@@ -29,9 +29,11 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -172,6 +174,54 @@ function createSaveElementMatrixFixture(): array
         'draftBlock' => $draftBlock,
     ];
 }
+
+it('saves canonical workflow changes as a draft', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement(['title' => 'Canonical Title']);
+
+    $response = postJson(action([SaveElementController::class, 'store']), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+        'title' => 'Draft Title',
+    ])->assertOk();
+
+    /** @var Entry $draft */
+    $draft = Entry::find()->draftOf($entry->id)->drafts()->status(null)->one();
+    expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Canonical Title')
+        ->and($draft->title)->toBe('Draft Title')
+        ->and($draft->isProvisionalDraft)->toBeFalse()
+        ->and($response->json('element.id'))->toBe($draft->id);
+});
+
+it('saves disabled workflow entries without requiring review', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $entry = disabledEntry($this->section, $this->entryType);
+
+    postJson(action([SaveElementController::class, 'store']), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+        'enabled' => false,
+        'title' => 'Updated while disabled',
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Updated while disabled')
+        ->and(Entry::find()->draftOf($entry->id)->drafts()->status(null)->count())->toBe(0);
+});
 
 describe('store', function () {
     it('requires authentication', function () {

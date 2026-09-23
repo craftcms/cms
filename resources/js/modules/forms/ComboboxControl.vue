@@ -50,7 +50,6 @@
 <template>
   <CraftCombobox
     :name="editable ? inputName(control.path) : ''"
-    :label="label"
     :options="control.props.options"
     :placeholder="control.props.placeholder"
     :limit="control.props.limit"

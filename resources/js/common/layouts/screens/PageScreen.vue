@@ -62,6 +62,7 @@
     defaultFormActions: () => ['saveAndContinueEditing'],
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
+    fillViewport: false,
   });
 
   const slots = defineSlots<ScreenSlots>();
@@ -199,7 +200,9 @@
     :has-sidebar="hasSidebar"
     :additional-skip-links="additionalSkipLinks"
   />
-  <div class="bg-header">
+  <div
+    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+  >
     <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
     <div class="cp">
       <div class="cp__sidebar">
@@ -298,7 +301,7 @@
                         </slot>
 
                         <slot name="content-header">
-                          <div id="cp-content-header" class="pt-xl pb-md">
+                          <div id="cp-content-header" class="pt-lg pb-md">
                             <CpContainer>
                               <div class="flex items-center justify-between">
                                 <LayoutSlotOutlet name="title">
@@ -339,6 +342,7 @@
                           </div>
                           <ContentFooter
                             v-show="hasFooter"
+                            class="cp-content__footer"
                             :read-only="readOnly"
                             :form="form"
                             :default-form-actions="defaultFormActions"
@@ -346,6 +350,7 @@
                             :form-additional-actions="formAdditionalActions"
                             :form-additional-buttons="formAdditionalButtons"
                             :submit-button-label="submitButtonLabel"
+                            :save-disabled="saveDisabled"
                             :contained="contentConstrained"
                             @save="save"
                           >
@@ -403,8 +408,8 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
-    border-start-end-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
+    border-start-start-radius: var(--c-radius-xl);
+    border-start-end-radius: var(--c-radius-xl);
     overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
@@ -419,6 +424,28 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
+  }
+
+  .page-screen {
+    background-color: var(--c-surface-header);
+  }
+
+  /* The top bar keeps its height and the shell takes the rest. */
+  .page-screen--fill-viewport {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+
+    .cp {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .cp__main {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   /**
@@ -530,6 +557,14 @@ Content
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
+  }
+
+  .cp-content__footer {
+    min-height: var(--cp-footer-height);
+    display: grid;
+    align-content: center;
+    border-block-start: 1px solic var(--c-color-border-quiet);
+    padding-block: var(--c-spacing-md);
   }
 
   /*

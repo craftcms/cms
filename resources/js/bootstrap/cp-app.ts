@@ -17,9 +17,11 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import CpLink from '@/common/components/CpLink.vue';
 import {cpComponentRegistry} from './components';
+import {elementDetailsTabRegistry} from './element-details-tabs';
 import {registerFormComponents} from '@/modules/forms/register';
 import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
+import {registerWorkflowComponents} from '@/modules/workflows/register';
 
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
@@ -27,6 +29,7 @@ export const queue = QueueService.getInstance();
 registerFormComponents(cpComponentRegistry);
 registerWidgetComponents(cpComponentRegistry);
 registerActivityComponents(cpComponentRegistry);
+registerWorkflowComponents(cpComponentRegistry, elementDetailsTabRegistry);
 
 export function installCpApp(app: App): void {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');

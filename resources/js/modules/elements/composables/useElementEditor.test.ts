@@ -66,17 +66,29 @@ function payload(
     notice: undefined,
     mergeNotice: undefined,
     canDiscardDraft: undefined,
-    submitButtonLabel: undefined,
     activityUrl: null,
     activityTimelineUrl: undefined,
     activityPageUrl: undefined,
     updatedTimestamps: {element: 1, canonical: 1},
-    formActions: [],
-    headerActions: [],
+    editorActions: {
+      primary: {
+        label: 'Save',
+        actionUrl: null,
+        params: {},
+        redirect: null,
+        tabId: null,
+      },
+      menu: [],
+      buttons: [],
+    },
     actionMenu: [],
     previewTargets: [],
     elementDisplayName: undefined,
     contextMenu: undefined,
+    workflow: {
+      current: null,
+      draftReviews: [],
+    },
     ...overrides,
   };
 }
@@ -186,6 +198,64 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
+  it('updates the editor payload from a details tab', () => {
+    const {editor} = mount(payload({title: 'Original title'}));
+
+    editor.updatePayload((current) => ({
+      title: `${current.title} updated`,
+    }));
+
+    expect(editor.props.title).toBe('Original title updated');
+    expect(editor.activityTimelineVersion.value).toBe(1);
+  });
+
+  it('supplies an empty workflow payload when a visit omits workflow data', () => {
+    const {editor} = mount(payload({workflow: undefined as never}));
+
+    expect(editor.props.workflow).toEqual({
+      convertedToDraft: false,
+      current: null,
+      draftReviews: [],
+    });
+  });
+
+  it.each(['pending', 'approved'] as const)(
+    'locks a %s workflow review until editing is explicitly started',
+    async (status) => {
+      const {editor} = mount(
+        payload({
+          workflow: {
+            current: {status} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        })
+      );
+
+      expect(editor.workflowReviewLocked.value).toBe(true);
+
+      editor.startEditingReviewedDraft();
+      await nextTick();
+
+      expect(editor.workflowReviewLocked.value).toBe(false);
+    }
+  );
+
+  it.each(['failed', 'invalidated'] as const)(
+    'keeps a %s workflow draft editable',
+    (status) => {
+      const {editor} = mount(
+        payload({
+          workflow: {
+            current: {status} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        })
+      );
+
+      expect(editor.workflowReviewLocked.value).toBe(false);
+    }
+  );
+
   /** A one-field layout, the smallest thing that can hold an unsaved value. */
   function fieldLayout(title: string): FormPayload {
     return {
@@ -252,7 +322,17 @@ describe('useElementEditor', () => {
           isProvisionalDraft: true,
           canDiscardDraft: true,
           notice: 'Showing your unsaved changes.',
-          submitButtonLabel: 'Save',
+          editorActions: {
+            primary: {
+              label: 'Save',
+              actionUrl: null,
+              params: {},
+              redirect: null,
+              tabId: null,
+            },
+            menu: [],
+            buttons: [],
+          },
         },
       },
     });
@@ -668,6 +748,98 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('starts a workflow draft when Save beats the autosave debounce', async () => {
+    vi.useFakeTimers();
+
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        form: fieldLayout('Canonical title'),
+        workflow: {
+          current: null,
+          draftReviews: [],
+        },
+        editorActions: {
+          primary: {
+            label: 'Save',
+            actionUrl: '/actions/elements/save-draft',
+            params: {
+              elementType: 'craft\\elements\\Entry',
+              elementId: 12,
+              siteId: 1,
+              dropProvisional: 1,
+              workflowSave: 1,
+            },
+            redirect: null,
+            tabId: null,
+          },
+          menu: [],
+          buttons: [],
+        },
+      })
+    );
+
+    await typeTitle('Edited title');
+
+    const save = interceptSave();
+    editor.save();
+
+    expect(save.last().url).toBe('/actions/elements/save-draft');
+    expect(save.last().data).toMatchObject({
+      elementType: 'craft\\elements\\Entry',
+      elementId: 12,
+      siteId: 1,
+      dropProvisional: 1,
+      workflowSave: 1,
+    });
+    expect(save.last().data).not.toHaveProperty('draftId');
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(postSpy).not.toHaveBeenCalled();
+
+    save.restore();
+    vi.useRealTimers();
+  });
+
+  it('saves a workflow draft with Cmd+S when the primary button opens its review tab', () => {
+    mount(
+      payload({
+        draftId: 9,
+        editorActions: {
+          primary: {
+            label: 'Request review',
+            actionUrl: '/actions/elements/save-draft',
+            params: {
+              elementType: 'craft\\elements\\Entry',
+              elementId: 12,
+              siteId: 1,
+              dropProvisional: 1,
+              workflowSave: 1,
+            },
+            redirect: null,
+            tabId: 'workflow',
+          },
+          menu: [],
+          buttons: [],
+        },
+      })
+    );
+    const save = interceptSave();
+
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    );
+
+    expect(save.last().url).toBe('/actions/elements/save-draft');
+    expect(save.last().data).toMatchObject({
+      draftId: 9,
+      dropProvisional: 1,
+      workflowSave: 1,
+    });
+
+    save.restore();
+  });
+
   /** Same for "Save and continue editing", which stays on the screen. */
   it('drops the provisional draft state when saving without redirecting', async () => {
     postSpy.mockResolvedValue({
@@ -710,7 +882,7 @@ describe('useElementEditor', () => {
    * screen is more of a draft afterwards, not less — the pointer has to follow
    * the server rather than being cleared because a save succeeded.
    */
-  it('follows the server onto the draft an alternate action created', async () => {
+  it('follows the server onto the workflow draft an alternate action created', async () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
@@ -751,18 +923,73 @@ describe('useElementEditor', () => {
         draftId: 9,
         isProvisionalDraft: false,
         form: fieldLayout('Edited title'),
+        workflow: {
+          current: {} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+        editorActions: {
+          primary: {
+            label: 'Save draft',
+            actionUrl: '/actions/elements/save-draft',
+            params: {
+              elementType: 'craft\\elements\\Entry',
+              elementId: 12,
+              siteId: 1,
+              dropProvisional: 1,
+              workflowSave: 1,
+            },
+            redirect: null,
+            tabId: null,
+          },
+          menu: [],
+          buttons: [],
+        },
       })
     );
 
     expect(editor.autosave.draftId.value).toBe(9);
 
-    // From here the screen edits that named draft: saves target it, and none
-    // of them claim it's provisional.
+    // From here ordinary saves preserve the named draft for review rather than
+    // applying it to the canonical element.
     editor.save();
 
-    expect(save.last().url).toBe('/actions/elements/apply-draft');
-    expect(save.last().data).toMatchObject({draftId: 9});
+    expect(save.last().url).toBe('/actions/elements/save-draft');
+    expect(save.last().data).toMatchObject({draftId: 9, dropProvisional: 1});
     expect(save.last().data).not.toHaveProperty('provisional');
+
+    save.restore();
+  });
+
+  it('submits an approved draft action without resaving form values', async () => {
+    const {editor} = mount(
+      payload({
+        draftId: 9,
+        form: fieldLayout('Reviewed title'),
+      })
+    );
+    const save = interceptSave();
+
+    await typeTitle('Unapproved browser value');
+    editor.submitAction({
+      label: 'Apply approved draft',
+      actionUrl: '/actions/elements/apply-draft',
+      params: {
+        workflowRunId: 4,
+        workflowCurrentStage: 1,
+      },
+      redirect: null,
+      includeFormData: false,
+    });
+
+    expect(save.last().url).toBe('/actions/elements/apply-draft');
+    expect(save.last().data).toEqual({
+      elementType: 'craft\\elements\\Entry',
+      elementId: 12,
+      draftId: 9,
+      siteId: 1,
+      workflowRunId: 4,
+      workflowCurrentStage: 1,
+    });
 
     save.restore();
   });

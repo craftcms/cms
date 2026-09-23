@@ -212,9 +212,13 @@ class Group extends Container
             ->instructions($props['instructions'] ?? null)
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)
-            ->input(FieldGroup::make()->children([
-                new HtmlString($renderer->renderNodes($node->children ?? [], $payload)),
-            ]))
+            ->input(
+                FieldGroup::make()
+                    ->children([
+                        new HtmlString($renderer->renderNodes($node->children ?? [], $payload)),
+                    ])
+                    ->attributes(['class' => 'auto-widths']),
+            )
             ->attributes([
                 'class' => isset($props['width']) ? "width-{$props['width']}" : null,
                 'data-form-node' => $node->uid,

@@ -33,7 +33,14 @@ export function useElementIndexViewMode(
       viewState.value.mode = value;
 
       // Reflect the change in the URL and refresh the server-rendered bits.
-      visitor.merge({viewMode: value}, {only: ['data', 'pagination']});
+      // `structure` comes along because the server only fills it in while the
+      // index is ordered by structure — without it, switching into structure
+      // mode leaves the payload's structure null until a full page load, and
+      // the rows render with no reordering affordances.
+      visitor.merge(
+        {viewMode: value},
+        {only: ['data', 'pagination', 'structure']}
+      );
     },
   });
 
@@ -50,7 +57,10 @@ export function useElementIndexViewMode(
       return null;
     }
 
-    return {params: {viewMode: persisted}, only: ['data', 'pagination']};
+    return {
+      params: {viewMode: persisted},
+      only: ['data', 'pagination', 'structure'],
+    };
   }
 
   return {mode, restore};

@@ -1,4 +1,4 @@
-import {existsSync} from 'node:fs';
+import {existsSync, mkdirSync, readdirSync} from 'node:fs';
 import {execSync} from 'node:child_process';
 
 // One-time bootstrap for `pnpm run dev`: build artifacts that the dev server
@@ -20,4 +20,29 @@ if (!existsSync('cms-assets/resources/legacy/cp/dist/css/cp.css')) {
     run('pnpm run build:ui');
   }
   run('pnpm run build:bundles');
+}
+
+// Wayfinder and the TypeScript transformer write these, and they're all
+// gitignored, so a fresh checkout has none of them. Vite's plugins do generate
+// them, but only at buildStart — too late for a typecheck, and not at all when
+// the dev server exits early (DDEV down, port taken, …), which leaves `vp
+// check` and the IDE resolving against types that were never written.
+const isEmpty = (dir) =>
+  !existsSync(dir) ||
+  readdirSync(dir).filter((entry) => entry !== '.gitkeep').length === 0;
+
+if (isEmpty('resources/js/generated')) {
+  // The transformer refuses to create its own output directory.
+  mkdirSync('resources/js/generated', {recursive: true});
+  run('pnpm run generate:types');
+}
+
+if (
+  [
+    'resources/js/actions',
+    'resources/js/routes',
+    'resources/js/wayfinder',
+  ].some(isEmpty)
+) {
+  run('pnpm run generate:wayfinder');
 }

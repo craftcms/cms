@@ -81,8 +81,8 @@ export default css`
 
   .card-body {
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-card-padding-inline, var(--c-spacing-md));
-    padding-block: var(--c-card-padding-block, var(--c-spacing-md));
+    padding-inline: var(--c-card-padding-inline, var(--cp-container-padding));
+    padding-block: var(--c-card-padding-block, var(--cp-container-padding));
   }
 
   .card-body--thumb-start {
