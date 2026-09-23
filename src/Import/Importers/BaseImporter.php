@@ -39,7 +39,6 @@ abstract class BaseImporter
      *
      * array => key is what to import into (e.g. a field handle or attribute name)
      *  value is the name/key/property from the incoming data;
-     *  by default, [id => id] is used, meaning elements are matched on their ID, and we expect an 'id' key in the provided data;
      *  example: ['plainText' => 'myPlainText'] means that you have a plainText field in you field layout or column in your table
      *    and you want to import the value of 'myPlainText' column/property from the incoming csv/json/xml;
      *  the array can be multidimensional;

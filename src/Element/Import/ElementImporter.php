@@ -70,14 +70,11 @@ abstract class ElementImporter extends BaseImporter
     private array $deletedNestedElementIds = [];
 
     /**
-     * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
-     *
-     * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
+     * Calls the parent constructor then starts tracking nested elements deleted during the import.
      */
     public function __construct(?array $config = null)
     {
         parent::__construct($config);
-        // $this->matchCriteria = ['id' => 'id'];
 
         Event::listen(function (ElementDeleted $event) {
             if ($this->trackingNestedElementDeletions) {

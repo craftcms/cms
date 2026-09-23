@@ -22,7 +22,7 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
 /**
- * If you create a new element import command that extends this class,
+ * If you create a new import command that extends this class,
  * you should register it from your Plugin's boot() method via
  * $this->commands() method and pass an array containing FQCN of the new command(s).
  */
@@ -32,9 +32,13 @@ abstract class Import extends Command implements PromptsForMissingInput
 
     protected function configure(): void
     {
-        $this->addArgument('file', InputArgument::REQUIRED, '`@root`-relative path to the file containing the data you want to import.')
-            ->addOption('site', null, InputOption::VALUE_OPTIONAL, 'The handle of the site you want to import into.')
-            ->addOption('transformer', null, InputOption::VALUE_OPTIONAL, 'The fully qualified class name of the transformer you want to use to manipulate the data on import.')
+        $this->addArgument('file', InputArgument::REQUIRED, '`@root`-relative path to the file containing the data you want to import.');
+
+        if (static::importerClass()::isElementImporter()) {
+            $this->addOption('site', null, InputOption::VALUE_OPTIONAL, 'The handle of the site you want to import into.');
+        }
+
+        $this->addOption('transformer', null, InputOption::VALUE_OPTIONAL, 'The fully qualified class name of the transformer you want to use to manipulate the data on import.')
             ->addOption('matchCriteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.');
     }
 
@@ -49,7 +53,7 @@ abstract class Import extends Command implements PromptsForMissingInput
     public function handle(): int
     {
         $options = form()
-            ->addIf(! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
+            ->addIf(static::importerClass()::isElementImporter() && ! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
                 label: 'Which site you want to import into?',
                 options: Sites::getAllSites()
                     ->mapWithKeys(fn (Site $site) => [$site->handle => $site->name])
