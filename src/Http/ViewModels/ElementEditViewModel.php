@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -758,7 +759,10 @@ abstract class ElementEditViewModel extends ViewModel
         }
 
         return [
-            'icon' => 'earth',
+            // Marks this as the screen's own site switcher, so the shared one
+            // every screen leads with stands down rather than adding a second.
+            'id' => 'site-crumb',
+            'icon' => Icons::earth(),
             'label' => t($currentSite->getName(), category: 'site'),
             'actions' => $items,
         ];
