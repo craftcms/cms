@@ -95,7 +95,7 @@ class AutomaticApprovalStage extends WorkflowStage
 {
     public static function displayName(): string
     {
-        return 'Automatic approval';
+        return 'Automatic Approval';
     }
 
     public function evaluate(WorkflowStageContext $context): WorkflowStageResult

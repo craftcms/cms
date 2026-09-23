@@ -64,7 +64,7 @@
       ...props.modelValue,
       {
         uid: crypto.randomUUID(),
-        name: t('Review'),
+        name: '',
         type: stageType.type,
         settings: {...stageType.settings},
         settingsForm: stageType.settingsForm,
@@ -145,7 +145,7 @@
       single-column
       tag="div"
       item-tag="div"
-      list-class="grid gap-1"
+      list-class="grid gap-md"
       :item-attrs="
         (uid, index) => ({
           role: 'listitem',
@@ -167,6 +167,7 @@
           v-if="editable"
           :actions="stageActions(index)"
           :label="t('Stage {num} actions', {num: index + 1})"
+          :flush="false"
         />
       </template>
 

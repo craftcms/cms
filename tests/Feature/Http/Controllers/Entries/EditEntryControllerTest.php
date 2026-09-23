@@ -426,7 +426,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
         'uid' => Str::uuid7()->toString(),
         'stages' => [[
             'uid' => Str::uuid7()->toString(),
-            'name' => 'Automatic approval',
+            'name' => 'Automatic Approval',
             'type' => AutomaticApprovalStage::class,
             'settings' => [],
         ]],

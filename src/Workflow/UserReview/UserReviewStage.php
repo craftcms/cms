@@ -36,7 +36,7 @@ class UserReviewStage extends WorkflowStage
 
     public static function displayName(): string
     {
-        return t('User review');
+        return t('User Review');
     }
 
     public function getRules(): array

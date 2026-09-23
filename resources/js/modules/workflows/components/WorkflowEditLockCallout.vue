@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <craft-callout variant="warning" icon="lock" appearance="fill">
+  <craft-callout variant="warning" icon="lock" appearance="fill" rounded="none">
     {{
       t(
         'You can edit this draft without resetting completed stages. If it has already been approved, editing it will reopen the final stage.'
@@ -26,3 +26,9 @@
     </craft-button>
   </craft-callout>
 </template>
+
+<style scoped lang="scss">
+  craft-callout {
+    --c-callout-padding-inline: var(--cp-container-padding);
+  }
+</style>

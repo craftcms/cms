@@ -457,7 +457,7 @@ MARKDOWN,
             'stages' => [
                 new WorkflowStageData(
                     uid: Str::uuid7()->toString(),
-                    name: 'Automatic approval',
+                    name: 'Automatic Approval',
                     type: AutomaticApprovalStage::class,
                     settings: [],
                 ),

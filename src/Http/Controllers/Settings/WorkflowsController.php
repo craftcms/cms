@@ -119,7 +119,7 @@ class WorkflowsController
 
     private function form(Workflow $workflow): CpScreenResponse
     {
-        $title = $workflow->exists ? $workflow->name : t('New workflow');
+        $title = $workflow->exists ? $workflow->name : t('Create a new workflow');
 
         return new CpScreenResponse()
             ->title($title)

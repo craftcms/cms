@@ -37,6 +37,7 @@
     container-type: inline-size;
     margin: 0;
     padding: 0;
+    border-inline-start: none;
     list-style: none;
   }
 

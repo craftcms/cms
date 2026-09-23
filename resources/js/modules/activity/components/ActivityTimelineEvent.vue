@@ -85,6 +85,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-sm);
+    --c-card-padding-inline: var(--c-spacing-md);
+    --c-card-padding-block: var(--c-spacing-md);
   }
 
   .activity-timeline__source {

@@ -14,8 +14,8 @@ setup((app) => {
 });
 
 const types = [
-  {value: 'user-review', label: 'User review'},
-  {value: 'automatic-approval', label: 'Automatic approval'},
+  {value: 'user-review', label: 'User Review'},
+  {value: 'automatic-approval', label: 'Automatic Approval'},
 ];
 
 const userReviewForm: FormPayload = {
@@ -69,7 +69,7 @@ const meta = {
   component: TypeConfigurator,
   args: {
     types,
-    selectedTypeLabel: 'User review',
+    selectedTypeLabel: 'User Review',
     form: userReviewForm,
   },
   parameters: {

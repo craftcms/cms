@@ -743,7 +743,7 @@ describe('apply', function () {
             'uid' => Str::uuid7()->toString(),
             'stages' => [[
                 'uid' => Str::uuid7()->toString(),
-                'name' => 'Automatic approval',
+                'name' => 'Automatic Approval',
                 'type' => AutomaticApprovalStage::class,
                 'settings' => [],
             ]],
@@ -775,7 +775,7 @@ describe('apply', function () {
             'uid' => Str::uuid7()->toString(),
             'stages' => [[
                 'uid' => Str::uuid7()->toString(),
-                'name' => 'Automatic approval',
+                'name' => 'Automatic Approval',
                 'type' => AutomaticApprovalStage::class,
                 'settings' => [],
             ]],

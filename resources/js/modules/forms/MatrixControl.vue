@@ -1428,7 +1428,7 @@
         single-column
         tag="div"
         item-tag="div"
-        list-class="grid gap-1"
+        list-class="grid gap-md"
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"

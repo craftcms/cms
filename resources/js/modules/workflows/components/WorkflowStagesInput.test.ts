@@ -12,7 +12,7 @@ const type = 'CraftCms\\Cms\\Workflow\\UserReview\\UserReviewStage';
 const stageTypes = [
   {
     type,
-    label: 'User review',
+    label: 'User Review',
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
     settingsForm: null,
   },
@@ -120,7 +120,7 @@ describe('WorkflowStagesInput', () => {
       | (HTMLElement & {disabled: boolean})
       | undefined;
     expect(removeAction?.disabled).toBe(true);
-    await selectType('User review');
+    await selectType('User Review');
 
     expect(updates.at(-1)).toEqual([
       stage('editorial', 'Editorial'),

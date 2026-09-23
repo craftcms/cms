@@ -134,7 +134,7 @@ it('renders registered stage types and inline settings forms', function () {
     $userReview = collect($payload['stageTypes'])->firstWhere('type', UserReviewStage::class);
     $automaticApproval = collect($payload['stageTypes'])->firstWhere('type', AutomaticApprovalStage::class);
 
-    expect($userReview['label'])->toBe('User review')
+    expect($userReview['label'])->toBe('User Review')
         ->and($userReview['settings'])->toBe([
             'approvalsRequired' => 1,
             'approvalMode' => 'total',
@@ -143,7 +143,7 @@ it('renders registered stage types and inline settings forms', function () {
         ->and($userReview['settingsForm'])->not->toBeNull()
         ->and($userReview['settingsForm']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
         ->and($automaticApproval)->toMatchArray([
-            'label' => 'Automatic approval',
+            'label' => 'Automatic Approval',
             'settings' => [],
             'settingsForm' => null,
         ]);

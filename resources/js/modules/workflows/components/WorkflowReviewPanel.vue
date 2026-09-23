@@ -77,7 +77,6 @@
   .workflow-review {
     display: grid;
     gap: var(--c-spacing-md);
-    padding: var(--c-spacing-md);
   }
 
   .workflow-review__body {
