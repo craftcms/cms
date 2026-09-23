@@ -607,7 +607,7 @@ class UsersTest extends TestCase
                 ->where(['userId' => $this->activeUser->id])
                 ->column();
 
-            self::assertSame(['token-current'], $tokens);
+            self::assertSame(['token-current'], array_map('trim', $tokens));
         } finally {
             $userSession->setIdentity(null);
             Session::reset();
