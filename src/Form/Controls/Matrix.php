@@ -62,6 +62,8 @@ class Matrix extends Control
 
     private ?string $elementType = null;
 
+    private ?string $siteName = null;
+
     private ?string $addLabel = null;
 
     private ?int $minEntries = null;
@@ -87,10 +89,22 @@ class Matrix extends Control
             $form = $forms->get($uid);
             $collapsed = (bool) ($entry['collapsed'] ?? false);
             $enabled = (bool) ($entry['enabled'] ?? true);
+            $enabledForSite = (bool) ($entry['enabledForSite'] ?? true);
             $icon = $blocks[$uid]['icon'] ?? null;
-            $actions = $enabled ? '' : Html::tag('craft-status', '', [
+            $statusLabel = match (true) {
+                ! $enabled && $control->props['siteName'] !== null => t('Disabled globally'),
+                ! $enabledForSite && $control->props['siteName'] !== null => t('Disabled for {site}', [
+                    'site' => $control->props['siteName'],
+                ]),
+                default => t('Disabled'),
+            };
+            $statusId = "{$attributes['id']}-{$index}-status";
+            $actions = $enabled && $enabledForSite ? '' : Html::tag('craft-status', '', [
+                'id' => $statusId,
                 'status' => 'disabled',
-                'label' => t('Disabled'),
+                'label' => $statusLabel,
+            ]).Html::tag('craft-tooltip', Html::encode($statusLabel), [
+                'for' => $statusId,
             ]);
 
             if ($editable) {
@@ -125,6 +139,7 @@ class Matrix extends Control
                 ? Html::hiddenInput("{$attributes['name']}[sortOrder][]", $uid)
                     .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][type]", $type)
                     .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][enabled]", $enabled ? '1' : '')
+                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][enabledForSite]", $enabledForSite ? '1' : '')
                     .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][collapsed]", $collapsed ? '1' : '')
                 : '';
             $content = $form instanceof NestedFormPayload
@@ -163,7 +178,9 @@ class Matrix extends Control
                     // No Craft 5 class names: the legacy stylesheet styles them,
                     // and would restyle the card. Behavior hangs off data attributes.
                     'data-matrix-block' => true,
-                    'data-disabled' => $enabled ? null : true,
+                    'data-disabled' => $enabled && $enabledForSite ? null : true,
+                    'data-disabled-global' => $enabled ? null : true,
+                    'data-disabled-site' => $enabledForSite ? null : true,
                     'data-id' => $uid,
                     'data-type' => $type,
                     // The CP's generated colorable rules turn this into the whole
@@ -343,6 +360,14 @@ class Matrix extends Control
         return $this;
     }
 
+    /** The localized site name, or null when the nested elements have one site. */
+    public function siteName(?string $siteName): static
+    {
+        $this->siteName = $siteName;
+
+        return $this;
+    }
+
     public function addLabel(string $addLabel): static
     {
         $this->addLabel = $addLabel;
@@ -409,6 +434,7 @@ class Matrix extends Control
             'blocks' => $this->blocks,
             'create' => $this->create,
             'elementType' => $this->elementType,
+            'siteName' => $this->siteName,
         ];
     }
 

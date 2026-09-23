@@ -68,7 +68,6 @@
 
 <template>
   <div class="space-y-4">
-    <h2 class="text-lg">{{ t('Contact Developer Support') }}</h2>
     <CraftTextarea
       ref="textarea"
       v-model="message"
