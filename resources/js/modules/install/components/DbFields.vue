@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
-  import Callout from '@/common/components/Callout.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import Select from '@/common/form/Select.vue';
@@ -58,13 +57,13 @@
 </script>
 
 <template>
-  <Callout variant="danger" v-if="errors && errors['*']">
+  <craft-callout variant="danger" v-if="errors && errors['*']">
     <ul>
       <li v-for="formError in errors['*']" :key="formError">
         {{ formError }}
       </li>
     </ul>
-  </Callout>
+  </craft-callout>
 
   <div class="grid grid-cols-5 gap-2">
     <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
