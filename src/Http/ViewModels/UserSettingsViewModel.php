@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Data\UserSettings;
 use CraftCms\Cms\User\Elements\User;
@@ -158,7 +160,7 @@ class UserSettingsViewModel extends ViewModel
         ];
     }
 
-    /** @return list<array{label: string, value: string, data?: array{addOption: bool}}> */
+    /** @return list<array{label: string, value: string}|ComboboxCreateOption> */
     private function photoVolumeOptions(): array
     {
         return $this->volumes->getAllVolumes()
@@ -168,11 +170,13 @@ class UserSettingsViewModel extends ViewModel
             ])
             ->sortBy('label')
             ->values()
-            ->push([
-                'label' => t('Create a new volume…'),
-                'value' => '__createVolume__',
-                'data' => ['addOption' => true],
-            ])
+            ->push(new ComboboxCreateOption(
+                t('Create a new volume…'),
+                action([VolumesController::class, 'create']),
+                'volume',
+                value: '__createVolume__',
+                valueField: 'uid',
+            ))
             ->all();
     }
 

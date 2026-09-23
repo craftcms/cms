@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
@@ -67,7 +68,7 @@ class Combobox extends Control
     }
 
     /**
-     * @param list<array<string, mixed>> $options
+     * @param  list<array<string, mixed>|ComboboxCreateOption>  $options
      *
      * Every option's `value` is cast to a string here, matching the client's own
      * `ComboboxOption.value: string` contract. A caller passing a raw int id (e.g. an
@@ -84,9 +85,13 @@ class Combobox extends Control
         return $this;
     }
 
-    /** @param array<string, mixed> $option */
-    private static function stringifyOptionValue(array $option): array
+    /** @param array<string, mixed>|ComboboxCreateOption $option */
+    private static function stringifyOptionValue(array|ComboboxCreateOption $option): array
     {
+        if ($option instanceof ComboboxCreateOption) {
+            $option = $option->jsonSerialize();
+        }
+
         if (($option['type'] ?? null) === 'optgroup') {
             return [...$option, 'options' => array_map(self::stringifyOptionValue(...), $option['options'] ?? [])];
         }

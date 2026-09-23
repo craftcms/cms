@@ -175,7 +175,8 @@ const VALUE_COMPONENTS = [
     tagName: 'craft-input-file',
     className: 'CraftInputFile',
     fileName: 'CraftInputFile',
-    modelType: "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
+    modelType:
+      "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
     importPath: '../components/input-file/input-file',
     slots: [
       'label',
@@ -654,6 +655,9 @@ function generateComboboxWrapper(component) {
   });
 
   const model = defineModel<${component.modelType}>();
+  const emit = defineEmits<{
+    'model-value-changed': [event: CustomEvent, cancelModelUpdate: () => void];
+  }>();
 
   withDefaults(
     defineProps<{
@@ -675,12 +679,20 @@ function generateComboboxWrapper(component) {
     }
   );
 
-  function onModelValueChanged(event: Event) {
+  function onModelValueChanged(event: CustomEvent) {
+    // Lion's event is not cancelable; let consumers reject a transient selection
+    // before the Vue model is updated.
+    let canceled = false;
+    emit('model-value-changed', event, () => (canceled = true));
+    if (canceled) {
+      return;
+    }
+
     // Lion fires an initial model-value-changed with detail.initialize=true and
     // its default (empty) value while the element boots — before Vue's
     // .modelValue binding has settled. Honoring that flag (as Lion's own
     // form-group repropagation does) prevents it from clobbering a bound value.
-    if ((event as CustomEvent).detail?.initialize) {
+    if (event.detail?.initialize) {
       return;
     }
     model.value = (event.target as ${component.className})?.modelValue ?? undefined;
@@ -723,6 +735,10 @@ function generateValueDeclaration(component) {
     component.tagName === 'craft-input'
       ? `  textExpanderTriggers?: import('../components/text-expander/text-expander').TextExpanderTriggers;\n`
       : '';
+  const comboboxEvent =
+    component.tagName === 'craft-combobox'
+      ? `  'onModel-value-changed'?: (event: CustomEvent, cancelModelUpdate: () => void) => void;\n`
+      : '';
 
   return `/**
  * Auto-generated type declaration for ${component.fileName}.vue
@@ -734,6 +750,7 @@ declare const _default: DefineComponent<{
 ${textExpanderProp}
   modelValue?: ${component.modelType};
   'onUpdate:modelValue'?: (val: ${component.modelType}) => void;
+${comboboxEvent}
 }>;
 export default _default;
 `;

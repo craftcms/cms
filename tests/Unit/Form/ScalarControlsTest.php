@@ -6,6 +6,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\Money;
@@ -220,6 +221,30 @@ it('serializes and validates combobox behavior', function () {
             'dir' => 'rtl',
         ])
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
+});
+
+it('renders a create option in an ordinary combobox', function () {
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([Field::make()->control(Combobox::make('category')->options([
+            ['label' => 'Existing', 'value' => 42],
+            new ComboboxCreateOption('Create category', '/categories/new', 'category'),
+        ]))]),
+        new FormContext(values: ['category' => '42']),
+    );
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $options = json_decode((string) $crawler->filter('craft-combobox')->attr('options'), true);
+
+    expect($options)->toBe([
+        ['label' => 'Existing', 'value' => '42'],
+        ['label' => 'Create category', 'value' => '__add__', 'data' => [
+            'create' => [
+                'url' => '/categories/new',
+                'resultKey' => 'category',
+                'labelField' => 'name',
+                'valueField' => 'id',
+            ],
+        ]],
+    ]);
 });
 
 it('renders an icon-only choice button with an accessible name and no label', function () {
