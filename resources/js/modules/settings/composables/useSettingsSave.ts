@@ -87,9 +87,6 @@ export function useSettingsSave<T extends object>(
     // Reset page state when this screen sends the user elsewhere, while saves
     // that remain on the current screen keep their local state by default.
     preserveState = !(redirect && redirectUrl.value),
-    // An alternate form action ("Save as a new X", "Delete") posting the
-    // same in-progress values to a different destination than this screen's
-    // own default `submit` target.
     action: actionOverride,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();

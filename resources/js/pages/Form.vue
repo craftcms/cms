@@ -32,7 +32,6 @@
     formActions?: FormAltAction[];
     /** Server-rendered markup for the details column. */
     metadataHtml?: string;
-    /** Caps and centers the content column (default on) — see `UseAppLayoutOptions.contentMaxWidth`. Pass `false` for a full-width screen (an index, say). */
     contentMaxWidth?: boolean;
   }>();
   const emit = defineEmits<{

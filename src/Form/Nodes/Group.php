@@ -115,11 +115,7 @@ class Group extends Container
         return $this;
     }
 
-    /**
-     * Starts a {@see self::collapsible()} group open rather than collapsed — e.g. an
-     * "Advanced" section whose fields already hold a value worth surfacing right away.
-     * Ignored (and never sent to the client) when the group isn't collapsible at all.
-     */
+    /** Ignored unless the group is {@see collapsible()}. */
     public function expanded(bool $expanded = true): static
     {
         $this->expanded = $expanded;

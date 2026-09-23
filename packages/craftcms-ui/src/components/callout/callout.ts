@@ -13,13 +13,6 @@ import {styleMap} from 'lit/directives/style-map.js';
  * @summary A boxed message: an optional icon, an optional title, body content,
  * and an optional trailing action.
  *
- * The host is `display: contents` (see `callout.styles`) so it never adds an
- * unstyled wrapper box of its own — but that means a surrounding CSS Grid
- * (e.g. `<craft-field-group>`'s `width-*` classes) can't size the *host*: with
- * no box of its own, the host's own grid placement is inert, and the grid
- * instead auto-places whatever the shadow root renders one column at a time.
- * `.callout` spans the full grid itself to compensate — see its own rule.
- *
  * @attr size - `small` steps the box down to `--c-text-sm` and tightens the gap
  *   between the icon and the text. Defaults to `auto`, which leaves the callout
  *   at the surrounding text size. Note this is type only — the padding below is

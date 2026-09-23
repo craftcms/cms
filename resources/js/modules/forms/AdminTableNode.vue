@@ -451,7 +451,6 @@
       });
   }
 
-  // Page-relative indices need an absolute position for the reorder endpoint.
   function onReorderWithinPage(startIndex: number, finishIndex: number): void {
     const previous = pageRows.value;
     const reordered = [...previous];
@@ -605,7 +604,6 @@
     props.node.props.statusActions.map(bulkActionToItem)
   );
 
-  // Refresh server-derived form props after a local row mutation.
   function refreshForm(): void {
     router.reload({only: ['form']});
   }

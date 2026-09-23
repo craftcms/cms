@@ -8,7 +8,6 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Json;
 
-/** PHP counterpart to the `<craft-select-color>` web component. */
 class SelectColor extends ViewComponent
 {
     use HasDisabled;
@@ -59,7 +58,6 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
-    /** Prepends a blank option, labelled "Transparent" unless {@see blankLabel()} overrides it. */
     public function allowTransparent(bool $allowTransparent = true): static
     {
         $this->allowTransparent = $allowTransparent;
@@ -67,7 +65,6 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
-    /** Overrides the blank option's label (default "Transparent"). */
     public function blankLabel(?string $blankLabel): static
     {
         $this->blankLabel = $blankLabel;
@@ -76,9 +73,6 @@ class SelectColor extends ViewComponent
     }
 
     /**
-     * Restricts the offered colors. `null` (the default) offers every color
-     * in the shared palette.
-     *
      * @param  list<string>|null  $colors
      */
     public function colors(?array $colors): static

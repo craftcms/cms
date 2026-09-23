@@ -7,12 +7,7 @@
     serverErrorValidators,
   } from './runtime';
 
-  // The underlying <craft-select-color> uses this sentinel internally for its
-  // blank ("no color") option's choiceValue, since a rich select's options
-  // need a real, distinct value to match against. Our own canonical "no
-  // color" value stays the empty string (the same convention every other
-  // select-like control in this Form system uses), so it's translated at the
-  // boundary in both directions rather than leaking out to the server.
+  // The select uses __blank__ internally; form values use an empty string.
   const BLANK_VALUE = '__blank__';
 
   type ColorSelectControlProps = {

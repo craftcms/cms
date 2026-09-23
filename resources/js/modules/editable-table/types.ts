@@ -52,12 +52,7 @@ export type EditableTableValue =
   | EditableTableValue[]
   | EditableTableRow;
 
-/**
- * `_hidden` is a reserved key (not a declared column, so it never renders as a
- * cell): hides the row (`hidden` attribute + class) without removing it — its
- * cells stay real inputs, still posting whatever they hold, so a caller can
- * toggle it back off without losing anything already typed.
- */
+/** `_hidden` hides a row without removing its inputs or submitted values. */
 export interface EditableTableRow {
   [key: string]: EditableTableValue;
 }
@@ -72,11 +67,6 @@ export interface EditableTableOptions {
   [key: string]: EditableTableOption;
 }
 
-/**
- * An `<optgroup>`-style options entry, e.g. what
- * `CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions()` returns — a leaf
- * option's own shape is {@link EditableTableOption}, not this.
- */
 export interface EditableTableOptionGroup {
   label?: string;
   type?: 'optgroup';

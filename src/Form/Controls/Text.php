@@ -181,7 +181,6 @@ class Text extends Control
         return $this;
     }
 
-    /** A display-only unit label rendered after the input (e.g. a percent or currency symbol). */
     public function suffix(?string $suffix): static
     {
         $this->suffix = $suffix;

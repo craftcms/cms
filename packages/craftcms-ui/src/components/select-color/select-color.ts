@@ -50,17 +50,13 @@ export default class CraftSelectColor extends LitElement {
   allowTransparent = false;
 
   /**
-   * Overrides the blank option's label (default "Transparent"). Use this
-   * when the value being picked isn't a background/opacity concept — e.g.
-   * "No color" for a category swatch.
+   * Label for the blank option (default "Transparent").
    */
   @property({attribute: 'blank-label'})
   blankLabel: string | null = null;
 
   /**
-   * The colors offered, in order. Defaults to every color in the shared
-   * palette ({@link paletteColors}) — pass a subset to restrict the choices
-   * to whatever set a particular caller's values are actually drawn from.
+   * Offered colors, in order. Defaults to the shared palette.
    */
   @property({type: Array})
   colors: string[] = [...paletteColors];
