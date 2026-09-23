@@ -562,7 +562,7 @@ Content
     min-height: var(--cp-footer-height);
     display: grid;
     align-content: center;
-    border-block-start: 1px solic var(--c-color-border-quiet);
+    border-block-start: 1px solid var(--c-color-border-quiet);
     padding-block: var(--c-spacing-md);
   }
 
