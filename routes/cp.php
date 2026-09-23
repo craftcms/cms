@@ -124,7 +124,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
-    Route::prefix('workflows')->group(function () {
+    Route::prefix('workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);

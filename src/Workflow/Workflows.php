@@ -315,6 +315,8 @@ class Workflows
 
     public function addComment(ElementInterface $draft, int $runId, int|string $stage, string $note): WorkflowRun
     {
+        $this->ensureAvailable();
+
         if (trim($note) === '') {
             throw new WorkflowException('A comment is required.');
         }
@@ -344,6 +346,8 @@ class Workflows
 
     public function overrideApproval(ElementInterface $draft, int $runId, ?string $reason = null): WorkflowRun
     {
+        $this->ensureAvailable();
+
         $reason = $reason !== null && trim($reason) !== '' ? $reason : null;
 
         $actor = $this->actor();

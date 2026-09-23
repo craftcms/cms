@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -143,7 +144,9 @@ readonly class SectionsController
         $section->name = $request->input('name');
         $section->handle = $request->input('handle');
         $section->type = $request->enum('type', SectionType::class, SectionType::Channel);
-        $section->workflowId = $request->integer('workflowId') ?: null;
+        if (Edition::isAtLeast(Edition::Pro)) {
+            $section->workflowId = $request->integer('workflowId') ?: null;
+        }
         $section->enableVersioning = $request->boolean('enableVersioning', true);
         $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');
