@@ -15,7 +15,6 @@
   import CpLink from '@/common/components/CpLink.vue';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -219,7 +218,10 @@
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
-        <Empty icon="light/pen-to-square" :label="t('No fields exist yet.')" />
+        <craft-empty
+          icon="light/pen-to-square"
+          :label="t('No fields exist yet.')"
+        ></craft-empty>
       </template>
       <template #table-header>
         <SearchForm v-model="searchTerm" />

@@ -8,7 +8,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
-  import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
 
@@ -103,11 +102,11 @@
   <CpContainer>
     <AdminTable :table="table">
       <template #empty-row>
-        <Empty :label="t('No GraphQL tokens exist yet.')">
+        <craft-empty :label="t('No GraphQL tokens exist yet.')">
           <CpLink :href="create().url" icon="plus" appearance="button">{{
             t('New token')
           }}</CpLink>
-        </Empty>
+        </craft-empty>
       </template>
     </AdminTable>
   </CpContainer>

@@ -11,8 +11,7 @@ export default class CraftEmpty extends LitElement {
         display: grid;
         place-items: center;
         border-radius: var(--c-radius-md);
-        background-color: var(--c-color-neutral-fill-quiet);
-        color: var(--c-color-neutral-on-quiet);
+        border: 1px solid var(--c-color-border-quiet);
         padding-block: var(--c-spacing-lg);
       }
 

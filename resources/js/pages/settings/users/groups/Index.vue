@@ -3,7 +3,6 @@
   import {h} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {
     create,
@@ -70,11 +69,11 @@
   <CpContainer class="@container">
     <AdminTable :table="table">
       <template #empty-row>
-        <Empty icon="users" :label="t('No groups exist yet.')">
+        <craft-empty icon="users" :label="t('No groups exist yet.')">
           <CpLink :href="create().url" icon="plus" appearance="button">{{
             t('New user group')
           }}</CpLink>
-        </Empty>
+        </craft-empty>
       </template>
     </AdminTable>
   </CpContainer>

@@ -11,7 +11,6 @@
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -100,10 +99,7 @@
 
   <div v-if="routes.length === 0" class="empty-routes">
     <CpContainer>
-      <Empty
-        :label="t('No routes exist yet.')"
-        class="border border-quiet rounded"
-      >
+      <craft-empty :label="t('No routes exist yet.')" class="rounded">
         <CpLink
           v-if="!readOnly"
           :href="create()"
@@ -113,7 +109,7 @@
         >
           {{ t('New route') }}
         </CpLink>
-      </Empty>
+      </craft-empty>
     </CpContainer>
   </div>
 
