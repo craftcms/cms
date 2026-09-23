@@ -733,6 +733,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       let sourceKey;
       if (this.settings.context === 'index') {
         sourceKey = Craft.getQueryParam('source');
+        // defaultSourcePath is relative to defaultSource, so discard it if the `source` param points elsewhere
+        // (https://github.com/craftcms/cms/issues/19689)
+        if (sourceKey && sourceKey !== this.settings.defaultSource) {
+          this.settings.defaultSourcePath = null;
+        }
       }
 
       if (!sourceKey) {
