@@ -75,7 +75,10 @@
     />
     <craft-field-group
       slot="input"
-      :class="{'group-fields-loading': showLoading}"
+      :class="{
+        'auto-widths': true,
+        'group-fields-loading': showLoading,
+      }"
     >
       <FormNodeList
         :nodes="node.children ?? []"

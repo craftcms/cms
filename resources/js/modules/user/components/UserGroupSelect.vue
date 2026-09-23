@@ -91,7 +91,7 @@
 
 <template>
   <div class="grid gap-2">
-    <div class="user-group-list">
+    <div v-if="selectedGroups.length" class="user-group-list">
       <craft-chip v-for="group in selectedGroups" :key="group.id">
         <div class="grid gap-1">
           <div class="flex gap-1">

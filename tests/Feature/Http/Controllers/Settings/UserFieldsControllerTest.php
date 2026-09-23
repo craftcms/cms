@@ -76,6 +76,8 @@ it('can save the user field layout', function () {
 });
 
 it('rejects reserved field handles', function () {
+    $fieldUid = Str::uuid()->toString();
+
     post(action([UserFieldsController::class, 'store']), [
         'fieldLayout' => json_encode([
             'uid' => Str::uuid()->toString(),
@@ -94,11 +96,11 @@ it('rejects reserved field handles', function () {
         ]),
         'generatedFields' => [
             [
-                'uid' => Str::uuid()->toString(),
+                'uid' => $fieldUid,
                 'name' => 'Username',
                 'handle' => 'username',
                 'template' => '',
             ],
         ],
-    ])->assertSessionHas('error');
+    ])->assertSessionHasErrors("generatedFields.$fieldUid.handle");
 });
