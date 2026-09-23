@@ -43,10 +43,12 @@ export class DataTableSorter extends DragSort {
     this.$table = $table;
     // `helper` needs `this` (unavailable before super); it's a drag-time
     // callback, so wire it once here.
-    this.settings.helper = ($helperRow: any) => this.getHelper($helperRow);
+    this.settings.helper = (helperRow: HTMLElement) =>
+      this.getHelper(helperRow);
   }
 
-  getHelper($helperRow: any): any {
+  getHelper(helperRow: HTMLElement): HTMLElement {
+    const $helperRow = $(helperRow);
     const $helper = $(`<div class="${this.settings.helperClass}"/>`).appendTo(
       document.body
     );
@@ -68,6 +70,6 @@ export class DataTableSorter extends DragSort {
       $($helperCells[i]).width($($cells[i]).width());
     }
 
-    return $helper;
+    return $helper[0];
   }
 }

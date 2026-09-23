@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\Nodes\Concerns\HasVisibility;
 use Illuminate\Support\Arr;
 
 use function CraftCms\Cms\template;
@@ -34,6 +35,9 @@ class Table extends Control
     /** @var list<string> */
     private array $hiddenRows = [];
 
+    /** @var array<string, mixed> */
+    private array $defaultValues = [];
+
     /** @var array<string, array<string, true>> */
     private array $errors = [];
 
@@ -53,6 +57,7 @@ class Table extends Control
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
+            'defaultValues' => $control->props['defaultValues'] ?? [],
             'static' => $attributes['name'] === null,
             'hiddenRows' => $control->props['hiddenRows'] ?? [],
             'errors' => $control->props['errors'] ?? [],
@@ -118,7 +123,7 @@ class Table extends Control
      * Hides the given rows (by their row key — a shipping category id, say) without
      * removing them: their cells stay real inputs, still posting whatever they hold, so a
      * caller can stop hiding a row later without losing anything already typed in it —
-     * the same principle {@see \CraftCms\Cms\Form\Nodes\Concerns\HasVisibility} documents
+     * the same principle {@see HasVisibility} documents
      * for whole Field/Group nodes.
      *
      * Deliberately a Control *prop* rather than part of each row's own value: props are
@@ -131,6 +136,14 @@ class Table extends Control
     public function hiddenRows(array $rowIds): static
     {
         $this->hiddenRows = $rowIds;
+
+        return $this;
+    }
+
+    /** @param array<string, mixed> $defaultValues */
+    public function defaultValues(array $defaultValues): static
+    {
+        $this->defaultValues = $defaultValues;
 
         return $this;
     }
@@ -162,6 +175,7 @@ class Table extends Control
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
             'hiddenRows' => $this->hiddenRows ?: null,
+            'defaultValues' => $this->defaultValues,
             'errors' => $this->errors ?: null,
         ]);
     }

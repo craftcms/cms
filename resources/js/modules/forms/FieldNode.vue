@@ -1,7 +1,10 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
+  import {actionClient} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
+  import {useEventListener} from '@vueuse/core';
+  import axios from 'axios';
   import {
     computed,
     getCurrentInstance,
@@ -9,7 +12,11 @@
     onErrorCaptured,
     provide,
     shallowRef,
+    useTemplateRef,
+    watch,
   } from 'vue';
+  import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
+  import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
   import FormNodeList from './FormNodeList.vue';
   import {
     FieldActionItems,
@@ -31,6 +38,23 @@
     FormPayload,
     FormValue,
   } from './types';
+
+  type CrossSiteCopyDetail = {
+    trigger?: unknown;
+    elementType: string;
+    elementId: number;
+    draftId: number | null;
+    siteId: number;
+    layoutElementUid: string;
+    label?: string | null;
+    siteIds: number[];
+  };
+
+  type CrossSiteCopyResponse = {
+    message: string;
+    field: FormNodePayload<FieldNodeProps>;
+    values: FormPayload['values'];
+  };
 
   type FieldNodeProps = {
     label?: string | null;
@@ -64,14 +88,19 @@
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
   }>();
+  const resolvedNode = shallowRef(props.node);
+  watch(
+    () => props.node,
+    (node) => (resolvedNode.value = node)
+  );
   const invalidate = inject(FormFailure)!;
   provide(
     FieldLabelSrOnly,
-    computed(() => Boolean(props.node.props.labelSrOnly))
+    computed(() => Boolean(resolvedNode.value.props.labelSrOnly))
   );
   const overrides = inject(FormControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
-  const control = computed(() => props.node.control!);
+  const control = computed(() => resolvedNode.value.control!);
   const component = computed(() => {
     const component = components[control.value.component];
 
@@ -84,7 +113,7 @@
     return component;
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
-  const actions = computed(() => props.node.children ?? []);
+  const actions = computed(() => resolvedNode.value.children ?? []);
 
   provide(FieldActionItems, shallowRef());
 
@@ -169,10 +198,10 @@
       control: control.value,
       value: value.value,
       values: props.values,
-      label: props.node.props.label ?? undefined,
+      label: resolvedNode.value.props.label ?? undefined,
       editable: editable.value,
       invalid: controlErrors.value.length > 0,
-      required: Boolean(props.node.props.required),
+      required: Boolean(resolvedNode.value.props.required),
       setValue,
     });
   }
@@ -184,31 +213,97 @@
       emit('change', formChange);
     }
   }
+
+  const field = useTemplateRef<HTMLElement>('field');
+  const copyDetail = shallowRef<CrossSiteCopyDetail>();
+  const copySites = shallowRef<Array<{id: number; name: string}>>([]);
+  const copying = shallowRef(false);
+
+  useEventListener(window, 'craft:copy-value-from-site', (event: Event) => {
+    const detail = (event as CustomEvent<CrossSiteCopyDetail>).detail;
+
+    if (
+      !detail ||
+      !(detail.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value
+    ) {
+      return;
+    }
+
+    copyDetail.value = detail;
+    copySites.value = Craft.sites.filter((site) =>
+      detail.siteIds.includes(site.id)
+    );
+  });
+
+  async function copyValue(fromSiteId: number): Promise<void> {
+    const detail = copyDetail.value;
+
+    if (!detail) {
+      return;
+    }
+
+    copying.value = true;
+
+    try {
+      const {data} = await actionClient.post<CrossSiteCopyResponse>(
+        CopyElementValuesController.url(),
+        {
+          elementType: detail.elementType,
+          elementId: detail.elementId,
+          draftId: detail.draftId,
+          siteId: detail.siteId,
+          layoutElementUid: detail.layoutElementUid,
+          fromSiteId,
+          namespace: props.scope.join('.') || null,
+        }
+      );
+
+      resolvedNode.value = data.field;
+      setValue(controlValueAt(data.values, data.field.control!));
+      copyDetail.value = undefined;
+      Craft.cp?.displayNotice?.(data.message);
+    } catch (error) {
+      const message = axios.isAxiosError<{message?: string}>(error)
+        ? error.response?.data?.message
+        : undefined;
+      Craft.cp?.displayError?.(
+        message ?? t('Couldn’t copy the field value from the selected site.')
+      );
+    } finally {
+      copying.value = false;
+    }
+  }
 </script>
 
 <template>
   <craft-field
+    ref="field"
     :id="fieldId(control.path)"
-    :label="node.props.label ?? undefined"
-    :label-sr-only="node.props.labelSrOnly || undefined"
+    :label="resolvedNode.props.label ?? undefined"
+    :label-sr-only="resolvedNode.props.labelSrOnly || undefined"
     :help-text="
-      node.props.instructionsHtml ? undefined : (node.props.instructions ?? undefined)
+      resolvedNode.props.instructionsHtml
+        ? undefined
+        : (resolvedNode.props.instructions ?? undefined)
     "
-    :instructions-position="node.props.instructionsPosition"
-    :required="Boolean(node.props.required)"
+    :instructions-position="resolvedNode.props.instructionsPosition"
+    :required="Boolean(resolvedNode.props.required)"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
-    :status="modified ? 'modified' : node.props.status"
+    :status="modified ? 'modified' : resolvedNode.props.status"
     :status-label="
-      modified ? t('This field has been modified.') : node.props.statusLabel
+      modified
+        ? t('This field has been modified.')
+        : resolvedNode.props.statusLabel
     "
     :class="{
-      [`width-${node.props.width}`]: Boolean(node.props.width),
-      hidden: Boolean(node.props.hidden),
+      [`width-${resolvedNode.props.width}`]: Boolean(resolvedNode.props.width),
+      hidden: Boolean(resolvedNode.props.hidden),
     }"
-    :hidden="node.props.hidden || undefined"
-    :data-layout-element="node.props.layoutUid"
+    :hidden="resolvedNode.props.hidden || undefined"
+    :data-layout-element="resolvedNode.props.layoutUid"
   >
     <div v-if="actions.length" slot="actions">
       <FormNodeList
@@ -222,15 +317,19 @@
       />
     </div>
     <span
-      v-if="node.props.instructionsHtml"
+      v-if="resolvedNode.props.instructionsHtml"
       slot="help-text"
-      v-html="node.props.instructionsHtml"
+      v-html="resolvedNode.props.instructionsHtml"
     />
-    <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
     <span
-      v-if="node.props.warningHtml"
+      v-if="resolvedNode.props.tipHtml"
+      slot="tip"
+      v-html="resolvedNode.props.tipHtml"
+    />
+    <span
+      v-if="resolvedNode.props.warningHtml"
       slot="warning"
-      v-html="node.props.warningHtml"
+      v-html="resolvedNode.props.warningHtml"
     />
     <div
       v-if="override"
@@ -248,10 +347,10 @@
       slot="input"
       :control="control"
       :value="value"
-      :label="node.props.label ?? undefined"
+      :label="resolvedNode.props.label ?? undefined"
       :editable="editable"
       :invalid="controlErrors.length > 0"
-      :required="Boolean(node.props.required)"
+      :required="Boolean(resolvedNode.props.required)"
       :values="values"
       :errors="errors"
       :touched-paths="touchedPaths"
@@ -267,4 +366,12 @@
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>
     </ul>
   </craft-field>
+  <CrossSiteCopyModal
+    :active="Boolean(copyDetail)"
+    :label="copyDetail?.label"
+    :sites="copySites"
+    :loading="copying"
+    @close="copyDetail = undefined"
+    @submit="copyValue"
+  />
 </template>

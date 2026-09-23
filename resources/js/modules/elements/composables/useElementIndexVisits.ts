@@ -57,6 +57,13 @@ export interface IndexVisitOptions {
   replace?: boolean;
   /** Drop the page param, restarting at page 1 (for filter-ish changes). */
   resetPage?: boolean;
+  /**
+   * Refresh without the index-wide loading state (or progress bar), for
+   * changes that show their own progress — e.g. expanding a structure row.
+   */
+  silent?: boolean;
+  /** Called once the visit finishes, whether it succeeded or not. */
+  onFinish?: () => void;
 }
 
 /**
@@ -100,6 +107,8 @@ export function createIndexVisitor(route: ElementIndexRoute) {
       preserveState: true,
       preserveScroll: true,
       replace: options.replace ?? false,
+      showProgress: !options.silent,
+      onFinish: options.onFinish,
     });
   }
 

@@ -16,6 +16,7 @@
   } from '@actions/Gql/TokensController';
   import {useForm, useHttp} from '@inertiajs/vue3';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type TokenData = Pick<
     CraftCms.Cms.Gql.Data.GqlToken,
@@ -90,7 +91,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised">
+  <CpContainer>
     <div class="grid gap-3">
       <CraftInput
         :label="t('Name')"
@@ -172,26 +173,28 @@
         </craft-button>
       </div>
     </div>
-  </craft-pane>
+  </CpContainer>
 
   <LayoutSlot name="content-details">
-    <CraftSwitch
-      :label="t('Enabled')"
-      id="enabled"
-      name="enabled"
-      v-model="form.enabled"
-      :disabled="readOnly"
-      :error="form.errors.enabled"
-    />
+    <craft-field-group class="p-lg">
+      <CraftSwitch
+        :label="t('Enabled')"
+        id="enabled"
+        name="enabled"
+        v-model="form.enabled"
+        :disabled="readOnly"
+        :error="form.errors.enabled"
+      />
 
-    <CraftInput
-      :label="t('Expiry Date')"
-      id="expiryDate"
-      name="expiryDate"
-      type="datetime-local"
-      v-model="form.expiryDate"
-      :disabled="readOnly"
-      :error="form.errors.expiryDate"
-    />
+      <CraftInput
+        :label="t('Expiry Date')"
+        id="expiryDate"
+        name="expiryDate"
+        type="datetime-local"
+        v-model="form.expiryDate"
+        :disabled="readOnly"
+        :error="form.errors.expiryDate"
+      />
+    </craft-field-group>
   </LayoutSlot>
 </template>

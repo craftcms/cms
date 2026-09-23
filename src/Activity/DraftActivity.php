@@ -29,7 +29,7 @@ use WeakMap;
 #[Singleton]
 readonly class DraftActivity
 {
-    /** @var WeakMap<ElementInterface, array{isNew: bool, metadataChanged: bool}> */
+    /** @var WeakMap<ElementInterface, DraftWrite> */
     private WeakMap $writes;
 
     public function __construct(private Sites $sites)
@@ -64,14 +64,41 @@ readonly class DraftActivity
             ->where('id', $element->id)
             ->whereNotNull('draftId')
             ->exists();
+        $dirtyAttributes = $element->getDirtyAttributes();
+        $dirtyFields = $element->getDirtyFields();
+        $original = $element instanceof Entry && $wasDraft
+            ? Entry::find()
+                ->id($element->id)
+                ->siteId($element->siteId)
+                ->drafts()
+                ->status(null)
+                ->one()
+            : null;
 
-        $this->writes[$element] = [
-            'isNew' => ! $wasDraft || (bool) $draft->provisional || ! (bool) $draft->saved,
-            'metadataChanged' => (bool) $draft->provisional !== $element->isProvisionalDraft ||
+        if ($original !== null && in_array('authorIds', $dirtyAttributes, true)) {
+            $original->getAuthorIds();
+        }
+
+        foreach ($original?->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if ($field instanceof BaseRelationField && in_array($field->handle, $dirtyFields, true)) {
+                $value = $original->getFieldValue($field->handle);
+
+                if ($value instanceof ElementQueryInterface) {
+                    $original->setFieldValue($field->handle, (clone $value)->status(null)->collect());
+                }
+            }
+        }
+
+        $this->writes[$element] = new DraftWrite(
+            isNew: ! $wasDraft || (bool) $draft->provisional || ! (bool) $draft->saved,
+            metadataChanged: (bool) $draft->provisional !== $element->isProvisionalDraft ||
                 $draft->name !== $element->draftName ||
                 $draft->notes !== $element->draftNotes ||
                 (bool) $draft->saved !== $element->markDraftAsSaved,
-        ];
+            original: $original,
+            dirtyAttributes: $dirtyAttributes,
+            dirtyFields: $dirtyFields,
+        );
     }
 
     public function handleElementPersisted(ElementPersisted $event): void
@@ -79,19 +106,28 @@ readonly class DraftActivity
         $write = $this->writes[$event->element] ?? null;
         unset($this->writes[$event->element]);
 
-        $contentChanged = $event->element->getDirtyAttributes() !== []
-            || $event->element->getDirtyFields() !== [];
+        $changes = [];
+        $contentChanged = $write !== null && ($write->dirtyAttributes !== [] || $write->dirtyFields !== []);
+
+        if ($write !== null && $event->element instanceof Entry && $write->original !== null) {
+            [$changes, $contentChanged] = EntryActivity::changes(
+                $event->element,
+                $write->original,
+                $write->dirtyAttributes,
+                $write->dirtyFields,
+            );
+        }
 
         if (
             $write === null ||
-            (! $write['isNew'] && ! $write['metadataChanged'] && ! $contentChanged)
+            (! $write->isNew && ! $write->metadataChanged && ! $contentChanged)
         ) {
             return;
         }
 
-        $activity = $write['isNew']
-            ? new DraftCreatedActivityEvent(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId))
-            : new DraftSaved(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId));
+        $activity = $write->isNew
+            ? new DraftCreatedActivityEvent(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId), changes: $changes)
+            : new DraftSaved(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId), changes: $changes);
 
         Activities::record($activity);
     }
