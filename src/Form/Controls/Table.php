@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\Nodes\Concerns\HasVisibility;
 use Illuminate\Support\Arr;
 
 use function CraftCms\Cms\template;
@@ -122,7 +123,7 @@ class Table extends Control
      * Hides the given rows (by their row key — a shipping category id, say) without
      * removing them: their cells stay real inputs, still posting whatever they hold, so a
      * caller can stop hiding a row later without losing anything already typed in it —
-     * the same principle {@see \CraftCms\Cms\Form\Nodes\Concerns\HasVisibility} documents
+     * the same principle {@see HasVisibility} documents
      * for whole Field/Group nodes.
      *
      * Deliberately a Control *prop* rather than part of each row's own value: props are
