@@ -34,6 +34,9 @@ class Table extends Control
     /** @var list<string> */
     private array $hiddenRows = [];
 
+    /** @var array<string, mixed> */
+    private array $defaultValues = [];
+
     /** @var array<string, array<string, true>> */
     private array $errors = [];
 
@@ -53,6 +56,7 @@ class Table extends Control
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
+            'defaultValues' => $control->props['defaultValues'] ?? [],
             'static' => $attributes['name'] === null,
             'hiddenRows' => $control->props['hiddenRows'] ?? [],
             'errors' => $control->props['errors'] ?? [],
@@ -135,6 +139,14 @@ class Table extends Control
         return $this;
     }
 
+    /** @param array<string, mixed> $defaultValues */
+    public function defaultValues(array $defaultValues): static
+    {
+        $this->defaultValues = $defaultValues;
+
+        return $this;
+    }
+
     /** @param array<string, array<string, true>> $errors */
     public function errors(array $errors): static
     {
@@ -162,6 +174,7 @@ class Table extends Control
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
             'hiddenRows' => $this->hiddenRows ?: null,
+            'defaultValues' => $this->defaultValues,
             'errors' => $this->errors ?: null,
         ]);
     }

@@ -45,7 +45,10 @@ function printStyles() {
   );
 
   lines.push(comment());
-  lines.push('\n:root,\n:host {');
+  // `[data-theme='light']` alongside the root, so a light subtree inside a dark
+  // one re-declares the palette. Without it only dark themes a subtree, and a
+  // light marker keeps inheriting whatever it sits in.
+  lines.push("\n:root,\n:host,\n[data-theme='light'] {");
   lines.push(lightColors);
   lines.push(`  /* Static colors */\n`);
   lines.push(staticColors);

@@ -8,6 +8,9 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -180,7 +183,7 @@ it('returns 400 for invalid layout element uuids', function () {
     ])->assertBadRequest();
 });
 
-it('copies a title field value from another site and returns updated field html', function () {
+it('does not offer to copy non-translatable field values', function () {
     $entry = EntryModel::factory()
         ->forSection($this->section)
         ->forEntryType($this->entryType)
@@ -190,34 +193,72 @@ it('copies a title field value from another site and returns updated field html'
         ]);
     localizeEntry($entry, $this->secondarySite->id);
 
+    $layoutElement = $entry->getFieldLayout()->getCustomFieldElements()[0];
+    $layoutElement->getField()->translationMethod = 'none';
+
+    expect(fieldActionLabels($entry))->not->toContain(t('Copy value from site…'));
+});
+
+it('copies a field value from another site and returns the updated field', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement([
+            'title' => 'Primary Title',
+            'slug' => 'primary-title',
+        ]);
+    localizeEntry($entry, $this->secondarySite->id);
+    $layoutElementUid = customFieldUid($entry);
+
+    expect(fieldActionLabels($entry))->toContain(t('Copy value from site…'));
+
     /** @var Entry $secondaryEntry */
     $secondaryEntry = Entry::find()
         ->id($entry->id)
         ->siteId($this->secondarySite->id)
         ->status(null)
         ->one();
-    $secondaryEntry->setFieldValue('copyField', 'Secondary field value');
+    $secondaryEntry->title = 'Secondary Title';
+    $secondaryEntry->slug = 'secondary-title';
+    $secondaryEntry->setFieldValueFromRequest('copyField', 'Secondary field value');
     $secondaryEntry->setAuthorIds([auth()->id()]);
-    Elements::saveElement($secondaryEntry);
+    expect(Elements::saveElement($secondaryEntry))->toBeTrue();
 
     postJson(action(CopyElementValuesController::class), [
         'elementType' => Entry::class,
         'elementId' => $entry->id,
         'siteId' => $entry->siteId,
         'fromSiteId' => $this->secondarySite->id,
-        'layoutElementUid' => customFieldUid($entry),
+        'layoutElementUid' => $layoutElementUid,
         'namespace' => 'copyNamespace',
     ])->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('message', t('Field value copied.'))
             ->where('modelName', 'element')
             ->where('fieldHtml', fn (string $html) => $html !== ''
-                && str_contains($html, 'data-layout-element="'.customFieldUid($entry).'"'))
+                && str_contains($html, 'data-layout-element="'.$layoutElementUid.'"'))
+            ->where('field.control.path', ['copyNamespace', 'fields', 'copyField'])
+            ->where('values.copyNamespace.fields.copyField', 'Secondary field value')
             ->has('headHtml')
             ->has('bodyHtml')
             ->etc()
         );
 });
+
+/** @return list<string> */
+function fieldActionLabels(Entry $entry): array
+{
+    $layoutElement = $entry->getFieldLayout()->getCustomFieldElements()[0];
+    $fieldNode = $layoutElement->formNode(new FieldLayoutElementContext($entry, new FormContext));
+
+    return collect($fieldNode->children())
+        ->filter(fn ($node) => $node instanceof ActionMenu)
+        ->flatMap(fn (ActionMenu $node) => $node->props()['items'])
+        ->pluck('label')
+        ->filter()
+        ->values()
+        ->all();
+}
 
 function customFieldUid(Entry $entry): string
 {

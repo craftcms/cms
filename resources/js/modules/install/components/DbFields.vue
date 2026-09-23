@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import Callout from '@/common/components/Callout.vue';
-  import {useFocusField} from '@/common/composables/useFocusField';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import Select from '@/common/form/Select.vue';
@@ -56,8 +55,6 @@
     {value: 'pgsql', label: 'PostgreSQL'},
     {value: 'sqlite', label: 'SQLite'},
   ];
-
-  useFocusField('db-driver');
 </script>
 
 <template>
@@ -76,7 +73,6 @@
         name="driver"
         id="db-driver"
         v-model="model.driver"
-        ref="db-driver"
         :options="options"
         :error="errors?.driver"
       />

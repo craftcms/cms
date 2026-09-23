@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Mixins;
 
+use Closure;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\fs\MissingFs;
-use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;

@@ -2,10 +2,13 @@
 {% set title = "Complete the Update"|t('app') %}
 
 {% block message %}
-    <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
-    <form method="post" action="{{ cpUrl('updates') }}" class="buttons">
+    <form method="post" action="{{ cpUrl('updates') }}">
+        <craft-pane>
+            <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
         {{ csrfInput() }}
         {{ hiddenInput('return', Request.path()) }}
-      <craft-button type="submit" variant="primary">{{ 'Finish up'|t('app') }}</craft-button>
+
+      <craft-button slot="primary-action" type="submit" variant="primary">{{ 'Finish up'|t('app') }}</craft-button>
+        </craft-pane>
     </form>
 {% endblock %}

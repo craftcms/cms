@@ -108,6 +108,8 @@ readonly class CopyElementValuesController
 
         return new ElementResponse()->success($element, t('Field value copied.'), [
             'fieldHtml' => $html,
+            'field' => $node,
+            'values' => $payload->values,
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);

@@ -96,6 +96,35 @@ describe('DataTable', () => {
     expect(selected(root)).toHaveLength(rows(root).length);
   });
 
+  it('leads structure rows with the toggle, then the handle, then the checkbox', () => {
+    const {root} = mount({structure: true, reorderable: true});
+
+    const leading = (cells: Element[]) =>
+      cells
+        .slice(0, 3)
+        .map((cell) =>
+          cell.classList.contains('cp-table-cell--structure')
+            ? 'toggle'
+            : cell.querySelector('craft-reorder-button') ||
+                cell.classList.contains('cell--header')
+              ? 'handle'
+              : cell.classList.contains('cp-table-cell--select')
+                ? 'select'
+                : 'other'
+        );
+
+    expect(leading([...root.querySelectorAll('thead tr > th')])).toEqual([
+      'toggle',
+      'handle',
+      'select',
+    ]);
+    expect(leading([...rows(root)[0]!.children])).toEqual([
+      'toggle',
+      'handle',
+      'select',
+    ]);
+  });
+
   it('honors handled row interactions without changing selection', async () => {
     const onClick = vi.fn(() => true);
     const onKeydown = vi.fn(() => true);
