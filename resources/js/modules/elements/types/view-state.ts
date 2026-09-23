@@ -39,6 +39,12 @@ export type ViewState = {
   nestedInputNamespace?: string | null;
   showHeaderColumn: boolean;
   static: boolean;
+  /**
+   * Elements whose children are collapsed in structure mode. The server
+   * excludes collapsed subtrees from the query, so this is sent with every
+   * structure-mode request rather than applied client-side.
+   */
+  collapsedElementIds?: Array<number | string>;
 };
 
 /** A sortable attribute, as serialized by `ElementIndexes::sortOptions()`. */

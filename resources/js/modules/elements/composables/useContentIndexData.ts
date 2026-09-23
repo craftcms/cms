@@ -15,6 +15,14 @@ type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
 
 export interface ElementIndexRow extends IndexQueryParams {
   id: string | number;
+  /** The row's depth in the tree (1-based). Structure mode only. */
+  level?: number;
+  /** Whether the row has descendants the index would list (its toggle). */
+  hasDescendants?: boolean;
+  /** The element's site, as `structures/move-element` requires. */
+  siteId?: number;
+  /** The element's plain-text name, for the row's toggle label. */
+  label?: string;
 }
 
 /**
@@ -102,6 +110,8 @@ export function useContentIndexData<
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
+    drafts: computed(() => props().drafts),
+    trashed: computed(() => props().trashed),
 
     // View state
     viewState: computed(() => props().viewState),

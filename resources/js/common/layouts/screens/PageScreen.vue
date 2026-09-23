@@ -342,6 +342,7 @@
                           </div>
                           <ContentFooter
                             v-show="hasFooter"
+                            class="cp-content__footer"
                             :read-only="readOnly"
                             :form="form"
                             :default-form-actions="defaultFormActions"
@@ -555,6 +556,14 @@ Content
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
+  }
+
+  .cp-content__footer {
+    min-height: var(--cp-footer-height);
+    display: grid;
+    align-content: center;
+    border-block-start: 1px solic var(--c-color-border-quiet);
+    padding-block: var(--c-spacing-md);
   }
 
   /*
