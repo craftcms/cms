@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
 import { getCoreRowModel, useVueTable } from "@tanstack/vue-table";
 import AdminTable from "@/modules/admin-table/components/AdminTable.vue";
 import { h, ref } from "vue";
@@ -120,10 +121,10 @@ const sectionTable = useVueTable({
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink as="craft-button" variant="accent" :href="create()" v-if="!readOnly">
+    <CpButtonLink variant="primary" :href="create()" v-if="!readOnly">
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t("New section") }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>

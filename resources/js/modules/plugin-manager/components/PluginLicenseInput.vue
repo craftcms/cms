@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t, ButtonVariant} from '@craftcms/ui';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {useForm, usePage} from '@inertiajs/vue3';
   import {computed} from 'vue';
@@ -92,12 +92,11 @@
       </CraftInput>
 
       <template v-if="showBuyButton">
-        <CpLink
-          appearance="button"
+        <CpButtonLink
           :inertia="false"
           :href="plugin.buyUrl"
-          :variant="plugin.licenseIssues.length > 0 ? 'accent' : 'neutral'"
-          >{{ t('Buy now') }}</CpLink
+          :variant="plugin.licenseIssues.length > 0 ? 'primary' : undefined"
+          >{{ t('Buy now') }}</CpButtonLink
         >
       </template>
       <template v-if="showUpdateButton">

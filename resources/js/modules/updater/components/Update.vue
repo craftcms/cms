@@ -2,7 +2,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import Release from '@/modules/updater/components/Release.vue';
   import {computed, ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import UpdaterController from '@actions/Updates/UpdaterController';
   import {Form} from '@inertiajs/vue3';
 
@@ -93,15 +93,14 @@
         <!-- Primary CTA -->
         <template v-if="showUpdateCta">
           <!-- External URL CTA -->
-          <CpLink
+          <CpButtonLink
             v-if="ctaUrl"
             :href="ctaUrl"
             target="_blank"
-            variant="accent"
-            appearance="button"
+            variant="primary"
           >
             {{ ctaButtonText }}
-          </CpLink>
+          </CpButtonLink>
           <!-- Update button -->
           <Form
             v-else
@@ -129,14 +128,12 @@
         <!-- Alternative CTA -->
         <template v-if="allowUpdates && altCtaText">
           <!-- External URL Alt CTA -->
-          <CpLink
+          <CpButtonLink
             v-if="altCtaUrl"
             :href="altCtaUrl"
-            appearance="button"
-            variant="neutral"
           >
             {{ altCtaText }}
-          </CpLink>
+          </CpButtonLink>
         </template>
 
         <!-- Action Menu -->
