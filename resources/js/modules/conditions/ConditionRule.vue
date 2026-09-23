@@ -169,14 +169,6 @@
     flex: 0 0 auto;
   }
 
-  .condition-rule-fields :deep(craft-combobox > [slot='label']) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-
   @container (width < 22rem) {
     .condition-rule-fields {
       order: 1;
