@@ -107,6 +107,41 @@ class MatrixTest extends TestCase
     }
 
     /**
+     * @dataProvider nestedElementManagerViewModeDataProvider
+     * @param string $viewMode
+     * @return void
+     */
+    public function testNestedElementManagerViewModeUsesAllEntryTypesWithoutHandlers(string $viewMode): void
+    {
+        $owner = new Entry([
+            'id' => 999999,
+            'sectionId' => 1013,
+            'typeId' => 1013,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+            'title' => 'Matrix owner',
+        ]);
+
+        $field = $owner->getFieldLayout()->getFieldByHandle('matrixCardsField');
+        self::assertInstanceOf(Matrix::class, $field);
+        $field->viewMode = $viewMode;
+        $field->setEntryTypes([1016, 1017]);
+
+        $value = Entry::find();
+        $value->setCachedResult([]);
+        $owner->setFieldValue($field->handle, $value);
+
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $field->getInputHtml($value, $owner);
+        $js = $view->clearJsBuffer(false);
+
+        self::assertIsString($js);
+        self::assertStringContainsString('"typeId":1016', $js);
+        self::assertStringContainsString('"typeId":1017', $js);
+        self::assertStringContainsString('const entryTypeIds = [1016,1017];', $js);
+    }
+
+    /**
      * @return array<string,array{string,bool}>
      */
     public static function nestedElementManagerViewModeDataProvider(): array

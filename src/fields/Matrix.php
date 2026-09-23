@@ -1208,25 +1208,26 @@ JS;
      */
     private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
     {
-        if ($owner?->hasEagerLoadedElements($this->handle)) {
-            $value = $owner->getEagerLoadedElements($this->handle)->all();
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            if ($owner?->hasEagerLoadedElements($this->handle)) {
+                $value = $owner->getEagerLoadedElements($this->handle);
+            }
+
+            if ($value instanceof ElementCollection) {
+                $value = $value->all();
+            } elseif ($value instanceof EntryQuery) {
+                $value = $value->getCachedResult() ?? (clone $value)
+                    ->status(null)
+                    ->limit(null)
+                    ->all();
+            }
+
+            /** @var Entry[]|null $value */
+            $entryTypes = $this->getEntryTypesForField($value ?? [], $owner);
+        } else {
+            $entryTypes = $this->getEntryTypes();
         }
 
-        if ($value instanceof ElementCollection) {
-            $value = $value->all();
-        } elseif ($value instanceof EntryQuery) {
-            $value = $value->getCachedResult() ?? (clone $value)
-                ->drafts(null)
-                ->canonicalsOnly()
-                ->status(null)
-                ->limit(null)
-                ->all();
-        }
-
-        /** @var Entry[]|null $value */
-        $entryTypes = $owner?->id
-            ? $this->getEntryTypesForField($value ?? [], $owner)
-            : $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,
