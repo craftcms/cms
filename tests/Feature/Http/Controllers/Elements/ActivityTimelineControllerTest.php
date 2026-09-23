@@ -28,6 +28,8 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
+use CraftCms\Cms\Workflow\Activity\WorkflowActivityEvent;
+use CraftCms\Cms\Workflow\Enums\WorkflowActivityType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -136,18 +138,53 @@ it('returns the requested site timeline oldest first with safe formatted details
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->has('events', 2)
-            ->where('events.0.id', $neutral->id)
+            ->where('events.0.id', (string) $neutral->id)
             ->where('events.0.component', 'craft:activity-timeline-event')
             ->where('events.0.props', [])
             ->where('events.0.icon', 'plus')
             ->where('events.0.actor.label', 'Ada Lovelace')
             ->whereType('events.0.actor.url', 'string')
             ->where('events.0.actor.deleted', false)
-            ->where('events.1.id', $updated->id)
+            ->where('events.1.id', (string) $updated->id)
             ->where('events.1.changes.0.label', 'Title')
             ->where('events.1.changes.0.old', 'Draft')
             ->where('events.1.changes.0.new', 'Release notes')
             ->etc());
+});
+
+it('includes workflow events that belong to a workflow submission', function () {
+    $activities = app(Activities::class);
+    $submission = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Submit,
+        workflow: ['id' => 1, 'uid' => fake()->uuid(), 'name' => 'Editorial review', 'stages' => []],
+        draft: ['elementId' => $this->entry->id, 'draftId' => 1, 'elementType' => Entry::class, 'siteId' => $this->entry->siteId],
+    ));
+    $approval = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Approve,
+        stage: 'Editorial review',
+        stageNumber: 1,
+    ));
+    $comment = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Comment,
+        stage: 'Editorial review',
+        stageNumber: 1,
+        note: 'Looks good.',
+    ));
+
+    postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $this->entry->id,
+        'siteId' => $this->entry->siteId,
+    ])
+        ->assertOk()
+        ->assertJsonPath('events.0.id', (string) $submission->id)
+        ->assertJsonPath('events.1.id', (string) $approval->id)
+        ->assertJsonPath('events.1.component', 'craft:workflow-activity-event')
+        ->assertJsonPath('events.2.id', (string) $comment->id)
+        ->assertJsonPath('events.2.props.noteHtml', "<p>Looks good.</p>\n");
 });
 
 it('returns impersonator details', function () {
@@ -198,8 +235,8 @@ it('limits embedded timelines and returns every event for the full timeline', fu
     ])
         ->assertOk()
         ->assertJsonCount(25, 'events')
-        ->assertJsonPath('events.0.id', $events[1]->id)
-        ->assertJsonPath('events.24.id', $events[25]->id);
+        ->assertJsonPath('events.0.id', (string) $events[1]->id)
+        ->assertJsonPath('events.24.id', (string) $events[25]->id);
 
     postJson(action(ActivityTimelineController::class), [
         'elementType' => Entry::class,
@@ -209,8 +246,8 @@ it('limits embedded timelines and returns every event for the full timeline', fu
     ])
         ->assertOk()
         ->assertJsonCount(26, 'events')
-        ->assertJsonPath('events.0.id', $events[0]->id)
-        ->assertJsonPath('events.25.id', $events[25]->id);
+        ->assertJsonPath('events.0.id', (string) $events[0]->id)
+        ->assertJsonPath('events.25.id', (string) $events[25]->id);
 });
 
 it('keeps deleted actors identifiable and sanitizes plugin descriptions', function () {
@@ -227,7 +264,7 @@ it('keeps deleted actors identifiable and sanitizes plugin descriptions', functi
     ])
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('events.0.id', $event->id)
+            ->where('events.0.id', (string) $event->id)
             ->where('events.0.icon', 'bolt')
             ->where('events.0.actor.label', 'Deleted editor')
             ->where('events.0.actor.url', null)
@@ -250,7 +287,7 @@ it('shows plugin actors without profile links and allows a default icon', functi
     ])
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('events.0.id', $event->id)
+            ->where('events.0.id', (string) $event->id)
             ->where('events.0.icon', null)
             ->where('events.0.actor.label', 'Webhook')
             ->where('events.0.actor.url', null)
@@ -276,7 +313,7 @@ it('shows canonical activity for drafts and revisions', function (string $deriva
         $derivative => $derivativeId,
     ])
         ->assertOk()
-        ->assertJsonPath('events.0.id', $event->id);
+        ->assertJsonPath('events.0.id', (string) $event->id);
 })->with([
     'draft' => 'draftId',
     'revision' => 'revisionId',

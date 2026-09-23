@@ -45,10 +45,16 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Workflow\Data\WorkflowStageData;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
@@ -59,6 +65,7 @@ use Illuminate\Support\Facades\Date;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Workbench\App\Workflow\AutomaticApprovalStage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -230,6 +237,7 @@ class DatabaseSeeder extends Seeder
         $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType]);
 
         $this->createSampleEntries($site);
+        $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
     }
 
     private function createSampleEntries(Site $site): void
@@ -316,7 +324,7 @@ MARKDOWN,
     private function seedActivity(Entry $entry, Site $site): void
     {
         $user = User::query()->firstOrFail();
-        $editor = UserFactory::new()->createElement([
+        $editor = UserFactory::new()->admin()->createElement([
             'fullName' => 'Ada Lovelace',
             'username' => 'ada',
             'email' => 'ada@example.com',
@@ -431,6 +439,43 @@ MARKDOWN,
             $impersonation->setImpersonatorId(null);
             Date::setTestNow();
         }
+    }
+
+    private function seedWorkflow(Section $section): void
+    {
+        UserGroups::saveGroup($reviewerGroup = new UserGroup([
+            'name' => 'Reviewers',
+            'handle' => 'reviewers',
+        ]));
+        User::query()
+            ->orderBy('id')
+            ->get()
+            ->each(fn (User $user) => $user->userGroups()->syncWithoutDetaching([$reviewerGroup->id]));
+
+        $workflow = new Workflow([
+            'name' => 'Editorial workflow',
+            'stages' => [
+                new WorkflowStageData(
+                    uid: Str::uuid7()->toString(),
+                    name: 'Automatic Approval',
+                    type: AutomaticApprovalStage::class,
+                    settings: [],
+                ),
+                new WorkflowStageData(
+                    uid: Str::uuid7()->toString(),
+                    name: 'Editorial review',
+                    type: UserReviewStage::class,
+                    settings: [
+                        'approvalsRequired' => 1,
+                        'userGroups' => [$reviewerGroup->uid],
+                    ],
+                ),
+            ],
+        ]);
+        app(Workflows::class)->saveWorkflow($workflow);
+
+        $section->workflowId = $workflow->id;
+        Sections::saveSection($section);
     }
 
     /** @param list<EntryType> $entryTypes */

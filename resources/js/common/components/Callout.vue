@@ -32,7 +32,6 @@
     padding: var(--c-callout-padding, var(--c-spacing-md));
     border: 1px solid var(--c-callout-border-color);
     color: var(--c-callout-text);
-    border-radius: var(--c-callout-radius);
   }
 
   .callout--danger {

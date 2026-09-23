@@ -20,7 +20,7 @@ class ActivityEventRecorder
         private readonly Impersonation $impersonation,
     ) {}
 
-    public function record(ActivityEventTypeInterface $event, ?string $rootEventId = null): ActivityEvent
+    public function record(ActivityEventTypeInterface $event, ?int $rootEventId = null): ActivityEvent
     {
         $data = $event->data();
 
