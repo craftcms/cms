@@ -22,6 +22,8 @@ use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
+use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -44,6 +46,7 @@ readonly class Drafts
     public function __construct(
         private Elements $elements,
         private DraftActivity $activity,
+        private Workflows $workflows,
     ) {}
 
     /**
@@ -71,6 +74,36 @@ readonly class Drafts
         }
 
         return collect($query->all());
+    }
+
+    /** @return list<int> */
+    public function getDraftIdsForElement(ElementInterface $element): array
+    {
+        if (! $element->id) {
+            return [];
+        }
+
+        $ids = [(int) $element->id];
+        $unresolvedIds = $ids;
+
+        while ($unresolvedIds !== []) {
+            $ownerIds = DB::table(Table::ELEMENTS_OWNERS)
+                ->whereIn('elementId', $unresolvedIds)
+                ->pluck('ownerId')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+            $unresolvedIds = array_values(array_diff($ownerIds, $ids));
+            array_push($ids, ...$unresolvedIds);
+        }
+
+        return DB::table(Table::ELEMENTS)
+            ->whereIn('id', $ids)
+            ->whereNotNull('draftId')
+            ->pluck('draftId')
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
@@ -240,6 +273,51 @@ readonly class Drafts
      */
     public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
+        if (! $draft instanceof WorkflowableInterface || ! $this->workflows->requiresApproval($draft)) {
+            return $this->applyDraftInternal($draft, $newAttributes);
+        }
+
+        $hasExpectedWorkflow = array_key_exists('workflowRunId', $newAttributes);
+        $expectedRunId = Arr::pull($newAttributes, 'workflowRunId');
+        $expectedStage = Arr::pull($newAttributes, 'workflowCurrentStage');
+
+        $latestRun = $this->workflows->latestRun($draft);
+        $runId = null;
+        $stage = null;
+
+        if (! $hasExpectedWorkflow) {
+            $runId = $latestRun?->id;
+            $stage = $latestRun?->currentStage;
+        }
+
+        if (is_numeric($expectedRunId)) {
+            $runId = (int) $expectedRunId;
+        }
+
+        if (is_numeric($expectedStage)) {
+            $stage = (int) $expectedStage;
+        }
+
+        return $this->workflows->applyDraft(
+            draft: $draft,
+            actor: currentUser(),
+            expectedRunId: $runId,
+            expectedStage: $stage,
+            apply: fn (ElementInterface $freshDraft): ElementInterface => $this->applyDraftInternal($freshDraft, $newAttributes),
+        );
+    }
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T  $draft
+     * @param  array<string,mixed>  $newAttributes
+     * @return T
+     *
+     * @throws Throwable
+     */
+    private function applyDraftInternal(ElementInterface $draft, array $newAttributes): ElementInterface
+    {
         $canonical = $draft->getCanonical(true);
         $originalDraft = $draft;
 
@@ -283,6 +361,7 @@ readonly class Drafts
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
+                    'applyingDraft' => true,
                     'revisionNotes' => $draftNotes ?: t('Applied “{name}”', ['name' => $draft->draftName]),
                 ]));
 
@@ -322,6 +401,8 @@ readonly class Drafts
 
             throw $e;
         }
+
+        $newCanonical->applyingDraft = false;
 
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on

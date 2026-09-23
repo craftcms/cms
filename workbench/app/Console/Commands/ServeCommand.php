@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Workbench\App\Console\Commands;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -57,6 +59,10 @@ final class ServeCommand extends Command
 
             return self::FAILURE;
         }
+
+        ProjectConfig::reset();
+        ProjectConfig::set('system.edition', Edition::Pro->handle(), 'Set Workbench edition');
+        ProjectConfig::flush();
 
         $this->components->info("Workbench available at $url");
 

@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Support\Facades\DB;
 use Stringable;
@@ -40,6 +41,8 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     public ?int $id = null;
 
     public ?int $structureId = null;
+
+    public ?int $workflowId = null;
 
     public ?string $name = null;
 
@@ -261,6 +264,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'handle' => $this->handle,
             'type' => $this->type->value,
             'entryTypes' => array_map(fn (EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
+            'workflow' => Workflow::find($this->workflowId)?->uid,
             'enableVersioning' => $this->enableVersioning,
             'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,

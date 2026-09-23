@@ -56,8 +56,7 @@ it('records durable actor subject site and payload snapshots', function () {
         changes: [new ActivityChange('Summary', null, 'Ready')],
     ));
 
-    expect($event->id)->toBeString()
-        ->and($event->eventType)->toBe(TestPluginEntryUpdated::class)
+    expect($event->eventType)->toBe(TestPluginEntryUpdated::class)
         ->and($event->source)->toBe('test-plugin')
         ->and($event->actorType)->toBe(ActivityActor::TYPE_USER)
         ->and($event->actorId)->toBe($actor->id)

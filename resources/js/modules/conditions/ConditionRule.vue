@@ -1,9 +1,16 @@
 <script setup lang="ts">
-  import {computed, inject, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+  import {
+    computed,
+    inject,
+    onBeforeUnmount,
+    ref,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {t} from '@craftcms/ui';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
-  import TypePicker from '@/common/components/TypePicker.vue';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import TypeConfigurator from '@/modules/forms/TypeConfigurator.vue';
   import {valueAt} from '@/modules/forms/runtime';
   import type {
     FormChange,
@@ -29,7 +36,7 @@
   const switching = computed(() => isLoading.value && changingType.value);
 
   const formKey = ref(0);
-  const formRenderer = ref<InstanceType<typeof FormRenderer>>();
+  const typeConfigurator = useTemplateRef('typeConfigurator');
   const latestFormPayload = shallowRef(payload.value.form);
 
   watch(
@@ -43,10 +50,11 @@
       form: {
         ...latestFormPayload.value,
         values:
-          formRenderer.value?.currentValues() ?? latestFormPayload.value.values,
+          typeConfigurator.value?.currentValues() ??
+          latestFormPayload.value.values,
       },
     }),
-    canSubmit: () => formRenderer.value?.canSubmit() ?? true,
+    canSubmit: () => typeConfigurator.value?.canSubmit() ?? true,
   });
 
   onBeforeUnmount(() => {
@@ -102,29 +110,21 @@
       role="group"
       :aria-label="payload.label"
     >
-      <div class="flex flex-wrap items-start gap-2">
-        <TypePicker
-          :key="payload.label"
+      <div class="condition-rule__content flex items-start gap-2">
+        <TypeConfigurator
+          :key="formKey"
+          ref="typeConfigurator"
+          class="min-w-0 flex-1"
           :types="editor.payload().ruleTypes"
-          :label="payload.label"
+          :selected-type-label="payload.label"
+          :form="payload.form"
+          :errors="editor.errors()"
           :disabled="!editor.editable()"
+          :form-disabled="switching"
+          :refresh="refresh"
           @select="switchType"
+          @change="change"
         />
-
-        <div
-          class="condition-rule-fields flex flex-wrap items-start gap-2 min-w-0 flex-1"
-          :inert="switching"
-        >
-          <FormRenderer
-            :key="formKey"
-            ref="formRenderer"
-            :payload="payload.form"
-            :errors="editor.errors()"
-            :disabled="!editor.editable() || switching"
-            :refresh="refresh"
-            @change="change"
-          />
-        </div>
 
         <craft-button
           v-if="editor.editable()"
@@ -154,25 +154,3 @@
   </div>
 </template>
 
-<style scoped>
-  .condition-rule {
-    container-type: inline-size;
-  }
-
-  .condition-rule-fields :deep(craft-field) {
-    margin-block: 0;
-    min-inline-size: 0;
-    flex: 1 1 0;
-  }
-
-  .condition-rule-fields :deep(craft-field:has(craft-select)) {
-    flex: 0 0 auto;
-  }
-
-  @container (width < 22rem) {
-    .condition-rule-fields {
-      order: 1;
-      flex-basis: 100%;
-    }
-  }
-</style>

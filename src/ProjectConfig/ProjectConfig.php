@@ -135,6 +135,8 @@ class ProjectConfig
 
     public const string PATH_VOLUMES = 'volumes';
 
+    public const string PATH_WORKFLOWS = 'workflows';
+
     /**
      * @var bool Whether project config changes should be written to YAML files automatically.
      *

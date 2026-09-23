@@ -10,6 +10,7 @@ import type {
 
 export interface UseAppLayoutOptions {
   title?: string;
+  saveDisabled?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<'saveAndContinueEditing'>;
   formActions?: Array<ActionItem>;

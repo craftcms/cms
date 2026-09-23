@@ -4,14 +4,14 @@
 
   defineProps<{
     payload: ElementEditPayload;
-    activeTabId: string | null;
+    active: boolean;
     refreshToken: number;
   }>();
 </script>
 
 <template>
   <ActivityTimeline
-    :active="activeTabId === 'activity'"
+    :active="active"
     :url="payload.activityTimelineUrl!"
     :element-type="payload.elementType"
     :element-id="payload.canonicalId"
