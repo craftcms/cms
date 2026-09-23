@@ -8,6 +8,7 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store, update} from '@actions/Gql/SchemasController';
   import {useForm} from '@inertiajs/vue3';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type TokenData = Pick<
     CraftCms.Cms.Gql.Data.GqlToken,
@@ -65,7 +66,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised">
+  <CpContainer>
     <div class="grid gap-3">
       <CraftInput
         v-if="!schema.isPublic"
@@ -94,26 +95,30 @@
         />
       </section>
     </div>
-  </craft-pane>
+  </CpContainer>
 
   <LayoutSlot v-if="schema.isPublic" name="content-details">
-    <CraftSwitch
-      :label="t('Enabled')"
-      id="enabled"
-      name="enabled"
-      v-model="form.enabled"
-      :disabled="readOnly"
-      :error="form.errors.enabled"
-    />
+    <div class="p-lg">
+      <craft-field-group>
+        <CraftSwitch
+          :label="t('Enabled')"
+          id="enabled"
+          name="enabled"
+          v-model="form.enabled"
+          :disabled="readOnly"
+          :error="form.errors.enabled"
+        />
 
-    <CraftInput
-      :label="t('Expiry Date')"
-      id="expiryDate"
-      name="expiryDate"
-      type="datetime-local"
-      v-model="form.expiryDate"
-      :disabled="readOnly"
-      :error="form.errors.expiryDate"
-    />
+        <CraftInput
+          :label="t('Expiry Date')"
+          id="expiryDate"
+          name="expiryDate"
+          type="datetime-local"
+          v-model="form.expiryDate"
+          :disabled="readOnly"
+          :error="form.errors.expiryDate"
+        />
+      </craft-field-group>
+    </div>
   </LayoutSlot>
 </template>
