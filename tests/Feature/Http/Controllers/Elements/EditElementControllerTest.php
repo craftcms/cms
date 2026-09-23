@@ -307,7 +307,7 @@ it('merges canonical changes into outdated drafts before rendering', function ()
         ->assertSeeText('Recent changes to the Current revision have been merged into this draft.');
 });
 
-it('marks the editor’s own site crumb so the shared one stands down', function () {
+it('uses the editor’s own site crumb rather than the shared one', function () {
     $other = Site::factory()->create();
     $section = Section::factory()->withSites($other)->create();
     $entry = EntryModel::factory()->forSection($section)->createElement();
@@ -318,10 +318,10 @@ it('marks the editor’s own site crumb so the shared one stands down', function
             $props = $page->toArray()['props'];
 
             // The editor lists only the sites the element propagates to, so it
-            // keeps its own crumb — flagged so the client drops the shared one
-            // rather than showing two site pickers.
+            // keeps its own crumb and never opts into the shared one — two
+            // site pickers otherwise.
             expect($props['crumbs'][0]['id'])->toBe('site-crumb');
-            expect($props['craft']['siteCrumb']['id'])->toBe('site-crumb');
+            expect($props['craft']['siteCrumb'])->toBeNull();
 
             return true;
         });

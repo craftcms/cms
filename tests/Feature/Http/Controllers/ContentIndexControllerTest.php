@@ -920,6 +920,25 @@ it('points each site switcher option at the page you are on', function () {
         );
 });
 
+it('offers no site switcher on a screen no site scopes', function () {
+    Site::factory()->create();
+
+    // Craft 5 draws its site crumb on element index, element edit and globals
+    // screens alone — the CP chrome itself has no site selector.
+    get("/{$this->cpTrigger}/dashboard")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.siteCrumb', null));
+});
+
+it('offers no site switcher on an index whose elements are not localized', function () {
+    Site::factory()->create();
+
+    // Users aren't localized, so there is no site to scope the index to.
+    get("/{$this->cpTrigger}/users")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.siteCrumb', null));
+});
+
 it('leaves the crumbs alone on a single-site install', function () {
     get("/{$this->cpTrigger}/content/entries")
         ->assertOk()
