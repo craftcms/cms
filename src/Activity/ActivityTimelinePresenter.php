@@ -56,7 +56,7 @@ class ActivityTimelinePresenter
 
     /**
      * @param  Collection<int, ActivityEvent>  $events
-     * @return Collection<string, ActivityEvent>
+     * @return Collection<int, ActivityEvent>
      */
     private function latestVersions(Collection $events): Collection
     {
@@ -127,10 +127,13 @@ class ActivityTimelinePresenter
         $formatted = $this->activities->format($event);
         $deleted = $isComment && $event->eventType === CommentDeleted::class;
         $canEdit = $isComment && ! $deleted && $root->actorId === $viewer->id;
+        $renderedComment = $isComment && ! $deleted
+            ? $this->comments->render($event, $viewer, $mentionedUsers)
+            : null;
         $occurredAt = $root->occurredAt->setTimezone($formatter->timeZone);
 
         return [
-            'id' => $root->id,
+            'id' => (string) $root->id,
             'component' => $event->eventType::component(),
             'props' => $event->eventType::props($event),
             'icon' => $this->activities->icon($event),
@@ -164,7 +167,7 @@ class ActivityTimelinePresenter
             ],
             'changes' => $event->changes,
             'comment' => $isComment ? [
-                'html' => $deleted ? null : $this->comments->render($event, $viewer, $mentionedUsers)->toHtml(),
+                'html' => $renderedComment?->toHtml(),
                 'markdown' => $canEdit ? $event->data['markdown'] : null,
                 'edited' => $event->eventType === CommentEdited::class,
                 'deleted' => $deleted,

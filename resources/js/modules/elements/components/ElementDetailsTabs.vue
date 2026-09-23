@@ -1,22 +1,31 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
-  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import {computed, useTemplateRef} from 'vue';
+  import {
+    elementDetailsTabRegistry,
+    type ElementDetailsTabDescriptor,
+  } from '@/bootstrap/element-details-tabs';
   import DetailsTabs, {
     type DetailsTab,
   } from '@/common/components/DetailsTabs.vue';
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
-  import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+  import type {
+    ElementEditPayload,
+    ElementEditPayloadUpdater,
+  } from '@/modules/elements/composables/useElementEditor';
 
-  type ElementDetailsTab = DetailsTab & {
-    visible?: (payload: ElementEditPayload) => boolean;
-  };
+  type ElementDetailsTab = DetailsTab &
+    Pick<
+      ElementDetailsTabDescriptor,
+      'visible' | 'status' | 'props' | 'headerActionsComponent'
+    >;
 
   const props = defineProps<{
     payload: ElementEditPayload;
     activityTimelineVersion: number;
-    pane?: boolean;
+    updatePayload: ElementEditPayloadUpdater;
+    syncLocationHash?: boolean;
   }>();
 
   const coreTabs: ElementDetailsTab[] = [
@@ -34,6 +43,11 @@
       component: ElementActivityTimeline,
       order: 10,
       visible: (payload) => payload.activityTimelineUrl !== null,
+      props: ({payload, active, refreshToken}) => ({
+        payload,
+        active,
+        refreshToken,
+      }),
     },
     {
       id: 'revisions',
@@ -41,29 +55,51 @@
       icon: 'clock-rotate-left',
       component: RevisionsList,
       order: 20,
+      props: ({payload}) => ({payload}),
     },
   ];
 
   const visibleTabs = computed<ElementDetailsTab[]>(() =>
-    [...coreTabs, ...elementDetailsTabRegistry.tabs].filter(
-      (tab) => tab.visible?.(props.payload) ?? true
-    )
+    ([...coreTabs, ...elementDetailsTabRegistry.tabs] as ElementDetailsTab[])
+      .filter((tab) => tab.visible?.(props.payload) ?? true)
+      .map((tab) => ({
+        ...tab,
+        statusData: tab.status?.(props.payload) ?? null,
+      }))
   );
 
-  function componentProps(activeTabId: string | null): Record<string, unknown> {
-    return {
+  const detailsTabs = useTemplateRef<{select(tabId: string): void}>(
+    'detailsTabs'
+  );
+
+  function componentProps(
+    tab: DetailsTab,
+    activeTabId: string | null
+  ): Record<string, unknown> {
+    const context = {
       payload: props.payload,
-      activeTabId,
+      active: activeTabId === tab.id,
       refreshToken: props.activityTimelineVersion,
+      updatePayload: props.updatePayload,
     };
+
+    return (tab as ElementDetailsTab).props?.(context) ?? {};
   }
+
+  function select(tabId: string): void {
+    detailsTabs.value?.select(tabId);
+  }
+
+  defineExpose({select});
 </script>
 
 <template>
   <DetailsTabs
+    ref="detailsTabs"
     :tabs="visibleTabs"
     :component-props="componentProps"
     id-prefix="element-details-tab"
+    :sync-location-hash="syncLocationHash"
   >
     <template #info>
       <slot name="info" />

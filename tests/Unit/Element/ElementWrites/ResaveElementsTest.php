@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Element\BulkOp\BulkOps as BulkOpsService;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -23,6 +23,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\LazyCollection;
 
@@ -38,11 +39,12 @@ beforeEach(function () {
 
     $this->action = new TestResaveElementWrites(
         Mockery::mock(Elements::class),
+        Mockery::mock(Drafts::class),
         Mockery::mock(ElementUris::class),
         Mockery::mock(ElementCaches::class),
         Mockery::mock(Search::class),
         Mockery::mock(Sites::class),
-        Mockery::mock(ElementWriteActivity::class),
+        Mockery::mock(Workflows::class),
     );
     $this->saveElementAction = $this->action;
 });

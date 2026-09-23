@@ -21,6 +21,7 @@ use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLo
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderResolvedTargetElement;
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderSourceElement;
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderTargetElement;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -372,6 +373,7 @@ it('uses custom element factories and provisional drafts when requested', functi
     $loader = app(ElementEagerLoader::class, ['drafts' => new TestElementEagerLoaderDrafts(
         app(Elements::class),
         app(DraftActivity::class),
+        app(Workflows::class),
     )]);
     $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
 

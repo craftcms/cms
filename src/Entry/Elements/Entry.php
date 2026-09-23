@@ -94,6 +94,8 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
@@ -120,7 +122,7 @@ use function CraftCms\Cms\t;
  * @property int[] $authorIds the entry authors’ IDs
  */
 #[Ruleset(EntryRules::class)]
-class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
 {
     use LegacyConstants;
     use NestedElement {
@@ -311,7 +313,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
-    public static function hasDrafts(): bool
+    public static function hasDrafts(): true
     {
         return true;
     }
@@ -1582,6 +1584,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         return $this->_type = $entryType;
+    }
+
+    public function workflow(): ?Workflow
+    {
+        $workflowId = $this->getSection()?->workflowId;
+
+        return $workflowId === null ? null : Workflow::find($workflowId);
     }
 
     /**

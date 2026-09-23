@@ -116,7 +116,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->sourceState()[1];
     }
 
-    /** @return array{id: int, editable: bool}|null */
+    /** @return array{id: int, editable: bool, maxLevels: int|null}|null */
     public function structure(): ?array
     {
         if ($this->sourceState()[0] === null) {
@@ -126,8 +126,33 @@ abstract class ContentIndexViewModel extends ViewModel
         $indexData = $this->resolveIndexData();
 
         return isset($indexData['structure'])
-            ? ['id' => $indexData['structure']->id, 'editable' => $indexData['structureEditable'] ?? false]
+            ? [
+                'id' => $indexData['structure']->id,
+                'editable' => $indexData['structureEditable'] ?? false,
+                // Bounds the depth a row can be dragged to; null means unlimited.
+                'maxLevels' => $indexData['structure']->maxLevels ?: null,
+            ]
             : null;
+    }
+
+    /**
+     * Whether the index is listing drafts or trashed elements. Both disable
+     * structure reordering: a move only makes sense against the canonical tree.
+     */
+    public function drafts(): bool
+    {
+        return filter_var(
+            $this->request->criteria()['drafts'] ?? false,
+            FILTER_VALIDATE_BOOLEAN,
+        );
+    }
+
+    public function trashed(): bool
+    {
+        return filter_var(
+            $this->request->criteria()['trashed'] ?? false,
+            FILTER_VALIDATE_BOOLEAN,
+        );
     }
 
     /** @return array<string, mixed>|null */
@@ -148,6 +173,12 @@ abstract class ContentIndexViewModel extends ViewModel
             fn ($sortItem) => ! empty($sortItem['field']),
         ));
 
+        // Structure mode *is* the structure ordering: indexData() only walks the
+        // tree (`structureId()` + `orderBy('lft')`) when it sees `order:
+        // structure`, so the mode pins the order rather than leaving it to
+        // whichever sort the user last chose for this source.
+        $structureMode = $this->mode() === ElementIndexViewMode::Structure->value;
+
         // The client treats the URL as the source of truth for sorting, so the
         // requested sort maps into order/sort/orderHistory, which indexData()
         // then applies. The resolved visible columns go into `tableColumns` so
@@ -156,9 +187,9 @@ abstract class ContentIndexViewModel extends ViewModel
             ...$this->request->viewState(),
             'mode' => $this->mode(),
             'tableColumns' => $this->resolveVisibleColumns(),
-            'order' => $orderBy[0]['field'] ?? null,
-            'sort' => $orderBy[0]['direction'] ?? 'asc',
-            'orderHistory' => array_map(
+            'order' => $structureMode ? 'structure' : ($orderBy[0]['field'] ?? null),
+            'sort' => $structureMode ? 'asc' : ($orderBy[0]['direction'] ?? 'asc'),
+            'orderHistory' => $structureMode ? [] : array_map(
                 fn (array $sortItem) => [$sortItem['field'], $sortItem['direction'] ?? 'asc'],
                 array_slice($orderBy, 1),
             ),
@@ -754,6 +785,13 @@ abstract class ContentIndexViewModel extends ViewModel
             condition: $this->request->condition(),
             baseCriteria: $this->baseCriteria(),
             criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
+            // Collapsed subtrees are excluded by the query itself, so a
+            // collapsed branch never reaches the client (and never counts
+            // toward pagination). Only structure mode collapses anything —
+            // honoring the param elsewhere would silently hide flat rows.
+            collapsedElementIds: $this->mode() === ElementIndexViewMode::Structure->value
+                ? $this->request->collapsedElementIds()
+                : [],
         )['query'];
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
@@ -904,10 +942,14 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         $attributes = array_values(array_unique(['title', ...$this->resolveVisibleColumns()]));
         $elementHtml = app(ElementHtml::class);
+        $descendantFlags = $this->mode() === ElementIndexViewMode::Structure->value
+            ? $this->descendantFlags(array_values($elements))
+            : [];
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->extraRowData($element),
+            ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
@@ -916,6 +958,77 @@ abstract class ContentIndexViewModel extends ViewModel
                 ])
                 ->all(),
         ], $elements);
+    }
+
+    /**
+     * Per-row structure metadata, present only in structure mode: `level`
+     * drives the row's indentation, and `hasDescendants` decides whether the
+     * row gets an expand/collapse toggle.
+     *
+     * @return array<string, mixed>
+     */
+    private function structureRowData(ElementInterface $element, bool $hasDescendants): array
+    {
+        if ($this->mode() !== ElementIndexViewMode::Structure->value || ! isset($element->level)) {
+            return [];
+        }
+
+        return [
+            'level' => (int) $element->level,
+            'hasDescendants' => $hasDescendants,
+            // Required by `structures/move-element`, which validates
+            // structureId/elementId/siteId before it will move anything.
+            'siteId' => $element->siteId,
+            // Plain-text name for the row's expand/collapse toggle.
+            'label' => $element->getUiLabel(),
+        ];
+    }
+
+    /**
+     * Whether each row has descendants this index would list, keyed by
+     * element ID.
+     *
+     * The nested set alone can't answer that: its bounds also span trashed
+     * and otherwise hidden elements, which would leave a toggle on a parent
+     * with nothing to show. Craft 5 queried every row; here the page answers
+     * for an expanded row whose next row follows it in tree order, so only
+     * collapsed rows and the page's last row — whose descendants aren't
+     * loaded — are queried, and only when the nested set says they could
+     * have any.
+     *
+     * @param  list<ElementInterface>  $elements
+     * @return array<int, bool>
+     */
+    private function descendantFlags(array $elements): array
+    {
+        $baseQuery = $this->resolveIndexData()['elementQuery'] ?? null;
+        $collapsedIds = array_map(intval(...), $this->request->collapsedElementIds());
+        $flags = [];
+
+        foreach ($elements as $index => $element) {
+            if (! isset($element->lft, $element->rgt, $element->level) || $element->rgt <= $element->lft + 1) {
+                $flags[$element->id] = false;
+
+                continue;
+            }
+
+            $next = $elements[$index + 1] ?? null;
+
+            if ($next !== null && ! in_array($element->id, $collapsedIds, true)) {
+                $flags[$element->id] = $next->level > $element->level;
+
+                continue;
+            }
+
+            $flags[$element->id] = $baseQuery instanceof ElementQueryInterface && (clone $baseQuery)
+                ->offset(null)
+                ->limit(null)
+                ->structureId($element->structureId)
+                ->descendantOf($element)
+                ->exists();
+        }
+
+        return $flags;
     }
 
     /**

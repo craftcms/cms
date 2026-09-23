@@ -323,6 +323,10 @@
   }
 
   function save(event: Event) {
+    if (props.value.saveDisabled) {
+      return;
+    }
+
     if (elementEditor.active.value) {
       void elementEditor.submit(event);
 
@@ -475,7 +479,7 @@
         <LayoutSlotOutlet name="submit-button">
           <slot name="submit-button">
             <craft-button
-              v-if="canSave && !readOnly"
+              v-if="canSave && !readOnly && !props.saveDisabled"
               type="submit"
               :variant="ButtonVariant.Primary"
               :loading="

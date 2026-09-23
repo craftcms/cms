@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import {nextTick, onMounted, useTemplateRef} from 'vue';
+
   withDefaults(
     defineProps<{
       illustrationSrc?: string;
@@ -6,6 +8,15 @@
     }>(),
     {illustrationSrc: '', heading: ''}
   );
+
+  const headingEl = useTemplateRef<HTMLElement>('headingEl');
+  onMounted(async () => {
+    // The heading is slotted into `<craft-pane>`, a Lit element — focusing it
+    // before the pane's own render/slot assignment settles is silently a
+    // no-op, so wait a tick first (matches `useFocusField`'s approach).
+    await nextTick();
+    headingEl.value?.focus();
+  });
 </script>
 
 <template>
@@ -14,7 +25,7 @@
       <img loading="lazy" :src="illustrationSrc" alt="" width="368" />
     </div>
     <div>
-      <h2 class="mb-4">{{ heading }}</h2>
+      <h1 ref="headingEl" tabindex="-1" class="mb-4">{{ heading }}</h1>
       <div class="grid gap-3 md:pr-6">
         <slot></slot>
       </div>
