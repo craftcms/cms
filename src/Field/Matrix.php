@@ -101,7 +101,7 @@ use function CraftCms\Cms\template;
  * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
  * @phpstan-import-type InputObjectFieldConfig from \GraphQL\Type\Definition\InputObjectField
  *
- * @phpstan-type SerializedEntryData array{type?:string,title?:string|null,slug?:string|null,uid?:string|null,enabled?:bool|int|string,collapsed?:bool|int|string,fresh?:bool|int|string,fields?:array<string,mixed>}
+ * @phpstan-type SerializedEntryData array{type?:string,title?:string|null,slug?:string|null,uid?:string|null,enabled?:bool|int|string,enabledForSite?:bool|int|string,collapsed?:bool|int|string,fresh?:bool|int|string,fields?:array<string,mixed>}
  * @phpstan-type SerializedEntries array<int|string,SerializedEntryData>
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
@@ -585,6 +585,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $values[$uid] = [
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
+                'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid);
@@ -602,6 +603,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->blocks($blocks)
             ->create($this->createConfig($context->element))
             ->forms($forms)
+            ->siteName($this->localizedSiteName($context->element))
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
@@ -721,19 +723,49 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'action' => $blockAction('expand'),
                 'hidden' => ! $entry->collapsed,
             ],
-            [
+        ];
+
+        $siteName = $this->localizedSiteName($entry->getOwner());
+
+        if ($siteName === null) {
+            $items[] = [
                 'icon' => 'circle-dashed',
                 'label' => t('Disable'),
                 'action' => $blockAction('disable'),
                 'hidden' => ! $entry->enabled,
-            ],
-            [
+            ];
+            $items[] = [
                 'icon' => 'circle',
                 'label' => t('Enable'),
                 'action' => $blockAction('enable'),
                 'hidden' => $entry->enabled,
-            ],
-        ];
+            ];
+        } else {
+            $items[] = [
+                'icon' => 'circle-dashed',
+                'label' => t('Disable for {site}', ['site' => $siteName]),
+                'action' => $blockAction('disableForSite'),
+                'hidden' => ! $entry->enabled || ! $entry->getEnabledForSite(),
+            ];
+            $items[] = [
+                'icon' => 'circle',
+                'label' => t('Enable for {site}', ['site' => $siteName]),
+                'action' => $blockAction('enableForSite'),
+                'hidden' => ! $entry->enabled || $entry->getEnabledForSite(),
+            ];
+            $items[] = [
+                'icon' => 'circle-dashed',
+                'label' => t('Disable globally'),
+                'action' => $blockAction('disableGlobally'),
+                'hidden' => ! $entry->enabled,
+            ];
+            $items[] = [
+                'icon' => 'circle',
+                'label' => t('Enable globally'),
+                'action' => $blockAction('enableGlobally'),
+                'hidden' => $entry->enabled,
+            ];
+        }
 
         if ($entry->id !== null) {
             $items[] = ['hr' => true];
@@ -1046,7 +1078,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $query;
     }
 
-    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,collapsed:bool,fields:array<string,mixed>}> */
+    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,enabledForSite:bool|null,collapsed:bool,fields:array<string,mixed>}> */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
@@ -1062,6 +1094,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'slug' => $entry->slug,
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
+                'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
                 'fields' => $entry->getSerializedFieldValues(),
             ];
@@ -1070,7 +1103,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $serialized;
     }
 
-    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,collapsed:bool,fields:array<string,mixed>}> */
+    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,enabledForSite:bool|null,collapsed:bool,fields:array<string,mixed>}> */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
@@ -1086,6 +1119,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'slug' => $entry->slug,
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
+                'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
                 'fields' => $entry->getSerializedFieldValuesForDb(),
             ];
@@ -1124,7 +1158,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         // The Form's Matrix control renders blocks whatever the view mode (see
         // `formControl()`), and this menu only reaches that control, so it
         // always offers the block items.
-        $items = $this->maxEntries !== 1 ? $this->blockViewActionMenuItems() : [];
+        $items = $this->maxEntries !== 1 ? $this->blockViewActionMenuItems($context->element) : [];
 
         $parentItems = parent::fieldLayoutActionMenuItems($context);
 
@@ -1140,7 +1174,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** @return list<array<string,mixed>> */
-    private function blockViewActionMenuItems(): array
+    private function blockViewActionMenuItems(?ElementInterface $owner = null): array
     {
         $items = [];
         $type = Entry::pluralLowerDisplayName();
@@ -1197,15 +1231,39 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $items[] = ['type' => 'hr'];
 
         // Enable/Disable
-        $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
-            'type' => $type,
-        ]));
+        $siteName = $this->localizedSiteName($owner);
+        if ($siteName === null) {
+            $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
+                'type' => $type,
+            ]));
+        } else {
+            $items[] = $this->selectionAction('disableForSite', 'circle-dashed', t('Disable selected {type} for {site}', [
+                'type' => $type,
+                'site' => $siteName,
+            ]), detail: ['site' => $siteName]);
+            $items[] = $this->selectionAction('disableGlobally', 'circle-dashed', t('Disable selected {type} globally', [
+                'type' => $type,
+            ]));
+        }
         $items[] = ['type' => 'hr'];
 
         // Copy
         $items[] = $this->copyAction($type, '[data-matrix-block]');
 
         return $items;
+    }
+
+    private function localizedSiteName(?ElementInterface $owner): ?string
+    {
+        if ($owner === null) {
+            return null;
+        }
+
+        $siteIds = $this->entryManager()->getSupportedSiteIds($owner);
+
+        return count($siteIds) > 1
+            ? t($owner->getSite()->getName(), category: 'site')
+            : null;
     }
 
     /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false,action:array<string,mixed>} */
@@ -1235,8 +1293,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /** @return array{id:string,icon:string,label:string,showInChips:false,hidden:bool,action:array<string,mixed>} */
-    private function selectionAction(string $action, string $icon, string $label, bool $hidden = true): array
+    /**
+     * @param  array<string,mixed>  $detail
+     * @return array{id:string,icon:string,label:string,showInChips:false,hidden:bool,action:array<string,mixed>}
+     */
+    private function selectionAction(string $action, string $icon, string $label, bool $hidden = true, array $detail = []): array
     {
         return [
             'id' => sprintf('selection-%s-%s', $action, mt_rand()),
@@ -1251,7 +1312,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'detail' => [
                     'action' => $action,
                     'type' => Entry::pluralLowerDisplayName(),
-                ],
+                ] + $detail,
             ],
         ];
     }
@@ -1367,6 +1428,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
+            'siteName' => $this->localizedSiteName($element),
             'forms' => collect($value)->mapWithKeys(fn (Entry $entry): array => [
                 $entry->uid => $this->blockFormVariables($entry, $static),
             ])->all(),
@@ -1384,7 +1446,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ]);
     }
 
-    /** @return array{formPayload: array<string, mixed>} */
+    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
     public function blockFormVariables(Entry $entry, bool $static): array
     {
         $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
@@ -1400,6 +1462,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return [
             'formPayload' => $payload->jsonSerialize(),
+            'siteName' => $this->localizedSiteName($entry->getOwner()),
         ];
     }
 
@@ -2047,6 +2110,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->enabled = (bool) $entryData['enabled'];
             }
 
+            if (isset($entryData['enabledForSite'])) {
+                $entry->setEnabledForSite((bool) $entryData['enabledForSite']);
+            }
+
             if (isset($entryData['fresh'])) {
                 $entry->setIsFresh();
                 $entry->propagateAll = true;
@@ -2066,7 +2133,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             // Skip disabled entries on Live Preview requests
-            if ($hideDisabledEntries && ! $entry->enabled) {
+            if ($hideDisabledEntries && (! $entry->enabled || ! $entry->getEnabledForSite())) {
                 continue;
             }
 

@@ -413,7 +413,9 @@ it('preserves nullable settings and renderer-native static output on built-in al
     expect(new MissingField()->settingsForm())->toBeNull()
         ->and(new MissingField()->getSettingsHtml())->toBeNull();
 
-    $html = new Matrix(['handle' => 'matrix'])->getStaticHtml(null, Mockery::mock(Entry::class));
+    $entry = Mockery::mock(Entry::class);
+    $entry->shouldReceive('getSupportedSites')->andReturn([]);
+    $html = new Matrix(['handle' => 'matrix'])->getStaticHtml(null, $entry);
 
     expect($html)->toContain('craft-matrix-input')
         ->not->toContain('data-form-matrix-add');

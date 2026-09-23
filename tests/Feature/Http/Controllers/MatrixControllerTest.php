@@ -21,10 +21,13 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Workflow\Workflows;
@@ -121,6 +124,7 @@ function saveMatrixControllerBlocks(array $fixture, array $blocks): EntryElement
             'type' => $fixture['entryType']->handle,
             'title' => $block['title'],
             'enabled' => $block['enabled'] ?? true,
+            'enabledForSite' => $block['enabledForSite'] ?? true,
             'fields' => [
                 'innerText' => $block['innerText'],
             ],
@@ -239,6 +243,42 @@ it('creates a new matrix entry draft and renders its block html', function () {
         ->and($host)->toHaveCount(1)
         ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['scope'])
         ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
+});
+
+it('renders localized actions and an escaped site status for dynamically loaded blocks', function () {
+    Site::query()->whereKey($this->fixture['siteId'])->update(['name' => 'Primary <em>Site</em>']);
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $this->fixture['section']->id,
+        'siteId' => $secondSite->id,
+        'hasUrls' => true,
+    ]);
+    Sections::refreshSections();
+
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+        'title' => 'Localized Block',
+        'innerText' => 'Localized text',
+        'enabledForSite' => false,
+    ]]);
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+
+    $html = postJson(action([MatrixController::class, 'renderBlocks']), [
+        'entryIds' => [$entry->id],
+        'siteId' => $this->fixture['siteId'],
+        'namespace' => 'testNamespace',
+    ])->assertOk()->json('blockHtml');
+    $block = new Crawler($html);
+    $visibleActions = $block
+        ->filter('.menu li:not(.hidden) .menu-item-label')
+        ->each(fn (Crawler $item): string => trim($item->text()));
+
+    expect($visibleActions)
+        ->toContain('Enable for Primary <em>Site</em>')
+        ->and($block->filter('.status .visually-hidden')->text())
+        ->toBe('Disabled for Primary <em>Site</em>');
 });
 
 it('returns the new block as form nodes when given a control path', function () {
