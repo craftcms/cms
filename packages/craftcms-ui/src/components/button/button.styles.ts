@@ -168,6 +168,13 @@ export default css`
     min-width: 0;
   }
 
+  :host([size~='extra-small']) {
+    --_padding-inline: var(--c-spacing-xs);
+    --_height: var(--c-size-control-xs);
+    min-width: var(--c-size-control-xs);
+    font-size: 0.8em;
+  }
+
   :host([size~='small']) {
     --_padding-inline: var(--c-spacing-sm);
     --_height: var(--c-size-control-sm);
@@ -418,6 +425,21 @@ export default css`
     color: inherit;
   }
 
+  /* After the variants, which switch the sizer off: extra-small draws under
+     the minimum target size, so the hit area has to come from the sizer. */
+  :host([size~='extra-small'])::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: var(--c-size-touch-target-sm);
+    min-width: var(--c-size-touch-target-sm);
+    width: 100%;
+    height: 100%;
+  }
+
   /* None — completely unstyled; provides behavior only. */
   :host([variant~='none']) {
     appearance: none;
@@ -543,6 +565,15 @@ export default css`
       min-width: 44px;
       width: 100%;
       height: 100%;
+    }
+  }
+
+  :host([href][size~='extra-small']:not([disabled])) .link {
+    padding-inline: var(--c-spacing-xs);
+
+    &::before {
+      min-height: var(--c-size-touch-target-sm);
+      min-width: var(--c-size-touch-target-sm);
     }
   }
 

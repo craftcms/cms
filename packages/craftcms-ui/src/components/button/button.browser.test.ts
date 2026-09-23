@@ -326,3 +326,45 @@ describe('themed subtrees', () => {
     );
   });
 });
+
+describe('[size=extra-small]', () => {
+  async function mountExtraSmall(variant: string): Promise<CraftButton> {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    const holder = document.createElement('div');
+    holder.style.padding = '40px';
+    holder.innerHTML = `<craft-button variant="${variant}" size="extra-small" icon="chevron-down" aria-label="Actions"></craft-button>`;
+    document.body.append(holder);
+
+    const button = holder.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it('draws smaller than the minimum target size', async () => {
+    const button = await mountExtraSmall('plain');
+    const {height} = button.getBoundingClientRect();
+
+    expect(height).toBeGreaterThan(0);
+    expect(height).toBeLessThan(24);
+  });
+
+  it('still answers a click across the full target area', async () => {
+    // Plain switches the sizer off, so this is the variant that would lose its
+    // hit area rather than the one that keeps it by default.
+    const button = await mountExtraSmall('plain');
+    const rect = button.getBoundingClientRect();
+    const middle = rect.left + rect.width / 2;
+
+    // Just outside the visible box, inside the 24px target.
+    const above = document.elementFromPoint(middle, rect.top - 3);
+    const below = document.elementFromPoint(middle, rect.bottom + 3);
+
+    expect(above).toBe(button);
+    expect(below).toBe(button);
+  });
+});
