@@ -7,8 +7,8 @@ use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Import\Data\Import as ImportData;
-use CraftCms\Cms\Import\Imports;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
@@ -27,7 +27,7 @@ it('getSettingsRules covers a step’s settings while getRules adds its file and
 it('keeps the import’s own name and handle off the step rules', function () {
     expect(ElementImporter::getRules())->not->toHaveKey('name')
         ->and(ElementImporter::getRules())->not->toHaveKey('handle')
-        ->and(new ImportData()->getRules())->toHaveKeys(['name', 'handle', 'steps']);
+        ->and(new ImportPlanData()->getRules())->toHaveKeys(['name', 'handle', 'steps']);
 });
 
 it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site', function () {
@@ -102,17 +102,17 @@ it('validateTransformer still passes for a valid class, arrow function, and empt
         ->and($failing)->toHaveKey('transformer');
 });
 
-it('excludes an invalid file-based import from getAllImports', function () {
+it('excludes an invalid file-based import from getAllImportPlans', function () {
     Config::set('craft.import', [
-        'invalidFileImport' => fn () => new ImportData()
+        'invalidFileImport' => fn () => new ImportPlanData()
             ->name('Invalid File Import')
             ->handle('invalidFileImport')
             ->steps([]),
     ]);
 
-    $imports = app(Imports::class);
+    $imports = app(ImportPlan::class);
 
-    expect($imports->getAllImports()->has('invalidFileImport'))->toBeFalse()
-        ->and($imports->getNonEditableImports()->has('invalidFileImport'))->toBeFalse()
-        ->and($imports->getImportByHandle('invalidFileImport'))->toBeNull();
+    expect($imports->getAllImportPlans()->has('invalidFileImport'))->toBeFalse()
+        ->and($imports->getNonEditableImportPlans()->has('invalidFileImport'))->toBeFalse()
+        ->and($imports->getImportPlanByHandle('invalidFileImport'))->toBeNull();
 });

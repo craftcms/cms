@@ -63,7 +63,7 @@ use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\IconController;
-use CraftCms\Cms\Http\Controllers\Import\ImportController;
+use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
@@ -328,16 +328,16 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         // Import
-        Route::middleware('can:saveImports')->group(function () {
-            Route::post('import/save', [ImportController::class, 'store']);
-            Route::post('import/duplicate', [ImportController::class, 'duplicate']);
-            Route::post('import/step-settings', [ImportController::class, 'stepSettings']);
-            Route::post('import/validate-step', [ImportController::class, 'validateStep']);
-            Route::post('import/step-mapping', [ImportController::class, 'stepMapping']);
-            Route::post('import/nested-mapping-cols', [ImportController::class, 'nestedMappingCols']);
+        Route::middleware('can:saveImportPlans')->group(function () {
+            Route::post('import/save', [ImportPlansController::class, 'store']);
+            Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
+            Route::post('import/step-settings', [ImportPlansController::class, 'stepSettings']);
+            Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
+            Route::post('import/step-mapping', [ImportPlansController::class, 'stepMapping']);
+            Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
         });
-        Route::middleware('can:deleteImports')->delete('import/delete', [ImportController::class, 'destroy']);
-        Route::middleware('can:triggerImports')->post('import/run', [ImportController::class, 'run']);
+        Route::middleware('can:deleteImportPlans')->delete('import/delete', [ImportPlansController::class, 'destroy']);
+        Route::middleware('can:triggerImportPlans')->post('import/run', [ImportPlansController::class, 'run']);
 
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);

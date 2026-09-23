@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Import;
 use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Import\Data\Import as ImportData;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
@@ -42,7 +42,7 @@ use function CraftCms\Cms\t;
 class Import
 {
     public function __construct(
-        private readonly Imports $imports,
+        private readonly ImportPlan $imports,
     ) {}
 
     /**
@@ -125,56 +125,56 @@ class Import
     }
 
     /**
-     * Resolves each of the import's steps into a queued Import job, fires
+     * Resolves each of the import plan's steps into a queued Import job, fires
      * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
-     * @param  ImportData  $import  The import to dispatch.
+     * @param  ImportPlanData  $importPlan  The import plan to dispatch.
      */
-    public function dispatchImport(ImportData $import): bool
+    public function dispatchImport(ImportPlanData $importPlan): bool
     {
         $steps = [];
 
-        // for each step in the $import
-        foreach ($import->steps as $key => $step) {
+        // for each step in the $importPlan
+        foreach ($importPlan->steps as $key => $step) {
             $filePath = BaseImporter::resolvedFilePath($step->file);
 
             // name for this batch of jobs
-            $steps[$key]['name'] = self::stepLabel($import, $step);
-            $steps[$key]['job'] = new ImportJob($import->uid ?? $import->handle, $step->uid, $filePath, 0);
+            $steps[$key]['name'] = self::stepLabel($importPlan, $step);
+            $steps[$key]['job'] = new ImportJob($importPlan->uid ?? $importPlan->handle, $step->uid, $filePath, 0);
         }
 
-        event($event = new ImportDispatching($steps, $import));
+        event($event = new ImportDispatching($steps, $importPlan));
 
         if (! $event->isValid) {
             return false;
         }
 
         $steps = $event->steps;
-        $import = $event->import;
+        $importPlan = $event->importPlan;
 
         // todo (iwona): think about scheduling batch pruning
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($steps, $import));
+        dispatch(new ImportPipeline($steps, $importPlan));
 
-        event(new ImportDispatched($steps, $import));
+        event(new ImportDispatched($steps, $importPlan));
 
         return true;
     }
 
     /**
-     * Returns a human-readable label for one of an import's steps.
+     * Returns a human-readable label for one of an import plan's steps.
      *
-     * @param  ImportData  $import  The import the step belongs to.
+     * @param  ImportPlanData  $importPlan  The import plan the step belongs to.
      * @param  BaseImporter  $step  The step to label.
      */
-    public static function stepLabel(ImportData $import, BaseImporter $step): string
+    public static function stepLabel(ImportPlanData $importPlan, BaseImporter $step): string
     {
         $type = $step::class ?? null;
 
         return sprintf(
             '%s: %s',
-            $import->name,
+            $importPlan->name,
             is_string($type) && class_exists($type) ? $type::displayName() : t('Unknown importer'),
         );
     }

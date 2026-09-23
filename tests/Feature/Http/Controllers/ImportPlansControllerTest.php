@@ -11,8 +11,8 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Http\Controllers\Import\ImportController;
-use CraftCms\Cms\Import\Imports;
+use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
+use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -103,8 +103,8 @@ beforeEach(function () {
         ], $settings),
     ], $overrides);
 
-    $this->saveImport = fn (array $steps, array $overrides = []) => $this->postJson(
-        action([ImportController::class, 'store']),
+    $this->saveImportPlan = fn (array $steps, array $overrides = []) => $this->postJson(
+        action([ImportPlansController::class, 'store']),
         array_merge([
             'name' => 'Fixture Import',
             'handle' => 'fixtureImport',
@@ -118,7 +118,7 @@ afterEach(function () {
 });
 
 it('saves an import with several steps of different types in one request', function () {
-    ($this->saveImport)([
+    ($this->saveImportPlan)([
         ($this->entryStep)(),
         [
             'uid' => Str::uuid7()->toString(),
@@ -130,7 +130,7 @@ it('saves an import with several steps of different types in one request', funct
         ],
     ])->assertOk();
 
-    $saved = app(Imports::class)->getImportByHandle('fixtureImport');
+    $saved = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport');
 
     expect($saved)->not->toBeNull()
         ->and($saved->steps)->toHaveCount(2)
@@ -141,38 +141,38 @@ it('saves an import with several steps of different types in one request', funct
 });
 
 it('rejects an import with no steps', function () {
-    ($this->saveImport)([])
+    ($this->saveImportPlan)([])
         ->assertStatus(400)
-        ->assertJsonPath('errors.steps.0', 'An import needs at least one step.');
+        ->assertJsonPath('errors.steps.0', 'An import plan needs at least one step.');
 
-    expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('reports a step’s own validation errors against that step', function () {
     $step = ($this->entryStep)([], ['file' => 'tests/Fixtures/Import/does-not-exist.json']);
 
-    $response = ($this->saveImport)([$step])->assertStatus(400);
+    $response = ($this->saveImportPlan)([$step])->assertStatus(400);
 
     // the key is a flat dotted string, which is how the step list on the edit screen
     // matches an error back to the row that caused it
     expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.file");
 
-    expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('validates a draft step without saving the import', function () {
-    $response = $this->postJson(action([ImportController::class, 'validateStep']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
         'step' => ($this->entryStep)(),
     ]);
 
     $response->assertOk();
-    expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('reports a draft step’s validation errors before the import is ever saved', function () {
     $step = ($this->entryStep)([], ['file' => 'tests/Fixtures/Import/does-not-exist.json']);
 
-    $response = $this->postJson(action([ImportController::class, 'validateStep']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
         'step' => $step,
     ]);
 
@@ -181,7 +181,7 @@ it('reports a draft step’s validation errors before the import is ever saved',
 });
 
 it('returns a container field’s destination columns for an unsaved step', function () {
-    $response = $this->postJson(action([ImportController::class, 'nestedMappingCols']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'nestedMappingCols']), [
         'step' => ($this->entryStep)(),
         'fieldUid' => $this->outerMatrixField->uid,
         'fieldHandle' => 'outerMatrix',
@@ -198,7 +198,7 @@ it('returns a container field’s destination columns for an unsaved step', func
 });
 
 it('returns a step’s mapping structure without the import being saved', function () {
-    $response = $this->postJson(action([ImportController::class, 'stepMapping']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
         'step' => ($this->entryStep)(),
     ]);
 
@@ -211,11 +211,11 @@ it('returns a step’s mapping structure without the import being saved', functi
         ->and($response->json('suggestions'))->not->toBeEmpty()
         ->and($response->json('suggestions.title'))->toBe('title');
 
-    expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('builds a step’s settings form from the posted draft step', function () {
-    $response = $this->postJson(action([ImportController::class, 'stepSettings']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(),
     ]);
 
@@ -225,7 +225,7 @@ it('builds a step’s settings form from the posted draft step', function () {
 });
 
 it('reports a step with a resolved field layout as mappable', function () {
-    $response = $this->postJson(action([ImportController::class, 'stepSettings']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(),
     ]);
 
@@ -235,7 +235,7 @@ it('reports a step with a resolved field layout as mappable', function () {
 it('reports a step whose field layout hasn’t resolved as not mappable', function () {
     // An element importer's destination columns come from the field layout its entry type
     // resolves, so there is nothing to map onto until one is chosen.
-    $response = $this->postJson(action([ImportController::class, 'stepSettings']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(['entryType' => null]),
     ]);
 
@@ -243,7 +243,7 @@ it('reports a step whose field layout hasn’t resolved as not mappable', functi
 });
 
 it('reports a step with no file as not mappable', function () {
-    $response = $this->postJson(action([ImportController::class, 'stepSettings']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)([], ['file' => null]),
     ]);
 
@@ -253,7 +253,7 @@ it('reports a step with no file as not mappable', function () {
 it('reports an unsaved users step as mappable', function () {
     // Users have one layout for the element type rather than one per setting, so it has to
     // resolve while the step is being built — not only when the import is saved.
-    $response = $this->postJson(action([ImportController::class, 'stepSettings']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => [
             'uid' => Str::uuid7()->toString(),
             'type' => UserImporter::class,
@@ -268,7 +268,7 @@ it('reports an unsaved users step as mappable', function () {
 });
 
 it('refuses to build the mapping for a step whose layout hasn’t resolved', function () {
-    $response = $this->postJson(action([ImportController::class, 'stepMapping']), [
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
         'step' => ($this->entryStep)(['entryType' => null]),
     ]);
 
@@ -280,7 +280,7 @@ it('refuses to build the mapping for a step whose layout hasn’t resolved', fun
 it('persists both levels’ keepMissingNestedElements decisions with the step', function () {
     // The mapping panel writes into the step client-side, so the whole nested shape
     // arrives in the one save — there's no per-container round trip.
-    ($this->saveImport)([
+    ($this->saveImportPlan)([
         ($this->entryStep)([
             'map' => ['outerMatrix' => ['outerEt' => []]],
             'keepMissingNestedElements' => [
@@ -296,7 +296,7 @@ it('persists both levels’ keepMissingNestedElements decisions with the step', 
         ]),
     ])->assertOk();
 
-    $importer = app(Imports::class)->getImportByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
 
     expect($importer->keepMissingNestedElements)->toBe([
         'outerMatrix' => [
@@ -311,7 +311,7 @@ it('persists both levels’ keepMissingNestedElements decisions with the step', 
 });
 
 it('persists match criteria and clearable items alongside the map', function () {
-    ($this->saveImport)([
+    ($this->saveImportPlan)([
         ($this->entryStep)([
             'map' => ['title' => 'Name'],
             'matchCriteria' => ['title' => '1'],
@@ -319,7 +319,7 @@ it('persists match criteria and clearable items alongside the map', function () 
         ]),
     ])->assertOk();
 
-    $importer = app(Imports::class)->getImportByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
 
     expect($importer->matchCriteria)->toBe(['title' => 1])
         ->and($importer->clearableItems)->toBe(['title' => 1]);
@@ -328,13 +328,13 @@ it('persists match criteria and clearable items alongside the map', function () 
 it('still decodes JSON-encoded container branches on save', function () {
     // File-based configs and plugins can still post the shape the Twig screen's hidden
     // inputs produced.
-    ($this->saveImport)([
+    ($this->saveImportPlan)([
         ($this->entryStep)([
             'map' => ['outerMatrix' => json_encode(['outerEt' => ['title' => 'Title']])],
         ]),
     ])->assertOk();
 
-    $importer = app(Imports::class)->getImportByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
 
     expect($importer->map)->toBe([
         'outerMatrix' => ['outerEt' => ['title' => 'Title']],
@@ -344,7 +344,7 @@ it('still decodes JSON-encoded container branches on save', function () {
 it('saves and maps a model importer step', function () {
     // ModelImporter has no site, fieldLayout or keepMissingNestedElements, so this is the
     // path that has to stay clear of the ElementImporter-only properties
-    ($this->saveImport)([
+    ($this->saveImportPlan)([
         [
             'uid' => Str::uuid7()->toString(),
             'type' => SystemMessageImporter::class,
@@ -358,7 +358,7 @@ it('saves and maps a model importer step', function () {
         ],
     ])->assertOk();
 
-    $importer = app(Imports::class)->getImportByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
 
     expect($importer)->toBeInstanceOf(SystemMessageImporter::class)
         ->and($importer->map)->toBe(['subject' => 'incomingSubject'])

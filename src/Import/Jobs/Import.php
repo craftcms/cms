@@ -8,7 +8,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Facades\Imports;
+use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Bus\Batchable;
 use Illuminate\Validation\ValidationException;
@@ -23,10 +23,10 @@ class Import extends Job
     private int $defaultBatchSize = 5;
 
     /**
-     * Promotes the owning import's UID/handle, the step's UID, the file path and the starting
+     * Promotes the owning import plan's UID/handle, the step's UID, the file path and the starting
      * offset, then calls the parent constructor.
      *
-     * @param  string  $importId  The UID (or, for file-based imports, the handle) of the import.
+     * @param  string  $importId  The UID (or, for file-based import plans, the handle) of the import plan.
      * @param  string  $stepUid  The UID of the step being run.
      * @param  string  $filePath  The path to the file being imported.
      * @param  int  $start  The offset to start processing from.
@@ -55,23 +55,23 @@ class Import extends Job
             return;
         }
 
-        $import = Imports::getImportByUid($this->importId) ?? Imports::getImportByHandle($this->importId);
+        $importPlan = ImportPlan::getImportPlanByUid($this->importId) ?? ImportPlan::getImportPlanByHandle($this->importId);
 
-        if ($import === null) {
-            ImportLog::warning("Skipping import job for missing import \"{$this->importId}\".");
+        if ($importPlan === null) {
+            ImportLog::warning("Skipping import job for missing import plan \"{$this->importId}\".");
 
             return;
         }
 
-        $step = collect($import->steps ?? [])->firstWhere('uid', $this->stepUid);
+        $step = collect($importPlan->steps ?? [])->firstWhere('uid', $this->stepUid);
 
         if ($step === null) {
-            ImportLog::warning("Skipping import job for missing step \"{$this->stepUid}\" of import \"{$import->name}\".");
+            ImportLog::warning("Skipping import job for missing step \"{$this->stepUid}\" of import plan \"{$importPlan->name}\".");
 
             return;
         }
 
-        $stepLabel = ImportFacade::stepLabel($import, $step);
+        $stepLabel = ImportFacade::stepLabel($importPlan, $step);
 
         try {
             $step->validateSettings();

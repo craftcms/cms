@@ -238,7 +238,7 @@ readonly class Navigation
                 ->subnav($this->sourceSubnav(User::class, 'users')));
         }
 
-        if (Gate::check('viewImports')) {
+        if (Gate::check('viewImportPlans')) {
             $navItems->add(new NavItem()
                 ->label(t('Import'))
                 ->url('import')

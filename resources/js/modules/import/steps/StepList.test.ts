@@ -208,23 +208,23 @@ it('shows a server error on the step it belongs to', () => {
 
 it('shows an error about the list itself when there are no steps', () => {
   // `steps` with nothing after it is the list's own error, not a row's
-  mount([], {errors: {steps: ['An import needs at least one step.']}});
+  mount([], {errors: {steps: ['An import plan needs at least one step.']}});
 
   expect(container.querySelector('.error-list')!.textContent).toContain(
-    'An import needs at least one step.'
+    'An import plan needs at least one step.'
   );
 });
 
 it('keeps a list error and a row error apart', () => {
   mount([step()], {
     errors: {
-      steps: ['An import needs at least one step.'],
+      steps: ['An import plan needs at least one step.'],
       'steps.step-1.file': ['File does not exist.'],
     },
   });
 
   expect(container.querySelector('.error-list')!.textContent).toContain(
-    'An import needs at least one step.'
+    'An import plan needs at least one step.'
   );
   expect(container.querySelector('.error-list')!.textContent).not.toContain(
     'File does not exist.'

@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\ImportHelper;
 
-class ImportMapViewModel extends ViewModel
+class ImportPlanMapViewModel extends ViewModel
 {
     private ?array $destinationCols = null;
 

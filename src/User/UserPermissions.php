@@ -766,24 +766,24 @@ class UserPermissions
             heading: t('Import'),
             permissions: collect([
                 new Permission(
-                    key: 'viewImports',
-                    label: t('View imports'),
-                    info: t('Allows viewing existing imports.'),
+                    key: 'viewImportPlans',
+                    label: t('View import plans'),
+                    info: t('Allows viewing existing import plans.'),
                     nested: collect([
                         new Permission(
-                            key: 'saveImports',
-                            label: t('Save imports'),
-                            info: t('Allows creating and saving imports.'),
+                            key: 'saveImportPlans',
+                            label: t('Save import plans'),
+                            info: t('Allows creating and saving import plans.'),
                         ),
                         new Permission(
-                            key: 'deleteImports',
-                            label: t('Delete imports'),
-                            info: t('Allows deleting imports.'),
+                            key: 'deleteImportPlans',
+                            label: t('Delete import plans'),
+                            info: t('Allows deleting import plans.'),
                         ),
                         new Permission(
-                            key: 'triggerImports',
-                            label: t('Run imports'),
-                            info: t('Allows user to run an import.'),
+                            key: 'triggerImportPlans',
+                            label: t('Run import plans'),
+                            info: t('Allows user to run an import plan.'),
                         ),
                     ])->filter(),
                 ),

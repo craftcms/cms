@@ -15,7 +15,7 @@
     destroy,
     duplicate,
     run,
-  } from '@actions/Import/ImportController';
+  } from '@actions/Import/ImportPlansController';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   interface ImportRow {
@@ -33,8 +33,8 @@
     canSave: boolean;
     canDelete: boolean;
     canTrigger: boolean;
-    editableImports: Array<ImportRow>;
-    nonEditableImports: Array<ImportRow>;
+    editableImportPlans: Array<ImportRow>;
+    nonEditableImportPlans: Array<ImportRow>;
   }>();
 
   function stepsCell(row: ImportRow) {
@@ -119,7 +119,7 @@
 
   const editableTable = useVueTable<ImportRow>({
     get data() {
-      return props.editableImports;
+      return props.editableImportPlans;
     },
     get columns() {
       return editableColumns.value;
@@ -154,7 +154,7 @@
 
   const nonEditableTable = useVueTable<ImportRow>({
     get data() {
-      return props.nonEditableImports;
+      return props.nonEditableImportPlans;
     },
     get columns() {
       return nonEditableColumns.value;
@@ -172,7 +172,7 @@
       :href="create().url"
       :inertia="false"
     >
-      {{ t('New import') }}
+      {{ t('New import plan') }}
     </CpLink>
   </LayoutSlot>
 
@@ -180,24 +180,24 @@
     <div class="grid gap-6">
       <craft-pane>
         <div>
-          <h3>{{ t('Editable Imports') }}</h3>
+          <h3>{{ t('Editable Import Plans') }}</h3>
           <p>
-            {{ t('Those imports can be edited in the Control Panel') }}
+            {{ t('Those import plans can be edited in the Control Panel') }}
           </p>
         </div>
 
         <AdminTable :table="editableTable" :reorderable="false">
           <template #empty-row>
-            <Empty :label="t('No imports yet.')" icon="light/upload" />
+            <Empty :label="t('No import plans yet.')" icon="light/upload" />
           </template>
         </AdminTable>
       </craft-pane>
 
-      <craft-pane v-if="nonEditableImports.length">
+      <craft-pane v-if="nonEditableImportPlans.length">
         <div>
-          <h3>{{ t('Non-Editable Imports') }}</h3>
+          <h3>{{ t('Non-Editable Import Plans') }}</h3>
           <p>
-            {{ t('Those imports can be edited in the config file.') }}
+            {{ t('Those import plans can be edited in the config file.') }}
           </p>
         </div>
         <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>

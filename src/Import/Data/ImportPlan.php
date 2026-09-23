@@ -9,7 +9,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
-use CraftCms\Cms\Support\Facades\Imports as ImportsFacade;
+use CraftCms\Cms\Support\Facades\ImportPlan as ImportPlanFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -25,10 +25,10 @@ use Override;
 use function CraftCms\Cms\t;
 
 /**
- * A named, handled import: an ordered list of steps, each of which pairs an importer type
+ * A named, handled import plan: an ordered list of steps, each of which pairs an importer type
  * with its own file, transformer, settings and mapping.
  */
-class Import extends Component implements CpEditable, Validatable
+class ImportPlan extends Component implements CpEditable, Validatable
 {
     public ?string $name = null;
 
@@ -45,8 +45,8 @@ class Import extends Component implements CpEditable, Validatable
     public ?string $uid = null;
 
     /**
-     * Whether this import is stored in the database, and so editable via the control panel.
-     * File-based imports, declared through the `craft.import` config, are not.
+     * Whether this import plan is stored in the database, and so editable via the control panel.
+     * File-based import plans, declared through the `craft.import` config, are not.
      */
     public bool $editable = false;
 
@@ -56,7 +56,7 @@ class Import extends Component implements CpEditable, Validatable
         if (isset($config['steps']) && is_string($config['steps'])) {
             $items = Json::decode($config['steps']);
             foreach ($items as $item) {
-                $step = ImportsFacade::createImporter($item);
+                $step = ImportPlanFacade::createImporter($item);
                 $steps[] = $step;
             }
             $config['steps'] = array_filter($steps);
@@ -66,7 +66,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Sets the name for the import.
+     * Sets the name for the import plan.
      *
      * @param  string|null  $name  The name to set.
      */
@@ -78,7 +78,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Sets the handle for the import.
+     * Sets the handle for the import plan.
      *
      * @param  string|null  $handle  The handle to be assigned.
      */
@@ -90,7 +90,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Sets the description for the import.
+     * Sets the description for the import plan.
      *
      * @param  string|null  $description  The description to be assigned.
      */
@@ -102,7 +102,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Sets the import's steps, assigning a UID to any step that doesn't have one yet.
+     * Sets the import plan's steps, assigning a UID to any step that doesn't have one yet.
      *
      * @param  array<array-key, array<string, mixed>>|null  $steps  The steps to set.
      */
@@ -131,7 +131,7 @@ class Import extends Component implements CpEditable, Validatable
         $items = [];
         foreach ($steps as $step) {
             if (is_array($step)) {
-                $step = ImportsFacade::createImporter($step);
+                $step = ImportPlanFacade::createImporter($step);
             }
             if (empty($step->uid)) {
                 $step->uid = Str::uuid7()->toString();
@@ -144,7 +144,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Serializes the import's steps into an array of arrays.'
+     * Serializes the import plan's steps into an array of arrays.'
      */
     public function serializeSteps(): ?array
     {
@@ -156,7 +156,7 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Defines validation rules for the import itself. Each step is validated separately,
+     * Defines validation rules for the import plan itself. Each step is validated separately,
      * against its own importer's rules, in `afterValidate()`.
      */
     #[Override]
@@ -173,8 +173,8 @@ class Import extends Component implements CpEditable, Validatable
                 'string',
                 'max:255',
                 new HandleRule(reservedWords: ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                // ensure DB-stored imports have unique handles
-                Rule::unique(Table::IMPORTS, 'handle')->ignore($this->uid, 'uid')->withoutTrashed('dateDeleted'),
+                // ensure DB-stored import plans have unique handles
+                Rule::unique(Table::IMPORT_PLANS, 'handle')->ignore($this->uid, 'uid')->withoutTrashed('dateDeleted'),
             ],
             'description' => [
                 'string',
@@ -189,20 +189,20 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Defines custom validation messages for the import.
+     * Defines custom validation messages for the import plan.
      */
     #[Override]
     public function getMessages(): array
     {
         return [
-            'steps.required' => t('An import needs at least one step.'),
-            'steps.min' => t('An import needs at least one step.'),
+            'steps.required' => t('An import plan needs at least one step.'),
+            'steps.min' => t('An import plan needs at least one step.'),
         ];
     }
 
     /**
      * Validates each step against its own importer type's rules, folding any errors back into
-     * the import's error bag under `steps.<key>.<attribute>`.
+     * the import plan's error bag under `steps.<key>.<attribute>`.
      */
     #[Override]
     public function afterValidate(?Validator $validator = null): void
@@ -222,7 +222,7 @@ class Import extends Component implements CpEditable, Validatable
 
     /**
      * Validates a single step's data against its importer type's rules. Used both when
-     * validating the import as a whole, and by the step slideout to check a draft step
+     * validating the import plan as a whole, and by the step slideout to check a draft step
      * before it lets the step close.
      *
      * @param  array<string, mixed>  $step  The step to validate.
@@ -259,13 +259,13 @@ class Import extends Component implements CpEditable, Validatable
     public function getImporters(): Collection
     {
         return collect($this->steps ?? [])
-            ->map(fn (array $step) => ImportsFacade::createImporter($step))
+            ->map(fn (array $step) => ImportPlanFacade::createImporter($step))
             ->filter()
             ->values();
     }
 
     /**
-     * Returns a plain array snapshot of the import's properties.
+     * Returns a plain array snapshot of the import plan's properties.
      */
     public function getConfig(): array
     {
@@ -279,8 +279,8 @@ class Import extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Determines whether the import is stored in the database, and therefore editable via the
-     * control panel. File-based imports are not.
+     * Determines whether the import plan is stored in the database, and therefore editable via the
+     * control panel. File-based import plans are not.
      */
     public function isEditable(): bool
     {

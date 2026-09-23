@@ -10,13 +10,13 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
-class Import extends BaseModel
+class ImportPlan extends BaseModel
 {
     use HasUid;
     use SoftDeletes;
 
     #[Override]
-    protected $table = Table::IMPORTS;
+    protected $table = Table::IMPORT_PLANS;
 
     #[Override]
     protected function casts(): array

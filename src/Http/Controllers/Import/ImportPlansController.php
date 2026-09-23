@@ -13,13 +13,13 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Http\ViewModels\ImportEditViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportMapViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportStepFormViewModel;
-use CraftCms\Cms\Import\Data\Import as ImportData;
+use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportPlanMapViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportPlanStepFormViewModel;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Imports;
+use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
@@ -36,7 +36,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-class ImportController
+class ImportPlansController
 {
     use RespondsWithFlash;
 
@@ -46,7 +46,7 @@ class ImportController
         private Request $request,
         GeneralConfig $generalConfig,
         private readonly Import $importService,
-        private readonly Imports $importsService,
+        private readonly ImportPlan $importsService,
         private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -57,39 +57,39 @@ class ImportController
         $currentUser = $this->request->craftUser();
 
         return Inertia::render('import/Index', [
-            'title' => t('Imports'),
+            'title' => t('Import Plans'),
             'crumbs' => [
                 ['label' => t('Import')],
             ],
             'readOnly' => $this->readOnly,
-            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImports'),
-            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImports'),
-            'canTrigger' => (bool) $currentUser?->can('triggerImports'),
-            'editableImports' => $this->importsService->getEditableImports()
-                ->map(fn (ImportData $import) => $this->importRow($import, true))
+            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImportPlans'),
+            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImportPlans'),
+            'canTrigger' => (bool) $currentUser?->can('triggerImportPlans'),
+            'editableImportPlans' => $this->importsService->getEditableImportPlans()
+                ->map(fn (ImportPlanData $importPlan) => $this->importRow($importPlan, true))
                 ->values()
                 ->all(),
-            'nonEditableImports' => $this->importsService->getNonEditableImports()
-                ->map(fn (ImportData $import) => $this->importRow($import, false))
+            'nonEditableImportPlans' => $this->importsService->getNonEditableImportPlans()
+                ->map(fn (ImportPlanData $importPlan) => $this->importRow($importPlan, false))
                 ->values()
                 ->all(),
         ]);
     }
 
     /** @return array<string, mixed> */
-    private function importRow(ImportData $import, bool $editable): array
+    private function importRow(ImportPlanData $importPlan, bool $editable): array
     {
         return [
-            'uid' => $import->uid,
-            'name' => $import->name,
-            'handle' => $import->handle,
-            'description' => $import->description,
-            'stepCount' => count($import->steps ?? []),
+            'uid' => $importPlan->uid,
+            'name' => $importPlan->name,
+            'handle' => $importPlan->handle,
+            'description' => $importPlan->description,
+            'stepCount' => count($importPlan->steps ?? []),
             'stepLabels' => array_map(
                 $this->stepTypeLabel(...),
-                $import->steps ?? [],
+                $importPlan->steps ?? [],
             ),
-            'editUrl' => $editable ? Url::cpUrl('import/'.$import->handle) : null,
+            'editUrl' => $editable ? Url::cpUrl('import/'.$importPlan->handle) : null,
         ];
     }
 
@@ -104,28 +104,28 @@ class ImportController
     {
         $old = $this->request->session()->get('import');
 
-        return $this->cpScreenResponse(! empty($old) ? new ImportData($old) : new ImportData);
+        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : new ImportPlanData);
     }
 
-    public function edit(?ImportData $import = null, ?string $handle = null): CpScreenResponse
+    public function edit(?ImportPlanData $importPlan = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $this->request->input('handle');
+        $handle ??= $importPlan->handle ?? $this->request->input('handle');
 
         if (is_null($handle)) {
             return $this->create();
         }
 
-        abort_if(is_null($found = $this->importsService->getImportByHandle($handle)), 404, 'Import not found');
-        abort_if(! $found->isEditable(), 400, "This import is not editable: $found->handle");
+        abort_if(is_null($found = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
+        abort_if(! $found->isEditable(), 400, "This import plan is not editable: $found->handle");
 
         $old = $this->request->session()->get('import');
         if (! empty($old)) {
-            $import = new ImportData($old);
+            $importPlan = new ImportPlanData($old);
         }
 
-        $import ??= $found;
+        $importPlan ??= $found;
 
-        return $this->cpScreenResponse($import);
+        return $this->cpScreenResponse($importPlan);
     }
 
     public function store(): Response
@@ -137,30 +137,30 @@ class ImportController
         ]);
 
         if ($importUid) {
-            abort_if(is_null($import = $this->importsService->getImportByUid($importUid, true)), 400, "Invalid import UID: $importUid");
+            abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($importUid, true)), 400, "Invalid import plan UID: $importUid");
         } else {
-            $import = new ImportData(['editable' => true]);
+            $importPlan = new ImportPlanData(['editable' => true]);
         }
 
-        $import->name($this->request->input('name', $import->name));
-        $import->handle($this->request->input('handle', $import->handle));
-        $import->description($this->request->input('description', $import->description));
-        $import->steps($this->request->input('steps', $import->steps ?? []));
+        $importPlan->name($this->request->input('name', $importPlan->name));
+        $importPlan->handle($this->request->input('handle', $importPlan->handle));
+        $importPlan->description($this->request->input('description', $importPlan->description));
+        $importPlan->steps($this->request->input('steps', $importPlan->steps ?? []));
 
-        if (! $this->importsService->saveImport($import)) {
-            return $this->asModelFailure($import, t('Couldn’t save import.'), 'import');
+        if (! $this->importsService->saveImportPlan($importPlan)) {
+            return $this->asModelFailure($importPlan, t('Couldn’t save import plan.'), 'import');
         }
 
         return $this->asModelSuccess(
-            $import,
-            t('Import saved.'),
+            $importPlan,
+            t('Import plan saved.'),
             'import',
         );
     }
 
     /**
      * Returns the form payload for a single step, built from the posted draft step rather than
-     * anything persisted, so a step can be configured before the import is ever saved.
+     * anything persisted, so a step can be configured before the import plan is ever saved.
      */
     public function stepSettings(): JsonResponse
     {
@@ -168,12 +168,12 @@ class ImportController
         $batchSize = $this->request->input('step.batchSize');
 
         return new JsonResponse([
-            'form' => new ImportStepFormViewModel(
+            'form' => new ImportPlanStepFormViewModel(
                 $importer,
                 $this->importService,
                 app(FormResolver::class),
                 $this->readOnly,
-                (bool) $this->request->craftUser()?->can('saveImports'),
+                (bool) $this->request->craftUser()?->can('saveImportPlans'),
                 $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
             )->form(),
             'canMap' => $this->canMapStep($importer),
@@ -216,7 +216,7 @@ class ImportController
         $step = $data['step'];
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        $errors = ImportData::stepErrors($step);
+        $errors = ImportPlanData::stepErrors($step);
 
         if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
@@ -249,7 +249,7 @@ class ImportController
             'available' => true,
             'destinationCols' => $destinationCols,
             'sourceDataCols' => $sourceDataCols,
-            'values' => new ImportMapViewModel($importer)->values(),
+            'values' => new ImportPlanMapViewModel($importer)->values(),
             'suggestions' => ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
         ]);
     }
@@ -345,7 +345,7 @@ class ImportController
 
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        return Imports::createImporter($step);
+        return ImportPlan::createImporter($step);
     }
 
     /**
@@ -375,15 +375,15 @@ class ImportController
             ]);
         }
 
-        $import = $this->importsService->getImportByUid($uid);
+        $importPlan = $this->importsService->getImportPlanByUid($uid);
 
-        abort_if(is_null($import), 404, "Invalid import UID: $uid");
-        abort_if(! $import->isEditable(), 400, "This import is not editable, so it can’t be duplicated via the Control Panel: $uid");
+        abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be duplicated via the Control Panel: $uid");
 
-        $this->importsService->duplicateImport($import);
+        $this->importsService->duplicateImportPlan($importPlan);
 
         return $this->asSuccess(t('“{name}” duplicated.', [
-            'name' => $import->name,
+            'name' => $importPlan->name,
         ]));
     }
 
@@ -397,15 +397,15 @@ class ImportController
             ]);
         }
 
-        $import = $this->importsService->getImportByUid($uid);
+        $importPlan = $this->importsService->getImportPlanByUid($uid);
 
-        abort_if(is_null($import), 404, "Invalid import UID: $uid");
-        abort_if(! $import->isEditable(), 400, "This import is not editable, so it can’t be deleted via the Control Panel: $uid");
+        abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be deleted via the Control Panel: $uid");
 
-        $this->importsService->deleteImport($import);
+        $this->importsService->deleteImportPlan($importPlan);
 
         return $this->asSuccess(t('“{name}” deleted.', [
-            'name' => $import->name,
+            'name' => $importPlan->name,
         ]));
     }
 
@@ -414,16 +414,16 @@ class ImportController
         $uid = $this->request->input('uid');
         $handle = $this->request->input('handle');
 
-        abort_if(is_null($uid) && is_null($handle), 400, 'An import uid or handle is required.');
+        abort_if(is_null($uid) && is_null($handle), 400, 'An import plan uid or handle is required.');
 
-        $import = $uid !== null
-            ? $this->importsService->getImportByUid($uid)
-            : $this->importsService->getImportByHandle($handle);
+        $importPlan = $uid !== null
+            ? $this->importsService->getImportPlanByUid($uid)
+            : $this->importsService->getImportPlanByHandle($handle);
 
-        abort_if(is_null($import), 400, 'Import not found.');
+        abort_if(is_null($importPlan), 400, 'Import plan not found.');
 
         try {
-            $this->importService->dispatchImport($import);
+            $this->importService->dispatchImport($importPlan);
         } catch (Throwable $e) {
             ImportLog::warning("Import failed: {$e->getMessage()}");
 
@@ -433,18 +433,18 @@ class ImportController
         return $this->asSuccess(t('Import started'));
     }
 
-    private function cpScreenResponse(ImportData $import): CpScreenResponse
+    private function cpScreenResponse(ImportPlanData $importPlan): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
-        $canSave = (bool) $currentUser?->can('saveImports');
+        $canSave = (bool) $currentUser?->can('saveImportPlans');
         $editable = ! $this->readOnly && $canSave;
 
         return new CpScreenResponse()
-            ->title(! isset($import->uid) ? t('Create a new import') : t('Edit {name} import', ['name' => $import->name]))
+            ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
             ->addCrumb(t('Import'), 'import')
             ->formAttributes(['action' => action([self::class, 'store'])])
-            ->inertiaPage('import/Edit', new ImportEditViewModel(
-                $import,
+            ->inertiaPage('import/Edit', new ImportPlanEditViewModel(
+                $importPlan,
                 $this->importService,
                 app(FormResolver::class),
                 $this->readOnly,
@@ -452,12 +452,12 @@ class ImportController
             ))
             ->when(
                 $editable,
-                callback: function (CpScreenResponse $response) use ($import) {
+                callback: function (CpScreenResponse $response) use ($importPlan) {
                     $response
                         ->action('import/save')
                         ->redirectUrl('import/{handle}');
 
-                    if ($import->isEditable()) {
+                    if ($importPlan->isEditable()) {
                         $response->addAltAction(t('Delete'), [
                             'variant' => 'danger',
                             'action' => [
@@ -465,26 +465,26 @@ class ImportController
                                 'method' => 'DELETE',
                                 'url' => action([self::class, 'destroy']),
                                 'body' => [
-                                    'uid' => $import->uid,
+                                    'uid' => $importPlan->uid,
                                     'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                                 ],
                                 'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                    'name' => $import->name,
+                                    'name' => $importPlan->name,
                                 ]),
                             ],
                         ]);
 
-                        $response->addAltAction(t('Run this import'), [
+                        $response->addAltAction(t('Run this import plan'), [
                             'action' => [
                                 'type' => 'http',
                                 'method' => 'POST',
                                 'url' => action([self::class, 'run']),
                                 'body' => [
-                                    'uid' => $import->uid,
+                                    'uid' => $importPlan->uid,
                                     'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                                 ],
                                 'confirm' => t('Are you sure you want to run “{name}”?', [
-                                    'name' => $import->name,
+                                    'name' => $importPlan->name,
                                 ]),
                             ],
                         ]);

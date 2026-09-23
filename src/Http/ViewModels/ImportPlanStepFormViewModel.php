@@ -22,10 +22,10 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use function CraftCms\Cms\t;
 
 /**
- * The form shown in an import step's slideout: the importer type, the data it reads, and
+ * The form shown in an import plan step's slideout: the importer type, the data it reads, and
  * whatever settings that importer type asks for.
  */
-class ImportStepFormViewModel extends ViewModel
+class ImportPlanStepFormViewModel extends ViewModel
 {
     public function __construct(
         private readonly ?BaseImporter $importer,

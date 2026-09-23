@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Import\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
-use CraftCms\Cms\Support\Facades\Imports;
+use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
@@ -98,7 +98,7 @@ abstract class Import extends Command implements PromptsForMissingInput
             'settings' => $settings,
         ];
 
-        $importConfig = Imports::createImporter($config);
+        $importConfig = ImportPlan::createImporter($config);
 
         if ($importConfig === null) {
             return self::FAILURE;

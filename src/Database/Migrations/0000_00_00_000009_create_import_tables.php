@@ -11,8 +11,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable(Table::IMPORTS)) {
-            Schema::create(Table::IMPORTS, function (Blueprint $table) {
+        if (! Schema::hasTable(Table::IMPORT_PLANS)) {
+            Schema::create(Table::IMPORT_PLANS, function (Blueprint $table) {
                 $table->integer('id', true);
                 $table->string('name');
                 $table->string('handle');
@@ -28,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(Table::IMPORTS);
+        Schema::dropIfExists(Table::IMPORT_PLANS);
     }
 };

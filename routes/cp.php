@@ -28,7 +28,7 @@ use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
-use CraftCms\Cms\Http\Controllers\Import\ImportController;
+use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
@@ -219,10 +219,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     /**
      * Import
      */
-    Route::middleware('can:viewImports')->group(function () {
-        Route::get('import', [ImportController::class, 'index']);
-        Route::middleware('can:saveImports')->get('import/new', [ImportController::class, 'create']);
-        Route::get('import/{handle}', [ImportController::class, 'edit']);
+    Route::middleware('can:viewImportPlans')->group(function () {
+        Route::get('import', [ImportPlansController::class, 'index']);
+        Route::middleware('can:saveImportPlans')->get('import/new', [ImportPlansController::class, 'create']);
+        Route::get('import/{handle}', [ImportPlansController::class, 'edit']);
     });
     /**
      * Users

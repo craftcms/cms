@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Import\Data\Import as ImportData;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Facades\Facade;
 
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getAllDataTypes()
  * @method static array getAllImporterTypes()
  * @method static ?string getElementImporterTypeFor(string $elementClass)
- * @method static bool dispatchImport(ImportData $import)
+ * @method static bool dispatchImport(ImportPlanData $importPlan)
  * @method static void import(BaseImporter $importer)
  * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria)
  * @method static string getRawData(string $filePath)

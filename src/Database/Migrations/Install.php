@@ -665,7 +665,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::IMPORTS, function (Blueprint $table) {
+        Schema::create(Table::IMPORT_PLANS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');

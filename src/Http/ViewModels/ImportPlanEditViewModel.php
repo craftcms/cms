@@ -14,17 +14,17 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Http\Controllers\Import\ImportController;
-use CraftCms\Cms\Import\Data\Import as ImportData;
+use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 
 use function CraftCms\Cms\t;
 
-class ImportEditViewModel extends ViewModel
+class ImportPlanEditViewModel extends ViewModel
 {
     public function __construct(
-        private readonly ImportData $import,
+        private readonly ImportPlanData $importPlan,
         private readonly Import $importService,
         private readonly FormResolver $formResolver,
         private readonly bool $readOnly = false,
@@ -36,39 +36,39 @@ class ImportEditViewModel extends ViewModel
         $mode = $this->readOnly || ! $this->canSave ? ControlMode::ReadOnly : ControlMode::Editable;
 
         $handle = Handle::make('handle');
-        if (! $this->import->uid) {
+        if (! $this->importPlan->uid) {
             $handle->source('name');
         }
 
         return $this->formResolver->resolve(Form::make([
             HiddenField::make('uid'),
             FormField::make(t('Name'), Text::make('name')->autofocus())
-                ->instructions(t('What this import will be called in the control panel.'))
+                ->instructions(t('What this import plan will be called in the control panel.'))
                 ->required(),
             FormField::make(t('Handle'), $handle)
-                ->instructions(t('How you’ll refer to this import in the code.'))
+                ->instructions(t('How you’ll refer to this import plan in the code.'))
                 ->required(),
             FormField::make(t('Description'), Textarea::make('description'))
-                ->instructions(t('A description of what this import is for.')),
+                ->instructions(t('A description of what this import plan is for.')),
         ]), new FormContext(
             values: [
-                'uid' => $this->import->uid,
-                'name' => $this->import->name,
-                'handle' => $this->import->handle,
-                'description' => $this->import->description,
+                'uid' => $this->importPlan->uid,
+                'name' => $this->importPlan->name,
+                'handle' => $this->importPlan->handle,
+                'description' => $this->importPlan->description,
             ],
             mode: $mode,
         ));
     }
 
     /**
-     * The import's steps, as the step list on the edit screen holds them.
+     * The import plan's steps, as the step list on the edit screen holds them.
      *
      * @return list<array<string, mixed>>
      */
     public function steps(): array
     {
-        return $this->import->serializeSteps() ?? [];
+        return $this->importPlan->serializeSteps() ?? [];
     }
 
     /**
@@ -89,28 +89,28 @@ class ImportEditViewModel extends ViewModel
     {
         return [
             'method' => 'post',
-            'url' => action([ImportController::class, 'store']),
+            'url' => action([ImportPlansController::class, 'store']),
         ];
     }
 
     public function stepSettingsUrl(): ?string
     {
-        return $this->readOnly ? null : action([ImportController::class, 'stepSettings']);
+        return $this->readOnly ? null : action([ImportPlansController::class, 'stepSettings']);
     }
 
     public function validateStepUrl(): ?string
     {
-        return $this->readOnly ? null : action([ImportController::class, 'validateStep']);
+        return $this->readOnly ? null : action([ImportPlansController::class, 'validateStep']);
     }
 
     public function stepMappingUrl(): string
     {
-        return action([ImportController::class, 'stepMapping']);
+        return action([ImportPlansController::class, 'stepMapping']);
     }
 
     public function nestedColsUrl(): string
     {
-        return action([ImportController::class, 'nestedMappingCols']);
+        return action([ImportPlansController::class, 'nestedMappingCols']);
     }
 
     public function readOnly(): bool
