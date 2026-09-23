@@ -83,6 +83,30 @@ it('needs a valid element', function (string $route) {
     ])->assertNotFound();
 })->with('routes');
 
+it('accepts numeric string ids', function (string $route) {
+    // The `integer` rule lets a numeric string through as a string, so ids
+    // arriving from a client that stringifies them must not blow up on the
+    // controller's int parameters.
+    $structure = Structure::factory()->create();
+    $root = $structure->structureElements()->firstOrFail();
+    Entry::factory()->create(['id' => $root->elementId]);
+
+    $child = new StructureElement([
+        'structureId' => $structure->id,
+        'elementId' => Element::factory()->create()->id,
+    ]);
+    Entry::factory()->create(['id' => $child->elementId]);
+    $child->appendTo($root);
+
+    SessionAuth::authorize("editStructure:{$structure->id}");
+
+    postJson($route, [
+        'structureId' => (string) $structure->id,
+        'elementId' => (string) $child->elementId,
+        'siteId' => (string) Site::first()->id,
+    ])->assertOk();
+})->with('routes');
+
 it('can get element level delta', function (string $elementToTest, int $expected) {
     $structure = Structure::factory()->create();
     $root = $structure->structureElements()->firstOrFail();

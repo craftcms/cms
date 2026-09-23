@@ -270,7 +270,10 @@ vi.mock('../editable-table', () => ({
         string,
         {type: string; textExpanderTriggers?: TextExpanderTriggers}
       >,
-      settings: {minRows?: number | null} = {}
+      settings: {
+        defaultValues?: FormValues;
+        minRows?: number | null;
+      } = {}
     ) {
       const body = required(
         document.querySelector<HTMLTableSectionElement>(`#${id} tbody`),
@@ -282,7 +285,7 @@ vi.mock('../editable-table', () => ({
           String(body.children.length),
           columns,
           baseName,
-          {}
+          settings.defaultValues ?? {}
         ).appendTo(body);
       }
     }
@@ -778,6 +781,37 @@ describe('FormRenderer', () => {
         },
       })
     );
+  });
+
+  it('renders a table whose field value is null', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {label: {type: 'singleline'}}},
+            path: ['details'],
+            mode: 'editable',
+            deltaGroup: ['details'],
+          },
+        },
+      ],
+      values: {details: null},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelectorAll('tbody > tr')).toHaveLength(0);
+    expect(renderer.currentValues()).toEqual({details: null});
   });
 
   it('renders table cell errors beside scalar values', async () => {
@@ -2560,6 +2594,31 @@ describe('FormRenderer', () => {
     expect(document.activeElement).toBe(input);
   });
 
+  it('preserves the focused descendant of an overridden control during reconciliation', async () => {
+    const overridden = clonePayload();
+    app.unmount();
+    await mount(overridden, {
+      slots: {
+        'settings.placeholder': () =>
+          h('div', [
+            h('button', {type: 'button'}, 'Actions'),
+            h('input', {'data-override-input': ''}),
+          ]),
+      },
+    });
+
+    const input = required(
+      container.querySelector<HTMLInputElement>('[data-override-input]'),
+      'Expected the override input.'
+    );
+    input.focus();
+    currentPayload.value = structuredClone(overridden);
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(input);
+  });
+
   it('passes switch configuration to craft-switch', async () => {
     const configured = clonePayload();
 
@@ -2960,6 +3019,7 @@ describe('FormRenderer', () => {
             allowDelete: true,
             allowReorder: true,
             minRows: 2,
+            defaultValues: {name: '<New row>', enabled: false},
           },
           [{name: '<Row>', enabled: true}],
         ],
@@ -3111,6 +3171,16 @@ describe('FormRenderer', () => {
         'input[name="settings[rows][0][enabled]"][type="checkbox"]'
       )?.checked
     ).toBe(true);
+    expect(
+      container.querySelector<HTMLTextAreaElement>(
+        'textarea[name="settings[rows][1][name]"]'
+      )?.value
+    ).toBe('<New row>');
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[rows][1][enabled]"][type="checkbox"]'
+      )?.checked
+    ).toBe(false);
     await vi.waitFor(() =>
       expect(
         container.querySelector<HTMLInputElement>(
@@ -3150,7 +3220,7 @@ describe('FormRenderer', () => {
         )?.value
       ).toEqual([
         {name: '<Row>', enabled: true},
-        {name: '', enabled: false},
+        {name: '<New row>', enabled: false},
       ])
     );
 
@@ -3186,7 +3256,7 @@ describe('FormRenderer', () => {
       settings: {
         rows: [
           {name: '<Changed row>', enabled: true},
-          {name: '', enabled: false},
+          {name: '<New row>', enabled: false},
         ],
       },
     });

@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
@@ -203,7 +204,14 @@ class ElementIndexes
             ];
         }
 
-        $query->where(new ExcludeDescendantIdsExpression($descendantIds));
+        // Compared against a literal rather than passed alone: a single-argument
+        // where() treats the expression as a column name and routes it to
+        // whereNull(), compiling to `<expr> is null` — which matches nothing, so
+        // collapsing a branch emptied the whole index. The comparison keeps the
+        // expression in the where's `column` slot, which
+        // {@see DisplayedInIndex::elementQueryWithAllDescendants()} looks for
+        // when it strips the exclusion back off.
+        $query->where(new ExcludeDescendantIdsExpression($descendantIds), '=', DB::raw('true'));
 
         return [
             'query' => $query,

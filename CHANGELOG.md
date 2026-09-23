@@ -55,8 +55,11 @@
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 
 ### Fields
+- Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
+- Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
+- Fixed multiple bugs with Table fields, including new columns moving or defaulting to Checkbox, settings rows not being draggable, and element edit forms failing when the field value was null. ([#19687](https://github.com/craftcms/cms/pull/19687))
 
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
@@ -65,6 +68,7 @@
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
+- Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
 
 ### Users & Auth
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))

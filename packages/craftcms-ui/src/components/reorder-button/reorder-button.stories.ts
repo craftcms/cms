@@ -16,11 +16,14 @@ const meta = {
     variant: 'neutral',
     orientation: 'vertical',
     disabled: false,
+    nested: false,
+    canIndent: false,
+    canOutdent: false,
   },
   argTypes: {
     position: {
       control: {type: 'select'},
-      options: ['first', 'middle', 'last'],
+      options: ['first', 'middle', 'last', 'only'],
     },
     orientation: {
       control: {type: 'select'},
@@ -34,7 +37,10 @@ const meta = {
       variant="${args.variant}"
       orientation="${args.orientation}"
       ?disabled="${args.disabled}"
-      @reorder="${(e: CustomEvent<{direction: 'up' | 'down'}>) =>
+      ?nested="${args.nested}"
+      ?can-indent="${args.canIndent}"
+      ?can-outdent="${args.canOutdent}"
+      @reorder="${(e: CustomEvent<{direction: string}>) =>
         console.log('reorder', e.detail.direction)}"
     ></craft-reorder-button>
   `,
@@ -64,4 +70,9 @@ export const Horizontal: Story = {
 
 export const Disabled: Story = {
   args: {disabled: true},
+};
+
+export const Nested: Story = {
+  name: 'Nested (indent/outdent)',
+  args: {nested: true, canIndent: true, canOutdent: true},
 };

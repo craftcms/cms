@@ -72,6 +72,7 @@ export {
   default as CraftReorderButton,
   type ReorderPosition,
   type ReorderDirection,
+  type NestedReorderDirection,
   type ReorderOrientation,
 } from './components/reorder-button/reorder-button.js';
 export {default as CraftSelectColor} from './components/select-color/select-color.js';
