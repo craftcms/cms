@@ -28,7 +28,7 @@
 <template>
   <craft-popover
     placement="bottom-end"
-:opened="opened"
+    :opened="opened"
     @opened-changed="opened = $event.detail.opened"
   >
     <craft-button
@@ -38,8 +38,14 @@
       :aria-label="t('Settings')"
       :aria-expanded="opened"
     ></craft-button>
-<div slot="content-body" role="region" aria-labelledby="widget-settings-heading">
-      <h2 id="widget-settings-heading" class="text-sm mb-md">{{ t('Widget Settings') }}</h2>
+    <div
+      slot="content-body"
+      role="region"
+      aria-labelledby="widget-settings-heading"
+    >
+      <h2 id="widget-settings-heading" class="text-sm mb-md">
+        {{ t('Widget Settings') }}
+      </h2>
       <craft-empty
         v-if="!widgets.length"
         :label="t('You don’t have any widgets yet.')"
