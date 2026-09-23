@@ -26,6 +26,12 @@ function links(container: HTMLElement): Array<string | null> {
   );
 }
 
+function linkClasses(container: HTMLElement): Array<string | null> {
+  return [...container.querySelectorAll('craft-breadcrumb-item')].map(
+    (item) => item.querySelector('a')?.getAttribute('class') ?? null
+  );
+}
+
 afterEach(() => {
   teardown?.();
   teardown = undefined;
@@ -57,5 +63,17 @@ describe('Breadcrumbs', () => {
     await nextTick();
 
     expect(links(container)).toEqual(['/admin/settings']);
+  });
+
+  it('underlines linked crumbs so they are not identified by color alone', async () => {
+    const container = mount([
+      {label: 'Settings', href: '/admin/settings'},
+      {label: 'Deprecation Warnings'},
+    ]);
+    await nextTick();
+
+    const classes = linkClasses(container);
+    expect(classes[0]).toContain('cp-link--underline');
+    expect(classes[1]).toBeNull();
   });
 });

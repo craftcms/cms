@@ -79,6 +79,7 @@
       icon?: string;
       block?: boolean;
       inertia?: boolean;
+      underline?: boolean;
     }>(),
     {
       variant: 'neutral',
@@ -103,6 +104,7 @@
       'cp-link--default': props.variant === 'neutral',
       'cp-link--primary': props.variant === 'accent',
       'cp-link--danger': props.variant === 'danger',
+      'cp-link--underline': props.underline,
     };
   });
 
@@ -169,6 +171,14 @@
     gap: var(--c-spacing-sm);
     align-items: center;
     text-decoration: none;
+  }
+
+  .cp-link--underline {
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 
   /**
