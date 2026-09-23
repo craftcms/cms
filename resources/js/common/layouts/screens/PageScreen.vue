@@ -113,14 +113,19 @@
   // with or without the nav on screen, and each level brings its switcher. The
   // server's own switchers take their menus from the main nav, so a source's
   // switcher is the same on its index and on the pages beneath it.
-  const {nav} = useCraftData();
+  const {nav, siteCrumb} = useCraftData();
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
       withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? []),
       subnav.value
     );
 
-    return merged.length > 0 ? merged : null;
+    // The site leads the trail on every screen, not just the ones that know
+    // they're site-specific: which site you're editing frames everything
+    // below it. Only present on a multi-site install.
+    const trail = siteCrumb.value ? [siteCrumb.value, ...merged] : merged;
+
+    return trail.length > 0 ? trail : null;
   });
   const readOnly = computed(() => Boolean(page.props.readOnly));
 

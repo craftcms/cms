@@ -242,27 +242,18 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /**
      * The site the index is listing, which everything else here is scoped to:
-     * the `?site=` handle the rest of the CP addresses sites by, held to the
-     * sites this index can actually show ({@see selectableSites()}).
+     * the `?site=` handle the rest of the CP addresses sites by.
+     *
+     * Taken at its word, even when this index has no sources for it. The site
+     * crumb is shared chrome that offers every editable site, so silently
+     * showing a different site's content than the one it names would be a lie;
+     * an index with nothing on this site comes up empty instead.
      *
      * Not a payload key — the client gets {@see siteId()} and {@see Sites()}.
      */
     protected function site(): Site
     {
-        if ($this->resolvedSite !== null) {
-            return $this->resolvedSite;
-        }
-
-        $requested = $this->requestedSite() ?? Sites::getCurrentSite();
-        $selectable = $this->selectableSites();
-
-        if ($selectable->contains(fn (Site $site): bool => $site->id === $requested->id)) {
-            return $this->resolvedSite = $requested;
-        }
-
-        // The requested site has nothing on this index — a section that only
-        // runs on the other sites, say — so fall back rather than list nothing.
-        return $this->resolvedSite = $selectable->first() ?? $requested;
+        return $this->resolvedSite ??= $this->requestedSite() ?? Sites::getCurrentSite();
     }
 
     /**
@@ -417,14 +408,13 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
-        $crumbs = array_values(array_filter([
-            // Leads the trail, the way the legacy index's `site-crumb` does:
-            // which site you're editing frames everything below it.
-            $this->siteCrumb($indexUrl),
+        $crumbs = [
             // The index's own name, not title() — that now names the selected
-            // source, which is the crumb below this one.
+            // source, which is the crumb below this one. The site crumb that
+            // leads the whole trail is shared chrome ({@see SiteSwitcher}),
+            // added by the screen rather than by any one index.
             new ActionItem()->label($this->indexTitle())->href($indexUrl),
-        ]));
+        ];
 
         [$sourceKey] = $this->sourceState();
 
@@ -453,53 +443,6 @@ abstract class ContentIndexViewModel extends ViewModel
             ->items($choices->count() > 1 ? $options : []);
 
         return $crumbs;
-    }
-
-    /**
-     * The site crumb: the active site, carrying the others as its menu.
-     *
-     * Each option is a plain link to this index under a different `?site=`, so
-     * switching sites is an ordinary navigation — the server then re-resolves
-     * the sources, the selected source, and the query against the new site.
-     *
-     * Deliberately not a link, matching the legacy index's `site-crumb`. It
-     * would only point at the page you're already on — and a crumb with a URL
-     * has its menu rebuilt from whichever nav level that URL sits in
-     * (`withNavCrumbMenus()`), which would replace these sites with the main
-     * navigation.
-     *
-     * `null` when there's no site menu to show, or only one site to show in it.
-     */
-    private function siteCrumb(string $indexUrl): ?ActionItem
-    {
-        $sites = $this->selectableSites();
-
-        if (! $this->showSiteMenu() || $sites->count() < 2) {
-            return null;
-        }
-
-        $siteId = $this->siteId();
-
-        return new ActionItem()
-            ->id('site-crumb')
-            ->icon('world')
-            ->ariaLabel(t('Site'))
-            ->label(t($this->site()->name, category: 'site'))
-            ->items($sites
-                ->map(fn (Site $site): array => [
-                    'type' => 'link',
-                    'label' => t($site->name, category: 'site'),
-                    'href' => $this->siteIndexUrl($indexUrl, $site),
-                    'selected' => $site->id === $siteId,
-                ])
-                ->values()
-                ->all());
-    }
-
-    /** This index, as the given site sees it. */
-    private function siteIndexUrl(string $indexUrl, Site $site): string
-    {
-        return Url::urlWithParams($indexUrl, ['site' => $site->handle]);
     }
 
     /**
