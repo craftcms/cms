@@ -17,6 +17,7 @@
 
   useResizeObserver(container, () => emit('resize'));
   const settingsButton = ref<HTMLElement>();
+  const widgetSettings = ref<InstanceType<typeof WidgetSettings>>();
   let savedWidget: DashboardWidget | false | undefined;
 
   onMounted(() => {
@@ -43,6 +44,8 @@
   });
 
   async function closeSettings() {
+    if (widgetSettings.value?.sending) return;
+
     if (props.widget.id < 0) {
       emit('cancel');
       return;
@@ -146,16 +149,17 @@
           </h2>
           <craft-button
             v-if="widget.settingsForm"
-            ref="settingsButton"
             slot="actions"
             type="button"
             icon="x"
             size="small"
             variant="plain"
             :aria-label="t('Cancel')"
+            :disabled="widgetSettings?.sending"
             @click="closeSettings"
           ></craft-button>
           <WidgetSettings
+            ref="widgetSettings"
             :widget="widget"
             @saved="saved"
             @cancel="closeSettings"

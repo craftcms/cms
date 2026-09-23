@@ -25,6 +25,7 @@
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
     {}
   ).withAllErrors();
+  defineExpose({sending: computed(() => form.processing)});
   const errors = computed(() =>
     Object.fromEntries(
       Object.entries(form.errors).map(([path, messages]) => [

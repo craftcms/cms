@@ -1,5 +1,6 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
+import {http} from '@inertiajs/vue3';
 import {useDashboard} from '@/modules/dashboard/useDashboard';
 import Widget from '@/modules/dashboard/Widget.vue';
 import HtmlWidget from '@/modules/dashboard/HtmlWidget.vue';
@@ -102,6 +103,28 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     Array.from(host.querySelectorAll('form craft-button')).find(button => button.textContent?.trim() === 'Cancel')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
     expect(configure.closest('.hidden, [inert]')).toBeNull();
+    expect(document.activeElement).toBe(host.querySelector('.front .widget-settings-button'));
+
+    if (visit === 0) {
+      let completeSave!: (response: Awaited<ReturnType<ReturnType<typeof http.getClient>['request']>>) => void;
+      vi.spyOn(http.getClient(), 'request').mockImplementationOnce(() => new Promise(resolve => {
+        completeSave = resolve;
+      }));
+
+      host.querySelector<HTMLElement>('.front .widget-settings-button')!.click();
+      await vi.waitFor(() => expect(host.querySelector('form')).not.toBeNull());
+      host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+      const close = host.querySelector<HTMLElement>('.settings-face [aria-label="Cancel"]')!;
+      await vi.waitFor(() => expect(close.hasAttribute('disabled')).toBe(true));
+
+      close.click();
+      api.hideSettings();
+      expect(host.querySelector('form')).not.toBeNull();
+
+      completeSave({status: 200, headers: {}, data: JSON.stringify({info: widget})});
+      await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
+      vi.restoreAllMocks();
+    }
 
     app.unmount();
     host.remove();
