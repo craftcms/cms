@@ -90,6 +90,19 @@ it('draws the same focus ring on the row and on its chevron', async () => {
   expect(ring(toggle)).toEqual(rowRing);
 });
 
+it('fills the chevron while it’s focused into view', async () => {
+  const item = await railFixture();
+  const toggle = item.shadowRoot!.querySelector<HTMLElement>(
+    '.rail-toggle craft-button'
+  )!;
+
+  toggle.focus();
+
+  expect(getComputedStyle(toggle).backgroundColor).not.toBe(
+    'rgba(0, 0, 0, 0)'
+  );
+});
+
 it('draws the chevron at the same size as the icon it replaces', async () => {
   const item = await railFixture();
   const shadow = item.shadowRoot!;
