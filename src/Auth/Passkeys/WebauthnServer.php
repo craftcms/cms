@@ -106,7 +106,7 @@ class WebauthnServer
                 ES256K::create(),
                 RS256::create(),
                 PS256::create(),
-                Ed256::create(), // removed as registration option; remove it in the next major release
+                Ed256::create(true), // removed as registration option; remove it in the next major release
             );
     }
 
