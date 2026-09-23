@@ -94,7 +94,7 @@ class EntryActivity
      * @param  string[]  $dirtyFields
      * @return array{list<ActivityChange>, bool}
      */
-    private static function changes(
+    public static function changes(
         Entry $entry,
         Entry $original,
         array $dirtyAttributes,
