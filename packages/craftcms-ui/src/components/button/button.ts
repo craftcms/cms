@@ -319,12 +319,12 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /**
    * Size of the button. Defaults to "medium".
    *
-   * `extra-small` draws below the 24px minimum target size, so it keeps a
+   * `xsmall` draws below the 24px minimum target size, so it keeps a
    * `--c-size-touch-target-sm` hit area around the smaller visible box.
    */
   @property({reflect: true}) size:
     | 'zero'
-    | 'extra-small'
+    | 'xsmall'
     | 'small'
     | 'medium'
     | 'large' = 'medium';

@@ -327,7 +327,7 @@ describe('themed subtrees', () => {
   });
 });
 
-describe('[size=extra-small]', () => {
+describe('[size=xsmall]', () => {
   async function mountExtraSmall(variant: string): Promise<CraftButton> {
     await import('../../styles/shared/color-palette.css');
     await import('../../styles/shared/colorable.css');
@@ -336,7 +336,7 @@ describe('[size=extra-small]', () => {
 
     const holder = document.createElement('div');
     holder.style.padding = '40px';
-    holder.innerHTML = `<craft-button variant="${variant}" size="extra-small" icon="chevron-down" aria-label="Actions"></craft-button>`;
+    holder.innerHTML = `<craft-button variant="${variant}" size="xsmall" icon="chevron-down" aria-label="Actions"></craft-button>`;
     document.body.append(holder);
 
     const button = holder.querySelector('craft-button') as CraftButton;

@@ -59,3 +59,22 @@ describe('Breadcrumbs', () => {
     expect(links(container)).toEqual(['/admin/settings']);
   });
 });
+
+describe('Breadcrumbs switcher', () => {
+  it('invokes the switcher with an xsmall button', async () => {
+    const container = mount([
+      {
+        label: 'All entries',
+        href: '/admin/content/entries',
+        items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+      },
+    ]);
+    await nextTick();
+
+    const invoker = container.querySelector('craft-button');
+
+    // Smaller than the crumb text beside it, with its target area floored by
+    // the size rather than the visible box.
+    expect(invoker?.getAttribute('size')).toBe('xsmall');
+  });
+});

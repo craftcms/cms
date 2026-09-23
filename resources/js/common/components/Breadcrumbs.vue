@@ -57,6 +57,7 @@
         slot="suffix"
         icon="chevron-down"
         :actions="item.items"
+        button-size="xsmall"
         :label="t('Actions')"
       />
     </craft-breadcrumb-item>

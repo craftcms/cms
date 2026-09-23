@@ -168,7 +168,7 @@ export default css`
     min-width: 0;
   }
 
-  :host([size~='extra-small']) {
+  :host([size~='xsmall']) {
     --_padding-inline: var(--c-spacing-xs);
     --_height: var(--c-size-control-xs);
     min-width: var(--c-size-control-xs);
@@ -425,9 +425,9 @@ export default css`
     color: inherit;
   }
 
-  /* After the variants, which switch the sizer off: extra-small draws under
+  /* After the variants, which switch the sizer off: xsmall draws under
      the minimum target size, so the hit area has to come from the sizer. */
-  :host([size~='extra-small'])::before {
+  :host([size~='xsmall'])::before {
     content: '';
     display: block;
     position: absolute;
@@ -568,7 +568,7 @@ export default css`
     }
   }
 
-  :host([href][size~='extra-small']:not([disabled])) .link {
+  :host([href][size~='xsmall']:not([disabled])) .link {
     padding-inline: var(--c-spacing-xs);
 
     &::before {
