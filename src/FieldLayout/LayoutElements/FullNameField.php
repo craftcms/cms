@@ -6,8 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
@@ -16,6 +18,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\ImportHelper;
 use InvalidArgumentException;
 use Override;
 
@@ -23,7 +26,9 @@ use function CraftCms\Cms\t;
 
 class FullNameField extends TextField implements ImportableFieldLayoutElementInterface
 {
-    use ImportableFieldLayoutElement;
+    use ImportableFieldLayoutElement {
+        getFieldsForMapping as traitGetFieldsForMapping;
+    }
 
     #[Override]
     public string $attribute = 'fullName';
@@ -100,5 +105,46 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Full Name');
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        if (! Cms::config()->showFirstAndLastNameFields) {
+            return self::traitGetFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
+        }
+
+        $cols = [
+            'multiple' => true,
+            'heading' => $this->label(),
+        ];
+
+        $subfields = [];
+
+        $parts = [
+            ['attribute' => 'firstName', 'label' => t('First Name'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+            ['attribute' => 'lastName', 'label' => t('Last Name'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+        ];
+
+        foreach ($parts as $part) {
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+
+            $subfields[] = [
+                'handle' => $part['attribute'],
+                'label' => $part['label'],
+                'prefixedHandleForMap' => $prefixedHandleForMap,
+                'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+                'prefixedHandleForClear' => $prefixedHandleForClear,
+                'prefixedHandle' => $prefixedHandle,
+                'prefixedHandleAsArray' => $prefixedHandleAsArray,
+                'isContainer' => false,
+                'canBeMatchCriteria' => $part['canBeMatchCriteria'],
+                'canBeCleared' => $part['canBeCleared'],
+            ];
+        }
+
+        $cols['subfields'] = $subfields;
+
+        return $cols;
     }
 }

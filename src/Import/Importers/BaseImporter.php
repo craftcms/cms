@@ -139,10 +139,16 @@ abstract class BaseImporter
     /**
      * Sets the path to the file that contains the data to be imported.
      *
-     * @param  string  $file  The file name or path to set.
+     * @param  string|null  $file  The file name or path to set.
      */
-    public function file(string $file): self
+    public function file(?string $file): self
     {
+        if ($file === null) {
+            $this->file = null;
+
+            return $this;
+        }
+
         if (! static::isFileValid($file)) {
             throw new InvalidArgumentException('Provided file either doesn’t exist or is not allowed for import.');
         }
