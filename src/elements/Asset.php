@@ -1928,14 +1928,16 @@ JS, [
      *
      * @param string[] $sizes
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param bool $preload Whether all requested transforms should be preloaded
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
+     * @since 5.9.0 Added $preload param
      * @since 3.5.0
      */
     #[AllowedInSandbox]
-    public function getSrcset(array $sizes, mixed $transform = null): string|false
+    public function getSrcset(array $sizes, mixed $transform = null, bool $preload = false): string|false
     {
-        $urls = array_filter($this->getUrlsBySize($sizes, $transform));
+        $urls = array_filter($this->getUrlsBySize($sizes, $transform, $preload));
 
         if (empty($urls)) {
             return false;
@@ -1978,11 +1980,13 @@ JS, [
      *
      * @param string[] $sizes
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param bool $preload Whether all requested transforms should be preloaded
      * @return array
+     * @since 5.9.0 Added $preload param
      * @since 3.7.16
      */
     #[AllowedInSandbox]
-    public function getUrlsBySize(array $sizes, mixed $transform = null): array
+    public function getUrlsBySize(array $sizes, mixed $transform = null, bool $preload = false): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return [];
@@ -2007,6 +2011,30 @@ JS, [
 
         if (!$currentWidth || !$currentHeight) {
             return [];
+        }
+
+        // eager load transforms
+        if ($preload) {
+            $baseTransform = [];
+            if ($transform) {
+                $baseTransform['width'] = $transform->width;
+                $baseTransform['height'] = $transform->height;
+                $baseTransform['mode'] = $transform->mode;
+                $baseTransform['position'] = $transform->position;
+                $baseTransform['quality'] = $transform->quality;
+            } else {
+                // if we don't have a transform, only use the width
+                $baseTransform['width'] = $currentWidth;
+            }
+
+            $transforms[] = $baseTransform;
+
+            foreach ($sizes as $size) {
+                [$value, $unit] = Assets::parseSrcsetSize($size);
+                $transforms[] = $value . $unit;
+            }
+
+            Craft::$app->getImageTransforms()->eagerLoadTransforms([$this], $transforms);
         }
 
         foreach ($sizes as $size) {

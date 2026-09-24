@@ -847,11 +847,11 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|array|null $value The transforms to include.
+     * @param string|array|null|bool $value The transforms to include.
      * @return static The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(string|array|null $value = null): static
+    public function withTransforms(string|array|null|bool $value = null): static
     {
         $this->withTransforms = $value;
         return $this;
@@ -867,12 +867,16 @@ class AssetQuery extends ElementQuery
 
         // Eager-load transforms?
         if ($this->withTransforms && !$this->asArray) {
-            $transforms = $this->withTransforms;
-            if (!is_array($transforms)) {
-                $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
-            }
+            if ($this->withTransforms === true) {
+                Craft::$app->getImageTransforms()->eagerLoadAllTransforms($elements);
+            } else {
+                $transforms = $this->withTransforms;
+                if (!is_array($transforms)) {
+                    $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
+                }
 
-            Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
+                Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
+            }
         }
 
         return $elements;
