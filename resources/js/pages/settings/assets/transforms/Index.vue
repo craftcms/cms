@@ -3,7 +3,7 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
     destroy,
@@ -103,12 +103,11 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      appearance="button"
+    <CpButtonLink
       :href="create().url"
-      variant="accent"
+      variant="primary"
       icon="plus"
-      >{{ t('New image transform') }}</CpLink
+      >{{ t('New image transform') }}</CpButtonLink
     >
   </LayoutSlot>
 
@@ -116,12 +115,10 @@
     <AdminTable :table="table">
       <template #empty-row>
         <craft-empty :label="t('No image transforms exist yet.')" icon="image">
-          <CpLink
-            appearance="button"
+          <CpButtonLink
             :href="create().url"
-            variant="neutral"
             icon="plus"
-            >{{ t('New image transform') }}</CpLink
+            >{{ t('New image transform') }}</CpButtonLink
           >
         </craft-empty>
       </template>

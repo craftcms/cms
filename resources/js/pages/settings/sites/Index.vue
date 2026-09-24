@@ -12,6 +12,7 @@
   import {create, edit, reorder} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -118,6 +119,7 @@
               [
                 h('craft-indicator', {
                   variant: row.original.enabled ? 'success' : 'empty',
+                  appearance: row.original.enabled ? 'outline-fill' : 'outline',
                 }),
                 h('span', getValue()),
               ]
@@ -246,14 +248,14 @@
     </div>
   </LayoutSlot>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       v-if="!readOnly"
-      as="craft-button"
       :href="create({}, {query: {groupId: group?.id}}).url"
       icon="plus"
+      variant="primary"
     >
       {{ t('New Site') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">
@@ -273,15 +275,13 @@
           icon="light/earth-americas"
           :label="t('No sites exist yet.')"
         >
-          <CpLink
+          <CpButtonLink
             v-if="!readOnly"
-            as="craft-button"
             :href="create({}, {query: {groupId: group?.id}}).url"
-            appearance="button"
           >
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('New Site') }}
-          </CpLink>
+          </CpButtonLink>
         </craft-empty>
       </template>
     </AdminTable>

@@ -396,9 +396,9 @@ export default class CraftNavItem extends LitElement {
   }
 
   /**
-   * A control lent to the row sits inside the row's own element, so pressing
-   * it would bubble on to the row — and when the row is a link, that's a
-   * navigation. CpLink puts Inertia's handlers on the host, and with
+   * A control lent to the row, or one of the item's own toggles, sits inside
+   * the item, so pressing it would bubble on to the row — and when the row is
+   * a link, that's a navigation. CpLink puts Inertia's handlers on the host, and with
    * `prefetch="click"` those aren't on `click` at all: `mousedown` prefetches
    * (and cancels the press, so the control never takes focus), `mouseup`
    * visits, and Enter does the same on `keydown`/`keyup` — cancelling the
@@ -504,6 +504,10 @@ export default class CraftNavItem extends LitElement {
     return html`
       <craft-button
         @click="${this.toggleSubnav}"
+        @mousedown="${this.#stopActionPressAtRow}"
+        @mouseup="${this.#stopActionPressAtRow}"
+        @keydown="${this.#stopActionPressAtRow}"
+        @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
         icon
         size="small"
@@ -569,6 +573,10 @@ export default class CraftNavItem extends LitElement {
       <craft-button
         class="flyout-toggle"
         @click="${this.#toggleFlyout}"
+        @mousedown="${this.#stopActionPressAtRow}"
+        @mouseup="${this.#stopActionPressAtRow}"
+        @keydown="${this.#stopActionPressAtRow}"
+        @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
         icon
         size="small"

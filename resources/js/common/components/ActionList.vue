@@ -135,6 +135,7 @@
     const marks = isItem && selectable.value;
     const attrs = defined({
       icon: action.icon,
+      hidden: action.hidden || undefined,
       // `craft-action-item` draws the checkmark gutter for its `checkbox`
       // type only; the others have no such notion.
       type: marks ? 'checkbox' : undefined,
@@ -370,6 +371,7 @@
 
     return defined({
       icon: action.icon,
+      hidden: action.hidden || undefined,
       'icon-only': iconOnly || undefined,
       'subnav-display': subnavDisplay(action),
       'initial-state': initialState(action),
@@ -457,7 +459,6 @@
       :as="as"
       :href="action.href!"
       :inertia="!action.external"
-      appearance="button"
     >
       {{ action.label }}
     </CpLink>

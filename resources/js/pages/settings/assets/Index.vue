@@ -6,7 +6,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
     destroy,
@@ -131,14 +131,13 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      appearance="button"
+    <CpButtonLink
       :href="create().url"
-      variant="accent"
+      variant="primary"
       icon="plus"
     >
       {{ t('New volume') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">

@@ -15,6 +15,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
 
   const props = defineProps<{
     title: string;
@@ -86,29 +87,27 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       v-if="!readOnly"
       :href="create()"
-      appearance="button"
-      variant="accent"
+      variant="primary"
       icon="plus"
     >
       {{ t('New route') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
     <CpContainer>
       <craft-empty :label="t('No routes exist yet.')" class="rounded">
-        <CpLink
+        <CpButtonLink
           v-if="!readOnly"
           :href="create()"
-          appearance="button"
-          variant="accent"
+          variant="primary"
           icon="plus"
         >
           {{ t('New route') }}
-        </CpLink>
+        </CpButtonLink>
       </craft-empty>
     </CpContainer>
   </div>
@@ -152,13 +151,12 @@
         </div>
 
         <div class="route__actions" v-if="!readOnly" @click.stop>
-          <CpLink
+          <CpButtonLink
             size="small"
-            appearance="button"
             :href="edit({uid: route.uid})"
           >
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
-          </CpLink>
+          </CpButtonLink>
           <craft-reorder-button
             :ref="(el: any) => setHandleRef(el, route.uid)"
             :position="getRowPosition(index)"

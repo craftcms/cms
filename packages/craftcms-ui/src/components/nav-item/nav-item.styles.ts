@@ -348,9 +348,12 @@ export default css`
     width: var(--_rail-box);
     height: var(--_rail-box);
 
+    /* A plain button is transparent, which would leave only a bare chevron
+       and its ring to show a keyboard user where they are. */
     craft-button {
       width: 100%;
       height: 100%;
+      background-color: var(--c-color-neutral-fill-quiet);
     }
 
     &:not(:focus-within) {

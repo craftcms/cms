@@ -4,6 +4,7 @@ import type {PaginationData, SortItem} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
+import type {IndexSite} from '@/modules/elements/types/sites';
 import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
 import type {
   SortOption,
@@ -35,6 +36,7 @@ export type ContentIndexData = Omit<
   GeneratedProps,
   | 'source'
   | 'sources'
+  | 'sites'
   | 'currentCondition'
   | 'viewState'
   | 'viewModes'
@@ -46,6 +48,7 @@ export type ContentIndexData = Omit<
 > & {
   source: SourceItem | null;
   sources: Source[];
+  sites: IndexSite[];
   currentCondition: ConditionConfig | null;
   viewState: Partial<ViewState>;
   viewModes: ViewMode[];
@@ -99,6 +102,10 @@ export function useContentIndexData<
     selectedSubnavItem: computed(() => props().selectedSubnavItem),
     showSiteMenu: computed(() => props().showSiteMenu),
     showStatusMenu: computed(() => props().showStatusMenu),
+
+    // Sites
+    siteId: computed(() => props().siteId),
+    sites: computed(() => props().sites),
 
     // Sources
     sources: computed(() => props().sources),

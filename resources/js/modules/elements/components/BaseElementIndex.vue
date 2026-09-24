@@ -220,8 +220,6 @@
 
 <style scoped lang="scss">
   .element-index {
-    overflow-y: clip;
-
     // A grid item's automatic minimum size would let a wide table stretch this
     // past its `minmax(0, 1fr)` track, leaving nothing for the body below to
     // scroll. Shrinking here hands the horizontal scrolling to

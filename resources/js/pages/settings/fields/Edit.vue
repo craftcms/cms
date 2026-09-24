@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {ref} from 'vue';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {pathsMatch} from '@/modules/forms/runtime';
@@ -14,6 +15,8 @@
     refreshUrl: string | null;
     supportedTranslationMethods: Record<string, string[]>;
     formActions?: ActionItem[];
+    /** The field's ID and usages, from `CpScreenResponse::metaSidebarHtml()`. */
+    details?: string | null;
   }>();
 
   const formPage = ref<{
@@ -50,6 +53,8 @@
 </script>
 
 <template>
+  <MetadataDetails :html="details" />
+
   <FormPage
     ref="formPage"
     :form="form"

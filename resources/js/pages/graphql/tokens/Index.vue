@@ -4,7 +4,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
@@ -91,21 +91,20 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       :href="create().url"
       icon="plus"
-      appearance="button"
-      variant="accent"
-      >{{ t('New token') }}</CpLink
+      variant="primary"
+      >{{ t('New token') }}</CpButtonLink
     >
   </LayoutSlot>
   <CpContainer>
     <AdminTable :table="table">
       <template #empty-row>
         <craft-empty :label="t('No GraphQL tokens exist yet.')">
-          <CpLink :href="create().url" icon="plus" appearance="button">{{
+          <CpButtonLink :href="create().url" icon="plus">{{
             t('New token')
-          }}</CpLink>
+          }}</CpButtonLink>
         </craft-empty>
       </template>
     </AdminTable>

@@ -61,9 +61,9 @@
     <craft-badge :fill="site.enabled ? 'success' : 'gray'">
       {{ site.enabled ? t('Enabled') : t('Disabled') }}
     </craft-badge>
-    <craft-callout v-if="site.primary" size="small" inline>
+    <craft-badge v-if="site.primary" no-prefix fill="accent" inline>
       <span>{{ t('Primary') }}</span>
-    </craft-callout>
+    </craft-badge>
   </LayoutSlot>
 
   <FormPage

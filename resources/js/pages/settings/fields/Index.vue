@@ -13,6 +13,7 @@
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -203,9 +204,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
+    <CpButtonLink variant="primary" :href="create()" icon="plus">
       {{ t('New field') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer>
