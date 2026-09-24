@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Import\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
@@ -121,21 +122,43 @@ abstract class Import extends Command implements PromptsForMissingInput
 
         try {
             $importer->validateSettings();
-            $filePath = $importer::resolvedFilePath($importer->file);
-            $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
-            $allData = ImportFacade::getFormattedData($filePath);
-            $count = count($allData);
-
-            foreach ($allData as $i => $item) {
-                $this->components->info('Importing item ('.($i + 1)."/{$count}) ...");
-                ImportFacade::importItem($importer, $item, $matchCriteria);
-            }
         } catch (ValidationException $e) {
             foreach ($e->errors() as $attribute => $messages) {
                 $this->components->error("$attribute: ".implode(' ', $messages));
             }
             $this->fail('Import configuration is invalid.');
         }
+
+        $filePath = $importer::resolvedFilePath($importer->file);
+        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
+
+        try {
+            $allData = ImportFacade::getFormattedData($filePath);
+        } catch (\Exception $e) {
+            $this->fail($e->getMessage());
+        }
+
+        $count = count($allData);
+
+        // iwona-events => entire import starts for CLI path
+
+        foreach ($allData as $i => $item) {
+            $this->components->info('Importing item ('.($i + 1)."/{$count}) ...");
+
+            // import data
+            try {
+                ImportFacade::importItem($importer, $item, $matchCriteria);
+            } catch (\Exception $e) {
+                // log and proceed further
+                if ($this->input->isInteractive()) {
+                    $this->components->warn('failed: '.$e->getMessage());
+                } else {
+                    ImportLog::warning('Couldn’t import data item '.($i + 1)."/{$count} because of the following error: ".$e->getMessage(), ['step' => $importer, 'data' => $item]);
+                }
+            }
+        }
+
+        // iwona-events => entire import ends for CLI path
 
         $this->components->info('Done');
 
