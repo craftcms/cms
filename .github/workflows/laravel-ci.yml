@@ -151,10 +151,14 @@ jobs:
           cache: true
           run-install: false
 
+      # `--trust-lockfile` skips the supply-chain pass, which re-checks every
+      # lockfile entry — the Font Awesome kit included, and that needs the
+      # license token. @craftcms/ui doesn't depend on the kit, and js-ci.yml
+      # still runs the full check.
       - name: Generate Custom Elements Manifest
         if: steps.cem.outputs.cache-hit != 'true'
         run: |
-          vp install --frozen-lockfile --filter @craftcms/ui
+          vp install --frozen-lockfile --filter @craftcms/ui -- --trust-lockfile
           vp run @craftcms/ui#build:manifest
 
       - name: Run tests
