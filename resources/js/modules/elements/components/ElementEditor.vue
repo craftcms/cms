@@ -228,7 +228,7 @@
   >
     <div class="element-notices">
       <craft-callout
-        v-if="payload.workflow.convertedToDraft"
+        v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
         variant="warning"
         icon="triangle-exclamation"
         class="mb-4"
