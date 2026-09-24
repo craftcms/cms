@@ -226,15 +226,6 @@
                   @submit.prevent="form && save()"
                   class="cp-main"
                 >
-                  <LayoutSlotOutlet name="error-summary">
-                    <slot name="error-summary">
-                      <ErrorSummary
-                        v-if="form && form.hasErrors"
-                        :errors="form.errors"
-                      />
-                    </slot>
-                  </LayoutSlotOutlet>
-                  <CalloutReadOnly v-if="readOnly" />
                   <div
                     ref="contentLayout"
                     class="cp-content"
@@ -273,6 +264,15 @@
                       class="cp-content__main"
                       :style="contentMainStyle"
                     >
+                      <LayoutSlotOutlet name="error-summary">
+                        <slot name="error-summary">
+                          <ErrorSummary
+                            v-if="form && form.hasErrors"
+                            :errors="form.errors"
+                          />
+                        </slot>
+                      </LayoutSlotOutlet>
+                      <CalloutReadOnly v-if="readOnly" />
                       <FlashMessages />
                       <div
                         :class="{
