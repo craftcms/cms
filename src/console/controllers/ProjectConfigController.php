@@ -273,7 +273,7 @@ class ProjectConfigController extends Controller
     /**
      * Checks project config schema compatibility with installed Craft and enabled plugins.
      *
-     * Requires an existing Craft installation to check YAML. Does not apply project config or migrations.
+     * Requires database access to an existing Craft installation, even when `--require-yaml=0` is passed. Does not apply project config or migrations.
      * Pass `--require-yaml=0` to skip the check successfully if `project.yaml` is missing.
      *
      * @return int
@@ -281,6 +281,10 @@ class ProjectConfigController extends Controller
      */
     public function actionCheck(): int
     {
+        if (!Craft::$app->getIsInstalled()) {
+            throw new InvalidConfigException('This check requires an existing Craft installation.');
+        }
+
         $projectConfig = Craft::$app->getProjectConfig();
         if (!$projectConfig->getDoesExternalConfigExist()) {
             if (!$this->requireYaml) {
@@ -290,10 +294,6 @@ class ProjectConfigController extends Controller
 
             $this->stderr('Project config file `project.yaml` was not found. Schema compatibility could not be checked.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
-        }
-
-        if (!Craft::$app->getIsInstalled()) {
-            throw new InvalidConfigException('This check requires an existing Craft installation.');
         }
 
         if ($projectConfig->getHadFileWriteIssues()) {
