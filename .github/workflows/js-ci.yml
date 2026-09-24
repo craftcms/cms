@@ -118,8 +118,14 @@ jobs:
         run: vp exec playwright install --with-deps --only-shell chromium
 
       - parallel:
+          - name: Check formatting
+            run: vp fmt --check
+
           - name: Run Oxlint
             run: vp lint resources/js/
+
+          - name: Check logical CSS properties
+            run: vp run lint:styles
 
           - name: Run TypeScript type check
             run: vp run typecheck
