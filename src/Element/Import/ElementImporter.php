@@ -70,6 +70,14 @@ abstract class ElementImporter extends BaseImporter
     private array $deletedNestedElementIds = [];
 
     /**
+     * Keys that are reserved for internal use by the importer.
+     * No fields or attributes should attempt to be match with those values.
+     *
+     * @var array|string[]
+     */
+    private array $reservedKeys = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
+
+    /**
      * Calls the parent constructor then starts tracking nested elements deleted during the import.
      */
     public function __construct(?array $config = null)
@@ -393,16 +401,14 @@ abstract class ElementImporter extends BaseImporter
 
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();
-        // $fieldHandles has custom and native fields - basically all field layout elements
-        $fieldHandles = array_diff(array_keys($item), $attributeHandles);
 
         // get a list of container properties
         $containerProps = ImportHelper::getImportableContainerProperties($this);
         // and deduce attributes from those
         $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
 
-        // exclude container attributes from field handles
-        $fieldHandles = empty($containerAttributes) ? $fieldHandles : array_diff($fieldHandles, $containerAttributes);
+        // $fieldHandles has custom and native fields - basically all field layout elements
+        $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, $this->reservedKeys);
 
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);

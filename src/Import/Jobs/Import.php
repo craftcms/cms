@@ -26,13 +26,13 @@ class Import extends Job
      * Promotes the owning import plan's UID/handle, the step's UID, the file path and the starting
      * offset, then calls the parent constructor.
      *
-     * @param  string  $importId  The UID (or, for file-based import plans, the handle) of the import plan.
+     * @param  string  $importPlanId  The UID (or, for file-based import plans, the handle) of the import plan.
      * @param  string  $stepUid  The UID of the step being run.
      * @param  string  $filePath  The path to the file being imported.
      * @param  int  $start  The offset to start processing from.
      */
     public function __construct(
-        private readonly string $importId,
+        private readonly string $importPlanId,
         private readonly string $stepUid,
         private readonly string $filePath,
         private readonly int $start = 0,
@@ -55,10 +55,10 @@ class Import extends Job
             return;
         }
 
-        $importPlan = ImportPlan::getImportPlanByUid($this->importId) ?? ImportPlan::getImportPlanByHandle($this->importId);
+        $importPlan = ImportPlan::getImportPlanByUid($this->importPlanId) ?? ImportPlan::getImportPlanByHandle($this->importPlanId);
 
         if ($importPlan === null) {
-            ImportLog::warning("Skipping import job for missing import plan \"{$this->importId}\".");
+            ImportLog::warning("Skipping import job for missing import plan \"{$this->importPlanId}\".");
 
             return;
         }
@@ -91,7 +91,7 @@ class Import extends Job
         $batchLimit = $this->getBatchSize($step);
 
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
-        // could be done once per step rather than for each root item that is being imported
+        // could be done once per step's batch rather than for each root item that is being imported
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
 
         // if batch limit is 0, it means this step's batch size was set to zero to disable batching of this step
