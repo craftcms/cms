@@ -106,7 +106,8 @@
     }
 
     @container (width >= 800px) {
-      padding: var(--c-spacing-sm) var(--c-spacing-md);
+      padding-block: var(--c-spacing-sm);
+      padding-inline: var(--c-spacing-md);
       align-items: start;
       grid-template-areas: 'label last-update status progress actions';
     }

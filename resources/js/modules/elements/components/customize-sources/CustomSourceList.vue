@@ -120,7 +120,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-xs);
-    margin: 0 0 var(--c-spacing-md);
+    margin-block: 0 var(--c-spacing-md);
+    margin-inline: 0;
     padding: 0;
     list-style: none;
   }
@@ -160,7 +161,8 @@
     display: flex;
     align-items: center;
     gap: var(--c-spacing-md);
-    padding: var(--c-spacing-xs) 0;
+    padding-block: var(--c-spacing-xs);
+    padding-inline: 0;
     border: none;
     background: none;
     color: inherit;
