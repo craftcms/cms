@@ -16,6 +16,13 @@
   const home = ref<HTMLElement>();
   const supportForm = ref<InstanceType<typeof SupportForm>>();
   const sending = computed(() => supportForm.value?.sending ?? false);
+  const cardHeading = computed(() => {
+    if (support.value) return t('Contact Developer Support');
+
+    return screen.value === 'help'
+      ? t('Ask on Stack Exchange')
+      : t('Post on GitHub');
+  });
 
   async function cancel() {
     if (sending.value) return;
@@ -32,44 +39,42 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="none">
+  <div @keydown.esc.stop="support && !sending ? (support = false) : cancel()">
     <slot name="header" />
-    <div
-      class="body"
-      @keydown.esc.stop="support && !sending ? (support = false) : cancel()"
-    >
-      <div v-show="screen === 'home'" ref="home" class="support-tiles">
-        <craft-button
-          type="button"
-          variant="fill"
-          class="support-tile"
-          data-screen="help"
-          @click="screen = 'help'"
-        >
-          <span class="support-tile-content">
-            <craft-icon name="life-ring" class="support-tile-icon"></craft-icon>
-            <span>{{ t('Get help') }}</span>
-            <span class="support-tile-description">{{
-              t('How-to’s and other questions')
-            }}</span>
-          </span>
-        </craft-button>
-        <craft-button
-          type="button"
-          variant="fill"
-          class="support-tile"
-          data-screen="feedback"
-          @click="screen = 'feedback'"
-        >
-          <span class="support-tile-content">
-            <craft-icon name="bullhorn" class="support-tile-icon"></craft-icon>
-            <span>{{ t('Give feedback') }}</span>
-            <span class="support-tile-description">{{
-              t('Bug reports and feature requests')
-            }}</span>
-          </span>
-        </craft-button>
-      </div>
+    <div v-show="screen === 'home'" ref="home" class="support-tiles">
+      <craft-button
+        type="button"
+        variant="fill"
+        class="support-tile"
+        data-screen="help"
+        @click="screen = 'help'"
+      >
+        <span class="support-tile-content">
+          <craft-icon name="life-ring" class="support-tile-icon"></craft-icon>
+          <span>{{ t('Get help') }}</span>
+          <span class="support-tile-description">{{
+            t('How-to’s and other questions')
+          }}</span>
+        </span>
+      </craft-button>
+      <craft-button
+        type="button"
+        variant="fill"
+        class="support-tile"
+        data-screen="feedback"
+        @click="screen = 'feedback'"
+      >
+        <span class="support-tile-content">
+          <craft-icon name="bullhorn" class="support-tile-icon"></craft-icon>
+          <span>{{ t('Give feedback') }}</span>
+          <span class="support-tile-description">{{
+            t('Bug reports and feature requests')
+          }}</span>
+        </span>
+      </craft-button>
+    </div>
+    <craft-card v-show="screen !== 'home'">
+      <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
       <div v-show="screen !== 'home'" class="space-y-4 p-4">
         <SupportSearch
           v-show="!support"
@@ -92,8 +97,8 @@
           t('Cancel')
         }}</craft-button>
       </div>
-    </div>
-  </craft-pane>
+    </craft-card>
+  </div>
 </template>
 
 <style scoped>

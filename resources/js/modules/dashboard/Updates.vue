@@ -37,7 +37,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body text-center space-y-3" aria-live="polite">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -69,5 +69,5 @@
         ></template
       >
     </div>
-  </craft-pane>
+  </craft-card>
 </template>

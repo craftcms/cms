@@ -270,6 +270,12 @@ export default class CraftCombobox extends LionCombobox {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    // Lion names the listbox after its own label only, which is empty when a
+    // wrapping craft-field provides the label.
+    this._listboxNode?.setAttribute(
+      'aria-labelledby',
+      this._inputNode.getAttribute('aria-labelledby') ?? ''
+    );
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');

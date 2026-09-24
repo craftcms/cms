@@ -251,12 +251,7 @@ describe('field input action listeners', () => {
     const blocks = [
       ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
     ];
-    const entries = blocks.map(() => ({
-      collapse: vi.fn(),
-      expand: vi.fn(),
-      disable: vi.fn(),
-      enable: vi.fn(),
-    }));
+    const entries = blocks.map(() => ({disableForSite: vi.fn()}));
     forContainer.mockImplementation(
       (el: Element) => entries[blocks.indexOf(el as HTMLElement)]
     );
@@ -264,19 +259,12 @@ describe('field input action listeners', () => {
 
     window.dispatchEvent(
       new CustomEvent('craft:matrix-selection-action', {
-        detail: {action: 'collapse', trigger},
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent('craft:matrix-selection-action', {
-        detail: {action: 'disable', trigger},
+        detail: {action: 'disableForSite', trigger},
       })
     );
 
-    expect(entries[0]!.collapse).toHaveBeenCalled();
-    expect(entries[0]!.disable).toHaveBeenCalled();
-    expect(entries[1]!.collapse).not.toHaveBeenCalled();
-    expect(entries[1]!.disable).not.toHaveBeenCalled();
+    expect(entries[0]!.disableForSite).toHaveBeenCalledOnce();
+    expect(entries[1]!.disableForSite).not.toHaveBeenCalled();
   });
 
   it('selects and deselects the field’s blocks through its Matrix input', () => {

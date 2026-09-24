@@ -159,6 +159,13 @@ describe('MatrixControl', () => {
     );
   }
 
+  function menuLabels(menu = menus.at(-1)): string[] {
+    return (
+      menu?.actions.flatMap((item) => ('label' in item ? [item.label] : [])) ??
+      []
+    );
+  }
+
   it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested Form to
@@ -184,11 +191,7 @@ describe('MatrixControl', () => {
     });
     await nextTick();
 
-    const labels = menus[0]!.actions.flatMap((item) =>
-      'label' in item ? [item.label] : []
-    );
-
-    expect(labels).toEqual([
+    expect(menuLabels(menus[0])).toEqual([
       'Collapse',
       'Disable',
       'Delete',
@@ -216,11 +219,8 @@ describe('MatrixControl', () => {
         .hasAttribute('data-collapsed')
     ).toBe(true);
 
-    const labels = menus
-      .at(-1)!
-      .actions.flatMap((item) => ('label' in item ? [item.label] : []));
-    expect(labels).toContain('Expand');
-    expect(labels).not.toContain('Collapse');
+    expect(menuLabels()).toContain('Expand');
+    expect(menuLabels()).not.toContain('Collapse');
   });
 
   it('also posts collapsed state for a block the browser just minted', async () => {
@@ -372,6 +372,56 @@ describe('MatrixControl', () => {
         ?.collapsed
     ).toBe(false);
     expect(block.querySelector('craft-status')).toBeNull();
+  });
+
+  it('updates site and global statuses independently', async () => {
+    mount(
+      {
+        entries: {
+          'block-a': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+        },
+        sortOrder: ['block-a'],
+      },
+      {siteName: 'English'}
+    );
+    await nextTick();
+
+    invoke('block-a', 'Disable for English');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: true, enabledForSite: false},
+      },
+    });
+
+    expect(menuLabels()).toEqual(
+      expect.arrayContaining(['Enable for English', 'Disable globally'])
+    );
+
+    invoke('block-a', 'Disable globally');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: false, enabledForSite: false},
+      },
+    });
+    expect(menuLabels()).not.toContain('Enable for English');
+
+    invoke('block-a', 'Enable globally');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: true, enabledForSite: false},
+      },
+    });
+    expect(menuLabels()).toContain('Enable for English');
   });
 
   it('folds a block when its titlebar is double-clicked', async () => {
@@ -527,6 +577,10 @@ describe('MatrixControl', () => {
     const serverActions = (uid: string) => [
       serverItem(uid, 'collapse', 'Collapse'),
       serverItem(uid, 'expand', 'Expand', {hidden: true}),
+      serverItem(uid, 'disableForSite', 'Disable for English'),
+      serverItem(uid, 'enableForSite', 'Enable for English', {hidden: true}),
+      serverItem(uid, 'disableGlobally', 'Disable globally'),
+      serverItem(uid, 'enableGlobally', 'Enable globally', {hidden: true}),
       serverItem(uid, 'delete', 'Delete'),
       serverItem(uid, 'duplicate', 'Duplicate'),
       serverItem(uid, 'copy', 'Copy'),
@@ -1406,15 +1460,30 @@ describe('MatrixControl', () => {
     ).toBe(true);
   });
 
-  it('selects blocks and applies a menu action across the selection', async () => {
-    mount({
-      entries: {
-        'block-a': {type: 'newType', enabled: true},
-        'block-b': {type: 'newType', enabled: true},
-        'block-c': {type: 'newType', enabled: true},
+  it('disables a mixed selection globally from any selected block’s menu', async () => {
+    mount(
+      {
+        entries: {
+          'block-a': {
+            type: 'newType',
+            enabled: false,
+            enabledForSite: true,
+          },
+          'block-b': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+          'block-c': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+        },
+        sortOrder: ['block-a', 'block-b', 'block-c'],
       },
-      sortOrder: ['block-a', 'block-b', 'block-c'],
-    });
+      {siteName: 'English'}
+    );
     await nextTick();
 
     const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
@@ -1428,16 +1497,21 @@ describe('MatrixControl', () => {
     expect(blocks[1]!.hasAttribute('data-selected')).toBe(true);
     expect(blocks[2]!.hasAttribute('data-selected')).toBe(false);
 
-    // Craft 5's `bulkActionMode()`: a menu action on a block that's part of a
-    // multi-selection applies to the whole selection.
-    invoke('block-a', 'Disable');
+    const selectedMenu = menus.find((menu) =>
+      menuLabels(menu).includes('Disable selected blocks globally')
+    );
+    expect(menuLabels(selectedMenu)).not.toContain(
+      'Disable selected blocks for English'
+    );
+
+    invoke('block-a', 'Disable selected blocks globally');
     await nextTick();
 
     expect(emitted.at(-1)).toMatchObject({
       entries: {
-        'block-a': {enabled: false},
-        'block-b': {enabled: false},
-        'block-c': {enabled: true},
+        'block-a': {enabled: false, enabledForSite: true},
+        'block-b': {enabled: false, enabledForSite: true},
+        'block-c': {enabled: true, enabledForSite: true},
       },
     });
   });
@@ -1515,7 +1589,12 @@ describe('MatrixControl', () => {
     // its own path, dropping anything under the block that wasn't part of it.
     expect(
       (emitted.at(-1) as {entries: Record<string, unknown>}).entries[uid]
-    ).toEqual({type: 'newType', enabled: true, fields: {body: 'hi'}});
+    ).toEqual({
+      type: 'newType',
+      enabled: true,
+      enabledForSite: true,
+      fields: {body: 'hi'},
+    });
     // The Control re-keys its whole subtree when sortOrder changes, so the
     // button that was busy is not the button that's there now.
     await vi.waitFor(() =>

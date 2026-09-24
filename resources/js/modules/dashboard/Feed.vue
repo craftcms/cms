@@ -69,7 +69,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -78,7 +78,7 @@
       <ol
         v-else-if="feed"
         :dir="feed.direction === 'rtl' ? 'rtl' : 'ltr'"
-        class="m-0 space-y-3"
+        class="grid gap-md"
       >
         <li v-for="item in items" :key="item.permalink">
           <a :href="item.permalink" target="_blank" rel="noopener">{{
@@ -93,5 +93,11 @@
         t('Loading…')
       }}</craft-spinner>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>
+
+<style scoped>
+  a {
+    text-decoration: none;
+  }
+</style>

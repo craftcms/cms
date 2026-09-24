@@ -105,6 +105,65 @@ describe('selectionMenuItem', () => {
     });
   });
 
+  it('resolves site and global status actions independently', () => {
+    const statusItem = (action: string) => ({
+      label: 'Status',
+      hidden: true,
+      action: {
+        type: 'event',
+        name: MATRIX_SELECTION_ACTION,
+        detail: {action, type: 'entries', site: 'English'},
+      },
+    });
+    const mixed = {
+      ...nothingSelected,
+      count: 2,
+      disabled: true,
+      disabledForSite: true,
+      globallyDisabled: false,
+      anyGloballyDisabled: false,
+    };
+
+    expect(
+      selectionMenuItem(statusItem('disableForSite'), mixed)
+    ).toMatchObject({
+      hidden: false,
+      label: 'Enable selected entries for English',
+      action: {detail: {action: 'enableForSite'}},
+    });
+    expect(
+      selectionMenuItem(statusItem('disableGlobally'), mixed)
+    ).toMatchObject({
+      hidden: false,
+      label: 'Disable selected entries globally',
+      action: {detail: {action: 'disableGlobally'}},
+    });
+
+    const globallyDisabled = {
+      ...mixed,
+      globallyDisabled: true,
+      anyGloballyDisabled: true,
+    };
+
+    expect(
+      selectionMenuItem(statusItem('disableForSite'), globallyDisabled).hidden
+    ).toBe(true);
+    expect(
+      selectionMenuItem(statusItem('disableGlobally'), globallyDisabled)
+    ).toMatchObject({
+      label: 'Enable selected entries globally',
+      action: {detail: {action: 'enableGlobally'}},
+    });
+
+    expect(
+      selectionMenuItem(statusItem('disableForSite'), {
+        ...mixed,
+        disabledForSite: false,
+        anyGloballyDisabled: true,
+      }).hidden
+    ).toBe(true);
+  });
+
   it('offers select all while any block is unselected, and deselect all while any is selected', () => {
     const item = (action: string, label: string) => ({
       type: 'button',

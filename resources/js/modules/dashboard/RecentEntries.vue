@@ -18,7 +18,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <ul v-if="entries.length" class="space-y-3" role="list">
@@ -32,5 +32,5 @@
       </ul>
       <craft-empty v-else :label="t('No entries exist yet.')"></craft-empty>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>
