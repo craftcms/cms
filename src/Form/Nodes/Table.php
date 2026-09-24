@@ -67,6 +67,11 @@ class Table implements Node
     /** @var list<array{value: string, label: string}>|null */
     private ?array $statusFilterOptions = null;
 
+    private bool $columnsToggleable = false;
+
+    /** @var list<string> */
+    private array $hiddenColumnsByDefault = [];
+
     private bool $searchable = false;
 
     private ?string $searchPlaceholder = null;
@@ -310,6 +315,21 @@ class Table implements Node
     }
 
     /**
+     * Adds a "View" menu for showing, hiding and reordering columns, and choosing the sort
+     * of any sortable {@see columns()}. The first column is always shown. Every other
+     * column starts visible unless its key is in `$hiddenByDefault`.
+     *
+     * @param  list<string>  $hiddenByDefault
+     */
+    public function toggleableColumns(array $hiddenByDefault = []): static
+    {
+        $this->columnsToggleable = true;
+        $this->hiddenColumnsByDefault = $hiddenByDefault;
+
+        return $this;
+    }
+
+    /**
      * Search {@see rows()} locally, or send `search` to the {@see dataUrl()} endpoint
      * and reset to page 1. See {@see rows()} for the `_search` override.
      */
@@ -438,6 +458,8 @@ class Table implements Node
             'bulkActions' => $this->bulkActions,
             'statusActions' => $this->statusActions,
             'statusFilterOptions' => $this->resolveStatusFilterOptions(),
+            'columnsToggleable' => $this->columnsToggleable,
+            'hiddenColumnsByDefault' => $this->hiddenColumnsByDefault,
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,

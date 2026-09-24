@@ -8,6 +8,10 @@
       <slot name="search"></slot>
     </div>
 
+    <div v-if="$slots.view" class="admin-table-toolbar__view">
+      <slot name="view"></slot>
+    </div>
+
     <div v-if="$slots.actions" class="admin-table-toolbar__actions">
       <slot name="actions"></slot>
     </div>

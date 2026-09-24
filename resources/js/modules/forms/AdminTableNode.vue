@@ -19,7 +19,11 @@
   } from '@craftcms/ui/vue/CraftSelectRich.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import type {ActionItemLink, PaginationData} from '@/common/types';
+  import type {
+    ActionItemLink,
+    CheckboxOption,
+    PaginationData,
+  } from '@/common/types';
   import type {
     BulkAction,
     BulkActionItem,
@@ -28,6 +32,8 @@
   import {useLocalStorage} from '@/common/composables/useStorage';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
+  import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
+  import type {SortOption} from '@/modules/elements/types/view-state';
   import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
   import CreateActionButton from '@/modules/admin-table/components/CreateActionButton.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -129,6 +135,8 @@
       bulkActions: BulkActionDescriptor[];
       statusActions: BulkActionSingle[];
       statusFilterOptions: StatusFilterOption[];
+      columnsToggleable: boolean;
+      hiddenColumnsByDefault: string[];
       searchable: boolean;
       searchPlaceholder: string | null;
       bordered: boolean;
@@ -279,6 +287,161 @@
         : collator.compare(String(left), String(right));
     };
   }
+
+  const viewSortOptions = computed<SortOption[]>(() => {
+    const sortable = props.node.props.columns.filter(
+      (column) => column.sortable
+    );
+
+    if (!sortable.length) {
+      return [];
+    }
+
+    return [
+      {
+        label: props.node.props.reorderUrl
+          ? t('Manual order')
+          : t('Default order'),
+        value: '',
+        defaultDir: 'asc',
+      },
+      ...sortable.map(
+        (column): SortOption => ({
+          label: column.label,
+          value: column.key,
+          defaultDir: 'asc',
+        })
+      ),
+    ];
+  });
+
+  const viewSortField = computed({
+    get: () => sorting.value[0]?.id ?? '',
+    set: (field: string) =>
+      onSortingChange(
+        field ? [{id: field, desc: sorting.value[0]?.desc ?? false}] : []
+      ),
+  });
+
+  const viewSortDirection = computed({
+    get: (): 'asc' | 'desc' => (sorting.value[0]?.desc ? 'desc' : 'asc'),
+    set: (direction: 'asc' | 'desc') => {
+      const current = sorting.value[0];
+
+      if (current) {
+        onSortingChange([{id: current.id, desc: direction === 'desc'}]);
+      }
+    },
+  });
+
+  // The first column is pinned; the rest can be hidden and reordered.
+  const pinnedColumn = props.node.props.columns[0];
+  const toggleableKeys = props.node.props.columns
+    .slice(1)
+    .map((column) => column.key);
+
+  interface StoredColumns {
+    visible: string[];
+    hidden: string[];
+  }
+
+  const storedColumns = useLocalStorage<StoredColumns | null>(
+    `${storageKey}.columns`,
+    null,
+    {writeDefaults: false, serializer: StorageSerializers.object}
+  );
+
+  // Stored columns keep the user's order. Columns the stored state has never seen show
+  // or hide according to their default.
+  function initialVisibleColumns(): string[] {
+    const stored = props.node.props.columnsToggleable
+      ? storedColumns.value
+      : null;
+    const known = new Set([
+      ...(stored?.visible ?? []),
+      ...(stored?.hidden ?? []),
+    ]);
+
+    return [
+      ...(stored?.visible ?? []).filter((key) => toggleableKeys.includes(key)),
+      ...toggleableKeys.filter(
+        (key) =>
+          !known.has(key) &&
+          !props.node.props.hiddenColumnsByDefault.includes(key)
+      ),
+    ];
+  }
+
+  const visibleColumns = ref(initialVisibleColumns());
+
+  function saveVisibleColumns(visible: string[]): void {
+    visibleColumns.value = visible;
+    storedColumns.value = {
+      visible,
+      hidden: toggleableKeys.filter((key) => !visible.includes(key)),
+    };
+  }
+
+  // Kept columns keep their order and newly checked ones go last. The checkbox group
+  // emits its value on mount, which is ignored as a no-op.
+  const viewTableColumns = computed({
+    get: () => visibleColumns.value,
+    set: (value: string[]) => {
+      const next = [
+        ...visibleColumns.value.filter((key) => value.includes(key)),
+        ...value.filter(
+          (key) =>
+            key !== pinnedColumn?.key && !visibleColumns.value.includes(key)
+        ),
+      ];
+
+      if (
+        next.length === visibleColumns.value.length &&
+        next.every((key, index) => key === visibleColumns.value[index])
+      ) {
+        return;
+      }
+
+      saveVisibleColumns(next);
+    },
+  });
+
+  function onColumnsReorder(options: CheckboxOption[]): void {
+    const visible = new Set(visibleColumns.value);
+
+    saveVisibleColumns(
+      options
+        .map((option) => String(option.value))
+        .filter((key) => visible.has(key))
+    );
+  }
+
+  const viewColumnOptions = computed<CheckboxOption[]>(() => {
+    const labels = new Map(
+      props.node.props.columns.map((column) => [column.key, column.label])
+    );
+
+    return [
+      ...(pinnedColumn
+        ? [
+            {
+              label: pinnedColumn.label,
+              value: pinnedColumn.key,
+              disabled: true,
+              checked: true,
+            },
+          ]
+        : []),
+      ...visibleColumns.value.map((key) => ({
+        label: labels.get(key) ?? key,
+        value: key,
+      })),
+      ...toggleableKeys
+        .filter((key) => !visibleColumns.value.includes(key))
+        .map((key) => ({label: labels.get(key) ?? key, value: key}))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    ];
+  });
 
   const isFiltered = computed(() => !!search.value || !!status.value);
 
@@ -551,6 +714,21 @@
       get sorting() {
         return sorting.value;
       },
+      get columnVisibility() {
+        return props.node.props.columnsToggleable
+          ? Object.fromEntries(
+              toggleableKeys.map((key) => [
+                key,
+                visibleColumns.value.includes(key),
+              ])
+            )
+          : {};
+      },
+      get columnOrder() {
+        return props.node.props.columnsToggleable && pinnedColumn
+          ? [pinnedColumn.key, ...visibleColumns.value]
+          : [];
+      },
     },
     getRowId: (row) => String(row.id),
     enableRowSelection: (row) =>
@@ -815,7 +993,10 @@
       >
         <template
           v-if="
-            hasStatusFilter || node.props.searchable || createActionInToolbar
+            hasStatusFilter ||
+            node.props.searchable ||
+            node.props.columnsToggleable ||
+            createActionInToolbar
           "
           #table-header
         >
@@ -865,6 +1046,16 @@
                   </craft-button>
                 </div>
               </CraftInput>
+            </template>
+            <template v-if="node.props.columnsToggleable" #view>
+              <IndexViewSettings
+                :options="viewColumnOptions"
+                :sort-options="viewSortOptions"
+                v-model:sort-field="viewSortField"
+                v-model:sort-direction="viewSortDirection"
+                v-model:table-columns="viewTableColumns"
+                @reorder="onColumnsReorder"
+              />
             </template>
             <template v-if="createActionInToolbar" #actions>
               <CreateActionButton
