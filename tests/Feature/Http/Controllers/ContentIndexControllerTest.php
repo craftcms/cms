@@ -870,7 +870,12 @@ it('falls back off a source that the requested site hides', function () {
 
 it('leads the crumbs with a shared site switcher on a multi-site install', function () {
     $primary = Sites::getCurrentSite();
-    $other = Site::factory()->create();
+    // Same group as the primary site, so the switcher lists the sites flat
+    // rather than grouped, and sorted after it.
+    $other = Site::factory()->create([
+        'groupId' => $primary->groupId,
+        'sortOrder' => 99,
+    ]);
 
     get("/{$this->cpTrigger}/content/entries")
         ->assertOk()
@@ -901,7 +906,12 @@ it('leads the crumbs with a shared site switcher on a multi-site install', funct
 });
 
 it('points each site switcher option at the page you are on', function () {
-    $other = Site::factory()->create();
+    // Same group as the primary site, so the switcher lists the sites flat
+    // rather than grouped, and sorted after it.
+    $other = Site::factory()->create([
+        'groupId' => Sites::getPrimarySite()->groupId,
+        'sortOrder' => 99,
+    ]);
     $section = Section::factory()->create(['handle' => 'blog']);
 
     get("/{$this->cpTrigger}/content/entries/{$section->handle}")
