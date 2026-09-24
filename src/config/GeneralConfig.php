@@ -2063,6 +2063,20 @@ class GeneralConfig extends BaseConfig
     public string $partialTemplatesPath = '_partials';
 
     /**
+     * @var int The duration in seconds of the cooldown timer after a reset password mail has been sent.
+     *
+     * Prevents other from exploiting the reset password functionality by applying a phase within it is not possible to
+     * trigger another password reset mail. Set the duration to zero to disable the cooldown.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->passwordResetCooldownDuration(300)
+     * ```
+     * :::
+     */
+    public int $passwordResetCooldownDuration = 60;
+
+    /**
      * @var string|null The query string param that Craft will check when determining the request’s path.
      *
      * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
@@ -5640,6 +5654,27 @@ class GeneralConfig extends BaseConfig
     public function pageTrigger(string $value): self
     {
         $this->pageTrigger = $value;
+        return $this;
+    }
+
+
+    /**
+     * The duration in seconds of the cooldown timer after a reset password mail has been sent.
+     *
+     * Prevents other from exploiting the reset password functionality by applying a phase within it is not possible to
+     * trigger another password reset mail. Set the duration to zero to disable the cooldown.
+     *
+     * ```php
+     * ->passwordResetCooldownDuration(300)
+     * ```
+     *
+     * @param int $value
+     * @return self
+     * @see $passwordResetCooldownDuration
+     */
+    public function passwordResetCooldownDuration(int $value): self
+    {
+        $this->passwordResetCooldownDuration = $value;
         return $this;
     }
 
