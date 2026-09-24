@@ -19,6 +19,7 @@
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import {useLocalStorage} from '@/common/composables/useStorage';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
@@ -125,7 +126,21 @@
   const isEndpointMode = computed(() => !!props.node.props.dataUrl);
 
   const pageRows = ref<TableRow[]>([]);
-  const perPage = ref(props.node.props.perPage);
+  // Keyed by endpoint rather than node uid, which isn't unique across screens or plugins.
+  const storedPerPage = props.node.props.dataUrl
+    ? useLocalStorage(
+        `adminTable.${new URL(props.node.props.dataUrl, window.location.origin).pathname}.perPage`,
+        props.node.props.perPage,
+        {writeDefaults: false}
+      )
+    : null;
+
+  const perPage = ref(
+    storedPerPage &&
+      props.node.props.perPageOptions.includes(storedPerPage.value)
+      ? storedPerPage.value
+      : props.node.props.perPage
+  );
   const pagination = ref<PaginationData | null>(null);
   const loading = ref(false);
 
@@ -383,9 +398,15 @@
       const previous = perPage.value;
       perPage.value = next.pageSize;
       table.resetRowSelection();
-      fetchPage(1).catch(() => {
-        perPage.value = previous;
-      });
+      fetchPage(1)
+        .then(() => {
+          if (storedPerPage) {
+            storedPerPage.value = perPage.value;
+          }
+        })
+        .catch(() => {
+          perPage.value = previous;
+        });
       return;
     }
 
