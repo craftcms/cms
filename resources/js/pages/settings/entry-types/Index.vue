@@ -134,11 +134,7 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpButtonLink
-      :href="create().url"
-      variant="primary"
-      icon="plus"
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">
       {{ t('New entry type') }}
     </CpButtonLink>
   </LayoutSlot>

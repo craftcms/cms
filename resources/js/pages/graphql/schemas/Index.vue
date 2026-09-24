@@ -86,12 +86,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpButtonLink
-      :href="create.url()"
-      icon="plus"
-      variant="primary"
-      >{{ t('New schema') }}</CpButtonLink
-    >
+    <CpButtonLink :href="create.url()" icon="plus" variant="primary">{{
+      t('New schema')
+    }}</CpButtonLink>
   </LayoutSlot>
   <CpContainer>
     <AdminTable :table="table" />

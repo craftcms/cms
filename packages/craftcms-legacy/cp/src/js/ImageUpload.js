@@ -24,7 +24,9 @@ Craft.ImageUpload = Garnish.Base.extend(
       const options = {
         url: Craft.getActionUrl(this.settings.uploadAction),
         formData: this.settings.postParameters,
-        fileInput: this.$container.find(this.settings.fileInputSelector).toArray(),
+        fileInput: this.$container
+          .find(this.settings.fileInputSelector)
+          .toArray(),
       };
 
       options.on = {};

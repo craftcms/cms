@@ -128,10 +128,7 @@
         <!-- Alternative CTA -->
         <template v-if="allowUpdates && altCtaText">
           <!-- External URL Alt CTA -->
-          <CpButtonLink
-            v-if="altCtaUrl"
-            :href="altCtaUrl"
-          >
+          <CpButtonLink v-if="altCtaUrl" :href="altCtaUrl">
             {{ altCtaText }}
           </CpButtonLink>
         </template>
