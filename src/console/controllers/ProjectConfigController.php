@@ -274,8 +274,8 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
         if (!$projectConfig->getDoesExternalConfigExist()) {
-            $this->stdout('No project config files found. Schema compatibility check skipped.' . PHP_EOL);
-            return ExitCode::OK;
+            $this->stderr('Project config file `project.yaml` was not found. Schema compatibility could not be checked.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         if (!Craft::$app->getIsInstalled()) {
