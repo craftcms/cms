@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {generateSlug} from '@/modules/input-generators/slug-generator';
+  import {useFormValueGroup} from './formValueGroup';
   import {valueAt} from './runtime';
   import TextControl from './TextControl.vue';
   import type {
@@ -30,6 +31,7 @@
     (event: 'update:value', value: string, kind?: FormChangeKind): void;
     (event: 'change', change: Event): void;
   }>();
+  const valueGroup = useFormValueGroup();
   const sourcePath = props.control.props.source;
   const charMap = props.control.props.charMap;
   const generator = useInputGenerator(sourceValue, (sourceValue) => {
@@ -45,7 +47,9 @@
 
     const path = [...props.control.path.slice(0, -1), ...sourcePath];
 
-    return String(valueAt(props.values, path) ?? '');
+    return String(
+      valueGroup?.valueAt(path) ?? valueAt(props.values, path) ?? ''
+    );
   }
 
   function onChange(event: Event): void {

@@ -160,14 +160,24 @@ describe('useElementEditor', () => {
         editor = useElementEditor();
 
         return () =>
-          editor.formPayload.value
-            ? h(FormRenderer, {
-                ref: editor.renderer as any,
-                payload: editor.formPayload.value,
-                errors: editor.errors.value,
-                'onUpdate:mutation': editor.onMutation,
-              })
-            : null;
+          h('div', [
+            editor.formPayload.value
+              ? h(FormRenderer, {
+                  ref: editor.renderer as any,
+                  payload: editor.formPayload.value,
+                  errors: editor.errors.value,
+                  'onUpdate:mutation': editor.onMutation,
+                })
+              : null,
+            editor.sidebarPayload.value
+              ? h(FormRenderer, {
+                  ref: editor.sidebarRenderer as any,
+                  payload: editor.sidebarPayload.value,
+                  errors: editor.sidebarErrors.value,
+                  'onUpdate:mutation': editor.onSidebarMutation,
+                })
+              : null,
+          ]);
       },
     });
 
@@ -283,6 +293,32 @@ describe('useElementEditor', () => {
     };
   }
 
+  function sidebarForm(slug: string, generateFromTitle = true): FormPayload {
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Slug', instructions: null, required: false},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+            component: 'craft:slug',
+            props: generateFromTitle ? {source: ['title']} : {},
+            path: ['slug'],
+            mode: 'editable',
+            deltaGroup: ['slug'],
+            forms: [],
+          },
+        },
+      ],
+      values: {slug},
+      errors: [],
+      globalErrors: [],
+    };
+  }
+
   /** The rendered Title input. */
   function titleInput(): HTMLInputElement {
     return container!.querySelector<HTMLInputElement>('input[name="title"]')!;
@@ -297,6 +333,72 @@ describe('useElementEditor', () => {
     titleInput().dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
   }
+
+  it('generates an empty entry slug from its title until the slug is edited', async () => {
+    vi.stubGlobal('Craft', {
+      ...(globalThis as any).Craft,
+      allowUppercaseInSlug: false,
+      limitAutoSlugsToAscii: true,
+      slugWordSeparator: '-',
+    });
+    mount(
+      payload({
+        form: fieldLayout(''),
+        sidebarForm: sidebarForm(''),
+      })
+    );
+
+    await typeTitle('First Title');
+
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    expect(slugInput.value).toBe('first-title');
+
+    slugInput.value = 'custom-slug';
+    slugInput.dispatchEvent(new Event('input', {bubbles: true}));
+    slugInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await typeTitle('Second Title');
+
+    expect(slugInput.value).toBe('custom-slug');
+  });
+
+  it('continues generating the slug after autosave returns it without a source', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('Craft', {
+      ...(globalThis as any).Craft,
+      allowUppercaseInSlug: false,
+      limitAutoSlugsToAscii: true,
+      slugWordSeparator: '-',
+    });
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        form: fieldLayout('First'),
+        screen: {sidebarForm: sidebarForm('first', false)},
+      },
+    });
+    mount(
+      payload({
+        canAutosave: true,
+        form: fieldLayout(''),
+        sidebarForm: sidebarForm(''),
+      })
+    );
+
+    await typeTitle('First');
+    await vi.advanceTimersByTimeAsync(1000);
+    await nextTick();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+
+    await typeTitle('First Article');
+
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    expect(slugInput.value).toBe('first-article');
+
+    vi.useRealTimers();
+  });
 
   it('reads the panel’s own props inside a slideout, not the page behind it', () => {
     const {editor} = mount(

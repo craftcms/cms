@@ -60,6 +60,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\Slug;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -2167,12 +2168,20 @@ JS, [
         }
 
         if ($this->getType()->showSlugField) {
+            $slug = Slug::make('slug')
+                ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
+                ->mode($static ? ControlMode::Disabled : ControlMode::Editable);
+
+            if (
+                ! $static &&
+                $this->getType()->hasTitleField &&
+                ($this->slug === null || ElementHelper::isTempSlug($this->slug))
+            ) {
+                $slug->source('title');
+            }
+
             $nodes[] = Field::make(t('Slug'))
-                ->control(
-                    Text::make('slug')
-                        ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+                ->control($slug);
         }
 
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {

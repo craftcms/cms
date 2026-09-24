@@ -23,6 +23,7 @@ import {useElementAutosave} from '@/modules/elements/composables/useElementAutos
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+import {provideFormValueGroup} from '@/modules/forms/formValueGroup';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -236,6 +237,8 @@ export function useElementEditor({saveData}: Options = {}) {
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<ElementEditFormData>({});
+
+  provideFormValueGroup();
 
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a
