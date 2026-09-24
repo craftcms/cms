@@ -80,6 +80,7 @@
     @model-value-changed="onModelValueChanged"
   >
     <input :id="inputId" slot="input" />
+    <slot name="suffix" />
   </craft-input>
   <craft-text-expander
     v-if="editable && control.props.textExpanderTriggers"

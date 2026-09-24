@@ -61,6 +61,26 @@ it('derives the character map from its language unless one is set', function () 
         ->and($custom['charMap'])->toBe(['ä' => 'a']);
 });
 
+it('can expose its source without automatically generating', function () {
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([
+            Field::make('Title', Text::make('title')),
+            Field::make('Slug', Slug::make('slug')
+                ->source('title')
+                ->charMap([])
+                ->autoGenerate(false)),
+        ]),
+        new FormContext(values: [
+            'title' => 'Updated title',
+            'slug' => 'established-slug',
+        ]),
+    );
+    app(FormHtmlRenderer::class)->render($payload);
+
+    expect($payload->nodes[1]->control?->props['autoGenerate'])->toBeFalse()
+        ->and(HtmlStack::bodyHtml())->not->toContain('new Craft.SlugGenerator');
+});
+
 it('rejects invalid slug source paths', function (string|array $source) {
     Slug::make('slug')->source($source);
 })->throws(InvalidArgumentException::class)

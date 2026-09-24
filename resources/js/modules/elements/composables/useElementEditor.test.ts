@@ -293,7 +293,7 @@ describe('useElementEditor', () => {
     };
   }
 
-  function sidebarForm(slug: string, generateFromTitle = true): FormPayload {
+  function sidebarForm(slug: string, autoGenerate = true): FormPayload {
     return {
       scope: [],
       refreshable: false,
@@ -305,7 +305,10 @@ describe('useElementEditor', () => {
           control: {
             type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
             component: 'craft:slug',
-            props: generateFromTitle ? {source: ['title']} : {},
+            props: {
+              source: ['title'],
+              ...(autoGenerate ? {} : {autoGenerate: false}),
+            },
             path: ['slug'],
             mode: 'editable',
             deltaGroup: ['slug'],
@@ -362,7 +365,7 @@ describe('useElementEditor', () => {
     expect(slugInput.value).toBe('custom-slug');
   });
 
-  it('continues generating the slug after autosave returns it without a source', async () => {
+  it('continues generating the slug after autosave returns an established slug', async () => {
     vi.useFakeTimers();
     vi.stubGlobal('Craft', {
       ...(globalThis as any).Craft,
@@ -374,7 +377,7 @@ describe('useElementEditor', () => {
       data: {
         draftId: 7,
         form: fieldLayout('First'),
-        screen: {sidebarForm: sidebarForm('first', false)},
+        screen: {sidebarForm: sidebarForm('first')},
       },
     });
     mount(

@@ -2171,12 +2171,14 @@ JS, [
                 ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
                 ->mode($static ? ControlMode::Disabled : ControlMode::Editable);
 
-            if (
-                ! $static &&
-                $this->getType()->hasTitleField &&
-                ($this->slug === null || ElementHelper::isTempSlug($this->slug))
-            ) {
-                $slug->source('title');
+            if (! $static && $this->getType()->hasTitleField) {
+                $slug
+                    ->source('title')
+                    ->autoGenerate(
+                        $this->isProvisionalDraft
+                        || $this->slug === null
+                        || ElementHelper::isTempSlug($this->slug),
+                    );
             }
 
             $nodes[] = Field::make(t('Slug'))

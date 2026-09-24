@@ -23,13 +23,15 @@ class Slug extends Text
 
     private bool $charMapWasSet = false;
 
+    private bool $autoGenerate = true;
+
     private ?string $language = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $source = $control->props['source'] ?? null;
 
-        if ($source !== null && $attributes['name'] !== null) {
+        if ($source !== null && ($control->props['autoGenerate'] ?? true) && $attributes['name'] !== null) {
             $sourcePath = [...array_slice($control->path, 0, -1), ...$source];
             HtmlStack::jsWithVars(fn ($sourceId, $targetId, $charMap) => <<<JS
 new Craft.SlugGenerator('#' + $sourceId, '#' + $targetId, {charMap: $charMap})
@@ -84,6 +86,13 @@ JS, [$renderer->inputId($sourcePath), $attributes['id'], $control->props['charMa
         return $this;
     }
 
+    public function autoGenerate(bool $autoGenerate = true): static
+    {
+        $this->autoGenerate = $autoGenerate;
+
+        return $this;
+    }
+
     #[Override]
     public function props(mixed $value = null): array
     {
@@ -99,6 +108,7 @@ JS, [$renderer->inputId($sourcePath), $attributes['id'], $control->props['charMa
             ...parent::props($value),
             'source' => $this->source,
             'charMap' => $charMap,
+            'autoGenerate' => $this->autoGenerate ? null : false,
         ]);
     }
 }
