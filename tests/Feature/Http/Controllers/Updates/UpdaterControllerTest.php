@@ -7,7 +7,9 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
@@ -140,6 +142,12 @@ it('renders without the navigation while a Craft update is pending', function ()
     // migration that hasn't run yet can leave it querying columns the database
     // doesn't have — on the very screen the update is run from.
     Info::query()->update(['schemaVersion' => '0.0.0.1']);
+    // Both caches have to go for the new row to be read: `Info` is memoized in
+    // the request Context, and `Updates` memoizes its own answer — either one
+    // still warm (as it is once a service provider has asked) leaves the
+    // update looking as though it isn't pending.
+    Context::forgetHidden('craft.info');
+    app()->forgetInstance(Updates::class);
 
     post(cp_url('updates'))
         ->assertOk()
