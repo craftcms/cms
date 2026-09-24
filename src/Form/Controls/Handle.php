@@ -16,6 +16,10 @@ class Handle extends Control
     /** @var list<string>|null */
     private ?array $source = null;
 
+    private ?int $maxLength = null;
+
+    private ?string $placeholder = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $source = $control->props['source'] ?? null;
@@ -31,6 +35,8 @@ JS, [$renderer->inputId($sourcePath), $attributes['id']]);
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
+            ->maxlength($control->props['maxLength'] ?? null)
+            ->placeholder($control->props['placeholder'] ?? null)
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -70,9 +76,27 @@ JS, [$renderer->inputId($sourcePath), $attributes['id']]);
         return $this;
     }
 
+    public function maxLength(?int $maxLength): static
+    {
+        $this->maxLength = $maxLength;
+
+        return $this;
+    }
+
+    public function placeholder(?string $placeholder): static
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
-        return Arr::whereNotNull(['source' => $this->source]);
+        return Arr::whereNotNull([
+            'source' => $this->source,
+            'maxLength' => $this->maxLength,
+            'placeholder' => $this->placeholder,
+        ]);
     }
 }
