@@ -19,16 +19,26 @@ use function CraftCms\Cms\t;
  * The control panel's site switcher: which site the CP is working with, and
  * the crumb that moves between them.
  *
- * The switcher leads the breadcrumbs on every screen rather than belonging to
- * any one of them — which site you're editing frames everything below it, the
- * same way the legacy CP's `site-crumb` does.
+ * Shared chrome rather than any one screen's, but only offered where a site
+ * actually scopes what's shown: a screen opts in with {@see scopeToSite()}.
+ * Craft 5 draws its `site-crumb` on element index, element edit and globals
+ * screens alone — the CP chrome itself has no site selector, so Settings and
+ * Utilities get none.
  */
 #[Scoped]
-readonly class SiteSwitcher
+class SiteSwitcher
 {
+    private bool $scoped = false;
+
     public function __construct(
-        private RequestedSite $requestedSite,
+        private readonly RequestedSite $requestedSite,
     ) {}
+
+    /** Marks this screen as one a site scopes, which is what offers the crumb. */
+    public function scopeToSite(): void
+    {
+        $this->scoped = true;
+    }
 
     /**
      * The sites the switcher offers: the ones this user may edit.
@@ -44,7 +54,8 @@ readonly class SiteSwitcher
 
     /**
      * The site crumb, or `null` when there's no switching to be done — a
-     * single-site install, or a user who can only edit one of several.
+     * screen no site scopes, a single-site install, or a user who can only
+     * edit one of several.
      *
      * Deliberately not a link: it would only point at the page you're already
      * on, and a crumb with a URL has its menu rebuilt from whichever nav level
@@ -55,7 +66,7 @@ readonly class SiteSwitcher
     {
         $sites = $this->sites();
 
-        if ($sites->count() < 2) {
+        if (! $this->scoped || $sites->count() < 2) {
             return null;
         }
 

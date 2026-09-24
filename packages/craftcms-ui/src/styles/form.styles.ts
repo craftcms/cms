@@ -99,6 +99,11 @@ export const baseFieldStyles = css`
     font-size: var(--c-field-label-font-size, var(--text-sm));
   }
 
+  :host(:not(craft-field):not([label-sr-only]):not([help-text]))
+    .form-field__label {
+    margin-block-end: var(--c-spacing-sm);
+  }
+
   .form-field__help-text {
     font-size: 1em;
     color: var(--c-text-quiet);

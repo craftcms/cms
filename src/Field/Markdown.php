@@ -299,22 +299,25 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->control(Text::make('placeholder')->value($this->placeholder)),
             FormField::make(t('Initial Rows'))
                 ->control(Number::make('initialRows')->min(1)->value($this->initialRows)),
-        ])->addGroup(t('Field Limit'), [
-            FormField::make(t('Maximum'))
-                ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
-                ->control(Number::make('fieldLimit')
-                    ->min(1)
-                    ->deltaGroupAtNamespace()
-                    ->value($this->charLimit ?? $this->byteLimit)),
-            FormField::make(t('Unit'))
-                ->control(Choice::make('limitUnit')
-                    ->deltaGroupAtNamespace()
-                    ->options([
-                        ['label' => t('Characters'), 'value' => 'chars'],
-                        ['label' => t('Bytes'), 'value' => 'bytes'],
-                    ])
-                    ->value($this->byteLimit ? 'bytes' : 'chars')),
-        ], 'markdown-field-limit')
+        ])->addGroup(t('Field Limit'), fn (Group $group): Group => $group
+            ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
+            ->asField()
+            ->add(
+                FormField::make(t('Maximum'))
+                    ->control(Number::make('fieldLimit')
+                        ->min(1)
+                        ->size(3)
+                        ->deltaGroupAtNamespace()
+                        ->value($this->charLimit ?? $this->byteLimit)),
+                FormField::make(t('Unit'))
+                    ->control(Choice::make('limitUnit')
+                        ->deltaGroupAtNamespace()
+                        ->options([
+                            ['label' => t('Characters'), 'value' => 'chars'],
+                            ['label' => t('Bytes'), 'value' => 'bytes'],
+                        ])
+                        ->value($this->byteLimit ? 'bytes' : 'chars')),
+            ), 'markdown-field-limit')
             ->addGroup(t('Links'), fn (Group $group): Group => $group
                 ->collapsible()
                 ->add(...$this->linkSettingsNodes()), 'markdown-link-settings')

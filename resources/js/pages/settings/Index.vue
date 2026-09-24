@@ -95,8 +95,8 @@
     background-color: var(--c-surface-overlay);
     color: var(--c-text-default);
     border: 1px solid var(--c-color-neutral-border-quiet);
-    padding: calc(var(--c-spacing-md) * 1.5) var(--c-spacing-md)
-      var(--c-spacing-md);
+    padding-block: calc(var(--c-spacing-md) * 1.5) var(--c-spacing-md);
+    padding-inline: var(--c-spacing-md);
     aspect-ratio: 5/4;
     border-radius: var(--c-radius-md);
     text-align: center;

@@ -55,7 +55,7 @@ it('renders entry dates and slug as namespaced Form controls', function (string 
 })->with([
     ['postDate', 'craft:date-time'],
     ['expiryDate', 'craft:date-time'],
-    ['slug', 'craft:text'],
+    ['slug', 'craft:slug'],
 ]);
 
 it('retains the system timezone when displaying entry dates', function () {

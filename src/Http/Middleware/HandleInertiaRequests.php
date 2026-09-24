@@ -124,7 +124,9 @@ class HandleInertiaRequests extends Middleware
         $currentUser = null;
         $generalConfig = app(GeneralConfig::class);
 
-        if (! $updates->isCraftUpdatePending()) {
+        $updatePending = $updates->isCraftUpdatePending();
+
+        if (! $updatePending) {
             $currentUser = currentUserElement();
         }
 
@@ -190,13 +192,24 @@ class HandleInertiaRequests extends Middleware
                 // on the site the CP is working with, so it's cached per site
                 // on the client and re-sent the first time each one is opened,
                 // rather than once for the whole session.
-                'nav' => Inertia::once(fn () => $nav->getTree())
-                    ->as('craft.nav.'.($nav->navSiteId() ?? 'all')),
+                //
+                // Left empty while a Craft update is pending: the tree is built
+                // from sections, volumes and the rest, which a migration that
+                // hasn't run yet may not have added columns for — and the
+                // updater screen is the one that has to render for the user to
+                // run it. The key changes with it, so the real tree is sent
+                // once the update is through.
+                'nav' => $updatePending
+                    ? Inertia::once(fn (): array => [])->as('craft.nav.pending')
+                    : Inertia::once(fn () => $nav->getTree())
+                        ->as('craft.nav.'.($nav->navSiteId() ?? 'all')),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.
                 'siteCrumb' => fn () => app(SiteSwitcher::class)->crumb(),
-                'navBadges' => fn (): object => (object) $nav->getBadgeCounts(),
+                'navBadges' => fn (): object => $updatePending
+                    ? (object) []
+                    : (object) $nav->getBadgeCounts(),
             ],
         ];
     }
