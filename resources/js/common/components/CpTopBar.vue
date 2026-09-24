@@ -176,5 +176,6 @@
 
   .cp-top-bar__breadcrumbs {
     grid-area: breadcrumbs;
+    overflow: auto;
   }
 </style>
