@@ -270,7 +270,13 @@
         </craft-button>
       </craft-callout>
 
-      <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+      <craft-callout
+        v-if="payload.readOnly"
+        variant="neutral"
+        rounded="none"
+        appearance="fill"
+        icon="lock"
+      >
         {{ t('This is a read-only view.') }}
       </craft-callout>
 
@@ -367,3 +373,9 @@
     </ElementDetailsTabs>
   </LayoutSlot>
 </template>
+
+<style scoped lang="scss">
+  craft-callout {
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+  }
+</style>
