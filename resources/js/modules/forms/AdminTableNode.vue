@@ -1044,6 +1044,9 @@
                       :label="t('Clear search')"
                     ></craft-icon>
                   </craft-button>
+                  <span class="flex items-center px-2">
+                    <craft-icon name="search"></craft-icon>
+                  </span>
                 </div>
               </CraftInput>
             </template>
