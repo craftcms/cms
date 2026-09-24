@@ -1,4 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftNavItem from './nav-item.js';
 import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
 import './nav-item.js';
@@ -7,6 +8,49 @@ import '../../styles/cp.css';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('aligns group headings when a nested plugin has a slotted icon', async () => {
+  const list = document.createElement('craft-nav-list');
+  const system = document.createElement('craft-nav-item') as CraftNavItem;
+  system.group = true;
+  system.append(document.createTextNode('System'));
+
+  const plugins = document.createElement('craft-nav-item') as CraftNavItem;
+  plugins.group = true;
+  plugins.append(document.createTextNode('Plugins'));
+
+  const subnav = document.createElement('craft-nav-list');
+  subnav.slot = 'subnav';
+  const plugin = document.createElement('craft-nav-item') as CraftNavItem;
+  plugin.href = '/admin/settings/plugins/test-plugin';
+  plugin.append(document.createTextNode('Test Plugin'));
+
+  const icon = document.createElement('craft-icon');
+  icon.slot = 'icon';
+  plugin.append(icon);
+  subnav.append(plugin);
+  plugins.append(subnav);
+  list.append(system, plugins);
+  document.body.append(list);
+
+  await Promise.all([
+    system.updateComplete,
+    plugins.updateComplete,
+    plugin.updateComplete,
+  ]);
+
+  const labelX = (item: CraftNavItem) =>
+    item
+      .shadowRoot!.querySelector('.nav-item__action-item')!
+      .getBoundingClientRect().left;
+
+  expect(labelX(plugins)).toBeCloseTo(labelX(system), 1);
+  expect(
+    computeAccessibleName(
+      plugin.shadowRoot!.querySelector('a.nav-item__action-item')!
+    )
+  ).toBe('Test Plugin');
 });
 
 /** A collapsed item with a subnav, so it renders both an icon and a chevron. */
