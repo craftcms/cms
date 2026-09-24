@@ -155,10 +155,7 @@
         </div>
 
         <div class="route__actions" v-if="!readOnly" @click.stop>
-          <CpButtonLink
-            size="small"
-            :href="edit({uid: route.uid})"
-          >
+          <CpButtonLink size="small" :href="edit({uid: route.uid})">
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
           </CpButtonLink>
           <craft-reorder-button

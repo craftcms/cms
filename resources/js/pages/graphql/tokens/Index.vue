@@ -92,12 +92,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpButtonLink
-      :href="create().url"
-      icon="plus"
-      variant="primary"
-      >{{ t('New token') }}</CpButtonLink
-    >
+    <CpButtonLink :href="create().url" icon="plus" variant="primary">{{
+      t('New token')
+    }}</CpButtonLink>
   </LayoutSlot>
   <CpContainer>
     <AdminTable :table="table">

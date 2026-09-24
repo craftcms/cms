@@ -88,7 +88,13 @@
       !item.action ||
       (item.bulk === false && selectedCount.value > 1)
     ) {
-      return {type: 'button', label: item.label, variant, fill: item.fill, disabled: true};
+      return {
+        type: 'button',
+        label: item.label,
+        variant,
+        fill: item.fill,
+        disabled: true,
+      };
     }
 
     if (item.action.type === 'event') {
@@ -136,7 +142,9 @@
     } satisfies ActionItemButton;
   }
 
-  function resolveList(list: Array<BulkAction> | null | undefined): ActionItems {
+  function resolveList(
+    list: Array<BulkAction> | null | undefined
+  ): ActionItems {
     return (list ?? []).flatMap((entry): ActionItems => {
       // A custom component (e.g. "Move to page…"), passed through as-is.
       if (entry.type === 'display') {
@@ -147,7 +155,13 @@
         const items = entry.items.filter(itemApplies).map(resolveItem);
 
         return items.length
-          ? [{type: 'group', heading: entry.heading, items} satisfies ActionItemGroup]
+          ? [
+              {
+                type: 'group',
+                heading: entry.heading,
+                items,
+              } satisfies ActionItemGroup,
+            ]
           : [];
       }
 
@@ -158,7 +172,9 @@
   const menuActions = computed<ActionItems>(() => resolveList(props.actions));
   const hasMenu = computed(() => menuActions.value.length > 0);
 
-  const statusActions = computed<ActionItems>(() => resolveList(props.statuses));
+  const statusActions = computed<ActionItems>(() =>
+    resolveList(props.statuses)
+  );
   const hasStatusMenu = computed(() => statusActions.value.length > 0);
 
   /**

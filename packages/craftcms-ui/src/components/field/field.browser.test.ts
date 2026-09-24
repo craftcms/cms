@@ -30,7 +30,9 @@ it.each([false, true])(
     const combobox = document.querySelector('craft-combobox')!;
     await vi.waitFor(() =>
       expect(
-        computeAccessibleName(combobox.querySelector('input:not([type=hidden])')!)
+        computeAccessibleName(
+          combobox.querySelector('input:not([type=hidden])')!
+        )
       ).toBe('Entry Type')
     );
     expect(

@@ -7,7 +7,10 @@
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
-  import type {BulkAction, BulkActionItem} from '@/modules/elements/types/actions';
+  import type {
+    BulkAction,
+    BulkActionItem,
+  } from '@/modules/elements/types/actions';
   import PerformElementActionController from '@actions/Elements/PerformElementActionController';
   import VarDump from '@/common/components/VarDump.vue';
 

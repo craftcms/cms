@@ -593,8 +593,9 @@
     return items;
   });
 
-  const statusActionItems = computed((): Array<BulkAction> =>
-    props.node.props.statusActions.map(bulkActionToItem)
+  const statusActionItems = computed(
+    (): Array<BulkAction> =>
+      props.node.props.statusActions.map(bulkActionToItem)
   );
 
   function refreshForm(): void {

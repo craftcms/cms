@@ -38,7 +38,9 @@
     :variant="node.props.variant"
     v-bind="{
       ...(node.props.appearance ? {appearance: node.props.appearance} : {}),
-      ...(node.props.padding !== undefined ? {padding: node.props.padding} : {}),
+      ...(node.props.padding !== undefined
+        ? {padding: node.props.padding}
+        : {}),
     }"
     :icon="node.props.icon"
     :data-dismissible="node.props.dismissible || undefined"

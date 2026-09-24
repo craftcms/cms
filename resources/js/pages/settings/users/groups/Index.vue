@@ -58,12 +58,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpButtonLink
-      :href="create().url"
-      icon="plus"
-      variant="primary"
-      >{{ t('New user group') }}</CpButtonLink
-    >
+    <CpButtonLink :href="create().url" icon="plus" variant="primary">{{
+      t('New user group')
+    }}</CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">

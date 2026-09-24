@@ -183,7 +183,10 @@ export default class CraftSelectColor extends LitElement {
         @model-value-changed=${this._handleModelValueChanged}
       >
         ${this.allowTransparent
-          ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
+          ? this._optionTemplate(
+              '__blank__',
+              this.blankLabel ?? t('Transparent')
+            )
           : ''}
         ${this.colors.map((color) =>
           this._optionTemplate(color, t(titleCase(color)))
