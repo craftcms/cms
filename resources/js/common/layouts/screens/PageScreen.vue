@@ -632,6 +632,10 @@ Content
 Content view
  */
   .cp-content-view {
+    /* Lets what's inside (e.g. the element index toolbar) respond to the room
+       the content actually has, rather than the viewport. */
+    container: cp-content-view / inline-size;
+
     @media (width >= var(--breakpoint-md)) {
       /* The content's half of the fold sum above. */
       min-width: calc(600rem / 16);

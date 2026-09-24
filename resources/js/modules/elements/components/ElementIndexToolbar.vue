@@ -197,17 +197,21 @@
     grid-template-columns: repeat(3, auto);
     grid-template-areas: 'status state state' 'filter filter filter' 'actions actions actions';
 
-    @media screen and (min-width: 480px) {
+    @container cp-content-view (width >= 480px) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas: 'status filter state' 'actions actions actions';
     }
 
-    @media (width >= var(--breakpoint-sm)) {
+    @container cp-content-view (width >= var(--breakpoint-sm)) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'status filter state actions';
     }
+  }
+
+  .element-toolbar :first-child {
+    grid-column-start: status-start;
   }
 
   /* Only laid out when the site menu is actually there, so an index without
@@ -216,12 +220,12 @@
     grid-template-columns: repeat(3, auto);
     grid-template-areas: 'site status state' 'filter filter filter' 'actions actions actions';
 
-    @media screen and (min-width: 480px) {
+    @container cp-content-view (width >= 480px) {
       grid-template-columns: auto auto minmax(0, 1fr) auto;
       grid-template-areas: 'site status filter state' 'actions actions actions actions';
     }
 
-    @media (width >= var(--breakpoint-sm)) {
+    @container cp-content-view (width >= var(--breakpoint-sm)) {
       grid-template-columns: auto auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'site status filter state actions';
     }
