@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
-  import Badge from '@/common/components/Badge.vue';
 
   defineProps<{
     plugin: PluginInfo & {isComposerInstalled?: boolean};
@@ -10,14 +9,14 @@
 
 <template>
   <template v-if="plugin.isEnabled">
-    <Badge variant="success">{{ t('Installed') }}</Badge>
+    <craft-badge fill="success">{{ t('Installed') }}</craft-badge>
   </template>
   <template v-else-if="!plugin.isComposerInstalled">
-    <Badge>{{ t('Missing') }}</Badge>
+    <craft-badge>{{ t('Missing') }}</craft-badge>
   </template>
   <template v-else-if="plugin.isInstalled">
     <div class="flex gap-1 items-center">
-      <Badge variant="warning">{{ t('Disabled') }}</Badge>
+      <craft-badge fill="warning">{{ t('Disabled') }}</craft-badge>
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>
           {{
@@ -32,7 +31,7 @@
   </template>
   <template v-else>
     <div class="flex gap-1 items-center">
-      <Badge>{{ t('Not Installed') }}</Badge>
+      <craft-badge>{{ t('Not Installed') }}</craft-badge>
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>
           {{

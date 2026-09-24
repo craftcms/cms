@@ -2,7 +2,6 @@
   import {attrs, t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import Empty from '@/common/components/Empty.vue';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
@@ -187,7 +186,7 @@
   </template>
   <template v-else>
     <slot name="empty">
-      <Empty :label="t('No results')" icon="empty-set" />
+      <craft-empty :label="t('No results')" icon="empty-set"></craft-empty>
     </slot>
   </template>
 </template>

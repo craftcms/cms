@@ -38,15 +38,6 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   }),
 }));
 
-vi.mock('@/common/components/Badge.vue', () => ({
-  default: defineComponent({
-    setup:
-      (_, {slots}) =>
-      () =>
-        h('div', slots.default?.()),
-  }),
-}));
-
 const values = {
   siteId: null,
   name: '',

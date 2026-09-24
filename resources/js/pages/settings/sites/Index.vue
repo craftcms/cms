@@ -13,11 +13,9 @@
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import Badge from '@/common/components/Badge.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -273,7 +271,10 @@
       @reorder="handleReorder"
     >
       <template #empty-row>
-        <Empty icon="light/earth-americas" :label="t('No sites exist yet.')">
+        <craft-empty
+          icon="light/earth-americas"
+          :label="t('No sites exist yet.')"
+        >
           <CpButtonLink
             v-if="!readOnly"
             :href="create({}, {query: {groupId: group?.id}}).url"
@@ -281,7 +282,7 @@
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('New Site') }}
           </CpButtonLink>
-        </Empty>
+        </craft-empty>
       </template>
     </AdminTable>
   </CpContainer>
