@@ -106,7 +106,7 @@
       ]"
     >
       <template #invoker>
-        <craft-button type="button" icon="plus" variant="dashed">
+        <craft-button slot="invoker" type="button" icon="plus" variant="dashed">
           {{ t('Add source') }}
         </craft-button>
       </template>

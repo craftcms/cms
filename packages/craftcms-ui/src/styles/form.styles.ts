@@ -85,10 +85,6 @@ export const baseComboboxStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host(:not([label-sr-only])) ::slotted(label:not(:empty)) {
-    margin-block-end: var(--c-spacing-md, 0.5rem);
-  }
-
   :host([has-feedback-for='error']) {
     color: var(--c-color-danger-on-normal);
 

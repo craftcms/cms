@@ -51,16 +51,16 @@
     :label="label"
     searchable
   >
-    <span slot="invoker" style="display: inline-flex" v-once>
-      <craft-button
-        type="button"
-        :variant="adding ? 'dashed' : 'fill'"
-        icon="chevron-down"
-        icon-position="suffix"
-      >
-        <craft-icon v-if="adding" name="plus" slot="prefix" />
-        {{ label }}
-      </craft-button>
-    </span>
+    <craft-button
+      slot="invoker"
+      v-once
+      type="button"
+      :variant="adding ? 'dashed' : 'fill'"
+      icon="chevron-down"
+      icon-position="suffix"
+    >
+      <craft-icon v-if="adding" name="plus" slot="prefix" />
+      {{ label }}
+    </craft-button>
   </craft-action-menu>
 </template>

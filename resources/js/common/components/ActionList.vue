@@ -151,12 +151,14 @@
       'data-keywords': isItem ? action.keywords : undefined,
     });
 
-    if (action.type === 'link') {
+    // A bare `href` makes it a link even without `type: 'link'`.
+    const link = action as Partial<ActionItemLink>;
+    if (action.type === 'link' || link.href) {
       return [
         {
           kind: 'link',
-          href: action.href,
-          external: action.external,
+          href: link.href,
+          external: link.external,
           label: action.label,
           onClick: action.onClick,
           attrs: defined({...attrs, size}),

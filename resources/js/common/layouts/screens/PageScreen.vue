@@ -217,9 +217,7 @@
       </div>
       <div class="cp__main">
         <div class="cp-page">
-          <div class="cp-page__header">
-            <FlashMessages />
-          </div>
+          <div class="cp-page__header"></div>
           <div class="cp-page__main">
             <slot name="page-main">
               <main id="main" tabindex="-1">
@@ -275,6 +273,7 @@
                       class="cp-content__main"
                       :style="contentMainStyle"
                     >
+                      <FlashMessages />
                       <div
                         :class="{
                           'cp-content-view': true,

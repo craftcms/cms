@@ -103,6 +103,71 @@ describe('ActionMenu', () => {
     expect(labels(menu)).toEqual(['Edit', 'Duplicate', 'Delete', 'Remove']);
   });
 
+  describe('invoker', () => {
+    function mountWithInvoker(slots?: Record<string, unknown>) {
+      const container = document.createElement('div');
+      document.body.append(container);
+
+      const app = createApp({
+        render: () =>
+          h(
+            ActionMenu,
+            {actions: [{label: 'Edit'}], label: 'Entry actions'},
+            slots
+          ),
+      });
+      app.mount(container);
+
+      teardown = () => {
+        app.unmount();
+        container.remove();
+      };
+
+      return container.querySelector('craft-action-menu')! as HTMLElement & {
+        updateComplete: Promise<unknown>;
+      };
+    }
+
+    // `craft-action-menu` puts its ARIA wiring on whatever is assigned to its
+    // `invoker` slot, so that has to be the focusable button itself rather
+    // than something wrapping it.
+    async function expectWiredInvoker(
+      menu: HTMLElement & {updateComplete: Promise<unknown>}
+    ) {
+      await nextTick();
+      await menu.updateComplete;
+
+      const invokers = menu.querySelectorAll(':scope > [slot="invoker"]');
+      expect(invokers).toHaveLength(1);
+
+      const invoker = invokers[0]!;
+      expect(invoker.tagName).toBe('CRAFT-BUTTON');
+      expect(invoker.id).toMatch(/^invoker-/);
+      expect(invoker.getAttribute('aria-controls')).toMatch(/^content-/);
+      expect(invoker.getAttribute('aria-haspopup')).toBe('true');
+      expect(invoker.getAttribute('aria-expanded')).toBe('false');
+
+      return invoker;
+    }
+
+    it('wires up the default invoker', async () => {
+      const invoker = await expectWiredInvoker(mountWithInvoker());
+
+      expect(invoker.getAttribute('aria-label')).toBe('Entry actions');
+    });
+
+    it('wires up a custom invoker', async () => {
+      const invoker = await expectWiredInvoker(
+        mountWithInvoker({
+          invoker: ({attributes}: {attributes: Record<string, string>}) =>
+            h('craft-button', {...attributes, type: 'button'}, 'Custom'),
+        })
+      );
+
+      expect(invoker.textContent).toBe('Custom');
+    });
+  });
+
   it('renders a display item as its component', async () => {
     const {menu} = mount([
       {

@@ -54,7 +54,7 @@ export default css`
     gap: 5px;
     align-items: center;
     font-weight: bold;
-    margin-block-end: var(--c-spacing-sm);
+    margin-block-end: var(--c-spacing-md);
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
