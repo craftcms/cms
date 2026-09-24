@@ -57,8 +57,8 @@ export default css`
   }
 
   .timeline-item__header {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     column-gap: var(--c-spacing-xs);
   }

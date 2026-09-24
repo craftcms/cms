@@ -751,6 +751,22 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     this.callOnSelectedEntries('enable');
   }
 
+  disableSelectedEntriesForSite(): void {
+    this.callOnSelectedEntries('disableForSite');
+  }
+
+  enableSelectedEntriesForSite(): void {
+    this.callOnSelectedEntries('enableForSite');
+  }
+
+  disableSelectedEntriesGlobally(): void {
+    this.callOnSelectedEntries('disableGlobally');
+  }
+
+  enableSelectedEntriesGlobally(): void {
+    this.callOnSelectedEntries('enableGlobally');
+  }
+
   deleteSelectedEntries(): void {
     this.callOnSelectedEntries('selfDestruct');
   }
@@ -765,6 +781,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       | 'expand'
       | 'disable'
       | 'enable'
+      | 'disableForSite'
+      | 'enableForSite'
+      | 'disableGlobally'
+      | 'enableGlobally'
       | 'selfDestruct'
       | 'duplicate'
   ): void {

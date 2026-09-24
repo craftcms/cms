@@ -34,6 +34,11 @@ class TestFlashController extends Controller
         return $this->asFailure('Failure message');
     }
 
+    public function failureWithErrors()
+    {
+        return $this->asFailure('Failure message', ['errors' => ['name' => ['Name is required']]]);
+    }
+
     public function successWithRedirect()
     {
         return $this->asSuccess('Success message', [], '/custom-redirect');
@@ -76,6 +81,7 @@ beforeEach(function () {
     Route::middleware('web')->post('/test-flash/success', [TestFlashController::class, 'success']);
     Route::middleware('web')->post('/test-flash/failure', [TestFlashController::class, 'failure']);
     Route::middleware('web')->post('/test-flash/failure-without-data', [TestFlashController::class, 'failureWithoutData']);
+    Route::middleware('web')->post('/test-flash/failure-with-errors', [TestFlashController::class, 'failureWithErrors']);
     Route::middleware('web')->post('/test-flash/success-redirect', [TestFlashController::class, 'successWithRedirect']);
     Route::middleware('web')->post('/test-flash/model-success', [TestFlashController::class, 'modelSuccess']);
     Route::middleware('web')->post('/test-flash/model-failure', [TestFlashController::class, 'modelFailure']);
@@ -103,6 +109,13 @@ it('asSuccess redirects with flash for HTML request', function () {
 it('asFailure redirects with flash for HTML request', function () {
     post('/test-flash/failure')
         ->assertRedirect();
+});
+
+it('asFailure leaves validation messages to the error bag', function () {
+    post('/test-flash/failure-with-errors')
+        ->assertRedirect()
+        ->assertSessionHasErrors(['name' => 'Name is required'])
+        ->assertSessionMissing('error');
 });
 
 it('asSuccess with custom redirect uses the redirect URL', function () {

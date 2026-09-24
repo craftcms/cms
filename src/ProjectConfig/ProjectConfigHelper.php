@@ -120,6 +120,23 @@ class ProjectConfigHelper
     }
 
     /**
+     * Ensure all workflow config changes are processed before resolving workflow references.
+     */
+    public static function ensureAllWorkflowsProcessed(): void
+    {
+        $projectConfig = app(ProjectConfig::class);
+
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_WORKFLOWS)) {
+            return;
+        }
+
+        $configs = $projectConfig->get(ProjectConfig::PATH_WORKFLOWS, true) ?? [];
+        foreach ($configs as $uid => $config) {
+            $projectConfig->processConfigChanges(ProjectConfig::PATH_WORKFLOWS.'.'.$uid);
+        }
+    }
+
+    /**
      * Ensure all section config changes are processed immediately in a safe manner.
      */
     public static function ensureAllSectionsProcessed(): void

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -32,9 +34,11 @@ readonly class StoreEntryController
 
     public function __construct(
         private Request $request,
+        private Drafts $drafts,
         private Elements $elements,
         private Entries $entries,
         private Sites $sites,
+        private Workflows $workflows,
     ) {}
 
     public function __invoke(): Response
@@ -78,6 +82,7 @@ readonly class StoreEntryController
         }
 
         $isNotNew = (bool) $entry->id;
+        $saveAsDraft = ! $duplicate && $this->workflows->requiresApproval($entry);
         if ($isNotNew) {
             $lockKey = "entry:$entry->id";
             $mutex = Cache::lock($lockKey, 15);
@@ -87,7 +92,18 @@ readonly class StoreEntryController
         }
 
         try {
-            $success = $this->elements->saveElement($entry);
+            if ($saveAsDraft && $isNotNew) {
+                $entry = $this->drafts->createDraft($entry, $currentUser->getCraftUserId());
+                $success = true;
+            } elseif ($saveAsDraft) {
+                $success = $this->drafts->saveElementAsDraft($entry, $currentUser->getCraftUserId());
+            } else {
+                $success = $this->elements->saveElement($entry);
+            }
+        } catch (InvalidElementException $e) {
+            /** @var Entry $entry */
+            $entry = $e->element;
+            $success = false;
         } catch (UnsupportedSiteException $e) {
             $entry->errors()->add('siteId', $e->getMessage());
             $success = false;
@@ -107,7 +123,7 @@ readonly class StoreEntryController
 
         // See if the user happens to have a provisional entry. If so delete it.
         /** @var Entry|null $provisional */
-        $provisional = Entry::find()
+        $provisional = $saveAsDraft ? null : Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
             ->draftCreator($currentUser->getCraftUserId())

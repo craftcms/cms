@@ -20,7 +20,10 @@ vi.mock('@/common/composables/useAppLayout', () => ({
 }));
 
 vi.mock('@/common/components/DynamicHtmlRenderer.vue', () => ({
-  default: defineComponent({render: () => h('div')}),
+  default: defineComponent({
+    props: {html: String},
+    setup: (props) => () => h('div', {class: 'details-html'}, props.html),
+  }),
 }));
 
 vi.mock('@/common/components/LayoutSlot.vue', () => ({
@@ -70,7 +73,7 @@ afterEach(() => {
   container.remove();
 });
 
-function mount(): void {
+function mount(details: string | null = null): void {
   app = createApp(Edit, {
     form,
     submit: {method: 'post', url: '/actions/fields/store'},
@@ -79,7 +82,7 @@ function mount(): void {
       OldField: ['none', 'custom'],
       NewField: ['none'],
     },
-    metadataHtml: null,
+    details,
   });
   app.mount(container);
 }
@@ -110,4 +113,21 @@ it('saves and starts another field from the form action', async () => {
     data: {addAnother: 1},
     preserveState: false,
   });
+});
+
+it('shows the field’s details in an Info tab', async () => {
+  mount('<dl>ID 1</dl>');
+  await nextTick();
+
+  expect(container.querySelector('craft-tab')?.id).toBe('details-tab-info');
+  expect(container.querySelector('.details-html')?.textContent).toBe(
+    '<dl>ID 1</dl>'
+  );
+});
+
+it('omits the details column for a new field', async () => {
+  mount();
+  await nextTick();
+
+  expect(container.querySelector('craft-tabs')).toBeNull();
 });

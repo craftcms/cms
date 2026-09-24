@@ -355,6 +355,7 @@
                             :form-additional-actions="formAdditionalActions"
                             :form-additional-buttons="formAdditionalButtons"
                             :submit-button-label="submitButtonLabel"
+                            :save-disabled="saveDisabled"
                             :contained="contentConstrained"
                             @save="save"
                           >
