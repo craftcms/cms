@@ -659,7 +659,7 @@ abstract class ElementEditViewModel extends ViewModel
         return [
             'icon' => 'earth',
             'label' => t($currentSite->getName(), category: 'site'),
-            'actions' => $items,
+            'items' => $items,
         ];
     }
 
