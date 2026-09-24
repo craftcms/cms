@@ -3,7 +3,6 @@
   import {router, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import Badge from '@/common/components/Badge.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -147,9 +146,9 @@
           header: t('Status'),
           cell: ({row}) =>
             h(
-              Badge,
-              {variant: row.original.isActive ? 'success' : 'default'},
-              () => (row.original.isActive ? t('Active') : t('Not active'))
+              'craft-badge',
+              {fill: row.original.isActive ? 'success' : 'gray'},
+              row.original.isActive ? t('Active') : t('Not active')
             ),
         }),
         columnHelper.actions(({row}) => {

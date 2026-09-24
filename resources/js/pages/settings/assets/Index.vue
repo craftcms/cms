@@ -6,7 +6,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import Empty from '@/common/components/Empty.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
@@ -145,7 +144,10 @@
       @reorder="handleReorder"
     >
       <template #empty-row>
-        <Empty :label="t('No volumes exist yet.')" icon="light/files" />
+        <craft-empty
+          :label="t('No volumes exist yet.')"
+          icon="light/files"
+        ></craft-empty>
       </template>
     </AdminTable>
   </CpContainer>
