@@ -149,7 +149,7 @@
       'data-keywords': isItem ? action.keywords : undefined,
     });
 
-    if (action.type === 'link') {
+    if (action.type === 'link' || !!action.href) {
       return [
         {
           kind: 'link',
