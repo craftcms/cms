@@ -45,7 +45,7 @@ export default class CraftIndicator extends LitElement {
 
       :host([appearance~='outline']) .indicator {
         background: transparent;
-        border: 2px solid var(--_fill);
+        border: 1px solid var(--_fill);
       }
     `,
   ];

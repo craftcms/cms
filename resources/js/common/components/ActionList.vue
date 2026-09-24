@@ -459,7 +459,6 @@
       :as="as"
       :href="action.href!"
       :inertia="!action.external"
-      appearance="button"
     >
       {{ action.label }}
     </CpLink>
