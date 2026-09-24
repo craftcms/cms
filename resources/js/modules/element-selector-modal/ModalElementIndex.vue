@@ -97,6 +97,23 @@
   });
 
   const showSidebar = computed(() => elementIndex.sources.length > 1);
+
+  const activeSiteHandle = computed(
+    () =>
+      elementIndex.sites.find((site) => site.id === elementIndex.siteId)
+        ?.handle ?? null
+  );
+
+  /**
+   * Switching sites reloads the whole payload, so the sources come back
+   * already resolved against the new site — the server drops the ones it isn't
+   * enabled for, and falls off the selected source if it was one of them. The
+   * selection goes too: the rows it referred to aren't on screen any more.
+   */
+  function switchSite(handle: string): void {
+    clearSelection();
+    index.visitor.merge({site: handle}, {resetPage: true});
+  }
 </script>
 
 <template>
@@ -151,7 +168,10 @@
             :view-modes="elementIndex.viewModes"
             :column-options="columnOptions"
             :sort-options="elementIndex.sortOptions"
+            :sites="elementIndex.sites"
+            :site-handle="activeSiteHandle"
             @reorder="reorder"
+            @site-change="switchSite"
           />
         </template>
         <template #body="{selection}">

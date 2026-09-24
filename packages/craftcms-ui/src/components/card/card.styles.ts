@@ -64,7 +64,7 @@ export default css`
   }
 
   .card__header {
-    min-height: 1lh;
+    min-height: var(--c-card-header-min-height, 1lh);
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
     border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;
@@ -81,8 +81,8 @@ export default css`
 
   .card-body {
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-card-padding-inline, var(--c-spacing-md));
-    padding-block: var(--c-card-padding-block, var(--c-spacing-md));
+    padding-inline: var(--c-card-padding-inline, var(--cp-container-padding));
+    padding-block: var(--c-card-padding-block, var(--cp-container-padding));
   }
 
   .card-body--thumb-start {

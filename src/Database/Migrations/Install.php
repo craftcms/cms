@@ -601,6 +601,31 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        $logger?->subLabel('workflows');
+        Schema::create(Table::WORKFLOWS, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->string('name');
+            $table->jsonb('stages');
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->char('uid', 36)->unique();
+        });
+
+        $logger?->subLabel('workflowruns');
+        Schema::create(Table::WORKFLOWRUNS, function (Blueprint $table) {
+            $table->id();
+            $table->integer('workflowId')->nullable();
+            $table->integer('draftId');
+            $table->integer('authorId')->nullable();
+            $table->unsignedBigInteger('activityRootEventId');
+            $table->unsignedSmallInteger('currentStage')->default(0);
+            $table->string('currentStageResult')->nullable();
+            $table->string('status');
+            $table->jsonb('payload')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
         $logger?->subLabel('fieldlayouts');
         Schema::create(Table::FIELDLAYOUTS, function (Blueprint $table) {
             $table->integer('id', true);
@@ -775,6 +800,7 @@ class Install extends Migration
         Schema::create(Table::SECTIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId')->nullable();
+            $table->integer('workflowId')->nullable();
             $table->string('name');
             $table->string('handle');
             $table->enum('type', [
@@ -1109,6 +1135,9 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRIES, ['fieldId']);
         Schema::createIndex(Table::ENTRYTYPES, ['fieldLayoutId']);
         Schema::createIndex(Table::ENTRYTYPES, ['dateDeleted']);
+        Schema::createIndex(Table::WORKFLOWRUNS, ['activityRootEventId'], unique: true);
+        Schema::createIndex(Table::WORKFLOWRUNS, ['draftId', 'dateCreated']);
+        Schema::createIndex(Table::WORKFLOWRUNS, ['draftId', 'status']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['type']);
         Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
@@ -1254,6 +1283,10 @@ class Install extends Migration
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ENTRYTYPES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::SECTIONS, fn (Blueprint $table) => $table->foreign('workflowId')->references('id')->on(Table::WORKFLOWS)->nullOnDelete());
+        Schema::table(Table::WORKFLOWRUNS, fn (Blueprint $table) => $table->foreign('activityRootEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
+        Schema::table(Table::WORKFLOWRUNS, fn (Blueprint $table) => $table->foreign('workflowId')->references('id')->on(Table::WORKFLOWS)->nullOnDelete());
+        Schema::table(Table::WORKFLOWRUNS, fn (Blueprint $table) => $table->foreign('authorId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());

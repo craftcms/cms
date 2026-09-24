@@ -234,7 +234,8 @@
         "UserGroups": "CraftCms\\Cms\\Support\\Facades\\UserGroups",
         "UserPermissions": "CraftCms\\Cms\\Support\\Facades\\UserPermissions",
         "Users": "CraftCms\\Cms\\Support\\Facades\\Users",
-        "Volumes": "CraftCms\\Cms\\Support\\Facades\\Volumes"
+        "Volumes": "CraftCms\\Cms\\Support\\Facades\\Volumes",
+        "Workflows": "CraftCms\\Cms\\Support\\Facades\\Workflows"
       }
     }
   },

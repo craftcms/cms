@@ -30,8 +30,6 @@ trait RespondsWithFlash
             return $this->asJsonFailure($message, $data);
         }
 
-        $message = Flash::error($message);
-
         request()->flash();
 
         // Attributes with no messages must not reach the session error bag:
@@ -39,9 +37,15 @@ trait RespondsWithFlash
         // on an empty one.
         $errors = array_filter($data['errors'] ?? []);
 
+        if ($errors !== []) {
+            return back()->with($data)->withErrors($errors);
+        }
+
+        $message = Flash::error($message);
+
         return back()
             ->with('error', $message)
-            ->with($data)->withErrors($errors);
+            ->with($data);
     }
 
     /** @param array<string, mixed> $data */

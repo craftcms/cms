@@ -25,15 +25,20 @@ class ElementResponse
     use RespondsWithFlash;
 
     /** @param array<string, mixed> $data */
-    public function success(ElementInterface $element, string $message, array $data = [], bool $supportsAddAnother = false): Response
-    {
+    public function success(
+        ElementInterface $element,
+        string $message,
+        array $data = [],
+        bool $supportsAddAnother = false,
+        ?string $redirect = null,
+    ): Response {
         // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
         $data += [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
         ];
 
-        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element) ?? $redirect, [
             'details' => ! $element->dateDeleted
                 ? app(ElementHtml::class)->elementChipHtml($element, ['hyperlink' => true])
                 : null,

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
@@ -120,10 +121,19 @@ class Settings
             'iconName' => 'light/files',
             'label' => t('Entry Types'),
         ];
+
+        if (Edition::isAtLeast(Edition::Pro)) {
+            $settings[$label]['workflows'] = [
+                'iconName' => 'light/clipboard-list-check',
+                'label' => t('Workflows'),
+            ];
+        }
+
         $settings[$label]['assets'] = [
             'iconName' => 'light/image',
             'label' => t('Assets'),
         ];
+
         $settings[$label]['fields'] = [
             'iconName' => 'light/pen-to-square',
             'label' => t('Fields'),

@@ -10,7 +10,7 @@
     destroy,
     edit,
   } from '@actions/Settings/Users/UserGroupsController';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
@@ -58,12 +58,11 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       :href="create().url"
       icon="plus"
-      appearance="button"
-      variant="accent"
-      >{{ t('New user group') }}</CpLink
+      variant="primary"
+      >{{ t('New user group') }}</CpButtonLink
     >
   </LayoutSlot>
 
@@ -71,9 +70,9 @@
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
-          <CpLink :href="create().url" icon="plus" appearance="button">{{
+          <CpButtonLink :href="create().url" icon="plus">{{
             t('New user group')
-          }}</CpLink>
+          }}</CpButtonLink>
         </Empty>
       </template>
     </AdminTable>

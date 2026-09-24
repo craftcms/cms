@@ -56,6 +56,7 @@
 
 ### Fields
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
+- Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
@@ -63,6 +64,17 @@
 
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
+
+### Workflows
+- Added approval workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Changes to enabled entries in sections with a workflow are now saved as drafts, which must be submitted for review and approved by each workflow stage before they can be applied. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the “User Review” workflow stage type, which supports per-group approval requirements, carried-over approvals, change requests, and email notifications for reviewers. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added a “Workflow” element details tab, for submitting drafts for review, reviewing them, and viewing workflow activity history. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface` and `CraftCms\Cms\Workflow\Stages\WorkflowStage`, for creating custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\WorkflowStageTypes`, for registering custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowableInterface`, which element types can implement to support workflows. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Workflows` and `CraftCms\Cms\Support\Facades\Workflows`. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the `CraftCms\Cms\Workflow\Events\WorkflowTransitioning`, `WorkflowTransitioned`, and `WorkflowCommented` events. ([#19667](https://github.com/craftcms/cms/pull/19667))
 
 ### Elements
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
@@ -202,6 +214,7 @@
 - Fixed a bug where <kbd>Shift</kbd>+<kbd>Space</kbd> didn’t preview the selected file in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
 - Fixed a bug where clicking an asset in the Assets index didn’t open its editor. ([#19682](https://github.com/craftcms/cms/pull/19682))
 - Fixed a bug where the Assets index’s folder dialogs could render behind other overlays, lose their centering, or not focus their name field. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where combobox fields rendered through the Form API displayed their label twice. ([#19694](https://github.com/craftcms/cms/pull/19694))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

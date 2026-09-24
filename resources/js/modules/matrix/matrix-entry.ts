@@ -189,11 +189,26 @@ export class MatrixEntry extends Base {
   private prepareActionMenu(): void {
     this.container.classList.add('active');
     const hideActions: string[] = [];
+    const targets = this.actionTargets();
+    const every = (attribute: string): boolean =>
+      targets.every((target) => target.hasAttribute(attribute));
+    const some = (attribute: string): boolean =>
+      targets.some((target) => target.hasAttribute(attribute));
 
     hideActions.push(this.collapsed ? 'collapse' : 'expand');
+    hideActions.push(every('data-disabled') ? 'disable' : 'enable');
+    const globallyDisabled = every('data-disabled-global');
+    const anyGloballyDisabled = some('data-disabled-global');
+    const disabledForSite = every('data-disabled-site');
     hideActions.push(
-      this.container.hasAttribute('data-disabled') ? 'disable' : 'enable'
+      anyGloballyDisabled || disabledForSite
+        ? 'disableForSite'
+        : 'enableForSite'
     );
+    hideActions.push(globallyDisabled ? 'disableGlobally' : 'enableGlobally');
+    if (anyGloballyDisabled) {
+      hideActions.push('disableForSite', 'enableForSite');
+    }
 
     if (!this.previousBlock()) {
       hideActions.push('moveUp');
@@ -216,6 +231,7 @@ export class MatrixEntry extends Base {
     }
 
     const bulk = this.bulkActionMode();
+    const site = this.container.dataset.siteName ?? '';
     const labels = {
       collapse: bulk ? t('Collapse selected blocks') : t('Collapse'),
       expand: bulk ? t('Expand selected blocks') : t('Expand'),
@@ -225,6 +241,24 @@ export class MatrixEntry extends Base {
       enable: bulk
         ? t('Enable selected {type}', {type: t('blocks')})
         : t('Enable'),
+      disableForSite: bulk
+        ? t('Disable selected {type} for {site}', {
+            type: t('blocks'),
+            site,
+          })
+        : t('Disable for {site}', {site}),
+      enableForSite: bulk
+        ? t('Enable selected {type} for {site}', {
+            type: t('blocks'),
+            site,
+          })
+        : t('Enable for {site}', {site}),
+      disableGlobally: bulk
+        ? t('Disable selected {type} globally', {type: t('blocks')})
+        : t('Disable globally'),
+      enableGlobally: bulk
+        ? t('Enable selected {type} globally', {type: t('blocks')})
+        : t('Enable globally'),
       duplicate: bulk
         ? t('Duplicate selected {type}', {type: t('blocks')})
         : t('Duplicate'),
@@ -457,28 +491,86 @@ export class MatrixEntry extends Base {
   }
 
   override disable(): void {
-    const enabledInput = blockPart<HTMLInputElement>(
-      this.container,
-      'input[name$="[enabled]"]'
-    );
-    if (enabledInput) {
-      enabledInput.value = '';
-    }
-    this.container.setAttribute('data-disabled', '');
-    this.toggleLegacyClass('disabled-entry', true);
-    this.collapse(true);
+    this.setStatus('enabled', false);
   }
 
   override enable(): void {
-    const enabledInput = blockPart<HTMLInputElement>(
-      this.container,
-      'input[name$="[enabled]"]'
-    );
-    if (enabledInput) {
-      enabledInput.value = '1';
+    this.setStatus('enabled', true);
+  }
+
+  disableForSite(): void {
+    this.setStatus('enabledForSite', false);
+  }
+
+  enableForSite(): void {
+    this.setStatus('enabledForSite', true);
+  }
+
+  disableGlobally(): void {
+    this.setStatus('enabled', false);
+  }
+
+  enableGlobally(): void {
+    this.setStatus('enabled', true);
+  }
+
+  private setStatus(
+    attribute: 'enabled' | 'enabledForSite',
+    enabled: boolean
+  ): void {
+    if (
+      attribute === 'enabledForSite' &&
+      this.container.hasAttribute('data-disabled-global')
+    ) {
+      return;
     }
-    this.container.removeAttribute('data-disabled');
-    this.toggleLegacyClass('disabled-entry', false);
+
+    const input = blockPart<HTMLInputElement>(
+      this.container,
+      `input[name$="[${attribute}]"]`
+    );
+    if (input) {
+      input.value = enabled ? '1' : '';
+    }
+
+    this.container.toggleAttribute(
+      attribute === 'enabled' ? 'data-disabled-global' : 'data-disabled-site',
+      !enabled
+    );
+
+    const disabled =
+      this.container.hasAttribute('data-disabled-global') ||
+      this.container.hasAttribute('data-disabled-site');
+    this.container.toggleAttribute('data-disabled', disabled);
+    this.toggleLegacyClass('disabled-entry', disabled);
+
+    const status = blockPart<HTMLElement>(
+      this.container,
+      '[data-matrix-block-actions] > .status'
+    );
+    if (status) {
+      const label =
+        this.container.dataset.siteName &&
+        this.container.hasAttribute('data-disabled-global')
+          ? t('Disabled globally')
+          : this.container.dataset.siteName &&
+              this.container.hasAttribute('data-disabled-site')
+            ? t('Disabled for {site}', {
+                site: this.container.dataset.siteName,
+              })
+            : t('Disabled');
+      status.title = label;
+      const accessibleLabel = status.querySelector('.visually-hidden');
+      if (accessibleLabel) {
+        accessibleLabel.textContent = label;
+      }
+    }
+
+    if (disabled) {
+      this.collapse(true);
+    } else {
+      this.expand();
+    }
   }
 
   moveUp(): void {
@@ -516,6 +608,12 @@ export class MatrixEntry extends Base {
     );
   }
 
+  private actionTargets(): HTMLElement[] {
+    return this.bulkActionMode()
+      ? Array.from(this.matrix.entrySelect?.getSelectedItems() ?? [])
+      : [this.container];
+  }
+
   onActionSelect(option: HTMLElement): void {
     switch (option.getAttribute('data-action')) {
       case 'collapse': {
@@ -541,6 +639,42 @@ export class MatrixEntry extends Base {
           this.matrix.disableSelectedEntries();
         } else {
           this.disable();
+        }
+        break;
+      }
+
+      case 'disableForSite': {
+        if (this.bulkActionMode()) {
+          this.matrix.disableSelectedEntriesForSite();
+        } else {
+          this.disableForSite();
+        }
+        break;
+      }
+
+      case 'enableForSite': {
+        if (this.bulkActionMode()) {
+          this.matrix.enableSelectedEntriesForSite();
+        } else {
+          this.enableForSite();
+        }
+        break;
+      }
+
+      case 'disableGlobally': {
+        if (this.bulkActionMode()) {
+          this.matrix.disableSelectedEntriesGlobally();
+        } else {
+          this.disableGlobally();
+        }
+        break;
+      }
+
+      case 'enableGlobally': {
+        if (this.bulkActionMode()) {
+          this.matrix.enableSelectedEntriesGlobally();
+        } else {
+          this.enableGlobally();
         }
         break;
       }

@@ -126,7 +126,6 @@
 
 <template>
   <div class="space-y-4">
-    <h2 class="text-lg">{{ search.heading }}</h2>
     <CraftTextarea
       ref="textarea"
       v-model="message"

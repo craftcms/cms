@@ -8,14 +8,25 @@
   import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
-  import {ref} from 'vue';
+  import type {IndexSite} from '@/modules/elements/types/sites';
+  import {computed, ref} from 'vue';
 
-  defineProps<{
+  const props = defineProps<{
     statusOptions?: Array<{label: string; value: string}>;
     viewModes?: Array<ViewMode>;
     columnOptions: Array<CheckboxOption>;
     sortOptions: Array<SortOption>;
     processing?: boolean;
+    /**
+     * The sites this index can be switched between.
+     *
+     * Only an index with nowhere else to put the menu passes these — the
+     * element selector modal. A full index page has a header, and puts its site
+     * menu in the crumbs there, the same way the legacy index does.
+     */
+    sites?: Array<IndexSite>;
+    /** The active site's handle, when `sites` are being offered. */
+    siteHandle?: string | null;
   }>();
 
   const search = defineModel<string>('search', {required: true});
@@ -35,15 +46,45 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'site-change', handle: string): void;
   }>();
 
   const filterActive = ref(false);
   const filterAnchor = ref<HTMLElement>();
+
+  // One site is no choice at all, so the menu only earns its place from two.
+  const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
+
+  const siteOptions = computed(() =>
+    (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
+  );
 </script>
 
 <template>
   <form @submit.prevent="emit('submit')" class="w-full">
-    <div class="element-toolbar">
+    <div
+      class="element-toolbar"
+      :class="{'element-toolbar--has-site': showSiteMenu}"
+    >
+      <div v-if="showSiteMenu" class="element-toolbar__site">
+        <CraftSelectRich
+          :model-value="siteHandle ?? undefined"
+          :options="siteOptions"
+          :label="t('Site')"
+          label-sr-only
+          @model-value-changed="
+            (event: CustomEvent) => {
+              if (event.detail.isTriggeredByUser) {
+                emit(
+                  'site-change',
+                  (event.target as unknown as {modelValue: string}).modelValue
+                );
+              }
+            }
+          "
+        />
+      </div>
+
       <div v-if="statusOptions?.length" class="element-toolbar__status">
         <CraftSelectRich
           v-model="status"
@@ -167,6 +208,27 @@
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'status filter state actions';
     }
+  }
+
+  /* Only laid out when the site menu is actually there, so an index without
+     one doesn't carry an empty track and its gap. */
+  .element-toolbar--has-site {
+    grid-template-columns: repeat(3, auto);
+    grid-template-areas: 'site status state' 'filter filter filter' 'actions actions actions';
+
+    @media screen and (min-width: 480px) {
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-template-areas: 'site status filter state' 'actions actions actions actions';
+    }
+
+    @media (width >= var(--breakpoint-sm)) {
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      grid-template-areas: 'site status filter state actions';
+    }
+  }
+
+  .element-toolbar__site {
+    grid-area: site;
   }
 
   .element-toolbar__status {

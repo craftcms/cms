@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {FormPayload} from '@/modules/forms/types';
@@ -42,11 +41,7 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="metadataHtml" name="content-details">
-    <div class="p-lg">
-      <DynamicHtmlRenderer :html="metadataHtml" />
-    </div>
-  </LayoutSlot>
+  <MetadataDetails :html="metadataHtml" />
 
   <FormPage
     ref="formPage"

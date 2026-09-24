@@ -53,6 +53,7 @@ readonly class ElementIndexState
      *
      * @param  class-string<ElementInterface>  $elementType
      * @param  string[]|null  $restrictTo  Source keys to limit the list to, or `null` for every source
+     * @param  int|null  $siteId  A site to limit the sources to, or `null` for every source
      * @return Collection<int, SourceConfig>
      */
     public function sources(
@@ -61,8 +62,9 @@ readonly class ElementIndexState
         bool $withDisabled = false,
         ?string $page = null,
         ?array $restrictTo = null,
+        ?int $siteId = null,
     ): Collection {
-        $allSources = $this->elementSources->getSources($elementType, $context, $withDisabled, $page);
+        $allSources = $this->elementSources->getSources($elementType, $context, $withDisabled, $page, $siteId);
 
         if ($restrictTo === null) {
             return $allSources;
@@ -112,6 +114,12 @@ readonly class ElementIndexState
             if (! $inserted) {
                 $sources[] = $source;
             }
+        }
+
+        // The nested sources above come from findSource(), which doesn't go
+        // through getSources()' site filter, so apply it to the final list.
+        if ($siteId !== null) {
+            return ElementSources::filterSourcesBySite($sources, $siteId);
         }
 
         return collect($sources);

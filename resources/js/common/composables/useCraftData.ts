@@ -1,6 +1,7 @@
 import {computed, type Ref} from 'vue';
 import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
+import type {BreadcrumbItem} from '@/common/types';
 
 export interface CpUser {
   username: string | null;
@@ -47,6 +48,14 @@ export interface CraftData {
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
+  /**
+   * The site switcher that leads the breadcrumbs, or null when there's only
+   * one site to work in. Carries no href — see `withNavCrumbMenus()`.
+   *
+   * Typed as the crumb it becomes rather than the `ActionItem` the server
+   * builds it from, the same way `crumbs` is.
+   */
+  siteCrumb: BreadcrumbItem | null;
   /**
    * Badge counts by nav item id, kept apart from `nav` because they change
    * without the tree's shape changing — `nav` is sent once and held, these

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Operations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
@@ -42,6 +43,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -64,10 +66,12 @@ readonly class ElementWrites
 
     public function __construct(
         private Elements $elements,
+        private Drafts $drafts,
         private ElementUris $elementUris,
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
+        private Workflows $workflows,
     ) {
         $this->propagationSites = new WeakMap;
     }
@@ -443,6 +447,7 @@ readonly class ElementWrites
 
             $fieldLayout = $element->getFieldLayout();
             $dirtyFields = $element->getDirtyFields();
+            $draftIdsToLock = $this->drafts->getDraftIdsForElement($element);
 
             if (! $isNewElement && ! $element->isNewForSite) {
                 $siteSettingsRecord = ElementSiteSettings::query()
@@ -494,6 +499,7 @@ readonly class ElementWrites
                 $originalPropagateAll,
                 $originalDateUpdated,
                 $inheritedUpdateSearchIndex,
+                $draftIdsToLock,
                 &$dirtyAttributes,
                 &$siteSettingsRecord,
             ) {
@@ -504,6 +510,8 @@ readonly class ElementWrites
                 DB::beginTransaction();
 
                 try {
+                    $this->workflows->lockDraftIds($draftIdsToLock);
+
                     $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout, $trackChanges, $dirtyAttributes);
 
                     if ($siteSettingsRecord === null) {
