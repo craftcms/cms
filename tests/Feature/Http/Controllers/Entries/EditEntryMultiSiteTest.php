@@ -12,6 +12,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
@@ -60,7 +61,13 @@ it('leads the breadcrumbs with a site switcher', function () {
             ->where('crumbs', function (Collection $crumbs) {
                 $siteCrumb = $crumbs->first();
 
-                return ($siteCrumb['icon'] ?? null) === 'earth'
+                // A name the icon set actually has: the client fetches
+                // `<name>.svg` with none of PHP's alias map, so `earth` — the
+                // Craft 5 alias — 404s in the browser.
+                $icon = $siteCrumb['icon'] ?? null;
+
+                return is_string($icon)
+                    && is_file(CmsAssets::resourcesPath("icons/solid/{$icon}.svg"))
                     && collect($siteCrumb['actions'] ?? [])
                         ->pluck('label')
                         ->contains($this->secondSite->name);
