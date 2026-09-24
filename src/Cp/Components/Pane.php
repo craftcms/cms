@@ -39,6 +39,8 @@ class Pane extends ViewComponent
 
     protected ?string $label = null;
 
+    protected ?int $headingLevel = null;
+
     protected function tagName(): string
     {
         return 'craft-pane';
@@ -105,6 +107,18 @@ class Pane extends ViewComponent
     public function label(?string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /**
+     * The heading level `label` renders at; the web component defaults to `2`,
+     * since a pane sits under the page’s own `<h1>`. Use `1` for a pane that
+     * really is the page’s main heading, or deeper for a nested one.
+     */
+    public function headingLevel(?int $headingLevel): static
+    {
+        $this->headingLevel = $headingLevel;
 
         return $this;
     }
@@ -205,6 +219,7 @@ class Pane extends ViewComponent
             'variant' => $this->getVariant(),
             'padding' => $this->padding,
             'label' => $this->label,
+            'heading-level' => $this->headingLevel,
         ];
     }
 }
