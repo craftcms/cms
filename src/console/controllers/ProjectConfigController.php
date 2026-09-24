@@ -73,6 +73,11 @@ class ProjectConfigController extends Controller
     public bool $overwrite = false;
 
     /**
+     * @var bool Whether the check should fail if `project.yaml` is missing.
+     */
+    public bool $requireYaml = true;
+
+    /**
      * @var int Counter of the total paths that have been processed.
      */
     private int $_pathCount = 0;
@@ -95,6 +100,9 @@ class ProjectConfigController extends Controller
         $options = parent::options($actionID);
 
         switch ($actionID) {
+            case 'check':
+                $options[] = 'requireYaml';
+                break;
             case 'apply':
             case 'sync':
                 $options[] = 'force';
@@ -265,7 +273,8 @@ class ProjectConfigController extends Controller
     /**
      * Checks project config schema compatibility with installed Craft and enabled plugins.
      *
-     * Requires an existing Craft installation. Does not apply project config or migrations.
+     * Requires an existing Craft installation to check YAML. Does not apply project config or migrations.
+     * Pass `--require-yaml=0` to skip the check successfully if `project.yaml` is missing.
      *
      * @return int
      * @throws InvalidConfigException if Craft isn't installed, YAML can't be checked, or an enabled plugin can't be loaded
@@ -274,6 +283,11 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
         if (!$projectConfig->getDoesExternalConfigExist()) {
+            if (!$this->requireYaml) {
+                $this->stdout('Project config file `project.yaml` was not found. Schema compatibility check skipped.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
             $this->stderr('Project config file `project.yaml` was not found. Schema compatibility could not be checked.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
