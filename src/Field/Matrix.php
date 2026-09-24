@@ -42,7 +42,7 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -597,7 +597,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $sortOrder[] = $uid;
         }
 
-        return MatrixControl::make($context->path)
+        return NestedElementBlocks::make($context->path)
             ->entryTypes($entryTypes)
             ->elementType(Entry::class)
             ->blocks($blocks)
@@ -698,7 +698,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * and so the permission checks stay on the server. Behavior travels with each
      * item as a declarative `action` descriptor — the instance-local ones as a
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
-     * the invoking element (see `resources/js/modules/forms/MatrixControl.vue`).
+     * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
      *
      * @return list<array<string, mixed>>
      */
@@ -818,7 +818,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         // Shown only once there's something on the clipboard that fits, which
-        // only the browser knows — see `MatrixControl.vue`.
+        // only the browser knows — see `NestedElementBlocksControl.vue`.
         $items[] = [
             'icon' => 'duplicate',
             'color' => Color::Fuchsia,

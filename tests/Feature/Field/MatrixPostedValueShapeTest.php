@@ -84,7 +84,7 @@ it('creates a block when the Form control prefixes both halves of the envelope',
     [$entry, $blockType] = matrixShapeFixture();
     $uid = Str::uuid()->toString();
 
-    // What MatrixControl.vue and matrix-input.ce.ts post for a brand new block.
+    // What NestedElementBlocksControl.vue and matrix-input.ce.ts post for a brand new block.
     saveMatrixShape($entry, [
         'entries' => ["uid:$uid" => ['type' => $blockType->handle, 'title' => 'Fresh']],
         'sortOrder' => ["uid:$uid"],

@@ -44,7 +44,7 @@
   import {useElementSize} from '@vueuse/core';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
-  import FormNodeList from './FormNodeList.vue';
+  import FormNodeList from '../FormNodeList.vue';
   import type {ActionItems} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import {
@@ -56,8 +56,8 @@
     type FormValues,
     type NestedElementValue,
     type NestedFormPayload,
-  } from './types';
-  import {FieldActionItems, inputName, isRecord, valueAt} from './runtime';
+  } from '../types';
+  import {FieldActionItems, inputName, isRecord, valueAt} from '../runtime';
 
   /** What a block is called, what it looks like, and what can be done to it. */
   type BlockPresentation = {
@@ -77,7 +77,7 @@
     color?: string | null;
     group?: string | null;
   };
-  type MatrixProps = {
+  type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
     addLabel: string;
     minEntries?: number | null;
@@ -127,18 +127,17 @@
     entryType?: string;
     trigger?: unknown;
   };
-  type MatrixValue = NestedElementValue;
 
   const props = defineProps<{
-    control: FormControlPayload<MatrixProps>;
-    value: MatrixValue;
+    control: FormControlPayload<NestedElementBlocksProps>;
+    value: NestedElementValue;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: MatrixValue, kind: 'discrete'): void;
+    (event: 'update:value', value: NestedElementValue, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();

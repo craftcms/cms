@@ -95,7 +95,7 @@ export type FormPayload<
  * them. `NestedFormPayload.scope` always ends in the bare UUID, so a control holding a
  * freshly minted block has to look its form up under both.
  *
- * @see CraftCms\Cms\Form\Controls\Matrix
+ * @see CraftCms\Cms\Form\Controls\NestedElementBlocks
  */
 export type NestedElementValue = {
   entries: {[uid: string]: NestedElementEntryValue};

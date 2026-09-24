@@ -446,8 +446,8 @@ describe('FormRenderer', () => {
         component: 'craft:field',
         props: {label: 'Content', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-          component: 'craft:matrix',
+          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          component: 'craft:nested-element-blocks',
           props: {
             entryTypes: [{value: 'text', label: 'Text'}],
             addLabel: 'Add an entry',
@@ -529,8 +529,8 @@ describe('FormRenderer', () => {
         component: 'craft:field',
         props: {label: 'Content', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-          component: 'craft:matrix',
+          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          component: 'craft:nested-element-blocks',
           props: {
             entryTypes: [{value: 'text', label: 'Text'}],
             addLabel: 'Add an entry',
@@ -2351,8 +2351,8 @@ describe('FormRenderer', () => {
           component: 'craft:field',
           props: {label: 'Content', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-            component: 'craft:matrix',
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+            component: 'craft:nested-element-blocks',
             props: {
               entryTypes: [{value: 'text', label: 'Text'}],
               addLabel: 'Add an entry',
@@ -3438,8 +3438,8 @@ describe('FormRenderer', () => {
     };
     nested.nodes = [
       fieldNode('Content', {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-        component: 'craft:matrix',
+        type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+        component: 'craft:nested-element-blocks',
         props: {
           entryTypes: [{value: 'text', label: 'Text'}],
           addLabel: 'Add an entry',
@@ -3648,8 +3648,8 @@ describe('FormRenderer', () => {
           component: 'craft:field',
           props: {label: 'Content'},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-            component: 'craft:matrix',
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+            component: 'craft:nested-element-blocks',
             props: {
               entryTypes: [{value: 'text', label: 'Text'}],
               addLabel: 'Add an entry',
