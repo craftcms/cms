@@ -239,7 +239,8 @@ class Table implements Node
 
     /**
      * Adds a separate "Set status" menu to the selection footer. Items use the same
-     * shape as single {@see bulkActions()} entries; the button label is fixed.
+     * shape as single {@see bulkActions()} entries, plus an optional `fill` (a colored
+     * status dot — any `craft-indicator` `fill` value); the button label is fixed.
      *
      * @param  list<array<string, mixed>>  $items
      */

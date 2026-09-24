@@ -54,6 +54,7 @@
     url: string;
     params?: Record<string, unknown>;
     allowMultiple?: boolean;
+    fill?: string;
   }
 
   interface BulkActionMenu {
@@ -537,6 +538,7 @@
       key: action.url,
       label: action.label,
       bulk: action.allowMultiple === false ? false : undefined,
+      fill: action.fill,
       action: {
         type: 'http',
         url: action.url,
