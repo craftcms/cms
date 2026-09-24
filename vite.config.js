@@ -226,6 +226,10 @@ export default defineConfig(({mode}) => {
         'stylelint --allow-empty-input',
       '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
       'resources/js/**/*.{ts,vue}': 'vp check --fix',
+      // Blocks on physical Tailwind classes. Spacing-scale warnings are
+      // printed by .vite-hooks/pre-commit, since this hides passing output.
+      '{resources,workbench/resources}/**/*.{vue,ts,js,twig,php,html}':
+        'node scripts/lint-tailwind-classes.mjs --quiet',
     },
     fmt: {
       singleQuote: true,

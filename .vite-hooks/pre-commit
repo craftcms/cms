@@ -1,1 +1,5 @@
 vp staged
+
+# `vp staged` hides the output of passing tasks, so spacing-scale suggestions
+# for the staged lines are printed here instead. Never blocks the commit.
+node scripts/lint-tailwind-classes.mjs --staged || true

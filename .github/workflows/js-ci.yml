@@ -127,6 +127,17 @@ jobs:
           - name: Check logical CSS properties
             run: vp run lint:styles
 
+          # Fails on physical Tailwind classes. On PRs, also annotates numeric
+          # spacing (p-2, …) on changed lines with its named step (p-md, …).
+          - name: Check Tailwind classes
+            run: |
+              if [ -n "$GITHUB_BASE_REF" ]; then
+                git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF"
+                node scripts/lint-tailwind-classes.mjs --diff FETCH_HEAD
+              else
+                node scripts/lint-tailwind-classes.mjs --quiet
+              fi
+
           - name: Run TypeScript type check
             run: vp run typecheck
 

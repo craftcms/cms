@@ -88,7 +88,7 @@
           <template v-if="!hiddenProperties.includes(name)">
             <th
               :class="{
-                'text-left': true,
+                'text-start': true,
                 'py-2': true,
                 'text-red-600': name === 'error',
               }"
