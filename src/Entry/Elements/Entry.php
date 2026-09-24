@@ -60,7 +60,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Slug;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
@@ -2099,7 +2099,7 @@ JS, [
                 ->value(self::dateTimeControlValue($this->$attribute === null
                     ? null
                     : Date::instance($this->$attribute)->setTimezone(Cms::timezone()))),
-            'slug' => Text::make('slug')->value($this->slug),
+            'slug' => Slug::make('slug')->value($this->slug),
             default => null,
         };
 
@@ -2167,12 +2167,22 @@ JS, [
         }
 
         if ($this->getType()->showSlugField) {
+            $slug = Slug::make('slug')
+                ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
+                ->mode($static ? ControlMode::Disabled : ControlMode::Editable);
+
+            if (! $static && $this->getType()->hasTitleField) {
+                $slug
+                    ->source('title')
+                    ->autoGenerate(
+                        $this->isProvisionalDraft
+                        || $this->slug === null
+                        || ElementHelper::isTempSlug($this->slug),
+                    );
+            }
+
             $nodes[] = Field::make(t('Slug'))
-                ->control(
-                    Text::make('slug')
-                        ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+                ->control($slug);
         }
 
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {

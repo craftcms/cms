@@ -255,17 +255,11 @@ describe('icon spacing', () => {
 });
 
 describe('[inherit]', () => {
-  /**
-   * A surface that sets its own text color without redefining the
-   * `--c-color-*` palette — the breadcrumbs bar, where the chevron has to
-   * read against a dark background.
-   */
   async function mountOnColoredSurface(
     attributes: string
   ): Promise<CraftButton> {
     const surface = document.createElement('div');
-    // Text color and palette deliberately disagree: without [inherit] the
-    // variant paints from the palette, with it from the text beside it.
+    // Text color and palette deliberately disagree, so the two paths differ.
     surface.style.color = 'rgb(255, 0, 0)';
     surface.style.setProperty('--c-color-neutral-on-quiet', 'rgb(0, 0, 255)');
     surface.innerHTML = `<craft-button variant="plain" icon="chevron-down" aria-label="Actions" ${attributes}></craft-button>`;
@@ -287,8 +281,6 @@ describe('[inherit]', () => {
   it('keeps it while hovered', async () => {
     const button = await mountOnColoredSurface('inherit');
 
-    // The variant's hover rule repaints from the palette, which on a surface
-    // like this would flip the button away from the text beside it.
     button.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
     await button.updateComplete;
 
@@ -299,5 +291,85 @@ describe('[inherit]', () => {
     const button = await mountOnColoredSurface('');
 
     expect(getComputedStyle(button).color).toBe('rgb(0, 0, 255)');
+  });
+});
+
+describe('themed subtrees', () => {
+  async function loadTokens(): Promise<void> {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+  }
+
+  function resolved(element: Element, token: string): string {
+    return getComputedStyle(element).getPropertyValue(token).trim();
+  }
+
+  it('re-resolves the generic color tokens against the subtree’s palette', async () => {
+    await loadTokens();
+
+    const dark = document.createElement('div');
+    dark.setAttribute('data-theme', 'dark');
+    document.body.append(dark);
+
+    const neutral = resolved(dark, '--c-color-neutral-fill-quiet');
+
+    expect(neutral).not.toBe('');
+    expect(resolved(dark, '--c-color-fill-quiet')).toBe(neutral);
+    expect(resolved(dark, '--c-color-on-quiet')).toBe(
+      resolved(dark, '--c-color-neutral-on-quiet')
+    );
+  });
+
+  it('leaves the root palette alone', async () => {
+    await loadTokens();
+
+    const root = document.documentElement;
+
+    expect(resolved(root, '--c-color-fill-quiet')).toBe(
+      resolved(root, '--c-color-neutral-fill-quiet')
+    );
+  });
+});
+
+describe('[size=xsmall]', () => {
+  async function mountExtraSmall(variant: string): Promise<CraftButton> {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    const holder = document.createElement('div');
+    holder.style.padding = '40px';
+    holder.innerHTML = `<craft-button variant="${variant}" size="xsmall" icon="chevron-down" aria-label="Actions"></craft-button>`;
+    document.body.append(holder);
+
+    const button = holder.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it('draws smaller than the minimum target size', async () => {
+    const button = await mountExtraSmall('plain');
+    const {height} = button.getBoundingClientRect();
+
+    expect(height).toBeGreaterThan(0);
+    expect(height).toBeLessThan(24);
+  });
+
+  it('still answers a click across the full target area', async () => {
+    // Plain switches the sizer off, so this is the variant that would lose its
+    // hit area rather than the one that keeps it by default.
+    const button = await mountExtraSmall('plain');
+    const rect = button.getBoundingClientRect();
+    const middle = rect.left + rect.width / 2;
+
+    // Just outside the visible box, inside the 24px target.
+    const above = document.elementFromPoint(middle, rect.top - 3);
+    const below = document.elementFromPoint(middle, rect.bottom + 3);
+
+    expect(above).toBe(button);
+    expect(below).toBe(button);
   });
 });

@@ -28,6 +28,7 @@
     valueAt,
     visitControls,
   } from './runtime';
+  import {useFormValueGroup} from './formValueGroup';
   import type {
     FormChange,
     FormChangeKind,
@@ -74,6 +75,7 @@
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
   const values = reactive(cloneRaw(props.payload.values));
+  const unregisterValueSource = useFormValueGroup()?.register(values);
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
@@ -129,7 +131,10 @@
     () => props.disabled,
     () => emitMutation()
   );
-  onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
+  onBeforeUnmount(() => {
+    refreshTimers.forEach(clearTimeout);
+    unregisterValueSource?.();
+  });
 
   function onControlChange(change: FormChange): void {
     recordChange(change);

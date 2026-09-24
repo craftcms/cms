@@ -120,12 +120,16 @@ it('compiles the meta fields into a sidebar form', function () {
                 $paths = $nodes
                     ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
                     ->all();
+                $slug = $nodes->first(
+                    fn (array $node) => ($node['control']['path'] ?? null) === ['slug'],
+                );
 
                 return in_array('slug', $paths, true)
                     && in_array('postDate', $paths, true)
                     && in_array('expiryDate', $paths, true)
                     && in_array('enabled', $paths, true)
-                    && in_array('notes', $paths, true);
+                    && in_array('notes', $paths, true)
+                    && ($slug['control']['props']['autoGenerate'] ?? null) === false;
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
             ->etc()
@@ -309,6 +313,9 @@ it('renders a provisional draft in the Inertia editor', function () {
             ->where('canonicalId', $this->entry->id)
             ->where('notice', 'Showing your unsaved changes.')
             ->where('applyDraftUrl', fn (string $url) => str_contains($url, 'elements/apply-draft'))
+            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+                ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['slug']
+                    && ! array_key_exists('autoGenerate', $node['control']['props'])))
             ->etc()
         );
 });

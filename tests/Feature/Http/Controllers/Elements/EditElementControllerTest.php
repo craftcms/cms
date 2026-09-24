@@ -15,6 +15,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
@@ -304,4 +305,24 @@ it('merges canonical changes into outdated drafts before rendering', function ()
     )))
         ->assertOk()
         ->assertSeeText('Recent changes to the Current revision have been merged into this draft.');
+});
+
+it('uses the editor’s own site crumb rather than the shared one', function () {
+    $other = Site::factory()->create();
+    $section = Section::factory()->withSites($other)->create();
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+
+    get(cp_url(sprintf('entries/%s/%d-%s', $section->handle, $entry->id, $entry->slug)))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            $props = $page->toArray()['props'];
+
+            // The editor lists only the sites the element propagates to, so it
+            // keeps its own crumb and never opts into the shared one — two
+            // site pickers otherwise.
+            expect($props['crumbs'][0]['id'])->toBe('site-crumb');
+            expect($props['craft']['siteCrumb'])->toBeNull();
+
+            return true;
+        });
 });

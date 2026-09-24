@@ -51,6 +51,8 @@ class Group extends Container
 
     private bool $asField = false;
 
+    private bool $required = false;
+
     private ?string $instructions = null;
 
     private ?string $tip = null;
@@ -124,6 +126,14 @@ class Group extends Container
         return $this;
     }
 
+    /** Field appearance only; marks the group label as required. */
+    public function required(bool $required = true): static
+    {
+        $this->required = $required;
+
+        return $this;
+    }
+
     /** Field appearance only. */
     public function instructions(?string $instructions): static
     {
@@ -185,6 +195,7 @@ class Group extends Container
             'label' => $this->label,
             ...($this->collapsible && ! $this->asField ? ['collapsible' => true] : []),
             ...($this->asField ? ['asField' => true] : []),
+            ...($this->asField && $this->required ? ['required' => true] : []),
             ...Arr::whereNotNull([
                 'instructions' => $this->instructions,
                 'tip' => $this->tip,
@@ -209,6 +220,7 @@ class Group extends Container
         return FieldComponent::make()
             ->fieldset()
             ->label($label)
+            ->required((bool) ($props['required'] ?? false))
             ->instructions($props['instructions'] ?? null)
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)

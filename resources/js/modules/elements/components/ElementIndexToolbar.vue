@@ -62,31 +62,32 @@
 
 <template>
   <form @submit.prevent="emit('submit')" class="w-full">
-    <div
-      class="element-toolbar"
-      :class="{'element-toolbar--has-site': showSiteMenu}"
-    >
-      <div v-if="showSiteMenu" class="element-toolbar__site">
-        <CraftSelectRich
-          :model-value="siteHandle ?? undefined"
-          :options="siteOptions"
-          :label="t('Site')"
-          label-sr-only
-          @model-value-changed="
-            (event: CustomEvent) => {
-              if (event.detail.isTriggeredByUser) {
-                emit(
-                  'site-change',
-                  (event.target as unknown as {modelValue: string}).modelValue
-                );
+    <div class="element-toolbar">
+      <div
+        v-if="showSiteMenu || statusOptions?.length"
+        class="element-toolbar__status"
+      >
+        <div v-if="showSiteMenu" class="element-toolbar__site">
+          <CraftSelectRich
+            :model-value="siteHandle ?? undefined"
+            :options="siteOptions"
+            :label="t('Site')"
+            label-sr-only
+            @model-value-changed="
+              (event: CustomEvent) => {
+                if (event.detail.isTriggeredByUser) {
+                  emit(
+                    'site-change',
+                    (event.target as unknown as {modelValue: string}).modelValue
+                  );
+                }
               }
-            }
-          "
-        />
-      </div>
+            "
+          />
+        </div>
 
-      <div v-if="statusOptions?.length" class="element-toolbar__status">
         <CraftSelectRich
+          v-if="statusOptions?.length"
           v-model="status"
           :options="statusOptions"
           :label="t('Status')"
@@ -214,29 +215,12 @@
     grid-column-start: status-start;
   }
 
-  /* Only laid out when the site menu is actually there, so an index without
-     one doesn't carry an empty track and its gap. */
-  .element-toolbar--has-site {
-    grid-template-columns: repeat(3, auto);
-    grid-template-areas: 'site status state' 'filter filter filter' 'actions actions actions';
-
-    @container cp-content-view (width >= 480px) {
-      grid-template-columns: auto auto minmax(0, 1fr) auto;
-      grid-template-areas: 'site status filter state' 'actions actions actions actions';
-    }
-
-    @container cp-content-view (width >= var(--breakpoint-sm)) {
-      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
-      grid-template-areas: 'site status filter state actions';
-    }
-  }
-
-  .element-toolbar__site {
-    grid-area: site;
-  }
-
+  /* Site and status share a cell rather than the grid gaining a column, so
+     the breakpoint ladder above stays the one definition of the layout. */
   .element-toolbar__status {
     grid-area: status;
+    display: flex;
+    gap: var(--c-spacing-sm);
   }
 
   .element-toolbar__state {
