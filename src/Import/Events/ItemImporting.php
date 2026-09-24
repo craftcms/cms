@@ -8,9 +8,9 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event DataImporting The event that is triggered before data is imported.
+ * @event ItemImporting The event that is triggered before data is imported.
  */
-class DataImporting
+class ItemImporting
 {
     use ValidatableEvent;
 

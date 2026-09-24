@@ -113,13 +113,13 @@ via the `RegisterImporterTypes` event (`$event->importers`).
 
 `Import::importItem()` (`src/Import/Import.php:190`):
 
-1. `DataImporting` event (cancellable, can rewrite `$data`).
+1. `ItemImporting` event (cancellable, can rewrite `$data`).
 2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
 3. Collect `additionalMatchCriteria()` from the transformer.
 4. Resolve match criteria.
 5. Apply clearable items.
 6. Hand to the importer's `importItem()`.
-7. `DataImported` event.
+7. `ItemImported` event.
 
 ### Match criteria
 
@@ -360,7 +360,7 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
 - `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`. Registering a new
   importable element type or model means contributing a concrete `ElementImporter` or
   `ModelImporter` subclass that implements `targetClass()`.
-- `DataImporting` / `DataImported`, `ImportPlanSaving` / `ImportPlanSaved`,
+- `ItemImporting` / `ItemImported`, `ImportPlanSaving` / `ImportPlanSaved`,
   `ImportDispatching` / `ImportDispatched`.
   The `*ing` variants are cancellable.
 - Transformers: extend `ElementTransformer` (or the per-type one) and override

@@ -11,10 +11,10 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
-use CraftCms\Cms\Import\Events\DataImported;
-use CraftCms\Cms\Import\Events\DataImporting;
 use CraftCms\Cms\Import\Events\ImportDispatched;
 use CraftCms\Cms\Import\Events\ImportDispatching;
+use CraftCms\Cms\Import\Events\ItemImported;
+use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -149,15 +149,12 @@ class Import
             return false;
         }
 
-        $steps = $event->steps;
-        $importPlan = $event->importPlan;
-
         // todo (iwona): think about scheduling batch pruning
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($steps, $importPlan));
+        dispatch(new ImportPipeline($event->steps, $event->importPlan));
 
-        event(new ImportDispatched($steps, $importPlan));
+        event(new ImportDispatched($event->steps, $event->importPlan));
 
         return true;
     }
@@ -189,7 +186,7 @@ class Import
      */
     public function importItem(BaseImporter $importer, array $data, array $matchCriteria = []): void
     {
-        event($event = new DataImporting($importer, $data));
+        event($event = new ItemImporting($importer, $data));
 
         if (! $event->isValid) {
             return;
@@ -230,7 +227,7 @@ class Import
 
         $importer->importItem($data);
 
-        event(new DataImported($importer, $data));
+        event(new ItemImported($importer, $data));
     }
 
     /**
