@@ -1,0 +1,100 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="JavaScript API/Utilities" />
+
+# Utilities
+
+The helpers the components are built from. Most are exported from the package root:
+
+```js
+import {t, toHandle, escapeHtml} from '@craftcms/ui';
+```
+
+Anything not exported from the root is still reachable by its own path:
+
+```js
+import {emitInput, emitChange} from '@craftcms/ui/utilities/form-events';
+```
+
+## Translation
+
+`t()` looks a message up in the loaded translations and interpolates it. `setTranslations()` installs the store, which the CP bootstrap does for you.
+
+```js
+import {t} from '@craftcms/ui';
+
+t('Delete');
+t('{num, number} {num, plural, =1{entry} other{entries}}', {num: 3});
+```
+
+The pattern syntax is ICU-style, and `formatMessage()` exposes the formatter on its own if you need it without the lookup.
+
+## Strings
+
+`toHandle()` converts a label into a Craft handle, `toEnvVar()` into an environment-variable name, and `toUriFormat()` into a URI-friendly slug. `asciiString()` transliterates using the same character map the PHP side uses, so a handle generated in the browser matches one generated on the server.
+
+```js
+import {toHandle, toUriFormat} from '@craftcms/ui';
+
+toHandle('Blog Posts'); // blogPosts
+toUriFormat('Blog Posts'); // blog-posts
+```
+
+`capitalize()`, `rand()`, and the `asciiCharMap` the transliteration reads are exported too.
+
+## DOM
+
+`appendHeadHtml()` and `appendBodyHtml()` inject a string of HTML and return a disposer that removes exactly what they added, which is what makes them safe to call from a component that can be torn down.
+
+```js
+import {appendBodyHtml} from '@craftcms/ui';
+
+const dispose = appendBodyHtml(response.bodyHtml);
+// later
+dispose();
+```
+
+`serializeFormInputs()` mirrors jQuery's `.serialize()` — same treatment of unchecked checkboxes and disabled controls — and `serializeFormInputsAsObject()` returns an object instead, keeping PHP-style bracket names verbatim. `isVisible()` and `appendElementHtml()` round the module out.
+
+## Attributes and converters
+
+`attrs()` flattens a Yii/Craft server attributes object into something `v-bind` accepts, which is how server-rendered attributes reach a Vue-wrapped component.
+
+`converters.ts` holds the two Lit attribute converters the components share. `defaultTrueBoolean` is a boolean that is on unless it is explicitly `"false"` — Lit's built-in converter is presence-based and cannot express that. `jsonAttribute` parses a JSON attribute and falls back rather than throwing on the absent and empty cases.
+
+```js
+import {defaultTrueBoolean, jsonAttribute} from '@craftcms/ui';
+
+@property({converter: defaultTrueBoolean}) dismissible = true;
+@property({converter: jsonAttribute(() => [])}) presets = [];
+```
+
+## Form events
+
+The two native events a form control owes its consumers, dispatched from the host so `event.target` is the component rather than whatever input it wraps.
+
+```js
+import {emitInput, emitChange} from '@craftcms/ui/utilities/form-events';
+
+emitInput(this); // the value was altered
+emitChange(this); // the value was committed
+```
+
+## Icons
+
+`getIconUrl()` resolves an icon name against the CP's published icon assets. `setIconResolver()` replaces the resolution strategy wholesale, and `createUrlIconResolver()` builds one that maps names onto a base URL — the hook to reach for when icons are served from somewhere other than the CP.
+
+## The rest
+
+| Module             | What it is                                                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `cookies`          | A cookie manager. `new Cookies(defaults)`, then `get`/`set`/`remove`.                                                   |
+| `create`           | `createButton`, `createSubmitButton`, `createPasteButton` — the button builders the factory and the legacy shims share. |
+| `format`           | `formatNumber()`, plus `cpHumanizer` for durations.                                                                     |
+| `escapeHtml`       | Escapes HTML special characters in a string.                                                                            |
+| `thumbnail-loader` | `ThumbnailLoader` and `ThumbnailWorker`, which fetch and swap element thumbnails.                                       |
+| `overlay-events`   | `wireOverlayLifecycleEvents()` — see below.                                                                             |
+| `overlay-position` | `viewportEscapingModifiers` — Popper modifiers that let a fixed-strategy overlay escape a clipping ancestor.            |
+| `api`              | `actionClient` and `apiClient`, the configured Axios instances for CP action requests and the Craft API.                |
+
+`wireOverlayLifecycleEvents(host)` is what gives [Dialog](?path=/docs/components-dialog--docs), [Popover](?path=/docs/components-popover--docs), and [Tooltip](?path=/docs/components-tooltip--docs) their four lifecycle events. It bridges Lion's `opened-changed` to `craft-show` and `craft-hide` as the state flips, then `craft-after-show` and `craft-after-hide` once the update settles. Call it once from a constructor to give an overlay component the same contract.

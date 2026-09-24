@@ -10,6 +10,11 @@ function isFlagged(button: CraftButton): boolean {
   return !!button.shadowRoot?.querySelector('.a11y-error');
 }
 
+/** The name the button last computed for itself, which it keeps internal. */
+function computedName(button: CraftButton): string {
+  return (button as unknown as {_accessibleName: string})._accessibleName;
+}
+
 /**
  * Mounts a button inside a container that starts hidden the way `craft-tabs`
  * hides a panel that isn't selected -- `display: none` and `visibility:
@@ -36,7 +41,7 @@ async function mountHidden(label: string | null): Promise<{
 
   // The name is computed asynchronously after the first render. An empty
   // string rather than undefined proves the check ran while still hidden.
-  await vi.waitFor(() => expect(button.accessibleName).toBe(''));
+  await vi.waitFor(() => expect(computedName(button)).toBe(''));
 
   return {button, container};
 }
@@ -49,7 +54,7 @@ it('does not flag a labelled button that was hidden when it first rendered', asy
   container.style.cssText = '';
 
   await vi.waitFor(() =>
-    expect(button.accessibleName).toBe('Cropping Rectangle')
+    expect(computedName(button)).toBe('Cropping Rectangle')
   );
   expect(isFlagged(button)).toBe(false);
 });

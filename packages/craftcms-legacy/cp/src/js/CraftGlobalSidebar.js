@@ -7,8 +7,8 @@ class CraftGlobalSidebar extends HTMLElement {
     this.trigger = this.querySelector('#sidebar-trigger');
 
     if (this.trigger) {
-      this.trigger.addEventListener('open', this.expand.bind(this));
-      this.trigger.addEventListener('close', this.collapse.bind(this));
+      this.trigger.addEventListener('craft-show', this.expand.bind(this));
+      this.trigger.addEventListener('craft-hide', this.collapse.bind(this));
     }
   }
 

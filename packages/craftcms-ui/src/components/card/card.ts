@@ -1,8 +1,14 @@
-import {property, state} from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
+import {styleMap} from 'lit/directives/style-map.js';
+import {Paddable} from '@src/mixins/Paddable.js';
 import styles from './card.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 
 /**
  * @summary A surface that groups related content into a bordered, rounded
@@ -15,12 +21,9 @@ import {classMap} from 'lit/directives/class-map.js';
  * (with the `label` attribute as the default label content). The footer region
  * is only rendered when the `footer` slot is filled.
  *
- * Host attributes are applied directly to the element, so the server-rendered
- * wrapper attributes that accompany an element's card HTML (its `id`, `style`
- * custom properties, and `data-*` metadata) can be spread onto it with the
- * `attrs()` utility — e.g. `v-bind="attrs(element.cardAttributes)"`. `class` is
- * usually excluded from that bind (`{exclude: ['class']}`), since the component
- * renders its own card chrome rather than the server's `.card` classes.
+ * The card renders its own chrome, so attributes set on the host are left
+ * alone — an `id`, `style` custom properties, and `data-*` metadata can all be
+ * spread onto it without the component interfering.
  *
  * @slot - The card's body content.
  * @slot header - The full header region. Replaces the default
@@ -30,8 +33,18 @@ import {classMap} from 'lit/directives/class-map.js';
  * @slot actions - Action content shown at the end of the header, e.g. buttons.
  * @slot footer - Footer content. The footer is only rendered when this slot is
  *   filled.
+ * @slot thumbnail - Artwork shown in a fixed column beside the body. Rendered
+ *   only while `show-thumb` is set; `thumb-alignment` puts the column at the
+ *   start or the end of the body.
  *
+ * @csspart base - The card's outermost element, which carries the surface and
+ *   the border.
+ * @csspart header - The default header region.
  * @csspart label - The label slot within the header.
+ * @csspart actions - The wrapper around the `actions` slot.
+ * @csspart body - The region holding the thumbnail column and the content.
+ * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
+ * @csspart footer - The default footer region.
  *
  * @attr collapsed - Collapses the card to its header.
  *
@@ -43,8 +56,20 @@ import {classMap} from 'lit/directives/class-map.js';
  * @cssproperty --c-card-padding-block - Block (vertical) padding of the header,
  *   body, and footer. Defaults to `--c-spacing-sm` for the header/footer and
  *   `--c-spacing-md` for the body.
+ *
+ * @property padding - Spacing for every padded region, from the shared spacing
+ *   scale. Supplied by the `Paddable` mixin, the same as `craft-pane` and
+ *   `craft-callout`. Leave it unset to keep the per-region defaults above; set
+ *   the custom properties for anything the scale cannot express.
  */
-export default class CraftCard extends LitElement {
+export default class CraftCard extends Paddable(LitElement, {
+  // The public properties, so an unset `padding` leaves the stylesheet's
+  // per-region defaults alone and only an explicit value overrides them.
+  customProperty: ['--c-card-padding-block', '--c-card-padding-inline'],
+}) {
+  // In the CP, an element's server-rendered card attributes are spread onto
+  // the host with `attrs(element.cardAttributes)`, excluding `class` — the
+  // component draws its own chrome rather than the server's `.card` classes.
   static override styles: CSSResultGroup = [styles];
 
   /** Label shown in the header when the `label` slot is not filled. */
@@ -68,85 +93,54 @@ export default class CraftCard extends LitElement {
   /** Whether the thumbnail region renders at all, even with slotted content. */
   @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean = true;
 
+  /**
+   * Which side of the body the thumbnail column sits on. Has no effect unless
+   * the `thumbnail` slot is filled and `show-thumb` is set.
+   */
   @property({attribute: 'thumb-alignment'}) thumbAlignment: 'start' | 'end' =
     'start';
 
   /**
-   * Whether the thumbnail slot currently has assigned content. Tracked as reactive
-   * state and updated from the slot's `slotchange` event, since Lit doesn't
-   * re-render on slotted light-DOM changes on its own — without this the card's
-   * presence-derived rendering would go stale (e.g. when the CVD swaps the thumb).
+   * The header, footer, and thumbnail regions only render when they have
+   * something in them, so their slots can't report their own changes — an
+   * unrendered slot never fires `slotchange`. The controller re-renders the
+   * card whenever its light DOM moves, which is how a thumbnail swapped in
+   * by the element index shows up.
    */
-  @state() private _hasThumbnail = false;
-
-  /**
-   * Whether header/footer content is currently slotted. The header and footer
-   * slots only render when filled, so (unlike the always-rendered thumbnail
-   * slot) their presence can't be tracked via `slotchange` — a light-DOM
-   * observer keeps them fresh when a consumer swaps slotted content.
-   */
-  @state() private _hasSlottedHeader = false;
-
-  @state() private _hasSlottedFooter = false;
-
-  private _lightDomObserver = new MutationObserver(() =>
-    this._syncSlotPresence()
-  );
-
-  override connectedCallback() {
-    super.connectedCallback();
-    this._syncSlotPresence();
-    this._lightDomObserver.observe(this, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['slot'],
-    });
-  }
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this._lightDomObserver.disconnect();
-  }
-
-  private _syncSlotPresence() {
-    this._hasSlottedHeader =
-      !!this.querySelector(':scope > [slot="header"]') ||
-      !!this.querySelector(':scope > [slot="label"]') ||
-      !!this.querySelector(':scope > [slot="actions"]');
-    this._hasSlottedFooter = !!this.querySelector(':scope > [slot="footer"]');
-    this._hasThumbnail = !!this.querySelector(':scope > [slot="thumbnail"]');
-  }
-
-  private _handleThumbnailSlotChange(event: Event) {
-    const slot = event.target as HTMLSlotElement;
-    this._hasThumbnail = slot.assignedElements({flatten: true}).length > 0;
-  }
+  private _lightDom = new LightDomController(this);
 
   override render() {
-    const hasSlottedHeader = !!this.label || this._hasSlottedHeader;
-    const hasSlottedFooter = this._hasSlottedFooter;
-    const showThumbnail = this.showThumb && this._hasThumbnail;
+    const hasSlottedHeader =
+      !!this.label || hasSlotted(this, 'header', 'label', 'actions');
+    const hasSlottedFooter = hasSlotted(this, 'footer');
+    const showThumbnail = this.showThumb && hasSlotted(this, 'thumbnail');
 
     return html`
       <div
+        part="base"
         class="${classMap({
           card: true,
           'card--has-thumbnail': showThumbnail,
         })}"
+        style="${styleMap(this.paddingStyles)}"
       >
         ${hasSlottedHeader
-          ? html`<div class="card__header">
+          ? html`<div class="card__header" part="header">
               <slot name="header">
                 <slot name="label" class="card__label" part="label"
                   >${this.label}</slot
                 >
-                <slot name="actions" class="card__actions"></slot>
+                <slot
+                  name="actions"
+                  class="card__actions"
+                  part="actions"
+                ></slot>
               </slot>
             </div>`
           : nothing}
 
         <div
+          part="body"
           class="${classMap({
             'card-body': true,
             'card-body--thumb-start':
@@ -155,11 +149,12 @@ export default class CraftCard extends LitElement {
               showThumbnail && this.thumbAlignment === 'end',
           })}"
         >
-          <div class="card-body__thumb" ?hidden="${!showThumbnail}">
-            <slot
-              name="thumbnail"
-              @slotchange="${this._handleThumbnailSlotChange}"
-            ></slot>
+          <div
+            class="card-body__thumb"
+            part="thumbnail"
+            ?hidden="${!showThumbnail}"
+          >
+            <slot name="thumbnail"></slot>
           </div>
 
           <div class="card-body__main">
@@ -168,7 +163,9 @@ export default class CraftCard extends LitElement {
         </div>
 
         ${hasSlottedFooter
-          ? html`<div class="card__footer"><slot name="footer"></slot></div>`
+          ? html`<div class="card__footer" part="footer">
+              <slot name="footer"></slot>
+            </div>`
           : nothing}
       </div>
     `;

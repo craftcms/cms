@@ -27,9 +27,9 @@ catalog:
   '@lion/ui': ^0.16.1
   '@playwright/test': ^1.59.1
   '@simplewebauthn/browser': ^13.3.0
-  '@storybook/addon-a11y': ^10.5.5
-  '@storybook/addon-docs': ^10.5.5
-  '@storybook/addon-themes': ^10.5.5
+  '@storybook/addon-a11y': ^10.6.0
+  '@storybook/addon-docs': ^10.6.0
+  '@storybook/addon-themes': ^10.6.0
   '@total-typescript/tsconfig': ^1.0.4
   '@types/node': ^25.6.0
   '@vitest/coverage-v8': 4.1.10
@@ -42,7 +42,7 @@ catalog:
   jquery: ^3.7.1
   lit: ^3.3.2
   punycode: ^2.3.1
-  storybook: ^10.5.5
+  storybook: ^10.6.0
   stylelint: ^17.9.1
   stylelint-config-standard: ^40.0.0
   stylelint-config-standard-scss: ^17.0.0

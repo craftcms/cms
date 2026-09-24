@@ -15,7 +15,7 @@ import type {
 
 import '../action-item/action-item.js';
 
-export type ActionMenuChangeDetail =
+export type ActionMenuSelectDetail =
   | {item: ActionMenuItemButton | ActionMenuItemLink}
   | {item: CraftActionItem};
 
@@ -61,7 +61,7 @@ export type {
  * @slot invoker - Element that triggers the menu.
  * @slot content - Action items to be rendered in the menu.
  *
- * @fires {CustomEvent<ActionMenuChangeDetail>} change - Emitted when the user
+ * @fires {CustomEvent<ActionMenuSelectDetail>} craft-select - Emitted when the user
  *   clicks an item. In data-driven mode `event.detail.item` is the
  *   `ActionMenuItemButton` or `ActionMenuItemLink` descriptor; in slot-based
  *   mode it is the clicked `craft-action-item` element.
@@ -132,10 +132,10 @@ export default class CraftActionMenu extends CraftPopover {
   @property({type: Boolean, reflect: true}) searchable = false;
 
   @queryAssignedElements({slot: 'invoker'})
-  invokerNodes!: HTMLElement[];
+  protected invokerNodes!: HTMLElement[];
 
   @queryAssignedElements({slot: 'content'})
-  contentNodes!: HTMLElement[];
+  protected contentNodes!: HTMLElement[];
 
   private uid: string = uuid();
 
@@ -165,14 +165,14 @@ export default class CraftActionMenu extends CraftPopover {
    *
    * One shared handler, so re-registering is a no-op — which is what lets
    * {@link _addEventListeners} be re-run whenever the content changes without
-   * stacking duplicates that would fire `change` more than once.
+   * stacking duplicates that would fire `craft-select` more than once.
    */
   private readonly _onItemClick = (event: Event): void => {
     const item = event.currentTarget as CraftActionItem;
 
     this.opened = false;
 
-    // In data-driven mode the 'change' event is dispatched from _renderItem
+    // In data-driven mode the 'craft-select' event is dispatched from _renderItem
     // (which has access to the descriptor). For slot-based mode this is the
     // only click handler, so dispatch it here.
     if (this.actions === undefined) {
@@ -214,10 +214,10 @@ export default class CraftActionMenu extends CraftPopover {
     item: ActionMenuItemButton | ActionMenuItemLink | CraftActionItem
   ): void {
     this.dispatchEvent(
-      new CustomEvent<ActionMenuChangeDetail>('change', {
+      new CustomEvent<ActionMenuSelectDetail>('craft-select', {
         bubbles: true,
         composed: true,
-        detail: {item} as ActionMenuChangeDetail,
+        detail: {item} as ActionMenuSelectDetail,
       })
     );
   }

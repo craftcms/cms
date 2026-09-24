@@ -8,10 +8,10 @@ export default css`
   .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
     /*
-      The two padding axes are declared separately because the callout's
-      default is asymmetric — a tight block edge, a roomier inline one. The
-      \`padding\` attribute writes both of these on this element when it's set,
-      so these fallbacks are what a callout with no \`padding\` renders with.
+      The two axes are declared separately so the padding attribute can write
+      either one on its own. These fallbacks are what a callout with no padding
+      renders with; the inline gap to the text is finished by the padding on
+      the icon, title, and description.
     */
     --_callout-padding-block: var(
       --c-callout-padding-block,
@@ -19,19 +19,22 @@ export default css`
     );
     --_callout-padding-inline: var(
       --c-callout-padding-inline,
-      var(--c-spacing-md)
+      var(--c-spacing-sm)
     );
     display: grid;
-    grid-template-areas: 'icon title action' 'icon description action';
+    grid-template-areas: 'icon description action';
     grid-template-columns: auto 1fr minmax(0, max-content);
-    gap: 0 var(--c-spacing-sm);
     align-items: start;
     padding: var(--_callout-padding-block) var(--_callout-padding-inline);
     border: 1px solid transparent;
   }
 
+  .callout--title {
+    grid-template-areas: 'icon title action' 'icon description action';
+  }
+
   .callout--hide-icon {
-    grid-template-areas: 'title action' 'description action';
+    grid-template-areas: 'description action';
     grid-template-columns: 1fr minmax(0, max-content);
 
     .callout__icon {
@@ -39,9 +42,18 @@ export default css`
     }
   }
 
+  .callout--hide-icon.callout--title {
+    grid-template-areas: 'title action' 'description action';
+  }
+
   .callout--small {
     font-size: var(--c-text-sm);
     gap: 0 var(--c-spacing-xs);
+  }
+
+  .callout__title,
+  .callout__description {
+    padding-inline: var(--c-spacing-sm);
   }
 
   .callout__title {
@@ -51,12 +63,9 @@ export default css`
   }
 
   .callout__description {
-    grid-area: title;
-    align-self: center;
-  }
-
-  .callout__title + .callout__description {
     grid-area: description;
+    align-self: center;
+    padding-inline: var(--c-spacing-sm);
   }
 
   .callout__action {
@@ -72,6 +81,7 @@ export default css`
     justify-content: center;
     align-items: center;
     grid-area: icon;
+    padding-inline: var(--c-spacing-sm);
   }
 
   ::slotted(code) {

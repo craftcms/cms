@@ -81,4 +81,40 @@ describe('craft-permission-tree', () => {
       )
     ).toEqual(['']);
   });
+
+  it('emits native input and change when a permission is toggled', async () => {
+    const element = document.createElement(
+      'craft-permission-tree'
+    ) as CraftPermissionTree;
+    element.name = 'permissions';
+    element.modelValue = ['viewEntries'];
+    element.groups = [
+      {
+        handle: 'content',
+        heading: 'Content',
+        keys: ['viewEntries'],
+        permissions: {
+          viewEntries: {key: 'viewEntries', label: 'View entries'},
+        },
+      },
+    ];
+    document.body.append(element);
+    await element.updateComplete;
+
+    const order: string[] = [];
+    element.addEventListener('input', () => order.push('input'));
+    element.addEventListener('change', () => order.push('change'));
+
+    const checkbox =
+      element.shadowRoot!.querySelector<CraftCheckbox>('craft-checkbox')!;
+    checkbox.checked = false;
+    checkbox.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
+    );
+    await element.updateComplete;
+
+    // Each toggle is a commit, so the pair fires together.
+    expect(order).toEqual(['input', 'change']);
+    expect(element.modelValue).toEqual([]);
+  });
 });

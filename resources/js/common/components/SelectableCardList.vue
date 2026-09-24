@@ -268,7 +268,7 @@
                 :disabled="ids.length < 2"
                 :position="getRowPosition(index)"
                 :orientation="reorderOrientation"
-                @reorder="
+                @craft-reorder="
                   (event: CustomEvent<{direction: 'up' | 'down'}>) => {
                     event.stopPropagation();
                     move(index, event.detail.direction === 'up' ? -1 : 1);

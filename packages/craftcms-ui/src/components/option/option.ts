@@ -3,6 +3,21 @@ import {LionOption} from '@lion/ui/listbox.js';
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 
+/**
+ * @summary One option inside `craft-select-rich` or `craft-combobox`. Unlike a
+ * native `<option>` it can hold arbitrary markup — an icon, a status, a
+ * thumbnail — alongside its label.
+ *
+ * Options widen their layout once they have room for it, measured against the
+ * option rather than the viewport, so the same list reads sensibly in a narrow
+ * slideout and a wide page.
+ *
+ * @slot - The option's label and any markup that goes with it.
+ * @slot suffix - Trailing content, shown after the label and hint.
+ *
+ * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
+ *   option switches to its wide layout. Defaults to `640`.
+ */
 export default class CraftOption extends LionOption {
   static override get styles() {
     return [...LionOption.styles, styles];
@@ -23,6 +38,10 @@ export default class CraftOption extends LionOption {
     }
   });
 
+  /**
+   * Secondary text shown after the label — a handle, a count, a short
+   * qualifier. Rendered quieter than the label rather than as part of it.
+   */
   @property()
   hint?: string | null = null;
 

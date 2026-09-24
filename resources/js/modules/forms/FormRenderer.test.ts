@@ -3562,7 +3562,7 @@ describe('FormRenderer', () => {
       'Expected the second Matrix reorder button.'
     );
     reorder.dispatchEvent(
-      new CustomEvent('reorder', {
+      new CustomEvent('craft-reorder', {
         bubbles: true,
         composed: true,
         detail: {direction: 'up'},

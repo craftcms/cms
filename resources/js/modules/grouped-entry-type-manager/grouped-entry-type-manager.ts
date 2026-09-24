@@ -835,7 +835,7 @@ export class Group extends Base {
     ) as CraftReorderButton;
     const container = this.container;
     btn.setAttribute('orientation', 'horizontal');
-    btn.addEventListener('reorder', (event: Event) => {
+    btn.addEventListener('craft-reorder', (event: Event) => {
       // SAFETY: craft-reorder-button emits this registered detail contract.
       const {direction} = (event as CustomEvent<{direction: ReorderDirection}>)
         .detail;

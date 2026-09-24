@@ -912,7 +912,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     if (this.#list?.classList.contains('inline-chips')) {
       btn.setAttribute('orientation', 'horizontal');
     }
-    btn.addEventListener('reorder', (event: Event) => {
+    btn.addEventListener('craft-reorder', (event: Event) => {
       if (!(event instanceof CustomEvent)) {
         return;
       }

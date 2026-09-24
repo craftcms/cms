@@ -6,7 +6,16 @@ import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './dialog.js';
 import '../button/button.js';
 
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `dialog.ts` surfaces it here without touching this file.
+ */
 const {events, args, argTypes, template} = getStorybookHelpers('craft-dialog');
+
+// Boolean attributes whose name differs from their property (`no-close` and
+// `noClose`) are set by property name: the helpers generate an arg for the
+// property too, and apply it after the attribute, so its default would win.
 
 /**
  * `#dispatch(name)` builds its events from a variable, so the analyzer records
@@ -57,7 +66,7 @@ export const NoLabel: Story = {
  * leaving a band of padding above the body. Dismissal comes from the footer.
  */
 export const NoHeader: Story = {
-  args: {label: '', 'no-close': true},
+  args: {label: '', noClose: true},
   async play({canvasElement}) {
     const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
     await dialog.updateComplete;
@@ -80,7 +89,7 @@ export const NoFooter: Story = {
  * component's own here.
  */
 export const NonModal: Story = {
-  args: {'non-modal': true},
+  args: {nonModal: true},
   async play({canvasElement}) {
     const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
     await dialog.updateComplete;
@@ -128,7 +137,7 @@ export const Scrolling: Story = {
 };
 
 export const ClosesOnOutsideClick: Story = {
-  args: {'close-on-outside-click': true},
+  args: {closeOnOutsideClick: true},
 };
 
 /**

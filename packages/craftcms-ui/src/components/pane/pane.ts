@@ -1,10 +1,15 @@
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
+import {html as staticHtml, unsafeStatic} from 'lit/static-html.js';
 import {property, state} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {Paddable} from '@src/mixins/Paddable.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 import styles from './pane.styles.js';
 
 export const PaneAppearance = {
@@ -87,10 +92,11 @@ const OVERFLOW_TOLERANCE = 1;
  * @slot secondary-action - The footer's secondary action, e.g. a cancel button.
  * @slot primary-action - The footer's primary action, e.g. a submit button.
  *
- * @attr padding - Spacing applied to the header, body, and footer regions.
- *   Accepts `sm`/`md`/`lg`/`xl` (mapped to `--c-spacing-*`), `0` or `none`, a
- *   unitless number (treated as pixels), or any CSS length. Defaults to `lg`.
- *   Supplied by the `Paddable` mixin, which writes it to `--_pane-spacing`.
+ * @attr {'sm'|'md'|'lg'|'xl'|'none'|'0'} padding - Spacing applied to the header, body, and footer regions.
+ *   Accepts `sm`, `md`, `lg`, and `xl` (mapped to `--c-spacing-*`), or
+ *   `0`/`none`. Defaults to `lg`. Values off that scale are ignored; set
+ *   `--c-pane-padding` for anything else. Supplied by the `Paddable` mixin,
+ *   which writes it to `--_pane-spacing`.
  *
  * @csspart base - The pane's outermost element, which carries the surface
  *   treatment. Style it to override border/shadow/fill for a single pane. It's
@@ -124,7 +130,7 @@ const OVERFLOW_TOLERANCE = 1;
  *   Defaults to `--c-color-neutral-border-quiet`.
  * @cssproperty --c-pane-padding - Fallback spacing used when the `padding`
  *   attribute is absent. Defaults to `--c-spacing-lg`.
- * @cssproperty --c-pane-title-font-size - Font size of the default `<h1>`
+ * @cssproperty --c-pane-title-font-size - Font size of the default heading
  *   title. Defaults to `1.125rem`.
  * @cssproperty --c-pane-title-line-height - Line height of the default title.
  * @cssproperty --c-pane-title-font-weight - Font weight of the default title.
@@ -169,9 +175,24 @@ export default class CraftPane extends Paddable(LitElement, {
   @property() label = '';
 
   /**
+   * The heading level `label` renders at. A pane sits inside a page that has
+   * its own `<h1>`, and pages routinely stack two or three panes, so the
+   * default is `2` — a run of `<h1>`s would leave a screen reader's heading
+   * list flat and unnavigable. Set it to `1` for a pane that really is the
+   * page's main heading, or deeper for a nested one.
+   */
+  @property({type: Number, attribute: 'heading-level'}) headingLevel:
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5
+    | 6 = 2;
+
+  /**
    * Whether header content is currently slotted. The header and footer slots
    * only render when filled, so their presence can't be tracked with
-   * `slotchange` — an unrendered slot never fires one. A light-DOM observer
+   * `slotchange` — an unrendered slot never fires one. `LightDomController`
    * keeps this fresh when a consumer adds, removes, or re-slots content.
    */
   @state() private _hasSlottedHeader = false;
@@ -188,7 +209,11 @@ export default class CraftPane extends Paddable(LitElement, {
   /** The host's `aria-label`, mirrored into state so it re-renders the region. */
   @state() private _hostLabel = '';
 
-  private _lightDomObserver = new MutationObserver(() => this._syncLightDom());
+  private _lightDom = new LightDomController(this, {
+    attributeFilter: ['aria-label'],
+    characterData: true,
+    onChange: () => this._syncLightDom(),
+  });
 
   private _resizeObserver?: ResizeObserver;
 
@@ -201,21 +226,8 @@ export default class CraftPane extends Paddable(LitElement, {
    */
   private _observedBoxes = new Set<Element>();
 
-  override connectedCallback() {
-    super.connectedCallback();
-    this._syncLightDom();
-    this._lightDomObserver.observe(this, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['slot', 'aria-label'],
-    });
-  }
-
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this._lightDomObserver.disconnect();
     this._resizeObserver?.disconnect();
     this._observedBoxes.clear();
   }
@@ -225,20 +237,15 @@ export default class CraftPane extends Paddable(LitElement, {
     return this.renderRoot?.querySelector('.cp-pane') ?? null;
   }
 
-  /**
-   * Only direct children can be assigned to this pane's slots, so presence is
-   * checked against them rather than the whole subtree — a nested component
-   * with its own `footer`/`actions` slot must not light up the pane's chrome.
-   */
-  private _hasSlot(...names: string[]): boolean {
-    return Array.from(this.children).some((child) =>
-      names.includes(child.slot)
-    );
-  }
-
   private _syncSlotPresence() {
-    this._hasSlottedHeader = this._hasSlot('header', 'title', 'header-actions');
-    this._hasSlottedFooter = this._hasSlot(
+    this._hasSlottedHeader = hasSlotted(
+      this,
+      'header',
+      'title',
+      'header-actions'
+    );
+    this._hasSlottedFooter = hasSlotted(
+      this,
       'footer',
       'footer-content',
       'feedback',
@@ -364,6 +371,18 @@ export default class CraftPane extends Paddable(LitElement, {
     this._observeScrollable();
   }
 
+  /**
+   * `staticHtml` because the tag name is part of the template, not a value —
+   * an interpolated tag would be escaped as text. The level is clamped to the
+   * six real heading elements so a bad attribute cannot emit an `<h0>`.
+   */
+  private _renderTitle() {
+    const level = Math.min(6, Math.max(1, Number(this.headingLevel) || 2));
+    const tag = unsafeStatic(`h${level}`);
+
+    return staticHtml`<${tag} class="cp-pane__title">${this.label}</${tag}>`;
+  }
+
   protected override render() {
     const showHeader = !!this.label || this._hasSlottedHeader;
 
@@ -380,9 +399,7 @@ export default class CraftPane extends Paddable(LitElement, {
           ? html`<slot name="header">
               <div class="cp-pane__header" part="header">
                 <slot name="title" part="title">
-                  ${this.label
-                    ? html`<h1 class="cp-pane__title">${this.label}</h1>`
-                    : nothing}
+                  ${this.label ? this._renderTitle() : nothing}
                 </slot>
                 <div class="cp-pane__header-actions" part="header-actions">
                   <slot name="header-actions"></slot>

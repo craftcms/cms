@@ -2,6 +2,14 @@ import {css} from 'lit';
 import {property} from 'lit/decorators.js';
 import CraftInput from '@src/components/input/input.js';
 
+/**
+ * @summary A handle input — `craft-input` in a monospace face, with the
+ * browser's autocorrection and auto-capitalisation turned off.
+ *
+ * Handles are typed exactly and read character by character, so the two
+ * conveniences a browser applies to prose actively get in the way. Everything
+ * else comes from `craft-input`.
+ */
 export default class CraftInputHandle extends CraftInput {
   static override get styles() {
     return [
@@ -15,6 +23,11 @@ export default class CraftInputHandle extends CraftInput {
     ];
   }
 
+  /**
+   * Whether the browser may autocorrect the value. Off here, unlike on
+   * `craft-input`. Serialised as `on`/`off` rather than as a bare boolean
+   * attribute, matching the native attribute it drives.
+   */
   @property({
     reflect: true,
     converter: {
@@ -24,6 +37,9 @@ export default class CraftInputHandle extends CraftInput {
   })
   override autocorrect = false;
 
+  /**
+   * The native `autocapitalize` mode. `off` here, unlike on `craft-input`.
+   */
   @property({reflect: true, type: String})
   override autocapitalize = 'off';
 

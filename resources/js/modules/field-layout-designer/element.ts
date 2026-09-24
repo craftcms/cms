@@ -107,14 +107,11 @@ export class Element extends Base {
       widthSlider.setAttribute('value', `${this.config.width || 100}`);
 
       if (this.tab.designer.settings!.readOnly) {
-        widthSlider.setAttribute('read-only', '');
+        widthSlider.setAttribute('readonly', '');
       }
 
-      widthSlider.addEventListener('value-change', (event: Event) => {
-        if (!(event instanceof CustomEvent)) {
-          return;
-        }
-        const width = Number(event.detail?.value);
+      widthSlider.addEventListener('change', () => {
+        const width = widthSlider.value;
         this.updateConfig((config: any) => {
           config.width = width;
           return config;

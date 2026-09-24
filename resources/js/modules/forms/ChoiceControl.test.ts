@@ -246,7 +246,7 @@ describe('ChoiceControl', () => {
 
     const handle = container!.querySelector('craft-reorder-button')!;
     handle.dispatchEvent(
-      new CustomEvent('reorder', {detail: {direction: 'down'}})
+      new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
     );
     await nextTick();
 

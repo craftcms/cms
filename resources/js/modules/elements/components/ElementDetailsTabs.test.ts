@@ -86,7 +86,7 @@ function tabs(): HTMLElement & {selectedIndex: number} {
 
 function select(index: number): void {
   tabs().selectedIndex = index;
-  tabs().dispatchEvent(new Event('selected-changed'));
+  tabs().dispatchEvent(new CustomEvent('craft-tab-show'));
 }
 
 function mountWithOverlay(overlaid?: Ref<boolean>): void {

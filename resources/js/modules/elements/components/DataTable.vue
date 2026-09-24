@@ -563,7 +563,7 @@
                 .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
                 .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
                 :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
-                @reorder="onStructureReorder(row.original.id, $event)"
+                @craft-reorder="onStructureReorder(row.original.id, $event)"
               ></craft-reorder-button>
             </div>
           </td>
@@ -571,7 +571,7 @@
             <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
               <div>
                 <craft-reorder-button
-                  @reorder="
+                  @craft-reorder="
                     (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                       emit(
                         'reorder',
