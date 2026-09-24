@@ -1,15 +1,7 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  ref,
-  shallowRef,
-  watch,
-  type InjectionKey,
-} from 'vue';
+import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {
@@ -55,9 +47,7 @@ export interface ElementFormAction {
   shift?: boolean;
 }
 
-export const elementFormActionSubmitterKey: InjectionKey<
-  (action: ElementFormAction) => void
-> = Symbol('elementFormActionSubmitter');
+export type ElementFormActionSubmitter = (action: ElementFormAction) => void;
 
 export interface ElementPrimaryAction extends ElementFormAction {
   tabId: string | null;
