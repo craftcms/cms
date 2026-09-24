@@ -388,24 +388,6 @@ class Import
         return false;
     }
 
-    /**
-     * Reads and formats the importer's source file, then imports each item one by one,
-     * synchronously. Queued imports go through `dispatchImport()` instead.
-     *
-     * @param  BaseImporter  $importer  The importer to use.
-     */
-    public function import(BaseImporter $importer): void
-    {
-        $importer->validateSettings();
-
-        $filePath = BaseImporter::resolvedFilePath($importer->file);
-        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
-
-        foreach ($this->getFormattedData($filePath) as $item) {
-            $this->importItem($importer, $item, $matchCriteria);
-        }
-    }
-
     // //////////// data //////////////
     /**
      * Returns a file's raw contents, throwing if the read fails or the file is empty.

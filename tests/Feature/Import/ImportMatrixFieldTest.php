@@ -56,7 +56,7 @@ beforeEach(function () {
         ->transformer(null);
 
     // An importer's own matchCriteria only reaches the pipeline when it's resolved and passed into
-    // importItem() - which is what Import::import(), the import job and craft:import:element all do.
+    // importItem() - which is what the import job and craft:import:element both do.
     // Calling importItem() without it means config-level criteria is silently ignored.
     $this->importWithConfigCriteria = fn ($importer, array $data) => ImportFixtures::importWithConfigCriteria($this->import, $importer, $data);
 

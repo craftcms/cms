@@ -60,7 +60,7 @@ final class ImportFixtures
 
     /**
      * Imports one item with the importer's own matchCriteria resolved and passed in, the way
-     * Import::Import(), the Import job and the Import commands all do. Calling
+     * the Import job and the Import commands both do. Calling
      * Import::importItem() without that third argument silently ignores config-level criteria.
      */
     public static function importWithConfigCriteria(Import $import, BaseImporter $importer, array $data): void

@@ -44,7 +44,7 @@ it('keeps nested elements as nested arrays', function () {
 
 // getData() unwraps the root's first key, which is the row list only when there are 2+ rows: with a
 // single <entry> the unwrapped value is that row itself, so the result is one row rather than a
-// list of one. Import::Import() foreaches whatever comes back, so this shape matters.
+// list of one. The import job and commands foreach whatever comes back, so this shape matters.
 it('formats a single-row XML document into one row rather than a list of one', function () {
     $result = Xml::format('<entries><entry><title>only one</title></entry></entries>');
 
