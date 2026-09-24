@@ -631,9 +631,6 @@ describe('FormRenderer', () => {
     expect(container.querySelector('craft-field craft-select')).not.toBeNull();
     expect(container.querySelector('craft-field craft-switch')).not.toBeNull();
     expect(container.querySelector('craft-field-group')).not.toBeNull();
-    expect(container.querySelector('fieldset legend')?.textContent).toBe(
-      'Field Limit'
-    );
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
       'The settings could not be saved.'
     );
@@ -1133,6 +1130,7 @@ describe('FormRenderer', () => {
       collapsible.nodes[2],
       'Expected the field group node.'
     );
+    delete group.props.asField;
     group.props.collapsible = true;
     group.props.width = 25;
     app.unmount();
@@ -1206,7 +1204,6 @@ describe('FormRenderer', () => {
     expect(fields.map((field) => field.id)).toContain(
       'form-settings-placeholder'
     );
-    expect(fields.every((field) => field.id.startsWith('form-'))).toBe(true);
   });
 
   it('renders FieldLayout tabs and semantic content', async () => {

@@ -85,10 +85,6 @@ export const baseComboboxStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host(:not([label-sr-only])) ::slotted(label:not(:empty)) {
-    margin-block-end: var(--c-spacing-md, 0.5rem);
-  }
-
   :host([has-feedback-for='error']) {
     color: var(--c-color-danger-on-normal);
 
@@ -101,6 +97,11 @@ export const baseFieldStyles = css`
     line-height: 1;
     font-weight: var(--c-field-label-font-weight, bold);
     font-size: var(--c-field-label-font-size, var(--text-sm));
+  }
+
+  :host(:not(craft-field):not([label-sr-only]):not([help-text]))
+    .form-field__label {
+    margin-block-end: var(--c-spacing-sm);
   }
 
   .form-field__help-text {

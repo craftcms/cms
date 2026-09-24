@@ -54,6 +54,15 @@ export default css`
     gap: 5px;
     align-items: center;
     font-weight: bold;
+    margin-block-end: var(
+      --c-field-label-margin-block-end,
+      var(--c-spacing-sm)
+    );
+  }
+
+  :host(:not([label-sr-only]))
+    .form-field__group-one:not(:has(.form-field__help-text))
+    ::slotted(label:not(:empty)) {
     margin-block-end: var(--c-spacing-sm);
   }
 
@@ -96,6 +105,10 @@ export default css`
   .form-field__help-text {
     display: block;
     margin-block-end: var(--c-spacing-xs, 0.3125rem);
+  }
+
+  :host([fieldset][data-form-node]) .form-field__help-text {
+    margin-block-end: var(--c-spacing-md);
   }
 
   .form-field__group-two .form-field__help-text {
