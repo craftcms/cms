@@ -2,7 +2,20 @@
 
 ## Unreleased
 
+- Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
+- Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
+- Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
+
+## 5.11.3 - 2026-09-18
+
+- Fixed an error that could occur when registering or logging in with a passkey. ([#19657](https://github.com/craftcms/cms/issues/19657), [#19660](https://github.com/craftcms/cms/pull/19660))
+
+## 5.11.2 - 2026-09-17
+
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
+- Added `craft\helpers\StringHelper::containsNewlines()`.
+- Added `craft\services\ElementSources::CONTEXT_RESTRICTED_MODAL`.
+- Added `craft\elements\db\EagerLoadPlan::$siteIds`.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where Money and Number fields’ currency labels didn't line up with their inputs. ([#19547](https://github.com/craftcms/cms/pull/19547))
 - Fixed a bug where Structure entries’ “Parent” field could be populated with the parent entry from a different site than the one being edited. ([#19576](https://github.com/craftcms/cms/issues/19576))
@@ -10,6 +23,15 @@
 - Fixed a bug where public registration could fail when sending the activation email, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a bug where custom fields nested within Content Block fields weren’t editable from element indexes. ([#19602](https://github.com/craftcms/cms/discussions/19602))
 - Fixed a bug where nested relational fields weren’t enforcing their “Validate related {type}” setting. ([#19625](https://github.com/craftcms/cms/pull/19625))
+- Fixed a bug where newly-created generated fields weren’t immediately available to card previews. ([#19166](https://github.com/craftcms/cms/pull/19166))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-r56r-f696-c8w9, GHSA-f6gf-r952-rxg6, GHSA-qcvp-ggx3-97r6)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-qj3q-j7r4-428p, GHSA-9hp6-3565-gvh5)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-v25r-wr32-jfg7)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-xpg7-m6gm-4xfh, GHSA-mp59-9rf5-93wr)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-5v62-pcq7-fxj9)
 
 ## 5.11.1 - 2026-09-02
 
@@ -75,10 +97,10 @@
 - Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
 - Fixed an error that could occur when upgrading to Craft 5. ([craftcms/commerce#4309](https://github.com/craftcms/commerce/pull/4309))
 - Fixed a bug where overridden entry type handles weren’t being prioritized when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5m2g-hhqr-84pc, GHSA-vfcw-xv8p-8rj2)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4wfw-q5w3-jh42)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-w5rh-mhxj-wr8r)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j5wg-m2pr-35qc)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. ([GHSA-5m2g-hhqr-84pc](https://github.com/craftcms/cms/security/advisories/GHSA-5m2g-hhqr-84pc), [GHSA-vfcw-xv8p-8rj2](https://github.com/craftcms/cms/security/advisories/GHSA-vfcw-xv8p-8rj2))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-4wfw-q5w3-jh42](https://github.com/craftcms/cms/security/advisories/GHSA-4wfw-q5w3-jh42))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-w5rh-mhxj-wr8r](https://github.com/craftcms/cms/security/advisories/GHSA-w5rh-mhxj-wr8r))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-j5wg-m2pr-35qc](https://github.com/craftcms/cms/security/advisories/GHSA-j5wg-m2pr-35qc))
 
 ## 5.10.13.2 - 2026-08-05
 

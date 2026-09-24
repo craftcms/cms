@@ -375,7 +375,7 @@ class Asset extends Element
     {
         $sources = [];
 
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
         } else {
             $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();

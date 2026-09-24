@@ -1067,9 +1067,11 @@ SQL;
      */
     private function _sqlWhere(string $key, string $oper, string|int $val): string
     {
-        $key = Craft::$app->getDb()->quoteColumnName($key);
+        $db = Craft::$app->getDb();
+        $key = $db->quoteColumnName($key);
+        $val = $db->quoteValue($val);
 
-        return sprintf("(%s %s '%s')", $key, $oper, $val);
+        return "($key $oper $val)";
     }
 
     /**

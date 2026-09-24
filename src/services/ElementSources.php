@@ -54,6 +54,8 @@ class ElementSources extends Component
     public const CONTEXT_FIELD = 'field';
     public const CONTEXT_INDEX = 'index';
     public const CONTEXT_MODAL = 'modal';
+    /** @since 5.11.2 */
+    public const CONTEXT_RESTRICTED_MODAL = 'restricted-modal';
     public const CONTEXT_SETTINGS = 'settings';
 
     /**

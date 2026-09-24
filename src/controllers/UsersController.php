@@ -1650,6 +1650,11 @@ JS);
                     if ($user) {
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
+
+                        // clear out any existing permissions they had, if they had any
+                        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+                            Craft::$app->getUserPermissions()->saveUserPermissions($user->id, []);
+                        }
                     }
                 }
             }

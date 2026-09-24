@@ -3563,7 +3563,7 @@ class Elements extends Component
 
                         $criteria = array_merge(
                             $siteCriteria,
-                            $plan->criteria,
+                            ElementHelper::cleanseQueryCriteria($plan->criteria),
                             $otherCriteria,
                         );
 
@@ -3575,6 +3575,10 @@ class Elements extends Component
 
                         if (!$query->siteId) {
                             $query->siteId = $siteId;
+                        }
+
+                        if (isset($plan->siteIds)) {
+                            $query->siteId = array_intersect((array)$query->siteId, $plan->siteIds);
                         }
 
                         if (!$query->id) {

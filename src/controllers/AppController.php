@@ -121,8 +121,14 @@ class AppController extends Controller
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
+        $icon = $this->request->getRequiredParam('icon');
+
+        if (!preg_match('/^[\w\-]+$/', $icon)) {
+            throw new BadRequestHttpException("Invalid icon: $icon");
+        }
+
         return $this->asJson([
-            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
+            'iconSvg' => Cp::iconSvg($icon),
         ]);
     }
 
@@ -783,6 +789,10 @@ class AppController extends Controller
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    if (isset($instance['returnUrl'])) {
+                        $instance['returnUrl'] = $this->validateReturnUrl($instance['returnUrl']);
+                    }
+
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
@@ -801,6 +811,26 @@ class AppController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    private function validateReturnUrl(mixed $returnUrl): string
+    {
+        if (!is_string($returnUrl)) {
+            throw new BadRequestHttpException('Invalid returnUrl param');
+        }
+
+        // only require the URL to be hashed if it contains Twig code
+        $validated = Craft::$app->getSecurity()->validateData($returnUrl);
+
+        if ($validated !== false) {
+            return $validated;
+        }
+
+        if (str_contains($returnUrl, '{')) {
+            throw new BadRequestHttpException('Invalid returnUrl param');
+        }
+
+        return $returnUrl;
     }
 
     /**

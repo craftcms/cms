@@ -90,7 +90,9 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\Filter\DefaultFilter;
+use Twig\Sandbox\SecurityError;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -231,7 +233,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('capitalize', [$this, 'capitalizeFilter'], ['needs_charset' => true]),
-            new TwigFilter('column', [$this, 'columnFilter'], ['needs_is_sandboxed' => true]),
+            new TwigFilter('column', [$this, 'columnFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('contains', [$this, 'containsFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('currency', [$this, 'currencyFilter']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
@@ -545,11 +547,40 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool $keepKeys
      * @return array
      * @throws RuntimeError
+     * @throws SecurityError if `$array` (or one of its elements) is an object and `$name` isn’t an allowed property/method in a sandboxed environment
      */
-    public function columnFilter(bool $isSandboxed, mixed $array, mixed $name, bool $keepKeys = true): array
+    public function columnFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $name, bool $keepKeys = true): array
     {
         $this->preventDottedNameInSandbox($isSandboxed, $name, 'column');
-        return ArrayHelper::getColumn($array, $name, $keepKeys);
+
+        if (!$isSandboxed || !is_string($name)) {
+            return ArrayHelper::getColumn($array, $name, $keepKeys);
+        }
+
+        $sandbox = $env->getExtension(SandboxExtension::class);
+
+        if (is_object($array) && !$array instanceof Traversable) {
+            // $array is a single object rather than a list of rows, so extracting a “column” from it would
+            // otherwise mean enumerating its public properties without any sandbox checks. Treat this the same
+            // way the template would if it had accessed the property directly, e.g. `array.name`.
+            $sandbox->checkPropertyAllowed($array, $name);
+            return [ArrayHelper::getValue($array, $name)];
+        }
+
+        // Check each object element’s property/method the same way the template would if it had accessed it
+        // directly, e.g. `element.name`, rather than letting ArrayHelper::getValue() read it unchecked.
+        $result = [];
+        foreach ($array as $k => $element) {
+            if (is_object($element)) {
+                $sandbox->checkPropertyAllowed($element, $name);
+            }
+            if ($keepKeys) {
+                $result[$k] = ArrayHelper::getValue($element, $name);
+            } else {
+                $result[] = ArrayHelper::getValue($element, $name);
+            }
+        }
+        return $result;
     }
 
     /**
