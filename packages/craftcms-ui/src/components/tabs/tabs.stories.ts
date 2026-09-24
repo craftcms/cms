@@ -558,11 +558,13 @@ export const EqualWidth: Story = {
       range.selectNodeContents(tab);
       const text = range.getBoundingClientRect();
 
-      // Within a pixel and a half of each other: half-leading lands on
-      // fractional pixels, and the bug this guards leaves a gap of twenty.
+      // Within a few pixels of each other: half-leading lands on fractional
+      // pixels, and how far off it lands depends on the font the machine has
+      // (CI's Linux fallback comes out near two). The bug this guards leaves a
+      // gap of twenty.
       expect(
         Math.abs(text.top - box.top - (box.bottom - text.bottom))
-      ).toBeLessThanOrEqual(1.5);
+      ).toBeLessThanOrEqual(3);
     });
   },
 };
