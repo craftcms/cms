@@ -1,5 +1,9 @@
 <template>
   <div class="admin-table-toolbar">
+    <div v-if="$slots.status" class="admin-table-toolbar__status">
+      <slot name="status"></slot>
+    </div>
+
     <div v-if="$slots.search" class="admin-table-toolbar__search">
       <slot name="search"></slot>
     </div>

@@ -64,6 +64,9 @@ class Table implements Node
     /** @var list<array<string, mixed>> */
     private array $statusActions = [];
 
+    /** @var list<array{value: string, label: string}>|null */
+    private ?array $statusFilterOptions = null;
+
     private bool $searchable = false;
 
     private ?string $searchPlaceholder = null;
@@ -130,15 +133,21 @@ class Table implements Node
         $status = is_bool($status) ? ($status ? 'enabled' : 'disabled') : $status;
 
         $row['_status'] = [
-            'fill' => (Color::tryFromStatus($status) ?? Color::Gray)->value,
+            'value' => $status,
+            'fill' => self::statusFill($status),
             'label' => ucfirst($status),
         ];
 
         return $row;
     }
 
+    private static function statusFill(string $status): string
+    {
+        return (Color::tryFromStatus($status) ?? Color::Gray)->value;
+    }
+
     /**
-     * Fetch rows by posting `{page, per_page, search}` to `$url`. The response must contain
+     * Fetch rows by posting `{page, per_page, search, status}` to `$url`. The response must contain
      * `{data: <rows>, pagination: {total, per_page, current_page, last_page, next_page_url,
      * prev_page_url, from, to}}`. Pass the page's rows through {@see prepareRows()} first.
      * Calling this clears {@see rows()}, and vice versa.
@@ -277,6 +286,23 @@ class Table implements Node
     }
 
     /**
+     * Adds a status dropdown to the toolbar, defaulting to enabled/disabled. Filters
+     * {@see rows()} locally on `_status`, or sends the chosen `status` to the {@see dataUrl()}
+     * endpoint and resets to page 1. "All" sends no `status`.
+     *
+     * @param  list<array{value: string, label: string}>|null  $options
+     */
+    public function statusFilter(?array $options = null): static
+    {
+        $this->statusFilterOptions = $options ?? [
+            ['value' => 'enabled', 'label' => t('Enabled')],
+            ['value' => 'disabled', 'label' => t('Disabled')],
+        ];
+
+        return $this;
+    }
+
+    /**
      * Search {@see rows()} locally, or send `search` to the {@see dataUrl()} endpoint
      * and reset to page 1. See {@see rows()} for the `_search` override.
      */
@@ -404,9 +430,27 @@ class Table implements Node
             'bulkDeletable' => $this->bulkDeletable,
             'bulkActions' => $this->bulkActions,
             'statusActions' => $this->statusActions,
+            'statusFilterOptions' => $this->resolveStatusFilterOptions(),
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,
+        ];
+    }
+
+    /** @return list<array{value: string, label: string, fill: string|null}> */
+    private function resolveStatusFilterOptions(): array
+    {
+        if ($this->statusFilterOptions === null) {
+            return [];
+        }
+
+        return [
+            ['value' => '', 'label' => t('All'), 'fill' => null],
+            ...array_map(fn (array $option) => [
+                'value' => $option['value'],
+                'label' => $option['label'],
+                'fill' => self::statusFill($option['value']),
+            ], $this->statusFilterOptions),
         ];
     }
 

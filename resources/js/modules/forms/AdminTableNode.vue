@@ -10,6 +10,9 @@
   import {watchDebounced} from '@vueuse/core';
   import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftSelectRich, {
+    type SelectRichOption,
+  } from '@craftcms/ui/vue/CraftSelectRich.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import type {ActionItemLink, PaginationData} from '@/common/types';
@@ -20,6 +23,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useLocalStorage} from '@/common/composables/useStorage';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
   import CreateActionButton from '@/modules/admin-table/components/CreateActionButton.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -79,8 +83,15 @@
     | TableHtml;
 
   interface TableStatus {
+    value?: string;
     fill: string;
     label: string | null;
+  }
+
+  interface StatusFilterOption {
+    value: string;
+    label: string;
+    fill: string | null;
   }
 
   type TableRow = Record<string, TableCellValue> & {
@@ -111,6 +122,7 @@
       bulkDeletable: boolean;
       bulkActions: BulkActionDescriptor[];
       statusActions: BulkActionSingle[];
+      statusFilterOptions: StatusFilterOption[];
       searchable: boolean;
       searchPlaceholder: string | null;
       bordered: boolean;
@@ -128,13 +140,16 @@
   const isEndpointMode = computed(() => !!props.node.props.dataUrl);
 
   const pageRows = ref<TableRow[]>([]);
-  // Keyed by endpoint rather than node uid, which isn't unique across screens or plugins.
+
+  // Endpoint tables are keyed by endpoint, since a node uid isn't unique across screens or plugins.
+  const storageKey = props.node.props.dataUrl
+    ? `adminTable.${new URL(props.node.props.dataUrl, window.location.origin).pathname}`
+    : `adminTable.${window.location.pathname}.${props.node.uid}`;
+
   const storedPerPage = props.node.props.dataUrl
-    ? useLocalStorage(
-        `adminTable.${new URL(props.node.props.dataUrl, window.location.origin).pathname}.perPage`,
-        props.node.props.perPage,
-        {writeDefaults: false}
-      )
+    ? useLocalStorage(`${storageKey}.perPage`, props.node.props.perPage, {
+        writeDefaults: false,
+      })
     : null;
 
   const perPage = ref(
@@ -156,6 +171,7 @@
         page,
         per_page: perPage.value,
         search: search.value || undefined,
+        status: status.value || undefined,
       });
       pageRows.value = data.data;
       pagination.value = data.pagination;
@@ -173,6 +189,34 @@
   });
 
   const search = ref('');
+
+  const hasStatusFilter = computed(
+    () => props.node.props.statusFilterOptions.length > 0
+  );
+
+  const storedStatus = useLocalStorage(`${storageKey}.status`, '', {
+    writeDefaults: false,
+  });
+
+  const status = ref(
+    hasStatusFilter.value &&
+      props.node.props.statusFilterOptions.some(
+        (option) => option.value === storedStatus.value
+      )
+      ? storedStatus.value
+      : ''
+  );
+
+  watch(status, (value) => {
+    storedStatus.value = value;
+    table.resetRowSelection();
+
+    if (isEndpointMode.value) {
+      fetchPage(1);
+    }
+  });
+
+  const isFiltered = computed(() => !!search.value || !!status.value);
 
   watchDebounced(
     search,
@@ -208,9 +252,11 @@
   const filteredRows = computed(() => {
     const query = search.value.trim().toLowerCase();
 
-    return query
-      ? rows.value.filter((row) => rowSearchText(row).includes(query))
-      : rows.value;
+    return rows.value.filter(
+      (row) =>
+        (!status.value || row._status?.value === status.value) &&
+        (!query || rowSearchText(row).includes(query))
+    );
   });
 
   const displayedRows = computed(() =>
@@ -375,6 +421,7 @@
   const showMoveToPage = computed(
     () =>
       isEndpointMode.value &&
+      !isFiltered.value &&
       !!props.node.props.moveToPageUrl &&
       (pagination.value?.last_page ?? 0) > 1
   );
@@ -643,6 +690,11 @@
       props.node.props.statusActions.map(bulkActionToItem)
   );
 
+  // The select's option slot only types the base option shape.
+  function statusOptionFill(option: SelectRichOption): string | undefined {
+    return (option as StatusFilterOption).fill ?? undefined;
+  }
+
   function refreshForm(): void {
     router.reload({only: ['form']});
   }
@@ -667,7 +719,7 @@
     >
       <AdminTable
         :table="table"
-        :reorderable="!!node.props.reorderUrl && !search"
+        :reorderable="!!node.props.reorderUrl && !isFiltered"
         :selectable="hasBulkFooter"
         :loading="loading"
         :from="footerFrom"
@@ -682,10 +734,33 @@
         @action-performed="refreshForm"
       >
         <template
-          v-if="node.props.searchable || createActionInToolbar"
+          v-if="
+            hasStatusFilter || node.props.searchable || createActionInToolbar
+          "
           #table-header
         >
           <AdminTableToolbar>
+            <template v-if="hasStatusFilter" #status>
+              <CraftSelectRich
+                v-model="status"
+                :options="node.props.statusFilterOptions"
+                :label="t('Status')"
+                label-sr-only
+              >
+                <template #option="{option}">
+                  <span
+                    v-if="statusOptionFill(option)"
+                    class="inline-flex items-center gap-2"
+                  >
+                    <craft-indicator
+                      :fill="statusOptionFill(option)"
+                    ></craft-indicator>
+                    {{ option.label }}
+                  </span>
+                  <ElementStatus v-else :label="option.label" value="" />
+                </template>
+              </CraftSelectRich>
+            </template>
             <template v-if="node.props.searchable" #search>
               <CraftInput
                 name="search"
@@ -726,7 +801,9 @@
             :label="
               search
                 ? t('No results for “{search}”.', {search})
-                : (node.props.emptyMessage ?? t('Nothing to show.'))
+                : status
+                  ? t('No results.')
+                  : (node.props.emptyMessage ?? t('Nothing to show.'))
             "
           ></craft-empty>
         </template>
