@@ -52,7 +52,7 @@ class ImportEntry extends Import
             'entryType' => [
                 'prompt' => fn ($responses) => select(
                     label: 'Which entry type do you want to import into?',
-                    options: $this->entryTypeOptions($responses['section']),
+                    options: $this->entryTypeOptions($this->option('section') ?? $responses['section']),
                 ),
             ],
         ]);
@@ -64,7 +64,7 @@ class ImportEntry extends Import
             return [];
         }
 
-        $section = Sections::getSectionByUid($section);
+        $section = Sections::getSectionByUid($section) ?? Sections::getSectionByHandle($section);
 
         return collect($section?->getEntryTypes())
             ->mapWithKeys(fn ($entryType) => [$entryType->uid => $entryType->name])

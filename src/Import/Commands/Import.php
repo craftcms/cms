@@ -88,10 +88,7 @@ abstract class Import extends Command implements PromptsForMissingInput
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
         }
 
-        $settings = [
-            ...$responses,
-            ...$this->options(),
-        ];
+        $settings = array_replace($this->options(), array_filter($responses, fn ($value) => $value !== null && $value !== ''));
         unset($settings['matchCriteria']);
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
@@ -123,7 +120,7 @@ abstract class Import extends Command implements PromptsForMissingInput
         $this->components->bulletList($list);
 
         try {
-            // $importer->validateSettings();
+            $importer->validateSettings();
             $filePath = $importer::resolvedFilePath($importer->file);
             $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
             $allData = ImportFacade::getFormattedData($filePath);
