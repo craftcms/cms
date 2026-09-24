@@ -113,7 +113,8 @@ class Pane extends ViewComponent
 
     /**
      * The level of the heading `label` renders, 1–6; the web component
-     * defaults to `2`. Use `1` only when the pane is the page’s main heading.
+     * defaults to `2`, since a pane sits under the page’s own `<h1>`. Use `1`
+     * only when the pane is the page’s main heading, or deeper for a nested one.
      */
     public function headingLevel(?int $headingLevel): static
     {

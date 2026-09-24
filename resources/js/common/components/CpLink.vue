@@ -78,6 +78,7 @@
       icon?: string;
       block?: boolean;
       inertia?: boolean;
+      underline?: boolean;
     }>(),
     {
       block: false,
@@ -90,6 +91,7 @@
       block: props.block,
       'inline-flex': !props.block,
       'cp-link': true,
+      'cp-link--underline': props.underline,
     };
   });
 
@@ -154,5 +156,13 @@
     gap: var(--c-spacing-sm);
     align-items: center;
     text-decoration: none;
+  }
+
+  .cp-link--underline {
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 </style>

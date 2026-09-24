@@ -46,11 +46,14 @@ export default class CraftBreadcrumbItem extends LitElement {
       align-items: center;
       font-weight: 400;
       color: inherit;
-      text-decoration: none;
+    }
+
+    a.label {
+      text-decoration: underline;
     }
 
     a.label:hover {
-      text-decoration: underline;
+      text-decoration: none;
     }
 
     slot[name='prefix']::slotted(*) {
