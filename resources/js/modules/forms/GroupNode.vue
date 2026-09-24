@@ -15,6 +15,7 @@
     collapsible?: boolean;
     /** Renders the group as one field rather than a section — see `Nodes\Group`. */
     asField?: boolean;
+    required?: boolean;
     instructions?: string | null;
     tip?: string;
     tipHtml?: string;
@@ -56,6 +57,7 @@
     v-if="node.props.asField"
     fieldset
     :label="node.props.label ?? undefined"
+    :required="node.props.required || undefined"
     :help-text="node.props.instructions ?? undefined"
     :class="{
       [`width-${node.props.width}`]: Boolean(node.props.width),
