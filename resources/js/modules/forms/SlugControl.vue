@@ -67,6 +67,9 @@
     :editable="editable"
     :invalid="invalid"
     :required="required"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="none"
     @update:value="emit('update:value', $event, 'typing')"
     @change="onChange"
   />
