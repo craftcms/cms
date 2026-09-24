@@ -19,6 +19,7 @@
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
+- Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
 
 ### Assets
 - Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
