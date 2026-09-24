@@ -30,6 +30,9 @@ class Table implements Node
 
     private int $perPage = 100;
 
+    /** @var list<int> */
+    private array $perPageOptions = [50, 100, 250];
+
     private ?string $moveToPageUrl = null;
 
     private ?string $emptyMessage = null;
@@ -137,19 +140,28 @@ class Table implements Node
      * `{data: <rows>, pagination: {total, per_page, current_page, last_page, next_page_url,
      * prev_page_url, from, to}}`. Pass the page's rows through {@see prepareRows()} first.
      * Calling this clears {@see rows()}, and vice versa.
+     *
+     * Users can switch `per_page` between `$perPageOptions` (plus `$perPage`), so the
+     * endpoint must honor the posted value rather than assume `$perPage`.
+     *
+     * @param  list<int>|null  $perPageOptions
      */
-    public function dataUrl(string $url, int $perPage = 100): static
+    public function dataUrl(string $url, int $perPage = 100, ?array $perPageOptions = null): static
     {
         $this->dataUrl = $url;
         $this->perPage = $perPage;
         $this->rows = [];
 
+        if ($perPageOptions !== null) {
+            $this->perPageOptions = $perPageOptions;
+        }
+
         return $this;
     }
 
     /**
-     * In {@see dataUrl()} mode, posts `{id, page}` to `$url` to move a row across pages.
-     * The endpoint computes the new absolute position.
+     * In {@see dataUrl()} mode, posts `{id, page, per_page}` to `$url` to move a row across
+     * pages. The endpoint computes the new absolute position.
      */
     public function moveToPageUrl(string $url): static
     {
@@ -364,6 +376,7 @@ class Table implements Node
             'rows' => $this->rows,
             'dataUrl' => $this->dataUrl,
             'perPage' => $this->perPage,
+            'perPageOptions' => $this->resolvePerPageOptions(),
             'moveToPageUrl' => $this->moveToPageUrl,
             'emptyMessage' => $this->emptyMessage,
             'createLabel' => $this->createLabel,
@@ -381,6 +394,15 @@ class Table implements Node
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,
         ];
+    }
+
+    /** @return list<int> */
+    private function resolvePerPageOptions(): array
+    {
+        $options = array_unique([...$this->perPageOptions, $this->perPage]);
+        sort($options);
+
+        return $options;
     }
 
     public function getControl(): ?Control

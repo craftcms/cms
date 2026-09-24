@@ -18,7 +18,6 @@
     BulkAction,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
-  import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -95,6 +94,7 @@
       rows: TableRow[];
       dataUrl: string | null;
       perPage: number;
+      perPageOptions: number[];
       moveToPageUrl: string | null;
       emptyMessage: string | null;
       createLabel: string | null;
@@ -125,6 +125,7 @@
   const isEndpointMode = computed(() => !!props.node.props.dataUrl);
 
   const pageRows = ref<TableRow[]>([]);
+  const perPage = ref(props.node.props.perPage);
   const pagination = ref<PaginationData | null>(null);
   const loading = ref(false);
 
@@ -136,11 +137,13 @@
         pagination: PaginationData;
       }>(props.node.props.dataUrl!, {
         page,
-        per_page: props.node.props.perPage,
+        per_page: perPage.value,
         search: search.value || undefined,
       });
       pageRows.value = data.data;
       pagination.value = data.pagination;
+      // The endpoint may ignore or clamp `per_page`, so defer to the size it actually used.
+      perPage.value = data.pagination.per_page;
     } finally {
       loading.value = false;
     }
@@ -360,7 +363,7 @@
 
   const paginationState = computed(() => ({
     pageIndex: (pagination.value?.current_page ?? 1) - 1,
-    pageSize: props.node.props.perPage,
+    pageSize: perPage.value,
   }));
 
   function onPaginationChange(
@@ -375,6 +378,17 @@
 
     const next =
       updater instanceof Function ? updater(paginationState.value) : updater;
+
+    if (next.pageSize !== perPage.value) {
+      const previous = perPage.value;
+      perPage.value = next.pageSize;
+      table.resetRowSelection();
+      fetchPage(1).catch(() => {
+        perPage.value = previous;
+      });
+      return;
+    }
+
     fetchPage(next.pageIndex + 1);
   }
 
@@ -466,7 +480,7 @@
     pageRows.value = reordered;
 
     const toPosition =
-      (pagination.value.current_page - 1) * props.node.props.perPage +
+      (pagination.value.current_page - 1) * pagination.value.per_page +
       finishIndex;
 
     actionClient
@@ -488,7 +502,11 @@
 
   function moveToPage(id: TableRow['id'], page: number): void {
     actionClient
-      .post(props.node.props.moveToPageUrl!, {id, page})
+      .post(props.node.props.moveToPageUrl!, {
+        id,
+        page,
+        per_page: pagination.value!.per_page,
+      })
       .then(() => {
         Craft.cp?.displayNotice?.(
           props.node.props.reorderSuccessMessage ?? t('Order updated.')
@@ -668,6 +686,8 @@
         :from="footerFrom"
         :to="footerTo"
         :total="footerTotal"
+        :enable-adjust-page-size="isEndpointMode"
+        :page-size-options="node.props.perPageOptions"
         :actions="footerActionItems"
         :statuses="statusActionItems"
         ids-field="ids"
@@ -675,14 +695,14 @@
         @action-performed="refreshForm"
       >
         <template #empty-row>
-          <Empty
+          <craft-empty
             v-if="!loading"
             :label="
               search
                 ? t('No results for “{search}”.', {search})
                 : (node.props.emptyMessage ?? t('Nothing to show.'))
             "
-          />
+          ></craft-empty>
         </template>
       </AdminTable>
     </component>
