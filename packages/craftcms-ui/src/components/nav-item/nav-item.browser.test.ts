@@ -9,6 +9,34 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+it('aligns group headings when a nested plugin has a slotted icon', async () => {
+  document.body.innerHTML = `
+    <craft-nav-list>
+      <craft-nav-item group>System</craft-nav-item>
+      <craft-nav-item group>
+        Plugins
+        <craft-nav-list slot="subnav">
+          <craft-nav-item href="/admin/settings/plugins/test-plugin">
+            Test Plugin <craft-icon slot="icon"></craft-icon>
+          </craft-nav-item>
+        </craft-nav-list>
+      </craft-nav-item>
+    </craft-nav-list>
+  `;
+
+  const [system, plugins] = document.querySelectorAll<CraftNavItem>(
+    'craft-nav-item[group]'
+  );
+  await Promise.all([system.updateComplete, plugins.updateComplete]);
+
+  const labelX = (item: CraftNavItem) =>
+    item
+      .shadowRoot!.querySelector('.nav-item__action-item')!
+      .getBoundingClientRect().left;
+
+  expect(labelX(plugins)).toBeCloseTo(labelX(system), 1);
+});
+
 /** A collapsed item with a subnav, so it renders both an icon and a chevron. */
 async function railFixture(): Promise<CraftNavItem> {
   const list = document.createElement('craft-nav-list');

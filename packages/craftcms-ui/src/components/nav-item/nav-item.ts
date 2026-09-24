@@ -705,7 +705,7 @@ export default class CraftNavItem extends LitElement {
   }
 
   override render() {
-    const hasSubnav = !!this.querySelector('[slot="subnav"]');
+    const hasSubnav = !!this.querySelector(':scope > [slot="subnav"]');
     // A `slot` can only project its content in one place, so the subnav is
     // either indented below or in the flyout, never both.
     const display = this.subnavDisplay ?? (this.iconOnly ? 'flyout' : 'inline');
@@ -726,8 +726,8 @@ export default class CraftNavItem extends LitElement {
       toggleInPrefix ||
       !!this.icon ||
       this.indicator ||
-      !!this.querySelector('[slot="prefix"]') ||
-      !!this.querySelector('[slot="icon"]');
+      !!this.querySelector(':scope > [slot="prefix"]') ||
+      !!this.querySelector(':scope > [slot="icon"]');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
     // Collapsed, a heading has no room for its name and nothing to sit above
