@@ -66,7 +66,8 @@ class UserReviewStage extends WorkflowStage
                 ])
                     ->label(t('Approvals required'))
                     ->instructions(t('The minimum number of approvals required in total or per reviewer group.'))
-                    ->asField(),
+                    ->asField()
+                    ->required(),
             ]),
         ]);
     }

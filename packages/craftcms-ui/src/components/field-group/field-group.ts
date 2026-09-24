@@ -49,6 +49,14 @@ export default class CraftFieldGroup extends LitElement {
           --c-field-label-margin-block-end: 0;
         }
 
+        craft-field[fieldset][required]
+          > craft-field-group
+          craft-field[required]
+          > [slot='label']
+          > craft-icon[name='asterisk'][data-craft-field-decoration] {
+          display: none;
+        }
+
         @container (min-width: 30rem) {
           craft-field-group.auto-widths > :not([class*='width-']) {
             grid-column: span 2;
