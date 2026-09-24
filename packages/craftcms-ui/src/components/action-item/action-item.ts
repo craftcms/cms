@@ -111,6 +111,14 @@ export default class CraftActionItem extends LitElement {
   @property({type: Boolean, reflect: true}) active: boolean = false;
 
   /**
+   * Tells assistive tech the item is the current one in its set — the selected
+   * entry of a list that picks what another part of the page shows. Sets
+   * `aria-current` on the item's own button or link, which an attribute on the
+   * host wouldn't reach. `active` only styles it.
+   */
+  @property({type: Boolean}) current: boolean = false;
+
+  /**
    * `checkbox` reserves room for a checkmark before the icon, so a list of
    * options stays aligned whether or not each one is checked.
    */
@@ -360,6 +368,7 @@ export default class CraftActionItem extends LitElement {
               'action-item--checkbox': this.type === 'checkbox',
             })}"
             href="${this.href}"
+            aria-current="${this.current ? 'true' : nothing}"
             target="${ifDefined(this.target ?? undefined)}"
             rel="${ifDefined(
               this.rel ??
@@ -377,6 +386,7 @@ export default class CraftActionItem extends LitElement {
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',
             })}"
+            aria-current="${this.current ? 'true' : nothing}"
             ?disabled="${this.disabled}"
           >
             ${this.renderBody()}

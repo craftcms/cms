@@ -11,6 +11,8 @@ export interface SourceRow {
   type: SourceType;
   /** Tracks the label/heading control so the sidebar updates as you type. */
   label: string;
+  /** Shown under the label — a section's handle, say. */
+  handle: string | null;
   page: string;
   form: FormPayload | null;
   /** Settings are built on first select and kept, as the legacy modal did. */
@@ -31,6 +33,7 @@ export interface SourcesResponse {
     type: SourceType;
     label: string | null;
     heading: string | null;
+    handle?: string | null;
     page: string | null;
     form: FormPayload | null;
   }>;

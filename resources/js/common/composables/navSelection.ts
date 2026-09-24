@@ -43,13 +43,18 @@ function queryOf(href: string | null): URLSearchParams {
  * Whether the URL carries every query parameter the item's href does. An item
  * addressed by query (`assets?source=temp`) shares its path with the bare
  * index, so the path alone would claim that page for it.
+ *
+ * `site` is left out: on a multi-site install the server stamps it onto every
+ * CP URL, so it says which site you're working in rather than where an item
+ * is. Requiring it would leave a URL built without it — an index's own route,
+ * say — belonging to no item at all.
  */
 function queryMatches(
   query: URLSearchParams,
   itemHref: string | null
 ): boolean {
   return [...queryOf(itemHref)].every(
-    ([name, value]) => query.get(name) === value
+    ([name, value]) => name === 'site' || query.get(name) === value
   );
 }
 

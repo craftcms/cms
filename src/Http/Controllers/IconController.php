@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\CmsAssets;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Search;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -43,12 +42,14 @@ readonly class IconController
         $freeOnly = $request->boolean('freeOnly', true);
         $noSearch = empty($search);
 
-        $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
+        // Holds data, not markup, so it shares nothing with the HTML lists
+        // Craft 5 cached for its own picker.
+        $cacheKey = sprintf('icon-picker-options-icons%s', $freeOnly ? ':free' : '');
 
         if ($noSearch) {
             if (DependencyCache::has($cacheKey)) {
                 return new JsonResponse([
-                    'listHtml' => DependencyCache::get($cacheKey),
+                    'icons' => DependencyCache::get($cacheKey),
                 ]);
             }
 
@@ -77,35 +78,27 @@ readonly class IconController
                 $scores[] = $score;
             }
 
-            $file = Icons::resolveIconPath($name);
-            $output[] = Html::beginTag('li').
-                Html::button(file_get_contents($file), [
-                    'class' => 'icon-picker--icon',
-                    'title' => $name,
-                    'value' => $name,
-                    'aria' => [
-                        'label' => $name,
-                    ],
-                ])->encode(false).
-                Html::endTag('li');
+            $output[] = [
+                'name' => $name,
+                'svg' => (string) file_get_contents(Icons::resolveIconPath($name)),
+            ];
         }
 
         if ($searchTerms) {
             array_multisort($scores, SORT_DESC, $output);
         }
 
-        $listHtml = implode('', $output);
-
         if ($noSearch) {
             DependencyCache::put(
                 key: $cacheKey,
-                value: $listHtml,
+                value: $output,
                 dependency: new FileDependency($indexPath),
             );
         }
 
+        // The picker renders the options itself, from their names and SVGs.
         return new JsonResponse([
-            'listHtml' => $listHtml,
+            'icons' => $output,
         ]);
     }
 

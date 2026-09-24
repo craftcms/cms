@@ -40,6 +40,13 @@ use function CraftCms\Cms\currentUserElement;
 
 class HandleInertiaRequests extends Middleware
 {
+    /**
+     * Asks for the nav tree to be sent again, although the client already has
+     * it — by a visit following something that changed what the nav lists,
+     * such as saving an element type's sources.
+     */
+    public const string REFRESH_NAV_HEADER = 'X-Craft-Refresh-Nav';
+
     #[Override]
     public function handle(Request $request, Closure $next)
     {
@@ -172,6 +179,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $currentUser->email,
                     'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
+                    'admin' => $currentUser->admin,
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),
@@ -191,7 +199,8 @@ class HandleInertiaRequests extends Middleware
                 // on the client and re-sent the first time each one is opened,
                 // rather than once for the whole session.
                 'nav' => Inertia::once(fn () => $nav->getTree())
-                    ->as('craft.nav.'.($nav->navSiteId() ?? 'all')),
+                    ->as('craft.nav.'.($nav->navSiteId() ?? 'all'))
+                    ->fresh($request->headers->has(self::REFRESH_NAV_HEADER)),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.

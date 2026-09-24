@@ -30,7 +30,7 @@ it('requires login', function () {
 });
 
 it('requires the viewUsers permission', function () {
-    get("/{$this->cpTrigger}/users")->assertOk();
+    get("/{$this->cpTrigger}/users/all")->assertOk();
 
     Gate::before(fn ($user, $ability) => $ability === 'viewUsers' ? false : null);
 
@@ -38,7 +38,7 @@ it('requires the viewUsers permission', function () {
 });
 
 it('returns an Inertia response with elements and pagination', function () {
-    get("/{$this->cpTrigger}/users")
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('users/Index')
@@ -49,11 +49,16 @@ it('returns an Inertia response with elements and pagination', function () {
         );
 });
 
-it('defaults to the “all users” source', function () {
-    get("/{$this->cpTrigger}/users")
+it('sends the bare index to the “all users” source it shows', function () {
+    // The nav links “All users” by its slug, so landing there highlights it
+    // rather than the Users item.
+    get("/{$this->cpTrigger}/users?".http_build_query(['per_page' => 2]))
+        ->assertRedirectContains("/{$this->cpTrigger}/users/all?per_page=2");
+
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('slug', null)
+            ->where('slug', 'all')
             ->where('source.key', '*')
         );
 });
@@ -109,7 +114,7 @@ it('paginates users via query params', function () {
         UserFactory::new()->createElement();
     }
 
-    get("/{$this->cpTrigger}/users?".http_build_query(['per_page' => 2]))
+    get("/{$this->cpTrigger}/users/all?".http_build_query(['per_page' => 2]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('pagination.per_page', 2)
@@ -118,7 +123,7 @@ it('paginates users via query params', function () {
 });
 
 it('exposes whether the current user can register users', function () {
-    get("/{$this->cpTrigger}/users")
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('canRegisterUsers', true)
@@ -135,8 +140,8 @@ it('404s on Solo', function () {
     get("/{$this->cpTrigger}/users")->assertNotFound();
 });
 
-it('crumbs the “all users” source by name on the bare index', function () {
-    get("/{$this->cpTrigger}/users")
+it('crumbs the “all users” source by name', function () {
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->count('crumbs', 2)

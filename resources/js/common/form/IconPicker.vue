@@ -4,20 +4,16 @@
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import {
-    type ComponentPublicInstance,
-    computed,
-    nextTick,
-    ref,
-    watch,
-  } from 'vue';
+  import {computed, nextTick, ref, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAsyncIcon} from '../composables/useAsyncIcon';
   import IconController from '@actions/IconController';
 
-  type PickerOptionsResponse = {listHtml: string};
+  /** An icon the picker offers: its name, and the SVG it's drawn with. */
+  type IconOption = {name: string; svg: string};
+  type PickerOptionsResponse = {icons: IconOption[]};
 
   const model = defineModel<string>();
   const props = withDefaults(
@@ -43,9 +39,10 @@
 
   const query = ref<string>('');
   const modalActive = ref<boolean>(false);
-  const iconHtml = ref<string | null>(null);
+  /** The icons on offer, or null before the first load. */
+  const icons = ref<IconOption[] | null>(null);
   const chooseButton = ref<HTMLElement | null>(null);
-  const searchInput = ref<ComponentPublicInstance | null>(null);
+  const searchForm = ref<HTMLFormElement | null>(null);
 
   const {html: previewHtml, state: previewState} = useAsyncIcon(model);
 
@@ -68,16 +65,12 @@
       }).url,
       {
         onSuccess: (response) => {
-          iconHtml.value = response.listHtml;
-
-          const count = new DOMParser()
-            .parseFromString(response.listHtml, 'text/html')
-            .querySelectorAll('li').length;
+          icons.value = response.icons;
 
           announce(
             `${t('Loading complete')} - ${t(
               '{num, number} {num, plural, =1{result} other{results}}',
-              {num: count}
+              {num: response.icons.length}
             )}`
           );
         },
@@ -86,14 +79,14 @@
   }
 
   function openModal() {
-    if (iconHtml.value === null) {
+    if (icons.value === null) {
       loadIcons();
     }
     modalActive.value = true;
   }
 
   function focusSearch() {
-    searchInput.value?.$el?.focus();
+    searchForm.value?.querySelector<HTMLElement>('input')?.focus();
   }
 
   watchDebounced(
@@ -110,25 +103,9 @@
 
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
 
-  function handleClick(event: MouseEvent) {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-
-    let button;
-    if (target.getAttribute?.('role') === 'button') {
-      button = target;
-    } else {
-      button = target.closest('button');
-      if (!button) {
-        return;
-      }
-    }
-
-    // @TODO probably don't use title for this
+  function choose(name: string) {
     modalActive.value = false;
-    model.value = button.getAttribute('value') ?? '';
+    model.value = name;
     chooseButton.value?.focus();
   }
 
@@ -181,54 +158,67 @@
     </div>
   </craft-input>
 
-  <Modal
-    :is-active="modalActive"
-    width="xl"
-    height="calc(550rem / 16)"
-    @close="modalActive = false"
-    @opened="focusSearch"
-  >
-    <craft-pane class="h-full">
-      <form
-        slot="header"
-        role="search"
-        @submit.prevent="loadIcons()"
-        class="sticky top-0 pt-4 px-4 pb-2 bg-white"
-      >
-        <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
-          <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
-            <craft-spinner
-              style="--size: 1em"
-              :visible="http.processing && iconHtml !== null"
-            ></craft-spinner>
-          </div>
-        </CraftInput>
-      </form>
-      <div>
-        <!-- This only shows on the initial load -->
-        <template v-if="http.processing && iconHtml === null">
-          <div class="flex justify-center p-4">
-            <craft-spinner></craft-spinner>
-          </div>
-        </template>
+  <!-- Teleported: the picker usually sits inside a web component (a field,
+    say) that only renders the slots it knows, so a modal left beside the
+    input would never be drawn — and inside another modal it would inherit
+    that modal's form and stacking context. -->
+  <Teleport to="body">
+    <Modal
+      :is-active="modalActive"
+      width="xl"
+      height="calc(550rem / 16)"
+      @close="modalActive = false"
+      @opened="focusSearch"
+    >
+      <craft-pane class="icon-picker-pane h-full">
+        <form
+          ref="searchForm"
+          slot="header"
+          role="search"
+          @submit.prevent="loadIcons()"
+          class="sticky top-0 pt-4 px-4 pb-2 bg-white"
+        >
+          <CraftInput :label="t('Search')" v-model="query">
+            <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
+              <craft-spinner
+                style="--size: 1em"
+                :visible="http.processing && icons !== null"
+              ></craft-spinner>
+            </div>
+          </CraftInput>
+        </form>
+        <div>
+          <!-- This only shows on the initial load -->
+          <template v-if="http.processing && icons === null">
+            <div class="flex justify-center p-4">
+              <craft-spinner></craft-spinner>
+            </div>
+          </template>
 
-        <template v-else-if="!iconHtml?.length">
-          <craft-empty
-            :label="t('No icons found matching “{query}”', {query})"
-          ></craft-empty>
-        </template>
+          <template v-else-if="!icons?.length">
+            <craft-empty
+              :label="t('No icons found matching “{query}”', {query})"
+            ></craft-empty>
+          </template>
 
-        <template v-else>
-          <ul
-            class="icon-grid"
-            :lang="contentLang"
-            v-html="iconHtml"
-            @click="handleClick"
-          ></ul>
-        </template>
-      </div>
-    </craft-pane>
-  </Modal>
+          <template v-else>
+            <ul class="icon-grid" :lang="contentLang">
+              <li v-for="icon in icons" :key="icon.name">
+                <button
+                  type="button"
+                  class="icon-picker--icon"
+                  :title="icon.name"
+                  :aria-label="icon.name"
+                  @click="choose(icon.name)"
+                  v-html="icon.svg"
+                ></button>
+              </li>
+            </ul>
+          </template>
+        </div>
+      </craft-pane>
+    </Modal>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -244,13 +234,28 @@
     justify-content: center;
   }
 
+  /* The pane fills the modal and clips what overflows it, so the results
+     scroll within its body, under the search box, rather than the list running
+     out of reach below the modal. */
+  .icon-picker-pane::part(base) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .icon-picker-pane::part(body) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
   .icon-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
     gap: var(--c-spacing-sm);
   }
 
-  :deep(.icon-grid__button) {
+  .icon-picker--icon {
     display: flex;
     align-items: center;
     justify-content: center;

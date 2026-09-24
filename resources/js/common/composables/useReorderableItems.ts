@@ -10,11 +10,13 @@ import {
 import {
   type Axis,
   type DragState,
+  type DraggedItem,
   type DropState,
+  type UseDragAndDropOptions,
   useDragAndDrop,
 } from './useDragAndDrop.js';
 
-export type {DragState, DropState};
+export type {DragState, DraggedItem, DropState};
 
 type ReorderableElement = Element | ComponentPublicInstance | null;
 
@@ -23,6 +25,10 @@ export interface UseReorderableItemsOptions {
   onReorder: (startIndex: number, finishIndex: number) => void;
   enabled?: () => boolean;
   axis?: Axis;
+  /** See `useDragAndDrop()`. */
+  type?: UseDragAndDropOptions['type'];
+  /** See `useDragAndDrop()`. */
+  dropInto?: UseDragAndDropOptions['dropInto'];
 }
 
 export interface UseReorderableItemsReturn {
@@ -30,6 +36,10 @@ export interface UseReorderableItemsReturn {
   setHandleRef: (el: ReorderableElement, itemId: string | number) => void;
   getDragState: (id: string | number) => DragState;
   getDropState: (id: string | number) => DropState;
+  /** See `useDragAndDrop()`'s `getDropIndex`. */
+  getDropIndex: () => number | null;
+  /** See `useDragAndDrop()`'s `getDropIntoId`. */
+  getDropIntoId: () => string | number | null;
   refreshRegistrations: () => void;
   getRowPosition: (index: number) => 'first' | 'middle' | 'last';
 }
@@ -45,11 +55,19 @@ export function useReorderableItems(
   let unmounted = false;
   let refreshScheduled = false;
 
-  const {registerItem, getDragState, getDropState, setupMonitor} =
-    useDragAndDrop({
-      onReorder: options.onReorder,
-      axis: options.axis ?? 'vertical',
-    });
+  const {
+    registerItem,
+    getDragState,
+    getDropState,
+    getDropIndex,
+    getDropIntoId,
+    setupMonitor,
+  } = useDragAndDrop({
+    onReorder: options.onReorder,
+    axis: options.axis ?? 'vertical',
+    type: options.type,
+    dropInto: options.dropInto,
+  });
 
   function resolveElement(el: ReorderableElement): HTMLElement | null {
     if (el instanceof HTMLElement) {
@@ -194,6 +212,8 @@ export function useReorderableItems(
     setHandleRef,
     getDragState,
     getDropState,
+    getDropIndex,
+    getDropIntoId,
     getRowPosition,
     refreshRegistrations,
   };

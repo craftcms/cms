@@ -63,6 +63,12 @@ readonly class ElementSourceForm
         $key = (string) $source['key'];
         $values = $values ?: $this->seed($elementType, $source);
 
+        // Structure order only runs one way. The direction control is disabled
+        // for it, and a disabled control takes the value sent back here.
+        if (($values['defaultSort']['attr'] ?? null) === 'structure') {
+            $values['defaultSort']['dir'] = 'asc';
+        }
+
         return $this->resolver->resolve(
             $this->form($elementType, $source, $values, $isNew),
             new FormContext(
@@ -210,7 +216,14 @@ readonly class ElementSourceForm
 
         return [
             Field::make(t('Default Sort'), Choice::make('defaultSort.attr')->options(array_map(
-                fn (array $option) => ['label' => $option['label'], 'value' => $option['attr']],
+                fn (array $option) => [
+                    'label' => $option['label'],
+                    'value' => $option['attr'],
+                    // Custom fields sit apart, under their own heading.
+                    'group' => str_starts_with((string) $option['attr'], 'field:') ? t('Fields') : null,
+                    // The direction a newly chosen attribute starts in.
+                    'defaultDir' => $option['defaultDir'],
+                ],
                 $options,
             ))->reactive())->width(75),
             Group::make('source-sort-direction', [

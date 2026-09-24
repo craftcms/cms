@@ -417,3 +417,32 @@ describe('craft-button icon spacing', () => {
     expect(content(element)).not.toContain('button-content--spaced-prefix');
   });
 });
+
+describe('craft-button press state', () => {
+  it('clears the press when a native drag ends instead of a mouseup', async () => {
+    // A drag handle never gets the mouseup Lion waits for; without this it
+    // stays `active`, looking selected, until the next click anywhere.
+    const button = await createButton();
+
+    button.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
+    expect(button.active).toBe(true);
+
+    button.dispatchEvent(
+      new DragEvent('dragend', {bubbles: true, composed: true})
+    );
+    expect(button.active).toBe(false);
+  });
+
+  it('leaves a later drag alone once the press has been released', async () => {
+    const button = await createButton();
+
+    button.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // Set by an owner (a button group, say) after the press ended.
+    button.active = true;
+    document.dispatchEvent(new DragEvent('dragend'));
+
+    expect(button.active).toBe(true);
+  });
+});

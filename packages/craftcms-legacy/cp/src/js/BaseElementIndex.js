@@ -1502,8 +1502,37 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceActions: function () {
-      // "Customize sources" now lives on the Inertia/Vue element index.
-      return [];
+      let actions = [];
+
+      // The modal is the Vue one the Inertia index opens from its nav gear.
+      if (
+        Craft.userIsAdmin &&
+        Craft.allowAdminChanges &&
+        Craft.openCustomizeSourcesModal
+      ) {
+        actions.push({
+          label: Craft.t('app', 'Customize sources'),
+          administrative: true,
+          onSelect: () => {
+            Craft.openCustomizeSourcesModal({
+              elementType: this.elementType,
+              page: this.settings.page ?? null,
+              sourceKey: this.rootSourceKey,
+              // Land on the source that was being edited, then start over from
+              // the server, as the legacy modal did.
+              onSaved: async (sourceKey) => {
+                if (sourceKey) {
+                  await this.asyncSelectSourceByKey(sourceKey);
+                }
+
+                window.location.reload();
+              },
+            });
+          },
+        });
+      }
+
+      return actions;
     },
 
     updateViewMenu: function () {

@@ -7,7 +7,10 @@
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
   import {useElementIndexPage} from '@/modules/elements/composables/useElementIndexPage';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
-  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import {
+    appendIndexQuery,
+    type ElementIndexRoute,
+  } from '@/modules/elements/composables/useElementIndexVisits';
   import {TableSpacing} from '@/common/types';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import {ref} from 'vue';
@@ -16,6 +19,8 @@
   import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {router} from '@inertiajs/vue3';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -69,14 +74,60 @@
 
   const customizeSourcesActive = ref(false);
 
+  const {currentUser, allowAdminChanges} = useCraftData();
+
   // The sources are edited from the nav now rather than from a sidebar on the
-  // page, so the page lends the nav the gear that opens the editor.
-  if (props.customizableSources) {
+  // page, so the page lends the nav the gear that opens the editor. Only for
+  // admins, where admin changes are allowed — the server refuses anyone else.
+  if (
+    props.customizableSources &&
+    currentUser.value?.admin &&
+    allowAdminChanges.value
+  ) {
     useNavItemAction(() => props.route.url(), {
       label: t('Customize sources'),
       icon: 'gear',
       onClick: () => (customizeSourcesActive.value = true),
     });
+  }
+
+  /**
+   * Starts the index over after the sources are saved — everything it shows,
+   * and the nav's list of them, comes from them — landing on the source the
+   * modal picked. The server's link for it is the nav's own, so the nav
+   * highlights it; without one, the source is named in the query.
+   *
+   * An Inertia visit rather than a reload, so the page stays on screen while
+   * the new one loads. The nav tree is normally sent once and kept, so the
+   * visit asks for it again.
+   */
+  function onSourcesSaved(landing: {
+    sourceKey: string | null;
+    url: string | null;
+  }): void {
+    router.visit(landingUrl(landing), {
+      headers: {'X-Craft-Refresh-Nav': '1'},
+    });
+  }
+
+  function landingUrl(landing: {
+    sourceKey: string | null;
+    url: string | null;
+  }): string {
+    if (landing.url) {
+      return landing.url;
+    }
+
+    if (landing.sourceKey === null) {
+      return window.location.href;
+    }
+
+    const site = new URLSearchParams(window.location.search).get('site');
+    const query = {source: landing.sourceKey, site: site ?? undefined};
+
+    return props.sourceHref
+      ? appendIndexQuery(props.sourceHref, query)
+      : props.route.url(query);
   }
 </script>
 
@@ -171,12 +222,15 @@
     </template>
   </BaseElementIndex>
 
+  <!-- A nested source (an asset subfolder, say) opens the modal on the source
+    it belongs to, which is what the modal lists. -->
   <CustomizeSourcesModal
     :is-active="customizeSourcesActive"
     :element-type="elementIndex.elementType"
     :page="elementIndex.page"
-    :source-key="elementIndex.source?.key"
+    :source-key="elementIndex.source?.key?.split('/')[0]"
     @close="customizeSourcesActive = false"
+    @saved="onSourcesSaved"
   />
 </template>
 

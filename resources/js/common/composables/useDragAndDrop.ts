@@ -1,4 +1,4 @@
-import {reactive} from 'vue';
+import {reactive, ref} from 'vue';
 import {
   draggable,
   dropTargetForElements,
@@ -28,10 +28,28 @@ export type DropState =
   | {type: 'idle'}
   | {type: 'is-over'; closestEdge: Edge; draggingRect: DOMRect};
 
+/** An item being dragged, as another list sees it. */
+export interface DraggedItem {
+  /** The dragging list's `type`, if it set one. */
+  type?: string;
+  id: string | number;
+}
+
 export interface UseDragAndDropOptions {
   onReorder: (startIndex: number, finishIndex: number) => void;
   axis?: Axis;
   allowedEdges?: Edge[];
+  /** Tags this list's drags, so another list's `dropInto` can tell them apart. */
+  type?: string;
+  /**
+   * Lets this list's items take a drag from another list dropped onto them,
+   * rather than between them — a source dropped on a page, say. The list's own
+   * items still only reorder.
+   */
+  dropInto?: {
+    accepts: (dragged: DraggedItem, targetId: string | number) => boolean;
+    onDrop: (targetId: string | number, dragged: DraggedItem) => void;
+  };
 }
 
 export interface UseDragAndDropReturn {
@@ -43,6 +61,18 @@ export interface UseDragAndDropReturn {
   ) => () => void;
   getDragState: (id: string | number) => DragState;
   getDropState: (id: string | number) => DropState;
+  /**
+   * The gap the dragged item would land in, counted from 0 (before the first
+   * item) to the item count (after the last), or null when there's nowhere
+   * new to put it.
+   *
+   * One answer for the whole list, where `getDropState()` answers per item:
+   * the bottom of B and the top of C are the same gap, so a list that draws
+   * its line from this can't draw it twice.
+   */
+  getDropIndex: () => number | null;
+  /** The item another list's drag would be dropped onto, if any (`dropInto`). */
+  getDropIntoId: () => string | number | null;
   setupMonitor: () => () => void;
 }
 
@@ -65,6 +95,7 @@ export function useDragAndDrop(
     id: string | number;
     index: number;
     instanceId: symbol;
+    type?: string;
     rect: DOMRect;
   };
 
@@ -82,13 +113,73 @@ export function useDragAndDrop(
       id,
       index,
       instanceId,
+      type: options.type,
       rect,
     };
+  }
+
+  /** A drag from this list, as opposed to one passing over from another. */
+  function isOwnItem(data: ElementDragPayload['data']): data is ItemData {
+    return isItemData(data) && data.instanceId === instanceId;
+  }
+
+  /** Whether another list's drag can be dropped onto the item `id`. */
+  function acceptsInto(
+    data: ElementDragPayload['data'],
+    id: string | number
+  ): data is ItemData {
+    return (
+      !!options.dropInto &&
+      isItemData(data) &&
+      data.instanceId !== instanceId &&
+      options.dropInto.accepts({type: data.type, id: data.id}, id)
+    );
+  }
+
+  const dropIntoId = ref<string | number | null>(null);
+
+  function getDropIntoId(): string | number | null {
+    return dropIntoId.value;
   }
 
   // Use reactive objects for state - keys are stringified IDs
   const dragStates = reactive<Record<string, DragState>>({});
   const dropStates = reactive<Record<string, DropState>>({});
+
+  const dropIndex = ref<number | null>(null);
+
+  function getDropIndex(): number | null {
+    return dropIndex.value;
+  }
+
+  /** The gap under the pointer, from the innermost drop target. */
+  function updateDropIndex(
+    source: ElementDragPayload,
+    target: {data: Record<string | symbol, unknown>} | undefined
+  ) {
+    const sourceData = source.data;
+    const targetData = target?.data;
+
+    // Over the dragged item itself it would stay where it is, which the item's
+    // own placeholder already shows. Over another list — dropping onto one of
+    // its items — it isn't going anywhere in this one.
+    if (
+      !targetData ||
+      !isItemData(sourceData) ||
+      !isOwnItem(targetData) ||
+      targetData.id === sourceData.id
+    ) {
+      dropIndex.value = null;
+      return;
+    }
+
+    const edge = extractClosestEdge(targetData);
+
+    dropIndex.value =
+      edge === 'bottom' || edge === 'right'
+        ? targetData.index + 1
+        : targetData.index;
+  }
 
   function setDragState(id: string | number, state: DragState) {
     dragStates[String(id)] = state;
@@ -159,8 +250,8 @@ export function useDragAndDrop(
 
           // Native HTML drag swallows the trailing pointerup on the source, so
           // an interactive drag handle (e.g. a button) can stay stuck in
-          // :active/:hover. Briefly disabling pointer events forces the browser
-          // to drop those states.
+          // :hover. Briefly disabling pointer events forces the browser to drop
+          // it. (`craft-button`'s own pressed state is released on `dragend`.)
           dragElement.style.pointerEvents = 'none';
           requestAnimationFrame(() => {
             dragElement.style.pointerEvents = '';
@@ -169,12 +260,12 @@ export function useDragAndDrop(
       }),
       dropTargetForElements({
         element,
-        getIsSticky: () => true,
+        // Sticky keeps the line where it was while the pointer crosses the gap
+        // between rows. A drop onto an item mustn't outlast the pointer leaving
+        // it, or letting go anywhere would still drop it there.
+        getIsSticky: ({source}) => isOwnItem(source.data),
         canDrop({source}) {
-          return (
-            source.data[itemDataKey] === true &&
-            source.data.instanceId === instanceId
-          );
+          return isOwnItem(source.data) || acceptsInto(source.data, id);
         },
         getData({input}) {
           return attachClosestEdge(
@@ -187,7 +278,10 @@ export function useDragAndDrop(
           );
         },
         onDragEnter({source, self}) {
-          if (!isItemData(source.data)) return;
+          if (!isOwnItem(source.data)) {
+            dropIntoId.value = id;
+            return;
+          }
 
           // Ignore if dragging over self
           if (source.data.id === id) return;
@@ -202,7 +296,7 @@ export function useDragAndDrop(
           });
         },
         onDrag({source, self}) {
-          if (!isItemData(source.data)) return;
+          if (!isOwnItem(source.data)) return;
 
           // Ignore if dragging over self
           if (source.data.id === id) return;
@@ -226,7 +320,10 @@ export function useDragAndDrop(
           });
         },
         onDragLeave({source}) {
-          if (!isItemData(source.data)) return;
+          if (!isOwnItem(source.data)) {
+            if (dropIntoId.value === id) dropIntoId.value = null;
+            return;
+          }
 
           // If the dragged item is leaving itself, update its drag state
           if (source.data.id === id) {
@@ -237,8 +334,20 @@ export function useDragAndDrop(
           // Otherwise, clear this item's drop state
           setDropState(id, idleDropState);
         },
-        onDrop() {
+        onDrop({source, location}) {
           setDropState(id, idleDropState);
+
+          if (isOwnItem(source.data) || !isItemData(source.data)) return;
+
+          dropIntoId.value = null;
+
+          // Only the innermost target takes the drop.
+          if (location.current.dropTargets[0]?.element === element) {
+            options.dropInto?.onDrop(id, {
+              type: source.data.type,
+              id: source.data.id,
+            });
+          }
         },
       })
     );
@@ -249,14 +358,25 @@ export function useDragAndDrop(
       canMonitor({source}) {
         return isItemData(source.data) && source.data.instanceId === instanceId;
       },
+      onDropTargetChange({location, source}) {
+        updateDropIndex(source, location.current.dropTargets[0]);
+      },
+      onDrag({location, source}) {
+        // Moving within a target changes its closest edge without changing
+        // the target.
+        updateDropIndex(source, location.current.dropTargets[0]);
+      },
       onDrop({location, source}) {
+        dropIndex.value = null;
+
         const target = location.current.dropTargets[0];
         if (!target) return;
 
         const sourceData = source.data;
         const targetData = target.data;
 
-        if (!isItemData(sourceData) || !isItemData(targetData)) return;
+        // Dropped onto another list's item: that list handles it (`dropInto`).
+        if (!isItemData(sourceData) || !isOwnItem(targetData)) return;
 
         const startIndex = sourceData.index;
         const indexOfTarget = targetData.index;
@@ -280,6 +400,8 @@ export function useDragAndDrop(
     registerItem,
     getDragState,
     getDropState,
+    getDropIndex,
+    getDropIntoId,
     setupMonitor,
   };
 }

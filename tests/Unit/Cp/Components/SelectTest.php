@@ -38,3 +38,22 @@ it('renders multiple values and disabled options', function () {
         ->and($crawler->filter('option[selected]'))->toHaveCount(2)
         ->and($crawler->filter('option[value="two"][disabled]'))->toHaveCount(1);
 });
+
+it('heads runs of options sharing a group with an optgroup', function () {
+    $crawler = new Crawler(Select::make()
+        ->name('sort')
+        ->value('field:abc')
+        ->options([
+            ['label' => 'Structure', 'value' => 'structure'],
+            ['label' => 'Title', 'value' => 'title', 'group' => null],
+            ['label' => 'Body', 'value' => 'field:abc', 'group' => 'Fields'],
+            ['label' => 'Summary', 'value' => 'field:def', 'group' => 'Fields'],
+        ])
+        ->toHtml());
+
+    expect($crawler->filter('select > option')->each(fn (Crawler $node) => $node->attr('value')))
+        ->toBe(['structure', 'title'])
+        ->and($crawler->filter('select > optgroup[label="Fields"] > option')->each(fn (Crawler $node) => $node->attr('value')))
+        ->toBe(['field:abc', 'field:def'])
+        ->and($crawler->filter('optgroup option[value="field:abc"][selected]'))->toHaveCount(1);
+});
