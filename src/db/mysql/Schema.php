@@ -477,14 +477,33 @@ SQL;
         }
 
         // Certificates
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
-            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
-            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
-            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
+        if (
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA]) ||
+            (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) ||
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT]) ||
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY]) ||
+            (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER]))
+        ) {
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
+                $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
+            }
+            if (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) {
+                $contents .= PHP_EOL . 'ssl_capath=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH];
+            }
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
+                $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
+            }
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
+                $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
+            }
+            if (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER])) {
+                $contents .= PHP_EOL . 'ssl_cipher=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER];
+            }
+        } else {
+            // The db connection wasn't explicitly configured with SSL attributes, but the normal
+            // my.cnf file chain (which --defaults-file causes mysqldump/mysql to ignore) might
+            // still specify them, so carry those over.
+            $contents .= $this->_sslDefaultsFromConfigFiles();
         }
 
         FileHelper::writeToFile($this->tempMyCnfPath, '');
@@ -493,6 +512,51 @@ SQL;
         FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
         return $this->tempMyCnfPath;
+    }
+
+    /**
+     * Returns `ssl_*` my.cnf directives based on whatever the normal MySQL config file chain
+     * (e.g. `/etc/my.cnf`, `~/.my.cnf`) would otherwise provide, since those files are ignored
+     * once `--defaults-file` is passed to `mysqldump`/`mysql`.
+     *
+     * @return string
+     */
+    private function _sslDefaultsFromConfigFiles(): string
+    {
+        $shellCommand = (new ShellCommand('mysql'))->addArg('--print-defaults');
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+
+        if (!$shellCommand->execute()) {
+            return '';
+        }
+
+        $directives = [
+            'ssl-ca' => 'ssl_ca',
+            'ssl-capath' => 'ssl_capath',
+            'ssl-cert' => 'ssl_cert',
+            'ssl-key' => 'ssl_key',
+            'ssl-cipher' => 'ssl_cipher',
+            'ssl-mode' => 'ssl_mode',
+        ];
+
+        $contents = '';
+        $output = trim($shellCommand->getOutput());
+        foreach (str_getcsv($output, ' ') as $token) {
+            if ($token === '' || !str_starts_with($token, '--') || !str_contains($token, '=')) {
+                continue;
+            }
+            [$key, $value] = explode('=', substr($token, 2), 2);
+            $value = trim($value, "\"'");
+            if (isset($directives[$key]) && !preg_match('/^\**$/', $value)) {
+                $contents .= PHP_EOL . $directives[$key] . '=' . $value;
+            }
+        }
+
+        return $contents;
     }
 
     /**
