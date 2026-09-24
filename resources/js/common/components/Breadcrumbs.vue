@@ -58,6 +58,7 @@
         icon="chevron-down"
         :actions="item.items"
         button-size="xsmall"
+        :flush="false"
         :label="t('Actions')"
       />
     </craft-breadcrumb-item>
