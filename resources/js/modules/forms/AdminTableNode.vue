@@ -4,10 +4,14 @@
   import {
     type ColumnDef,
     getCoreRowModel,
+    getSortedRowModel,
+    type Row,
     type RowSelectionState,
+    type SortingState,
+    type Updater,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {watchDebounced} from '@vueuse/core';
+  import {StorageSerializers, watchDebounced} from '@vueuse/core';
   import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftSelectRich, {
@@ -34,6 +38,7 @@
   interface TableColumn {
     key: string;
     label: string;
+    sortable?: boolean;
   }
 
   interface TableLink {
@@ -99,6 +104,7 @@
     _deletable?: boolean;
     _status?: TableStatus | null;
     _search?: string;
+    _sort?: Record<string, string | number | boolean | null>;
   };
 
   const props = defineProps<{
@@ -172,6 +178,12 @@
         per_page: perPage.value,
         search: search.value || undefined,
         status: status.value || undefined,
+        sort: sorting.value.length
+          ? sorting.value.map((sort) => ({
+              field: sort.id,
+              direction: sort.desc ? 'desc' : 'asc',
+            }))
+          : undefined,
       });
       pageRows.value = data.data;
       pagination.value = data.pagination;
@@ -216,7 +228,64 @@
     }
   });
 
+  const storedSort = useLocalStorage<SortingState | null>(
+    `${storageKey}.sort`,
+    null,
+    {writeDefaults: false, serializer: StorageSerializers.object}
+  );
+
+  const sorting = ref<SortingState>(
+    (storedSort.value ?? [])
+      .filter((sort) =>
+        props.node.props.columns.some(
+          (column) => column.key === sort.id && column.sortable
+        )
+      )
+      .slice(0, 1)
+  );
+
+  function onSortingChange(updater: Updater<SortingState>): void {
+    sorting.value =
+      updater instanceof Function ? updater(sorting.value) : updater;
+    storedSort.value = sorting.value;
+    table.resetRowSelection();
+
+    if (isEndpointMode.value) {
+      fetchPage(1);
+    }
+  }
+
+  const collator = new Intl.Collator(undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  });
+
+  function sortValue(row: TableRow, key: string): string | number {
+    const value =
+      row._sort && key in row._sort
+        ? row._sort[key]
+        : cellText(row[key] ?? null);
+
+    return typeof value === 'number' ? value : String(value ?? '');
+  }
+
+  function compareRows(key: string) {
+    return (a: Row<TableRow>, b: Row<TableRow>): number => {
+      const left = sortValue(a.original, key);
+      const right = sortValue(b.original, key);
+
+      return typeof left === 'number' && typeof right === 'number'
+        ? left - right
+        : collator.compare(String(left), String(right));
+    };
+  }
+
   const isFiltered = computed(() => !!search.value || !!status.value);
+
+  // Drag-reorder and "Move to page" act on the rows' own order, which filtering and sorting hide.
+  const orderingDisabled = computed(
+    () => isFiltered.value || sorting.value.length > 0
+  );
 
   watchDebounced(
     search,
@@ -356,6 +425,8 @@
       (column, columnIndex) =>
         columnHelper.accessor(column.key, {
           header: column.label,
+          enableSorting: !!column.sortable,
+          sortingFn: compareRows(column.key),
           cell: ({getValue, row}) => {
             const value = getValue();
             let rendered;
@@ -421,7 +492,7 @@
   const showMoveToPage = computed(
     () =>
       isEndpointMode.value &&
-      !isFiltered.value &&
+      !orderingDisabled.value &&
       !!props.node.props.moveToPageUrl &&
       (pagination.value?.last_page ?? 0) > 1
   );
@@ -477,6 +548,9 @@
       get pagination() {
         return paginationState.value;
       },
+      get sorting() {
+        return sorting.value;
+      },
     },
     getRowId: (row) => String(row.id),
     enableRowSelection: (row) =>
@@ -485,8 +559,14 @@
       rowSelection.value =
         updater instanceof Function ? updater(rowSelection.value) : updater;
     },
-    enableSorting: false,
+    enableMultiSort: false,
+    sortDescFirst: false,
+    get manualSorting() {
+      return isEndpointMode.value;
+    },
+    onSortingChange,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     get manualPagination() {
       return isEndpointMode.value;
     },
@@ -719,7 +799,7 @@
     >
       <AdminTable
         :table="table"
-        :reorderable="!!node.props.reorderUrl && !isFiltered"
+        :reorderable="!!node.props.reorderUrl && !orderingDisabled"
         :selectable="hasBulkFooter"
         :loading="loading"
         :from="footerFrom"

@@ -20,7 +20,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string}> */
+    /** @var list<array{key: string, label: string, sortable?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -80,7 +80,12 @@ class Table implements Node
         return new self($uid);
     }
 
-    /** @param list<array{key: string, label: string}> $columns */
+    /**
+     * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
+     * then back to the rows' own order. See {@see rows()} for the `_sort` override.
+     *
+     * @param  list<array{key: string, label: string, sortable?: bool}>  $columns
+     */
     public function columns(array $columns): static
     {
         $this->columns = $columns;
@@ -99,6 +104,7 @@ class Table implements Node
      * `_deletable => false` suppresses deletion of one row. `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
+     * `_sort` maps column keys to values to sort by client-side instead of the cell's text.
      *
      * @param  list<array<string, mixed>>  $rows
      */
@@ -147,10 +153,11 @@ class Table implements Node
     }
 
     /**
-     * Fetch rows by posting `{page, per_page, search, status}` to `$url`. The response must contain
-     * `{data: <rows>, pagination: {total, per_page, current_page, last_page, next_page_url,
-     * prev_page_url, from, to}}`. Pass the page's rows through {@see prepareRows()} first.
-     * Calling this clears {@see rows()}, and vice versa.
+     * Fetch rows by posting `{page, per_page, search, status, sort}` to `$url`, where `sort`
+     * is `[{field, direction}]` for a sortable column key, or omitted for the rows' own order.
+     * The response must contain `{data: <rows>, pagination: {total, per_page, current_page,
+     * last_page, next_page_url, prev_page_url, from, to}}`. Pass the page's rows through
+     * {@see prepareRows()} first. Calling this clears {@see rows()}, and vice versa.
      *
      * Users can switch `per_page` between `$perPageOptions` (plus `$perPage`), so the
      * endpoint must honor the posted value rather than assume `$perPage`.
