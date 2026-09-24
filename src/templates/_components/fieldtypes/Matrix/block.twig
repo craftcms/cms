@@ -143,19 +143,34 @@
   }) %}
 {% endif %}
 
-{% set actionMenuItems = actionMenuItems|push({hr: true}) %}
-
 {% if not staticEntries %}
-  {% for entryType in entryTypes %}
-    {% set actionMenuItems = actionMenuItems|push({
+  {% set groupedEntryTypes = collect(entryTypes).groupBy(et => (et.group ?? 'General'|t('app'))) %}
+  {% if groupedEntryTypes.count() > 1 %}
+    {% set actionMenuItems = actionMenuItems|merge(groupedEntryTypes.map((entryTypes, group) => [
+      {hr: true, padded: false},
+      {
+        heading: group|t('site'),
+        padded: false,
+        items: entryTypes|map(entryType => {
+          icon: entryType.icon ?? 'plus',
+          color: entryType.color,
+          label: 'Add {type} above'|t('app', {type: entryType.name|t('site')}),
+          attributes: {
+            data: {action: 'add', type: entryType.handle},
+          },
+        }),
+      },
+    ]).flatten(1).all()) %}
+  {% else %}
+    {% set actionMenuItems = actionMenuItems|push({hr: true})|merge(entryTypes|map(entryType => {
       icon: entryType.icon ?? 'plus',
       color: entryType.color,
       label: 'Add {type} above'|t('app', {type: entryType.name|t('site')}),
       attributes: {
         data: {action: 'add', type: entryType.handle},
       },
-    }) %}
-  {% endfor %}
+    })) %}
+  {% endif %}
 {% endif %}
 
 {% namespace baseInputName %}
@@ -258,6 +273,7 @@
       <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       {{ disclosureMenu(actionMenuItems, {
         hiddenLabel: 'Actions'|t('app'),
+        withSearchInput: not staticEntries and entryTypes|length > 5,
         buttonAttributes: {
           class: ['action-btn', 'small'],
           title: 'Actions'|t('app'),
