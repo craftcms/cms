@@ -106,7 +106,7 @@ export const NonModal: Story = {
  * big to draw.
  */
 export const Fullscreen: Story = {
-  args: {fullscreen: true, open: true},
+  args: {fullscreen: true, opened: true},
   async play({canvasElement}) {
     const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
     await dialog.updateComplete;
@@ -147,7 +147,7 @@ export const ClosesOnOutsideClick: Story = {
  * the boundary.
  */
 export const Themed: Story = {
-  args: {label: 'Dark dialog', open: true},
+  args: {label: 'Dark dialog', opened: true},
   render: (args) =>
     template({...args, 'data-theme': 'dark'}, html`${body}${footerClose}`),
   async play({canvasElement}) {
