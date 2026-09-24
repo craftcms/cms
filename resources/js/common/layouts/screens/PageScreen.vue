@@ -642,6 +642,7 @@ Content view
     /* The default lives in `cp.css`; a page passing a length overrides it
        inline through `contentMaxWidth`. */
     max-width: var(--cp-content-max-width);
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
   }
 </style>

@@ -216,7 +216,8 @@
     font-size: var(--c-text-sm);
     gap: 0.25rem;
     line-height: 1.3;
-    padding: 0.125rem 0.4rem;
+    padding-block: 0.125rem;
+    padding-inline: 0.4rem;
   }
 
   .route-token--button {
@@ -242,14 +243,16 @@
     flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
-    padding: 13px 24px 14px;
+    padding-block: 13px 14px;
+    padding-inline: 24px;
   }
 
   .route-token-picker h3 {
     flex-basis: 100%;
     font-size: var(--c-text-sm);
     font-weight: 600;
-    margin: 0 0 3px;
+    margin-block: 0 3px;
+    margin-inline: 0;
     text-align: center;
   }
 
@@ -257,7 +260,8 @@
     font-family: inherit;
     font-size: 12px;
     line-height: 16px;
-    padding: 2px 7px;
+    padding-block: 2px;
+    padding-inline: 7px;
   }
 
   @media (width < var(--breakpoint-md)) {

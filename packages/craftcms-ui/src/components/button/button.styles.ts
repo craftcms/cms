@@ -531,8 +531,12 @@ export default css`
     &::before {
       content: '';
       position: absolute;
+      /* Physical on purpose: translate(-50%, -50%) centers against the
+         physical left edge in both directions. */
+      /* stylelint-disable liberty/use-logical-spec */
       top: 50%;
       left: 50%;
+      /* stylelint-enable liberty/use-logical-spec */
       transform: translate(-50%, -50%);
       min-height: 44px;
       min-width: 44px;

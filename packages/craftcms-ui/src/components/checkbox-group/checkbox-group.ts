@@ -35,7 +35,7 @@ export default class CraftCheckboxGroup extends SsrChoiceGroupMixin(
         }
 
         .form-field__group-two {
-          margin-top: var(--c-spacing-sm);
+          margin-block-start: var(--c-spacing-sm);
         }
 
         ::slotted(label) {
