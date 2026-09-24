@@ -168,6 +168,9 @@ export function useElementAutosave<T extends object>(
       return;
     }
 
+    // This save includes the edits that armed the debounce timer.
+    armed = false;
+
     // Coalesce: whoever is already saving will pick up the newer values on its
     // trailing run, so at most one extra request is ever queued.
     if (inFlight) {

@@ -8,9 +8,8 @@ type NavNode = CraftCms.Cms.Cp.Data.ActionItem;
  * pure weight. Selection is the one part of it that isn't the same on every
  * page, so it moved here.
  *
- * Mirrors `Cp\Navigation::applySelection()`: a descendant claims its
- * ancestors, and failing that the first item whose path prefixes the current
- * one wins.
+ * Mirrors `Cp\Navigation::applySelection()`: the most specific matching item
+ * claims its ancestors, even when a shorter match is in an earlier group.
  */
 
 /** Compares pathnames, so a relative href and an absolute one still match. */
@@ -72,58 +71,14 @@ function childrenOf(item: NavNode): Array<NavNode> {
 
 function selectWithin(
   items: Array<NavNode>,
-  path: string,
-  query: URLSearchParams,
-  state: {found: boolean}
+  best: NavNode | null
 ): Array<NavNode> {
-  // Every child first, so a deeper match settles the question before any item
-  // at this level gets to answer it.
-  const resolved = items.map((item) => {
+  return items.map((item) => {
     const children = childrenOf(item);
-    const subnav = children.length
-      ? selectWithin(children, path, query, state)
-      : item.subnav;
-
-    return {
-      item,
-      subnav,
-      descendantSelected:
-        Array.isArray(subnav) && subnav.some((child) => child.selected),
-    };
-  });
-
-  // The longest match among siblings, not the first.
-  //
-  // An index sits alongside the sources beneath it — `content/entries` next to
-  // `content/entries/blog` — and prefixes every one of them. First-match-wins
-  // handed it the selection on every source page, and the source you were
-  // actually on never lit up.
-  let best = -1;
-  let bestLength = -1;
-
-  if (!state.found) {
-    resolved.forEach(({item}, index) => {
-      const itemPath = pathOf(item.href);
-
-      if (
-        matches(path, itemPath) &&
-        queryMatches(query, item.href) &&
-        itemPath.length > bestLength
-      ) {
-        best = index;
-        bestLength = itemPath.length;
-      }
-    });
-  }
-
-  return resolved.map(({item, subnav, descendantSelected}, index) => {
-    // A selected descendant claims its ancestors unconditionally — the trail
-    // has to reach the root.
-    const selected = descendantSelected || index === best;
-
-    if (selected) {
-      state.found = true;
-    }
+    const subnav = children.length ? selectWithin(children, best) : item.subnav;
+    const selected =
+      item === best ||
+      (Array.isArray(subnav) && subnav.some((child) => child.selected));
 
     return {...item, selected, subnav};
   });
@@ -145,7 +100,34 @@ export function withNavSelection(
   // Your own account sits under Users, which is where the nav points.
   path = path.replace(/\/myaccount(\/|$)/, '/users$1');
 
-  return selectWithin(items, path, queryOf(url), {found: false});
+  const query = queryOf(url);
+  let best: NavNode | null = null;
+  let bestLength = -1;
+  let bestQuerySize = -1;
+
+  function findBest(nodes: Array<NavNode>) {
+    for (const item of nodes) {
+      findBest(childrenOf(item));
+
+      const itemPath = pathOf(item.href);
+      const querySize = queryOf(item.href).size;
+
+      if (
+        matches(path, itemPath) &&
+        queryMatches(query, item.href) &&
+        (itemPath.length > bestLength ||
+          (itemPath.length === bestLength && querySize > bestQuerySize))
+      ) {
+        best = item;
+        bestLength = itemPath.length;
+        bestQuerySize = querySize;
+      }
+    }
+  }
+
+  findBest(items);
+
+  return selectWithin(items, best);
 }
 
 /**

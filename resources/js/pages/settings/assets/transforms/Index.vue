@@ -11,7 +11,6 @@
   } from '@actions/Settings/ImageTransformsController';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -112,11 +111,11 @@
   <CpContainer class="@container">
     <AdminTable :table="table">
       <template #empty-row>
-        <Empty :label="t('No image transforms exist yet.')" icon="image">
+        <craft-empty :label="t('No image transforms exist yet.')" icon="image">
           <CpButtonLink :href="create().url" icon="plus">{{
             t('New image transform')
           }}</CpButtonLink>
-        </Empty>
+        </craft-empty>
       </template>
     </AdminTable>
   </CpContainer>

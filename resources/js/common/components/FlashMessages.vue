@@ -28,12 +28,12 @@
   <!-- TODO: this is just temporary placement -->
   <div>
     <template v-if="errorFlash">
-      <craft-callout variant="danger" rounded="none">{{
+      <craft-callout variant="danger" rounded="none" appearance="fill">{{
         errorFlash
       }}</craft-callout>
     </template>
     <template v-if="successFlash">
-      <craft-callout variant="success" rounded="none">{{
+      <craft-callout variant="success" rounded="none" appearance="fill">{{
         successFlash
       }}</craft-callout>
     </template>

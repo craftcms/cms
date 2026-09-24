@@ -54,16 +54,14 @@ export default css`
     gap: 5px;
     align-items: center;
     font-weight: bold;
+    /* CONFLICT-REVIEW: Kept this branch's --c-field-label-margin-block-end override (used by
+       c-field-group) with 6.x's new --c-spacing-md default. Dropped this branch's slotted-label
+       margin rule for group-one: 6.x removed the base slotted-label margin to avoid double spacing,
+       so that override would now add extra space instead of reducing it. */
     margin-block-end: var(
       --c-field-label-margin-block-end,
-      var(--c-spacing-sm)
+      var(--c-spacing-md)
     );
-  }
-
-  :host(:not([label-sr-only]))
-    .form-field__group-one:not(:has(.form-field__help-text))
-    ::slotted(label:not(:empty)) {
-    margin-block-end: var(--c-spacing-sm);
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */

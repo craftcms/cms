@@ -553,6 +553,10 @@ li.crumb {
     }
   }
 
+  a:not(:hover) {
+    text-decoration: underline;
+  }
+
   a {
     position: relative;
   }

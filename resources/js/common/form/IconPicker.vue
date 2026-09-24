@@ -16,7 +16,6 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAsyncIcon} from '../composables/useAsyncIcon';
   import IconController from '@actions/IconController';
-  import Empty from '@/common/components/Empty.vue';
 
   type PickerOptionsResponse = {listHtml: string};
 
@@ -214,7 +213,9 @@
         </template>
 
         <template v-else-if="!iconHtml?.length">
-          <Empty :label="t('No icons found matching “{query}”', {query})" />
+          <craft-empty
+            :label="t('No icons found matching “{query}”', {query})"
+          ></craft-empty>
         </template>
 
         <template v-else>
