@@ -36,6 +36,9 @@ export default class CraftInputCopy extends CraftInput {
     ></craft-copy-button>`;
   }
 
+  /**
+   * Adds the copy button to the field, in the suffix slot.
+   */
   override get slots() {
     return {
       ...super.slots,

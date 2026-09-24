@@ -308,7 +308,7 @@
               v-if="!readOnly"
               variant="inherit"
               :position="getRowPosition(index)"
-              @reorder="
+              @craft-reorder="
                 (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                   reorder(
                     index,

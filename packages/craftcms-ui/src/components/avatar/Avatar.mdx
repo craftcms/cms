@@ -1,0 +1,42 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as AvatarStories from './avatar.stories';
+
+<Meta of={AvatarStories} name="Docs" />
+
+# Avatar
+
+`<craft-avatar>` stands in for a person or an object with their initials on a gradient disc.
+
+<Canvas of={AvatarStories.Default} sourceState="shown" />
+
+It draws initials rather than loading a picture, which makes it the right choice where there may not be one — a user with no photo, an object with no thumbnail. When there _is_ an image, use [Thumbnail](?path=/docs/components-thumbnail--docs).
+
+## Initials
+
+The initials come from `label`: one capital per word, so "Brad Bell" gives BB.
+
+<Canvas of={AvatarStories.SingleName} sourceState="shown" />
+
+Without a label there is nothing to derive them from, and the avatar shows a question mark:
+
+<Canvas of={AvatarStories.NoLabel} sourceState="shown" />
+
+That fallback is a signal, not a design. Treat a question mark as a missing `label` rather than as a placeholder to leave in place.
+
+## Sizing and Colour
+
+Size and the two gradient stops are custom properties, so a set of avatars can be themed together:
+
+<Canvas of={AvatarStories.Themed} sourceState="shown" />
+
+## Accessibility
+
+A labelled avatar is an SVG with `role="img"` whose title is the label, so it is announced as the person it represents rather than as two letters.
+
+Without a label there is nothing to announce, so the disc is `aria-hidden` instead of being exposed as an unnamed image — the same rule [Icon](?path=/docs/components-icon--docs) follows.
+
+Where an avatar sits beside the same name in text, the name would be announced twice. That is the case for leaving the label off deliberately.
+
+## Properties
+
+<ArgTypes of={AvatarStories} />

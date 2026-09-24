@@ -1,6 +1,13 @@
 import {css, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 
+/**
+ * @summary Renders in place of a component that could not be loaded — a field
+ * type whose plugin is missing or disabled.
+ *
+ * It exists so a page with a broken component still renders, and says which
+ * component and which plugin rather than leaving a gap.
+ */
 export default class CraftMissingComponent extends LitElement {
   static override styles = css`
     :host {
@@ -59,8 +66,10 @@ export default class CraftMissingComponent extends LitElement {
     }
   `;
 
+  /** The message explaining why the component could not be loaded. */
   @property() error = '';
 
+  /** Name of the plugin the missing component belonged to. */
   @property({attribute: 'plugin-name'}) pluginName = '';
 
   protected override render() {

@@ -1,0 +1,39 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="JavaScript API/Reactive Controllers" />
+
+# Reactive Controllers
+
+Lit [reactive controllers](https://lit.dev/docs/composition/controllers/) that components share. A controller attaches to a host in its constructor and rides the host's lifecycle from there.
+
+## LightDomController
+
+Re-renders the host when its light-DOM children change.
+
+A component that renders differently depending on what is slotted into it has a problem Lit does not solve on its own: slot content is not reactive state, so adding a child after the first render changes nothing. This controller watches the host's children and requests an update when they change.
+
+```js
+import {
+  LightDomController,
+  hasSlotted,
+} from '@craftcms/ui/controllers/LightDomController';
+
+class CraftThing extends LitElement {
+  #lightDom = new LightDomController(this);
+
+  render() {
+    return html`
+      ${hasSlotted(this, 'header') ? html`<div class="header"><slot name="header"></slot></div>` : nothing}
+      <slot></slot>
+    `;
+  }
+}
+```
+
+`hasSlotted(host, ...names)` reports whether any of the named slots have content. It checks **direct children only** — a `footer` nested deeper inside the subtree does not count, which is what keeps a card from lighting up its own chrome because something further down happened to use the same slot name.
+
+The default slot is matched by the empty string, the same way `HTMLElement.slot` reports it — `hasSlotted(this, '')`.
+
+The controller takes options for the cases the default does not cover: `onChange` to run something besides a re-render, `characterData` to also watch text changes, and `attributeFilter` to widen the attributes it watches. It always watches `slot`, because content moves between slots by having that attribute rewritten rather than by being added or removed.
+
+[Card](?path=/docs/components-card--docs), [Pane](?path=/docs/components-pane--docs), [Chip](?path=/docs/components-chip--docs), and [Action Item](?path=/docs/components-action-item--docs) all use it.

@@ -169,7 +169,7 @@
     size="small"
     placement="inline-end"
     collapsible
-    @selected-changed="onSelectedChanged"
+    @craft-tab-show="onSelectedChanged"
   >
     <craft-tab
       v-for="tab in visibleTabs"

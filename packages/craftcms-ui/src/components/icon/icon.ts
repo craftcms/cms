@@ -10,20 +10,31 @@ import {property, state} from 'lit/decorators.js';
 import {resolveIcon} from '../../utilities/icons.js';
 
 /**
- * craft-icon renders an SVG icon fetched from the CP's published icon assets
- * (see `getIconUrl` for the URL contract).
+ * @summary An SVG icon, fetched by name from the CP's published icon assets.
+ * Icons inherit `currentColor` and size with the surrounding text, so they sit
+ * in a label or a button without being sized by hand.
  *
- * In addition to name-based rendering, you may pass an inline `<svg>` (or
- * other element) into the default slot to render your own icon. When the slot
- * has assigned content, the slotted markup is rendered and the fetched
- * (name-based) icon is suppressed.
+ * Slot your own `<svg>` instead of naming one when the icon set does not cover
+ * what you need — slotted content takes over and the named icon is not
+ * fetched.
+ *
+ * An icon is decorative unless you say otherwise: without a `label` it is
+ * `aria-hidden`, and with one it becomes `role="img"` with that name. Icon-only
+ * buttons need the label; an icon beside text does not.
+ *
+ * @slot - Your own icon markup, used in place of the named one.
  */
 export default class CraftIcon extends LitElement {
   /** Icon name, optionally prefixed with a variant (e.g. `custom-icons/foo`). */
   @property({reflect: true}) name?: string;
 
+  /**
+   * Icon family to resolve the name against. Defaults to `classic`, which is
+   * what the CP's own icons use.
+   */
   @property({reflect: true}) family?: string;
 
+  /** Weight within the family. Defaults to `solid`. */
   @property({reflect: true}) variant?: string;
 
   /**
@@ -32,6 +43,11 @@ export default class CraftIcon extends LitElement {
    */
   @property() label?: string;
 
+  /**
+   * `badge` draws the icon on a coloured disc, for a marker that has to read
+   * as a status rather than as decoration. It defaults the disc to the warning
+   * colour; set `data-color` for another.
+   */
   @property({reflect: true}) appearance?: 'plain' | 'badge' = 'plain';
 
   @state() private _svg: TemplateResult | typeof nothing = nothing;

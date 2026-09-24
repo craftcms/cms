@@ -1,5 +1,17 @@
 import {html, LitElement} from 'lit';
 
+/**
+ * @summary Lays fields out on a twelve-column grid that collapses as its
+ * container narrows. Children take a full row by default, and a `width-*`
+ * class gives them a fraction of one.
+ *
+ * The breakpoints are container queries rather than media queries, so a group
+ * inside a narrow pane stacks even on a wide screen — the layout follows the
+ * space the fields actually have.
+ *
+ * @slot - The fields to lay out. Add `width-25`, `width-33`, `width-50`,
+ *   `width-66`, or `width-75` to a child to give it a fraction of the row.
+ */
 export default class CraftFieldGroup extends LitElement {
   protected override render() {
     return html`

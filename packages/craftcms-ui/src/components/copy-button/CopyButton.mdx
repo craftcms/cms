@@ -1,0 +1,31 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CopyButtonStories from './copy-button.stories';
+
+<Meta of={CopyButtonStories} name="Docs" />
+
+# Copy Button
+
+`<craft-copy-button>` copies a value to the clipboard.
+
+<Canvas of={CopyButtonStories.Default} sourceState="shown" />
+
+Use it beside a value worth taking away — a token, a URL, an ID. For a value shown in a field, [Input Copy](?path=/docs/form-controls-text-controls-input-copy--docs) pairs the two together and is usually the better fit.
+
+## Events
+
+The outcome is reported rather than assumed:
+
+- `craft-copy` — the value reached the clipboard
+- `craft-error` — it did not
+
+Clipboard writes fail for reasons outside your control: permissions, an insecure context, a browser that declines. Listening for the failure is what lets the interface say so rather than appearing to have worked.
+
+## Accessibility
+
+`tooltip-label` names what will be copied, which is what makes an icon-only copy button announce as something other than "button".
+
+A copy that succeeds silently is a copy a screen reader user cannot confirm. The button reports success through `craft-copy`; whether that becomes an announcement is up to the surrounding page, and it should.
+
+## Properties
+
+<ArgTypes of={CopyButtonStories} />

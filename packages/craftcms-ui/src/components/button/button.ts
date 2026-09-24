@@ -3,6 +3,7 @@ import {html, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
+import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
@@ -49,8 +50,15 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  */
 export default class CraftButton extends Actionable(LionButtonSubmit) {
   static override get styles() {
-    return [...super.styles, visuallyHiddenStyles, styles];
+    return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
   }
+
+  /**
+   * Defaults to `button` rather than Lion's `submit`: a plain action button is
+   * far the more common case, and Lion gates its submit and reset wiring
+   * behind this, so the default also skips that work.
+   */
+  override type = 'button';
 
   constructor() {
     super();
@@ -89,7 +97,7 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
     // Moved while it was still waiting to be shown: disconnecting dropped the
     // observer, so pick the wait back up rather than never judging it.
-    if (this.hasUpdated && !this.accessibleName) {
+    if (this.hasUpdated && !this._accessibleName.trim()) {
       this.#checkAccessibleName();
     }
   }
@@ -259,17 +267,15 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    * name, so the check waits until it's visible.
    */
   #checkAccessibleName(): void {
-    if (!this.accessibleName) {
-      // In link mode the host is role="presentation" (name not computable on
-      // it); the real accessible element is the inner anchor.
-      const nameTarget = this.isLink
-        ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
-          this)
-        : this;
-      this.accessibleName = computeAccessibleName(nameTarget);
-    }
+    // In link mode the host is role="presentation" (name not computable on
+    // it); the real accessible element is the inner anchor.
+    const nameTarget = this.isLink
+      ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
+        this)
+      : this;
+    this._accessibleName = computeAccessibleName(nameTarget);
 
-    const unnamed = !this.accessibleName || this.accessibleName.trim() === '';
+    const unnamed = this._accessibleName.trim() === '';
 
     if (unnamed && !this.#isVisible()) {
       this.#awaitRender();
@@ -311,9 +317,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.#renderObserver?.disconnect();
     this.#renderObserver = null;
   }
-
-  /** The computed accessible name */
-  @property({attribute: 'accessible-name'}) accessibleName: string;
 
   /**
    * The button's visual style. Defaults to "fill" (neutral fill).
@@ -382,7 +385,20 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
-  @query('[data-live-region]') liveRegion: HTMLElement;
+  @query('[data-live-region]') protected liveRegion: HTMLElement;
+
+  /**
+   * The name the button actually computes to, kept only so a button that ends
+   * up nameless can be flagged.
+   *
+   * Deliberately internal: it records a name, it does not apply one. Exposing
+   * it as an attribute invited consumers to "name" a button by setting it,
+   * which silenced the warning below while leaving nothing in the DOM for a
+   * screen reader. Name an icon-only button with `aria-label` on the host, or
+   * with a `label` on the icon it contains.
+   */
+  @state()
+  private _accessibleName: string = '';
 
   @state()
   private _hasAccessibilityError: boolean = false;

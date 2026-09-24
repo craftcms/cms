@@ -65,7 +65,7 @@ function installItem(handle = 'alpha') {
 
 async function state(handle: string, state: string, message?: string) {
   installItem(handle).dispatchEvent(
-    new CustomEvent('action:change-state', {
+    new CustomEvent('craft-state-change', {
       bubbles: true,
       composed: true,
       detail: {state, actionType: 'http', message},
@@ -157,7 +157,7 @@ it('refreshes only pluginInfo on HTTP success but not clipboard success', async 
       typeof item.action === 'object' && item.action?.type === 'clipboard'
   )!;
   clipboardItem.dispatchEvent(
-    new CustomEvent('action:change-state', {
+    new CustomEvent('craft-state-change', {
       bubbles: true,
       detail: {state: 'success', actionType: 'clipboard'},
     })

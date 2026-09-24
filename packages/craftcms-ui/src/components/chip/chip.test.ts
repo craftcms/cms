@@ -122,8 +122,16 @@ describe('craft-chip status', () => {
     expect(element.shadowRoot?.querySelector('[part="prefix"]')).not.toBeNull();
   });
 
-  it('leaves the status out until show-status is set', async () => {
+  // Slotting a status is enough to show it; `show-status` is for a status slot
+  // that is filled later, or styled before it is.
+  it('renders a slotted status without show-status', async () => {
     const element = await createChip({}, '<span slot="status">Live</span>');
+
+    expect(slot(element, 'status')).not.toBeNull();
+  });
+
+  it('leaves the status out when nothing is slotted and show-status is unset', async () => {
+    const element = await createChip();
 
     expect(slot(element, 'status')).toBeNull();
   });
@@ -155,10 +163,10 @@ describe('craft-chip selection', () => {
     );
   });
 
-  it('emits selected-change with the new state', async () => {
+  it('emits craft-selection-change with the new state', async () => {
     const element = await createChip({selectable: ''});
     const events: Array<CustomEvent> = [];
-    element.addEventListener('selected-change', (event) =>
+    element.addEventListener('craft-selection-change', (event) =>
       events.push(event as CustomEvent)
     );
 
@@ -175,7 +183,7 @@ describe('craft-chip selection', () => {
   it('carries the shift key from the click that preceded the change', async () => {
     const element = await createChip({selectable: ''});
     const events: Array<CustomEvent> = [];
-    element.addEventListener('selected-change', (event) =>
+    element.addEventListener('craft-selection-change', (event) =>
       events.push(event as CustomEvent)
     );
 

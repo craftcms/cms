@@ -24,7 +24,7 @@ export type ReorderOrientation = 'vertical' | 'horizontal';
  * @dependency craft-button
  * @dependency craft-icon
  *
- * @fires {CustomEvent<{direction: ReorderDirection}>} reorder - Emitted when the
+ * @fires {CustomEvent<{direction: ReorderDirection}>} craft-reorder - Emitted when the
  *   user chooses a move action. `event.detail.direction` is `'up'` or `'down'`
  *   regardless of orientation: `'up'` always means toward the start of the list
  *   ("Move forward" when horizontal) and `'down'` toward the end. A `nested`
@@ -104,7 +104,7 @@ export default class CraftReorderButton extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent<{direction: NestedReorderDirection}>('reorder', {
+      new CustomEvent<{direction: NestedReorderDirection}>('craft-reorder', {
         detail: {direction},
         bubbles: true,
         composed: true,

@@ -1,0 +1,126 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CalloutStories from './callout.stories';
+
+<Meta of={CalloutStories} name="Docs" />
+
+# Callout
+
+`<craft-callout>` is a boxed message that explains the state of the page, or the consequences of an action, in place.
+It holds an optional icon, an optional title, body content, and an optional trailing action.
+
+<Canvas of={CalloutStories.Default} sourceState="shown" />
+
+Use a callout for something the person needs to know while they are looking at the surrounding content.
+For a message about an action that has already completed, and that does not need to stay on screen, use a flash message instead.
+
+## Variant and Appearance
+
+`variant` carries the meaning, and `appearance` controls how loudly that meaning is stated.
+The two are independent, and they behave the same way here as on every other component that accepts them.
+See [Variants & Appearances](?path=/docs/tokens-variants-appearances--docs) for the underlying token mapping.
+
+Every variant except `neutral` also supplies a default icon, so a variant on its own is usually all a callout needs:
+
+<Canvas of={CalloutStories.Variants} sourceState="shown" />
+
+<Canvas of={CalloutStories.Appearances} sourceState="shown" />
+
+Reach for `solid` when the callout must be seen before anything else on the page, and `plain` when it is a footnote to the content it sits beside.
+
+## Content
+
+A callout has four regions: the icon, the title, the body, and the action.
+Each one collapses when it has nothing in it, so a callout with only body content is a plain box.
+
+The title has two forms.
+The `title` attribute is the shorthand:
+
+<Canvas of={CalloutStories.WithTitle} sourceState="shown" />
+
+Slot `title` instead when the title needs markup of its own.
+The slot takes precedence over the attribute.
+
+The `action` slot holds a trailing button or link.
+Give it `inherit` so it takes the callout's colour rather than the neutral palette:
+
+<Canvas of={CalloutStories.WithAction} sourceState="shown" />
+
+## The Icon
+
+The icon comes from the variant unless you say otherwise, and there are three ways to say otherwise.
+
+Set `icon` to a name to replace the variant's default:
+
+<Canvas of={CalloutStories.WithIcon} sourceState="shown" />
+
+Slot `icon` to supply your own artwork.
+Slotted content is honored even when no icon name resolves, so this works on a `neutral` callout that has no default of its own:
+
+<Canvas of={CalloutStories.CustomIcon} sourceState="shown" />
+
+Set `hide-icon` to suppress the region entirely, including a variant's default and anything slotted:
+
+<Canvas of={CalloutStories.HideIcon} sourceState="shown" />
+
+## Layout
+
+`rounded` selects which corners are rounded.
+Use `start` or `end` when the callout is flush against the top or bottom of another surface, and `none` when it spans a container edge to edge:
+
+<Canvas of={CalloutStories.Rounded} sourceState="shown" />
+
+`inline` renders the callout as a pill that flows with surrounding text rather than as a block-level box:
+
+<Canvas of={CalloutStories.Inline} sourceState="shown" />
+
+`size` steps the type down to `--c-text-sm` and tightens the gap between the icon and the text.
+The box padding is rem-based, so it does not scale with the type — pair `size` with `padding` when a small callout also wants a tighter box:
+
+<Canvas of={CalloutStories.Sizes} sourceState="shown" />
+
+## Padding
+
+Leaving `padding` off keeps the callout's own asymmetric pair: `--c-spacing-sm` on the block axis and `--c-spacing-md` on the inline one.
+A value that is given applies to both axes, the way a one-value CSS `padding` shorthand does.
+
+It accepts `sm`, `md`, `lg`, and `xl` (mapped to `--c-spacing-*`), or `0`/`none`:
+
+<Canvas of={CalloutStories.Padding} sourceState="shown" />
+
+The attribute is closed to that scale, so the design system stays the vocabulary for spacing.
+A value off it is ignored, and the callout's own default stands.
+
+For a value off the scale, or an asymmetric pair of your own, set the custom properties instead:
+
+<Canvas of={CalloutStories.CustomPadding} sourceState="shown" />
+
+```css
+craft-callout {
+  --c-callout-padding-block: var(--c-spacing-lg);
+  --c-callout-padding-inline: var(--c-spacing-sm);
+}
+```
+
+An `inline` callout also carries a little padding on the host itself.
+That is part of the pill treatment rather than of the box, and `padding` does not govern it.
+
+## Everything at Once
+
+<Canvas of={CalloutStories.KitchenSink} sourceState="shown" />
+
+## Accessibility
+
+A callout is a container, not a live region.
+It has no implicit role, and adding one to the page does not announce it.
+When a callout appears in response to something the person did — a failed save, a validation summary — the announcement is the responsibility of the code that inserts it.
+
+The icon is decorative.
+It repeats what the variant and the text already say, and carries no accessible name of its own, so nothing is lost when it is not announced.
+If you slot artwork that conveys something the text does not, give it its own label.
+
+Colour is not the only signal a callout carries, but it is the fastest one.
+Keep the text meaningful on its own, so a `danger` callout still reads as a problem when the colour is not perceived.
+
+## Properties
+
+<ArgTypes of={CalloutStories} />
