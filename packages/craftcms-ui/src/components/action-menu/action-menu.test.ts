@@ -77,7 +77,7 @@ describe('slot-based content added after setup', () => {
     content.append(added);
 
     let changed: CraftActionItem | null = null;
-    element.addEventListener('change', (event) => {
+    element.addEventListener('craft-select', (event) => {
       changed = (event as CustomEvent).detail.item;
     });
 

@@ -1389,11 +1389,12 @@ describe('MatrixControl', () => {
 
     // Grab the first of the two selected blocks and drop it at the end. Craft 5
     // took the whole selection along; the drag engine only reports the one.
-    container!
-      .querySelectorAll('craft-reorder-button')[0]!
-      .dispatchEvent(
-        new CustomEvent('reorder', {bubbles: true, detail: {direction: 'down'}})
-      );
+    container!.querySelectorAll('craft-reorder-button')[0]!.dispatchEvent(
+      new CustomEvent('craft-reorder', {
+        bubbles: true,
+        detail: {direction: 'down'},
+      })
+    );
     await nextTick();
 
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([
@@ -1415,7 +1416,10 @@ describe('MatrixControl', () => {
 
     const button = container!.querySelectorAll('craft-reorder-button')[1]!;
     button.dispatchEvent(
-      new CustomEvent('reorder', {bubbles: true, detail: {direction: 'up'}})
+      new CustomEvent('craft-reorder', {
+        bubbles: true,
+        detail: {direction: 'up'},
+      })
     );
     await nextTick();
 

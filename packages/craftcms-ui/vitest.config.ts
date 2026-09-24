@@ -56,6 +56,7 @@ export default defineConfig({
           exclude: ['**/*.browser.test.ts'],
           root: './src/components',
           environment: 'happy-dom',
+          setupFiles: ['../../test/element-internals.setup.ts'],
         },
       },
       {
@@ -65,6 +66,17 @@ export default defineConfig({
         test: {
           name: 'mixins',
           root: './src/mixins',
+          environment: 'happy-dom',
+          setupFiles: ['../../test/element-internals.setup.ts'],
+        },
+      },
+      {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
+          name: 'controllers',
+          root: './src/controllers',
           environment: 'happy-dom',
         },
       },

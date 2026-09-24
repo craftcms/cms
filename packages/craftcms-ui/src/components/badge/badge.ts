@@ -31,8 +31,10 @@ export default class CraftBadge extends LitElement {
   /** The badge color — a color value from `Color` (e.g. `red`, `emerald`). */
   @property({reflect: true}) fill: ColorValue = Color.Gray;
 
+  /** Leaves out the prefix region, default indicator included. */
   @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
 
+  /** The badge's scale: `small`, `medium` (the default), or `large`. */
   @property() size: SizeValue = Size.Medium;
 
   /** The resolved color value used for the badge fill. */

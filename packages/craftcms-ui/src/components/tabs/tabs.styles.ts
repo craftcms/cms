@@ -68,6 +68,36 @@ export default css`
   }
 
   /*
+   * Unless the strip is asked to divide its width evenly, which is the other
+   * answer to the same problem: rather than collapsing the tabs that don't
+   * fit, every tab takes the same share and shrinks with the container. The
+   * component turns the overflow measurement off to match — see tabs.ts.
+   *
+   * A zero flex basis rather than auto: growing from zero is what makes the
+   * shares equal, where auto would hand out only the *leftover* space and
+   * leave a long label wider than a short one. The min-width override drops
+   * the automatic minimum on a flex item, without which a long label would
+   * refuse to shrink past its content and push the row wide anyway.
+   *
+   * Only the block placements: an inline strip runs down the block axis, where
+   * its tabs already span the full width, so there is no share to divide.
+   */
+  :host([equal-width]:is([placement='block-start'], [placement='block-end']))
+    ::slotted([slot='tab']) {
+    flex: 1 1 0;
+    min-width: 0;
+    /* The label sits in the middle of the share it was given rather than
+       against its leading edge, and wrapped lines centre with it. */
+    justify-content: center;
+    text-align: center;
+    /* Centred on the cross axis too. A label with no room left wraps, which
+       makes that tab taller and stretches the rest of the row to match it;
+       without this their single lines would sit against the top of the space
+       they were stretched into while the wrapped one sat in the middle. */
+    align-items: center;
+  }
+
+  /*
    * craft-popover gives itself display: contents, which would leave the menu
    * with no box to lay out or measure — and, being an author style, would also
    * beat the UA's [hidden] rule. Rules here are in the outer tree relative to

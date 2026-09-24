@@ -223,7 +223,7 @@
               <craft-reorder-button
                 :position="getRowPosition(thumbIdx)"
                 orientation="horizontal"
-                @reorder="
+                @craft-reorder="
                   (event: CustomEvent<{direction: 'up' | 'down'}>) =>
                     move(thumbIdx, event.detail.direction === 'up' ? -1 : 1)
                 "

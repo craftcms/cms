@@ -1,0 +1,45 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InfoIconStories from './info-icon.stories';
+
+<Meta of={InfoIconStories} name="Docs" />
+
+# Info Icon
+
+`<craft-info-icon>` is a small button that reveals explanatory text in a tooltip.
+
+<Canvas of={InfoIconStories.Default} sourceState="shown" />
+
+Reach for it when a detail helps but should not take up room beside the thing it explains — the definition of a setting, the consequence of an option, the format a field expects.
+
+<Canvas of={InfoIconStories.InContext} sourceState="shown" />
+
+If the explanation is something a person needs _before_ acting rather than on demand, put it in the field's help text instead. An info icon is for the second question, not the first.
+
+## Behaviour
+
+The tooltip opens on **click**, not hover.
+That is deliberate: hover text cannot be reached without a pointer, and it disappears the moment attention moves, which is the wrong trade for text meant to be read.
+
+Only one info icon is open at a time — opening one closes any other:
+
+<Canvas of={InfoIconStories.OnlyOneOpen} sourceState="shown" />
+
+## Appearance
+
+`icon` changes the marker when the default circle is not right — a lightbulb for a tip rather than a definition, say:
+
+<Canvas of={InfoIconStories.CustomIcon} sourceState="shown" />
+
+<Canvas of={InfoIconStories.Disabled} sourceState="shown" />
+
+## Accessibility
+
+The trigger is a real button with an accessible name from `label`, defaulting to a translated "More Info".
+
+Give it a more specific name when the page has several, so they are distinguishable in a list of controls: "More info about propagation" tells a screen reader user which one they have landed on, where three identical "More Info" buttons do not.
+
+The `id` ties the tooltip to its button, and is generated when you do not supply one — so a page can hold many info icons without collisions.
+
+## Properties
+
+<ArgTypes of={InfoIconStories} />

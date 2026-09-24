@@ -284,6 +284,52 @@ describe('size', () => {
   });
 });
 
+describe('equal width', () => {
+  it('defaults to off and reflects the attribute', async () => {
+    const element = await createTabs();
+
+    expect(element.equalWidth).toBe(false);
+    expect(element.hasAttribute('equal-width')).toBe(false);
+
+    element.equalWidth = true;
+    await element.updateComplete;
+    expect(element.hasAttribute('equal-width')).toBe(true);
+  });
+
+  it('gives the tabs an equal share of the strip', () => {
+    // Asserted against the stylesheet: there is no cascade in this
+    // environment, so the widths themselves are covered by the EqualWidth
+    // play function in tabs.stories.ts.
+    const selector = [...rules().keys()].find(
+      (key) => key.includes('[equal-width]') && key.includes("slot='tab'")
+    );
+
+    expect(selector).toBeDefined();
+
+    const body = rules().get(selector!)!;
+
+    // A zero basis is what makes the shares equal rather than merely
+    // proportional, and the min-width override is what lets a long label
+    // shrink into its share instead of widening the row.
+    expect(body).toContain('flex: 1 1 0');
+    expect(body).toContain('min-width: 0');
+
+    // A wrapped label makes its tab taller and stretches the row with it, so
+    // the labels are centred on both axes rather than only the inline one.
+    expect(body).toContain('justify-content: center');
+    expect(body).toContain('align-items: center');
+
+    // Only the block placements divide a width.
+    expect(selector).toContain("placement='block-start'");
+    expect(selector).toContain("placement='block-end'");
+    expect(selector).not.toContain('inline-start');
+  });
+
+  it('leaves the natural widths alone when off', () => {
+    expect(rules().get("::slotted([slot='tab'])")).toContain('flex: none');
+  });
+});
+
 describe('craft-tab', () => {
   it('reflects disabled', async () => {
     const element = await createTabs();
@@ -403,10 +449,23 @@ describe('external-panel mode', () => {
     ]);
   });
 
-  it('switches panels on click and fires selected-changed', async () => {
+  it('stays quiet on the initial render', async () => {
+    let fired = 0;
+    const element = document.createElement('craft-tabs');
+    element.addEventListener('craft-tab-show', () => {
+      fired++;
+    });
+    document.body.append(element);
+    await element.updateComplete;
+
+    // Selecting the first tab on load is not a change anyone asked for.
+    expect(fired).toBe(0);
+  });
+
+  it('switches panels on click and fires craft-tab-show', async () => {
     const {element, tabs, sections} = await createExternalTabs();
     let fired = 0;
-    element.addEventListener('selected-changed', () => {
+    element.addEventListener('craft-tab-show', () => {
       fired++;
     });
 
@@ -628,7 +687,7 @@ describe('collapsible', () => {
     });
 
     let reported: number | undefined;
-    element.addEventListener('selected-changed', (event) => {
+    element.addEventListener('craft-tab-show', (event) => {
       reported = (event.target as CraftTabs).selectedIndex;
     });
 
@@ -811,7 +870,7 @@ describe('collapsible', () => {
   it('leaves a strip that isn’t collapsible alone', async () => {
     const {element, tabs, sections} = await createExternalTabs();
     let fired = 0;
-    element.addEventListener('selected-changed', () => {
+    element.addEventListener('craft-tab-show', () => {
       fired++;
     });
 

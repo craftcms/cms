@@ -68,8 +68,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
   @property({type: Boolean, attribute: 'show-title', reflect: true})
   showTitle = false;
 
+  /** Text for the select button. Falls back to a translated "Select". */
   @property({attribute: 'select-label'}) selectLabel = '';
 
+  /** Text for the cancel button. Falls back to a translated "Cancel". */
   @property({attribute: 'cancel-label'}) cancelLabel = '';
 
   /** A submit is in flight. */
@@ -78,6 +80,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
   /** The index body is being fetched. */
   @property({type: Boolean, reflect: true}) loading = false;
 
+  /**
+   * Whether there is a selection to accept. Enables the select button, and
+   * `submit()` does nothing without it.
+   */
   @property({type: Boolean, attribute: 'can-submit', reflect: true})
   canSubmit = false;
 

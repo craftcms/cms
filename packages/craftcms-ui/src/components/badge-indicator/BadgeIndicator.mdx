@@ -1,0 +1,49 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as BadgeIndicatorStories from './badge-indicator.stories';
+
+<Meta of={BadgeIndicatorStories} name="Docs" />
+
+# Badge Indicator
+
+`<craft-badge-indicator>` marks something as new or changed, with an optional count.
+
+<Canvas of={BadgeIndicatorStories.Dot} sourceState="shown" />
+
+It attaches to whatever it sits beside — a nav item, a tab, a button — and says only "there is something here".
+
+<Canvas of={BadgeIndicatorStories.Numbered} sourceState="shown" />
+
+## Not the Same as Badge
+
+[Badge](?path=/docs/components-badge--docs) is a pill with a label, naming a state in place. This is a marker that draws attention to something else.
+
+If the thing needs naming, use a badge. If it needs pointing at, use this.
+
+## Variants
+
+<Canvas of={BadgeIndicatorStories.Primary} sourceState="shown" />
+
+<Canvas of={BadgeIndicatorStories.Secondary} sourceState="shown" />
+
+<Canvas of={BadgeIndicatorStories.Inverse} sourceState="shown" />
+
+`inverse` is for placing the badge on a dark or coloured surface, where the primary treatment would disappear.
+
+## Accessibility
+
+A bare dot conveys nothing — it is a coloured shape with no text.
+
+`alt-text` is what gives it meaning, and it is worth setting whenever the badge is not immediately beside text that already explains it.
+
+For a count, `badge-count-suffix` supplies the units, because a number alone is ambiguous:
+
+```html
+<craft-badge-indicator badge-count="3" badge-count-suffix="unread messages">
+</craft-badge-indicator>
+```
+
+Announced as "3 unread messages" rather than "3", which could be anything.
+
+## Properties
+
+<ArgTypes of={BadgeIndicatorStories} />

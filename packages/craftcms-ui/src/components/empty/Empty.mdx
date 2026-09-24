@@ -1,0 +1,52 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as EmptyStories from './empty.stories';
+
+<Meta of={EmptyStories} name="Docs" />
+
+# Empty
+
+`<craft-empty>` fills a space that has nothing in it yet.
+
+<Canvas of={EmptyStories.Default} sourceState="shown" />
+
+Use it wherever a list, index, or panel can come up with no results — a place that would otherwise be blank, which reads as broken rather than as empty.
+
+## Writing the Message
+
+An empty state has one job: tell a person what is missing and what to do about it.
+
+<Canvas of={EmptyStories.LabelOnly} sourceState="shown" />
+
+Say what is absent rather than that something is. "No entries yet" is a fact about the section; "Nothing to show" is a fact about the screen, and a person cannot act on it.
+
+Then give them the action:
+
+<Canvas of={EmptyStories.WithAction} sourceState="shown" />
+
+The default slot sits below the message and is where that action goes.
+
+## Distinguishing Empty From Filtered
+
+The two look the same and mean opposite things. A section with no entries needs "Create one"; a search with no matches needs "Clear the filters".
+
+Getting this wrong sends someone to create something they already have.
+
+## Graphics and Custom Content
+
+`icon` puts artwork above the message, and the `graphic` slot replaces it with your own:
+
+<Canvas of={EmptyStories.CustomGraphic} sourceState="shown" />
+
+The `content` slot replaces the message region entirely, for a state needing more than a line:
+
+<Canvas of={EmptyStories.CustomContent} sourceState="shown" />
+
+## Accessibility
+
+The graphic is decoration — the message carries the meaning, so artwork that repeats it should not be announced twice.
+
+When an empty state appears in response to something a person did, such as a filter returning nothing, the change needs announcing. The component does not do that: it renders in place and says nothing about arriving, so the code that swaps it in is responsible.
+
+## Properties
+
+<ArgTypes of={EmptyStories} />

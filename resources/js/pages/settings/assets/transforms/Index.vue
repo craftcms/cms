@@ -103,23 +103,18 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpButtonLink
-      :href="create().url"
-      variant="primary"
-      icon="plus"
-      >{{ t('New image transform') }}</CpButtonLink
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">{{
+      t('New image transform')
+    }}</CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <craft-empty :label="t('No image transforms exist yet.')" icon="image">
-          <CpButtonLink
-            :href="create().url"
-            icon="plus"
-            >{{ t('New image transform') }}</CpButtonLink
-          >
+          <CpButtonLink :href="create().url" icon="plus">{{
+            t('New image transform')
+          }}</CpButtonLink>
         </craft-empty>
       </template>
     </AdminTable>

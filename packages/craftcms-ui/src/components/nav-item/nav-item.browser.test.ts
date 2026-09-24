@@ -98,9 +98,7 @@ it('fills the chevron while it’s focused into view', async () => {
 
   toggle.focus();
 
-  expect(getComputedStyle(toggle).backgroundColor).not.toBe(
-    'rgba(0, 0, 0, 0)'
-  );
+  expect(getComputedStyle(toggle).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 it('draws the chevron at the same size as the icon it replaces', async () => {

@@ -1,15 +1,23 @@
 import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
-import {html, LitElement} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import styles from './avatar.styles.js';
 
 /**
- * @summary Container to represent a user or object
+ * @summary Stands in for a user or object with their initials on a gradient
+ * disc. Draws initials rather than loading a picture, so it works where there
+ * may not be one — use `craft-thumbnail` when there is.
  *
- * @cssproperty [--color-start=red] - Start color of the gradient
- * @cssproperty [--color-end=blue] - End color of the gradient
- * @cssproperty [--color-text=currentColor] - Color of the text
- * @cssproperty [--size=calc(30rem / 16)] - Overall size of the avatar. Defaults to 30px.
+ * Without a `label` there are no initials to draw and nothing to announce, so
+ * the disc falls back to a question mark and is hidden from assistive
+ * technology rather than exposed as an unnamed image.
+ *
+ * @cssproperty [--c-avatar-color-start=red] - The gradient's start colour.
+ * @cssproperty [--c-avatar-color-end=blue] - The gradient's end colour.
+ * @cssproperty [--c-avatar-color-text=inherit] - The initials' colour.
+ * @cssproperty [--size=calc(30rem / 16)] - The avatar's overall size, 30px by
+ * default. Shared with the other square components — spinner, status, indicator —
+ * so one declaration can size a row of them together.
  */
 export default class CraftAvatar extends LitElement {
   static override styles: CSSResultGroup = [styles];
@@ -44,9 +52,10 @@ export default class CraftAvatar extends LitElement {
         <svg
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
-          role="img"
+          role="${this.label ? 'img' : nothing}"
+          aria-hidden="${this.label ? nothing : 'true'}"
         >
-          ${this.label ? html`<title>${this.label}</title>` : ''}
+          ${this.label ? html`<title>${this.label}</title>` : nothing}
           <defs>
             <linearGradient
               id="${this._gradientId}"
@@ -55,8 +64,14 @@ export default class CraftAvatar extends LitElement {
               x2="1"
               y2="0"
             >
-              <stop offset="0%" style="stop-color:var(--color-start)"></stop>
-              <stop offset="100%" style="stop-color:var(--color-end)"></stop>
+              <stop
+                offset="0%"
+                style="stop-color:var(--c-avatar-color-start)"
+              ></stop>
+              <stop
+                offset="100%"
+                style="stop-color:var(--c-avatar-color-end)"
+              ></stop>
             </linearGradient>
           </defs>
           <circle
