@@ -151,15 +151,19 @@ jobs:
           cache: true
           run-install: false
 
-      # `--trust-lockfile` skips the supply-chain pass, which re-checks every
-      # lockfile entry — the Font Awesome kit included, and that needs the
-      # license token. @craftcms/ui doesn't depend on the kit, and js-ci.yml
-      # still runs the full check.
+      # pnpm's supply-chain pass re-checks every lockfile entry, the Font
+      # Awesome kit included, so even this filtered install needs the license
+      # token. pnpm won't expand env vars in credentials coming from the
+      # project .npmrc, so the token goes in the user-level one.
       - name: Generate Custom Elements Manifest
         if: steps.cem.outputs.cache-hit != 'true'
+        shell: bash
         run: |
-          vp install --frozen-lockfile --filter @craftcms/ui -- --trust-lockfile
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile --filter @craftcms/ui
           vp run @craftcms/ui#build:manifest
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Run tests
         uses: ./.github/actions/run-tests
