@@ -95,11 +95,12 @@ describe('SelectableCardList', () => {
     const {reorders} = mount(['a', 'b', 'c']);
     await nextTick();
 
-    container!
-      .querySelectorAll('craft-reorder-button')[2]!
-      .dispatchEvent(
-        new CustomEvent('reorder', {bubbles: true, detail: {direction: 'up'}})
-      );
+    container!.querySelectorAll('craft-reorder-button')[2]!.dispatchEvent(
+      new CustomEvent('craft-reorder', {
+        bubbles: true,
+        detail: {direction: 'up'},
+      })
+    );
 
     expect(reorders).toEqual([[2, 1]]);
   });

@@ -5,9 +5,12 @@ import {classMap} from 'lit/directives/class-map.js';
 import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden.js';
 
 /**
- * @summary A badge indicator component. Used in various places to indicate that
- * something is new or has been updated. The indicator can have an optional
- * notification count.
+ * @summary A small marker showing that something is new or has changed, with
+ * an optional count.
+ *
+ * It attaches to whatever it sits beside — a nav item, a tab, a button — and
+ * says only "there is something here". What that something is has to come from
+ * the text around it or from `alt-text`.
  */
 
 export default class CraftBadgeIndicator extends LitElement {
@@ -26,6 +29,10 @@ export default class CraftBadgeIndicator extends LitElement {
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
 
+  /**
+   * Id of the badge, so the element it marks can reference it. Generated when
+   * not supplied.
+   */
   @property()
   override id: string;
 

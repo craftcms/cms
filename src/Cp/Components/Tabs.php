@@ -51,6 +51,8 @@ class Tabs extends ViewComponent
 
     protected bool $collapsible = false;
 
+    protected bool $equalWidth = false;
+
     protected function tagName(): string
     {
         return 'craft-tabs';
@@ -146,6 +148,19 @@ class Tabs extends ViewComponent
     }
 
     /**
+     * Gives every tab the same share of the strip’s width rather than the width
+     * of its own label. Tabs that share the width always fit, so nothing
+     * collapses into the overflow menu; long labels wrap instead. Only the
+     * block placements have a width to divide, so an inline strip ignores it.
+     */
+    public function equalWidth(bool $equalWidth = true): static
+    {
+        $this->equalWidth = $equalWidth;
+
+        return $this;
+    }
+
+    /**
      * Which axis the strip runs along; the web component defaults to
      * `horizontal`. Strings (e.g. from Twig `ui()` config) are validated
      * against {@see TabsLayout}.
@@ -203,6 +218,7 @@ class Tabs extends ViewComponent
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
             'collapsible' => $this->collapsible,
+            'equal-width' => $this->equalWidth,
             'layout' => $this->getLayout(),
         ];
     }

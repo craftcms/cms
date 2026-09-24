@@ -331,7 +331,17 @@ readonly class Navigation
         $items = [];
         $group = null;
 
-        foreach ($this->elementSources->getSources($elementType, page: $page) as $source) {
+        // Scoped to the site the CP is working with, so switching sites leaves
+        // the nav listing only the sources that run on the new one. The tree is
+        // cached and handed to the client per site ({@see cacheKey()}), so this
+        // is resolved once per site rather than per request.
+        $sources = $this->elementSources->getSources(
+            $elementType,
+            page: $page,
+            siteId: $this->navSiteId(),
+        );
+
+        foreach ($sources as $source) {
             if (($source['type'] ?? null) === ElementSources::TYPE_HEADING) {
                 $heading = (string) ($source['heading'] ?? '');
 
@@ -567,6 +577,21 @@ readonly class Navigation
     }
 
     /**
+     * The site the nav's sources are scoped to.
+     *
+     * `null` on a single-site install, or before a user can be asked which
+     * sites they may edit — in both cases there's nothing to filter by.
+     */
+    public function navSiteId(): ?int
+    {
+        if (! Sites::isMultiSite()) {
+            return null;
+        }
+
+        return app(RequestedSite::class)->get()?->id;
+    }
+
+    /**
      * The cache key for the current request's tree.
      *
      * Everything the tree's *shape* depends on is in here, so a change to any
@@ -580,7 +605,10 @@ readonly class Navigation
             'cp-nav',
             self::CACHE_VERSION,
             currentUser()?->getCraftUserId() ?? 'guest',
-            Sites::getCurrentSite()->id ?? 0,
+            // The site the sources were filtered for, not `getCurrentSite()` —
+            // that's always the primary site on a CP request, so every site
+            // would share the primary site's tree.
+            $this->navSiteId() ?? 0,
             Edition::get()->value,
             app()->getLocale(),
             (int) $this->generalConfig->allowAdminChanges,

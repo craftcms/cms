@@ -1,4 +1,6 @@
-import {describe, expect, it} from 'vitest';
+import {ref} from 'vue';
+import {describe, expect, it, vi} from 'vitest';
+import type {ViewState} from '@/modules/elements/types/view-state';
 import {
   cascadeStructureSelection,
   deselectDescendants,
@@ -6,6 +8,7 @@ import {
   loadedBranchDepth,
   resolveStructureMove,
   selectDescendantsOfSelected,
+  useElementIndexStructure,
 } from './useElementIndexStructure';
 
 // hoodie
@@ -196,5 +199,39 @@ describe('loadedBranchDepth', () => {
 
   it('is unknown when part of the branch is collapsed', () => {
     expect(loadedBranchDepth(tree, 1, (id) => id === 2)).toBeNull();
+  });
+});
+
+describe('useElementIndexStructure', () => {
+  const visitor = {merge: vi.fn(), visit: vi.fn(), currentQuery: () => ({})};
+  const route = {url: () => '/cp/entries'};
+  const viewState = ref<ViewState>({
+    inlineEditing: false,
+    mode: 'structure',
+    showHeaderColumn: true,
+    static: false,
+  });
+
+  // The saved mode is shared by every source, so it can outlive a switch to a
+  // source without a structure.
+  it('only treats structure sources as being in structure mode', () => {
+    const source = ref<{structureId: number | null}>({structureId: 1});
+    const {isStructure} = useElementIndexStructure(
+      {
+        structure: null,
+        get source() {
+          return source.value;
+        },
+      },
+      viewState,
+      route,
+      visitor
+    );
+
+    expect(isStructure.value).toBe(true);
+
+    source.value = {structureId: null};
+
+    expect(isStructure.value).toBe(false);
   });
 });

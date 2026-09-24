@@ -33,7 +33,11 @@ function releasePageScroll(): void {
 }
 
 /**
- * craft-dialog is a modal dialog over a native `<dialog>`.
+ * @summary A modal dialog over a native `<dialog>`.
+ *
+ * Being modal, it takes focus and blocks the page behind it — so reach for it
+ * when a person genuinely has to deal with something before continuing, and
+ * for anything less use a `craft-popover` or an inline `craft-callout`.
  *
  * Set the `open` attribute (or the `opened` property) to show it; default-slot
  * children render as the body, `slot="footer"` children render in a footer, and

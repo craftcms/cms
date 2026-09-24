@@ -1,12 +1,30 @@
 import {css, html, type PropertyValues} from 'lit';
 import {property, state} from 'lit/decorators.js';
-import {LionInput} from '@lion/ui/input.js';
-import {inputStyles, baseFormControlStyles} from '@src/styles/form.styles';
+import {baseFormControlStyles} from '@src/styles/form.styles';
+import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
 
-export default class CraftInputPassword extends LionInput {
+/**
+ * @summary A password input with a button to reveal the value. The button
+ * toggles the field between `password` and `text`, and names itself "Show" or
+ * "Hide" as it goes.
+ *
+ * It extends `craft-input`, so everything on that control applies here too.
+ *
+ * @slot label - The control's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages.
+ * @slot suffix - Supplied by the component: the reveal button. Slotting your
+ *   own replaces it.
+ */
+export default class CraftInputPassword extends CraftInput {
+  /**
+   * Rules for a password manager generating a password, passed through to the
+   * native input's `passwordrules` attribute.
+   */
   @property({attribute: 'passwordrules'}) passwordRules = '';
 
   @state()
@@ -15,7 +33,6 @@ export default class CraftInputPassword extends LionInput {
   static override get styles() {
     return [
       ...super.styles,
-      inputStyles,
       css`
         .input-group__container {
           position: relative;
@@ -43,6 +60,12 @@ export default class CraftInputPassword extends LionInput {
       `,
     ];
   }
+
+  /**
+   * Starts at `password` and flips to `text` while the value is revealed, which
+   * is how the reveal button works.
+   */
+  override type = 'password';
 
   constructor() {
     super();
@@ -72,7 +95,7 @@ export default class CraftInputPassword extends LionInput {
     this._inputNode?.removeAttribute('passwordrules');
   }
 
-  reveal = () => {
+  protected reveal = () => {
     this._visible = !this._visible;
     this.type = this._visible ? 'text' : 'password';
   };
@@ -80,7 +103,7 @@ export default class CraftInputPassword extends LionInput {
   // Note: no leading/trailing whitespace inside the template — with
   // `renderAsDirectHostChild` every root node is appended to the host, and
   // text nodes don't get a slot attribute.
-  renderSuffix = () => {
+  protected renderSuffix = () => {
     return html`<craft-button
       type="button"
       icon
@@ -99,6 +122,9 @@ export default class CraftInputPassword extends LionInput {
     </craft-button>`;
   };
 
+  /**
+   * Adds the reveal button to the field, in the suffix slot.
+   */
   override get slots() {
     return {
       ...super.slots,

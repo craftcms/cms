@@ -1,7 +1,6 @@
-import {LionInput} from '@lion/ui/input.js';
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
-import {inputStyles} from '@src/styles/form.styles';
+import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import styles from './input-color.styles.js';
 
@@ -52,7 +51,7 @@ function expandedHexValue(value: unknown): string | null {
 }
 
 /**
- * @summary A color input built on top of Lion's text input. Pairs a free
+ * @summary A color input built on top of `craft-input`. Pairs a free
  * text field (prefixed with `#`) with a native `<input type="color">` swatch and
  * an optional datalist of preset colors.
  *
@@ -69,9 +68,9 @@ function expandedHexValue(value: unknown): string | null {
  *
  * @since 1.0
  */
-export default class CraftInputColor extends LionInput {
+export default class CraftInputColor extends CraftInput {
   static override get styles() {
-    return [...super.styles, inputStyles, styles];
+    return [...super.styles, styles];
   }
 
   /**
@@ -90,9 +89,14 @@ export default class CraftInputColor extends LionInput {
 
   protected _pickerListId = `${this._inputId}-presets`;
 
+  /**
+   * Fixed to `text`. The swatch beside the field is a separate native colour
+   * input, so the text field keeps the hex value editable.
+   */
+  override type = 'text';
+
   constructor() {
     super();
-    this.type = 'text';
   }
 
   /**
@@ -111,6 +115,9 @@ export default class CraftInputColor extends LionInput {
     return CraftInputColor._browserSupportsColorInputs;
   }
 
+  /**
+   * Adds the colour swatch alongside the native input.
+   */
   override get slots() {
     return {
       ...super.slots,
@@ -133,22 +140,38 @@ export default class CraftInputColor extends LionInput {
     };
   }
 
+  /**
+   * Parses the typed hex string into the model value.
+   */
   override parser(value: string) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Formats the model value for display in the field.
+   */
   override formatter(value: unknown) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Serialises the model value for form submission.
+   */
   override serializer(value: unknown) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Restores a model value from its serialised form.
+   */
   override deserializer(value: string) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Normalises what is typed before it is parsed, so a value pasted with or
+   * without a leading `#` lands the same way.
+   */
   override preprocessor(value: string) {
     const normalizedValue = normalizeColorValue(value);
 

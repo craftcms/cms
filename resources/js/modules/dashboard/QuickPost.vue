@@ -52,7 +52,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <p v-if="widget.data?.message">{{ widget.data.message }}</p>
@@ -70,5 +70,5 @@
         error
       }}</craft-callout>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>

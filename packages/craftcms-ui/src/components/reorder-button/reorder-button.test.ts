@@ -8,7 +8,7 @@ it('emits composed reorder events to list owners', async () => {
     'craft-reorder-button'
   ) as CraftReorderButton;
   const reordered = vi.fn();
-  list.addEventListener('reorder', reordered);
+  list.addEventListener('craft-reorder', reordered);
   list.append(button);
   document.body.append(list);
   await button.updateComplete;
@@ -35,7 +35,7 @@ it('only offers indent and outdent on nested buttons', async () => {
   expect(button.shadowRoot?.querySelector('[data-action="indent"]')).toBeNull();
 
   const reordered = vi.fn();
-  button.addEventListener('reorder', reordered);
+  button.addEventListener('craft-reorder', reordered);
   button.nested = true;
   button.canIndent = true;
   await button.updateComplete;
@@ -57,7 +57,7 @@ it('blocks both moves for an only child', async () => {
   ) as CraftReorderButton;
   button.position = 'only';
   const reordered = vi.fn();
-  button.addEventListener('reorder', reordered);
+  button.addEventListener('craft-reorder', reordered);
   document.body.append(button);
   await button.updateComplete;
 

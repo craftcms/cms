@@ -52,7 +52,13 @@ export default class CraftTruncate extends LitElement {
   }
 
   protected override firstUpdated() {
-    this.#measure();
+    // `observe()` delivers an initial callback once the element is laid out,
+    // which is the first measurement. Measuring here as well would set state
+    // straight after an update completed — the double render Lit warns about.
+    // Without a ResizeObserver there is nothing else to seed it.
+    if (!this.#resizeObserver) {
+      this.#measure();
+    }
   }
 
   #measure() {

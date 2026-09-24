@@ -1,7 +1,7 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as ButtonStories from './button.stories';
 
-<Meta of={ButtonStories} />
+<Meta of={ButtonStories} name="Docs" />
 
 # Button
 
@@ -27,7 +27,7 @@ A button represents a clickable element that performs an action when activated.
 
 ## Inherit
 
-Add the boolean `inherit` property to a button placed inside a [Colorable](?path=/docs/concepts-colorable--docs) container (such as a `craft-callout` or any `[data-color]` element). Its neutral variants then adopt the container's color instead of the neutral palette, while still honoring the chosen appearance (`solid`, `fill`, `outline`, and so on).
+Add the boolean `inherit` property to a button placed inside a [Colorable](?path=/docs/tokens-colorable--docs) container (such as a `craft-callout` or any `[data-color]` element). Its neutral variants then adopt the container's color instead of the neutral palette, while still honoring the chosen appearance (`solid`, `fill`, `outline`, and so on).
 
 `primary` and `danger` ignore `inherit` and keep their own colors, so they remain stable inside colorable containers.
 
@@ -59,3 +59,7 @@ The offset follows the button's size, and an icon-only button aligns its icon ra
 ## Links
 
 <Canvas of={ButtonStories.Links} />
+
+## Properties
+
+<ArgTypes of={ButtonStories} />

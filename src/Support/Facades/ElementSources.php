@@ -9,7 +9,9 @@ use Override;
 
 /**
  * @method static \Illuminate\Support\Collection filterExtraHeadings(mixed[]|\Illuminate\Support\Collection $sources)
- * @method static \Illuminate\Support\Collection getSources(string $elementType, string $context = 'index', bool $withDisabled = false, string|null $page = null)
+ * @method static bool sourceIsAvailableForSite(mixed $source, int $siteId)
+ * @method static \Illuminate\Support\Collection filterSourcesBySite(mixed[]|\Illuminate\Support\Collection $sources, int $siteId)
+ * @method static \Illuminate\Support\Collection getSources(string $elementType, string $context = 'index', bool $withDisabled = false, string|null $page = null, int|null $siteId = null)
  * @method static bool sourceExists(string $elementType, string $sourceKey, string $context = 'index', bool $withDisabled = false, string|null $page = null)
  * @method static mixed|null findSource(string $elementType, string $sourceKey, string $context = 'index', bool $withDisabled = false, string|null $page = null)
  * @method static \Illuminate\Support\Collection getPages(string $elementType)

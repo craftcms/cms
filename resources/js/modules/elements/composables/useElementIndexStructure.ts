@@ -10,6 +10,7 @@ import type {ViewState} from '@/modules/elements/types/view-state';
 
 interface ElementIndexStructureContext {
   structure: {id: number; editable: boolean; maxLevels: number | null} | null;
+  source?: {structureId?: number | null} | null;
 }
 
 /** The parts of a row the structure helpers read. */
@@ -464,7 +465,12 @@ export function useElementIndexStructure(
 ) {
   const visitor = indexVisitor ?? createIndexVisitor(route);
 
-  const isStructure = computed(() => viewState.value.mode === 'structure');
+  // The saved mode is shared by every source, so it can say `structure` on a
+  // source that isn't one.
+  const isStructure = computed(
+    () =>
+      viewState.value.mode === 'structure' && props.source?.structureId != null
+  );
 
   /** The active structure, or `null` when the source isn't one. */
   const structure = computed(() => props.structure);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -85,12 +86,11 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       :href="create.url()"
       icon="plus"
-      appearance="button"
-      variant="accent"
-      >{{ t('New schema') }}</CpLink
+      variant="primary"
+      >{{ t('New schema') }}</CpButtonLink
     >
   </LayoutSlot>
   <CpContainer>

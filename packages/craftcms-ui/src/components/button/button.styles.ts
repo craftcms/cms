@@ -401,6 +401,37 @@ export default css`
     background-color: transparent;
   }
 
+  /*
+    A plain [inherit] button takes the surrounding text color, not just the
+    ambient palette.
+
+    Skipping the palette block at the top is enough under a colorable ancestor,
+    which redefines --c-color-*. It isn't enough on a surface that sets its own
+    text color without them — the breadcrumbs bar — where the variant's own
+    on-* token still wins and paints the button against the bar, not with it.
+
+    Only plain, which draws no background of its own. A filled variant's text
+    has to stay readable against its own fill, so it keeps its on-* token no
+    matter what the surrounding text is doing.
+
+    Last in the color rules, and repeated per state, so it beats the variant's
+    base, hover and active colors rather than relying on source order alone.
+  */
+  :host([variant~='plain'][inherit]) {
+    color: inherit;
+  }
+
+  @media (hover: hover) {
+    :host([variant~='plain'][inherit]:not(:disabled):not(.loading):hover) {
+      color: inherit;
+    }
+  }
+
+  :host([variant~='plain'][inherit]:not(:disabled):not(.loading):active),
+  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)) {
+    color: inherit;
+  }
+
   /* None — completely unstyled; provides behavior only. */
   :host([variant~='none']) {
     appearance: none;
@@ -456,25 +487,6 @@ export default css`
 
   .button-content--end {
     justify-content: end;
-  }
-
-  .a11y-error {
-    position: relative;
-    outline: 2px solid var(--c-color-danger-border-normal) !important;
-    background-color: rgba(255, 0, 0, 0.1) !important;
-
-    &:after {
-      content: '!';
-      position: absolute;
-      display: inline-flex;
-      font-size: calc(11rem / 16);
-      padding: 0.125em 0.5em 0.25em;
-      inset-block-start: -2px;
-      inset-inline-start: 0;
-      background: var(--c-color-danger-bg-emphasis);
-      color: white;
-      transform: translateX(-100%);
-    }
   }
 
   /*

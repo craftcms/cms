@@ -1,5 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
-import {expect} from 'storybook/test';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+import {expect, waitFor} from 'storybook/test';
 
 import {html} from 'lit';
 
@@ -7,39 +9,38 @@ import {sizes} from '@src/constants/size';
 
 import '../tab/tab.js';
 import './tabs.js';
+import type CraftTabs from './tabs.js';
 import {tabsPlacements} from './tabs.js';
 
 import '../icon/icon.js';
 
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `tabs.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftTabs>('craft-tabs');
+
+type CraftTabsArgs = CraftTabs & typeof args;
+
 const meta = {
   title: 'Components/Tabs',
   component: 'craft-tabs',
+  // `selected-index` is Lion's, so it is not in the manifest and is declared
+  // alongside the generated set.
   argTypes: {
-    placement: {
-      control: {type: 'inline-radio'},
-      options: tabsPlacements,
-      description: 'Where the strip sits relative to the panels.',
-    },
-    size: {
-      control: {type: 'inline-radio'},
-      options: sizes,
-      description: 'How large the strip is.',
-    },
+    ...argTypes,
     selectedIndex: {
       name: 'selected-index',
       control: {type: 'number'},
       description: 'Index of the selected tab. -1 selects nothing.',
     },
-    collapsible: {
-      control: {type: 'boolean'},
-      description: 'Whether clicking the selected tab deselects it.',
-    },
   },
   args: {
+    ...args,
     placement: 'block-start',
     size: 'medium',
     selectedIndex: 0,
-    collapsible: false,
   },
   render: (args) => html`
     <craft-tabs
@@ -47,6 +48,7 @@ const meta = {
       size="${args.size}"
       selected-index="${args.selectedIndex}"
       ?collapsible="${args.collapsible}"
+      ?equal-width="${args.equalWidth}"
     >
       <craft-tab slot="tab">Tab One</craft-tab>
       <div slot="panel">
@@ -62,10 +64,10 @@ const meta = {
       </div>
     </craft-tabs>
   `,
-} satisfies Meta<any>;
+} satisfies Meta<CraftTabsArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftTabsArgs>;
 
 /*
  * These play functions are the real test bed for the Lion-driven behavior:
@@ -347,11 +349,24 @@ export const ExternalPanels: Story = {
   },
 };
 
-/** Waits out the animation frames the overflow measurement schedules. */
+/**
+ * Waits out the animation frames the overflow measurement schedules.
+ *
+ * A fixed number of frames is not enough on its own: `requestAnimationFrame`
+ * is starved when several browser tests run at once, so the measurement had
+ * not always finished by the time the assertions ran. Pair this with
+ * `settleUntil()` wherever the result of a measurement is being read.
+ */
 async function settle() {
   for (let frame = 0; frame < 3; frame++) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
+}
+
+/** Settles, then waits for the measurement to actually land. */
+async function settleUntil(condition: () => boolean) {
+  await settle();
+  await waitFor(() => expect(condition()).toBe(true));
 }
 
 const OVERFLOW_LABELS = [
@@ -369,6 +384,18 @@ const OVERFLOW_LABELS = [
  * Storybook viewport to watch tabs move in and out of the menu.
  */
 export const Overflow: Story = {
+  parameters: {
+    a11y: {
+      config: {
+        // This story opens the overflow menu and leaves it open, so the scan
+        // reaches Lion's overlay wrapper — a `<dialog role="none">` it creates
+        // to position the content without adding a second dialog around it.
+        // The role is deliberate on Lion's side and the element is not ours to
+        // change; the menu inside it carries the real semantics.
+        rules: [{id: 'aria-allowed-role', enabled: false}],
+      },
+    },
+  },
   render: () => html`
     <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
       <craft-tabs>
@@ -390,8 +417,9 @@ export const Overflow: Story = {
 
     const collapsed = () => tabs.filter((tab) => tab.hasAttribute('hidden'));
 
-    // The strip measures off a rAF, so settle before reading it.
-    await settle();
+    // The strip measures off a rAF, so wait for the measurement to land
+    // rather than for a fixed number of frames.
+    await settleUntil(() => collapsed().length > 0);
 
     // Some tabs don't fit, so the menu is showing and holds exactly them.
     await expect(collapsed().length).toBeGreaterThan(0);
@@ -408,7 +436,9 @@ export const Overflow: Story = {
     const label = target.textContent!.trim();
 
     await userEvent.click(menu.querySelector('[slot="invoker"]')!);
-    await settle();
+    await settleUntil(
+      () => menu.querySelectorAll('craft-action-item').length > 0
+    );
 
     // The items are the menu's own light DOM, which lives inside the strip's
     // shadow root — a document-level query wouldn't reach them.
@@ -417,7 +447,7 @@ export const Overflow: Story = {
     );
     await expect(item).toBeTruthy();
     await userEvent.click(item as HTMLElement);
-    await settle();
+    await settleUntil(() => !target.hasAttribute('hidden'));
 
     // It swapped into the strip, selected, and something else took its place
     // in the menu.
@@ -458,6 +488,84 @@ export const NoOverflow: Story = {
         t.hasAttribute('hidden')
       )
     ).toBe(false);
+  },
+};
+
+/**
+ * With `equal-width` the tabs divide the strip between them instead of each
+ * taking the width of its own label, so a one-word tab and a five-word one
+ * come out the same size.
+ *
+ * This is the other answer to the problem `Overflow` solves, and replaces it:
+ * the container here is the narrow one from that story, but nothing collapses
+ * into the menu — tabs that share the width always fit, so they shrink instead.
+ */
+export const EqualWidth: Story = {
+  render: () => html`
+    <div style="max-inline-size: 34rem;">
+      <craft-tabs equal-width>
+        ${OVERFLOW_LABELS.slice(0, 4).map(
+          (label, index) => html`
+            <craft-tab slot="tab">${label}</craft-tab>
+            <div slot="panel"><p>Panel ${index + 1}: ${label}</p></div>
+          `
+        )}
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const tabs = [...strip.querySelectorAll('craft-tab')];
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    await settle();
+
+    // Every tab is the same width, whatever its label is — within a pixel,
+    // flex having to split an odd number of them between the shares.
+    const widths = tabs.map((tab) => tab.getBoundingClientRect().width);
+
+    await expect(widths[0]).toBeGreaterThan(0);
+    widths.forEach((width) =>
+      expect(Math.abs(width - widths[0]!)).toBeLessThanOrEqual(1)
+    );
+
+    // The labels are the ones that overflow a 26rem strip in `Overflow`, and
+    // this one is not much wider — so this is the natural width being divided,
+    // not four short tabs that happened to fit.
+    const natural = widths.reduce((total, width) => total + width, 0);
+    await expect(natural).toBeLessThanOrEqual(
+      strip.getBoundingClientRect().width + 1
+    );
+
+    // Nothing collapsed: the measurement is off and the tabs shrank instead.
+    await expect(menu.hidden).toBe(true);
+    await expect(tabs.some((tab) => tab.hasAttribute('hidden'))).toBe(false);
+
+    // A label with no room left wraps, which makes that tab taller and
+    // stretches the row to match it. The single-line labels stay centred in
+    // the space they were stretched into rather than riding its top edge.
+    const wrapped = tabs.find(
+      (tab) => tab.textContent!.trim() === 'Search Engine Optimization'
+    )!;
+
+    await expect(wrapped.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    tabs.forEach((tab) => {
+      const box = tab.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(tab);
+      const text = range.getBoundingClientRect();
+
+      // Within a few pixels of each other: half-leading lands on fractional
+      // pixels, and how far off it lands depends on the font the machine has
+      // (CI's Linux fallback comes out near two). The bug this guards leaves a
+      // gap of twenty.
+      expect(
+        Math.abs(text.top - box.top - (box.bottom - text.bottom))
+      ).toBeLessThanOrEqual(3);
+    });
   },
 };
 

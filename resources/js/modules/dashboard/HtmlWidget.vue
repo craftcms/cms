@@ -22,7 +22,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <craft-spinner class="body-loading" visible role="status">{{
       t('Loading…')
@@ -37,7 +37,7 @@
         @ready="emit('ready')"
       />
     </div>
-  </craft-pane>
+  </craft-card>
 </template>
 
 <style scoped>

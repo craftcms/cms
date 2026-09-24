@@ -233,4 +233,47 @@ describe('withNavCrumbMenus', () => {
 
     expect(crumb!.items).toBe(items);
   });
+
+  it('gives an index’s own crumb its sources, not the main nav', () => {
+    // The "all entries" source is linked by the bare index URL, which is also
+    // the Entries nav item's own href. Matching the outer level first handed
+    // this crumb Dashboard/Entries/Assets instead of the sources beneath it.
+    const [crumb] = withNavCrumbMenus(
+      [
+        {
+          label: 'All entries',
+          href: '/admin/content/entries',
+          items: [{type: 'link', label: 'All entries', href: '/x'}],
+        },
+      ],
+      NAV
+    );
+
+    expect(crumb!.items).toMatchObject([
+      {type: 'link', label: 'All entries', selected: true},
+      {type: 'link', label: 'Singles', selected: false},
+      {
+        type: 'group',
+        heading: 'Channels',
+        items: [{type: 'link', label: 'Posts', selected: false}],
+      },
+    ]);
+  });
+
+  it('keeps the menu of a crumb that isn’t a link', () => {
+    // The element index's site crumb: a switcher for something the nav has no
+    // level for. It carries no href precisely so its sites aren't replaced by
+    // whichever nav level its URL would have landed in.
+    const items = [
+      {type: 'link' as const, label: 'English', href: '/admin/content/entries'},
+      {
+        type: 'link' as const,
+        label: 'French',
+        href: '/admin/content/entries?site=fr',
+      },
+    ];
+    const [crumb] = withNavCrumbMenus([{label: 'English', items}], NAV);
+
+    expect(crumb!.items).toBe(items);
+  });
 });

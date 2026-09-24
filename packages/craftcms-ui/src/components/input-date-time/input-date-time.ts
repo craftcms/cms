@@ -5,60 +5,127 @@ import CraftInputDate from '../input-date/input-date.js';
 import CraftInputTime, {
   type DisabledTimeRange,
 } from '../input-time/input-time.js';
+import {defaultTrueBoolean, jsonAttribute} from '@src/utilities/converters';
+import {t} from '@src/utilities/translate';
 
-const booleanAttribute = {
-  fromAttribute: (value: string | null) => value !== 'false',
-  toAttribute: (value: boolean) => String(value),
+/**
+ * Accessible names for the inputs the component owns. Functions rather than
+ * strings so they translate against the locale in play when they are read,
+ * not the one loaded when the module was first imported.
+ */
+const PART_LABELS: Record<string, () => string> = {
+  date: () => t('Date'),
+  time: () => t('Time'),
+  timezone: () => t('Time zone'),
 };
 
+/**
+ * @summary A paired date and time field. It owns a `craft-input-date`, a
+ * `craft-input-time`, and optionally a timezone input, creating them as its
+ * own light-DOM children and keeping their values in step.
+ *
+ * Give it a `name` and it submits the parts under that name — `name[date]`,
+ * `name[time]`, `name[timezone]`, and `name[locale]` — so the server receives
+ * one coherent value. The locale always goes along, and the timezone is
+ * carried by a hidden input whenever it is not shown as a control.
+ *
+ * The component has no label or field chrome of its own. Wrap it in
+ * `craft-field` for a label, instructions, and error handling.
+ *
+ * @slot - Content placed after the date and time inputs, such as a button
+ *   that clears them. The component's own inputs always lead, so slotted
+ *   controls stay after the inputs they act on in reading and tab order.
+ */
 export default class CraftInputDateTime extends LitElement {
+  /**
+   * Base name for the submitted values. Each part is posted under it as
+   * `name[date]`, `name[time]`, `name[timezone]`, and `name[locale]`. Without
+   * a name nothing is submitted.
+   */
   @property() name?: string;
 
+  /** Value of the date input, as `YYYY-MM-DD`. */
   @property({attribute: 'date-value'}) dateValue = '';
 
+  /** Value of the time input, as `HH:MM`. */
   @property({attribute: 'time-value'}) timeValue = '';
 
+  /**
+   * Locale the inputs format against. Always submitted as `name[locale]`, so
+   * the server can read the parts back the way they were entered.
+   */
   @property() locale?: string;
 
+  /**
+   * The timezone the value belongs to. Shown as an editable input when
+   * `show-timezone` is set, and submitted as a hidden input otherwise.
+   */
   @property() timezone?: string;
 
-  @property({attribute: 'show-date', converter: booleanAttribute})
+  /**
+   * Whether the date input is shown. On by default — set `show-date="false"`
+   * to drop it and leave a time-only field. Any other value counts as on.
+   */
+  @property({attribute: 'show-date', converter: defaultTrueBoolean})
   showDate = true;
 
-  @property({attribute: 'show-time', converter: booleanAttribute})
+  /**
+   * Whether the time input is shown. On by default — set `show-time="false"`
+   * to drop it and leave a date-only field. Any other value counts as on.
+   */
+  @property({attribute: 'show-time', converter: defaultTrueBoolean})
   showTime = true;
 
+  /**
+   * Whether the timezone is editable. Unlike `show-date` and `show-time` this
+   * is an ordinary boolean attribute: absent means off, present means on.
+   */
   @property({type: Boolean, attribute: 'show-timezone'})
   showTimezone = false;
 
+  /** Earliest selectable date, as `YYYY-MM-DD`. */
   @property() min?: string;
 
+  /** Latest selectable date, as `YYYY-MM-DD`. */
   @property() max?: string;
 
+  /** Earliest selectable time, as `HH:MM`. */
   @property({attribute: 'min-time'}) minTime?: string;
 
+  /** Latest selectable time, as `HH:MM`. */
   @property({attribute: 'max-time'}) maxTime?: string;
 
+  /** Spacing between the time input's suggestions, in minutes. */
   @property({type: Number, attribute: 'minute-increment'}) minuteIncrement = 30;
 
+  /**
+   * Time ranges that cannot be chosen, as a JSON array of `[start, end]`
+   * pairs of `HH:MM` times. Passed through to the time input, which enforces
+   * them with validation.
+   */
   @property({
     attribute: 'disabled-time-ranges',
-    converter: {
-      fromAttribute: (value) => JSON.parse(value ?? '[]'),
-      toAttribute: (value) => JSON.stringify(value),
-    },
+    converter: jsonAttribute<DisabledTimeRange[]>(() => []),
   })
   disabledTimeRanges: DisabledTimeRange[] = [];
 
+  /** Snaps a typed time onto the nearest `minute-increment` step. */
   @property({type: Boolean, attribute: 'force-round-time'})
   forceRoundTime = false;
 
+  /** Disables every input the component owns. */
   @property({type: Boolean}) disabled = false;
 
+  /** Makes every input the component owns read-only. */
   @property({type: Boolean}) readonly = false;
 
+  /** Marks the date and time inputs as required. */
   @property({type: Boolean}) required = false;
 
+  /**
+   * Id of the element describing this field, applied as `aria-describedby` to
+   * each input the component owns. `craft-field` supplies this for you.
+   */
   @property({attribute: 'described-by'}) describedBy?: string;
 
   static override styles = css`
@@ -186,6 +253,7 @@ export default class CraftInputDateTime extends LitElement {
     required: boolean
   ) {
     input.name = this.name ? `${this.name}[${part}]` : '';
+
     input.disabled = this.disabled;
     input.readOnly = this.readonly;
     input.required = required;
@@ -199,6 +267,12 @@ export default class CraftInputDateTime extends LitElement {
     } else {
       input.removeAttribute('aria-describedby');
     }
+
+    // A wrapping `craft-field` names the pair, not the parts. Without a name
+    // of its own each input is announced only as an edit field, so a person
+    // tabbing between them is told twice that they are somewhere they can
+    // type and never which half they are in.
+    input.setAttribute('aria-label', PART_LABELS[part]?.() ?? part);
   }
 
   #onModelValueChanged = (event: Event) => {

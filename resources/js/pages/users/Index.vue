@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
   import {
     appendIndexQuery,
@@ -64,12 +64,11 @@
 <template>
   <ElementIndexPage :route="route">
     <template #toolbar-actions>
-      <CpLink
+      <CpButtonLink
         v-if="page.props.canRegisterUsers"
         :href="create().url"
         icon="plus"
-        appearance="button"
-        >{{ page.props.newUserLabel }}</CpLink
+        >{{ page.props.newUserLabel }}</CpButtonLink
       >
     </template>
   </ElementIndexPage>

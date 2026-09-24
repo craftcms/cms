@@ -32,7 +32,7 @@ type FormControlTarget = HTMLElement & {
 };
 
 /**
- * A generic form-field shell that renders the standard CP field chrome
+ * @summary A generic form-field shell that renders the standard CP field chrome
  * (label, instructions, tip/warning notices, errors and status badge) around
  * any slotted control, mirroring the server-side field wrapper
  * (`FormFields::fieldHtml()` / `forms/field.blade.php`).
@@ -268,6 +268,10 @@ export default class CraftField extends FormControlMixin(LitElement) {
     super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
   }
 
+  /**
+   * Adds an element to the field's `aria-describedby`, so a control outside
+   * the field can still be described by it.
+   */
   override addToAriaDescribedBy(
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}

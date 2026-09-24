@@ -30,7 +30,7 @@ function popoverLayer(): number {
 }
 
 /**
- * A non-modal popover component built on Lion's overlay system.
+ * @summary A non-modal popover built on Lion's overlay system.
  *
  * Overlays content on top of the page without affecting document flow.
  * The trigger can be a slotted `invoker` child, an external element
@@ -50,6 +50,11 @@ function popoverLayer(): number {
  *   <div slot="content">Popover content here</div>
  * </craft-popover>
  * ```
+ *
+ * @fires craft-show - The overlay is opening. Fires as the state flips.
+ * @fires craft-after-show - The overlay has opened and its update has settled.
+ * @fires craft-hide - The overlay is closing. Fires as the state flips.
+ * @fires craft-after-hide - The overlay has closed and its update has settled.
  */
 export default class CraftPopover extends OverlayMixin(LitElement) {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
@@ -317,11 +322,23 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     }
   }
 
+  /**
+
+   * Opens the popover. Resolves once the overlay has finished opening.
+
+   */
+
   async show(): Promise<void> {
     this.opened = true;
     await this.updateComplete;
     await this.open();
   }
+
+  /**
+
+   * Closes the popover. Resolves once the overlay has finished closing.
+
+   */
 
   async hide(): Promise<void> {
     this.opened = false;

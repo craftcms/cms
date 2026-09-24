@@ -31,8 +31,10 @@ class RequestedSite
             return null;
         }
 
+        // Testbench reports an HTTP test as running in console, so the console
+        // guard on its own would have the CP ignore `?site=` in every test.
         if (
-            ! app()->runningInConsole() &&
+            (! app()->runningInConsole() || app()->runningUnitTests()) &&
             ($handle = request()->query('site')) !== null &&
             ($site = $this->sites->getSiteByHandle($handle, true)) !== null &&
             in_array($site->id, $editableSiteIds)

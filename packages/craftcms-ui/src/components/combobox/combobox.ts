@@ -4,6 +4,7 @@ import {property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import '../option/option.js';
 import '../icon/icon.js';
@@ -61,17 +62,37 @@ interface VisibleEntry {
  * @slot label - Field label.
  * @slot after - Supplementary content rendered below the field.
  * @slot feedback - Validation feedback.
+ *
+ * @fires input - Emitted on every alteration to the value, typed or selected.
+ * @fires change - Emitted when the value is committed: an option is selected,
+ *   or the field is left after typing.
+ * @attr model-value - The initial value. A JSON array of values when
+ *   `multiple-choice` is set, otherwise the value itself.
+ *
+ * @fires model-value-changed - The selection changed. Bubbles, so a form can
+ *   listen for it once on an ancestor rather than per field.
+ *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
  */
 export default class CraftCombobox extends LionCombobox {
+  /** Lets the combobox post its value with its form, through `ElementInternals`. */
   static formAssociated = true;
 
   static override get properties() {
     return {modelValue: {attribute: 'model-value'}};
   }
 
+  /**
+   * Whether more than one option may be selected. Each selected value posts
+   * as `name[]`.
+   */
   @property({type: Boolean, attribute: 'multiple-choice', reflect: true})
   override multipleChoice = false;
 
+  /** Whether the form refuses to submit without a value. */
   @property({type: Boolean}) required = false;
 
   private internals?: ElementInternals;
@@ -188,18 +209,39 @@ export default class CraftCombobox extends LionCombobox {
   /** Last model value we've announced via `model-value-changed`. */
   #lastNotifiedValue: unknown = undefined;
 
+  /** Last model value announced as committed, via native `change`. */
+  #committedValue: unknown = undefined;
+
   #filtering = false;
 
   override firstUpdated(changed: Map<PropertyKey, unknown>) {
     super.firstUpdated(changed);
     this._inputNode?.addEventListener('input', this.#onInput);
+    // Same reason as `#onInput`: the textbox lives in the light DOM, so its own
+    // `change` on blur would reach consumers with the textbox as `target`.
+    // `#commit()` is what announces a commit from the host.
+    this._inputNode?.addEventListener('change', (event) =>
+      event.stopPropagation()
+    );
     // Keep our notion of the last-announced value in sync with every
     // model-value-changed the component emits — Lion's (on selection) and ours
     // (on free-text, below) — so we never double-announce the same value.
     this.addEventListener('model-value-changed', () => {
       this.#lastNotifiedValue = this.modelValue;
+
+      // Typing announces its own `input` from `#onInput` and commits on blur;
+      // anything else reaching here is a selection, which is both at once.
+      if (!this.#typing) {
+        emitInput(this);
+        this.#commit();
+      }
     });
+
+    // A typed value commits when the field is left, as a text input's does.
+    this.addEventListener('blur', () => this.#commit());
+
     this.#lastNotifiedValue = this.modelValue;
+    this.#committedValue = this.modelValue;
     this.#renderOptions();
     if (this.multipleChoice) {
       this.initialValues = [
@@ -210,8 +252,30 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
+  /** Emits native `change` when the value has moved since the last commit. */
+  #commit(): void {
+    // Multiple choice announces its own `change` once per user edit (see the
+    // constructor), and its array value never compares equal here anyway.
+    if (this.multipleChoice) {
+      return;
+    }
+
+    if (this.modelValue === this.#committedValue) {
+      return;
+    }
+
+    this.#committedValue = this.modelValue;
+    emitChange(this);
+  }
+
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    // Lion names the listbox after its own label only, which is empty when a
+    // wrapping craft-field provides the label.
+    this._listboxNode?.setAttribute(
+      'aria-labelledby',
+      this._inputNode.getAttribute('aria-labelledby') ?? ''
+    );
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');
@@ -255,6 +319,9 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
+  /**
+   * Registers an option with the combobox. Called by Lion as options render.
+   */
   override addFormElement(child: unknown, indexToInsertAt?: number) {
     super.addFormElement(
       child as Parameters<LionCombobox['addFormElement']>[0],
@@ -277,12 +344,27 @@ export default class CraftCombobox extends LionCombobox {
     });
   }
 
-  #onInput = () => {
-    this.#filtering = true;
-    this.#renderOptions();
-    if (!this.multipleChoice && !this.requireOptionMatch) {
-      this.#syncModelFromInput();
+  #typing = false;
+
+  #onInput = (event: Event) => {
+    // Lion keeps its textbox in the light DOM, so the input's own event would
+    // reach consumers with the textbox as `target` rather than this component.
+    // Claim it here and re-emit from the host; listeners bound to the textbox
+    // itself (Lion's own) still run.
+    event.stopPropagation();
+
+    this.#typing = true;
+    try {
+      this.#filtering = true;
+      this.#renderOptions();
+      if (!this.multipleChoice && !this.requireOptionMatch) {
+        this.#syncModelFromInput();
+      }
+    } finally {
+      this.#typing = false;
     }
+
+    emitInput(this);
   };
 
   /**
@@ -625,6 +707,7 @@ export default class CraftCombobox extends LionCombobox {
     );
   }
 
+  /** Restores the initial selection when the owning form is reset. */
   formResetCallback() {
     if (this.multipleChoice) {
       this.modelValue = [...this.initialValues];
@@ -633,6 +716,7 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
+  /** Tracks whether an ancestor `<fieldset>` has disabled the control. */
   formDisabledCallback(disabled: boolean) {
     this.fieldsetDisabled = disabled;
     this.requestUpdate();

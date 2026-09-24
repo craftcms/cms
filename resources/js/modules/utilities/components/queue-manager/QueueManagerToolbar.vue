@@ -6,7 +6,7 @@
   import TransitionFade from '@/common/components/TransitionFade.vue';
   import {useForm} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {
@@ -68,10 +68,10 @@
 
 <template>
   <template v-if="activeJob">
-    <CpLink as="craft-button" :href="show.url({id: 'queue-manager'})">
+    <CpButtonLink :href="show.url({id: 'queue-manager'})">
       <craft-icon name="arrow-left" slot="prefix"></craft-icon>
       {{ t('Back') }}
-    </CpLink>
+    </CpButtonLink>
     <div class="grow"></div>
     <RetryJobButton v-if="isRetryable" :job="activeJob" size="default" />
     <ReleaseJobButton

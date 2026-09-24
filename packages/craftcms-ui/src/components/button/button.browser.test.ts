@@ -10,6 +10,11 @@ function isFlagged(button: CraftButton): boolean {
   return !!button.shadowRoot?.querySelector('.a11y-error');
 }
 
+/** The name the button last computed for itself, which it keeps internal. */
+function computedName(button: CraftButton): string {
+  return (button as unknown as {_accessibleName: string})._accessibleName;
+}
+
 /**
  * Mounts a button inside a container that starts hidden the way `craft-tabs`
  * hides a panel that isn't selected -- `display: none` and `visibility:
@@ -36,7 +41,7 @@ async function mountHidden(label: string | null): Promise<{
 
   // The name is computed asynchronously after the first render. An empty
   // string rather than undefined proves the check ran while still hidden.
-  await vi.waitFor(() => expect(button.accessibleName).toBe(''));
+  await vi.waitFor(() => expect(computedName(button)).toBe(''));
 
   return {button, container};
 }
@@ -49,7 +54,7 @@ it('does not flag a labelled button that was hidden when it first rendered', asy
   container.style.cssText = '';
 
   await vi.waitFor(() =>
-    expect(button.accessibleName).toBe('Cropping Rectangle')
+    expect(computedName(button)).toBe('Cropping Rectangle')
   );
   expect(isFlagged(button)).toBe(false);
 });
@@ -246,5 +251,53 @@ describe('icon spacing', () => {
     const {icon, label} = await mountLabelled({icon: 'pen'}, 'rtl');
 
     expect(icon.left - label.right).toBeCloseTo(6, 0);
+  });
+});
+
+describe('[inherit]', () => {
+  /**
+   * A surface that sets its own text color without redefining the
+   * `--c-color-*` palette — the breadcrumbs bar, where the chevron has to
+   * read against a dark background.
+   */
+  async function mountOnColoredSurface(
+    attributes: string
+  ): Promise<CraftButton> {
+    const surface = document.createElement('div');
+    // Text color and palette deliberately disagree: without [inherit] the
+    // variant paints from the palette, with it from the text beside it.
+    surface.style.color = 'rgb(255, 0, 0)';
+    surface.style.setProperty('--c-color-neutral-on-quiet', 'rgb(0, 0, 255)');
+    surface.innerHTML = `<craft-button variant="plain" icon="chevron-down" aria-label="Actions" ${attributes}></craft-button>`;
+
+    document.body.append(surface);
+
+    const button = surface.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it('takes the surrounding text color', async () => {
+    const button = await mountOnColoredSurface('inherit');
+
+    expect(getComputedStyle(button).color).toBe('rgb(255, 0, 0)');
+  });
+
+  it('keeps it while hovered', async () => {
+    const button = await mountOnColoredSurface('inherit');
+
+    // The variant's hover rule repaints from the palette, which on a surface
+    // like this would flip the button away from the text beside it.
+    button.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+    await button.updateComplete;
+
+    expect(getComputedStyle(button).color).toBe('rgb(255, 0, 0)');
+  });
+
+  it('uses the variant’s own palette color without it', async () => {
+    const button = await mountOnColoredSurface('');
+
+    expect(getComputedStyle(button).color).toBe('rgb(0, 0, 255)');
   });
 });

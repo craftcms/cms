@@ -3,7 +3,7 @@
   import {router} from '@inertiajs/vue3';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -108,9 +108,9 @@
 
 <template>
   <LayoutSlot v-if="!readOnly" name="content-actions">
-    <CpLink variant="accent" appearance="button" :href="create().url">{{
+    <CpButtonLink variant="primary" :href="create().url">{{
       t('New Asset Transformer')
-    }}</CpLink>
+    }}</CpButtonLink>
   </LayoutSlot>
 
   <CpContainer>

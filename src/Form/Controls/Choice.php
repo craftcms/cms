@@ -491,7 +491,7 @@ class Choice extends Control
                 // `<craft-button>` keys its square treatment on. The option's
                 // label becomes the button's accessible name instead.
                 ->label($icon !== null ? null : self::optionLabel($option))
-                ->attributes($icon !== null ? ['aria' => ['label' => $option['label']]] : [])
+                ->accessibleName($icon !== null ? $option['label'] : null)
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));

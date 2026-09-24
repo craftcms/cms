@@ -37,6 +37,7 @@ import {
   type IndexQueryParams,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
+import type {ViewMode} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexPageOptions {
   /** The page's index route — the one per-page piece of the pipeline. */
@@ -102,10 +103,32 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     elementIndex,
     options.route
   );
-  const {mode, restore: restoreViewMode} = useElementIndexViewMode(
+  // The structure view mode only applies to structure sources, so hide it
+  // (and any other `structuresOnly` mode) unless the active source is one.
+  const visibleViewModes = computed(() =>
+    elementIndex.viewModes.filter(
+      (viewMode) =>
+        !viewMode.structuresOnly || elementIndex.source?.structureId != null
+    )
+  );
+
+  const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
     options.route,
     viewState
   );
+
+  // The saved mode is shared by every source, so fall back to the first mode
+  // the active source offers (as the legacy index did) while keeping the saved
+  // one for sources that support it.
+  const mode = computed<ViewMode['mode']>({
+    get: () =>
+      visibleViewModes.value.some(({mode}) => mode === savedMode.value)
+        ? savedMode.value
+        : (visibleViewModes.value[0]?.mode ?? 'table'),
+    set: (value) => {
+      savedMode.value = value;
+    },
+  });
   const structureView = useElementIndexStructure(
     elementIndex,
     viewState,
@@ -141,15 +164,6 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       }
     );
   });
-
-  // The structure view mode only applies to structure sources, so hide it
-  // (and any other `structuresOnly` mode) unless the active source is one.
-  const visibleViewModes = computed(() =>
-    elementIndex.viewModes.filter(
-      (viewMode) =>
-        !viewMode.structuresOnly || elementIndex.source?.structureId != null
-    )
-  );
 
   const visibleColumns = ref({});
 

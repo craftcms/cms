@@ -11,6 +11,8 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\JobProgress;
@@ -111,7 +113,11 @@ class HandleInertiaRequests extends Middleware
             return parent::share($request);
         }
 
-        $currentSite = Sites::getCurrentSite();
+        // The site the CP is working with, not the request's: `getCurrentSite()`
+        // is documented to always be the primary site on a CP request, so
+        // sharing it would have every screen read the primary site's content
+        // no matter which one `?site=` names.
+        $currentSite = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -180,7 +186,16 @@ class HandleInertiaRequests extends Middleware
                 // pure weight. It carries no selection for that reason — the
                 // front end marks the trail from the URL it's on — and no
                 // badge counts, which are volatile and ride along below.
-                'nav' => Inertia::once(fn () => $nav->getTree())->as('craft.nav'),
+                // Keyed by site: the tree now lists only the sources that run
+                // on the site the CP is working with, so it's cached per site
+                // on the client and re-sent the first time each one is opened,
+                // rather than once for the whole session.
+                'nav' => Inertia::once(fn () => $nav->getTree())
+                    ->as('craft.nav.'.($nav->navSiteId() ?? 'all')),
+                // The site switcher that leads the breadcrumbs. Per-request
+                // rather than `once`, since its links point at whichever page
+                // you're currently on.
+                'siteCrumb' => fn () => app(SiteSwitcher::class)->crumb(),
                 'navBadges' => fn (): object => (object) $nav->getBadgeCounts(),
             ],
         ];

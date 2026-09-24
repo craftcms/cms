@@ -379,7 +379,7 @@ describe('craft-text-expander', () => {
     const events: string[] = [];
     let detail: TextExpanderSelectDetail | null = null;
     target.addEventListener('input', () => events.push('input'));
-    expander.addEventListener('craft-text-expander-select', (event) => {
+    expander.addEventListener('craft-select', (event) => {
       events.push('select');
       detail = event.detail;
     });
@@ -745,7 +745,7 @@ describe('craft-text-expander', () => {
       '@': {source: 'text-expander/options'},
     });
     let detail: TextExpanderErrorDetail | null = null;
-    expander.addEventListener('craft-text-expander-error', (event) => {
+    expander.addEventListener('craft-error', (event) => {
       detail = event.detail;
     });
 
@@ -766,7 +766,7 @@ describe('craft-text-expander', () => {
       '#': {source: 'text-expander/options'},
     });
     let detail: TextExpanderErrorDetail | null = null;
-    expander.addEventListener('craft-text-expander-error', (event) => {
+    expander.addEventListener('craft-error', (event) => {
       detail = event.detail;
     });
 

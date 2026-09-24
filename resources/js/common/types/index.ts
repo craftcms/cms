@@ -121,6 +121,7 @@ export interface ActionItemButton {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
   onClick?: (event: Event) => void;
@@ -172,6 +173,7 @@ export interface ActionItemLink {
    */
   selected?: boolean;
   variant?: VariantKey | string;
+  hidden?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   action?: BaseAction;

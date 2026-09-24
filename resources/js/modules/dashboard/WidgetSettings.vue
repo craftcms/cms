@@ -25,6 +25,7 @@
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
     {}
   ).withAllErrors();
+  defineExpose({sending: computed(() => form.processing)});
   const errors = computed(() =>
     Object.fromEntries(
       Object.entries(form.errors).map(([path, messages]) => [
@@ -81,9 +82,6 @@
 
 <template>
   <form @submit.prevent="save">
-    <h2 class="mb-4 text-lg">
-      {{ t('{type} Settings', {type: widget.name}) }}
-    </h2>
     <craft-field-group>
       <FormRenderer
         v-if="widget.settingsForm"

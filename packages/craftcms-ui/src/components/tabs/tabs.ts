@@ -113,7 +113,7 @@ const FIT_TOLERANCE = 1;
  * panel count, and it is fixed at first render — a strip is all-`controls` or
  * all-slotted, never a mix. Lion's own pairing is bypassed entirely here (it
  * indexes into a panel list that doesn't exist), so this component owns the
- * keyboard navigation in this mode; `selectedIndex` and `selected-changed`
+ * keyboard navigation in this mode; `selectedIndex` and `craft-tab-show`
  * behave identically either way.
  *
  * Replacing the external panels' markup (re-rendering the fragment they live
@@ -129,6 +129,24 @@ const FIT_TOLERANCE = 1;
  * Collapsed tabs get the `hidden` attribute, so they leave the accessibility
  * tree along with the layout and are reachable only through the menu. Strips
  * placed on the inline axis run down the block axis and are left alone.
+ *
+ * ## Equal-width tabs
+ *
+ * With `equal-width`, the tabs divide the strip between them instead of each
+ * holding the width of its own label — four tabs take a quarter each, however
+ * long their labels are:
+ *
+ *     <craft-tabs equal-width>
+ *       <craft-tab slot="tab">Content</craft-tab>
+ *       <div slot="panel">…</div>
+ *       <craft-tab slot="tab">Advanced settings</craft-tab>
+ *       <div slot="panel">…</div>
+ *     </craft-tabs>
+ *
+ * This replaces the overflow behaviour rather than combining with it: tabs that
+ * share the width always fit, so nothing collapses into the menu, and a label
+ * with no room left shrinks (wrapping, then clipping) in place. Inline
+ * placements are unaffected — their tabs already span the strip.
  *
  * ## Collapsible strips
  *
@@ -152,7 +170,7 @@ const FIT_TOLERANCE = 1;
  * @slot panel - The panels, one per tab, in the same order. Omitted entirely
  *   in external-panel mode.
  *
- * @event selected-changed - Fired when the selected tab changes, by click or
+ * @event craft-tab-show - Fired when the selected tab changes, by click or
  *   keyboard, including when a collapsible strip closes. Read `selectedIndex`
  *   off the target for the new index — `-1` when nothing is selected. Note it
  *   does not bubble, so listen on the element itself.
@@ -160,7 +178,7 @@ const FIT_TOLERANCE = 1;
  * @attr collapsed - Present while nothing is selected and the panel region is
  *   taking no space. Reflected and read-only — set `selectedIndex` (or let a
  *   `collapsible` strip be toggled) to change it. Exists so a surrounding
- *   layout can respond in CSS alone, without listening for `selected-changed`:
+ *   layout can respond in CSS alone, without listening for `craft-tab-show`:
  *
  *       .body:has(craft-tabs[collapsed]) { grid-template-columns: 1fr auto; }
  *
@@ -177,6 +195,10 @@ const FIT_TOLERANCE = 1;
  * @attr size - The scale of the strip: `small`, `medium` (the default), or
  *   `large`. Sets the strip's font size, which the tabs and the overflow
  *   invoker size themselves from.
+ *
+ * @attr equal-width - Give every tab the same share of the strip's width
+ *   rather than the width of its own label. Turns off overflow collapsing, and
+ *   does nothing on the inline placements.
  *
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
  *   Defaults to `--c-spacing-lg`.
@@ -213,6 +235,21 @@ export default class CraftTabs extends LionTabs {
    * `-1` and the panel region collapsed to nothing.
    */
   @property({type: Boolean, reflect: true}) collapsible = false;
+
+  /**
+   * Whether every tab takes an equal share of the strip's width, rather than
+   * each holding the width of its own label.
+   *
+   * Turns off the overflow collapsing described above, which measures natural
+   * widths to decide what fits — widths this makes a function of the container
+   * instead of the label, leaving nothing to measure. Equal-width tabs share
+   * the space they're given, so there is never anything to collapse.
+   *
+   * Only the block placements divide a width; an inline strip runs down the
+   * block axis, where its tabs already span it, so this does nothing there.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'equal-width'})
+  equalWidth = false;
 
   /**
    * Which axis the tab strip runs along: `horizontal` or `vertical`.
@@ -387,16 +424,27 @@ export default class CraftTabs extends LionTabs {
       } else {
         this.#syncSlotted();
       }
+
+      // Lion announces the selection as `selected-changed`. That is its
+      // protocol, not this component's API, so the public event is emitted
+      // here under our own name. The guard keeps the initial render quiet:
+      // there is no previous index to have changed from.
+      if (changedProperties.get('selectedIndex') !== undefined) {
+        this.dispatchEvent(new CustomEvent('craft-tab-show'));
+      }
     }
 
     if (
       changedProperties.has('selectedIndex') ||
       changedProperties.has('placement') ||
-      changedProperties.has('size')
+      changedProperties.has('size') ||
+      changedProperties.has('equalWidth')
     ) {
       // The selected tab is never left in the menu, so a selection landing on
       // a collapsed tab has to redraw the strip. A size change resizes the tabs
-      // without resizing the host, so the ResizeObserver never sees it.
+      // without resizing the host, so the ResizeObserver never sees it. Turning
+      // `equalWidth` off restores the natural widths the menu is measured
+      // from, and so has to redraw the strip that was left un-collapsed.
       this.#measureOverflow();
     }
   }
@@ -415,7 +463,7 @@ export default class CraftTabs extends LionTabs {
    *
    * The click it claims is stopped where it is, so a listener bound to the
    * host (or above it) won't see the one that closes the strip. Listen for
-   * `selected-changed` instead, which fires either way.
+   * `craft-tab-show` instead, which fires either way.
    */
   #handleClick = (event: Event) => {
     if (!this.collapsible || this.#collapsed) {
@@ -671,7 +719,12 @@ export default class CraftTabs extends LionTabs {
 
     // A strip placed on the inline axis runs down the block axis, which the
     // inline measurement below doesn't describe, so it never collapses.
-    if (this.#inline || tabs.length === 0) {
+    //
+    // Equal-width tabs are left alone for a different reason: they stretch to
+    // fill the strip, so `offsetWidth` reports the share each was given rather
+    // than the width its label wants, and the comparison below would be
+    // measuring the container against itself.
+    if (this.#inline || this.equalWidth || tabs.length === 0) {
       this.#applyOverflow([]);
       return;
     }
@@ -922,10 +975,10 @@ export default class CraftTabs extends LionTabs {
               size="small"
             >
               <!--
-                The name has to come from the icon: craft-button's
-                \`accessible-name\` only records the name it computed, it doesn't
-                put one in the DOM, so an icon-only button with nothing else to
-                read is nameless.
+                The name has to come from the icon: craft-button does not
+                name itself, so an icon-only button with nothing else to read
+                is nameless. A label on the icon (or aria-label on the host)
+                is what supplies one.
               -->
               <craft-icon
                 name="ellipsis"
