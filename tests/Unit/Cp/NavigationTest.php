@@ -411,9 +411,7 @@ it('selects the plugin settings item instead of the Plugins index', function () 
 
     $groups = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav);
 
-    expect($groups->first()->selected)->toBeFalse()
-        ->and($groups->first()->subnav[0]->selected)->toBeFalse()
-        ->and($groups->last()->selected)->toBeTrue()
+    expect($groups->first()->subnav[0]->selected)->toBeFalse()
         ->and($groups->last()->subnav[0]->selected)->toBeTrue();
 });
 

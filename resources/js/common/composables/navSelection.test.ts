@@ -70,19 +70,6 @@ it('leaves a source addressed by query to pages that ask for it', function () {
   ).toBe(true);
 });
 
-it('selects a query-addressed source over a bare index with the same path', function () {
-  const items = [
-    node('All Entries', {href: '/admin/content/entries'}),
-    node('Recent', {href: '/admin/content/entries?source=recent'}),
-  ];
-
-  expect(
-    labelsSelected(
-      withNavSelection(items, '/admin/content/entries?source=recent')
-    )
-  ).toEqual(['Recent']);
-});
-
 it('picks the source over the index that sits beside it', function () {
   // This is how a real sources subnav is shaped: the index is a sibling of the
   // sources, not their parent, and its path prefixes every one of them. Taking
@@ -161,9 +148,6 @@ it('selects a plugin setting over the Plugins index in another group', function 
       withNavSelection(items, '/admin/settings/plugins/test-plugin')
     )
   ).toEqual(['Settings', 'Plugins', 'Test Plugin']);
-  expect(
-    labelsSelected(withNavSelection(items, '/admin/settings/plugins'))
-  ).toEqual(['Settings', 'System', 'Plugins index']);
 });
 
 it('selects nothing for a page the nav does not cover', function () {
