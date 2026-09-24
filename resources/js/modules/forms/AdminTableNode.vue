@@ -11,7 +11,6 @@
   import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import type {ActionItemLink, PaginationData} from '@/common/types';
   import type {
@@ -21,6 +20,8 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useLocalStorage} from '@/common/composables/useStorage';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
+  import CreateActionButton from '@/modules/admin-table/components/CreateActionButton.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -101,6 +102,7 @@
       createLabel: string | null;
       createUrl: string | null;
       createMenuItems: Array<{label: string; url: string}> | null;
+      createActionInPageHeader: boolean;
       reorderUrl: string | null;
       reorderSuccessMessage: string | null;
       reorderFailMessage: string | null;
@@ -231,13 +233,14 @@
 
   const columnHelper = createCraftColumnHelper<TableRow>();
 
-  const createMenuActions = computed<ActionItemLink[]>(
+  const hasCreateAction = computed(
     () =>
-      props.node.props.createMenuItems?.map((item) => ({
-        type: 'link',
-        href: item.url,
-        label: item.label,
-      })) ?? []
+      (!!props.node.props.createUrl && !!props.node.props.createLabel) ||
+      !!props.node.props.createMenuItems?.length
+  );
+
+  const createActionInToolbar = computed(
+    () => hasCreateAction.value && !props.node.props.createActionInPageHeader
   );
 
   function isMenu(
@@ -647,58 +650,21 @@
 
 <template>
   <div :data-form-node="node.uid">
-    <LayoutSlot v-if="node.props.createUrl" name="content-actions">
-      <CpButtonLink
-        variant="primary"
-        icon="plus"
-        :href="node.props.createUrl"
-        :inertia="false"
-        >{{ node.props.createLabel }}</CpButtonLink
-      >
-    </LayoutSlot>
-    <LayoutSlot v-else-if="createMenuActions.length" name="content-actions">
-      <ActionMenu :actions="createMenuActions">
-        <template #invoker="{attributes}">
-          <craft-button
-            type="button"
-            variant="primary"
-            icon="plus"
-            v-bind="attributes"
-          >
-            {{ node.props.createLabel }}
-            <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-          </craft-button>
-        </template>
-      </ActionMenu>
+    <LayoutSlot
+      v-if="hasCreateAction && node.props.createActionInPageHeader"
+      name="content-actions"
+    >
+      <CreateActionButton
+        :label="node.props.createLabel"
+        :url="node.props.createUrl"
+        :menu-items="node.props.createMenuItems"
+      />
     </LayoutSlot>
 
     <component
       :is="node.props.bordered ? 'craft-pane' : 'div'"
       v-bind="node.props.bordered ? {padding: '0', appearance: 'raised'} : {}"
     >
-      <div v-if="node.props.searchable" slot="header-actions">
-        <CraftInput
-          name="search"
-          :label="t('Search')"
-          :placeholder="node.props.searchPlaceholder ?? t('Search')"
-          label-sr-only
-          v-model="search"
-        >
-          <div slot="suffix" class="flex">
-            <craft-button
-              v-if="search"
-              type="button"
-              icon
-              size="small"
-              variant="plain"
-              @click="search = ''"
-            >
-              <craft-icon name="x" :label="t('Clear search')"></craft-icon>
-            </craft-button>
-          </div>
-        </CraftInput>
-      </div>
-
       <AdminTable
         :table="table"
         :reorderable="!!node.props.reorderUrl && !search"
@@ -715,6 +681,45 @@
         @reorder="onReorder"
         @action-performed="refreshForm"
       >
+        <template
+          v-if="node.props.searchable || createActionInToolbar"
+          #table-header
+        >
+          <AdminTableToolbar>
+            <template v-if="node.props.searchable" #search>
+              <CraftInput
+                name="search"
+                :label="t('Search')"
+                :placeholder="node.props.searchPlaceholder ?? t('Search')"
+                label-sr-only
+                v-model="search"
+              >
+                <div slot="suffix" class="flex">
+                  <craft-button
+                    v-if="search"
+                    type="button"
+                    icon
+                    size="small"
+                    variant="plain"
+                    @click="search = ''"
+                  >
+                    <craft-icon
+                      name="x"
+                      :label="t('Clear search')"
+                    ></craft-icon>
+                  </craft-button>
+                </div>
+              </CraftInput>
+            </template>
+            <template v-if="createActionInToolbar" #actions>
+              <CreateActionButton
+                :label="node.props.createLabel"
+                :url="node.props.createUrl"
+                :menu-items="node.props.createMenuItems"
+              />
+            </template>
+          </AdminTableToolbar>
+        </template>
         <template #empty-row>
           <craft-empty
             v-if="!loading"

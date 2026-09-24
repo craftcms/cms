@@ -44,6 +44,8 @@ class Table implements Node
     /** @var list<array{label: string, url: string}>|null */
     private ?array $createMenuItems = null;
 
+    private bool $createActionInPageHeader = false;
+
     private ?string $reorderUrl = null;
 
     private ?string $reorderSuccessMessage = null;
@@ -196,6 +198,17 @@ class Table implements Node
         $this->createLabel = $label;
         $this->createUrl = null;
         $this->createMenuItems = $items;
+
+        return $this;
+    }
+
+    /**
+     * Render the {@see createAction()} or {@see createActionMenu()} button in the page header
+     * instead of the table's toolbar.
+     */
+    public function createActionInPageHeader(bool $inPageHeader = true): static
+    {
+        $this->createActionInPageHeader = $inPageHeader;
 
         return $this;
     }
@@ -382,6 +395,7 @@ class Table implements Node
             'createLabel' => $this->createLabel,
             'createUrl' => $this->createUrl,
             'createMenuItems' => $this->createMenuItems,
+            'createActionInPageHeader' => $this->createActionInPageHeader,
             'reorderUrl' => $this->reorderUrl,
             'reorderSuccessMessage' => $this->reorderSuccessMessage,
             'reorderFailMessage' => $this->reorderFailMessage,
