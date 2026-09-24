@@ -33,6 +33,16 @@ function stubClipboard(writeText = vi.fn().mockResolvedValue(undefined)) {
   return writeText;
 }
 
+/**
+ * happy-dom has no Web Animations either, and a copy plays its status icons in
+ * and out — outside the test's own `await`, so a missing `animate()` surfaces
+ * as an unhandled rejection that fails the run. Left in place for the whole
+ * file: the icons animate back to rest on a timer that can outlive a test.
+ */
+Element.prototype.animate ??= function () {
+  return {finished: Promise.resolve()} as unknown as Animation;
+};
+
 beforeEach(() => {
   document.body.innerHTML = '';
 });
