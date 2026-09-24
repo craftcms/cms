@@ -20,6 +20,11 @@ function anchor(element: CraftButton): HTMLAnchorElement | null {
   return element.shadowRoot?.querySelector('a.link') ?? null;
 }
 
+/** The inner content wrapper, which carries the nameless-button warning class. */
+function content(element: CraftButton): HTMLElement | null {
+  return element.shadowRoot?.querySelector('.button-content') ?? null;
+}
+
 beforeEach(() => {
   document.body.innerHTML = '';
 });
@@ -75,7 +80,15 @@ describe('craft-button link mode', () => {
     const element = await createButton({href: '/x'}, 'Settings');
     // Wait for firstUpdated's async accessible-name computation.
     await element.updateComplete;
-    expect(element.accessibleName).toBe('Settings');
+    expect(content(element)!.classList.contains('a11y-error')).toBe(false);
+  });
+
+  /** An icon-only button with nothing to read from is the case worth catching. */
+  it('flags an accessible-name error for a nameless button', async () => {
+    const element = await createButton({}, '');
+    await element.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(content(element)!.classList.contains('a11y-error')).toBe(true);
   });
 });
 
@@ -115,6 +128,16 @@ describe('craft-button link semantics', () => {
     expect(anchor(element)).toBeNull();
     expect(element.getAttribute('aria-disabled')).toBe('true');
     expect(element.getAttribute('role')).toBe('button');
+  });
+
+  it('can remain focusable when disabled', async () => {
+    const element = await createButton({
+      disabled: '',
+      'focusable-when-disabled': '',
+    });
+
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(0);
   });
 
   it('does not submit a form when a link-mode button is clicked', async () => {

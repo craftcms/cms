@@ -223,9 +223,7 @@
       </div>
       <div class="cp__main">
         <div class="cp-page">
-          <div class="cp-page__header">
-            <FlashMessages />
-          </div>
+          <div class="cp-page__header"></div>
           <div class="cp-page__main">
             <slot name="page-main">
               <main id="main" tabindex="-1">
@@ -234,15 +232,6 @@
                   @submit.prevent="form && save()"
                   class="cp-main"
                 >
-                  <LayoutSlotOutlet name="error-summary">
-                    <slot name="error-summary">
-                      <ErrorSummary
-                        v-if="form && form.hasErrors"
-                        :errors="form.errors"
-                      />
-                    </slot>
-                  </LayoutSlotOutlet>
-                  <CalloutReadOnly v-if="readOnly" />
                   <div
                     ref="contentLayout"
                     class="cp-content"
@@ -281,6 +270,16 @@
                       class="cp-content__main"
                       :style="contentMainStyle"
                     >
+                      <LayoutSlotOutlet name="error-summary">
+                        <slot name="error-summary">
+                          <ErrorSummary
+                            v-if="form && form.hasErrors"
+                            :errors="form.errors"
+                          />
+                        </slot>
+                      </LayoutSlotOutlet>
+                      <CalloutReadOnly v-if="readOnly" />
+                      <FlashMessages />
                       <div
                         :class="{
                           'cp-content-view': true,
@@ -351,27 +350,29 @@
                               <slot name="content-notices"></slot>
                             </LayoutSlotOutlet>
                           </div>
-                          <ContentFooter
-                            v-show="hasFooter"
-                            class="cp-content__footer"
-                            :read-only="readOnly"
-                            :form="form"
-                            :default-form-actions="defaultFormActions"
-                            :form-actions="formActions"
-                            :form-additional-actions="formAdditionalActions"
-                            :form-additional-buttons="formAdditionalButtons"
-                            :submit-button-label="submitButtonLabel"
-                            :contained="contentConstrained"
-                            @save="save"
-                          >
-                            <template
-                              v-for="name in footerSlots"
-                              :key="name"
-                              #[name]
+                          <div class="cp-content__footer">
+                            <ContentFooter
+                              v-show="hasFooter"
+                              :read-only="readOnly"
+                              :form="form"
+                              :default-form-actions="defaultFormActions"
+                              :form-actions="formActions"
+                              :form-additional-actions="formAdditionalActions"
+                              :form-additional-buttons="formAdditionalButtons"
+                              :submit-button-label="submitButtonLabel"
+                              :save-disabled="saveDisabled"
+                              :contained="contentConstrained"
+                              @save="save"
                             >
-                              <slot :name="name"></slot>
-                            </template>
-                          </ContentFooter>
+                              <template
+                                v-for="name in footerSlots"
+                                :key="name"
+                                #[name]
+                              >
+                                <slot :name="name"></slot>
+                              </template>
+                            </ContentFooter>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -570,11 +571,12 @@ Content
   }
 
   .cp-content__footer {
-    min-height: var(--cp-footer-height);
     display: grid;
     align-content: center;
-    border-block-start: 1px solic var(--c-color-border-quiet);
+    border-block-start: 1px solid var(--c-color-border-quiet);
     padding-block: var(--c-spacing-md);
+    padding-inline: var(--cp-container-padding);
+    min-height: var(--cp-footer-height);
   }
 
   /*

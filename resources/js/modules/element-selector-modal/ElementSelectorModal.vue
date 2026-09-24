@@ -156,7 +156,7 @@
         :label="t('Select transform')"
       >
         <template #invoker>
-          <craft-button type="button" variant="fill">
+          <craft-button slot="invoker" type="button" variant="fill">
             {{ t('Select transform') }}
           </craft-button>
         </template>

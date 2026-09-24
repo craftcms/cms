@@ -8,7 +8,6 @@
   } from '@tanstack/vue-table';
   import {computed, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {Form} from '@inertiajs/vue3';
   interface Migration {
     id?: number;
@@ -69,7 +68,7 @@
 
 <template>
   <template v-if="!newMigrations">
-    <Empty :label="t('No pending content migrations.')" />
+    <craft-empty :label="t('No pending content migrations.')"></craft-empty>
   </template>
   <template v-if="allMigrations.length">
     <template v-if="newMigrations.length">

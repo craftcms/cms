@@ -13,9 +13,9 @@
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -204,9 +204,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
+    <CpButtonLink variant="primary" :href="create()" icon="plus">
       {{ t('New field') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer>
@@ -219,7 +219,10 @@
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
-        <Empty icon="light/pen-to-square" :label="t('No fields exist yet.')" />
+        <craft-empty
+          icon="light/pen-to-square"
+          :label="t('No fields exist yet.')"
+        ></craft-empty>
       </template>
       <template #table-header>
         <SearchForm v-model="searchTerm" />

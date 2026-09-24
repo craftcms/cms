@@ -1,0 +1,87 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started/Theming" />
+
+# Theming
+
+Components style themselves from CSS custom properties, and custom properties cross the shadow boundary.
+That is the whole mechanism: you never write a selector that reaches inside a component, you change the value it reads.
+
+There are three levels to reach for, in order.
+
+## 1. The palette
+
+Under everything is a palette of raw colours — `--color-red-500`, `--color-slate-200`, and so on across the ramp.
+These are the only place literal colours are written.
+
+Redefining one retunes every component that ends up reading it, which makes it the right lever for a brand colour and the wrong one for a one-off:
+
+```css
+:root {
+  --color-blue-500: #0b5fff;
+}
+```
+
+## 2. The tokens
+
+Above the palette sit the `--c-*` tokens, which name a _role_ rather than a colour: `--c-surface-raised`, `--c-text-quiet`, `--c-color-focus-outline`, `--c-spacing-md`, `--c-text-sm`.
+Components are authored against these, never against the palette directly.
+
+Change a token to move every component that plays that role:
+
+```css
+:root {
+  --c-surface-raised: var(--color-slate-50);
+  --c-color-focus-outline: var(--color-blue-500);
+}
+```
+
+## 3. A component's own properties
+
+Each component exposes its own `--c-<component>-*` properties for the things only it has — `--c-card-radius`, `--c-chip-height`, `--c-pane-background`.
+They are listed in the "Properties" table on each component's page.
+
+Set them on the element, or on any ancestor, since they inherit:
+
+```css
+craft-card {
+  --c-card-radius: 0;
+  --c-card-padding-block: var(--c-spacing-lg);
+}
+```
+
+Reach for these last. If two components need the same change, the token above them is the better place to make it.
+
+## Dark mode
+
+The dark palette is applied by `data-theme="dark"` on an ancestor — usually `<html>`:
+
+```html
+<html data-theme="dark"></html>
+```
+
+That redefines the palette, and because tokens are defined in terms of the palette, everything above updates with it.
+This is why authoring against tokens matters: a component that hard-codes `#fff` stays white in the dark theme, while one that reads `--c-surface-raised` follows.
+
+## Colouring one component
+
+Colour is a separate axis from theme, and it works through `data-color`:
+
+```html
+<craft-badge fill="emerald">Live</craft-badge>
+<craft-chip data-color="violet">Draft</craft-chip>
+```
+
+Setting it rescopes the generic `--c-color-*` tokens to that colour's group, so the component's surface, border, and text all move together and stay legible against each other.
+[Colorable](?path=/docs/tokens-colorable--docs) covers the contract, and [Color Palette](?path=/docs/tokens-color-palette--docs) shows the palette.
+
+For a semantic state rather than a specific colour, use `variant` — `neutral`, `success`, `warning`, `danger`, `info` — paired with an `appearance` for how loudly it should read.
+[Variants & Appearances](?path=/docs/tokens-variants-appearances--docs) covers both.
+
+## What not to do
+
+**Do not style into a component with `::part` when a custom property exists.** Parts are a much narrower contract: a property is a value the component agreed to read, while a part is an element it happens to render. Properties are listed first on every page for that reason.
+
+**Do not set `!important` on a token.** Components layer their own fallbacks with `var(--c-thing, <default>)`, and `!important` on the outer value defeats the per-component overrides above.
+
+**Do not rely on a component's internal class names.** They are inside shadow DOM, they are not API, and they change.

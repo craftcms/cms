@@ -2,6 +2,7 @@ import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
+import {FormAssociated} from '@src/mixins/FormAssociated';
 import {t} from '@src/utilities/translate';
 import styles from './slide-picker.styles.js';
 
@@ -9,22 +10,63 @@ import styles from './slide-picker.styles.js';
  * @summary Segmented slider control for selecting numeric values in fixed steps.
  * @since 1.0
  *
- * @fires {CustomEvent<{value:number}>} value-change - Emitted when user input
- * changes the current value.
+ * @attr {string} name - Field name. The control posts under this, like any
+ * other input. Supplied by the `FormAssociated` mixin.
+ * @attr {boolean} disabled - Whether the control responds to input. A disabled
+ * control is left out of form submission. Supplied by the `FormAssociated`
+ * mixin.
+ *
+ * @fires input - Emitted on every alteration to the value.
+ * @fires change - Emitted when an alteration to the value is committed by the
+ * user. Every alteration is a commit here, so it follows each `input`.
  */
-export default class CraftSlidePicker extends LitElement {
+export default class CraftSlidePicker extends FormAssociated(LitElement) {
   static override styles = [styles];
 
+  /** Lowest selectable value. */
   @property({type: Number}) min = 0;
+  /** Highest selectable value. */
   @property({type: Number}) max = 100;
+  /** Spacing between selectable values. */
   @property({type: Number}) step = 10;
+  /** The currently selected value. */
   @property({type: Number}) value = 0;
+  /** Accessible name for the slider. */
   @property() label = t('Number of columns');
+  /**
+   * Id of the element describing the control, applied as `aria-describedby`.
+   * `craft-field` supplies this for you.
+   */
   @property({attribute: 'described-by'}) describedBy?: string;
+  /**
+   * Unit appended to the announced value — `columns`, `px`. Without one a
+   * bare number is all a screen reader gets.
+   */
   @property({attribute: 'value-unit'}) valueUnit = '';
+  /**
+   * Formats the announced value, for when a number and a unit are not enough.
+   * A property rather than an attribute, so bind it with `.valueLabel`.
+   */
   @property({attribute: false}) valueLabel?: (value: number) => string;
-  @property({type: Boolean, reflect: true, attribute: 'read-only'})
-  readOnly = false;
+  /**
+   * Renders the current value without allowing it to be changed. Spelled the
+   * way HTML spells it, and the way the other controls do. A read-only control
+   * still posts its value; a `disabled` one does not.
+   */
+  @property({type: Boolean, reflect: true}) readonly = false;
+
+  /** Whether the control responds to input. */
+  get #editable(): boolean {
+    return !this.readonly && !this.disabled;
+  }
+
+  override _formValue(): string | null {
+    return this.name ? String(this.value) : null;
+  }
+
+  override _restoreFormValue(value: string | null): void {
+    this.value = this.#normalize(Number(value ?? this.min));
+  }
 
   protected override willUpdate(changed: PropertyValues<this>) {
     super.willUpdate(changed);
@@ -92,25 +134,22 @@ export default class CraftSlidePicker extends LitElement {
     this.value = normalized;
 
     if (emit) {
-      this.dispatchEvent(
-        new CustomEvent<{value: number}>('value-change', {
-          detail: {value: normalized},
-          bubbles: true,
-          composed: true,
-        })
-      );
+      // Every step is a commit, so `change` follows `input` immediately —
+      // what a radio group does, not what a range slider does.
+      this.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+      this.dispatchEvent(new Event('change', {bubbles: true, composed: true}));
     }
   }
 
   #handleSegmentClick(value: number) {
-    if (this.readOnly) {
+    if (!this.#editable) {
       return;
     }
     this.#setValue(value, true);
   }
 
   #handleKeyDown(event: KeyboardEvent) {
-    if (this.readOnly) {
+    if (!this.#editable) {
       return;
     }
 
@@ -151,13 +190,14 @@ export default class CraftSlidePicker extends LitElement {
       <div
         class="slide-picker"
         role="slider"
-        tabindex=${this.readOnly ? -1 : 0}
+        tabindex=${this.#editable ? 0 : -1}
         aria-label=${this.label}
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
-        aria-readonly=${this.readOnly ? 'true' : 'false'}
+        aria-readonly=${this.readonly ? 'true' : 'false'}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
         aria-describedby=${ifDefined(this.describedBy)}
         @keydown=${this.#handleKeyDown}
       >

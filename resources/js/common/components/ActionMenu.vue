@@ -52,17 +52,24 @@
   }
 
   /**
-   `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
-   `OverlayMixin`) imperatively relocates/restructures its own light DOM. If Vue
-   keeps the invoker in its reactive patch path, a later re-render patches the
-   invoker's slot fragment against DOM the element moved and throws "Cannot read
-   properties of null (reading 'insertBefore')". A passive wrapper isn't enough:
-   Vue's block optimization flattens dynamic descendants and patches them with
-   `craft-action-menu` as the container, bypassing the wrapper. `v-once` renders
-   the invoker exactly once and removes it from the block's dynamic children, so
-   Vue never re-patches the overlay-managed DOM. Invokers are static triggers
-   (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
-   sized to the invoker so the overlay positions against a real box.
+   `v-once` on the invoker slot is load-bearing, not an optimization.
+   `craft-action-menu` (Lion `OverlayMixin`) imperatively relocates/restructures
+   its own light DOM. If Vue keeps the invoker in its reactive patch path, a
+   later re-render patches the invoker's slot fragment against DOM the element
+   moved and throws "Cannot read properties of null (reading 'insertBefore')".
+   Being passive isn't enough: Vue's block optimization flattens dynamic
+   descendants and patches them with `craft-action-menu` as the container,
+   bypassing anything short of `v-once`. `v-once` renders the invoker exactly
+   once and removes it from the block's dynamic children, so Vue never
+   re-patches the overlay-managed DOM. Invokers are static triggers (an icon /
+   avatar), so freezing them is safe.
+
+   It's on the `<slot>` outlet itself (not a wrapping element) so the invoker
+   — the default `craft-button` below, or whatever a consumer slots in via
+   `#invoker` — is the *direct* child `craft-action-menu` assigns to its
+   `invoker` slot. That's what lets the component's `id`/`aria-controls`/
+   `aria-haspopup`/`aria-expanded` wiring land on the real, focusable element
+   instead of an inert wrapper.
 
    The items are a different matter: they change, and they're rendered here
    rather than by the element so link actions can be `CpLink`s and make Inertia
@@ -80,24 +87,19 @@
     :label="label ?? undefined"
     :searchable="searchable"
   >
-    <span
-      slot="invoker"
-      style="display: inline-flex; vertical-align: middle"
-      v-once
-    >
-      <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
-        <craft-button
-          type="button"
-          :size="buttonSize"
-          :icon="icon"
-          :aria-label="label"
-          inherit
-          :flush="invokerFlush"
-          :variant="buttonVariant"
-        >
-        </craft-button>
-      </slot>
-    </span>
+    <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
+      <craft-button
+        slot="invoker"
+        type="button"
+        :size="buttonSize"
+        :icon="icon"
+        :aria-label="label"
+        inherit
+        :flush="invokerFlush"
+        :variant="buttonVariant"
+      >
+      </craft-button>
+    </slot>
     <div slot="content">
       <ActionList :actions="sorted" as="craft-action-item" />
     </div>

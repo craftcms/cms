@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -22,6 +22,7 @@ use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SitesService;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Facade;
@@ -119,11 +120,12 @@ beforeEach(function () {
 
     $this->action = new TestPropagateElementsWrites(
         $this->elements,
+        Mockery::mock(Drafts::class),
         Mockery::mock(ElementUris::class),
         $this->elementCaches,
         Mockery::mock(Search::class),
         app(SitesService::class),
-        Mockery::mock(ElementWriteActivity::class),
+        Mockery::mock(Workflows::class),
     );
     $this->writes = $this->action;
 });

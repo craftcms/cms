@@ -140,3 +140,10 @@ it('is configurable from a config array', function () {
         ->and($html)->toContain('padding="sm"')
         ->and($html)->toContain('label="From config"');
 });
+
+it('renders the heading level', function () {
+    expect(Pane::make()->label('Details')->headingLevel(1)->toHtml())
+        ->toContain('heading-level="1"')
+        ->and(Pane::make()->label('Details')->toHtml())
+        ->not->toContain('heading-level');
+});

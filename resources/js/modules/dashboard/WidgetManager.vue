@@ -38,18 +38,24 @@
       :aria-label="t('Settings')"
       :aria-expanded="opened"
     ></craft-button>
-    <div slot="content-body" role="region" :aria-label="t('Widgets')">
-      <h2 class="text-base mb-3">{{ t('Widgets') }}</h2>
+    <div
+      slot="content-body"
+      role="region"
+      aria-labelledby="widget-settings-heading"
+    >
+      <h2 id="widget-settings-heading" class="text-sm mb-md">
+        {{ t('Widget Settings') }}
+      </h2>
       <craft-empty
         v-if="!widgets.length"
         :label="t('You don’t have any widgets yet.')"
       ></craft-empty>
-      <ul v-else class="m-0 p-0 space-y-1 list-none">
+      <ul v-else class="m-0 p-0 grid gap-sm">
         <li
           v-for="(widget, index) in widgets"
           :key="widget.id"
           :ref="(el) => setItemRef(el, widget.id)"
-          class="flex flex-wrap items-center gap-3 rounded p-2"
+          class="flex flex-wrap items-center gap-sm p-sm rounded bg-(--c-color-fill-quiet)"
           :class="{'bg-gray-100': getDropState(widget.id).type === 'is-over'}"
         >
           <craft-reorder-button

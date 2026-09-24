@@ -7,6 +7,7 @@ import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
+import {topStackedPanel} from '@/common/slideouts/panel-stack';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
@@ -76,7 +77,19 @@ export function useSettingsSave<T extends object>(
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+      // Only the topmost panel (or the page, when none is open) saves.
+      const top = topStackedPanel();
+      const isTopmost = top
+        ? slideout &&
+          top.element.dataset.slideoutId === slideout.instance.containerId
+        : !slideout;
+
+      if (!isTopmost) {
+        return;
+      }
+
       event.preventDefault();
+      event.stopImmediatePropagation();
       save({redirect: false});
     }
   });

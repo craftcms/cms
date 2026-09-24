@@ -28,16 +28,20 @@
   <!-- TODO: this is just temporary placement -->
   <div>
     <template v-if="errorFlash">
-      <craft-callout variant="danger" rounded="none">{{
+      <craft-callout variant="danger" rounded="none" appearance="fill">{{
         errorFlash
       }}</craft-callout>
     </template>
     <template v-if="successFlash">
-      <craft-callout variant="success" rounded="none">{{
+      <craft-callout variant="success" rounded="none" appearance="fill">{{
         successFlash
       }}</craft-callout>
     </template>
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  craft-callout {
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+  }
+</style>

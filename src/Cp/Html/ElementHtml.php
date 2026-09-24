@@ -95,7 +95,6 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'show-indicators' => $config['showIndicators'],
             'show-thumb' => $config['showThumb'],
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],

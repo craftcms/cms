@@ -3,7 +3,7 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
     destroy,
@@ -11,7 +11,6 @@
   } from '@actions/Settings/ImageTransformsController';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -104,27 +103,19 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      appearance="button"
-      :href="create().url"
-      variant="accent"
-      icon="plus"
-      >{{ t('New image transform') }}</CpLink
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">{{
+      t('New image transform')
+    }}</CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">
     <AdminTable :table="table">
       <template #empty-row>
-        <Empty :label="t('No image transforms exist yet.')" icon="image">
-          <CpLink
-            appearance="button"
-            :href="create().url"
-            variant="neutral"
-            icon="plus"
-            >{{ t('New image transform') }}</CpLink
-          >
-        </Empty>
+        <craft-empty :label="t('No image transforms exist yet.')" icon="image">
+          <CpButtonLink :href="create().url" icon="plus">{{
+            t('New image transform')
+          }}</CpButtonLink>
+        </craft-empty>
       </template>
     </AdminTable>
   </CpContainer>

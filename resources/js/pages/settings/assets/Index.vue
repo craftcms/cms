@@ -6,8 +6,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import Empty from '@/common/components/Empty.vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
     destroy,
@@ -132,14 +131,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      appearance="button"
-      :href="create().url"
-      variant="accent"
-      icon="plus"
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">
       {{ t('New volume') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">
@@ -150,7 +144,10 @@
       @reorder="handleReorder"
     >
       <template #empty-row>
-        <Empty :label="t('No volumes exist yet.')" icon="light/files" />
+        <craft-empty
+          :label="t('No volumes exist yet.')"
+          icon="light/files"
+        ></craft-empty>
       </template>
     </AdminTable>
   </CpContainer>

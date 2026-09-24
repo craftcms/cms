@@ -184,3 +184,10 @@ it('builds placement and collapsible from the registry', function () {
         ->and($html)->toContain('collapsible')
         ->and($html)->toContain('size="small"');
 });
+
+it('renders equal-width tabs', function () {
+    expect(Tabs::make()->equalWidth()->tab('One', 'Panel one')->toHtml())
+        ->toContain('equal-width')
+        ->and(Tabs::make()->tab('One', 'Panel one')->toHtml())
+        ->not->toContain('equal-width');
+});

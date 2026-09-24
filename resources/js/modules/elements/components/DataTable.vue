@@ -26,7 +26,6 @@
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
-  import Empty from '@/common/components/Empty.vue';
   import {usePage} from '@inertiajs/vue3';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import {
@@ -563,7 +562,7 @@
                 .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
                 .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
                 :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
-                @reorder="onStructureReorder(row.original.id, $event)"
+                @craft-reorder="onStructureReorder(row.original.id, $event)"
               ></craft-reorder-button>
             </div>
           </td>
@@ -571,7 +570,7 @@
             <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
               <div>
                 <craft-reorder-button
-                  @reorder="
+                  @craft-reorder="
                     (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                       emit(
                         'reorder',
@@ -655,7 +654,10 @@
         >
           <td :colspan="visibleColumnCount">
             <slot name="empty-row">
-              <Empty :label="t('No results')" icon="empty-set" />
+              <craft-empty
+                :label="t('No results')"
+                icon="empty-set"
+              ></craft-empty>
             </slot>
           </td>
         </tr>

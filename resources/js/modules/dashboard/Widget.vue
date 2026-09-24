@@ -17,6 +17,7 @@
 
   useResizeObserver(container, () => emit('resize'));
   const settingsButton = ref<HTMLElement>();
+  const widgetSettings = ref<InstanceType<typeof WidgetSettings>>();
   let savedWidget: DashboardWidget | false | undefined;
 
   onMounted(() => {
@@ -43,6 +44,8 @@
   });
 
   async function closeSettings() {
+    if (widgetSettings.value?.sending) return;
+
     if (props.widget.id < 0) {
       emit('cancel');
       return;
@@ -103,13 +106,13 @@
           <template #header>
             <div
               v-if="widget.title || widget.subtitle"
-              slot="title"
+              slot="label"
               class="widget-heading"
             >
               <h2
                 v-if="widget.title"
                 :id="`widget-heading-${widget.id}`"
-                class="text-base"
+                class="text-sm"
               >
                 {{ widget.title }}
               </h2>
@@ -118,10 +121,12 @@
             <craft-button
               v-if="widget.settingsForm"
               ref="settingsButton"
-              slot="header-actions"
+              slot="actions"
               class="widget-settings-button"
               type="button"
               icon="gear"
+              size="small"
+              variant="plain"
               :aria-label="t('Widget settings')"
               :aria-describedby="
                 widget.title ? `widget-heading-${widget.id}` : undefined
@@ -138,13 +143,28 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-pane appearance="raised">
+        <craft-card>
+          <h2 slot="label" class="text-sm">
+            {{ t('{type} Settings', {type: widget.name}) }}
+          </h2>
+          <craft-button
+            v-if="widget.settingsForm"
+            slot="actions"
+            type="button"
+            icon="x"
+            size="small"
+            variant="plain"
+            :aria-label="t('Cancel')"
+            :disabled="widgetSettings?.sending"
+            @click="closeSettings"
+          ></craft-button>
           <WidgetSettings
+            ref="widgetSettings"
             :widget="widget"
             @saved="saved"
             @cancel="closeSettings"
           />
-        </craft-pane>
+        </craft-card>
       </div>
     </Transition>
   </div>
@@ -189,7 +209,7 @@
       transition: none;
     }
   }
-  craft-pane {
+  craft-card {
     display: block;
     position: relative;
   }

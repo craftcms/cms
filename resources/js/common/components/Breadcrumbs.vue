@@ -47,7 +47,7 @@
         <DynamicHtmlRenderer :html="item.html" />
       </template>
       <template v-else-if="item.href">
-        <CpLink :href="item.href">{{ item.label }}</CpLink>
+        <CpLink :href="item.href" underline>{{ item.label }}</CpLink>
       </template>
       <template v-else>
         {{ item.label }}

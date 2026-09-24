@@ -11,11 +11,11 @@
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
 
   const props = defineProps<{
     title: string;
@@ -87,33 +87,28 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
+    <CpButtonLink
       v-if="!readOnly"
       :href="create()"
-      appearance="button"
-      variant="accent"
+      variant="primary"
       icon="plus"
     >
       {{ t('New route') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
     <CpContainer>
-      <Empty
-        :label="t('No routes exist yet.')"
-        class="border border-quiet rounded"
-      >
-        <CpLink
+      <craft-empty :label="t('No routes exist yet.')" class="rounded">
+        <CpButtonLink
           v-if="!readOnly"
           :href="create()"
-          appearance="button"
-          variant="accent"
+          variant="primary"
           icon="plus"
         >
           {{ t('New route') }}
-        </CpLink>
-      </Empty>
+        </CpButtonLink>
+      </craft-empty>
     </CpContainer>
   </div>
 
@@ -156,13 +151,9 @@
         </div>
 
         <div class="route__actions" v-if="!readOnly" @click.stop>
-          <CpLink
-            size="small"
-            appearance="button"
-            :href="edit({uid: route.uid})"
-          >
+          <CpButtonLink size="small" :href="edit({uid: route.uid})">
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
-          </CpLink>
+          </CpButtonLink>
           <craft-reorder-button
             :ref="(el: any) => setHandleRef(el, route.uid)"
             :position="getRowPosition(index)"

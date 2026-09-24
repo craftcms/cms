@@ -6,7 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -18,10 +18,16 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
+  import {
+    elementFormActionSubmitterKey,
+    useElementEditor,
+  } from '@/modules/elements/composables/useElementEditor';
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import type {FormSaveOptions} from '@/common/types';
+  import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
+  import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
@@ -50,8 +56,13 @@
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    startEditingReviewedDraft,
     submitAction,
+    updatePayload,
+    workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
+
+  provide(elementFormActionSubmitterKey, submitAction);
 
   const hasDetails = computed(
     () =>
@@ -60,20 +71,26 @@
       Boolean(payload.activityTimelineUrl) ||
       elementDetailsTabRegistry.hasVisible(payload)
   );
+  const detailsTabs = useTemplateRef<{select: (tabId: string) => void}>(
+    'detailsTabs'
+  );
 
   // Alternate saves in the Save button's menu, and the buttons grouped with
   // it (Create a draft, …).
   const formActionItems = computed(() =>
-    payload.formActions.map((action) => ({
+    payload.editorActions.menu.map((action) => ({
       label: action.label,
+      shortcut: action.shortcut ? {key: 'S', shift: action.shift} : undefined,
       onClick: () => submitAction(action),
     }))
   );
 
   const saveButtons = computed(() =>
-    payload.headerActions.map((action) => ({
+    payload.editorActions.buttons.map((action) => ({
       label: action.label,
       variant: action.variant,
+      disabled: action.disabled,
+      disabledReason: action.disabledReason,
       onClick: () => submitAction(action),
     }))
   );
@@ -95,6 +112,15 @@
     router.reload();
   }
 
+  function primaryAction(options?: FormSaveOptions): void {
+    if (payload.editorActions.primary.tabId) {
+      detailsTabs.value?.select(payload.editorActions.primary.tabId);
+      return;
+    }
+
+    save(options);
+  }
+
   // The View buttons and the action menu stay out of slideouts, which have no
   // room for them, and out of pages the shell marks read-only.
   const isSlideout = useIsSlideout();
@@ -106,8 +132,9 @@
   useAppLayout(() => ({
     title: payload.title,
     form,
-    onSave: save,
-    submitButtonLabel: payload.submitButtonLabel,
+    onSave: workflowReviewLocked.value ? undefined : primaryAction,
+    saveDisabled: workflowReviewLocked.value,
+    submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
@@ -151,11 +178,16 @@
   <LayoutSlot
     v-if="
       activity.activity.value.length ||
+      (!isSlideout && payload.workflow.draftReviews.length) ||
       (showElementControls && payload.previewTargets.length)
     "
     name="content-toolbar-meta"
   >
     <ElementActivityAvatars :entries="activity.activity.value" />
+    <WorkflowDraftsStatus
+      v-if="!isSlideout && payload.workflow.draftReviews.length"
+      :drafts="payload.workflow.draftReviews"
+    />
     <ElementViewButtons
       v-if="showElementControls"
       :targets="payload.previewTargets"
@@ -188,11 +220,34 @@
       activity.isStale.value ||
       payload.readOnly ||
       payload.notice ||
-      payload.mergeNotice
+      payload.mergeNotice ||
+      payload.workflow.convertedToDraft ||
+      workflowReviewLocked
     "
     name="content-notices"
   >
     <div class="element-notices">
+      <craft-callout
+        v-if="payload.workflow.convertedToDraft"
+        variant="warning"
+        icon="triangle-exclamation"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
+      >
+        {{
+          t(
+            'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
+          )
+        }}
+      </craft-callout>
+
+      <WorkflowEditLockCallout
+        v-if="workflowReviewLocked"
+        class="mb-4"
+        @start-editing="startEditingReviewedDraft"
+      />
+
       <craft-callout
         v-if="activity.isStale.value"
         variant="warning"
@@ -215,7 +270,13 @@
         </craft-button>
       </craft-callout>
 
-      <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+      <craft-callout
+        v-if="payload.readOnly"
+        variant="neutral"
+        rounded="none"
+        appearance="fill"
+        icon="lock"
+      >
         {{ t('This is a read-only view.') }}
       </craft-callout>
 
@@ -261,6 +322,7 @@
         :payload="formPayload"
         :errors="errors"
         :modified="autosave.modified.value"
+        :disabled="workflowReviewLocked"
         @update:mutation="onMutation"
       />
 
@@ -273,8 +335,11 @@
     name="content-details"
   >
     <ElementDetailsTabs
+      ref="detailsTabs"
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
+      :update-payload="updatePayload"
+      :sync-location-hash="!isSlideout"
     >
       <template #info>
         <!-- Anything the element type shows above its meta fields, e.g. an
@@ -293,6 +358,7 @@
               :payload="sidebarPayload"
               :errors="sidebarErrors"
               :modified="autosave.modified.value"
+              :disabled="workflowReviewLocked"
               @update:mutation="onSidebarMutation"
             />
           </craft-field-group>
@@ -307,3 +373,9 @@
     </ElementDetailsTabs>
   </LayoutSlot>
 </template>
+
+<style scoped lang="scss">
+  craft-callout {
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+  }
+</style>

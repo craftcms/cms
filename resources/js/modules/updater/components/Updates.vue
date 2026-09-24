@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, ref, watch} from 'vue';
   import {useApiClient, useFetch} from '@/common/composables/useFetch';
-  import Empty from '@/common/components/Empty.vue';
   import Update from '@/modules/updater/components/Update.vue';
   import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';
@@ -201,20 +200,20 @@
 
 <template>
   <!-- Error State -->
-  <Empty
+  <craft-empty
     v-if="isError"
     icon="alert-circle"
     :label="t('Unable to fetch updates at this time.')"
-  />
+  ></craft-empty>
 
   <!-- Success State -->
   <template v-else-if="isSuccess">
     <!-- No Updates Available -->
-    <Empty
+    <craft-empty
       v-if="!showUpdates"
       icon="check"
       :label="t('You’re all up to date!')"
-    />
+    ></craft-empty>
 
     <!-- Updates Available -->
     <div v-else class="updates-utility">
@@ -255,11 +254,13 @@
   </template>
 
   <!-- Loading State -->
-  <Empty v-else :label="t('Checking for updates…')">
-    <template #graphic>
-      <craft-spinner style="--size: 3rem" :visible="true"></craft-spinner>
-    </template>
-  </Empty>
+  <craft-empty v-else :label="t('Checking for updates…')">
+    <craft-spinner
+      slot="graphic"
+      style="--size: 3rem"
+      :visible="true"
+    ></craft-spinner>
+  </craft-empty>
 </template>
 
 <style scoped lang="scss">

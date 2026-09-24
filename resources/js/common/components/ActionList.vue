@@ -135,6 +135,7 @@
     const marks = isItem && selectable.value;
     const attrs = defined({
       icon: action.icon,
+      hidden: action.hidden || undefined,
       // `craft-action-item` draws the checkmark gutter for its `checkbox`
       // type only; the others have no such notion.
       type: marks ? 'checkbox' : undefined,
@@ -148,12 +149,14 @@
       'data-keywords': isItem ? action.keywords : undefined,
     });
 
-    if (action.type === 'link') {
+    // A bare `href` makes it a link even without `type: 'link'`.
+    const link = action as Partial<ActionItemLink>;
+    if (action.type === 'link' || link.href) {
       return [
         {
           kind: 'link',
-          href: action.href,
-          external: action.external,
+          href: link.href,
+          external: link.external,
           label: action.label,
           onClick: action.onClick,
           attrs: defined({...attrs, size}),
@@ -370,6 +373,7 @@
 
     return defined({
       icon: action.icon,
+      hidden: action.hidden || undefined,
       'icon-only': iconOnly || undefined,
       'subnav-display': subnavDisplay(action),
       'initial-state': initialState(action),
@@ -457,7 +461,6 @@
       :as="as"
       :href="action.href!"
       :inertia="!action.external"
-      appearance="button"
     >
       {{ action.label }}
     </CpLink>

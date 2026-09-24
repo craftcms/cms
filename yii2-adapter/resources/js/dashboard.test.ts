@@ -1,5 +1,6 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
+import {http} from '@inertiajs/vue3';
 import {useDashboard} from '@/modules/dashboard/useDashboard';
 import Widget from '@/modules/dashboard/Widget.vue';
 import HtmlWidget from '@/modules/dashboard/HtmlWidget.vue';
@@ -79,11 +80,15 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     app.mount(host);
 
     await vi.waitFor(() => expect(host.querySelector('button')?.textContent).toBe('Configure plugin'));
+    const api = legacyWindow.dashboard.widgets[1];
+    expect(api.$bodyContainer.find('button').text()).toBe('Configure plugin');
+    expect(api.$title.text()).toBe('Plugin widget');
+    expect(api.$settingsBtn.length).toBe(1);
     const configure = host.querySelector('button')!;
-    configure.addEventListener('click', () => legacyWindow.dashboard.widgets[1].showSettings());
+    configure.addEventListener('click', () => api.showSettings());
     configure.click();
 
-    await vi.waitFor(() => expect(host.querySelector('form h2')?.textContent).toBe('Example Settings'));
+    await vi.waitFor(() => expect(host.querySelector('.settings-face h2')?.textContent).toBe('Example Settings'));
 
     const cancel = Array.from(host.querySelectorAll('form craft-button')).find(button => button.textContent?.trim() === 'Cancel')!;
     cancel.dispatchEvent(new MouseEvent('click', {bubbles: true}));
@@ -92,12 +97,34 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     expect(configure.closest('[inert]')).toBeNull();
 
     host.querySelector('[aria-label="Widget settings"]')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    await vi.waitFor(() => expect(host.querySelector('form h2')?.textContent).toBe('Example Settings'));
+    await vi.waitFor(() => expect(host.querySelector('.settings-face h2')?.textContent).toBe('Example Settings'));
     // Allow the legacy delayed flip to finish before cancelling.
     await new Promise(resolve => setTimeout(resolve, 150));
     Array.from(host.querySelectorAll('form craft-button')).find(button => button.textContent?.trim() === 'Cancel')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
     expect(configure.closest('.hidden, [inert]')).toBeNull();
+    expect(document.activeElement).toBe(host.querySelector('.front .widget-settings-button'));
+
+    if (visit === 0) {
+      let completeSave!: (response: Awaited<ReturnType<ReturnType<typeof http.getClient>['request']>>) => void;
+      vi.spyOn(http.getClient(), 'request').mockImplementationOnce(() => new Promise(resolve => {
+        completeSave = resolve;
+      }));
+
+      host.querySelector<HTMLElement>('.front .widget-settings-button')!.click();
+      await vi.waitFor(() => expect(host.querySelector('form')).not.toBeNull());
+      host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+      const close = host.querySelector<HTMLElement>('.settings-face [aria-label="Cancel"]')!;
+      await vi.waitFor(() => expect(close.hasAttribute('disabled')).toBe(true));
+
+      close.click();
+      api.hideSettings();
+      expect(host.querySelector('form')).not.toBeNull();
+
+      completeSave({status: 200, headers: {}, data: JSON.stringify({info: widget})});
+      await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
+      vi.restoreAllMocks();
+    }
 
     app.unmount();
     host.remove();

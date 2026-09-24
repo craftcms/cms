@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {computed, h, shallowReactive} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Empty from '@/common/components/Empty.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -120,12 +119,12 @@
         </div>
       </craft-callout>
     </div>
-    <AdminTable :table="table" @action:change-state="handleStateChange">
+    <AdminTable :table="table" @craft-state-change="handleStateChange">
       <template #empty-row>
-        <Empty
+        <craft-empty
           icon="plugin"
           :label="t('There are no available plugins.')"
-        ></Empty>
+        ></craft-empty>
       </template>
     </AdminTable>
   </div>

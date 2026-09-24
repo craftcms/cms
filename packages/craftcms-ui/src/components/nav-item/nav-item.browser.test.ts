@@ -9,6 +9,34 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+it('aligns group headings when a nested plugin has a slotted icon', async () => {
+  document.body.innerHTML = `
+    <craft-nav-list>
+      <craft-nav-item group>System</craft-nav-item>
+      <craft-nav-item group>
+        Plugins
+        <craft-nav-list slot="subnav">
+          <craft-nav-item href="/admin/settings/plugins/test-plugin">
+            Test Plugin <craft-icon slot="icon"></craft-icon>
+          </craft-nav-item>
+        </craft-nav-list>
+      </craft-nav-item>
+    </craft-nav-list>
+  `;
+
+  const [system, plugins] = document.querySelectorAll<CraftNavItem>(
+    'craft-nav-item[group]'
+  );
+  await Promise.all([system.updateComplete, plugins.updateComplete]);
+
+  const labelX = (item: CraftNavItem) =>
+    item
+      .shadowRoot!.querySelector('.nav-item__action-item')!
+      .getBoundingClientRect().left;
+
+  expect(labelX(plugins)).toBeCloseTo(labelX(system), 1);
+});
+
 /** A collapsed item with a subnav, so it renders both an icon and a chevron. */
 async function railFixture(): Promise<CraftNavItem> {
   const list = document.createElement('craft-nav-list');
@@ -88,6 +116,17 @@ it('draws the same focus ring on the row and on its chevron', async () => {
   // through to a ring of a different width and offset than craft-button's.
   expect(rowRing.outlineWidth).toBe('2px');
   expect(ring(toggle)).toEqual(rowRing);
+});
+
+it('fills the chevron while it’s focused into view', async () => {
+  const item = await railFixture();
+  const toggle = item.shadowRoot!.querySelector<HTMLElement>(
+    '.rail-toggle craft-button'
+  )!;
+
+  toggle.focus();
+
+  expect(getComputedStyle(toggle).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 it('draws the chevron at the same size as the icon it replaces', async () => {
@@ -206,6 +245,40 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
 
   expect(opened()).toBe(2);
   expect(reachedRow).toEqual(['keydown:Escape', 'keyup:Escape']);
+});
+
+// CpLink puts Inertia's Link handlers on the host, which visit on Enter's
+// keyup — so the chevron has to keep its own presses from reaching them.
+it('opens the flyout from its chevron instead of following the link', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const item = await railFixture();
+  const toggle = item.shadowRoot!.querySelector<HTMLElement>(
+    '.rail-toggle craft-button'
+  )!;
+  const reachedRow: string[] = [];
+  for (const type of pressEvents) {
+    item.addEventListener(type, (event) =>
+      reachedRow.push(
+        event instanceof KeyboardEvent ? `${type}:${event.key}` : type
+      )
+    );
+  }
+
+  // The hover intent is shared by every item, so earlier tests can leave it
+  // holding state that would delay the open.
+  flyoutHoverIntent.reset();
+
+  toggle.focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+
+  expect(item.flyoutOpen).toBe(true);
+
+  await userEvent.keyboard(' ');
+  await item.updateComplete;
+
+  expect(item.flyoutOpen).toBe(false);
+  expect(reachedRow).toEqual([]);
 });
 
 /** A rail holding the page itself, with no subnav, beside a branch it's in. */

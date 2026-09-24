@@ -18,8 +18,11 @@ import {
 } from '@src/utilities/hover-intent.js';
 
 /**
- * One row of a navigation: a link, a heading over a run of them, or a branch
- * with a subnav.
+ * @summary One row of the control panel's navigation: a link, a heading over a
+ * run of them, or a branch with a subnav.
+ *
+ * Items live inside a `craft-nav-list`, which supplies the list semantics that
+ * make the group announce as a list rather than as loose links.
  *
  * A branch shows its subnav one of two ways — indented beneath it, or in a
  * flyout beside it — chosen by the caller through `subnav-display`, since only
@@ -29,6 +32,10 @@ import {
  * label moves to a tooltip or heads the flyout, an icon-less item stands its
  * first letter in, and a heading becomes the rule between the runs it
  * separates.
+ *
+ * @slot - The item's label.
+ * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
+ *   flyout beside it.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = styles;
@@ -68,9 +75,17 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean})
   indicator: boolean = false;
 
+  /**
+   * Id of the item, used to tie a subnav to the item that owns it. Generated
+   * when not supplied.
+   */
   @property()
   override id: string;
 
+  /**
+   * Collapses the item to its icon, hiding the label. The label is still
+   * announced, and a subnav moves into a flyout rather than disappearing.
+   */
   @property({reflect: true, type: Boolean, attribute: 'icon-only'})
   iconOnly: boolean = false;
 
@@ -107,6 +122,7 @@ export default class CraftNavItem extends LitElement {
   @property({attribute: 'subnav-display', reflect: true})
   subnavDisplay?: 'inline' | 'flyout';
 
+  /** Whether an inline subnav is expanded. */
   @state()
   subnavState: 'open' | 'closed' = 'closed';
 
@@ -348,6 +364,7 @@ export default class CraftNavItem extends LitElement {
     }
   };
 
+  /** Expands or collapses the subnav. */
   toggleSubnav(event: Event) {
     event.preventDefault();
     event.stopPropagation();
@@ -360,7 +377,7 @@ export default class CraftNavItem extends LitElement {
    * keyboard and can carry `aria-expanded`; so is one that performs an action;
    * one that does none of these is a label.
    */
-  actionTag(useFlyout: boolean) {
+  protected actionTag(useFlyout: boolean) {
     if (this.href) {
       return literal`a`;
     }
@@ -386,19 +403,19 @@ export default class CraftNavItem extends LitElement {
   }
 
   /** A bare `<button>` defaults to submit, which would post its form. */
-  buttonType(useFlyout: boolean) {
+  protected buttonType(useFlyout: boolean) {
     return !this.href && (useFlyout || this.button) ? 'button' : nothing;
   }
 
   /** A row that is neither a link, a button, nor a flyout's trigger. */
-  isStatic(useFlyout: boolean) {
+  protected isStatic(useFlyout: boolean) {
     return !this.href && !useFlyout && !this.button;
   }
 
   /**
-   * A control lent to the row sits inside the row's own element, so pressing
-   * it would bubble on to the row — and when the row is a link, that's a
-   * navigation. CpLink puts Inertia's handlers on the host, and with
+   * A control lent to the row, or one of the item's own toggles, sits inside
+   * the item, so pressing it would bubble on to the row — and when the row is
+   * a link, that's a navigation. CpLink puts Inertia's handlers on the host, and with
    * `prefetch="click"` those aren't on `click` at all: `mousedown` prefetches
    * (and cancels the press, so the control never takes focus), `mouseup`
    * visits, and Enter does the same on `keydown`/`keyup` — cancelling the
@@ -433,7 +450,7 @@ export default class CraftNavItem extends LitElement {
     }
   };
 
-  renderIconItem(hasSubnav: boolean, useFlyout: boolean) {
+  protected renderIconItem(hasSubnav: boolean, useFlyout: boolean) {
     const tag = this.actionTag(useFlyout);
 
     return staticHtml`
@@ -481,7 +498,7 @@ export default class CraftNavItem extends LitElement {
    * labelled item has already projected the default slot into itself, and a
    * slot can only render its content in one place.
    */
-  renderFlyout(withLabel: boolean) {
+  protected renderFlyout(withLabel: boolean) {
     return html`
       <craft-popover
         for="${this.itemId}"
@@ -500,10 +517,14 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderSubnavToggle() {
+  protected renderSubnavToggle() {
     return html`
       <craft-button
         @click="${this.toggleSubnav}"
+        @mousedown="${this.#stopActionPressAtRow}"
+        @mouseup="${this.#stopActionPressAtRow}"
+        @keydown="${this.#stopActionPressAtRow}"
+        @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
         icon
         size="small"
@@ -525,7 +546,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderPrefix(showToggle: boolean = false) {
+  protected renderPrefix(showToggle: boolean = false) {
     if (showToggle && this.togglePosition === 'prefix') {
       return html`
         <span class="nav-item__prefix">${this.renderSubnavToggle()}</span>
@@ -564,11 +585,15 @@ export default class CraftNavItem extends LitElement {
    * every branch in the tab order, so tabbing past a branch would mean tabbing
    * through it.
    */
-  renderFlyoutToggle() {
+  protected renderFlyoutToggle() {
     return html`
       <craft-button
         class="flyout-toggle"
         @click="${this.#toggleFlyout}"
+        @mousedown="${this.#stopActionPressAtRow}"
+        @mouseup="${this.#stopActionPressAtRow}"
+        @keydown="${this.#stopActionPressAtRow}"
+        @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
         icon
         size="small"
@@ -593,7 +618,7 @@ export default class CraftNavItem extends LitElement {
    * Hidden from assistive tech: it's a picture of the label, and the item is
    * already named by `aria-label`.
    */
-  renderInitial() {
+  protected renderInitial() {
     const initial = this.iconOnly ? this.labelText.at(0) : null;
 
     return initial
@@ -611,7 +636,10 @@ export default class CraftNavItem extends LitElement {
    * Not collapsed: the rail renders this inside the row's own link, and a
    * button can't live inside one.
    */
-  renderSuffix(showToggle: boolean = false, showFlyoutToggle = false) {
+  protected renderSuffix(
+    showToggle: boolean = false,
+    showFlyoutToggle = false
+  ) {
     return html`
       <div class="nav-item__suffix">
         ${this.iconOnly
@@ -634,7 +662,11 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderItem(showToggle: boolean, hasPrefix: boolean, useFlyout: boolean) {
+  protected renderItem(
+    showToggle: boolean,
+    hasPrefix: boolean,
+    useFlyout: boolean
+  ) {
     return staticHtml`
       <div
         class="${classMap({
@@ -652,7 +684,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderInteractiveItem(useFlyout: boolean) {
+  protected renderInteractiveItem(useFlyout: boolean) {
     const tag = this.actionTag(useFlyout);
     return staticHtml`
       <${tag}
@@ -673,7 +705,7 @@ export default class CraftNavItem extends LitElement {
   }
 
   override render() {
-    const hasSubnav = !!this.querySelector('[slot="subnav"]');
+    const hasSubnav = !!this.querySelector(':scope > [slot="subnav"]');
     // A `slot` can only project its content in one place, so the subnav is
     // either indented below or in the flyout, never both.
     const display = this.subnavDisplay ?? (this.iconOnly ? 'flyout' : 'inline');
@@ -694,8 +726,8 @@ export default class CraftNavItem extends LitElement {
       toggleInPrefix ||
       !!this.icon ||
       this.indicator ||
-      !!this.querySelector('[slot="prefix"]') ||
-      !!this.querySelector('[slot="icon"]');
+      !!this.querySelector(':scope > [slot="prefix"]') ||
+      !!this.querySelector(':scope > [slot="icon"]');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
     // Collapsed, a heading has no room for its name and nothing to sit above

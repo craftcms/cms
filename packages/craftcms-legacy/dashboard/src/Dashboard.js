@@ -425,9 +425,11 @@ import './dashboard.scss';
       }
 
       this.$front = this.$container.children('.front');
-      const $pane = this.$front.children('.pane, craft-pane');
+      const $pane = this.$front.children('.pane, craft-pane, craft-card');
 
-      this.$settingsBtn = $pane.children('.icon.settings, .widget-settings-button');
+      this.$settingsBtn = $pane.children(
+        '.icon.settings, .widget-settings-button'
+      );
       this.$heading = $pane.children('.widget-heading');
       this.$title = this.$heading.find('> h2');
       this.$subtitle = this.$heading.find('> h5');
@@ -778,8 +780,8 @@ import './dashboard.scss';
 
       refreshColspanPicker();
 
-      this.colspanPicker.addEventListener('value-change', ({detail}) => {
-        const colspan = detail.value;
+      this.colspanPicker.addEventListener('change', () => {
+        const colspan = this.colspanPicker.value;
 
         // Update the widget and grid
         this.setColspan(colspan);

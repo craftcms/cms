@@ -10,13 +10,12 @@
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
-  import Empty from '@/common/components/Empty.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
@@ -134,14 +133,9 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      :href="create().url"
-      variant="accent"
-      appearance="button"
-      icon="plus"
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">
       {{ t('New entry type') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer>
@@ -154,7 +148,10 @@
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
-        <Empty icon="light/files" :label="t('No entry types exist yet.')" />
+        <craft-empty
+          icon="light/files"
+          :label="t('No entry types exist yet.')"
+        ></craft-empty>
       </template>
       <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />

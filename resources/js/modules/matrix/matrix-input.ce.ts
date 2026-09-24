@@ -34,7 +34,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     this.listener = new AbortController();
     const {signal} = this.listener;
     this.addEventListener('click', this.onClick, {signal});
-    this.addEventListener('reorder', this.onReorder, {signal});
+    this.addEventListener('craft-reorder', this.onReorder, {signal});
     this.addEventListener('entrySortDragStop', this.changed, {signal});
   }
 
@@ -182,7 +182,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     const remove = document.createElement('craft-button');
     remove.dataset.formMatrixRemove = '';
     remove.setAttribute('icon', 'trash');
-    remove.setAttribute('accessible-name', t('Remove {type}', {type: label}));
+    remove.setAttribute('aria-label', t('Remove {type}', {type: label}));
     actions.append(reorder, remove);
 
     return actions;

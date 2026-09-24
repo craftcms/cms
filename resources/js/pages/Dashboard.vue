@@ -42,9 +42,13 @@
       <div class="flex gap-2">
         <ActionMenu :actions="actions" :label="t('New widget')"
           ><template #invoker
-            ><craft-button type="button" icon="plus" :disabled="busy">{{
-              t('New widget')
-            }}</craft-button></template
+            ><craft-button
+              slot="invoker"
+              type="button"
+              icon="plus"
+              :disabled="busy"
+              >{{ t('New widget') }}</craft-button
+            ></template
           ></ActionMenu
         >
         <WidgetManager

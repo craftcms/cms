@@ -50,9 +50,29 @@ const preview: Preview = {
       },
     },
 
+    docs: {
+      // Show each story's source in a "Code" panel alongside Controls, so the
+      // markup is available from the story view and not only from the docs
+      // page. Stories that pin `docs.source.code` supply that value here too.
+      codePanel: true,
+    },
+
     options: {
       storySort: {
         method: 'alphabetical',
+        // Everything else sorts alphabetically beneath these. Getting Started
+        // leads because a first-time reader lands on the sidebar, and Tokens
+        // trails because it explains what the component pages reference.
+        order: [
+          'Getting Started',
+          ['Introduction', 'Installation', 'Theming'],
+          'Components',
+          'Form Controls',
+          ['Choice Controls', 'Select Controls', 'Text Controls'],
+          'JavaScript API',
+          ['Factory', 'Utilities', 'Services', 'Reactive Controllers'],
+          'Tokens',
+        ],
       },
     },
 

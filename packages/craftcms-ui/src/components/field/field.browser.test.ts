@@ -4,6 +4,7 @@ import type CraftField from './field.js';
 import './field.js';
 import '../input/input.js';
 import '../select/select.js';
+import '../combobox/combobox.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -21,6 +22,24 @@ it('labels nested native controls', async () => {
     'Operator'
   );
 });
+
+it.each([false, true])(
+  'labels a nested combobox and its listbox once (multiple: %s)',
+  async (multiple) => {
+    document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple-choice' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
+    const combobox = document.querySelector('craft-combobox')!;
+    await vi.waitFor(() =>
+      expect(
+        computeAccessibleName(
+          combobox.querySelector('input:not([type=hidden])')!
+        )
+      ).toBe('Entry Type')
+    );
+    expect(
+      computeAccessibleName(combobox.querySelector('[role=listbox]')!)
+    ).toBe('Entry Type');
+  }
+);
 
 describe('spacing', () => {
   async function renderField(attrs: string): Promise<CraftField> {

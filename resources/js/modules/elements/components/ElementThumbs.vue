@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import Empty from '@/common/components/Empty.vue';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
     useReorderableItems,
@@ -224,7 +223,7 @@
               <craft-reorder-button
                 :position="getRowPosition(thumbIdx)"
                 orientation="horizontal"
-                @reorder="
+                @craft-reorder="
                   (event: CustomEvent<{direction: 'up' | 'down'}>) =>
                     move(thumbIdx, event.detail.direction === 'up' ? -1 : 1)
                 "
@@ -263,7 +262,7 @@
   </template>
   <template v-else>
     <slot name="empty">
-      <Empty :label="t('No results')" icon="empty-set" />
+      <craft-empty :label="t('No results')" icon="empty-set"></craft-empty>
     </slot>
   </template>
 </template>

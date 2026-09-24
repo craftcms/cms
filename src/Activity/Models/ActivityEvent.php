@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use InvalidArgumentException;
 
 /**
- * @property string $id
+ * @property int $id
  * @property string $eventType
  * @property string $source
  * @property string $actorType
@@ -26,7 +26,7 @@ use InvalidArgumentException;
  * @property string|null $subjectType
  * @property string|null $subjectId
  * @property int|null $siteId
- * @property string|null $rootEventId
+ * @property int|null $rootEventId
  * @property array{snapshots: array<string, array<string, int|string>>, changes: list<array<string, mixed>>, data: array<string, mixed>} $payload
  * @property array<string, array<string, int|string>> $snapshots
  * @property list<ActivityChange> $changes
@@ -45,10 +45,10 @@ class ActivityEvent extends BaseModel
     protected function casts(): array
     {
         return [
-            'id' => 'string',
+            'id' => 'integer',
             'actorId' => 'integer',
             'siteId' => 'integer',
-            'rootEventId' => 'string',
+            'rootEventId' => 'integer',
             'payload' => 'array',
             'occurredAt' => 'immutable_datetime',
         ];
@@ -139,7 +139,7 @@ class ActivityEvent extends BaseModel
      * @return Builder<static>
      */
     #[Scope]
-    protected function rootEvent(Builder $query, self|string $rootEvent): Builder
+    protected function rootEvent(Builder $query, self|int $rootEvent): Builder
     {
         return $query->where('rootEventId', $rootEvent instanceof self ? $rootEvent->id : $rootEvent);
     }

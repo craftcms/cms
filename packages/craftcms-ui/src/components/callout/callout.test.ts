@@ -88,16 +88,17 @@ describe('craft-callout padding', () => {
   });
 
   /**
-   * So the shipped appearance is byte-identical to the `padding: sm md`
-   * shorthand this replaced: the pair still comes from the stylesheet, and the
-   * attribute only ever overrides it.
+   * The default pair still comes from the stylesheet, and the attribute only
+   * ever overrides it. Both axes are `sm`: the inline gap to the text is made
+   * up by the padding on the icon, title, and description themselves, so the
+   * container's own inline padding is the tighter step.
    */
-  it('keeps the asymmetric default in the stylesheet', () => {
+  it('keeps the default padding in the stylesheet', () => {
     expect(cssText).toContain(
       '--_callout-padding-block:var(--c-callout-padding-block,var(--c-spacing-sm));'
     );
     expect(cssText).toContain(
-      '--_callout-padding-inline:var(--c-callout-padding-inline,var(--c-spacing-md));'
+      '--_callout-padding-inline:var(--c-callout-padding-inline,var(--c-spacing-sm));'
     );
     expect(cssText).toContain(
       'padding:var(--_callout-padding-block)var(--_callout-padding-inline);'
@@ -119,16 +120,26 @@ describe('craft-callout padding', () => {
     expect(spacing(element, 'inline')).toBe('0');
   });
 
-  it.each([
-    ['0', '0'],
-    ['24', 'calc(24rem / 16)'],
-    ['2rem', '2rem'],
-    ['var(--my-spacing)', 'var(--my-spacing)'],
-  ])('resolves %s to %s', async (padding, expected) => {
-    const element = await createCallout({padding});
+  it('resolves 0 to zero', async () => {
+    const element = await createCallout({padding: '0'});
 
-    expect(spacing(element, 'block')).toBe(expected);
+    expect(spacing(element, 'block')).toBe('0');
   });
+
+  /**
+   * The attribute is closed to the spacing scale. An off-scale value writes
+   * nothing, so the callout's asymmetric default still applies — the custom
+   * properties are the escape hatch for arbitrary spacing.
+   */
+  it.each(['24', '2rem', 'var(--my-spacing)'])(
+    'ignores %s, which is off the spacing scale',
+    async (padding) => {
+      const element = await createCallout({padding});
+
+      expect(spacing(element, 'block')).toBe('');
+      expect(spacing(element, 'inline')).toBe('');
+    }
+  );
 
   it('re-renders when the padding property changes', async () => {
     const element = await createCallout();
