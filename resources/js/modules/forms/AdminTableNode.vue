@@ -197,6 +197,10 @@
       pagination.value = data.pagination;
       // The endpoint may ignore or clamp `per_page`, so defer to the size it actually used.
       perPage.value = data.pagination.per_page;
+
+      if (!data.data.length && page > 1 && page > data.pagination.last_page) {
+        await fetchPage(Math.max(1, data.pagination.last_page));
+      }
     } finally {
       loading.value = false;
     }
@@ -859,7 +863,7 @@
 
     await actionClient.post(props.node.props.deleteUrl!, {id: row.id});
     rows.value = rows.value.filter((r) => r.id !== row.id);
-    refreshForm();
+    refreshTable();
   }
 
   async function deleteSelected(): Promise<void> {
@@ -876,7 +880,7 @@
     await actionClient.post(props.node.props.deleteUrl!, {ids});
     rows.value = rows.value.filter((r) => !ids.includes(r.id!));
     table.resetRowSelection();
-    refreshForm();
+    refreshTable();
   }
 
   // `BulkActionsBar` handles the request, per-row-vs-bulk disabling, and
@@ -956,6 +960,14 @@
   function refreshForm(): void {
     router.reload({only: ['form']});
   }
+
+  function refreshTable(): void {
+    refreshForm();
+
+    if (isEndpointMode.value) {
+      fetchPage(pagination.value?.current_page ?? 1);
+    }
+  }
 </script>
 
 <template>
@@ -989,7 +1001,7 @@
         :statuses="statusActionItems"
         ids-field="ids"
         @reorder="onReorder"
-        @action-performed="refreshForm"
+        @action-performed="refreshTable"
       >
         <template
           v-if="
