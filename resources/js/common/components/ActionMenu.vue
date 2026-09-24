@@ -16,8 +16,6 @@
       searchable?: boolean;
       /** Passed to the invoker; see `craft-button`'s `flush`. */
       flush?: boolean | string;
-      /** Passed to the invoker; see `craft-button`'s `size`. */
-      buttonSize?: 'zero' | 'xsmall' | 'small' | 'medium' | 'large';
     }>(),
     {
       icon: 'ellipsis',
@@ -25,7 +23,6 @@
       buttonVariant: ButtonVariant.Plain,
       searchable: false,
       flush: true,
-      buttonSize: 'small',
     }
   );
 
@@ -91,7 +88,7 @@
       <craft-button
         slot="invoker"
         type="button"
-        :size="buttonSize"
+        size="small"
         :icon="icon"
         :aria-label="label"
         inherit

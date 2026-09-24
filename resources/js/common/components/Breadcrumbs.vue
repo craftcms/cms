@@ -57,10 +57,23 @@
         slot="suffix"
         icon="chevron-down"
         :actions="item.items"
-        button-size="xsmall"
-        :flush="false"
         :label="t('Actions')"
-      />
+      >
+        <!-- Its own invoker rather than the default one: a crumb's switcher
+          sits beside text, so it's smaller and isn't pulled flush against the
+          label. -->
+        <template #invoker="{label, attributes}">
+          <craft-button
+            v-bind="attributes"
+            type="button"
+            variant="plain"
+            size="xsmall"
+            icon="chevron-down"
+            :aria-label="label"
+            inherit
+          ></craft-button>
+        </template>
+      </ActionMenu>
     </craft-breadcrumb-item>
   </craft-breadcrumbs>
 </template>
