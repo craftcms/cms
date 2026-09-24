@@ -1,35 +1,28 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {computed, inject} from 'vue';
+  import {computed} from 'vue';
   import type {
     ElementEditorActions,
     ElementEditPayload,
     ElementEditPayloadUpdater,
+    ElementFormActionSubmitter,
   } from '@/modules/elements/composables/useElementEditor';
-  import {elementFormActionSubmitterKey} from '@/modules/elements/composables/useElementEditor';
   import WorkflowDraftReviews from './WorkflowDraftReviews.vue';
   import WorkflowReviewPanel from './WorkflowReviewPanel.vue';
 
   const props = defineProps<{
     payload: ElementEditPayload;
     updatePayload: ElementEditPayloadUpdater;
+    submitAction: ElementFormActionSubmitter;
   }>();
 
-  const submitAction = inject(elementFormActionSubmitterKey);
-
   const applyDraftAction = computed(() =>
-    submitAction && props.payload.workflow.current?.canApply
+    props.payload.workflow.current?.canApply
       ? (props.payload.editorActions.buttons.find(
           (action) => action.actionUrl === props.payload.applyDraftUrl
         ) ?? null)
       : null
   );
-
-  function applyDraft(): void {
-    if (applyDraftAction.value) {
-      submitAction?.(applyDraftAction.value);
-    }
-  }
 
   function updateWorkflowReview(
     workflowReview: CraftCms.Cms.Workflow.Data.WorkflowReviewData,
@@ -67,7 +60,7 @@
           <craft-button
             type="button"
             :variant="ButtonVariant.Primary"
-            @click="applyDraft"
+            @click="props.submitAction(applyDraftAction)"
           >
             {{ applyDraftAction.label }}
           </craft-button>

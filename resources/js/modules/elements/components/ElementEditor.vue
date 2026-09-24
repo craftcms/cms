@@ -6,7 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -18,10 +18,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {
-    elementFormActionSubmitterKey,
-    useElementEditor,
-  } from '@/modules/elements/composables/useElementEditor';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
@@ -61,8 +58,6 @@
     updatePayload,
     workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
-
-  provide(elementFormActionSubmitterKey, submitAction);
 
   const hasDetails = computed(
     () =>
@@ -333,6 +328,7 @@
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
       :update-payload="updatePayload"
+      :submit-action="submitAction"
       :sync-location-hash="!isSlideout"
     >
       <template #info>
