@@ -17,17 +17,19 @@
 
   const submitAction = inject(elementFormActionSubmitterKey);
 
-  if (!submitAction) {
-    throw new Error('WorkflowDetailsTab requires an element editor.');
-  }
-
   const applyDraftAction = computed(() =>
-    props.payload.workflow.current?.canApply
+    submitAction && props.payload.workflow.current?.canApply
       ? (props.payload.editorActions.buttons.find(
           (action) => action.actionUrl === props.payload.applyDraftUrl
         ) ?? null)
       : null
   );
+
+  function applyDraft(): void {
+    if (applyDraftAction.value) {
+      submitAction?.(applyDraftAction.value);
+    }
+  }
 
   function updateWorkflowReview(
     workflowReview: CraftCms.Cms.Workflow.Data.WorkflowReviewData,
@@ -65,7 +67,7 @@
           <craft-button
             type="button"
             :variant="ButtonVariant.Primary"
-            @click="submitAction(applyDraftAction)"
+            @click="applyDraft"
           >
             {{ applyDraftAction.label }}
           </craft-button>

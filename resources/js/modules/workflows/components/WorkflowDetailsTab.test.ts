@@ -57,6 +57,45 @@ describe('WorkflowDetailsTab', () => {
     vi.unstubAllGlobals();
   });
 
+  it('renders workflow details without an element editor', () => {
+    const elementPayload = {
+      workflow: {
+        current: review({
+          actionComponent: null,
+          actionProps: {},
+          runs: [],
+        }),
+        draftReviews: [
+          {
+            name: 'First draft',
+            requester: 'Ada Lovelace',
+            stage: 'Editorial review',
+            statusLabel: 'Awaiting approval',
+            statusIndicator: 'pending',
+            url: '/admin/entries/posts/12?draftId=34',
+          },
+        ],
+      },
+      draftId: 34,
+      isProvisionalDraft: false,
+      elementType: 'craft\\elements\\Entry',
+      canonicalId: 12,
+      siteId: 1,
+    } as unknown as ElementEditPayload;
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(WorkflowDetailsTab, {
+      payload: elementPayload,
+      updatePayload: vi.fn(),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+
+    expect(container.textContent).toContain('First draft');
+    expect(container.textContent).toContain('Awaiting approval');
+  });
+
   it('enables applying a draft after its review is approved', async () => {
     const approvedReview = review({
       status: 'approved',
