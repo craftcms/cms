@@ -164,6 +164,44 @@ describe('useElementAutosave', () => {
     expect(postSpy).toHaveBeenCalledTimes(2);
   });
 
+  it.each([false, true])(
+    'consumes a scheduled save without dropping newer edits (newer edit: %s)',
+    async (newerEdit) => {
+      vi.useFakeTimers();
+      let finish!: () => void;
+      postSpy.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finish = () => resolve({data: {draftId: 7}});
+          })
+      );
+      const {autosave, form} = mount();
+
+      try {
+        form.title = 'Changed';
+        autosave.schedule();
+        const saving = autosave.save();
+        if (newerEdit) {
+          form.title = 'Changed again';
+          autosave.schedule();
+        }
+        await vi.advanceTimersByTimeAsync(100);
+        finish();
+        await nextTick();
+        await nextTick();
+
+        expect(postSpy).toHaveBeenCalledTimes(newerEdit ? 2 : 1);
+        expect(postSpy.mock.lastCall![1].title).toBe(
+          newerEdit ? 'Changed again' : 'Changed'
+        );
+        if (newerEdit) finish();
+        await saving;
+      } finally {
+        vi.useRealTimers();
+      }
+    }
+  );
+
   /**
    * A submission re-seeds the renderers with what it saved, and reconciling
    * emits mutations like any other write — but they land while the visit is

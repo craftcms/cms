@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {EntryType, ActionItem} from '@/common/types';
-  import Tooltip from '@/common/components/Tooltip.vue';
   import {ref, watch} from 'vue';
 
   const emit = defineEmits<{
@@ -54,7 +53,7 @@
           {{ name }}
         </div>
         <template v-if="description">
-          <Tooltip>{{ description }}</Tooltip>
+          <craft-info-icon>{{ description }}</craft-info-icon>
         </template>
       </div>
       <div class="cp-code">{{ handle }}</div>

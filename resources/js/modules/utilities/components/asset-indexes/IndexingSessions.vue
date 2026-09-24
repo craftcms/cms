@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import Badge from '@/common/components/Badge.vue';
   import SessionProgress from '@/modules/utilities/components/asset-indexes/SessionProgress.vue';
   import SessionActions from '@/modules/utilities/components/asset-indexes/SessionActions.vue';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
@@ -33,13 +32,15 @@
             <strong>{{ t('Status') }}</strong>
           </div>
           <template v-if="session.actionRequired">
-            <Badge variant="warning">{{ t('Waiting for review') }}</Badge>
+            <craft-badge fill="warning">{{
+              t('Waiting for review')
+            }}</craft-badge>
           </template>
           <template v-else-if="session.id === currentSessionId">
-            <Badge variant="success">{{ t('Active') }}</Badge>
+            <craft-badge fill="success">{{ t('Active') }}</craft-badge>
           </template>
           <template v-else>
-            <Badge>{{ t('Waiting') }}</Badge>
+            <craft-badge>{{ t('Waiting') }}</craft-badge>
           </template>
         </div>
 

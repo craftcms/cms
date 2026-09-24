@@ -19,6 +19,7 @@
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
+- Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
 
 ### Assets
 - Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
@@ -81,6 +82,7 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
+- Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
 
 ### Users & Auth
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))

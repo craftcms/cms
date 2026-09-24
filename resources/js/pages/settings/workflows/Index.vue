@@ -8,7 +8,6 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {PaginationData, SortItem} from '@/common/types';
-  import Empty from '@/common/components/Empty.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
@@ -118,10 +117,10 @@
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
-        <Empty
+        <craft-empty
           icon="light/clipboard-list-check"
           :label="t('No approval workflows exist yet.')"
-        />
+        ></craft-empty>
       </template>
       <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />

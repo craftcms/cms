@@ -122,6 +122,34 @@ it('prefers the longer of two matching siblings', function () {
   ).toEqual(['User Groups']);
 });
 
+it('selects a plugin setting over the Plugins index in another group', function () {
+  const items = [
+    node('Settings', {
+      href: '/admin/settings',
+      subnav: [
+        node('System', {
+          group: true,
+          subnav: [node('Plugins index', {href: '/admin/settings/plugins'})],
+        }),
+        node('Plugins', {
+          group: true,
+          subnav: [
+            node('Test Plugin', {
+              href: '/admin/settings/plugins/test-plugin',
+            }),
+          ],
+        }),
+      ],
+    }),
+  ];
+
+  expect(
+    labelsSelected(
+      withNavSelection(items, '/admin/settings/plugins/test-plugin')
+    )
+  ).toEqual(['Settings', 'Plugins', 'Test Plugin']);
+});
+
 it('selects nothing for a page the nav does not cover', function () {
   expect(labelsSelected(withNavSelection(tree(), '/admin/nowhere'))).toEqual(
     []

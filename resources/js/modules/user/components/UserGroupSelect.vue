@@ -5,7 +5,6 @@
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import type {SlideoutSaveResult} from '@/common/slideouts';
   import Text from '@/common/components/Text.vue';
-  import Tooltip from '@/common/components/Tooltip.vue';
   import {create} from '@actions/Settings/Users/UserGroupsController';
 
   type UserGroupOption = Pick<
@@ -96,7 +95,9 @@
         <div class="grid gap-1">
           <div class="flex gap-1">
             <div class="font-bold">{{ groupLabel(group) }}</div>
-            <Tooltip v-if="group.description">{{ group.description }}</Tooltip>
+            <craft-info-icon v-if="group.description">{{
+              group.description
+            }}</craft-info-icon>
           </div>
         </div>
 

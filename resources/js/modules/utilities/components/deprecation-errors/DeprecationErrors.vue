@@ -6,7 +6,6 @@
   import DeleteLogButton from '@/modules/utilities/components/deprecation-errors/DeleteLogButton.vue';
   import StackTraceButton from '@/modules/utilities/components/deprecation-errors/StackTraceButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import Empty from '@/common/components/Empty.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface LogData {
@@ -69,7 +68,9 @@
     :reorderable="false"
   >
     <template #empty-row>
-      <Empty :label="t('No deprecation warnings to report!')" />
+      <craft-empty
+        :label="t('No deprecation warnings to report!')"
+      ></craft-empty>
     </template>
   </AdminTable>
 </template>
