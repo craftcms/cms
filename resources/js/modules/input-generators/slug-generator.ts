@@ -3,6 +3,34 @@ import {BaseInputGenerator} from './base-input-generator';
 
 declare const Craft: any;
 
+export function generateSlug(
+  sourceValue: string,
+  charMap?: Record<string, string> | null
+): string {
+  // Remove HTML tags
+  sourceValue = sourceValue.replace(/<(.*?)>/g, '');
+
+  // Remove inner-word punctuation
+  sourceValue = sourceValue.replace(/['"‘’“”ʻ[\](){}:]/g, '');
+
+  if (Craft.limitAutoSlugsToAscii) {
+    // Convert extended ASCII characters to basic ASCII
+    sourceValue = asciiString(sourceValue, charMap ?? undefined);
+  }
+
+  // Make it lowercase
+  if (!Craft.allowUppercaseInSlug) {
+    sourceValue = sourceValue.toLowerCase();
+  }
+
+  // Get the "words". Keep XRegExp's previous BMP-only Unicode matching.
+  const words =
+    sourceValue.match(/(?:(?![\u{10000}-\u{10FFFF}])[\p{L}\p{N}\p{M}])+/gu) ??
+    [];
+
+  return words.join(Craft.slugWordSeparator);
+}
+
 /**
  * Generates a slug from a source value. Port of `Craft.SlugGenerator`.
  *
@@ -20,27 +48,6 @@ export class SlugGenerator extends BaseInputGenerator {
   }
 
   override generateTargetValue(sourceVal: string): string {
-    // Remove HTML tags
-    sourceVal = sourceVal.replace(/<(.*?)>/g, '');
-
-    // Remove inner-word punctuation
-    sourceVal = sourceVal.replace(/['"‘’“”ʻ[\](){}:]/g, '');
-
-    if (Craft.limitAutoSlugsToAscii) {
-      // Convert extended ASCII characters to basic ASCII
-      sourceVal = asciiString(sourceVal, this.settings!.charMap ?? undefined);
-    }
-
-    // Make it lowercase
-    if (!Craft.allowUppercaseInSlug) {
-      sourceVal = sourceVal.toLowerCase();
-    }
-
-    // Get the "words". Keep XRegExp's previous BMP-only Unicode matching.
-    const words =
-      sourceVal.match(/(?:(?![\u{10000}-\u{10FFFF}])[\p{L}\p{N}\p{M}])+/gu) ??
-      [];
-
-    return words.join(Craft.slugWordSeparator);
+    return generateSlug(sourceVal, this.settings?.charMap);
   }
 }

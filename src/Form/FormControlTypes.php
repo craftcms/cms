@@ -32,6 +32,7 @@ use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
+use CraftCms\Cms\Form\Controls\Slug;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -76,6 +77,7 @@ class FormControlTypes extends TypeRegistry
         Number::class,
         PermissionTree::class,
         Range::class,
+        Slug::class,
         Table::class,
         Text::class,
         Textarea::class,

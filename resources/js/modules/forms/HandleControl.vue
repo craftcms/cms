@@ -12,6 +12,8 @@
 
   type HandleControlProps = {
     source?: string[];
+    maxLength?: number;
+    placeholder?: string;
   };
 
   const props = defineProps<{
@@ -59,6 +61,8 @@
   <craft-input-handle
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
+    :maxlength="control.props.maxLength"
+    :placeholder="control.props.placeholder"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
