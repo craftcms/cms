@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import './shortcut.js';
 import type CraftShortcut from './shortcut.js';
@@ -26,6 +26,10 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('craft-shortcut', () => {
   it('uses the platform symbols on a Mac', async () => {
     expect(prefix(await createShortcut({os: 'Mac'}))).toBe('⌘');
@@ -49,6 +53,11 @@ describe('craft-shortcut', () => {
 
   /** An unknown platform falls back to the Ctrl spelling rather than nothing. */
   it('falls back to Ctrl for an unknown platform', async () => {
+    // `Unknown` is also what sends the component back to `navigator.platform`,
+    // which happy-dom takes from the host — so on a Linux runner it would come
+    // back as Linux. Pin it to something no platform check recognizes.
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Plan 9');
+
     expect(prefix(await createShortcut({os: 'Unknown'}))).toBe('Ctrl+');
   });
 
