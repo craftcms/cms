@@ -22,7 +22,7 @@ export default class CraftEmpty extends LitElement {
         display: grid;
         place-items: center;
         border-radius: var(--c-radius-md);
-        border: 1px solid var(--c-color-border-quiet);
+        border: 1px solid transparent;
         padding-block: var(--c-spacing-lg);
       }
 
@@ -38,6 +38,10 @@ export default class CraftEmpty extends LitElement {
         margin: 0;
         font-size: 1.25em;
       }
+      
+      :host([appearance~='outline']) {
+        border-color: var(--c-color-border-quiet);
+      }
     `,
   ];
 
@@ -46,6 +50,8 @@ export default class CraftEmpty extends LitElement {
 
   /** Name of an icon shown above the message. */
   @property() icon: string = '';
+
+  @property({reflect: true}) appearance: 'plain' | 'outline' = 'plain'
 
   protected override render() {
     return html`
