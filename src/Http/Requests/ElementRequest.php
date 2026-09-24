@@ -79,6 +79,8 @@ class ElementRequest extends FormRequest
             'failMessage' => ['exclude'],
             'redirect' => ['exclude'],
             'successMessage' => ['exclude'],
+            'workflowRunId' => ['exclude'],
+            'workflowCurrentStage' => ['exclude'],
             $fieldsLocation => ['exclude'],
         ];
     }

@@ -13,6 +13,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Structure\Models\Structure;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -48,6 +49,12 @@ class Section extends BaseModel
     public function structure(): BelongsTo
     {
         return $this->belongsTo(Structure::class, 'structureId');
+    }
+
+    /** @return BelongsTo<Workflow, $this> */
+    public function workflow(): BelongsTo
+    {
+        return $this->belongsTo(Workflow::class, 'workflowId');
     }
 
     /**

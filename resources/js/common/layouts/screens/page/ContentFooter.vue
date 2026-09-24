@@ -19,6 +19,7 @@
         | 'formActions'
         | 'formAdditionalActions'
         | 'formAdditionalButtons'
+        | 'saveDisabled'
         | 'submitButtonLabel'
       > & {
         readOnly: boolean;
@@ -75,6 +76,7 @@
         :additional-buttons="formAdditionalButtons"
         :submit-label="submitButtonLabel"
         :read-only="readOnly"
+        :save-disabled="saveDisabled"
       >
         <template v-if="slots['submit-button']" #submit-button>
           <slot name="submit-button"></slot>
@@ -93,10 +95,3 @@
     </div>
   </div>
 </template>
-
-<style scoped lang="css">
-  .content-footer {
-    padding-inline: var(--cp-container-padding);
-    min-height: var(--cp-footer-height);
-  }
-</style>

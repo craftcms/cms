@@ -22,8 +22,8 @@ use Stringable;
  * The header only renders when `label` is set or one of the `header`, `title`,
  * or `header-actions` slots is filled; the footer only when one of the footer
  * slots is. Note that `label` (the attribute) and `title` (a slot) are
- * different things: `label` renders the default `<h1>` inside the `title` slot,
- * which filling `title` replaces.
+ * different things: `label` renders the default heading (at `heading-level`,
+ * `<h2>` by default) inside the `title` slot, which filling `title` replaces.
  *
  * Renders directly (no Blade view) — the component is a single element whose
  * chrome lives in the web component. Content strings are HTML-encoded; pass an
@@ -38,6 +38,8 @@ class Pane extends ViewComponent
     protected string|int|null $padding = null;
 
     protected ?string $label = null;
+
+    protected ?int $headingLevel = null;
 
     protected function tagName(): string
     {
@@ -98,13 +100,24 @@ class Pane extends ViewComponent
     }
 
     /**
-     * The pane’s title, rendered as an `<h1>` in the header. Named `label`
+     * The pane’s title, rendered as a heading in the header. Named `label`
      * rather than `title` because `title` is a global HTML attribute (and the
      * name of the slot this fills).
      */
     public function label(?string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /**
+     * The level of the heading `label` renders, 1–6; the web component
+     * defaults to `2`. Use `1` only when the pane is the page’s main heading.
+     */
+    public function headingLevel(?int $headingLevel): static
+    {
+        $this->headingLevel = $headingLevel;
 
         return $this;
     }
@@ -205,6 +218,7 @@ class Pane extends ViewComponent
             'variant' => $this->getVariant(),
             'padding' => $this->padding,
             'label' => $this->label,
+            'heading-level' => $this->headingLevel,
         ];
     }
 }

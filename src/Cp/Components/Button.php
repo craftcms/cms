@@ -43,6 +43,8 @@ class Button extends ViewComponent
 
     protected bool $loading = false;
 
+    protected bool $focusableWhenDisabled = false;
+
     protected bool $active = false;
 
     protected bool $toggle = false;
@@ -149,6 +151,13 @@ class Button extends ViewComponent
         return $this;
     }
 
+    public function focusableWhenDisabled(bool $focusableWhenDisabled = true): static
+    {
+        $this->focusableWhenDisabled = $focusableWhenDisabled;
+
+        return $this;
+    }
+
     /** Pressed/selected state (e.g. within a button group). */
     public function active(bool $active = true): static
     {
@@ -168,7 +177,7 @@ class Button extends ViewComponent
         return $this;
     }
 
-    /** Accessible name override, for icon-only buttons. */
+    /** Accessible name for an icon-only button. Rendered as `aria-label`. */
     public function accessibleName(?string $accessibleName): static
     {
         $this->accessibleName = $accessibleName;
@@ -271,11 +280,12 @@ class Button extends ViewComponent
             'icon' => $icon,
             'icon-position' => $this->iconPosition,
             'loading' => $this->loading,
+            'focusable-when-disabled' => $this->focusableWhenDisabled,
             'active' => $this->active ? 'true' : null,
             'toggle' => $this->toggle,
             'value' => $this->value,
             'disabled' => $this->isDisabled(),
-            'accessible-name' => $this->accessibleName,
+            'aria-label' => $this->accessibleName,
             'align' => $this->align,
             'flush' => $this->flush,
             'href' => $this->href,

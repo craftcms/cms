@@ -133,12 +133,12 @@ describe('ElementChips', () => {
       const {root, selection} = mount();
 
       chips(root)[0]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
       chips(root)[2]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: true},
         })
       );
@@ -168,7 +168,7 @@ describe('ElementChips', () => {
 
       chips(root)[0]!.dispatchEvent(clickEvent('click'));
       chips(root)[1]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
@@ -216,7 +216,7 @@ describe('ElementChips', () => {
       const button = root.querySelectorAll('craft-reorder-button')[1]!;
 
       button.dispatchEvent(
-        new CustomEvent('reorder', {detail: {direction: 'up'}})
+        new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
       );
 
       expect(emitted.reorder![0]).toEqual([1, 0]);
@@ -227,7 +227,7 @@ describe('ElementChips', () => {
       const first = root.querySelectorAll('craft-reorder-button')[0]!;
 
       first.dispatchEvent(
-        new CustomEvent('reorder', {detail: {direction: 'up'}})
+        new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
       );
 
       expect(emitted.reorder).toHaveLength(0);

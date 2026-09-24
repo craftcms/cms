@@ -1,0 +1,26 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ShortcutStories from './shortcut.stories';
+
+<Meta of={ShortcutStories} name="Docs" />
+
+# Shortcut
+
+`<craft-shortcut>` renders a keyboard shortcut.
+
+<Canvas of={ShortcutStories.Default} sourceState="shown" />
+
+It shows the platform's own symbols — ⌘ on a Mac, Ctrl on Windows — detected from the browser, so the same markup reads correctly everywhere. `os` overrides the detection when you need to show a specific platform.
+
+## Display Only
+
+The component renders a shortcut; it does not bind one. Whatever handles the key press is separate, which means the two can disagree — a rendered shortcut that nothing listens for is a promise the interface does not keep.
+
+## Accessibility
+
+Symbols like ⌘ and ⇧ are announced inconsistently, and sometimes not at all.
+
+Where a shortcut is the only way to reach something, it needs a text equivalent nearby rather than living solely in the symbols. Inside an [Action Item](?path=/docs/components-action-item--docs), the item's label carries the meaning and the shortcut is supplementary, which is the arrangement that works.
+
+## Properties
+
+<ArgTypes of={ShortcutStories} />

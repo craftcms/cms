@@ -19,20 +19,27 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\from;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -342,10 +349,16 @@ describe('store', function () {
         $entry = EntryModel::factory()->createElement([
             'title' => 'Canonical Title',
         ]);
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
 
-        postJson(action([ElementDraftsController::class, 'store']), [
+        $response = postJson(cp_url('actions/elements/save-draft'), [
             'elementType' => Entry::class,
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
@@ -361,7 +374,41 @@ describe('store', function () {
             ->one();
 
         expect($savedDraft->isProvisionalDraft)->toBeFalse()
-            ->and($savedDraft->title)->toBe('Saved Draft Title');
+            ->and($savedDraft->title)->toBe('Saved Draft Title')
+            ->and($response->json('screen.isProvisionalDraft'))->toBeFalse()
+            ->and($response->json('screen.workflow.current.canSubmit'))->toBeTrue()
+            ->and(collect($response->json('screen.editorActions.buttons'))->pluck('label'))->not->toContain('Create a draft');
+    });
+
+    it('redirects to the named draft after promoting a provisional draft for review', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        $response = from($entry->getCpEditUrl())->post(cp_url('actions/elements/save-draft'), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'dropProvisional' => true,
+            'title' => 'Saved Draft Title',
+        ]);
+
+        /** @var Entry $namedDraft */
+        $namedDraft = Entry::find()
+            ->draftId($draft->draftId)
+            ->siteId($draft->siteId)
+            ->status(null)
+            ->one();
+
+        $response->assertRedirect($namedDraft->getCpEditUrl());
     });
 
     it('includes cp editor payload fields on the control panel action route', function () {
@@ -417,7 +464,7 @@ describe('store', function () {
             ->and($response->json('screen.canonicalId'))->toBe($entry->id)
             // Saving now means applying the draft, not saving the element under it.
             ->and($response->json('screen.applyDraftUrl'))->toContain('elements/apply-draft')
-            ->and($response->json('screen.submitButtonLabel'))->toBe(t('Save'));
+            ->and($response->json('screen.editorActions.primary.label'))->toBe(t('Save'));
 
         // The rest of the chrome the initial load carries, which the screen has
         // no other way to refresh mid-edit.
@@ -427,8 +474,7 @@ describe('store', function () {
                 'metadataHtml',
                 'statusLabelHtml',
                 'crumbs',
-                'formActions',
-                'headerActions',
+                'editorActions',
                 'actionMenu',
                 'previewTargets',
                 'updatedTimestamps',
@@ -613,7 +659,7 @@ describe('store', function () {
         $request->setUserResolver(fn () => currentUser());
         app()->instance('request', $request);
 
-        $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController
+        $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class), app(Workflows::class)) extends ElementDraftsController
         {
             private int $canSaveCalls = 0;
 
@@ -688,6 +734,182 @@ describe('apply', function () {
         expect($canonical->title)->toBe('Applied Draft Title')
             ->and($canonical->slug)->toBe('applied-draft-title')
             ->and(Entry::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+    });
+
+    it('applies an approved first workflow stage', function () {
+        $entry = EntryModel::factory()->createElement(['title' => 'Canonical Title']);
+        $workflow = Workflow::query()->create([
+            'name' => 'Automatic workflow',
+            'uid' => Str::uuid7()->toString(),
+            'stages' => [[
+                'uid' => Str::uuid7()->toString(),
+                'name' => 'Automatic Approval',
+                'type' => AutomaticApprovalStage::class,
+                'settings' => [],
+            ]],
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Reviewed draft');
+        $draft->title = 'Approved Title';
+        expect(ElementsFacade::saveElement($draft))->toBeTrue();
+        $run = app(Workflows::class)->submitForReview($draft);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'workflowRunId' => $run->id,
+            'workflowCurrentStage' => 0,
+        ])->assertOk();
+
+        expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Approved Title')
+            ->and($run->fresh()->status)->toBe(WorkflowStatus::Published);
+    });
+
+    it('preserves approval when the approved draft fails live validation', function () {
+        $entry = EntryModel::factory()->createElement(['title' => 'Canonical Title']);
+        $workflow = Workflow::query()->create([
+            'name' => 'Automatic workflow',
+            'uid' => Str::uuid7()->toString(),
+            'stages' => [[
+                'uid' => Str::uuid7()->toString(),
+                'name' => 'Automatic Approval',
+                'type' => AutomaticApprovalStage::class,
+                'settings' => [],
+            ]],
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Reviewed draft');
+        $draft->title = null;
+        expect(ElementsFacade::saveElement($draft))->toBeTrue();
+        $run = app(Workflows::class)->submitForReview($draft);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'workflowRunId' => $run->id,
+            'workflowCurrentStage' => 0,
+        ])->assertBadRequest()
+            ->assertJsonValidationErrors('title');
+
+        expect($run->fresh()->status)->toBe(WorkflowStatus::Approved)
+            ->and(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Canonical Title');
+    });
+
+    it('promotes provisional changes to a workflow draft instead of applying them', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        $response = postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'provisional' => true,
+            'workflowSave' => true,
+            'title' => 'Changed Title',
+            'slug' => 'changed-title',
+        ])->assertOk();
+
+        /** @var Entry $savedDraft */
+        $savedDraft = Entry::find()
+            ->draftId($draft->draftId)
+            ->siteId($draft->siteId)
+            ->status(null)
+            ->one();
+        /** @var Entry $canonical */
+        $canonical = Entry::find()
+            ->id($entry->id)
+            ->siteId($entry->siteId)
+            ->status(null)
+            ->one();
+
+        expect($canonical->title)->toBe('Canonical Title')
+            ->and($savedDraft->isProvisionalDraft)->toBeFalse()
+            ->and($savedDraft->title)->toBe('Changed Title')
+            ->and($response->json('screen.draftId'))->toBe($draft->draftId)
+            ->and($response->json('screen.workflow.convertedToDraft'))->toBeTrue()
+            ->and($response->json('screen.workflow.current.canSubmit'))->toBeTrue();
+    });
+
+    it('applies a disabled provisional workflow entry without requiring review', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'provisional' => true,
+            'workflowSave' => true,
+            'enabled' => false,
+            'title' => 'Changed Title',
+            'slug' => 'changed-title',
+        ])->assertOk();
+
+        /** @var Entry $canonical */
+        $canonical = Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one();
+        expect($canonical->title)->toBe('Changed Title')
+            ->and($canonical->enabled)->toBeFalse()
+            ->and(Entry::find()->draftOf($entry->id)->drafts()->status(null)->count())->toBe(0);
+    });
+
+    it('disables a live workflow entry without requiring review', function () {
+        $entryType = EntryType::factory()->create();
+        $section = Section::factory()->withEntryTypes($entryType)->create();
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        $section->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement([
+                'title' => 'Live Title',
+                'slug' => 'live-title',
+            ]);
+
+        postJson(action([ElementDraftsController::class, 'store']), [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'workflowSave' => true,
+            'enabled' => false,
+            'title' => 'Disabled Title',
+            'slug' => 'disabled-title',
+        ])->assertOk();
+
+        /** @var Entry $canonical */
+        $canonical = Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one();
+        expect($canonical->title)->toBe('Disabled Title')
+            ->and($canonical->enabled)->toBeFalse()
+            ->and(Entry::find()->draftOf($entry->id)->drafts()->status(null)->count())->toBe(0);
     });
 
     it('applies email changes from unpublished user drafts', function () {

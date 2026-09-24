@@ -5,7 +5,7 @@ import type {WindowWithCraft} from '@src/types/globals';
 import '../button/button.js';
 
 /**
- * A disclosure trigger supporting two modes:
+ * @summary A trigger that shows and hides content, in either of two modes:
  *
  * **Slotted (collapsible) mode** — Lion's collapsible convention: a
  * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
@@ -20,6 +20,9 @@ import '../button/button.js';
  * persists the state to a cookie (`cookie-name`). This is the contract of the
  * legacy `CraftDisclosure` element and `_includes/disclosure-toggle.twig`.
  * The mode is chosen automatically when such a button is present.
+ *
+ * @fires craft-show - The content was expanded.
+ * @fires craft-hide - The content was collapsed.
  */
 export default class CraftDisclosure extends LionCollapsible {
   static override get styles() {
@@ -159,7 +162,7 @@ export default class CraftDisclosure extends LionCollapsible {
   private __handleExternalOpen() {
     this.__externalExpanded = true;
     this.__externalTrigger?.setAttribute('aria-expanded', 'true');
-    this.dispatchEvent(new CustomEvent('open'));
+    this.dispatchEvent(new CustomEvent('craft-show'));
 
     const target = this.__externalTarget;
     if (target) {
@@ -172,7 +175,7 @@ export default class CraftDisclosure extends LionCollapsible {
   private __handleExternalClose() {
     this.__externalExpanded = false;
     this.__externalTrigger?.setAttribute('aria-expanded', 'false');
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(new CustomEvent('craft-hide'));
 
     const target = this.__externalTarget;
     if (target) {

@@ -113,14 +113,19 @@
   // with or without the nav on screen, and each level brings its switcher. The
   // server's own switchers take their menus from the main nav, so a source's
   // switcher is the same on its index and on the pages beneath it.
-  const {nav} = useCraftData();
+  const {nav, siteCrumb} = useCraftData();
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
       withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? []),
       subnav.value
     );
 
-    return merged.length > 0 ? merged : null;
+    // The site leads the trail on every screen, not just the ones that know
+    // they're site-specific: which site you're editing frames everything
+    // below it. Only present on a multi-site install.
+    const trail = siteCrumb.value ? [siteCrumb.value, ...merged] : merged;
+
+    return trail.length > 0 ? trail : null;
   });
   const readOnly = computed(() => Boolean(page.props.readOnly));
 
@@ -340,27 +345,29 @@
                               <slot name="content-notices"></slot>
                             </LayoutSlotOutlet>
                           </div>
-                          <ContentFooter
-                            v-show="hasFooter"
-                            class="cp-content__footer"
-                            :read-only="readOnly"
-                            :form="form"
-                            :default-form-actions="defaultFormActions"
-                            :form-actions="formActions"
-                            :form-additional-actions="formAdditionalActions"
-                            :form-additional-buttons="formAdditionalButtons"
-                            :submit-button-label="submitButtonLabel"
-                            :contained="contentConstrained"
-                            @save="save"
-                          >
-                            <template
-                              v-for="name in footerSlots"
-                              :key="name"
-                              #[name]
+                          <div class="cp-content__footer">
+                            <ContentFooter
+                              v-show="hasFooter"
+                              :read-only="readOnly"
+                              :form="form"
+                              :default-form-actions="defaultFormActions"
+                              :form-actions="formActions"
+                              :form-additional-actions="formAdditionalActions"
+                              :form-additional-buttons="formAdditionalButtons"
+                              :submit-button-label="submitButtonLabel"
+                              :save-disabled="saveDisabled"
+                              :contained="contentConstrained"
+                              @save="save"
                             >
-                              <slot :name="name"></slot>
-                            </template>
-                          </ContentFooter>
+                              <template
+                                v-for="name in footerSlots"
+                                :key="name"
+                                #[name]
+                              >
+                                <slot :name="name"></slot>
+                              </template>
+                            </ContentFooter>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -559,11 +566,12 @@ Content
   }
 
   .cp-content__footer {
-    min-height: var(--cp-footer-height);
     display: grid;
     align-content: center;
-    border-block-start: 1px solic var(--c-color-border-quiet);
+    border-block-start: 1px solid var(--c-color-border-quiet);
     padding-block: var(--c-spacing-md);
+    padding-inline: var(--cp-container-padding);
+    min-height: var(--cp-footer-height);
   }
 
   /*

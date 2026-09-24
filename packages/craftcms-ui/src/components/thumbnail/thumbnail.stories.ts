@@ -53,21 +53,16 @@ const meta: Meta<CraftThumbnail> = {
 export default meta;
 type Story = StoryObj<CraftThumbnail & typeof args>;
 
-// Checkered is enabled by default and is visible behind the transparent image.
 export const Default: Story = {
   args: {},
 };
 
-// Disable the checkered backing for an opaque image.
+// Side by side, so the chequerboard reads as a property of the left thumbnail
+// rather than as part of the image itself.
 export const Checkered: Story = {
   render: () => html`
-    <craft-thumbnail src="${transparentImage}" alt="Checkered (default)">
-    </craft-thumbnail>
-    <craft-thumbnail
-      src="${transparentImage}"
-      alt="No checkered"
-      .checkered="${false}"
-    >
+    <craft-thumbnail src="${transparentImage}" alt="Default"></craft-thumbnail>
+    <craft-thumbnail src="${transparentImage}" alt="Checkered" checkered>
     </craft-thumbnail>
   `,
 };
@@ -324,8 +319,10 @@ export const Presentations: Story = {
               <div slot="prefix">${thumbnail('fit', 30)}</div>
               Selector chip
             </craft-chip>
+            <!-- The server requests 120px for a large chip, which the chip
+                 displays in its 40px thumbnail box. -->
             <craft-chip show-thumb size="large">
-              <div slot="thumbnail">${thumbnail('fit', 120)}</div>
+              <div slot="thumbnail">${thumbnail('fit', 40)}</div>
               Large chip
             </craft-chip>
             <craft-card style="width: 280px;" thumb-alignment="end">

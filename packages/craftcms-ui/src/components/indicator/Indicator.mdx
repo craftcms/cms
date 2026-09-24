@@ -1,11 +1,7 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
-import IndicatorMeta, {
-  ArbitraryColor,
-  ArbitrarySize,
-  Default,
-} from './indicator.stories';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as IndicatorStories from './indicator.stories';
 
-<Meta of={IndicatorMeta} name="Docs" />
+<Meta of={IndicatorStories} name="Docs" />
 
 # Indicator
 
@@ -13,7 +9,7 @@ import IndicatorMeta, {
 object — for example, the live/draft state of an entry or a "has updates" marker
 in a list.
 
-<Canvas of={Default} />
+<Canvas of={IndicatorStories.Default} />
 
 ## Usage
 
@@ -23,92 +19,6 @@ in a list.
 
 The element renders a single `role="img"` dot. It has no slot — all of its
 appearance is driven by attributes.
-
-## Properties
-
-<table>
-  <thead>
-    <tr>
-      <th>Property</th>
-      <th>Attribute</th>
-      <th>Type</th>
-      <th>Default</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>fill</code>
-      </td>
-      <td>
-        <code>fill</code>
-      </td>
-      <td>
-        <code>string</code>
-      </td>
-      <td>
-        <code>var(--c-color-fill-loud)</code>
-      </td>
-      <td>
-        The dot color. Accepts a semantic keyword (see below) or any CSS color.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>appearance</code>
-      </td>
-      <td>
-        <code>appearance</code>
-      </td>
-      <td>
-        <code>'solid' | 'outline' | 'outline-fill'</code>
-      </td>
-      <td>
-        <code>'outline-fill'</code>
-      </td>
-      <td>
-        How the dot is drawn — see <a href="#appearance">Appearance</a>.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>size</code>
-      </td>
-      <td>
-        <code>size</code>
-      </td>
-      <td>
-        <code>'md' | 'lg'</code>
-      </td>
-      <td>
-        <code>'md'</code>
-      </td>
-      <td>
-        <code>md</code> ≈ 0.6em, <code>lg</code> ≈ 1em. Scales with the
-        surrounding font size.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>label</code>
-      </td>
-      <td>
-        <code>label</code>
-      </td>
-      <td>
-        <code>string | null</code>
-      </td>
-      <td>
-        <code>null</code>
-      </td>
-      <td>
-        Accessible name, exposed as <code>aria-label</code>. Provide it for
-        non-decorative dots.
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 ## Fill
 
@@ -123,42 +33,15 @@ verbatim.
 Prefer the variant and swatch names so indicators stay consistent with the rest
 of the palette; reach for an arbitrary value only when a color falls outside it.
 
-<Canvas of={ArbitraryColor} />
+<Canvas of={IndicatorStories.ArbitraryColor} />
 
 ## Appearance
 
 `appearance` controls how the dot is drawn:
 
-<table>
-  <thead>
-    <tr>
-      <th>Value</th>
-      <th>Renders</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>outline-fill</code> (default)
-      </td>
-      <td>Filled dot with a subtle dark outline.</td>
-    </tr>
-    <tr>
-      <td>
-        <code>solid</code>
-      </td>
-      <td>Filled dot with no outline.</td>
-    </tr>
-    <tr>
-      <td>
-        <code>outline</code>
-      </td>
-      <td>
-        Hollow dot — a 2px ring in the fill color over a transparent center.
-      </td>
-    </tr>
-  </tbody>
-</table>
+- `outline-fill` (default) — filled dot with a subtle dark outline.
+- `solid` — filled dot with no outline.
+- `outline` — hollow dot: a 2px ring in the fill colour over a transparent centre.
 
 ## Sizing
 
@@ -166,7 +49,7 @@ of the palette; reach for an arbitrary value only when a color falls outside it.
 `em`, the dot scales with the font size of its container — set `font-size` on a
 wrapper to fine-tune it.
 
-<Canvas of={ArbitrarySize} />
+<Canvas of={IndicatorStories.ArbitrarySize} />
 
 ## Accessibility
 
@@ -188,3 +71,7 @@ craft-indicator {
   font-size: 1.25rem;
 }
 ```
+
+## Properties
+
+<ArgTypes of={IndicatorStories} />

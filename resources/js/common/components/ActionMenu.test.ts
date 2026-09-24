@@ -35,6 +35,12 @@ function labels(menu: Element): string[] {
   ) as string[];
 }
 
+function visibleLabels(menu: Element): string[] {
+  return [...menu.querySelectorAll('craft-action-item:not([hidden])')].map(
+    (item) => item.textContent?.trim()
+  ) as string[];
+}
+
 afterEach(() => {
   teardown?.();
   teardown = undefined;
@@ -66,6 +72,21 @@ describe('ActionMenu', () => {
       'Edit',
       'Duplicate',
     ]);
+  });
+
+  it('only shows actions that are currently available', async () => {
+    const {menu, set} = mount([
+      {label: 'Collapse'},
+      {label: 'Expand', hidden: true},
+    ]);
+    await nextTick();
+
+    expect(visibleLabels(menu)).toEqual(['Collapse']);
+
+    set([{label: 'Collapse', hidden: true}, {label: 'Expand'}]);
+    await nextTick();
+
+    expect(visibleLabels(menu)).toEqual(['Expand']);
   });
 
   it('sinks destructive items to the bottom, stably', async () => {

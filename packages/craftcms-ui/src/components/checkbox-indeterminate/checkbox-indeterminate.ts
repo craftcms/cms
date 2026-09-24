@@ -17,6 +17,9 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  * `_subCheckboxes.filter(cb => !cb.disabled)` — so disabling them is precisely
  * what stops "All" from clearing them again, leaving a toggle that takes
  * several clicks to come back around.
+ *
+ * @slot - The child `craft-checkbox`es this one summarises.
+ * @slot label - The checkbox's label.
  */
 export default class CraftCheckboxIndeterminate extends SsrChoiceInputMixin(
   LionCheckboxIndeterminate

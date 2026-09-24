@@ -50,6 +50,7 @@ use CraftCms\Cms\Http\Controllers\Settings\Users\UserFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
+use CraftCms\Cms\Http\Controllers\Settings\WorkflowsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
@@ -67,6 +68,8 @@ use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Controllers\Workflows\UserReviewController;
+use CraftCms\Cms\Http\Controllers\Workflows\WorkflowTransitionsController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -121,6 +124,18 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
+
+    Route::prefix('workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+        Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
+        Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
+        Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
+            Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
+            Route::post('user-review/approve', [UserReviewController::class, 'approve']);
+            Route::post('user-review/request-changes', [UserReviewController::class, 'requestChanges']);
+            Route::post('user-review/request-review', [UserReviewController::class, 'requestReview']);
+        });
+    });
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -294,6 +309,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             });
 
             Route::get('{entryType}', [EntryTypesController::class, 'edit']);
+        });
+
+        // Workflows
+        Route::prefix('settings/workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+            Route::get('/', [WorkflowsController::class, 'index']);
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [WorkflowsController::class, 'create']);
+                Route::post('/', [WorkflowsController::class, 'store']);
+                Route::patch('{workflow}', [WorkflowsController::class, 'update']);
+                Route::delete('{workflow}', [WorkflowsController::class, 'destroy']);
+            });
+
+            Route::get('{workflow}', [WorkflowsController::class, 'edit']);
         });
 
         // Fields

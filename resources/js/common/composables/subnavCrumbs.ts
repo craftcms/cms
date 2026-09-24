@@ -80,6 +80,24 @@ function samePath(one: string | null, other: string): boolean {
 }
 
 /**
+ * The levels below this one, as the nav draws them.
+ *
+ * A group heading isn't a level of its own — its children belong to the level
+ * the heading sits in — so only what hangs off *them* counts as deeper.
+ */
+function levelsBelow(items: Array<NavItem>): Array<Array<NavItem>> {
+  return items.flatMap((item) => {
+    const children = Array.isArray(item.subnav) ? item.subnav : [];
+
+    if (item.group) {
+      return levelsBelow(children);
+    }
+
+    return children.length > 0 ? [children] : [];
+  });
+}
+
+/**
  * The list in the nav holding an item that links to `href`, looking through
  * group headings the way the nav draws them.
  */
@@ -91,18 +109,20 @@ function navLevelOf(
     samePath(item.href, href) ||
     (item.group && Array.isArray(item.subnav) && item.subnav.some(holds));
 
-  if (items.some(holds)) {
-    return items;
+  // Deeper levels answer first, the way selection resolves the same ambiguity
+  // (see `selectWithin`). An element index shares its URL with the “all
+  // elements” source listed beneath it, so checking this level first handed
+  // the index's own crumb the main nav instead of its sources.
+  for (const level of levelsBelow(items)) {
+    const found = navLevelOf(level, href);
+
+    if (found) {
+      return found;
+    }
   }
 
-  for (const item of items) {
-    const level = Array.isArray(item.subnav)
-      ? navLevelOf(item.subnav, href)
-      : null;
-
-    if (level) {
-      return level;
-    }
+  if (items.some(holds)) {
+    return items;
   }
 
   return null;

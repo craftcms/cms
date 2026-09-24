@@ -3,6 +3,7 @@ import {css, html, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import CraftInput from '../input/input.js';
+import {defaultTrueBoolean} from '@src/utilities/converters';
 import '../button/button.js';
 import '../icon/icon.js';
 
@@ -14,17 +15,15 @@ type MaskedInput = HTMLInputElement & {
   };
 };
 
-const defaultTrueBooleanConverter = {
-  fromAttribute(value: string | null): boolean {
-    return value !== 'false';
-  },
-  toAttribute(value: boolean): string {
-    return String(value);
-  },
-};
-
 /**
  * @summary A locale-aware money input with a currency label and clear button.
+ * Extends `craft-input`, so it carries the same label, help text, validation,
+ * and slots.
+ *
+ * The field is a masked text input rather than `type="number"`: the mask is
+ * built from `locale` and `currency` via `Intl.NumberFormat`, so the grouping
+ * and decimal characters are the ones that locale actually uses. Override
+ * either separator to depart from that.
  *
  * @dependency craft-button
  * @dependency craft-icon
@@ -55,27 +54,49 @@ export default class CraftInputMoney extends CraftInput {
     ];
   }
 
+  /** ISO 4217 currency code, which sets the symbol and the decimal places. */
   @property() currency = 'USD';
 
+  /** Locale the amount is formatted for. Accepts `en-US` or `en_US`. */
   @property() locale = 'en-US';
 
+  /**
+   * Number of decimal places. Defaults to whatever the currency uses in this
+   * locale — two for most, none for yen.
+   */
   @property({type: Number}) decimals?: number;
 
+  /** Character separating the decimals. Defaults to the locale's own. */
   @property({attribute: 'decimal-separator'}) decimalSeparator?: string;
 
+  /** Character grouping the thousands. Defaults to the locale's own. */
   @property({attribute: 'group-separator'}) groupSeparator?: string;
 
+  /**
+   * Whether the currency symbol is shown beside the field. On by default —
+   * set `show-currency="false"` to hide it.
+   */
   @property({
-    converter: defaultTrueBooleanConverter,
+    converter: defaultTrueBoolean,
     attribute: 'show-currency',
   })
   showCurrency = true;
 
-  @property({converter: defaultTrueBooleanConverter}) clearable = true;
+  /**
+   * Whether a button to clear the amount is shown once there is one. On by
+   * default — set `clearable="false"` to remove it.
+   */
+  @property({converter: defaultTrueBoolean}) clearable = true;
+
+  /**
+   * Fixed to `text` rather than `number`: the value is a formatted, masked
+   * amount, and a number input would fight the grouping and currency symbols.
+   */
+  override type = 'text';
 
   constructor() {
     super();
-    this.type = 'text';
+
     this.inputMode = 'decimal';
   }
 

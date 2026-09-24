@@ -37,26 +37,37 @@ const animations = {
 export default class CraftCopyButton extends LitElement {
   static override styles: CSSResultGroup = [styles];
 
-  @state() isCopying = false;
+  @state() protected isCopying = false;
 
-  @state() status: 'rest' | 'copying' | 'success' | 'error' = 'rest';
+  @state() protected status: 'rest' | 'copying' | 'success' | 'error' = 'rest';
 
-  @query('slot[name="copy-icon"]') copyIconEl!: HTMLSlotElement;
-  @query('slot[name="success-icon"]') successIconEl!: HTMLSlotElement;
-  @query('slot[name="error-icon"]') errorIconEl!: HTMLSlotElement;
-  @query('craft-tooltip') tooltipEl!: CraftTooltip;
+  @query('slot[name="copy-icon"]') protected copyIconEl!: HTMLSlotElement;
+  @query('slot[name="success-icon"]') protected successIconEl!: HTMLSlotElement;
+  @query('slot[name="error-icon"]') protected errorIconEl!: HTMLSlotElement;
+  @query('craft-tooltip') protected tooltipEl!: CraftTooltip;
 
   /** Value to copy on click */
   @property({type: String}) value = '';
 
+  /** Prevents copying, and dims the button. */
   @property({type: Boolean}) disabled = false;
 
   /** The length of time to show feedback before restoring the default trigger. */
   @property({attribute: 'feedback-duration', type: Number}) feedbackDuration =
     1000;
 
+  /**
+   * Text shown in the button's tooltip, naming what will be copied.
+   */
   @property({attribute: 'tooltip-label'})
   tooltipLabel: string | null = null;
+
+  /**
+
+   * Copies `value` to the clipboard and shows the outcome. Resolves once the
+   * status has been shown.
+
+   */
 
   async copyValue() {
     if (this.status === 'copying' || this.disabled) {
@@ -89,6 +100,12 @@ export default class CraftCopyButton extends LitElement {
       this.isCopying = false;
     }
   }
+
+  /**
+
+   * Shows the copy outcome for a moment, then returns the button to rest.
+
+   */
 
   async showStatus(status: 'success' | 'error') {
     const statusIcon =

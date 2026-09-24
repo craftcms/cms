@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -23,6 +24,7 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -104,6 +106,7 @@ readonly class SectionsController
             'values' => ['required', 'array'],
             'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
             'values.type' => ['required', Rule::enum(SectionType::class)],
+            'values.workflowId' => ['nullable', 'integer', Rule::exists(Workflow::class, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
         $values = $data['values'];
@@ -141,6 +144,9 @@ readonly class SectionsController
         $section->name = $request->input('name');
         $section->handle = $request->input('handle');
         $section->type = $request->enum('type', SectionType::class, SectionType::Channel);
+        if (Edition::isAtLeast(Edition::Pro)) {
+            $section->workflowId = $request->integer('workflowId') ?: null;
+        }
         $section->enableVersioning = $request->boolean('enableVersioning', true);
         $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');

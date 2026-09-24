@@ -96,12 +96,49 @@ class ElementSources
     }
 
     /**
+     * Whether a source is available for the given site.
+     *
+     * A source with no `sites` key isn't site-specific and is available
+     * everywhere; one scoped to an empty set is available nowhere.
+     *
+     * @param  SourceConfig  $source
+     */
+    public static function sourceIsAvailableForSite(array $source, int $siteId): bool
+    {
+        if (! isset($source['sites'])) {
+            return true;
+        }
+
+        return in_array($siteId, (array) $source['sites']);
+    }
+
+    /**
+     * Filters a source list down to the sources available for the given site,
+     * dropping any heading that ends up standing over nothing.
+     *
+     * @param  SourceConfig[]|Collection<int,SourceConfig>  $sources
+     * @return Collection<int,SourceConfig>
+     */
+    public static function filterSourcesBySite(array|Collection $sources, int $siteId): Collection
+    {
+        $filtered = collect($sources)
+            ->filter(fn (array $source): bool => (
+                $source['type'] === self::TYPE_HEADING ||
+                self::sourceIsAvailableForSite($source, $siteId)
+            ))
+            ->values();
+
+        return self::filterExtraHeadings($filtered);
+    }
+
+    /**
      * Returns the element index sources in the custom groupings/order.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $context  The context
      * @param  bool  $withDisabled  Whether disabled sources should be included
      * @param  string|null  $page  The page to fetch sources for
+     * @param  int|null  $siteId  A site to limit the sources to, or `null` for every source
      * @return Collection<int,SourceConfig>
      */
     public function getSources(
@@ -109,6 +146,7 @@ class ElementSources
         string $context = self::CONTEXT_INDEX,
         bool $withDisabled = false,
         ?string $page = null,
+        ?int $siteId = null,
     ): Collection {
         $sources = $this
             ->sources($elementType, $context)
@@ -129,6 +167,10 @@ class ElementSources
                 isset($source['page']) &&
                 $this->pageNameId($source['page']) === $pageNameId
             ));
+        }
+
+        if ($siteId !== null) {
+            return self::filterSourcesBySite($sources->values(), $siteId);
         }
 
         return $sources->values();

@@ -1,12 +1,18 @@
 {% extends "_layouts/base" %}
 {% set bodyClass = 'message' %}
+{% set includePane = includePane ?? true %}
+{% set message = block('message') %}
 
 {% block body %}
   <main class="message-container">
     <div class="modal">
-      <div class="body">
-        {% block message %}{% endblock %}
-      </div>
+      {% if includePane %}
+        <craft-pane>
+          {{ message | raw }}
+        </craft-pane>
+      {% else %}
+        {{ message | raw }}
+      {% endif %}
     </div>
   </main>
 {% endblock %}

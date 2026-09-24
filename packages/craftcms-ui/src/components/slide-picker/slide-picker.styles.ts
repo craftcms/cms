@@ -2,7 +2,7 @@ import {css} from 'lit';
 
 export default css`
   :host {
-    display: inline-block;
+    display: inline-flex;
   }
 
   .slide-picker {
@@ -57,7 +57,7 @@ export default css`
     z-index: 1;
   }
 
-  :host([read-only]) .slide-picker__segment {
+  :host([readonly]) .slide-picker__segment {
     cursor: default;
     opacity: 0.7;
   }

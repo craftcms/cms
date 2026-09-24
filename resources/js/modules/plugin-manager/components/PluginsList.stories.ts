@@ -68,7 +68,7 @@ function failureStory(messages: string[]): Story {
             const table = harness.value!.querySelector('.element-index')!;
             messages.forEach((message) => {
               table.dispatchEvent(
-                new CustomEvent('action:change-state', {
+                new CustomEvent('craft-state-change', {
                   bubbles: true,
                   composed: true,
                   detail: {state: 'error', actionType: 'http', message},

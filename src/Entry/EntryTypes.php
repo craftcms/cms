@@ -332,7 +332,6 @@ class EntryTypes
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
         $entryTypeModel = $this->getEntryTypeModel($entryTypeUid, true);
-
         DB::beginTransaction();
 
         try {

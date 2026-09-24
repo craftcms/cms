@@ -213,6 +213,18 @@ window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
       case 'enable':
         entry.enable();
         break;
+      case 'disableForSite':
+        entry.disableForSite();
+        break;
+      case 'enableForSite':
+        entry.enableForSite();
+        break;
+      case 'disableGlobally':
+        entry.disableGlobally();
+        break;
+      case 'enableGlobally':
+        entry.enableGlobally();
+        break;
     }
   }
 

@@ -134,7 +134,7 @@
   }
 
   .activity-timeline__composer {
-    padding: var(--c-spacing-md);
+    padding-block-start: var(--c-spacing-md);
   }
 
   .activity-timeline__full-link {

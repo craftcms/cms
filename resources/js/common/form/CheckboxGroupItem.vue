@@ -61,7 +61,7 @@
     >
       <craft-reorder-button
         :position="position"
-        @reorder="
+        @craft-reorder="
           (e: CustomEvent<{direction: 'up' | 'down'}>) =>
             emit(
               'reorder',

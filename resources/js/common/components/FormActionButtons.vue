@@ -36,9 +36,9 @@
       type="button"
       :variant="button.variant ?? ButtonVariant.Solid"
       :loading="submitter.isSubmitting(button.label)"
-      :disabled="form.processing || (button.disabled && !button.disabledReason)"
-      :aria-disabled="
-        button.disabled && button.disabledReason ? 'true' : undefined
+      :disabled="form.processing || button.disabled"
+      :focusable-when-disabled="
+        button.disabled && button.disabledReason ? true : undefined
       "
       @click="onClick(button, $event)"
     >
@@ -57,10 +57,3 @@
     </craft-tooltip>
   </template>
 </template>
-
-<style scoped lang="scss">
-  craft-button[aria-disabled='true'] {
-    cursor: default;
-    opacity: 0.25;
-  }
-</style>

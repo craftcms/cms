@@ -149,4 +149,8 @@ readonly class Table
     public const string WEBAUTHN = 'webauthn';
 
     public const string WIDGETS = 'widgets';
+
+    public const string WORKFLOWS = 'workflows';
+
+    public const string WORKFLOWRUNS = 'workflowruns';
 }

@@ -1,0 +1,62 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="JavaScript API/Services" />
+
+# Services
+
+Three stateful classes that sit behind the components rather than inside them. Each is plain data and logic with no rendering.
+
+## ConfigService
+
+A singleton holding the CP config payload, and the source of the URLs everything else builds on.
+
+```js
+import {ConfigService} from '@craftcms/ui';
+
+const config = ConfigService.getInstance();
+
+config.getCpUrl('entries');
+config.getActionUrl('users/session-info');
+config.get('someSetting', 'a fallback');
+```
+
+The page bootstrap calls `initialize()` with the payload; `getInstance()` never does it for you. Calling a URL helper before that throws a named error rather than letting an `undefined` base reach `new URL()` and surface as an opaque `TypeError` somewhere else.
+
+`all()`, `get()`, and `set()` reach the underlying values. `resetInstance()` exists for tests.
+
+## AssetIndexer
+
+Drives an asset indexing session: concurrent connections, a task queue, and state updates delivered as events.
+
+```js
+import {AssetIndexer} from '@craftcms/ui';
+
+const indexer = new AssetIndexer();
+
+indexer.on('change', ({sessions, currentSessionId, reviewSessionId}) => {
+  render(sessions);
+});
+indexer.on('error', ({message}) => console.error(message));
+indexer.on('complete', () => indexer.destroy());
+
+await indexer.startIndexing(params);
+```
+
+The methods are fire-and-forget — call one, then react to `change`, `error`, or `complete`. `startIndexing()` is the exception and returns a promise, so an immediate failure is catchable at the call site.
+
+`getSessions()`, `getCurrentSessionId()`, and `isProcessing()` read the current state. `stopSession()`, `getSessionOverview()`, and `finishSession()` drive a session through the rest of its life, and `destroy()` tears the whole thing down. `IndexingActions` holds the action paths it posts to.
+
+## Csrf
+
+Fetches and caches the CSRF token from the session-info endpoint.
+
+```js
+import {Csrf} from '@craftcms/ui/services/Csrf';
+
+const csrf = new Csrf();
+const token = await csrf.getToken();
+```
+
+`getToken()` refreshes on first use and returns the cached value after that. `refreshToken()` forces a fetch, and collapses concurrent calls into one request. `clearToken()` drops the cache so the next `getToken()` refetches — which is what to call after a response says the token expired.
+
+Unlike the other two, `Csrf` is not exported from the package root; import it from `@craftcms/ui/services/Csrf`.

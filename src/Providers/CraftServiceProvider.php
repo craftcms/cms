@@ -30,6 +30,8 @@ use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Update\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use CraftCms\Cms\View\ViewServiceProvider;
+use CraftCms\Cms\Workflow\UserReview\UserReviewServiceProvider;
+use CraftCms\Cms\Workflow\WorkflowServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 use Override;
 
@@ -62,6 +64,8 @@ class CraftServiceProvider extends AggregateServiceProvider
         FieldLayoutServiceProvider::class,
         SectionServiceProvider::class,
         EntryServiceProvider::class,
+        WorkflowServiceProvider::class,
+        UserReviewServiceProvider::class,
         StructureServiceProvider::class,
         QueueServiceProvider::class,
         ImportServiceProvider::class,

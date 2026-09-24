@@ -75,14 +75,16 @@ describe('resolvePadding', () => {
     expect(resolvePadding(value)).toBe('0');
   });
 
-  it.each([24, '24', '0.5'] as const)('reads %s as pixels', (value) => {
-    expect(resolvePadding(value)).toBe(`calc(${value}rem / 16)`);
-  });
-
-  it.each(['2rem', 'var(--my-spacing)', 'calc(1rem + 2px)'])(
-    'passes %s through verbatim',
+  /**
+   * The attribute is closed to arbitrary lengths. Ignoring them leaves the
+   * stylesheet's own default in place, rather than writing a value the design
+   * system does not define — consumers who need one set the component's
+   * padding custom properties instead.
+   */
+  it.each([24, '24', '0.5', '2rem', 'var(--my-spacing)', 'calc(1rem + 2px)'])(
+    'ignores %s, which is off the spacing scale',
     (value) => {
-      expect(resolvePadding(value)).toBe(value);
+      expect(resolvePadding(value)).toBeUndefined();
     }
   );
 
@@ -118,10 +120,10 @@ describe('Paddable with a default', () => {
   it('re-renders when the property changes', async () => {
     const element = await create<SinglePropertyHost>('test-single-padding');
 
-    element.padding = 24;
+    element.padding = 'xl';
     await element.updateComplete;
 
-    expect(written(element, '--_test-spacing')).toBe('calc(24rem / 16)');
+    expect(written(element, '--_test-spacing')).toBe('var(--c-spacing-xl)');
   });
 
   /** Removing the attribute has to clear the value, not strand the last one. */
