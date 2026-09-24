@@ -11,6 +11,7 @@
   import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import type {ActionItemLink, PaginationData} from '@/common/types';
   import type {
@@ -608,13 +609,12 @@
 <template>
   <div :data-form-node="node.uid">
     <LayoutSlot v-if="node.props.createUrl" name="content-actions">
-      <CpLink
-        variant="accent"
-        appearance="button"
+      <CpButtonLink
+        variant="primary"
         icon="plus"
         :href="node.props.createUrl"
         :inertia="false"
-        >{{ node.props.createLabel }}</CpLink
+        >{{ node.props.createLabel }}</CpButtonLink
       >
     </LayoutSlot>
     <LayoutSlot v-else-if="createMenuActions.length" name="content-actions">
