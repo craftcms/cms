@@ -18,6 +18,7 @@ use craft\services\ProjectConfig as ProjectConfigService;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
+use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
@@ -262,6 +263,45 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Checks project config schema compatibility with installed Craft and enabled plugins.
+     *
+     * Requires an existing Craft installation. Does not apply project config or migrations.
+     *
+     * @return int
+     * @throws InvalidConfigException if Craft isn't installed, YAML can't be checked, or an enabled plugin can't be loaded
+     */
+    public function actionCheck(): int
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        if (!$projectConfig->getDoesExternalConfigExist()) {
+            $this->stdout('No project config files found. Schema compatibility check skipped.' . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        if (!Craft::$app->getIsInstalled()) {
+            throw new InvalidConfigException('This check requires an existing Craft installation.');
+        }
+
+        if ($projectConfig->getHadFileWriteIssues()) {
+            throw new InvalidConfigException('Resolve project config file-write errors before checking schema compatibility. Craft is currently using internal config instead of YAML.');
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        foreach (array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []) as $handle) {
+            if ($pluginsService->isPluginEnabled($handle) && $pluginsService->getPlugin($handle) === null) {
+                throw new InvalidConfigException("Enabled plugin \"$handle\" could not be loaded. Check its Composer package and plugin initialization errors before checking schema compatibility.");
+            }
+        }
+
+        if (!$this->_checkSchemaVersions()) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Project config schema versions are compatible with installed Craft and enabled plugins.' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Applies project config file changes.
      *
      * @return int
@@ -277,20 +317,7 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $issues = [];
-        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            $this->stderr("Your project config files were created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
-
-            foreach ($issues as $issue) {
-                $this->stderr($issue['cause'], Console::FG_RED);
-                $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
-                $this->stderr($issue['existing'], Console::FG_RED);
-                $this->stderr(' while ', Console::FG_YELLOW);
-                $this->stderr($issue['incoming'], Console::FG_RED);
-                $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
-            }
-
-            $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        if (!$this->_checkSchemaVersions()) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -527,6 +554,28 @@ class ProjectConfigController extends Controller
         $this->stdout($path, Console::FG_CYAN);
         $this->stdout(" ($size)\n");
         return ExitCode::OK;
+    }
+
+    private function _checkSchemaVersions(): bool
+    {
+        $issues = [];
+        if (Craft::$app->getProjectConfig()->getAreConfigSchemaVersionsCompatible($issues)) {
+            return true;
+        }
+
+        $this->stderr("Your project config files were created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
+        foreach ($issues as $issue) {
+            $this->stderr($issue['cause'], Console::FG_RED);
+            $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
+            $this->stderr($issue['existing'], Console::FG_RED);
+            $this->stderr(' while ', Console::FG_YELLOW);
+            $this->stderr($issue['incoming'], Console::FG_RED);
+            $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
+        }
+
+        $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        return false;
     }
 
     /**
