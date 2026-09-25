@@ -191,7 +191,7 @@
     </div>
 
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
-      <slot name="body" :selection="selection"></slot>
+      <slot name="body" :selection="selection" :showFooter="showFooter"></slot>
     </div>
 
     <div class="element-index__footer" ref="indexFooter" v-if="showFooter">

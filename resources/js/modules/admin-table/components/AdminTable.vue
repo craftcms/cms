@@ -86,9 +86,10 @@
     <template #header v-if="$slots['table-header']">
       <slot name="table-header"></slot>
     </template>
-    <template #body>
+    <template #body="{showFooter}">
       <DataTable
         v-bind="viewProps"
+        :with-bottom-border="!showFooter"
         @reorder="(s: number, f: number) => emit('reorder', s, f)"
       >
         <template #empty-row v-if="$slots['empty-row']">
