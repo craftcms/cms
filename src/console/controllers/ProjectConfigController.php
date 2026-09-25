@@ -73,6 +73,7 @@ class ProjectConfigController extends Controller
 
     /**
      * @var bool Whether the check should fail if `project.yaml` is missing.
+     * @since 5.12.0
      */
     public bool $requireYaml = true;
 
@@ -276,6 +277,7 @@ class ProjectConfigController extends Controller
      * Pass `--require-yaml=0` to skip the check successfully if `project.yaml` is missing.
      *
      * @return int
+     * @since 5.12.0
      */
     public function actionCheck(): int
     {
