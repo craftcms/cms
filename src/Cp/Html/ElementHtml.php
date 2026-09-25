@@ -86,6 +86,7 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
@@ -95,7 +96,7 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'show-thumb' => $config['showThumb'],
+            'show-thumb' => $thumbHtml !== null,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
@@ -130,19 +131,8 @@ readonly class ElementHtml
             ]);
         }
 
-        if ($config['showThumb']) {
-            $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
-            if ($component instanceof Thumbable) {
-                $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
-                $html .= $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
-            } else {
-                /** @var Chippable&Iconic $component */
-                $icon = $component->getIcon();
-                if ($icon || $icon === '0') {
-                    $html .= Icon::make()->name($icon)->slot('icon');
-                }
-            }
-            $html .= Html::endTag('div');
+        if ($thumbHtml !== null) {
+            $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
         }
 
         if ($config['selectable']) {
@@ -233,6 +223,28 @@ readonly class ElementHtml
         } // .element
 
         return $html.Html::endTag('craft-chip');
+    }
+
+    /**
+     * Returns a chip’s thumbnail or icon HTML, or `null` if the component doesn’t have one.
+     */
+    private function chipThumbHtml(Chippable $component, string $size): ?string
+    {
+        if ($component instanceof Thumbable) {
+            $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+
+            return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        }
+
+        if ($component instanceof Iconic) {
+            $icon = $component->getIcon();
+
+            if ($icon || $icon === '0') {
+                return (string) Icon::make()->name($icon)->slot('icon');
+            }
+        }
+
+        return null;
     }
 
     /**
