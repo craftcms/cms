@@ -53,6 +53,7 @@ Also read `CHANGELOG` between the two versions. Look especially for entries ment
 
 ## 4. Verify
 
+- **Lock files (6.x):** `yii2-adapter/` has its own `composer.lock`, which the adapter's Codeception suite installs from. Update Twig there too (`composer update twig/twig` from `yii2-adapter/`), or CI runs the adapter tests against the old Twig version and fails on any API the new code relies on. If Composer refuses a partial update because other packages are locked below what `composer.json` now requires, update those alongside Twig (with `-W` if needed), then check that every changed package's version matches the root `composer.lock`.
 - **Tests:** run `vendor/bin/codecept run unit web/twig`. This needs the test database named in `tests/.env` to exist.
 - **Static analysis and coding standards:** run `vendor/bin/phpstan analyse` and `vendor/bin/ecs check` on the changed files.
 - **Compiled templates:** compiled templates are cached by template source, not by Craft's node or visitor code. After changing `GetAttrNode`, `GetAttrAdjuster`, or any other compile-time code, clear `tests/_craft/storage/runtime/compiled_templates/` before running tests, or stale compiled templates will hide the change.
