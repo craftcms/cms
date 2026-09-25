@@ -2,6 +2,7 @@ import {LionCheckboxGroup} from '@lion/ui/checkbox-group.js';
 import {css} from 'lit';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A group of checkboxes sharing one name, for a choice where any
@@ -19,9 +20,8 @@ import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages for the group as a whole.
  */
-export default class CraftCheckboxGroup extends SsrChoiceGroupMixin(
-  LionCheckboxGroup,
-  'checkbox'
+export default class CraftCheckboxGroup extends HasLabel(
+  SsrChoiceGroupMixin(LionCheckboxGroup, 'checkbox')
 ) {
   static override get styles() {
     return [

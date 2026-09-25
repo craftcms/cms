@@ -3,6 +3,7 @@ import {inputStyles} from '../../styles/form.styles.js';
 import {LionTextarea} from '@lion/ui/textarea.js';
 import {property} from 'lit/decorators.js';
 import autosize from 'autosize';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A multi-line text input, with the same label, help text, and
@@ -16,7 +17,7 @@ import autosize from 'autosize';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftTextarea extends LionTextarea {
+export default class CraftTextarea extends HasLabel(LionTextarea) {
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }
