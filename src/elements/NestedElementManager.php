@@ -20,6 +20,7 @@ use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
@@ -929,13 +930,26 @@ JS, [
 
                 if (!empty($otherSiteIds)) {
                     // Get the owner element across each of those sites
-                    $localizedOwners = $owner::find()
+                    $ownerQuery = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
+                        ->status(null);
+
+                    // If the owner is nested too, retain its own owner, so it doesn't fall back to its primary owner
+                    // (e.g. the canonical element when it's shared with a draft), which may not support the other sites
+                    // (see https://github.com/craftcms/cms/issues/18281)
+                    if (
+                        $owner instanceof NestedElementInterface &&
+                        $ownerQuery instanceof NestedElementQueryInterface &&
+                        $ownerId = $owner->getOwnerId()
+                    ) {
+                        $ownerQuery->ownerId($ownerId);
+                    }
+
+                    $localizedOwners = (clone $ownerQuery)
                         ->siteId($otherSiteIds)
-                        ->status(null)
                         ->all();
 
                     // Duplicate elements, ensuring we don't process the same elements more than once
@@ -960,13 +974,8 @@ JS, [
                         if (
                             !empty($preexistingOtherSiteIds) &&
                             !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
-                            $preexistingLocalizedOwner = $owner::find()
-                                ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->isProvisionalDraft)
-                                ->revisions($owner->getIsRevision())
-                                ->id($owner->id)
+                            $preexistingLocalizedOwner = (clone $ownerQuery)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->status(null)
                                 ->one()
                         ) {
                             // Just resave elements for that one site, and let them propagate over to the new site(s) from there
