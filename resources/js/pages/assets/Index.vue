@@ -135,7 +135,9 @@
       </craft-checkbox>
     </template>
     <template #navbar>
-      <Breadcrumbs :items="breadcrumbs" />
+      <div class="border-b border-b-quiet py-sm">
+        <Breadcrumbs :items="breadcrumbs" />
+      </div>
     </template>
     <template #toolbar-actions>
       <AssetUploadButton
@@ -157,7 +159,9 @@
       {{
         t(
           'A file named “{filename}” already exists in the destination folder.',
-          {filename: conflictPrompt?.conflict.filename ?? ''}
+          {
+            filename: conflictPrompt?.conflict.filename ?? '',
+          }
         )
       }}
     </p>

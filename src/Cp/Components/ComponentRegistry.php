@@ -25,6 +25,7 @@ class ComponentRegistry
         'checkbox-group' => CheckboxGroup::class,
         'checkbox-select' => CheckboxSelect::class,
         'combobox' => Combobox::class,
+        'empty' => EmptyState::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'icon' => Icon::class,

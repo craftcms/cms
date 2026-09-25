@@ -56,7 +56,10 @@ export default defineConfig({
           exclude: ['**/*.browser.test.ts'],
           root: './src/components',
           environment: 'happy-dom',
-          setupFiles: ['../../test/element-internals.setup.ts'],
+          setupFiles: [
+            '../../test/element-internals.setup.ts',
+            '../../test/icons.setup.ts',
+          ],
         },
       },
       {

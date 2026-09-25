@@ -68,7 +68,7 @@ it('leads the breadcrumbs with a site switcher', function () {
 
                 return is_string($icon)
                     && Icons::resolveIconName($icon) === $icon
-                    && collect($siteCrumb['actions'] ?? [])
+                    && collect($siteCrumb['items'] ?? [])
                         ->pluck('label')
                         ->contains($this->secondSite->name);
             })
@@ -81,7 +81,7 @@ it('points each site switcher link at the same element on that site', function (
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('crumbs', function (Collection $crumbs) {
-                $actions = collect($crumbs->first()['actions'] ?? []);
+                $actions = collect($crumbs->first()['items'] ?? []);
 
                 return $actions->every(fn (array $action) => str_contains(
                     (string) $action['href'],
