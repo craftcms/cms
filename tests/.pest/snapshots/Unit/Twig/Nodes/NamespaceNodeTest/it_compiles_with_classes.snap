@@ -4,7 +4,7 @@ if ($_namespace !== null && $_namespace !== '') {
     yield CraftCms\Cms\Support\Facades\InputNamespace::namespaceInputs(function () use (&$context, $macros, $blocks) {
         return \Twig\Extension\CoreExtension::captureOutput((function () use (&$context, $macros, $blocks) {
             yield "<input name=\"title\">";
-            yield from [];
+            return; yield;
         })());
     }, $_namespace, withClasses: true);
 } else {
