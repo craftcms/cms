@@ -15,7 +15,13 @@
 </script>
 
 <template>
-  <craft-callout variant="danger" icon="triangle-exclamation" class="mb-3">
+  <craft-callout
+    variant="danger"
+    rounded="none"
+    appearance="fill"
+    icon="triangle-exclamation"
+    class="mb-3"
+  >
     <div slot="title" class="font-bold">
       {{ title }}
     </div>
@@ -31,3 +37,9 @@
     </ul>
   </craft-callout>
 </template>
+
+<style scoped lang="scss">
+  craft-callout {
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+  }
+</style>

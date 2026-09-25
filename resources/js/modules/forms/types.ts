@@ -1,3 +1,5 @@
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+
 type GeneratedFormPayload = CraftCms.Cms.Form.FormPayload;
 type GeneratedFormNodePayload = GeneratedFormPayload['nodes'][number];
 type GeneratedFormControlPayload = NonNullable<
@@ -32,6 +34,24 @@ export type FormPropertyValue =
 export interface FormProperties {
   [key: string]: FormPropertyValue;
 }
+
+export type TextControlProps = {
+  inputType?: string;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
+  maxLength?: number;
+  placeholder?: string;
+  inputMode?: string;
+  autofocus?: boolean;
+  autocomplete?: boolean | string;
+  autocorrect?: boolean;
+  autocapitalize?: boolean;
+  size?: number;
+  dir?: string;
+  monospace?: boolean;
+  textExpanderTriggers?: TextExpanderTriggers;
+};
 
 /**
  * `emptyValue` stays omitted rather than being retyped: `FormValue` is

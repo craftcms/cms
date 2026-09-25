@@ -34,6 +34,7 @@ import TemplateContentNode from './TemplateContentNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
 import HandleControl from './HandleControl.vue';
+import SlugControl from './SlugControl.vue';
 import HiddenControl from './HiddenControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
@@ -62,6 +63,7 @@ export function registerFormComponents(
   components.register('craft:line-break', LineBreakNode);
   components.register('craft:separator', SeparatorNode);
   components.register('craft:handle', HandleControl);
+  components.register('craft:slug', SlugControl);
   components.register('craft:hidden-field', HiddenFieldNode);
   components.register('craft:hidden', HiddenControl);
   components.register('craft:text', TextControl);

@@ -1,4 +1,16 @@
-# Packages
-/packages/*
+/yii2-adapter/*
+
+# Legacy lints its SCSS with its own config; its Vue and CSS aren't covered yet
+/packages/craftcms-legacy/**/*.vue
+/packages/craftcms-legacy/**/*.ts
+/packages/craftcms-legacy/**/*.html
+/packages/craftcms-legacy/**/*.css
+
+# Built or generated
+**/dist/*
 /resources/legacy/*
 /resources/build/*
+/resources/js/generated/*
+/resources/js/actions/*
+/resources/js/routes/*
+/resources/js/wayfinder/*

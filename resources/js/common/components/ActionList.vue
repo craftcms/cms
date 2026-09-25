@@ -495,7 +495,8 @@
      itself, which it has to set inline for the same reason: the shadow
      `::slotted()` rule can't reach inside the slotted content. */
   .action-list__heading {
-    padding: var(--c-spacing-xs) var(--c-spacing-md);
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
     font-size: var(--c-text-sm);
     font-weight: bold;
   }

@@ -330,9 +330,18 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    */
   @property({reflect: true, type: Boolean}) inherit: boolean = false;
 
-  /** Size of the button. Defaults to "medium" */
-  @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
-    'medium';
+  /**
+   * Size of the button. Defaults to "medium".
+   *
+   * `xsmall` draws below the 24px minimum target size, so it keeps a
+   * `--c-size-touch-target-sm` hit area around the smaller visible box.
+   */
+  @property({reflect: true}) size:
+    | 'zero'
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large' = 'medium';
 
   /** The value submitted with the form or used for selection in a radio button-group */
   @property({reflect: true}) value: string;

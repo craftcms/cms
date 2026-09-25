@@ -1,33 +1,17 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
-  import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import '@craftcms/ui/components/text-expander/text-expander';
   import {useId} from 'vue';
-  import type {FormChangeKind, FormControlPayload} from './types';
+  import type {
+    FormChangeKind,
+    FormControlPayload,
+    TextControlProps,
+  } from './types';
   import {
     ignoreModelValueInitialization,
     inputName,
     serverErrorValidators,
   } from './runtime';
-
-  type TextControlProps = {
-    inputType?: string;
-    min?: number | string;
-    max?: number | string;
-    step?: number | string;
-    maxLength?: number;
-    placeholder?: string;
-    inputMode?: string;
-    autofocus?: boolean;
-    autocomplete?: boolean | string;
-    autocorrect?: boolean;
-    autocapitalize?: boolean;
-    size?: number;
-    dir?: string;
-    monospace?: boolean;
-    suffix?: string;
-    textExpanderTriggers?: TextExpanderTriggers;
-  };
 
   defineProps<{
     control: FormControlPayload<TextControlProps>;
@@ -96,9 +80,11 @@
     @model-value-changed="onModelValueChanged"
   >
     <input :id="inputId" slot="input" />
-    <span v-if="control.props.suffix" slot="suffix">{{
-      control.props.suffix
-    }}</span>
+    <slot name="suffix">
+      <span v-if="control.props.suffix" slot="suffix">{{
+        control.props.suffix
+      }}</span>
+    </slot>
   </craft-input>
   <craft-text-expander
     v-if="editable && control.props.textExpanderTriggers"

@@ -66,7 +66,8 @@ export default class CraftBreadcrumbItem extends LitElement {
 
     slot[name='separator']::slotted(*) {
       color: var(--c-text-quiet);
-      margin: 0 var(--c-spacing-md);
+      margin-block: 0;
+      margin-inline: var(--c-spacing-md);
     }
   `;
 

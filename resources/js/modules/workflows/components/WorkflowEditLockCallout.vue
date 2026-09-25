@@ -29,6 +29,6 @@
 
 <style scoped lang="scss">
   craft-callout {
-    --c-callout-padding-inline: var(--cp-container-padding);
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
   }
 </style>
