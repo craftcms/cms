@@ -156,7 +156,7 @@
 
 <template>
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
-    <CpContainer>
+    <component :is="isBareTable ? 'div' : CpContainer">
       <component
         :is="isBareTable ? 'div' : 'craft-pane'"
         v-bind="isBareTable ? {} : {appearance: 'raised'}"
@@ -183,7 +183,7 @@
           </FormRenderer>
         </component>
       </component>
-    </CpContainer>
+    </component>
   </component>
   <LayoutSlot v-if="metadataHtml" name="content-details">
     <DynamicHtmlRenderer :html="metadataHtml" />
