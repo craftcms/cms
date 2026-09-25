@@ -98,8 +98,11 @@ export function useSettingsSave<T extends object>(
     redirect = true,
     data: extraData = {},
     // Reset page state when this screen sends the user elsewhere, while saves
-    // that remain on the current screen keep their local state by default.
-    preserveState = !(redirect && redirectUrl.value),
+    // that remain on the current screen keep their local state by default. A
+    // failed save lands back on this screen, so it keeps state either way —
+    // otherwise the remount drops the validation errors it came back with.
+    preserveState = redirect && redirectUrl.value ? 'errors' : true,
+    action: actionOverride,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();
 
@@ -122,7 +125,7 @@ export function useSettingsSave<T extends object>(
      * usual 422 — `asJsonFailure()` picks it.
      */
     async function submitInSlideout(retried = false): Promise<void> {
-      const route = action();
+      const route = actionOverride ?? action();
       const routeIsString = Object(route).constructor === String;
 
       form.clearErrors();
@@ -239,7 +242,7 @@ export function useSettingsSave<T extends object>(
 
           return payload;
         })
-        .submit(action(), {
+        .submit(actionOverride ?? action(), {
           ...submitOptions,
           onHttpException: (response) => {
             if (!passwordConfirmation || response.status !== 423 || retried) {

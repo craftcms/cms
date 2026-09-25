@@ -1,6 +1,7 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import {colors} from '@src/constants/colors';
+import type {Validator} from '@lion/ui/form-core.js';
+import {colors as paletteColors} from '@src/constants/colors';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import styles from './select-color.styles.js';
@@ -15,13 +16,9 @@ function titleCase(value: string): string {
 }
 
 /**
- * @summary A colour picker offering the Craft palette, built on the rich
- * select. Renders one option per colour from `constants/colors`, each with its
- * swatch, plus an optional "transparent" option.
- *
- * Use it where a colour has to come from the design system — a label colour, a
- * status colour — so the choice stays inside the palette. For an arbitrary
- * colour, use `craft-input-color`, which takes any hex value.
+ * @summary A color picker built on top of the rich select. Renders one option
+ * per color from `constants/colors` (or {@link CraftSelectColor.colors}, when
+ * narrowed), with an optional "transparent" option.
  *
  * @since 1.0
  *
@@ -58,10 +55,35 @@ export default class CraftSelectColor extends LitElement {
   modelValue: string | null = null;
 
   /**
-   * When enabled, a "Transparent" option is prepended to the list of colors.
+   * When enabled, a blank option (labelled {@link blankLabel}) is prepended
+   * to the list of colors.
    */
   @property({type: Boolean, reflect: true, attribute: 'allow-transparent'})
   allowTransparent = false;
+
+  /**
+   * Label for the blank option (default "Transparent").
+   */
+  @property({attribute: 'blank-label'})
+  blankLabel: string | null = null;
+
+  /**
+   * Offered colors, in order. Defaults to the shared palette.
+   */
+  @property({type: Array})
+  colors: string[] = [...paletteColors];
+
+  @property({type: Boolean, reflect: true})
+  disabled = false;
+
+  @property({type: Boolean, reflect: true, attribute: 'readonly'})
+  readOnly = false;
+
+  @property({type: Boolean, reflect: true})
+  required = false;
+
+  @property({attribute: false})
+  validators: Validator[] = [];
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
@@ -83,8 +105,6 @@ export default class CraftSelectColor extends LitElement {
       'border-radius:var(--c-radius-full);' +
       'box-shadow:inset 0 0 0 1px rgb(0 0 0 / 15%);';
 
-    // Reuses the checkerboard treatment from input-color so the transparent
-    // option reads as "no color".
     const transparent =
       'background:' +
       'linear-gradient(45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
@@ -135,14 +155,11 @@ export default class CraftSelectColor extends LitElement {
    * read the up-to-date `this.modelValue` off `event.target`.
    */
   protected _handleModelValueChanged(event: Event) {
-    // Don't let the inner (non-composed) event escape; we re-dispatch our own.
     event.stopPropagation();
 
     const inner = event.target as {modelValue?: string | null} | null;
     this.modelValue = inner?.modelValue ?? null;
 
-    // Re-dispatch from the host so it crosses the shadow boundary (composed)
-    // and Vue's `@model-value-changed` listener fires with the host as target.
     this.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
@@ -159,12 +176,19 @@ export default class CraftSelectColor extends LitElement {
         label=${this.label}
         name=${this.name}
         .modelValue=${this.modelValue}
+        .disabled=${this.disabled}
+        .readOnly=${this.readOnly}
+        .required=${this.required}
+        .validators=${this.validators}
         @model-value-changed=${this._handleModelValueChanged}
       >
         ${this.allowTransparent
-          ? this._optionTemplate('__blank__', t('Transparent'))
+          ? this._optionTemplate(
+              '__blank__',
+              this.blankLabel ?? t('Transparent')
+            )
           : ''}
-        ${colors.map((color) =>
+        ${this.colors.map((color) =>
           this._optionTemplate(color, t(titleCase(color)))
         )}
       </craft-select-rich>

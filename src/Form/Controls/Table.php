@@ -31,6 +31,9 @@ class Table extends Control
 
     private bool $keyed = false;
 
+    /** @var list<string> */
+    private array $hiddenRows = [];
+
     /** @var array<string, mixed> */
     private array $defaultValues = [];
 
@@ -55,6 +58,7 @@ class Table extends Control
             'maxRows' => $control->props['maxRows'] ?? null,
             'defaultValues' => $control->props['defaultValues'] ?? [],
             'static' => $attributes['name'] === null,
+            'hiddenRows' => $control->props['hiddenRows'] ?? [],
             'errors' => $control->props['errors'] ?? [],
         ]);
     }
@@ -114,6 +118,19 @@ class Table extends Control
         return $this;
     }
 
+    /**
+     * Hide rows by key without removing their inputs or submitted values. Visibility
+     * is a prop so it can change on a reactive refresh without changing row values.
+     *
+     * @param  list<string>  $rowIds
+     */
+    public function hiddenRows(array $rowIds): static
+    {
+        $this->hiddenRows = $rowIds;
+
+        return $this;
+    }
+
     /** @param array<string, mixed> $defaultValues */
     public function defaultValues(array $defaultValues): static
     {
@@ -148,6 +165,7 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'hiddenRows' => $this->hiddenRows ?: null,
             'defaultValues' => $this->defaultValues,
             'errors' => $this->errors ?: null,
         ]);

@@ -66,25 +66,30 @@
 </script>
 
 <template>
-  <Transition name="body" @after-enter="(el) => emit('opened', el as Element)">
-    <div class="cp-modal" v-if="isActive">
-      <div
-        ref="content"
-        :class="{
-          content: true,
-          [widthClass]: true,
-        }"
-        :style="[contentStyle, resizer.style.value]"
-      >
-        <slot></slot>
+  <Teleport to="body">
+    <Transition
+      name="body"
+      @after-enter="(el) => emit('opened', el as Element)"
+    >
+      <div class="cp-modal" v-if="isActive">
+        <div
+          ref="content"
+          :class="{
+            content: true,
+            [widthClass]: true,
+          }"
+          :style="[contentStyle, resizer.style.value]"
+        >
+          <slot></slot>
+        </div>
+        <CornerResizeHandle v-if="resizable" :resizer="resizer" />
       </div>
-      <CornerResizeHandle v-if="resizable" :resizer="resizer" />
-    </div>
-  </Transition>
+    </Transition>
 
-  <Transition name="fade" v-if="overlay">
-    <div class="cp-overlay" v-if="isActive" @click="emit('close')"></div>
-  </Transition>
+    <Transition name="fade" v-if="overlay">
+      <div class="cp-overlay" v-if="isActive" @click="emit('close')"></div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>

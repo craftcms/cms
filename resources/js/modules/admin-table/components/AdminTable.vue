@@ -4,7 +4,7 @@
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
-  import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import type {BulkAction} from '@/modules/elements/types/actions';
 
   const props = withDefaults(
     defineProps<{
@@ -21,7 +21,10 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: Array<number>;
-      actions?: Array<BulkActionItem> | null;
+      actions?: Array<BulkAction> | null;
+      /** A caller with its own bulk-action shape supplies this directly; see `BaseElementIndex`. */
+      statuses?: Array<BulkAction> | null;
+      idsField?: string;
       elementType?: string;
       source?: string | null;
       context?: string;
@@ -56,6 +59,8 @@
     enableAdjustPageSize: props.enableAdjustPageSize,
     pageSizeOptions: props.pageSizeOptions,
     actions: props.actions,
+    statuses: props.statuses,
+    idsField: props.idsField,
     elementType: props.elementType,
     source: props.source,
     context: props.context,
@@ -81,9 +86,10 @@
     <template #header v-if="$slots['table-header']">
       <slot name="table-header"></slot>
     </template>
-    <template #body>
+    <template #body="{showFooter}">
       <DataTable
         v-bind="viewProps"
+        :with-bottom-border="!showFooter"
         @reorder="(s: number, f: number) => emit('reorder', s, f)"
       >
         <template #empty-row v-if="$slots['empty-row']">

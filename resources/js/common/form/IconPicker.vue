@@ -4,13 +4,7 @@
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import {
-    type ComponentPublicInstance,
-    computed,
-    nextTick,
-    ref,
-    watch,
-  } from 'vue';
+  import {computed, nextTick, ref, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
@@ -45,7 +39,7 @@
   const modalActive = ref<boolean>(false);
   const iconHtml = ref<string | null>(null);
   const chooseButton = ref<HTMLElement | null>(null);
-  const searchInput = ref<ComponentPublicInstance | null>(null);
+  const searchForm = ref<HTMLFormElement | null>(null);
 
   const {html: previewHtml, state: previewState} = useAsyncIcon(model);
 
@@ -93,7 +87,7 @@
   }
 
   function focusSearch() {
-    searchInput.value?.$el?.focus();
+    searchForm.value?.querySelector<HTMLElement>('craft-input')?.focus();
   }
 
   watchDebounced(
@@ -112,12 +106,12 @@
 
   function handleClick(event: MouseEvent) {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) {
+    if (!(target instanceof Element)) {
       return;
     }
 
     let button;
-    if (target.getAttribute?.('role') === 'button') {
+    if (target.getAttribute('role') === 'button') {
       button = target;
     } else {
       button = target.closest('button');
@@ -192,10 +186,11 @@
       <form
         slot="header"
         role="search"
+        ref="searchForm"
         @submit.prevent="loadIcons()"
         class="sticky top-0 pt-4 px-4 pb-2 bg-white"
       >
-        <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
+        <CraftInput :label="t('Search')" v-model="query">
           <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
             <craft-spinner
               style="--size: 1em"

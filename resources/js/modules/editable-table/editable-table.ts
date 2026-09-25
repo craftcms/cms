@@ -1,12 +1,15 @@
 import {Base} from '@craftcms/garnish';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
+import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
 import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
 import '@craftcms/ui/components/text-expander/text-expander';
+import CraftInputMoney from '@craftcms/ui/components/input-money/input-money';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
   EditableTableColumns,
   EditableTableOption,
+  EditableTableOptionGroup,
   EditableTableOptions,
   EditableTableRow,
   EditableTableValue,
@@ -23,6 +26,12 @@ declare const Garnish: any;
 declare const $: any;
 
 const noop = (): void => {};
+
+function isOptionGroup(
+  option: EditableTableOption | EditableTableOptionGroup
+): option is EditableTableOptionGroup {
+  return Array.isArray((option as EditableTableOptionGroup).options);
+}
 
 function defaultOptionValue(
   options: EditableTableOptions | EditableTableOption[] | undefined
@@ -579,8 +588,11 @@ export class EditableTable extends Base<EditableTableSettings> {
   ): any {
     void staticRows;
 
+    // Keep hidden rows' inputs mounted so they retain and submit their values.
+    // Some hosts override the UA [hidden] rule, so the class is also needed.
     const $tr = $('<tr/>', {
       'data-id': rowId,
+      ...(values._hidden ? {hidden: true, class: 'hidden'} : {}),
     });
 
     for (const colId in columns) {
@@ -681,6 +693,45 @@ export class EditableTable extends Base<EditableTableSettings> {
               .appendTo($cell);
             break;
 
+          case 'money': {
+            // New rows may start with an empty string rather than {value, locale}.
+            const moneyValue =
+              value instanceof Object && !Array.isArray(value)
+                ? ((value as Record<string, unknown>).value ?? null)
+                : (value ?? null);
+            const moneyLocale =
+              (value instanceof Object && !Array.isArray(value)
+                ? (value as Record<string, unknown>).locale
+                : undefined) ??
+              col.locale ??
+              'en-US';
+            const money = document.createElement(
+              'craft-input-money'
+            ) as CraftInputMoney;
+            money.name = `${name}[value]`;
+            money.modelValue = moneyValue === null ? '' : String(moneyValue);
+            money.currency = col.currency ?? 'USD';
+            money.locale = String(moneyLocale);
+            if (col.decimals !== undefined) money.decimals = col.decimals;
+            if (col.decimalSeparator !== undefined) {
+              money.decimalSeparator = col.decimalSeparator;
+            }
+            if (col.groupSeparator !== undefined) {
+              money.groupSeparator = col.groupSeparator;
+            }
+            if (col.showCurrency !== undefined) {
+              money.showCurrency = col.showCurrency;
+            }
+            if (col.clearable !== undefined) money.clearable = col.clearable;
+            $cell.append(money);
+            $('<input/>', {
+              type: 'hidden',
+              name: `${name}[locale]`,
+              value: String(moneyLocale),
+            }).appendTo($cell);
+            break;
+          }
+
           case 'time':
             Craft.ui
               .createTimeInput({
@@ -724,10 +775,24 @@ export class EditableTable extends Base<EditableTableSettings> {
             combobox.name = name;
             combobox.label = col.heading ?? colId;
             combobox.options = Array.isArray(col.options)
-              ? col.options.map((option) => ({
-                  label: option.label ?? String(option.value ?? ''),
-                  value: String(option.value ?? ''),
-                }))
+              ? col.options.map(
+                  (option): ComboboxItem =>
+                    isOptionGroup(option)
+                      ? {
+                          type: 'optgroup',
+                          label: option.label ?? '',
+                          options: option.options.map((groupedOption) => ({
+                            label:
+                              groupedOption.label ??
+                              String(groupedOption.value ?? ''),
+                            value: String(groupedOption.value ?? ''),
+                          })),
+                        }
+                      : {
+                          label: option.label ?? String(option.value ?? ''),
+                          value: String(option.value ?? ''),
+                        }
+                )
               : [];
             combobox.modelValue = String(value ?? '');
             combobox.showAllOnEmpty = true;

@@ -71,6 +71,11 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  // Plugin bundles must use the mounted app's router, not their own module copy.
+  get $router() {
+    return router;
+  },
+
   get $elementDetailsTabs() {
     return elementDetailsTabRegistry;
   },

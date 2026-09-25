@@ -39,6 +39,8 @@
     href?: string;
     external?: boolean;
     label?: string;
+    /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
+    fill?: string;
     onClick?: (event: Event) => void;
     /**
      * Everything optional, with the unset keys left out entirely. Binding an
@@ -168,6 +170,7 @@
       {
         kind: 'button',
         label: action.label,
+        fill: action.fill,
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
@@ -472,6 +475,7 @@
       :is="as"
       @click="action.onClick"
     >
+      <craft-indicator v-if="action.fill" :fill="action.fill"></craft-indicator>
       {{ action.label }}
     </component>
   </template>

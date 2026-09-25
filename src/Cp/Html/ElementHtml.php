@@ -87,6 +87,11 @@ readonly class ElementHtml
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
+        $iconName = $config['showThumb'] && ! $component instanceof Thumbable && $component instanceof Iconic
+            ? $component->getIcon()
+            : null;
+        $icon = $iconName || $iconName === '0' ? $iconName : null;
+
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
@@ -95,16 +100,18 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'show-thumb' => $config['showThumb'],
+            'show-thumb' => $config['showThumb'] && $component instanceof Thumbable,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
+            'icon' => $icon,
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
+                'color' => $color->value ?? 'white',
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -130,19 +137,15 @@ readonly class ElementHtml
             ]);
         }
 
-        if ($config['showThumb']) {
-            $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
-            if ($component instanceof Thumbable) {
-                $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
-                $html .= $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
-            } else {
-                /** @var Chippable&Iconic $component */
-                $icon = $component->getIcon();
-                if ($icon || $icon === '0') {
-                    $html .= Icon::make()->name($icon)->slot('icon');
-                }
-            }
-            $html .= Html::endTag('div');
+        if ($config['showThumb'] && $component instanceof Thumbable) {
+            $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
+            $html .= Html::tag('div', $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '', [
+                'slot' => 'thumbnail',
+            ]);
+        }
+
+        if ($icon !== null) {
+            $html .= Icon::make()->name($icon)->slot('icon');
         }
 
         if ($config['selectable']) {
@@ -207,25 +210,27 @@ readonly class ElementHtml
             ]);
         }
 
-        $html .= Html::beginTag('div', ['slot' => 'suffix']);
-        if ($config['showActionMenu']) {
-            /** @var Chippable&Actionable $component */
-            $html .= $this->componentActionMenu($component);
+        if ($config['showActionMenu'] || $config['sortable']) {
+            $html .= Html::beginTag('div', ['slot' => 'suffix']);
+            if ($config['showActionMenu']) {
+                /** @var Chippable&Actionable $component */
+                $html .= $this->componentActionMenu($component);
+            }
+            if ($config['sortable']) {
+                $html .= Button::make()
+                    ->icon('move')
+                    ->attributes([
+                        'class' => ['chromeless', 'small', 'move-btn'],
+                        'title' => t('Reorder'),
+                        'aria' => [
+                            'label' => t('Reorder'),
+                        ],
+                        'role' => 'none',
+                        'tabindex' => '-1',
+                    ]);
+            }
+            $html .= Html::endTag('div'); // slot=suffix
         }
-        if ($config['sortable']) {
-            $html .= Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]);
-        }
-        $html .= Html::endTag('div'); // slot=suffix
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();

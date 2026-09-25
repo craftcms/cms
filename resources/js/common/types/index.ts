@@ -1,5 +1,6 @@
 import type {ActionFeedback, BaseAction, VariantKey} from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
+import type {UrlMethodPair} from '@inertiajs/core';
 import type {Component} from 'vue';
 import type {FormValues} from '@/modules/forms/types';
 
@@ -134,6 +135,8 @@ export interface ActionItemButton {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
+  fill?: string;
   /**
    * Items that hang off this one — the nav's own children.
    *
@@ -217,10 +220,21 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
+/** A server-described action that resubmits the current form values. */
+export interface FormAltAction {
+  label: string;
+  destructive?: boolean;
+  action?: string;
+  params?: FormValues;
+  confirm?: string;
+}
+
 export interface FormSaveOptions {
   redirect?: boolean;
   data?: FormValues;
-  preserveState?: boolean;
+  preserveState?: boolean | 'errors';
+  /** Overrides the screen's default submit destination. */
+  action?: UrlMethodPair;
 }
 
 export interface EntryType {
@@ -287,6 +301,7 @@ export type EditableTableCellType =
   | 'autosuggest'
   | 'template'
   | 'number'
+  | 'money'
   | 'singleline'
   | 'multiline'
   | 'heading'

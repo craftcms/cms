@@ -7,12 +7,6 @@ export default css`
 
   .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
-    /*
-      The two axes are declared separately so the padding attribute can write
-      either one on its own. These fallbacks are what a callout with no padding
-      renders with; the inline gap to the text is finished by the padding on
-      the icon, title, and description.
-    */
     --_callout-padding-block: var(
       --c-callout-padding-block,
       var(--c-spacing-sm)
@@ -28,6 +22,8 @@ export default css`
     padding-block: var(--_callout-padding-block);
     padding-inline: var(--_callout-padding-inline);
     border: 1px solid transparent;
+    /* The display: contents host cannot take a grid span, so its rendered box does. */
+    grid-column: 1 / -1;
   }
 
   .callout--title {

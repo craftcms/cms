@@ -13,6 +13,7 @@
   type GroupNodeProps = {
     label?: string | null;
     collapsible?: boolean;
+    expanded?: boolean;
     /** Renders the group as one field rather than a section — see `Nodes\Group`. */
     asField?: boolean;
     required?: boolean;
@@ -104,6 +105,9 @@
     v-else
     :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
     :label="node.props.collapsible ? node.props.label : undefined"
+    :opened="
+      node.props.collapsible ? node.props.expanded || undefined : undefined
+    "
     :class="{
       [`width-${node.props.width}`]: Boolean(node.props.width),
       hidden: Boolean(node.props.hidden),

@@ -2,12 +2,15 @@
   import {actionClient} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {shallowRef, toRaw} from 'vue';
+  import {computed, shallowRef, toRaw} from 'vue';
   import {
     useAppLayout,
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import type {ActionItem, FormAltAction} from '@/common/types';
   import type {
     FormChange,
     FormChangeKind,
@@ -21,10 +24,15 @@
 
   const props = defineProps<{
     form: FormPayload;
-    submit: UrlMethodPair;
+    /** Omit for node-only screens with no form submission. */
+    submit?: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+    formActions?: FormAltAction[];
+    /** Server-rendered markup for the details column. */
+    metadataHtml?: string;
+    contentMaxWidth?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -36,42 +44,79 @@
   const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
-  const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    transform: () => renderer.value?.currentValues() ?? props.form.values,
-    onSuccess: () => {
-      elevatedBaseline.value = structuredClone(
-        toRaw(renderer.value?.currentValues() ?? props.form.values)
-      );
-      advanceBaseline();
-    },
-    passwordConfirmation: elevatedFields
-      ? {
-          required: () => {
-            const values = renderer.value?.currentValues() ?? props.form.values;
-            const fields =
-              elevatedFields === '*'
-                ? [
-                    ...new Set([
-                      ...Object.keys(elevatedBaseline.value),
-                      ...Object.keys(values),
-                    ]),
-                  ]
-                : elevatedFields;
 
-            return fields.some(
-              (field) =>
-                normalize(values[field]) !==
-                normalize(elevatedBaseline.value[field])
-            );
-          },
-        }
-      : undefined,
+  const save = props.submit
+    ? useSettingsSave(inertiaForm, () => props.submit!, {
+        transform: () => renderer.value?.currentValues() ?? props.form.values,
+        onSuccess: () => {
+          elevatedBaseline.value = structuredClone(
+            toRaw(renderer.value?.currentValues() ?? props.form.values)
+          );
+          advanceBaseline();
+        },
+        passwordConfirmation: elevatedFields
+          ? {
+              required: () => {
+                const values =
+                  renderer.value?.currentValues() ?? props.form.values;
+                const fields =
+                  elevatedFields === '*'
+                    ? [
+                        ...new Set([
+                          ...Object.keys(elevatedBaseline.value),
+                          ...Object.keys(values),
+                        ]),
+                      ]
+                    : elevatedFields;
+
+                return fields.some(
+                  (field) =>
+                    normalize(values[field]) !==
+                    normalize(elevatedBaseline.value[field])
+                );
+              },
+            }
+          : undefined,
+      }).save
+    : undefined;
+
+  const translatedFormActions = computed<ActionItem[]>(
+    () =>
+      props.formActions?.map((altAction) => ({
+        label: altAction.label,
+        variant: altAction.destructive ? 'danger' : undefined,
+        onClick: () => {
+          if (altAction.confirm && !window.confirm(altAction.confirm)) {
+            return;
+          }
+
+          save?.({
+            action: altAction.action
+              ? {url: altAction.action, method: 'post'}
+              : undefined,
+            data: altAction.params,
+          });
+        },
+      })) ?? []
+  );
+
+  const isBareTable = computed(() => {
+    const [node, ...rest] = props.form.nodes;
+    return (
+      rest.length === 0 &&
+      node?.component === 'craft:admin-table' &&
+      node.props.bordered === false
+    );
   });
 
+  // `PageScreen` shows the Save button purely on `form` being truthy (`v-if="form"`) —
+  // it doesn't look at `onSave`/`submit`. Passing `inertiaForm` unconditionally would
+  // show a Save button with nothing to save on a node-only screen (a listing, say).
   useAppLayout({
-    form: inertiaForm,
+    form: props.submit ? inertiaForm : null,
     defaultFormActions: props.defaultFormActions,
-    contentMaxWidth: true,
+    formActions: translatedFormActions.value,
+    contentMaxWidth: props.contentMaxWidth ?? true,
     onSave: save,
   });
 
@@ -110,26 +155,37 @@
 </script>
 
 <template>
-  <form @submit.prevent="save()">
-    <CpContainer>
-      <craft-field-group class="py-4">
-        <FormRenderer
-          ref="renderer"
-          :payload="form"
-          :refresh="refreshUrl ? refresh : undefined"
-          :errors="errors"
-          @update:mutation="onMutation"
-          @change="onChange"
+  <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
+    <component :is="isBareTable ? 'div' : CpContainer">
+      <component
+        :is="isBareTable ? 'div' : 'craft-pane'"
+        v-bind="isBareTable ? {} : {appearance: 'raised'}"
+      >
+        <component
+          :is="isBareTable ? 'div' : 'craft-field-group'"
+          v-bind="isBareTable ? {} : {class: 'py-4'}"
         >
-          <template
-            v-for="(_, slotName) in $slots"
-            :key="slotName"
-            #[slotName]="slotProps"
+          <FormRenderer
+            ref="renderer"
+            :payload="form"
+            :refresh="refreshUrl ? refresh : undefined"
+            :errors="errors"
+            @update:mutation="onMutation"
+            @change="onChange"
           >
-            <slot :name="slotName" v-bind="slotProps" />
-          </template>
-        </FormRenderer>
-      </craft-field-group>
-    </CpContainer>
-  </form>
+            <template
+              v-for="(_, slotName) in $slots"
+              :key="slotName"
+              #[slotName]="slotProps"
+            >
+              <slot :name="slotName" v-bind="slotProps" />
+            </template>
+          </FormRenderer>
+        </component>
+      </component>
+    </component>
+  </component>
+  <LayoutSlot v-if="metadataHtml" name="content-details">
+    <DynamicHtmlRenderer :html="metadataHtml" />
+  </LayoutSlot>
 </template>

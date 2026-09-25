@@ -80,7 +80,11 @@
     @model-value-changed="onModelValueChanged"
   >
     <input :id="inputId" slot="input" />
-    <slot name="suffix" />
+    <slot name="suffix">
+      <span v-if="control.props.suffix" slot="suffix">{{
+        control.props.suffix
+      }}</span>
+    </slot>
   </craft-input>
   <craft-text-expander
     v-if="editable && control.props.textExpanderTriggers"

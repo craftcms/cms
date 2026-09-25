@@ -113,7 +113,7 @@
         {% set rowNumber = loop.index %}
         {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
         {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
-        <tr data-id="{{ rowId }}">
+        <tr data-id="{{ rowId }}"{% if rowId in (hiddenRows ?? []) %} hidden class="hidden"{% endif %}>
           {% for colId, col in cols %}
             {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
             {% set value = cell.value is defined ? cell.value : cell %}

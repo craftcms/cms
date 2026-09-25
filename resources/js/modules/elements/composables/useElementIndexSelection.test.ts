@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {BulkActionItem} from '@/modules/elements/types/actions';
+import type {BulkAction} from '@/modules/elements/types/actions';
 import {
   useElementIndexSelection,
   type ElementIndexSelectionOptions,
@@ -259,9 +259,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const actions = ref<Array<BulkActionItem>>([
-      {key: 'delete', label: 'Delete'},
-    ]);
+    const actions = ref<Array<BulkAction>>([{key: 'delete', label: 'Delete'}]);
     const s = useElementIndexSelection(table, opts({actions}));
 
     expect(s.hasBulkActions.value).toBe(true);

@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -119,10 +120,16 @@ it('exposes all user photo volumes', function () {
                     ->pluck('control')
                     ->firstWhere('path', ['photoVolumeUid']);
                 $values = collect($control['props']['options'])->pluck('value');
+                $create = collect($control['props']['options'])->firstWhere('value', '__createVolume__');
 
                 return $values->contains((string) $publicVolume->uid)
                     && $values->contains((string) $privateVolume->uid)
-                    && $values->contains('__createVolume__');
+                    && $create['data']['create'] === [
+                        'url' => action([VolumesController::class, 'create']),
+                        'resultKey' => 'volume',
+                        'labelField' => 'name',
+                        'valueField' => 'uid',
+                    ];
             }));
 });
 
