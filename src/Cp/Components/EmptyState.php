@@ -94,7 +94,11 @@ class EmptyState extends ViewComponent
         return $this;
     }
 
-    /** Shown after the message, usually the action to take (default slot). */
+    /**
+     * Shown after the message, usually the action to take (default slot).
+     *
+     * @param  string|Htmlable|Stringable|ViewComponent|iterable<array-key, mixed>|null  $actions
+     */
     public function actions(string|Htmlable|Stringable|ViewComponent|iterable|null $actions): static
     {
         $this->slots[static::DEFAULT_SLOT] = $actions;
