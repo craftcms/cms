@@ -297,13 +297,15 @@ class ProjectConfigController extends Controller
         }
 
         if ($projectConfig->getHadFileWriteIssues()) {
-            throw new InvalidConfigException('Resolve project config file-write errors before checking schema compatibility. Craft is currently using internal config instead of YAML.');
+            $this->stderr('Resolve project config file-write errors before checking schema compatibility. Craft is currently using internal config instead of YAML.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $pluginsService = Craft::$app->getPlugins();
         foreach (array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []) as $handle) {
             if ($pluginsService->isPluginEnabled($handle) && $pluginsService->getPlugin($handle) === null) {
-                throw new InvalidConfigException("Enabled plugin \"$handle\" could not be loaded. Check its Composer package and plugin initialization errors before checking schema compatibility.");
+                $this->stdout("Enabled plugin \"$handle\" could not be loaded. Check its Composer package and plugin initialization errors before checking schema compatibility." . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
             }
         }
 
