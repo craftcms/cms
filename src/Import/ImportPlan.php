@@ -23,10 +23,10 @@ use Throwable;
 class ImportPlan
 {
     /**
-     * @param  LaravelCollection|null  $imports  The cached collection of import plans.
+     * @param  LaravelCollection|null  $importPlans  The cached collection of import plans.
      */
     public function __construct(
-        private ?LaravelCollection $imports = null,
+        private ?LaravelCollection $importPlans = null,
     ) {}
 
     /**
@@ -50,30 +50,30 @@ class ImportPlan
      */
     public function getAllImportPlans(): LaravelCollection
     {
-        if ($this->imports === null) {
-            $dbImports = array_map(
+        if ($this->importPlans === null) {
+            $dbImportPlans = array_map(
                 fn ($row) => new ImportPlanData((array) $row + ['editable' => true]),
                 $this->_importPlanQuery()->get()->all(),
             );
 
-            $fileImports = array_filter(array_map(function ($fileImport) {
-                $fileImport = $fileImport();
+            $fileImportPlans = array_filter(array_map(function ($fileImportPlan) {
+                $fileImportPlan = $fileImportPlan();
 
-                if (! $fileImport->validate()) {
-                    ImportLog::warning("Skipping invalid file-based import plan \"{$fileImport->handle}\": ".implode(' ', $fileImport->errors()->all()));
+                if (! $fileImportPlan->validate()) {
+                    ImportLog::warning("Skipping invalid file-based import plan \"{$fileImportPlan->handle}\": ".implode(' ', $fileImportPlan->errors()->all()));
 
                     return null;
                 }
 
-                return $fileImport;
+                return $fileImportPlan;
             }, Config::get('craft.import', [])));
 
-            $this->imports = new LaravelCollection($dbImports + $fileImports)
+            $this->importPlans = new LaravelCollection($dbImportPlans + $fileImportPlans)
                 ->keyBy(fn (ImportPlanData $item, $key) => $item->handle ?? $key)
                 ->sortBy('name');
         }
 
-        return $this->imports;
+        return $this->importPlans;
     }
 
     /**
@@ -108,7 +108,7 @@ class ImportPlan
             return null;
         }
 
-        if ($this->imports !== null) {
+        if ($this->importPlans !== null) {
             /** @var ImportPlanData|null */
             return ($editableOnly ? $this->getEditableImportPlans() : $this->getAllImportPlans())
                 ->where('handle', $handle)
@@ -136,7 +136,7 @@ class ImportPlan
      */
     public function getImportPlanByUid(string $uid, bool $editableOnly = false): ?ImportPlanData
     {
-        if ($this->imports !== null) {
+        if ($this->importPlans !== null) {
             /** @var ImportPlanData|null */
             return ($editableOnly ? $this->getEditableImportPlans() : $this->getAllImportPlans())
                 ->where('uid', $uid)
@@ -203,7 +203,7 @@ class ImportPlan
         }
 
         // invalidate caches
-        $this->imports = null;
+        $this->importPlans = null;
 
         event(new ImportPlanSaved($importPlan, $isNewImport));
 
@@ -248,7 +248,7 @@ class ImportPlan
         $newImport->save();
 
         // invalidate caches
-        $this->imports = null;
+        $this->importPlans = null;
     }
 
     /**
@@ -267,7 +267,7 @@ class ImportPlan
         $importRecord->delete();
 
         // invalidate caches
-        $this->imports = null;
+        $this->importPlans = null;
     }
 
     /**
