@@ -18,7 +18,6 @@ use craft\services\ProjectConfig as ProjectConfigService;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
-use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
@@ -277,12 +276,12 @@ class ProjectConfigController extends Controller
      * Pass `--require-yaml=0` to skip the check successfully if `project.yaml` is missing.
      *
      * @return int
-     * @throws InvalidConfigException if Craft isn't installed, YAML can't be checked, or an enabled plugin can't be loaded
      */
     public function actionCheck(): int
     {
         if (!Craft::$app->getIsInstalled()) {
-            throw new InvalidConfigException('This check requires an existing Craft installation.');
+            $this->stdout('This check requires an existing Craft installation.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
