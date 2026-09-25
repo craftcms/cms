@@ -146,11 +146,11 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 ->control(Text::make(['placeholder'])->value($this->placeholder)),
             Group::make('plain-text-field-limit', [
                 FormField::make(t('Maximum'))
-                    ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
                     ->control(Number::make('fieldLimit')
                         ->value($this->charLimit ?? $this->byteLimit)
                         ->deltaGroupAtNamespace()
-                        ->min(1)),
+                        ->min(1)
+                        ->size(3)),
                 FormField::make(t('Unit'))
                     ->control(Choice::make(['limitUnit'])
                         ->value($this->byteLimit ? 'bytes' : 'chars')
@@ -159,7 +159,10 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                             ['label' => t('Characters'), 'value' => 'chars'],
                             ['label' => t('Bytes'), 'value' => 'bytes'],
                         ])),
-            ])->label(t('Field Limit')),
+            ])
+                ->label(t('Field Limit'))
+                ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
+                ->asField(),
             Group::make('plain-text-behavior', [
                 FormField::make(t('Use a monospaced font'))
                     ->control(Lightswitch::make('code')->value($this->code)),

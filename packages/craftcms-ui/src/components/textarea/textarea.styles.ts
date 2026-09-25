@@ -3,7 +3,7 @@ import {baseFormControlStyles} from '@src/styles/form.styles';
 
 export default css`
   :host(:not([label-sr-only])) .form-field__group-one {
-    margin-bottom: var(--c-spacing-sm);
+    margin-block-end: var(--c-spacing-sm);
   }
 
   :host([monospace]) ::slotted([slot='input']) {

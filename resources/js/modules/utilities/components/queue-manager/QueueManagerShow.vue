@@ -88,7 +88,7 @@
           <template v-if="!hiddenProperties.includes(name)">
             <th
               :class="{
-                'text-left': true,
+                'text-start': true,
                 'py-2': true,
                 'text-red-600': name === 'error',
               }"
@@ -156,6 +156,6 @@
 
 <style scoped lang="scss">
   tr {
-    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

@@ -73,7 +73,8 @@
   }
 
   .activity-timeline__change-comparison dd {
-    margin: var(--c-spacing-xs) 0 0;
+    margin-block: var(--c-spacing-xs) 0;
+    margin-inline: 0;
   }
 
   @container (min-width: 32rem) {

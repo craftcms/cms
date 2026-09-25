@@ -69,7 +69,7 @@
         <h1 ref="heading" tabindex="-1">{{ t('Install failed 😞') }}</h1>
 
         <div
-          class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
+          class="text-start border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
         >
           {{ errorMessage }}
         </div>

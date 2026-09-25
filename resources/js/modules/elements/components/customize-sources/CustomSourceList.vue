@@ -290,7 +290,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-xs);
-    margin: 0 0 var(--c-spacing-md);
+    margin-block: 0 var(--c-spacing-md);
+    margin-inline: 0;
     padding: 0;
     list-style: none;
   }
@@ -363,21 +364,19 @@
   // bottom of one row and the top of the next draw the same line.
   // Scoped under `.cs-item` to outrank DropIndicator's own contained offsets.
   .cs-item .cs-item__drop-indicator.drop-indicator--top {
-    top: calc(var(--_gap) / -2 - 1px);
+    inset-block-start: calc(var(--_gap) / -2 - 1px);
   }
 
   .cs-item .cs-item__drop-indicator.drop-indicator--bottom {
-    bottom: calc(var(--_gap) / -2 - 1px);
+    inset-block-end: calc(var(--_gap) / -2 - 1px);
   }
 
   // A heading's margin widens the gap above it, so the line above one belongs
   // in the middle of that larger gap.
   .cs-item--heading .cs-item__drop-indicator.drop-indicator--top {
-    top: calc((var(--_gap) + var(--c-spacing-md)) / -2 - 1px);
+    inset-block-start: calc((var(--_gap) + var(--c-spacing-md)) / -2 - 1px);
   }
 
-  // Takes the leftover width so a long label truncates rather than squeezing
-  // the icon beside it.
   // The handle and the menu each sit in a box as tall as a one-line row — the
   // select button's line plus its padding and border — so they stay level with
   // the label's first line however many lines it wraps to.

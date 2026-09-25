@@ -17,7 +17,8 @@ export default class CraftShortcut extends LitElement {
 
     .shortcut {
       font-size: 0.9em;
-      padding: 0 var(--c-spacing-sm);
+      padding-block: 0;
+      padding-inline: var(--c-spacing-sm);
       background-color: var(--c-color-neutral-fill-quiet);
       border: 1px solid var(--c-color-neutral-border-quiet);
       border-radius: var(--c-radius-sm);

@@ -230,7 +230,7 @@
   }
 
   .element-index__header,
-  element-index__navbar,
+  .element-index__navbar,
   .element-index__body,
   .element-index__footer {
     padding-inline: var(--cp-container-padding);
@@ -246,7 +246,7 @@
 
   .element-index__footer {
     position: sticky;
-    bottom: 0;
+    inset-block-end: 0;
     z-index: 1;
     display: flex;
     align-items: center;

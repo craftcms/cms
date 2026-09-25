@@ -123,7 +123,13 @@
     // The site leads the trail on every screen, not just the ones that know
     // they're site-specific: which site you're editing frames everything
     // below it. Only present on a multi-site install.
-    const trail = siteCrumb.value ? [siteCrumb.value, ...merged] : merged;
+    //
+    // A screen that writes its own stands down the shared one — an element
+    // editor's lists just the sites that element propagates to, which is the
+    // better answer there.
+    const ownsSiteCrumb = merged.some((crumb) => crumb.id === 'site-crumb');
+    const trail =
+      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged;
 
     return trail.length > 0 ? trail : null;
   });
@@ -226,15 +232,6 @@
                   @submit.prevent="form && save()"
                   class="cp-main"
                 >
-                  <LayoutSlotOutlet name="error-summary">
-                    <slot name="error-summary">
-                      <ErrorSummary
-                        v-if="form && form.hasErrors"
-                        :errors="form.errors"
-                      />
-                    </slot>
-                  </LayoutSlotOutlet>
-                  <CalloutReadOnly v-if="readOnly" />
                   <div
                     ref="contentLayout"
                     class="cp-content"
@@ -273,6 +270,15 @@
                       class="cp-content__main"
                       :style="contentMainStyle"
                     >
+                      <LayoutSlotOutlet name="error-summary">
+                        <slot name="error-summary">
+                          <ErrorSummary
+                            v-if="form && form.hasErrors"
+                            :errors="form.errors"
+                          />
+                        </slot>
+                      </LayoutSlotOutlet>
+                      <CalloutReadOnly v-if="readOnly" />
                       <FlashMessages />
                       <div
                         :class="{
@@ -642,6 +648,7 @@ Content view
     /* The default lives in `cp.css`; a page passing a length overrides it
        inline through `contentMaxWidth`. */
     max-width: var(--cp-content-max-width);
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
   }
 </style>

@@ -1,4 +1,6 @@
+import {execFileSync} from 'child_process';
 import {writeFileSync, readFileSync} from 'fs';
+import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {transformSync} from 'esbuild';
@@ -252,6 +254,20 @@ export default async function main() {
 
   writeFileSync(OUT_LIT_FILE, generateLitStyles(paletteColors, semanticColors));
   console.log(`Generated ${OUT_LIT_FILE}`);
+
+  formatOutput([OUT_FILE, OUT_LIT_FILE]);
+}
+
+/*
+Both outputs are committed, so run them through the repo formatter. Otherwise
+every build rewrites them unformatted and `vp fmt` flips them back again.
+ */
+function formatOutput(files) {
+  const vpBin = resolve(
+    dirname(createRequire(import.meta.url).resolve('vite-plus/package.json')),
+    'bin/vp'
+  );
+  execFileSync(process.execPath, [vpBin, 'fmt', ...files], {stdio: 'ignore'});
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

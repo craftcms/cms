@@ -20,7 +20,8 @@ export default css`
       position: absolute;
       display: inline-flex;
       font-size: calc(11rem / 16);
-      padding: 0.125em 0.5em 0.25em;
+      padding-block: 0.125em 0.25em;
+      padding-inline: 0.5em;
       inset-block-start: -2px;
       inset-inline-start: 0;
       background: var(--c-color-danger-bg-emphasis);
