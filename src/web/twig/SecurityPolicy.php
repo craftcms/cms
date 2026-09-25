@@ -155,10 +155,10 @@ class SecurityPolicy implements SecurityPolicyInterface
         $this->allowedProperties = $properties;
     }
 
-    public function checkSecurity($tags, $filters, $functions): void
+    public function checkSecurity($tags, $filters, $functions, array $tests = []): void
     {
         foreach ($tags as $tag) {
-            if (!in_array($tag, $this->allowedTags)) {
+            if (!in_array($tag, $this->allowedTags, true)) {
                 if ('extends' === $tag) {
                     trigger_deprecation('twig/twig', '3.12', 'The "extends" tag is always allowed in sandboxes, but won\'t be in 4.0, please enable it explicitly in your sandbox policy if needed.');
                 } elseif ('use' === $tag) {
@@ -170,13 +170,13 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
 
         foreach ($filters as $filter) {
-            if (!in_array($filter, $this->allowedFilters)) {
+            if (!in_array($filter, $this->allowedFilters, true)) {
                 throw new SecurityNotAllowedFilterError(sprintf('Filter "%s" is not allowed.', $filter), $filter);
             }
         }
 
         foreach ($functions as $function) {
-            if (!in_array($function, $this->allowedFunctions)) {
+            if (!in_array($function, $this->allowedFunctions, true)) {
                 throw new SecurityNotAllowedFunctionError(sprintf('Function "%s" is not allowed.', $function), $function);
             }
         }
@@ -201,7 +201,7 @@ class SecurityPolicy implements SecurityPolicyInterface
 
         $method = strtolower($method);
         foreach ($this->allowedMethods as $class => $methods) {
-            if ($obj instanceof $class && in_array($method, $methods)) {
+            if ($obj instanceof $class && in_array($method, $methods, true)) {
                 return;
             }
         }
@@ -252,7 +252,7 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
 
         foreach ($this->allowedProperties as $class => $properties) {
-            if ($obj instanceof $class && in_array($property, $properties)) {
+            if ($obj instanceof $class && in_array($property, $properties, true)) {
                 return;
             }
         }
