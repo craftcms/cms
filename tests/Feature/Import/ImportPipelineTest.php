@@ -19,6 +19,7 @@ use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
@@ -159,7 +160,10 @@ it('passes the run ID to the item importing and imported events', function () {
     ], [], 'run-id');
 
     Event::assertDispatched(fn (ItemImporting $event) => $event->runId === 'run-id');
-    Event::assertDispatched(fn (ItemImported $event) => $event->runId === 'run-id');
+    Event::assertDispatched(fn (ItemImported $event) => $event->runId === 'run-id'
+        && $event->importedItem instanceof SystemMessage
+        && $event->importedItem->exists
+        && $event->importedItem->key === 'my_message');
 });
 
 it('flags the run and the step as having failures when an item in an import job fails', function () {

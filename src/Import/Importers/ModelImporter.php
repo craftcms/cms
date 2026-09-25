@@ -11,8 +11,10 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Override;
+use RuntimeException;
 
 /**
  * The ModelImporter should be used for importing data into an eloquent model.
@@ -107,7 +109,7 @@ abstract class ModelImporter extends BaseImporter
     }
 
     #[Override]
-    public function importItem(array $data): void
+    public function importItem(array $data): Model
     {
         $model = $this->getModel($data);
         $isNew = ! $model->exists;
@@ -140,9 +142,11 @@ abstract class ModelImporter extends BaseImporter
 
         $model->fill($attributes);
 
-        if ($isNew || $model->isDirty()) {
-            $model->save();
+        if (($isNew || $model->isDirty()) && ! $model->save()) {
+            throw new RuntimeException('Unable to save model being imported: '.$model::class);
         }
+
+        return $model;
     }
 
     /**

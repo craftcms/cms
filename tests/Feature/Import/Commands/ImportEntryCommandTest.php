@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryTransformer;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -231,4 +232,17 @@ it('fires the import and step lifecycle events in order with the same run ID', f
 
     expect(array_column($fired, 0))->toBe([ImportStarted::class, ImportStepStarted::class, ImportStepFinished::class, ImportFinished::class])
         ->and(array_unique(array_column($fired, 1)))->toHaveCount(1);
+});
+
+it('flags the import finished event when an entry fails to save', function () {
+    Event::fake([ImportFinished::class]);
+    Event::listen(ElementSaving::class, function (ElementSaving $event) {
+        $event->isValid = false;
+    });
+
+    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+        ->assertSuccessful();
+
+    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(0);
+    Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures);
 });

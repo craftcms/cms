@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Models\Field;
@@ -83,9 +84,9 @@ describe('required-value validation, skipping enabled entries and allowing disab
         $importer = ($scenario['importer'])($this);
         $importer->section(($scenario['section'])($this)->uid)->entryType(($scenario['entryType'])($this)->uid);
 
-        $this->import->importItem($importer, [
+        expect(fn () => $this->import->importItem($importer, [
             'title' => 'imported entry',
-        ]);
+        ]))->toThrow(InvalidElementException::class);
 
         $entry = EntryElement::find()->title('imported entry')->one();
 

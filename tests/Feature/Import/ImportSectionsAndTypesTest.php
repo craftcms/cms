@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -115,13 +116,13 @@ it('uses each row’s own entry type when the importer has no field layout provi
 // Validation rejects the entry, so the row is skipped (logged as a warning) rather than imported
 // under a type its section doesn't allow.
 it('skips a row whose entry type is not allowed in its section', function () {
-    ($this->importRows)([[
+    expect(fn () => ($this->importRows)([[
         'title' => 'row with a disallowed type',
         'sectionId' => 'firstImportSection',
         'typeId' => 'secondSectionOnlyType',
         'plainText' => 'mismatched',
         'matchCriteria' => ['title' => 'title'],
-    ]]);
+    ]]))->toThrow(InvalidElementException::class);
 
     expect(EntryElement::find()->title('row with a disallowed type')->status(null)->one())->toBeNull();
 });

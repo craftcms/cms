@@ -16,6 +16,7 @@ class ItemImporting
 
     /**
      * Promotes the importer config, raw data and import run ID into a cancellable event fired before import.
+     * A cancelled item doesn't fire `ItemImported`, so listeners tracking imported elements won't see it.
      *
      * @param  BaseImporter  $importer  The importer config for this event.
      * @param  array  $data  The raw data about to be imported - before remapping.

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Import;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementDeleted;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -389,7 +390,7 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function importItem(array $data): void
+    public function importItem(array $data): ElementInterface
     {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
@@ -452,7 +453,7 @@ abstract class ElementImporter extends BaseImporter
             || $this->fieldValuesChanged($element, $oldFieldValues);
 
         if (! $hasChanges) {
-            return;
+            return $element;
         }
 
         if ($element->enabled && $element->getEnabledForSite()) {
@@ -468,10 +469,9 @@ abstract class ElementImporter extends BaseImporter
 
         try {
             if (! Elements::saveElement($element)) {
-                ImportLog::warning(
-                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
-                    print_r($element->errors()->all(), true),
-                    ['data' => $item]
+                throw new InvalidElementException(
+                    $element,
+                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
                 );
             }
         } finally {
@@ -488,6 +488,8 @@ abstract class ElementImporter extends BaseImporter
                 ['elementId' => $element->id, 'prunedElementIds' => $this->deletedNestedElementIds]
             );
         }
+
+        return $element;
     }
 
     /**

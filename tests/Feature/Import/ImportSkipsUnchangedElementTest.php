@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -133,4 +134,15 @@ it('does not save when re-importing a row whose matrix blocks are unchanged', fu
 
     expect($this->saveCount)->toBe(0)
         ->and(EntryElement::find()->title('seed entry')->status(null)->one()->getFieldValue('myMatrix')->count())->toBe(1);
+});
+
+it('passes the matched entry to the item imported event even when it is not re-saved', function () {
+    $seededEntryId = EntryElement::find()->title('seed entry')->one()->id;
+    Event::fake([ItemImported::class]);
+
+    $this->import->importItem($this->importer, ($this->entryData)());
+
+    expect($this->saveCount)->toBe(0);
+    Event::assertDispatched(fn (ItemImported $event) => $event->importedItem instanceof EntryElement
+        && $event->importedItem->id === $seededEntryId);
 });

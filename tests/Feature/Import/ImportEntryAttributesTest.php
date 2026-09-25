@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -12,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -151,11 +154,25 @@ it('defaults the author to the logged-in user when authorIds is absent', functio
 // the CLI case: no authenticated user, so there's nothing to default from and the entry fails the
 // section's author requirement
 it('skips an entry that omits authorIds in a section requiring an author when nobody is logged in', function () {
-    $this->import->importItem($this->importer, ($this->entryData)([
+    Event::fake([ItemImported::class]);
+
+    expect(fn () => $this->import->importItem($this->importer, ($this->entryData)([
         'sectionId' => $this->sectionRequiringAnAuthor->handle,
-    ]));
+    ])))->toThrow(InvalidElementException::class);
 
     expect(($this->importedEntry)())->toBeNull();
+    Event::assertNotDispatched(ItemImported::class);
+});
+
+it('passes the newly saved entry to the item imported event', function () {
+    Event::fake([ItemImported::class]);
+
+    $this->import->importItem($this->importer, ($this->entryData)());
+
+    $entryId = ($this->importedEntry)()->id;
+
+    Event::assertDispatched(fn (ItemImported $event) => $event->importedItem instanceof EntryElement
+        && $event->importedItem->id === $entryId);
 });
 
 // section/type references

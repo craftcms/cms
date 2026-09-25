@@ -228,9 +228,9 @@ class Import
 
         $this->applyClearableItems($data, $importer->clearableItems ?? []);
 
-        $importer->importItem($data);
+        $importedItem = $importer->importItem($data);
 
-        event(new ItemImported($importer, $data, $runId));
+        event(new ItemImported($importer, $data, $runId, $importedItem));
     }
 
     /**

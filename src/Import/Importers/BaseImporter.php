@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
@@ -407,13 +408,15 @@ abstract class BaseImporter
     }
 
     /**
-     * No-op base implementation; subclasses override to actually perform the import.
+     * No-op base implementation; subclasses override to actually perform the import
+     * and return the element or model the data was imported into, if any.
      *
      * @param  array  $data  The data for the item being imported.
      */
-    public function importItem(array $data): void
+    public function importItem(array $data): ElementInterface|Model|null
     {
         // by default, this doesn't do anything
+        return null;
     }
 
     /**
