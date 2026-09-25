@@ -30,7 +30,11 @@ interface LegacyModalInstance {
 }
 
 declare module '@tanstack/vue-table' {
-  interface ColumnMeta {
+  interface ColumnMeta<
+    TFeatures extends TableFeatures,
+    TData extends RowData,
+    TValue extends CellData = CellData,
+  > {
     wrap?: boolean;
     // Applies classes to the cell
     cellClass?: string | Record<string, boolean>;

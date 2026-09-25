@@ -1,7 +1,8 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import {computed, ref, watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {Table} from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
   import {ButtonVariant, t} from '@craftcms/ui';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
@@ -12,7 +13,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      table: Table<CraftTableFeatures, TData>;
       selectable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
@@ -62,13 +63,13 @@
 
   // --- Pagination footer proxies (moved verbatim from AdminTable) ---
   const pageIndexProxy = computed({
-    get: () => props.table.getState().pagination.pageIndex + 1,
+    get: () => props.table.atoms.pagination.get().pageIndex + 1,
     set: (v) => {
       if (v) props.table.setPageIndex(parseInt(String(v)) - 1);
     },
   });
   const pageSizeProxy = computed({
-    get: () => props.table.getState().pagination.pageSize,
+    get: () => props.table.atoms.pagination.get().pageSize,
     set: (v) => {
       if (v) props.table.setPageSize(parseInt(String(v)));
     },
@@ -78,7 +79,7 @@
       props.table.getPageCount() > 1 &&
       Boolean(
         props.table.options.manualPagination ||
-        props.table.options.getPaginationRowModel
+        'paginatedRowModel' in props.table.options.features
       )
   );
   const showPageSize = computed(() => props.enableAdjustPageSize);

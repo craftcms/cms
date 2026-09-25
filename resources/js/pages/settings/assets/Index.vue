@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useTable} from '@tanstack/vue-table';
+  import {
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -110,7 +114,8 @@
     ]),
   ]);
 
-  const table = useVueTable<VolumeData>({
+  const table = useTable<CraftTableFeatures, VolumeData>({
+    features: craftTableFeatures,
     get data() {
       return volumes.value;
     },
@@ -123,7 +128,6 @@
       },
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
   useAppLayout({title: props.title});

@@ -2,7 +2,11 @@
   import {h, ref} from 'vue';
   import {router, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useTable} from '@tanstack/vue-table';
+  import {
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -122,7 +126,8 @@
   }
 
   const columnHelper = createCraftColumnHelper<AuthMethod>();
-  const table = useVueTable<AuthMethod>({
+  const table = useTable<CraftTableFeatures, AuthMethod>({
+    features: craftTableFeatures,
     get data() {
       return props.methods;
     },
@@ -194,7 +199,6 @@
         }),
       ];
     },
-    getCoreRowModel: getCoreRowModel<AuthMethod>(),
     enableSorting: false,
   });
 </script>

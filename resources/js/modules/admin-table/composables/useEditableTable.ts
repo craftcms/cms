@@ -10,10 +10,14 @@ import {
   type ColumnDef,
   type ColumnHelper,
   createColumnHelper,
-  getCoreRowModel,
   type Row,
-  useVueTable,
+  type TableOptions,
+  useTable,
 } from '@tanstack/vue-table';
+import {
+  craftTableFeatures,
+  type CraftTableFeatures,
+} from '@/modules/admin-table/tableFeatures';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';
@@ -26,21 +30,23 @@ function resolve<T>(value: MaybeGetter<T>): T {
 }
 
 interface BaseColumnOptions<T extends object> {
-  header?: ColumnDef<T>['header'];
+  header?: ColumnDef<CraftTableFeatures, T>['header'];
   size?: number;
   class?: HTMLAttributes['class'];
-  meta?: ColumnDef<T>['meta'];
-  disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
+  meta?: ColumnDef<CraftTableFeatures, T>['meta'];
+  disabled?:
+    | MaybeGetter<boolean>
+    | ((row: Row<CraftTableFeatures, T>) => boolean);
   placeholder?: string;
 }
 
 interface TextColumnOptions<T extends object> extends BaseColumnOptions<T> {
   inputType?: 'text' | 'email' | 'url' | 'number';
   placeholder?: string;
-  name?: (row: Row<T>, columnId: string) => string;
+  name?: (row: Row<CraftTableFeatures, T>, columnId: string) => string;
   onChange?: (
     value: string,
-    ctx: Pick<CellContext<T, unknown>, 'row' | 'column'>
+    ctx: Pick<CellContext<CraftTableFeatures, T, unknown>, 'row' | 'column'>
   ) => void;
   onInput?: (event: Event) => void;
 }
@@ -58,7 +64,7 @@ interface CheckboxColumnOptions<T extends object> extends BaseColumnOptions<T> {
   ariaLabelledBy?: string;
   onChange?: (
     value: boolean,
-    ctx: Pick<CellContext<T, unknown>, 'row' | 'column'>
+    ctx: Pick<CellContext<CraftTableFeatures, T, unknown>, 'row' | 'column'>
   ) => void;
 }
 
@@ -67,44 +73,46 @@ interface AutocompleteColumnOptions<
 > extends BaseColumnOptions<T> {
   options?:
     | MaybeGetter<Array<SelectItem>>
-    | ((row: Row<T>) => Array<SelectItem>);
+    | ((row: Row<CraftTableFeatures, T>) => Array<SelectItem>);
   requireOptionMatch?: boolean;
   label?: string;
   onChange?: (
     value: string,
-    ctx: Pick<CellContext<T, unknown>, 'row' | 'column'>
+    ctx: Pick<CellContext<CraftTableFeatures, T, unknown>, 'row' | 'column'>
   ) => void;
 }
 
 export type AccessorParam<T extends object> = Parameters<
-  ColumnHelper<T>['accessor']
+  ColumnHelper<CraftTableFeatures, T>['accessor']
 >[0];
 
 interface EditableColumnHelper<T extends object> {
-  accessor: ColumnHelper<T>['accessor'];
-  display: ColumnHelper<T>['display'];
-  group: ColumnHelper<T>['group'];
+  accessor: ColumnHelper<CraftTableFeatures, T>['accessor'];
+  display: ColumnHelper<CraftTableFeatures, T>['display'];
+  group: ColumnHelper<CraftTableFeatures, T>['group'];
   text: (
     accessor: AccessorParam<T>,
     options?: TextColumnOptions<T>
-  ) => ColumnDef<T>;
+  ) => ColumnDef<CraftTableFeatures, T>;
   lightswitch: (
     accessor: AccessorParam<T>,
     options?: LightswitchColumnOptions<T>
-  ) => ColumnDef<T>;
+  ) => ColumnDef<CraftTableFeatures, T>;
   checkbox: (
     accessor: AccessorParam<T>,
     options?: CheckboxColumnOptions<T>
-  ) => ColumnDef<T>;
+  ) => ColumnDef<CraftTableFeatures, T>;
   autocomplete: (
     accessor: AccessorParam<T>,
     options?: AutocompleteColumnOptions<T>
-  ) => ColumnDef<T>;
+  ) => ColumnDef<CraftTableFeatures, T>;
 }
 
 interface UseEditableTableOptions<T extends object> {
   data: () => T[] | Record<string, T>;
-  columns: (options: {columnHelper: EditableColumnHelper<T>}) => ColumnDef<T>[];
+  columns: (options: {
+    columnHelper: EditableColumnHelper<T>;
+  }) => ColumnDef<CraftTableFeatures, T>[];
   key?: string;
   name?: string;
   columnVisibility?: () => Record<string, boolean>;
@@ -136,7 +144,7 @@ export function useEditableTable<T extends object>(
   });
 
   function handleChange(
-    row: Row<T>,
+    row: Row<CraftTableFeatures, T>,
     columnId: string,
     value: string | boolean
   ): void {
@@ -165,7 +173,7 @@ export function useEditableTable<T extends object>(
 
   function resolveDisabled<T extends object>(
     disabled: BaseColumnOptions<T>['disabled'],
-    row: Row<T>
+    row: Row<CraftTableFeatures, T>
   ): boolean | undefined {
     let value = disabled;
     if (disabled instanceof Function) {
@@ -181,7 +189,9 @@ export function useEditableTable<T extends object>(
       TextColumnOptions<T>,
       'header' | 'size' | 'meta' | 'inputType'
     >
-  ): (ctx: CellContext<T, unknown>) => ReturnType<typeof h> {
+  ): (
+    ctx: CellContext<CraftTableFeatures, T, unknown>
+  ) => ReturnType<typeof h> {
     return ({row, column}) =>
       h('textarea', {
         rows: 1,
@@ -219,7 +229,9 @@ export function useEditableTable<T extends object>(
 
   function switchCell(
     cellOptions?: Omit<LightswitchColumnOptions<T>, 'header' | 'size' | 'meta'>
-  ): (ctx: CellContext<T, unknown>) => ReturnType<typeof h> {
+  ): (
+    ctx: CellContext<CraftTableFeatures, T, unknown>
+  ) => ReturnType<typeof h> {
     return ({row, column}) =>
       h(CraftSwitch, {
         modelValue: Boolean(
@@ -243,7 +255,9 @@ export function useEditableTable<T extends object>(
 
   function checkboxCell(
     cellOptions?: Omit<CheckboxColumnOptions<T>, 'header' | 'size' | 'meta'>
-  ): (ctx: CellContext<T, unknown>) => ReturnType<typeof h> {
+  ): (
+    ctx: CellContext<CraftTableFeatures, T, unknown>
+  ) => ReturnType<typeof h> {
     return ({row, column}) => {
       return h('input', {
         type: 'checkbox',
@@ -270,7 +284,9 @@ export function useEditableTable<T extends object>(
 
   function autocompleteCell(
     cellOptions?: AutocompleteColumnOptions<T>
-  ): (ctx: CellContext<T, unknown>) => ReturnType<typeof h> {
+  ): (
+    ctx: CellContext<CraftTableFeatures, T, unknown>
+  ) => ReturnType<typeof h> {
     return ({row, column}) => {
       const opts =
         cellOptions?.options instanceof Function
@@ -301,13 +317,15 @@ export function useEditableTable<T extends object>(
     };
   }
 
-  const baseHelper = createColumnHelper<T>();
+  const baseHelper = createColumnHelper<CraftTableFeatures, T>();
 
   function buildColumnDef(
     accessor: AccessorParam<T>,
     base: BaseColumnOptions<T> | undefined
   ) {
-    const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+    const columnDef: Parameters<
+      ColumnHelper<CraftTableFeatures, T>['accessor']
+    >[1] = {
       id: String(accessor),
     };
     if (base?.header !== undefined) columnDef.header = base.header;
@@ -384,7 +402,10 @@ export function useEditableTable<T extends object>(
 
   const columns = shallowRef(options.columns({columnHelper}));
 
-  const tableOptions: Parameters<typeof useVueTable<T>>[0] = {
+  const columnVisibility = options.columnVisibility;
+
+  const tableOptions: TableOptions<CraftTableFeatures, T> = {
+    features: craftTableFeatures,
     get data() {
       return normalizedData.value;
     },
@@ -392,21 +413,18 @@ export function useEditableTable<T extends object>(
       return columns.value;
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<T>(),
+    ...(columnVisibility && {
+      state: {
+        get columnVisibility() {
+          return columnVisibility();
+        },
+      },
+    }),
   };
 
   Object.assign(tableOptions, {defaultColumn: {size: 'auto'}});
 
-  if (options.columnVisibility) {
-    const columnVisibility = options.columnVisibility;
-    tableOptions.state = {
-      get columnVisibility() {
-        return columnVisibility();
-      },
-    };
-  }
-
-  const table = useVueTable(tableOptions);
+  const table = useTable(tableOptions);
 
   return {table};
 }

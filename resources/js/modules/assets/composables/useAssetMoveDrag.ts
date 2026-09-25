@@ -48,7 +48,7 @@ export function useAssetMoveDrag() {
   const folderConflictPrompt = ref<FolderMoveConflictPrompt | null>(null);
 
   function selectedMoveIds(): {assetIds: number[]; folderIds: number[]} {
-    const selection = table.value?.getState().rowSelection ?? {};
+    const selection = table.value?.atoms.rowSelection.get() ?? {};
     const assetIds: number[] = [];
     const folderIds: number[] = [];
 
@@ -101,7 +101,7 @@ export function useAssetMoveDrag() {
   }
 
   function selectedElements(): HTMLElement[] {
-    const selection = table.value?.getState().rowSelection ?? {};
+    const selection = table.value?.atoms.rowSelection.get() ?? {};
 
     return Object.entries(selection)
       .filter(([, selected]) => selected)
@@ -252,7 +252,7 @@ export function useAssetMoveDrag() {
       // Snapshot the pre-grab selection first so onDragStop can undo a force
       // select of a row that wasn't already part of a selected group.
       filter: () => {
-        preDragSelection = {...table.value?.getState().rowSelection};
+        preDragSelection = {...table.value?.atoms.rowSelection.get()};
         const grabbed = dragDrop?.$targetItem;
         if (grabbed?.dataset.rowId) {
           const rowId = grabbed.dataset.rowId;

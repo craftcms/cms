@@ -7,7 +7,11 @@
     platformAuthenticatorIsAvailable,
     startRegistration,
   } from '@simplewebauthn/browser';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useTable} from '@tanstack/vue-table';
+  import {
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import CraftDate from '@/common/components/Date.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -154,7 +158,8 @@
   }
 
   const columnHelper = createCraftColumnHelper<Passkey>();
-  const table = useVueTable<Passkey>({
+  const table = useTable<CraftTableFeatures, Passkey>({
+    features: craftTableFeatures,
     get data() {
       return page.props.passkeys;
     },
@@ -189,7 +194,6 @@
         ]),
       ];
     },
-    getCoreRowModel: getCoreRowModel<Passkey>(),
     enableSorting: false,
   });
 </script>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import migrationsController from '@actions/Utilities/MigrationsController';
+  import {createColumnHelper, useTable} from '@tanstack/vue-table';
   import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import {computed, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {Form} from '@inertiajs/vue3';
@@ -38,23 +38,26 @@
     ] satisfies Migration[];
   });
 
-  const columnHelper = createColumnHelper<Migration>();
-  const columns = ref([
-    columnHelper.accessor('name', {
-      header: t('Name'),
-      cell: (info) => info.getValue(),
-    }),
-    columnHelper.accessor('status', {
-      header: t('Status'),
-      cell: (info) => info.getValue(),
-    }),
-    columnHelper.accessor('batch', {
-      header: t('Batch'),
-      cell: (info) => info.getValue(),
-    }),
-  ]);
+  const columnHelper = createColumnHelper<CraftTableFeatures, Migration>();
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('name', {
+        header: t('Name'),
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('status', {
+        header: t('Status'),
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('batch', {
+        header: t('Batch'),
+        cell: (info) => info.getValue(),
+      }),
+    ])
+  );
 
-  const migrationsTable = useVueTable({
+  const migrationsTable = useTable({
+    features: craftTableFeatures,
     get columns() {
       return columns.value;
     },
@@ -62,7 +65,6 @@
     get data() {
       return allMigrations.value;
     },
-    getCoreRowModel: getCoreRowModel<Migration>(),
   });
 </script>
 

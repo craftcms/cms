@@ -1,5 +1,6 @@
 import {ref} from 'vue';
 import {describe, expect, it, vi} from 'vitest';
+import type {RowSelectionState} from '@tanstack/vue-table';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import {
   cascadeStructureSelection,
@@ -49,7 +50,7 @@ describe('cascadeStructureSelection', () => {
   });
 
   it('releases descendants and ancestors when a row is deselected', () => {
-    const all = {'1': true, '2': true, '3': true, '4': true};
+    const all: RowSelectionState = {'1': true, '2': true, '3': true, '4': true};
 
     expect(
       cascadeStructureSelection(all, {'1': true, '3': true, '4': true}, rows)
@@ -63,7 +64,7 @@ describe('cascadeStructureSelection', () => {
   });
 
   it('returns the incoming state untouched when nothing changed', () => {
-    const next = {'5': true};
+    const next: RowSelectionState = {'5': true};
 
     expect(cascadeStructureSelection({'5': true}, next, rows)).toBe(next);
   });
@@ -78,7 +79,7 @@ describe('selectDescendantsOfSelected', () => {
   });
 
   it('returns the same object when nothing needs adding', () => {
-    const selection = {'5': true};
+    const selection: RowSelectionState = {'5': true};
 
     expect(selectDescendantsOfSelected(selection, rows)).toBe(selection);
   });

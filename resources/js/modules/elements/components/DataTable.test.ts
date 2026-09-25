@@ -184,7 +184,7 @@ describe('DataTable', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
-      render: () => h(DataTable, {table, loading: loading.value}),
+      render: () => h(DataTable, {table, loading: loading.value} as never),
     });
     app.mount(container);
     await nextTick();
@@ -226,7 +226,7 @@ describe('DataTable', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
-      render: () => h(DataTable, {table, loading: loading.value}),
+      render: () => h(DataTable, {table, loading: loading.value} as never),
     });
     app.mount(container);
     await nextTick();

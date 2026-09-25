@@ -1,11 +1,18 @@
 import {h} from 'vue';
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useVueTable,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  sortFn_alphanumeric,
+  sortFn_text,
+  type Table,
+  tableFeatures,
+  useTable,
 } from '@tanstack/vue-table';
+import {
+  craftTableFeatures,
+  type CraftTableFeatures,
+} from '@/modules/admin-table/tableFeatures';
 import ElementStatus from '@/modules/elements/ElementStatus.vue';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 
@@ -104,9 +111,18 @@ export const sampleEntries: Array<SampleEntry> = [
   },
 ];
 
-const columnHelper = createColumnHelper<SampleEntry>();
+// The CP's own tables sort and paginate on the server; the sample table has no
+// server, so it does both on the client.
+const sampleFeatures = tableFeatures({
+  ...craftTableFeatures,
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  sortFns: {alphanumeric: sortFn_alphanumeric, text: sortFn_text},
+});
 
-export const sampleColumns = [
+const columnHelper = createColumnHelper<typeof sampleFeatures, SampleEntry>();
+
+export const sampleColumns = columnHelper.columns([
   columnHelper.accessor('title', {header: 'Title'}),
   columnHelper.accessor('status', {
     header: 'Status',
@@ -114,7 +130,7 @@ export const sampleColumns = [
   }),
   columnHelper.accessor('section', {header: 'Section'}),
   columnHelper.accessor('postDate', {header: 'Post Date'}),
-];
+]);
 
 /**
  * Builds a client-side TanStack table over the sample entries, with the row-id
@@ -123,19 +139,21 @@ export const sampleColumns = [
  */
 export function createSampleTable(
   options: {data?: Array<SampleEntry>; pageSize?: number} = {}
-) {
-  return useVueTable<SampleEntry>({
+): Table<CraftTableFeatures, SampleEntry> {
+  const table = useTable<typeof sampleFeatures, SampleEntry>({
+    features: sampleFeatures,
     data: options.data ?? sampleEntries,
     columns: sampleColumns,
     getRowId: (row) => String(row.id),
     enableRowSelection: true,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {pageIndex: 0, pageSize: options.pageSize ?? 50},
     },
   });
+
+  // SAFETY: Row-model and sort-fn slots only change how rows are processed, not
+  // the table's API, so this is the same surface as a plain CP table's.
+  return table as unknown as Table<CraftTableFeatures, SampleEntry>;
 }
 
 /**

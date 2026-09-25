@@ -7,7 +7,10 @@ import {
 
 const meta = {
   title: 'Elements/AdminTable',
-  component: AdminTable,
+  // The component is generic over its row type, which `Meta<typeof …>` can't
+  // instantiate. Every story drives it through `render`, so the only thing the
+  // cast costs is arg typing that nothing here uses.
+  component: AdminTable as Meta['component'],
   parameters: {
     docs: {
       description: {
@@ -21,7 +24,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof AdminTable>;
+} satisfies Meta;
 
 export default meta;
 type Story = StoryObj<{title?: string}>;

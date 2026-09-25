@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {
   useElementIndexSelection,
@@ -11,7 +12,10 @@ interface TestElement {
   id: number;
 }
 
-function rowAt(rows: Array<Row<TestElement>>, index: number): Row<TestElement> {
+function rowAt(
+  rows: Array<Row<CraftTableFeatures, TestElement>>,
+  index: number
+): Row<CraftTableFeatures, TestElement> {
   const row = rows[index];
   if (!row) throw new Error(`Expected row ${index}.`);
 
@@ -31,7 +35,7 @@ function makeRow(
   id: number,
   selection: Ref<Record<string, boolean>>,
   selected = false
-): Row<TestElement> {
+): Row<CraftTableFeatures, TestElement> {
   const rowId = String(id);
   if (selected) {
     selection.value = {...selection.value, [rowId]: true};
@@ -46,10 +50,12 @@ function makeRow(
       const next = v ?? !selection.value[rowId];
       selection.value = {...selection.value, [rowId]: next};
     },
-  } as Row<TestElement>;
+  } as Row<CraftTableFeatures, TestElement>;
 }
 
-function makeTable(rows: Array<Row<TestElement>>): Table<TestElement> {
+function makeTable(
+  rows: Array<Row<CraftTableFeatures, TestElement>>
+): Table<CraftTableFeatures, TestElement> {
   // SAFETY: This focused Table fixture implements every member read by the selection composable.
   return {
     getRowModel: () => ({rows}),
@@ -59,7 +65,7 @@ function makeTable(rows: Array<Row<TestElement>>): Table<TestElement> {
       rows.forEach((r) => r.toggleSelected(v));
     },
     resetRowSelection: () => rows.forEach((r) => r.toggleSelected(false)),
-  } as Table<TestElement>;
+  } as Table<CraftTableFeatures, TestElement>;
 }
 
 const opts = (

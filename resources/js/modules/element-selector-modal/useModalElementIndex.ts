@@ -1,5 +1,9 @@
 import {actionClient, type ElementInfo} from '@craftcms/ui';
-import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+import {useTable} from '@tanstack/vue-table';
+import {
+  craftTableFeatures,
+  type CraftTableFeatures,
+} from '@/modules/admin-table/tableFeatures';
 import type {RowSelectionState} from '@tanstack/table-core';
 import {computed, ref, shallowRef, watch} from 'vue';
 import type {ConditionConfig} from '@/modules/conditions/types';
@@ -141,7 +145,8 @@ export function useModalElementIndex(options: Options) {
     () => new Set(options.disabledElementIds?.() ?? [])
   );
 
-  const table = useVueTable<Row>({
+  const table = useTable<CraftTableFeatures, Row>({
+    features: craftTableFeatures,
     get data() {
       return elementIndex.data ?? [];
     },
@@ -175,7 +180,6 @@ export function useModalElementIndex(options: Options) {
       rowSelection.value =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
     },
-    getCoreRowModel: getCoreRowModel<Row>(),
     ...sortingConfig,
     ...paginationConfig,
     enableMultiSort: false,

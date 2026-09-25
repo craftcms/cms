@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import {createColumnHelper, useTable} from '@tanstack/vue-table';
   import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import {computed, h, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
@@ -46,7 +46,7 @@
   }>();
 
   const searchTerm = ref(props.searchTerm ?? '');
-  const columnHelper = createColumnHelper<FieldRow>();
+  const columnHelper = createColumnHelper<CraftTableFeatures, FieldRow>();
   const columnVisibility = computed(() => {
     return {
       name: true,
@@ -58,87 +58,89 @@
       actions: !props.readOnly,
     };
   });
-  const columns = ref([
-    columnHelper.accessor('title', {
-      header: t('Name'),
-      meta: {
-        trackSize: '1.5fr',
-      },
-      cell: ({row, getValue}) =>
-        h(CpLink, {href: row.original.url, class: 'font-bold'}, getValue),
-    }),
-    columnHelper.accessor('searchable', {
-      header: t('Searchable'),
-      meta: {
-        trackSize: '34px',
-        headerSrOnly: true,
-      },
-      enableSorting: false,
-      cell: ({row}) => {
-        if (row.original.searchable) {
-          return h('craft-icon', {
-            appearance: 'badge',
-            name: 'magnifying-glass',
-            label: t('This field’s values are used as search keywords.'),
-          });
-        }
-      },
-    }),
-    columnHelper.accessor('translatable', {
-      header: t('Translatable'),
-      meta: {
-        trackSize: '34px',
-        headerSrOnly: true,
-      },
-      enableSorting: false,
-      cell: ({getValue}) => {
-        if (getValue()) {
-          return h('craft-icon', {
-            appearance: 'badge',
-            name: 'custom-icons/language',
-            label: getValue(),
-          });
-        }
-      },
-    }),
-    columnHelper.accessor('handle', {
-      header: t('Handle'),
-      cell: ({getValue}) =>
-        h('craft-copy-attribute', {value: getValue()}, getValue),
-    }),
-    columnHelper.display({
-      id: 'type',
-      header: t('Type'),
-      cell: ({row}) => {
-        if (row.original.type.isMissing) {
-          return t('Missing');
-        }
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('title', {
+        header: t('Name'),
+        meta: {
+          trackSize: '1.5fr',
+        },
+        cell: ({row, getValue}) =>
+          h(CpLink, {href: row.original.url, class: 'font-bold'}, getValue),
+      }),
+      columnHelper.accessor('searchable', {
+        header: t('Searchable'),
+        meta: {
+          trackSize: '34px',
+          headerSrOnly: true,
+        },
+        enableSorting: false,
+        cell: ({row}) => {
+          if (row.original.searchable) {
+            return h('craft-icon', {
+              appearance: 'badge',
+              name: 'magnifying-glass',
+              label: t('This field’s values are used as search keywords.'),
+            });
+          }
+        },
+      }),
+      columnHelper.accessor('translatable', {
+        header: t('Translatable'),
+        meta: {
+          trackSize: '34px',
+          headerSrOnly: true,
+        },
+        enableSorting: false,
+        cell: ({getValue}) => {
+          if (getValue()) {
+            return h('craft-icon', {
+              appearance: 'badge',
+              name: 'custom-icons/language',
+              label: getValue(),
+            });
+          }
+        },
+      }),
+      columnHelper.accessor('handle', {
+        header: t('Handle'),
+        cell: ({getValue}) =>
+          h('craft-copy-attribute', {value: getValue()}, getValue),
+      }),
+      columnHelper.display({
+        id: 'type',
+        header: t('Type'),
+        cell: ({row}) => {
+          if (row.original.type.isMissing) {
+            return t('Missing');
+          }
 
-        return h('div', {class: 'flex items-center gap-2'}, [
-          h('craft-icon', row.original.type.icon),
-          h('span', row.original.type.label),
-        ]);
-      },
-    }),
-    columnHelper.accessor('usages', {
-      header: t('Used by'),
-    }),
-    columnHelper.display({
-      id: 'actions',
-      meta: {
-        trackSize: '60px',
-      },
-      cell: ({row}) =>
-        h('div', {class: 'self-end flex justify-end'}, [
-          h(DeleteButton, {
-            confirm: t('Are you sure you want to delete “{name}”?', {
-              name: row.original.title,
+          return h('div', {class: 'flex items-center gap-2'}, [
+            h('craft-icon', row.original.type.icon),
+            h('span', row.original.type.label),
+          ]);
+        },
+      }),
+      columnHelper.accessor('usages', {
+        header: t('Used by'),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        meta: {
+          trackSize: '60px',
+        },
+        cell: ({row}) =>
+          h('div', {class: 'self-end flex justify-end'}, [
+            h(DeleteButton, {
+              confirm: t('Are you sure you want to delete “{name}”?', {
+                name: row.original.title,
+              }),
+              onClick: () => router.delete(destroy({fieldId: row.original.id})),
             }),
-            onClick: () => router.delete(destroy({fieldId: row.original.id})),
-          }),
-        ]),
-    }),
-  ]);
+          ]),
+      }),
+    ])
+  );
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
@@ -175,7 +177,8 @@
     },
   });
 
-  const table = useVueTable({
+  const table = useTable({
+    features: craftTableFeatures,
     get data() {
       return props.data;
     },
@@ -193,8 +196,6 @@
         return sortingState.value;
       },
     },
-
-    getCoreRowModel: getCoreRowModel<FieldRow>(),
     ...paginationConfig,
     ...sortingConfig,
   });

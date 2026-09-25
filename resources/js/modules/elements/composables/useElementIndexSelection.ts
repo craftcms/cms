@@ -1,5 +1,6 @@
 import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
@@ -22,15 +23,18 @@ export interface ElementIndexSelectionOptions {
  * table rather than being mirrored here, so the checkboxes, the row model and
  * this composable can never disagree.
  */
-export function useElementIndexSelection(
-  table: MaybeRefOrGetter<Table<any>>,
+export function useElementIndexSelection<TData extends Record<string, any>>(
+  table: MaybeRefOrGetter<Table<CraftTableFeatures, TData>>,
   options: ElementIndexSelectionOptions
 ) {
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
 
-  const rows = (): Array<Row<any>> => toValue(table).getRowModel().rows;
-  const rowFor = (id: SelectableId): Row<any> | undefined =>
+  const rows = (): Array<Row<CraftTableFeatures, TData>> =>
+    toValue(table).getRowModel().rows;
+  const rowFor = (
+    id: SelectableId
+  ): Row<CraftTableFeatures, TData> | undefined =>
     rows().find((row) => row.original.id === id);
 
   const selection = useSelectable({
@@ -78,13 +82,13 @@ export function useElementIndexSelection(
   }
 
   function selectRow(
-    row: Row<any>,
+    row: Row<CraftTableFeatures, TData>,
     {checked, shiftKey = false}: {checked: boolean; shiftKey?: boolean}
   ) {
     selection.setChecked(row.original.id, checked, {shiftKey});
   }
 
-  function toggleRow(row: Row<any>) {
+  function toggleRow(row: Row<CraftTableFeatures, TData>) {
     if (readOnly.value) return;
     selection.toggle(row.original.id);
   }
@@ -92,7 +96,10 @@ export function useElementIndexSelection(
   // A click anywhere on a selectable row/card body toggles that row, unless it
   // landed on an interactive control. Reuses selectRow so a shift-click extends
   // the range from the anchor exactly like shift-clicking the checkbox does.
-  function selectRowFromEvent(row: Row<any> | undefined, event: MouseEvent) {
+  function selectRowFromEvent(
+    row: Row<CraftTableFeatures, TData> | undefined,
+    event: MouseEvent
+  ) {
     if (!selectable.value || readOnly.value || !row) return;
     if (!row.getCanSelect()) return;
     if (isInteractiveClick(event)) return;
@@ -109,7 +116,7 @@ export function useElementIndexSelection(
     }
   }
 
-  function extendSelectionTo(row: Row<any>) {
+  function extendSelectionTo(row: Row<CraftTableFeatures, TData>) {
     if (readOnly.value) return;
     selection.extendTo(row.original.id);
   }

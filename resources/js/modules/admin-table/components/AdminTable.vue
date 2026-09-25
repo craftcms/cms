@@ -1,6 +1,7 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import {computed} from 'vue';
   import type {Table} from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
@@ -8,7 +9,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;

@@ -2,11 +2,11 @@ import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {getElementLevelDelta, moveElement} from '@actions/StructuresController';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {type RowSelectionState, useTable} from '@tanstack/vue-table';
 import {
-  getCoreRowModel,
-  type RowSelectionState,
-  useVueTable,
-} from '@tanstack/vue-table';
+  craftTableFeatures,
+  type CraftTableFeatures,
+} from '@/modules/admin-table/tableFeatures';
 import {computed, onMounted, onScopeDispose, ref, shallowRef, watch} from 'vue';
 import {
   type ElementIndexRow,
@@ -362,7 +362,8 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     }
   }
 
-  const elementTable = useVueTable<ElementIndexRow>({
+  const elementTable = useTable<CraftTableFeatures, ElementIndexRow>({
+    features: craftTableFeatures,
     get data() {
       return tableData.value;
     },
@@ -395,7 +396,6 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
         ? cascadeStructureSelection(rowSelection.value, next, tableData.value)
         : next;
     },
-    getCoreRowModel: getCoreRowModel<ElementIndexRow>(),
     ...sortingConfig,
     ...paginationConfig,
     enableMultiSort: false,

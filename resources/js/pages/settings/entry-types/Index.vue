@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useTable} from '@tanstack/vue-table';
+  import {
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/tableFeatures';
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
@@ -39,34 +43,36 @@
       actions: !props.readOnly,
     };
   });
-  const columns = computed(() => [
-    columnHelper.display({
-      id: 'name',
-      header: t('Entry Type'),
-      cell: ({row}) => h(DynamicHtmlRenderer, {html: row.original.chip}),
-    }),
-    columnHelper.accessor('handle', {
-      header: t('Handle'),
-      meta: {
-        cellClass: 'justify-center',
-      },
-      cell: ({getValue}) =>
-        h('craft-copy-attribute', {value: getValue()}, getValue()),
-    }),
-    columnHelper.accessor('usages', {
-      header: t('Usages'),
-      cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteButton, {
-        confirm: t(
-          'Are you sure you want to delete “{name}” and all entries of that type?',
-          {name: row.original.title}
-        ),
-        onClick: () => router.delete(destroy({entryType: row.original.id})),
+  const columns = computed(() =>
+    columnHelper.columns([
+      columnHelper.display({
+        id: 'name',
+        header: t('Entry Type'),
+        cell: ({row}) => h(DynamicHtmlRenderer, {html: row.original.chip}),
       }),
-    ]),
-  ]);
+      columnHelper.accessor('handle', {
+        header: t('Handle'),
+        meta: {
+          cellClass: 'justify-center',
+        },
+        cell: ({getValue}) =>
+          h('craft-copy-attribute', {value: getValue()}, getValue()),
+      }),
+      columnHelper.accessor('usages', {
+        header: t('Usages'),
+        cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteButton, {
+          confirm: t(
+            'Are you sure you want to delete “{name}” and all entries of that type?',
+            {name: row.original.title}
+          ),
+          onClick: () => router.delete(destroy({entryType: row.original.id})),
+        }),
+      ]),
+    ])
+  );
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
@@ -104,7 +110,8 @@
     },
   });
 
-  const table = useVueTable<EntryTypeRow>({
+  const table = useTable<CraftTableFeatures, EntryTypeRow>({
+    features: craftTableFeatures,
     get data() {
       return entryTypes.value;
     },
@@ -123,7 +130,6 @@
         return columnVisibility.value;
       },
     },
-    getCoreRowModel: getCoreRowModel<EntryTypeRow>(),
     ...paginationConfig,
     ...sortingConfig,
   });
