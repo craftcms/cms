@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Import;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -22,12 +21,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -60,37 +57,12 @@ abstract class ElementImporter extends BaseImporter
     public protected(set) ?array $keepMissingNestedElements = null;
 
     /**
-     * Whether an `Elements::saveElement()` call is currently in progress, so the `ElementDeleted`
-     * listener registered in the constructor knows to collect deletions caused by it.
-     */
-    private bool $trackingNestedElementDeletions = false;
-
-    /**
-     * Element IDs deleted (via nested-item pruning) during the current `Elements::saveElement()` call.
-     */
-    private array $deletedNestedElementIds = [];
-
-    /**
      * Keys that are reserved for internal use by the importer.
      * No fields or attributes should attempt to be match with those values.
      *
      * @var array|string[]
      */
     private array $reservedKeys = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
-
-    /**
-     * Calls the parent constructor then starts tracking nested elements deleted during the import.
-     */
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-
-        Event::listen(function (ElementDeleted $event) {
-            if ($this->trackingNestedElementDeletions) {
-                $this->deletedNestedElementIds[] = $event->element->id;
-            }
-        });
-    }
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -464,9 +436,6 @@ abstract class ElementImporter extends BaseImporter
 
         $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
 
-        $this->trackingNestedElementDeletions = true;
-        $this->deletedNestedElementIds = [];
-
         try {
             if (! Elements::saveElement($element)) {
                 throw new InvalidElementException(
@@ -475,18 +444,9 @@ abstract class ElementImporter extends BaseImporter
                 );
             }
         } finally {
-            $this->trackingNestedElementDeletions = false;
-
             foreach ($restoreKeepFlagFields as $field) {
                 $field->setKeepMissingNestedElements(false);
             }
-        }
-
-        if (! empty($this->deletedNestedElementIds)) {
-            ImportLog::info(
-                'Pruned nested elements missing from imported data (elementId: '.($element->id ?? 'new').')',
-                ['elementId' => $element->id, 'prunedElementIds' => $this->deletedNestedElementIds]
-            );
         }
 
         return $element;

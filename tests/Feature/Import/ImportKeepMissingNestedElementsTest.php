@@ -11,7 +11,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -85,21 +84,6 @@ describe('nested matrix pruning', function () {
         expect($blocks[0]->id)->toBe($this->seededBlockIds[0]);
     });
 
-    it('logs pruned nested elements via ImportLog when pruning happens', function () {
-        ImportLog::shouldReceive('info')
-            ->once()
-            ->withArgs(fn (string $message, array $context) => ! empty($context['prunedElementIds']) && count($context['prunedElementIds']) === 1);
-
-        $this->import->importItem($this->matrixImporter, ($this->matrixEntryData)([
-            [
-                'type' => 'blockEt',
-                'title' => 'block 1',
-                'matchCriteria' => ['title' => 'title'],
-                'fields' => ['plainText' => 'one'],
-            ],
-        ]));
-    });
-
     it('keeps an existing block missing from a later import when the field opts in to keeping missing elements', function () {
         $importer = (clone $this->matrixImporter)->keepMissingNestedElements(['myMatrix' => ['__keep__' => true]]);
 
@@ -115,21 +99,6 @@ describe('nested matrix pruning', function () {
         $entry = EntryElement::find()->title('matrix entry')->one();
         $blocks = $entry->getFieldValue('myMatrix')->all();
         expect($blocks)->toHaveCount(2);
-    });
-
-    it('does not log anything when the field opts in to keeping missing elements', function () {
-        ImportLog::shouldReceive('info')->never();
-
-        $importer = (clone $this->matrixImporter)->keepMissingNestedElements(['myMatrix' => ['__keep__' => true]]);
-
-        $this->import->importItem($importer, ($this->matrixEntryData)([
-            [
-                'type' => 'blockEt',
-                'title' => 'block 1',
-                'matchCriteria' => ['title' => 'title'],
-                'fields' => ['plainText' => 'one'],
-            ],
-        ]));
     });
 });
 
