@@ -7,6 +7,7 @@
 - Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
 - Fixed a bug where the `attribute()` Twig function was allowed within sandboxed Twig environments, even if it wasn’t listed in `allowedFunctions`.
 - Fixed a bug where Twig array access with a `false` key could return the wrong value when Dev Mode was disabled.
+- Fixed an error that could occur when adding a new site to a draft, if it contained multiple levels of nested content. ([#18281](https://github.com/craftcms/cms/issues/18281))
 
 ## 5.11.3 - 2026-09-18
 

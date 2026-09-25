@@ -16,4 +16,15 @@ return [
         'uid' => 'nem-section----------------------uid',
         'entryTypes' => ['3000'],
     ],
+    // Lets entries choose their own sites, so a draft can add a site its canonical entry isn't in.
+    [
+        'id' => '3001',
+        'name' => 'NEM Custom Propagation Section',
+        'handle' => 'nemCustomPropagationSection',
+        'type' => 'channel',
+        'enableVersioning' => true,
+        'propagationMethod' => 'custom',
+        'uid' => 'nem-section-custom---------------uid',
+        'entryTypes' => ['3002'],
+    ],
 ];
