@@ -1,19 +1,39 @@
 <script>
   (function() {
-    fetch('{{ url }}', {
-      headers: {
-        'Accept': 'application/json',
+    function fetchCsrfData() {
+      return fetch('{{ url }}', {
+        headers: {
+          'Accept': 'application/json',
+        },
+      }).then((response) => response.json());
+    }
+
+    function createHiddenInput({name, value}) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      return input;
+    }
+
+    function handleFocusIn(e) {
+      const asyncInput = e.currentTarget.querySelector('craft-csrf-input');
+      if (asyncInput) {
+        fetchCsrfData().then(({csrfTokenName, csrfTokenValue}) => {
+          const input = createHiddenInput({name: csrfTokenName, value: csrfTokenValue});
+          asyncInput.replaceWith(input);
+        });
       }
-    }).then(response => response.json())
-      .then(data => {
-        document.querySelectorAll('craft-csrf-input')
-          .forEach(element => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = data.csrfTokenName;
-            input.value = data.csrfTokenValue;
-            element.replaceWith(input);
-          });
-      });
+    }
+
+    const asyncInputs = document.querySelectorAll('craft-csrf-input');
+    asyncInputs.forEach((el) => {
+      const form = el.closest('form');
+      if (!form) {
+        console.warning('craft-csrf-input should be within a form element.');
+        return;
+      }
+      form.addEventListener('focusin', handleFocusIn);
+    });
   })();
 </script>
