@@ -3,6 +3,7 @@
 ### Development
 
 - The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Added the `project-config/check` command, which checks project config schema compatibility without applying changes.
 
 ### Extensibility
 
