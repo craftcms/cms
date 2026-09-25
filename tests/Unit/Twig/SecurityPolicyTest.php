@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\SecurityPolicy;
 use Illuminate\Support\Traits\Macroable;
+use Twig\Sandbox\SecurityNotAllowedFunctionError;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
 
@@ -97,3 +98,7 @@ describe('AllowedInSandbox attribute', function () {
             ->toThrow(SecurityNotAllowedPropertyError::class);
     });
 });
+
+it('rejects historically allowed functions', function (string $function) {
+    $this->policy->checkSecurity([], [], [$function]);
+})->throws(SecurityNotAllowedFunctionError::class)->with(['parent', 'block', 'attribute']);
