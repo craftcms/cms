@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
@@ -86,7 +87,8 @@ it('fails when schema versions are incompatible', function () {
 it('passes when schema versions are compatible', function () {
     app(ProjectConfig::class)->regenerateExternalConfig();
 
-    $this->artisan('craft:project-config:check')
-        ->expectsOutputToContain('Project config schema versions are compatible with installed Craft and enabled plugins.')
-        ->assertSuccessful();
+    $exitCode = Artisan::call('craft:project-config:check');
+
+    expect(Artisan::output())->toContain('Project config schema versions are compatible with installed Craft and enabled plugins.')
+        ->and($exitCode)->toBe(0);
 });
