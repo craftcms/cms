@@ -71,14 +71,14 @@ class NavTokenParser extends AbstractTokenParser
         $stream->expect(Token::BLOCK_END_TYPE);
 
         if (count($targets) > 1) {
+            /** @var AssignContextVariable $keyTarget */
             $keyTarget = $targets->getNode('0');
-            $keyTarget = new AssignContextVariable($keyTarget->getAttribute('name'), $keyTarget->getTemplateLine());
+            /** @var AssignContextVariable $valueTarget */
             $valueTarget = $targets->getNode('1');
-            $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         } else {
             $keyTarget = new AssignContextVariable('_key', $lineno);
+            /** @var AssignContextVariable $valueTarget */
             $valueTarget = $targets->getNode('0');
-            $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         }
 
         return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno);
