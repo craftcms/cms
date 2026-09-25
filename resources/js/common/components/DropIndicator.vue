@@ -30,7 +30,7 @@
 <style scoped lang="scss">
   .drop-indicator {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     width: 2000px; // Large enough to span any table
     height: calc(2rem / 16);
     background-color: var(--c-color-accent-fill-loud, #2563eb);
@@ -44,8 +44,7 @@
 
   .drop-indicator--inline {
     position: relative;
-    top: auto;
-    bottom: auto;
+    inset-block: auto;
     background-color: transparent;
   }
 
@@ -54,18 +53,18 @@
   }
 
   .drop-indicator--top {
-    top: -1px; // Account for border-collapse in tables
+    inset-block-start: -1px; // Account for border-collapse in tables
 
     &.drop-indicator--contained {
-      top: 0;
+      inset-block-start: 0;
     }
   }
 
   .drop-indicator--bottom {
-    bottom: -1px; // Account for border-collapse in tables
+    inset-block-end: -1px; // Account for border-collapse in tables
 
     &.drop-indicator--contained {
-      bottom: 0;
+      inset-block-end: 0;
     }
   }
 </style>

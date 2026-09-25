@@ -8,6 +8,11 @@ import {
 } from './useSettingsSave';
 import type {SlideoutSaveResult} from '@/common/slideouts';
 
+const layers = vi.hoisted(() => ({top: null as null | {element: HTMLElement}}));
+vi.mock('@/common/slideouts/panel-stack', () => ({
+  topStackedPanel: () => layers.top,
+}));
+
 const axiosRequest = vi.fn();
 const routerReload = vi.fn();
 let slideout: SettingsSaveDependencies['slideout'] = null;
@@ -72,6 +77,7 @@ function run<T>(fn: () => T): T {
 }
 
 beforeEach(() => {
+  layers.top = null;
   axiosRequest.mockReset().mockResolvedValue({data: {message: 'Saved.'}});
   routerReload.mockReset();
   redirectUrl.value = undefined;
@@ -85,6 +91,54 @@ beforeEach(() => {
 });
 
 afterEach(() => scope?.stop());
+
+describe('save shortcut with an open editor', () => {
+  it.each([false, true])(
+    'only saves the page when no panel is open (legacy panel open: %s)',
+    (panelOpen) => {
+      slideout = null;
+      const form = makeForm();
+      run(() => useTestSettingsSave(form));
+      layers.top = panelOpen ? {element: document.createElement('div')} : null;
+
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', metaKey: true})
+      );
+
+      expect(form.submit).toHaveBeenCalledTimes(panelOpen ? 0 : 1);
+      expect(axiosRequest).not.toHaveBeenCalled();
+    }
+  );
+
+  it('routes one Ctrl+S to the top slideout, never the owner page', async () => {
+    const ownerForm = makeForm();
+    const childForm = makeForm();
+    const ownerScope = effectScope();
+    slideout = null;
+    ownerScope.run(() => useTestSettingsSave(ownerForm));
+    const childScope = effectScope();
+    slideout = {
+      instance: {containerId: 'child'},
+      close: vi.fn(),
+      saved: vi.fn(() => true),
+    };
+    childScope.run(() => useTestSettingsSave(childForm));
+    const element = document.createElement('div');
+    element.dataset.slideoutId = 'child';
+    layers.top = {element};
+
+    try {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+      );
+      await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalledOnce());
+      expect(ownerForm.submit).not.toHaveBeenCalled();
+    } finally {
+      ownerScope.stop();
+      childScope.stop();
+    }
+  });
+});
 
 describe('useSettingsSave in a slideout', () => {
   it('posts directly instead of making an Inertia visit', async () => {

@@ -133,16 +133,20 @@
   --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-bounce: bounce 1s infinite;
 
-  /* set our default variables */
-  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-
   /* How see-through every quiet border is (--c-color-*-border-quiet): each
      mixes its color with this much transparent. Resolved where the color
      tokens are declared, so override it on :root, not on a subtree. */
   --c-color-border-quiet-transparency: 60%;
+}
+
+/* On [data-theme] too: a var() resolves where it's declared, so :root alone
+   would inherit the root palette's value into a themed subtree. */
+:root,
+[data-theme] {
+  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
   --c-color-border-normal: var(--c-color-neutral-border-normal);
   --c-color-border-loud: var(--c-color-neutral-border-loud);
   --c-color-on-quiet: var(--c-color-neutral-on-quiet);

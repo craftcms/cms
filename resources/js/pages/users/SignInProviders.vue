@@ -6,7 +6,6 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Badge from '@/common/components/Badge.vue';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
 
@@ -97,12 +96,11 @@
 
           cell: ({row}) =>
             h(
-              Badge,
+              'craft-badge',
               {
-                variant: row.original.connected ? 'success' : 'default',
+                fill: row.original.connected ? 'success' : 'gray',
               },
-              () =>
-                row.original.connected ? t('Connected') : t('Not connected')
+              row.original.connected ? t('Connected') : t('Not connected')
             ),
         }),
         columnHelper.actions(({row}) => [

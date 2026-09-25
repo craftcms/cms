@@ -57,18 +57,17 @@ class UserReviewStage extends WorkflowStage
                     ->required(),
                 Group::make('user-review-approval-requirement', [
                     Field::make(t('Minimum'), Number::make('approvalsRequired')->min(1)->size(3))
-                        ->labelSrOnly()
                         ->required(),
                     Field::make(t('Mode'), Choice::make('approvalMode')->options([
                         ['label' => t('Total'), 'value' => UserReviewApprovalMode::Total->value],
                         ['label' => t('Per group'), 'value' => UserReviewApprovalMode::PerGroup->value],
                     ]))
-                        ->labelSrOnly()
                         ->required(),
                 ])
                     ->label(t('Approvals required'))
                     ->instructions(t('The minimum number of approvals required in total or per reviewer group.'))
-                    ->asField(),
+                    ->asField()
+                    ->required(),
             ]),
         ]);
     }

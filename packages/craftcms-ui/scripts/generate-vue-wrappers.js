@@ -175,7 +175,8 @@ const VALUE_COMPONENTS = [
     tagName: 'craft-input-file',
     className: 'CraftInputFile',
     fileName: 'CraftInputFile',
-    modelType: "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
+    modelType:
+      "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
     importPath: '../components/input-file/input-file',
     slots: [
       'label',

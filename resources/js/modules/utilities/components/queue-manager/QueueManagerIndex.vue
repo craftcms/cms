@@ -8,12 +8,10 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import CpLink from '@/common/components/CpLink.vue';
-  import Badge from '@/common/components/Badge.vue';
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';
-  import Empty from '@/common/components/Empty.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = withDefaults(
@@ -117,7 +115,10 @@
     </div>
   </template>
   <template v-else>
-    <Empty icon="play" :label="t('There are no jobs in the queue')" />
+    <craft-empty
+      icon="play"
+      :label="t('There are no jobs in the queue')"
+    ></craft-empty>
   </template>
 </template>
 

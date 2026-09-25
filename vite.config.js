@@ -220,11 +220,16 @@ export default defineConfig(({mode}) => {
       'yii2-adapter/**/*.php':
         './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix',
       '!(yii2-adapter)/**/*.php': ['./vendor/bin/rector', './vendor/bin/pint'],
-      'yii2-adapter/**/*.scss':
-        'stylelint --fix --allow-empty-input -c ./yii2-adapter/.stylelintrc.json',
-      '!(yii2-adapter)/**/*.scss': 'stylelint --fix --allow-empty-input',
-      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write --no-error-on-unmatched-pattern',
+      // No --fix: a logical property isn't always a drop-in swap for a
+      // physical one (e.g. alongside a translateX()), so a person decides.
+      '!(yii2-adapter)/**/*.{css,scss,vue,ts,html}':
+        'stylelint --allow-empty-input',
+      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
       'resources/js/**/*.{ts,vue}': 'vp check --fix',
+      // Blocks on physical Tailwind classes. Spacing-scale warnings are
+      // printed by .vite-hooks/pre-commit, since this hides passing output.
+      '{resources,workbench/resources}/**/*.{vue,ts,js,twig,php,html}':
+        'node scripts/lint-tailwind-classes.mjs --quiet',
     },
     fmt: {
       singleQuote: true,
@@ -249,6 +254,10 @@ export default defineConfig(({mode}) => {
         'yii2-adapter/*',
         'tests-playwright/.authentication.json',
         'tests/Fixtures/Import/*',
+        // Written by `boost:install`
+        '.mcp.json',
+        'boost.json',
+        'opencode.json',
       ],
     },
     base: './',

@@ -1,15 +1,7 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  ref,
-  shallowRef,
-  watch,
-  type InjectionKey,
-} from 'vue';
+import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {
@@ -23,6 +15,7 @@ import {useElementAutosave} from '@/modules/elements/composables/useElementAutos
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+import {provideFormValueGroup} from '@/modules/forms/formValueGroup';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -55,9 +48,7 @@ export interface ElementFormAction {
   shift?: boolean;
 }
 
-export const elementFormActionSubmitterKey: InjectionKey<
-  (action: ElementFormAction) => void
-> = Symbol('elementFormActionSubmitter');
+export type ElementFormActionSubmitter = (action: ElementFormAction) => void;
 
 export interface ElementPrimaryAction extends ElementFormAction {
   tabId: string | null;
@@ -236,6 +227,8 @@ export function useElementEditor({saveData}: Options = {}) {
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<ElementEditFormData>({});
+
+  provideFormValueGroup();
 
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a

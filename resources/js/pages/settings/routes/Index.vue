@@ -11,7 +11,6 @@
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
-  import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -100,10 +99,7 @@
 
   <div v-if="routes.length === 0" class="empty-routes">
     <CpContainer>
-      <Empty
-        :label="t('No routes exist yet.')"
-        class="border border-quiet rounded"
-      >
+      <craft-empty :label="t('No routes exist yet.')" class="rounded">
         <CpButtonLink
           v-if="!readOnly"
           :href="create()"
@@ -112,7 +108,7 @@
         >
           {{ t('New route') }}
         </CpButtonLink>
-      </Empty>
+      </craft-empty>
     </CpContainer>
   </div>
 
@@ -200,7 +196,8 @@
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-md);
     position: relative;
-    padding: var(--c-spacing-sm) var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     background: var(--c-surface-raised);
     grid-template-columns: subgrid;
   }
@@ -221,7 +218,8 @@
     color: var(--c-text-quiet);
     display: inline-flex;
     font-size: var(--c-text-sm);
-    padding: 0.125rem 0.35rem;
+    padding-block: 0.125rem;
+    padding-inline: 0.35rem;
     white-space: nowrap;
   }
 
@@ -252,7 +250,8 @@
     display: inline-flex;
     font-family: var(--c-font-mono);
     font-size: var(--c-text-sm);
-    padding: 0 0.25em;
+    padding-block: 0;
+    padding-inline: 0.25em;
   }
 
   .route__template {

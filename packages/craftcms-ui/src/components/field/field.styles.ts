@@ -54,7 +54,10 @@ export default css`
     gap: 5px;
     align-items: center;
     font-weight: bold;
-    margin-block-end: var(--c-spacing-sm);
+    margin-block-end: var(
+      --c-field-label-margin-block-end,
+      var(--c-spacing-md)
+    );
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -96,6 +99,10 @@ export default css`
   .form-field__help-text {
     display: block;
     margin-block-end: var(--c-spacing-xs, 0.3125rem);
+  }
+
+  :host([fieldset][data-form-node]) .form-field__help-text {
+    margin-block-end: var(--c-spacing-md);
   }
 
   .form-field__group-two .form-field__help-text {

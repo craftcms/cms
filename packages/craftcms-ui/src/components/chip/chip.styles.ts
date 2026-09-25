@@ -127,7 +127,8 @@ export default css`
   }
 
   .cp-chip__body {
-    padding: calc(var(--_chip-spacing) / 2) var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-inline: var(--_chip-spacing);
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: center;

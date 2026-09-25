@@ -382,6 +382,39 @@ it('carries a plugin’s own icon into its settings nav item', function () {
         ->and($plugin->icon)->toBeNull();
 });
 
+it('selects the plugin settings item instead of the Plugins index', function () {
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
+            ],
+            'Plugins' => [
+                'test-plugin' => [
+                    'label' => 'Test Plugin',
+                    'url' => '/admin/settings/plugins/test-plugin',
+                ],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/settings/plugins/test-plugin'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $groups = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav);
+
+    expect($groups->first()->subnav[0]->selected)->toBeFalse()
+        ->and($groups->last()->subnav[0]->selected)->toBeTrue();
+});
+
 it('leaves a source addressed by query to requests that ask for it', function (string $uri, array $selected) {
     $this->totalEditableSections = 1;
 

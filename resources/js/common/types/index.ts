@@ -59,6 +59,11 @@ export interface ChipIndicator {
 }
 
 export interface BreadcrumbItem {
+  /**
+   * Identifies a crumb the screen owns. `site-crumb` marks a screen's own site
+   * switcher, which the shared one defers to.
+   */
+  id?: string | null;
   href?: string | null;
   /** What the navigation and the legacy templates used to call `href`. */
   url?: string | null;

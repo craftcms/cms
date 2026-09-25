@@ -501,10 +501,7 @@ readonly class Navigation
     }
 
     /**
-     * Marks the trail to the current page.
-     *
-     * The first match wins, so a deeper item claims its ancestors rather than
-     * a shallower one swallowing the branch.
+     * Marks the trail to the most specific matching item.
      *
      * @param  NavItem[]  $items
      * @return NavItem[]
@@ -517,20 +514,42 @@ readonly class Navigation
             $path = 'users';
         }
 
-        $found = false;
+        $best = null;
+        $bestLength = -1;
+        $bestQuerySize = -1;
+        $findBest = function (array $items) use (&$findBest, $path, &$best, &$bestLength, &$bestQuerySize): void {
+            foreach ($items as $item) {
+                if (is_array($item->subnav)) {
+                    $findBest($item->subnav);
+                }
 
-        return $this->selectWithin($items, $path, $found);
+                $itemPath = $this->navItemPath((string) $item->href);
+                parse_str((string) parse_url((string) $item->href, PHP_URL_QUERY), $params);
+                $querySize = count($params);
+
+                if ($this->pathMatches($path, $itemPath) && $this->queryMatches((string) $item->href) &&
+                    ($bestLength < strlen($itemPath) || ($bestLength === strlen($itemPath) && $querySize > $bestQuerySize))) {
+                    $best = $item;
+                    $bestLength = strlen($itemPath);
+                    $bestQuerySize = $querySize;
+                }
+            }
+        };
+
+        $findBest($items);
+
+        return $this->selectWithin($items, $path, $best);
     }
 
     /**
      * @param  NavItem[]  $items
      * @return NavItem[]
      */
-    private function selectWithin(array $items, string $path, bool &$found): array
+    private function selectWithin(array $items, string $path, ?NavItem $best): array
     {
         foreach ($items as $item) {
             if (is_array($item->subnav)) {
-                $item->subnav = $this->selectWithin($item->subnav, $path, $found);
+                $item->subnav = $this->selectWithin($item->subnav, $path, $best);
             }
 
             $descendantSelected = is_array($item->subnav) && array_any(
@@ -540,14 +559,9 @@ readonly class Navigation
 
             $itemPath = $this->navItemPath((string) $item->href);
 
-            // A selected descendant claims its ancestors unconditionally —
-            // it has already set `$found`, and the trail has to reach the root.
-            // Failing that, the first path match wins and closes the question
-            // for everything after it.
-            if ($descendantSelected || (! $found && $this->pathMatches($path, $itemPath) && $this->queryMatches((string) $item->href))) {
+            if ($descendantSelected || $item === $best) {
                 $item->selected = true;
                 $item->linkAttributes['aria']['current'] = $itemPath === $path ? 'page' : 'true';
-                $found = true;
             }
         }
 

@@ -152,3 +152,23 @@ it('ignores a change the user did not make', () => {
 
   expect(onSiteChange).not.toHaveBeenCalled();
 });
+
+it('omits the shared cell when there is no site menu and no statuses', () => {
+  mount({});
+
+  // An empty cell would still take its grid gap.
+  expect(container!.querySelector('.element-toolbar__status')).toBeNull();
+});
+
+it('puts the site menu and the status menu in one cell', () => {
+  mount({
+    sites: [site(1, 'default', 'Default'), site(2, 'fr', 'French')],
+    siteHandle: 'default',
+    statusOptions: [{label: 'All', value: ''}],
+  });
+
+  const cell = container!.querySelector('.element-toolbar__status')!;
+
+  expect(cell.querySelector('.element-toolbar__site')).not.toBeNull();
+  expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
+});

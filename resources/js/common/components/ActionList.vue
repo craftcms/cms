@@ -149,12 +149,14 @@
       'data-keywords': isItem ? action.keywords : undefined,
     });
 
-    if (action.type === 'link') {
+    // A bare `href` makes it a link even without `type: 'link'`.
+    const link = action as Partial<ActionItemLink>;
+    if (action.type === 'link' || link.href) {
       return [
         {
           kind: 'link',
-          href: action.href,
-          external: action.external,
+          href: link.href,
+          external: link.external,
           label: action.label,
           onClick: action.onClick,
           attrs: defined({...attrs, size}),
@@ -489,7 +491,8 @@
      itself, which it has to set inline for the same reason: the shadow
      `::slotted()` rule can't reach inside the slotted content. */
   .action-list__heading {
-    padding: var(--c-spacing-xs) var(--c-spacing-md);
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
     font-size: var(--c-text-sm);
     font-weight: bold;
   }

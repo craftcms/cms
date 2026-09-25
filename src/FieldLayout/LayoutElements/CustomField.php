@@ -23,8 +23,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\FieldSelect;
+use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Missing as MissingControl;
-use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
@@ -655,8 +655,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
                     ->warning(t('Changing this may result in data loss.')),
                 Group::make('custom-field-configuration', [
                     $this->labelSettingsNode($context),
-                    Field::make(t('Handle'), Text::make('handle')
-                        ->monospace()
+                    Field::make(t('Handle'), Handle::make('handle')
                         ->maxLength(64)
                         ->value($this->handle)
                         ->placeholder($this->_originalHandle))
