@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Jobs;
 
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Events\ImportStarted;
+use CraftCms\Cms\Import\Events\ImportStepFinished;
 use CraftCms\Cms\Queue\Job;
+use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -14,14 +18,16 @@ use function CraftCms\Cms\t;
 class ImportPipeline extends Job
 {
     /**
-     * Promotes steps and import plan, then calls the parent constructor.
+     * Promotes steps, import plan and run ID, then calls the parent constructor.
      *
      * @param  array  $steps  The steps to run in this pipeline.
      * @param  ImportPlanData  $importPlan  The import plan this pipeline belongs to.
+     * @param  string  $runId  The unique ID of this import run.
      */
     public function __construct(
         public array $steps,
         public ImportPlanData $importPlan,
+        public string $runId,
     ) {
         parent::__construct();
     }
@@ -31,18 +37,44 @@ class ImportPipeline extends Job
      */
     public function handle(): void
     {
-        // each batch should `allowFailures()`
-        // so that we don't cancel the batch when one job failed
-        // maybe this should be customisable?
-        // https://laravel.com/docs/13.x/queues#allowing-failures
-        $steps = [];
-        foreach ($this->steps as $step) {
-            $steps[] = Bus::batch([$step['job']])->name($step['name'] ?? 'Importing step data')->allowFailures();
+        if (empty($this->steps)) {
+            return;
         }
 
-        if (! empty($steps)) {
-            Bus::chain($steps)->dispatch();
+        $importPlan = $this->importPlan;
+        $runId = $this->runId;
+
+        event(new ImportStarted($importPlan, $importPlan->steps ?? [], $runId));
+        $steps = [];
+
+        foreach ($this->steps as $step) {
+            $stepUid = $step['uid'];
+
+            // each batch should `allowFailures()`
+            // so that we don't cancel the batch when one job failed
+            // https://laravel.com/docs/13.x/queues#allowing-failures
+            // todo (iwona): maybe this should be customisable?
+            $steps[] = Bus::batch([$step['job']])
+                ->name($step['name'] ?? 'Importing step data')
+                ->allowFailures()
+                // runs once, after every job in this step has run (failed ones included)
+                ->finally(function (Batch $batch) use ($importPlan, $stepUid, $runId) {
+                    // let FinishImport know that at least one step had failures
+                    if ($batch->hasFailures()) {
+                        Cache::put(FinishImport::hasFailuresCacheKey($runId), true, now()->addDay());
+                    }
+
+                    $itemsFailed = (bool) Cache::pull(FinishImport::stepHasFailuresCacheKey($runId, $stepUid));
+                    $step = collect($importPlan->steps ?? [])->firstWhere('uid', $stepUid);
+
+                    if ($step !== null) {
+                        event(new ImportStepFinished($importPlan, $step, $runId, $batch->hasFailures() || $itemsFailed));
+                    }
+                });
         }
+
+        // runs only after the last step's batch has finished, and never if a batch was cancelled
+        Bus::chain([...$steps, new FinishImport($importPlan, $runId)])->dispatch();
     }
 
     #[Override]

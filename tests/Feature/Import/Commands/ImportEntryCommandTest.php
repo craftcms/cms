@@ -6,11 +6,20 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryTransformer;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Import\Events\ImportFinished;
+use CraftCms\Cms\Import\Events\ImportStarted;
+use CraftCms\Cms\Import\Events\ImportStepFinished;
+use CraftCms\Cms\Import\Events\ImportStepStarted;
+use CraftCms\Cms\Import\Events\ItemImported;
+use CraftCms\Cms\Import\Events\ItemImporting;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 
 const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)';
 
@@ -179,4 +188,47 @@ it('prompts for the transformer when the option is omitted, defaulting it when l
 it('throws for an unknown site handle', function () {
     ($this->command)('entries-plain-text.json', ['--site' => 'no-such-site', '--matchCriteria' => '={"title":"title"}'])
         ->assertFailed();
+});
+
+it('fires the import finished event once with the importer and the items’ run ID', function () {
+    Event::fake([ImportFinished::class, ItemImported::class]);
+
+    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+        ->assertSuccessful();
+
+    Event::assertDispatchedTimes(ImportFinished::class, 1);
+    Event::assertDispatched(fn (ImportFinished $event) => $event->importPlan === null
+        && count($event->steps) === 1
+        && $event->steps[0] instanceof BaseImporter
+        && Str::isUuid($event->runId)
+        && $event->hasFailures === false);
+
+    $runId = Event::dispatched(ImportFinished::class)->first()[0]->runId;
+    Event::assertDispatchedTimes(ItemImported::class, 3);
+    Event::assertNotDispatched(ItemImported::class, fn (ItemImported $event) => $event->runId !== $runId);
+});
+
+it('flags the import finished event when an item fails to import', function () {
+    Event::fake([ImportFinished::class]);
+    Event::listen(ItemImporting::class, fn () => throw new Exception('Item failed.'));
+
+    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+        ->assertSuccessful();
+
+    Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures);
+});
+
+it('fires the import and step lifecycle events in order with the same run ID', function () {
+    $fired = [];
+    foreach ([ImportStarted::class, ImportStepStarted::class, ImportStepFinished::class, ImportFinished::class] as $eventClass) {
+        Event::listen($eventClass, function (object $event) use (&$fired) {
+            $fired[] = [$event::class, $event->runId];
+        });
+    }
+
+    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+        ->assertSuccessful();
+
+    expect(array_column($fired, 0))->toBe([ImportStarted::class, ImportStepStarted::class, ImportStepFinished::class, ImportFinished::class])
+        ->and(array_unique(array_column($fired, 1)))->toHaveCount(1);
 });

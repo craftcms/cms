@@ -31,6 +31,7 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
@@ -132,6 +133,7 @@ class Import
      */
     public function dispatchImport(ImportPlanData $importPlan): bool
     {
+        $runId = (string) Str::uuid();
         $steps = [];
 
         // for each step in the $importPlan
@@ -140,7 +142,8 @@ class Import
 
             // name for this batch of jobs
             $steps[$key]['name'] = self::stepLabel($importPlan, $step);
-            $steps[$key]['job'] = new ImportJob($importPlan->uid ?? $importPlan->handle, $step->uid, $filePath, 0);
+            $steps[$key]['uid'] = $step->uid;
+            $steps[$key]['job'] = new ImportJob($importPlan->uid ?? $importPlan->handle, $step->uid, $filePath, $runId, 0);
         }
 
         event($event = new ImportDispatching($steps, $importPlan));
@@ -152,7 +155,7 @@ class Import
         // todo (iwona): think about scheduling batch pruning
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($event->steps, $event->importPlan));
+        dispatch(new ImportPipeline($event->steps, $event->importPlan, $runId));
 
         event(new ImportDispatched($event->steps, $event->importPlan));
 
@@ -183,10 +186,11 @@ class Import
      * @param  BaseImporter  $importer  The importer config to import into.
      * @param  array  $data  The raw item data being imported.
      * @param  array  $matchCriteria  any criteria that should be used to match incoming data against existing elements
+     * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
-    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = []): void
+    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
     {
-        event($event = new ItemImporting($importer, $data));
+        event($event = new ItemImporting($importer, $data, $runId));
 
         if (! $event->isValid) {
             return;
@@ -216,7 +220,6 @@ class Import
         //      the array should be an array of key-value pairs where
         //      the key is the property, field handle or column name in the system
         //      the value is the actual value to match on (not the handle)
-        // and now top that up with any additional (computed) match criteria
 
         // additional match criteria
         $additionalMatchCriteria = $importer->transformer instanceof BaseTransformer ?
@@ -227,7 +230,7 @@ class Import
 
         $importer->importItem($data);
 
-        event(new ItemImported($importer, $data));
+        event(new ItemImported($importer, $data, $runId));
     }
 
     /**

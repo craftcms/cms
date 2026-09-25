@@ -16,11 +16,11 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
-use http\Exception\InvalidArgumentException;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 

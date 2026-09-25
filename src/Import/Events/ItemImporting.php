@@ -15,12 +15,15 @@ class ItemImporting
     use ValidatableEvent;
 
     /**
-     * Promotes the importer config and raw data into a cancellable event fired before import.
+     * Promotes the importer config, raw data and import run ID into a cancellable event fired before import.
      *
      * @param  BaseImporter  $importer  The importer config for this event.
+     * @param  array  $data  The raw data about to be imported - before remapping.
+     * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
     public function __construct(
         public BaseImporter $importer,
         public array $data,
+        public ?string $runId = null,
     ) {}
 }

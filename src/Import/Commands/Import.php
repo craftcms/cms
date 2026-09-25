@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Import\Events\ImportFinished;
+use CraftCms\Cms\Import\Events\ImportStarted;
+use CraftCms\Cms\Import\Events\ImportStepFinished;
+use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -14,6 +18,7 @@ use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -140,15 +145,21 @@ abstract class Import extends Command implements PromptsForMissingInput
 
         $count = count($allData);
 
-        // iwona-events => entire import starts for CLI path
+        $runId = (string) Str::uuid();
+        $hasFailures = false;
+
+        event(new ImportStarted(null, [$importer], $runId));
+        event(new ImportStepStarted(null, $importer, $runId));
 
         foreach ($allData as $i => $item) {
             $this->components->info('Importing item ('.($i + 1)."/{$count}) ...");
 
             // import data
             try {
-                ImportFacade::importItem($importer, $item, $matchCriteria);
+                ImportFacade::importItem($importer, $item, $matchCriteria, $runId);
             } catch (\Exception $e) {
+                $hasFailures = true;
+
                 // log and proceed further
                 if ($this->input->isInteractive()) {
                     $this->components->warn('failed: '.$e->getMessage());
@@ -158,7 +169,8 @@ abstract class Import extends Command implements PromptsForMissingInput
             }
         }
 
-        // iwona-events => entire import ends for CLI path
+        event(new ImportStepFinished(null, $importer, $runId, $hasFailures));
+        event(new ImportFinished(null, [$importer], $runId, $hasFailures));
 
         $this->components->info('Done');
 

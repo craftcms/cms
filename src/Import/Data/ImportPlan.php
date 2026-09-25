@@ -37,8 +37,8 @@ class ImportPlan extends Component implements CpEditable, Validatable
     public ?string $description = null;
 
     /**
-     * @var array<int, array<string, mixed>>|null An ordered list of step arrays, each shaped
-     *                                            `{uid, type, file, transformer, batchSize, settings}`.
+     * @var array<int, BaseImporter>|null An ordered list of steps, each an importer holding its own
+     *                                    uid, file, transformer, batch size and settings.
      */
     public ?array $steps = null;
 
@@ -104,7 +104,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
     /**
      * Sets the import plan's steps, assigning a UID to any step that doesn't have one yet.
      *
-     * @param  array<array-key, array<string, mixed>>|null  $steps  The steps to set.
+     * @param  array<array-key, array<string, mixed>|BaseImporter>|null  $steps  The steps to set.
      */
     public function steps(?array $steps): self
     {
@@ -121,6 +121,8 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Normalize an array of steps (which could be an array or arrays) into an array of BaseImporter objects.
+     *
+     * @return array<int, BaseImporter>|null
      */
     private static function normalizeSteps(array $steps): ?array
     {

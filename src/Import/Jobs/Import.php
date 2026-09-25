@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
+use CraftCms\Cms\Import\Events\ImportChunkFinished;
+use CraftCms\Cms\Import\Events\ImportChunkStarted;
+use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
@@ -11,6 +14,7 @@ use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Bus\Batchable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Override;
 
@@ -23,18 +27,20 @@ class Import extends Job
     private int $defaultBatchSize = 5;
 
     /**
-     * Promotes the owning import plan's UID/handle, the step's UID, the file path and the starting
-     * offset, then calls the parent constructor.
+     * Promotes the owning import plan's UID/handle, the step's UID, the file path, the import run's ID
+     * and the starting offset, then calls the parent constructor.
      *
      * @param  string  $importPlanId  The UID (or, for file-based import plans, the handle) of the import plan.
      * @param  string  $stepUid  The UID of the step being run.
      * @param  string  $filePath  The path to the file being imported.
+     * @param  string  $runId  The unique ID of the import run this job belongs to.
      * @param  int  $start  The offset to start processing from.
      */
     public function __construct(
         private readonly string $importPlanId,
         private readonly string $stepUid,
         private readonly string $filePath,
+        private readonly string $runId,
         private readonly int $start = 0,
     ) {
         parent::__construct();
@@ -63,6 +69,7 @@ class Import extends Job
             return;
         }
 
+        /** @var BaseImporter|null $step */
         $step = collect($importPlan->steps ?? [])->firstWhere('uid', $this->stepUid);
 
         if ($step === null) {
@@ -87,46 +94,62 @@ class Import extends Job
         $data = array_slice($allData, $this->start);
         // count how many items we have to process
         $dataCount = count($data);
-        // figure out our batch limit
-        $batchLimit = $this->getBatchSize($step);
+        // figure out our chunk limit
+        $chunkLimit = $this->getChunkSize($step);
 
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
-        // could be done once per step's batch rather than for each root item that is being imported
+        // could be done once per step's chunk rather than for each root item that is being imported
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
 
-        // if batch limit is 0, it means this step's batch size was set to zero to disable batching of this step
+        // if chunk limit is 0, it means this step's chunk size was set to zero to disable chunking of this step
         // so we want to go through all the data in one go
-        if ($batchLimit === 0) {
-            $batchLimit = $dataCount;
+        if ($chunkLimit === 0) {
+            $chunkLimit = $dataCount;
         }
 
-        for ($i = 0; $i < $batchLimit; $i++) {
+        if ($this->start === 0) {
+            event(new ImportStepStarted($importPlan, $step, $this->runId));
+        }
+
+        event(new ImportChunkStarted($importPlan, $step, $this->runId, $this->start, $chunkLimit));
+
+        $processedCount = 0;
+        $chunkHasFailures = false;
+
+        for ($i = 0; $i < $chunkLimit; $i++) {
             // if we have less data than the limit, break
             if (! isset($data[$i])) {
                 break;
             }
 
+            $processedCount++;
+
             // import data
             try {
-                ImportFacade::importItem($step, $data[$i], $matchCriteria);
+                ImportFacade::importItem($step, $data[$i], $matchCriteria, $this->runId);
             } catch (\Exception $e) {
-                // log and proceed further
+                // log, let FinishImport know that this run had failures and proceed further
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['step' => $stepLabel, 'data' => $data[$i]]);
+                Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
+                Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());
+                $chunkHasFailures = true;
             }
         }
 
+        event(new ImportChunkFinished($importPlan, $step, $this->runId, $this->start, $processedCount, $chunkHasFailures));
+
         // if there's any data items left - add another job to the batch
-        if ($dataCount - $batchLimit > 0) {
-            $this->batch()->add(new Import($this->importId, $this->stepUid, $this->filePath, ($this->start + $batchLimit)));
+        if ($dataCount - $chunkLimit > 0) {
+            $this->batch()->add(new self($this->importPlanId, $this->stepUid, $this->filePath, $this->runId, ($this->start + $chunkLimit)));
         }
     }
 
     /**
-     * Returns the step's configured batch size, or the default batch size if null.
+     * Returns the step's configured chunk size, or the default chunk size if null.
      */
-    private function getBatchSize(BaseImporter $step): int
+    private function getChunkSize(BaseImporter $step): int
     {
-        // if batch size was left empty, it was cast to a null, and we should use the default batch size
+        // if chunk size was left empty, it was cast to a null, and we should use the default chunk size
         if (($step->batchSize ?? null) === null) {
             return $this->defaultBatchSize;
         }
