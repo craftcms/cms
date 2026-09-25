@@ -294,7 +294,7 @@ describe('useSettingsSave on a full page', () => {
     expect(axiosRequest).not.toHaveBeenCalled();
   });
 
-  it('only preserves page state when the save remains on the current screen', () => {
+  it('resets page state on a redirecting save unless it comes back with errors', () => {
     redirectUrl.value = '/admin/entry-types';
     const redirectingForm = makeForm();
     const continuingForm = makeForm();
@@ -308,7 +308,7 @@ describe('useSettingsSave on a full page', () => {
 
     expect(redirectingForm.submit).toHaveBeenCalledWith(
       action(),
-      expect.objectContaining({preserveState: false})
+      expect.objectContaining({preserveState: 'errors'})
     );
     expect(continuingForm.submit).toHaveBeenCalledWith(
       action(),

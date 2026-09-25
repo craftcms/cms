@@ -227,7 +227,7 @@ export interface FormAltAction {
 export interface FormSaveOptions {
   redirect?: boolean;
   data?: FormValues;
-  preserveState?: boolean;
+  preserveState?: boolean | 'errors';
   /** Overrides the screen's default submit destination. */
   action?: UrlMethodPair;
 }
