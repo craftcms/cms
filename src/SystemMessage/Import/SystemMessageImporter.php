@@ -19,8 +19,8 @@ class SystemMessageImporter extends ModelImporter
     {
         parent::__construct($config);
 
-        // match incoming data on key and language combination
-        $this->matchCriteria = ['key' => 'key', 'language' => 'language'];
+        // match incoming data on key and language combination, unless the config provides its own criteria
+        $this->matchCriteria ??= ['key' => 'key', 'language' => 'language'];
     }
 
     #[Override]

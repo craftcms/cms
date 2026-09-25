@@ -134,9 +134,9 @@ it('saves an import with several steps of different types in one request', funct
 
     expect($saved)->not->toBeNull()
         ->and($saved->steps)->toHaveCount(2)
-        ->and($saved->steps[0]['type'])->toBe(EntryImporter::class)
-        ->and($saved->steps[1]['type'])->toBe(SystemMessageImporter::class)
-        ->and($saved->steps[1]['batchSize'])->toBe(25)
+        ->and($saved->steps[0]::class)->toBe(EntryImporter::class)
+        ->and($saved->steps[1]::class)->toBe(SystemMessageImporter::class)
+        ->and($saved->steps[1]->batchSize)->toBe(25)
         ->and($saved->getImporters())->toHaveCount(2);
 });
 

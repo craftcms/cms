@@ -212,7 +212,7 @@ abstract class ElementImporter extends BaseImporter
                 'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSite($value, $attribute, $fail, $validator),
             ],
-            'settings.keepMissingNestedElements' => ['array'],
+            'settings.keepMissingNestedElements' => ['nullable', 'array'],
         ]);
     }
 
@@ -222,6 +222,7 @@ abstract class ElementImporter extends BaseImporter
         $data = parent::toArrayData();
         $data['settings']['site'] = $this->site?->handle;
         $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
+        $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
 
         return $data;
     }

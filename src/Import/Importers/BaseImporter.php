@@ -13,15 +13,19 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
+use CraftCms\UrlValidator\UrlValidationException;
+use CraftCms\UrlValidator\UrlValidator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
-use InvalidArgumentException;
+use Symfony\Component\Filesystem\Filesystem;
 
 use function CraftCms\Cms\t;
 
@@ -137,22 +141,13 @@ abstract class BaseImporter
     abstract public static function getDefaultTransformer(): ?string;
 
     /**
-     * Sets the path to the file that contains the data to be imported.
+     * Sets the path or URL of the file that contains the data to be imported.
+     * The value is stored as given; it's checked by `validate()`.
      *
-     * @param  string|null  $file  The file name or path to set.
+     * @param  string|null  $file  The file alias, path or URL to set.
      */
     public function file(?string $file): self
     {
-        if ($file === null) {
-            $this->file = null;
-
-            return $this;
-        }
-
-        if (! static::isFileValid($file)) {
-            throw new InvalidArgumentException('Provided file either doesn’t exist or is not allowed for import.');
-        }
-
         $this->file = $file;
 
         return $this;
@@ -276,6 +271,7 @@ abstract class BaseImporter
             'type' => static::class,
             'file' => $this->file,
             'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
+            'batchSize' => $this->batchSize,
             'settings' => [
                 'map' => $this->map,
                 'matchCriteria' => $this->matchCriteria,
@@ -305,47 +301,117 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates a provided file based on its existence, MIME type, and compatibility with
-     * the application's expected data types.
+     * Validates a provided file path or URL based on its location, existence and MIME type.
      *
-     * @param  mixed  $value  The file to validate, typically a path or identifier.
+     * @param  mixed  $value  The file path, alias or URL to validate.
      * @param  string  $attribute  The name of the attribute being validated.
      * @param  Closure  $fail  A callback function to report validation failures.
      * @param  Validator  $validator  The validator instance performing the validation.
-     * @param  string|null  $attributeForMessage  Optional. An alternate attribute name for error messages.
      */
-    public static function validateFile(mixed $value, string $attribute, Closure $fail, Validator $validator, ?string $attributeForMessage = null): bool
+    public static function validateFile(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
-        if (empty($value)) {
-            $fail(/* $attributeForMessage ?? */ $attribute, t('File must be provided.'));
-            // $validator->errors()->add($attributeForMessage ?? $attribute, t('File must be provided.'));
+        $error = self::fileError($value);
+
+        if ($error !== null) {
+            $fail($attribute, $error);
 
             return false;
         }
 
-        $filePath = self::resolvedFilePath($value);
-        if (! file_exists($filePath)) {
-            $fail($attribute, t('File “{filePath}” does not exist.', [
+        return true;
+    }
+
+    /**
+     * Returns an error message if the file path or URL can't be used for import, or null if it can.
+     * Hostname resolution (DNS lookup) can be skipped for URLs via `$resolveHost`.
+     */
+    private static function fileError(?string $file, bool $resolveHost = true): ?string
+    {
+        if (empty($file)) {
+            return t('File must be provided.');
+        }
+
+        if (! Url::isAbsoluteUrl($file) && ! str_starts_with($file, '@') && new Filesystem()->isAbsolutePath($file)) {
+            return t('File paths must be relative to the project root or start with an alias.');
+        }
+
+        $filePath = self::resolvedFilePath($file);
+
+        if (Url::isValidUrl($filePath)) {
+            $urlValidator = static::urlValidator();
+
+            if (! $resolveHost) {
+                if (! $urlValidator->validateScheme($filePath) || ! $urlValidator->validateHostname($filePath)) {
+                    return t('URL “{url}” is not permitted.', ['url' => $filePath]);
+                }
+
+                return null;
+            }
+
+            try {
+                $urlValidator->validate($filePath);
+            } catch (UrlValidationException) {
+                return t('URL “{url}” is not permitted.', ['url' => $filePath]);
+            }
+
+            // todo (iwona): need to check the mime type too
+            return null;
+        }
+
+        // reject any other scheme (e.g. data:, glob://, phar://) so PHP's stream wrappers can't be used
+        if (Url::isAbsoluteUrl($filePath) || ! self::isFilepathAllowed($filePath)) {
+            return t('Access to this file ({filePath}) is not permitted.', [
                 'filePath' => $filePath,
-            ]));
-
-            return false;
+            ]);
         }
 
-        $file = new File($filePath);
+        if (! is_file($filePath) || ! is_readable($filePath)) {
+            return t('File “{filePath}” does not exist.', [
+                'filePath' => $filePath,
+            ]);
+        }
+
         $dataTypes = array_unique(array_filter(array_keys(Import::getAllDataTypes())));
 
         // validate file type (e.g. csv, json, xml)
-        $newValidator = ValidatorFacade::make(
-            ['file' => $file],
+        $mimeValidator = ValidatorFacade::make(
+            ['file' => new File($filePath)],
             ['file' => ['mimes:'.implode(',', $dataTypes)]]
         );
 
-        if ($newValidator->fails()) {
-            $fail($attribute, t('Only files with these MIME types are allowed: {mimeTypes}.', [
+        if ($mimeValidator->fails()) {
+            return t('Only files with these MIME types are allowed: {mimeTypes}.', [
                 'mimeTypes' => implode(', ', $dataTypes),
-            ]));
+            ]);
+        }
 
+        return null;
+    }
+
+    /**
+     * Returns the validator used to check import URLs.
+     */
+    protected static function urlValidator(?callable $resolver = null): UrlValidator
+    {
+        return new UrlValidator($resolver, [
+            'ipv4FilterFlags' => FILTER_FLAG_NO_RES_RANGE,
+            'ipv6FilterFlags' => FILTER_FLAG_NO_RES_RANGE,
+        ]);
+    }
+
+    private static function isFilepathAllowed(string $filePath): bool
+    {
+        // disallow if the filename starts with a dot
+        $basename = basename($filePath);
+        if (str_starts_with($basename, '.')) {
+            return false;
+        }
+
+        // resolve symlinks and relative segments before checking the location
+        $realPath = realpath($filePath);
+
+        // disallow if the $filePath is within one of the restricted directories
+        if (Security::isRestrictedDir($filePath) || ($realPath !== false && Security::isRestrictedDir($realPath))) {
             return false;
         }
 
@@ -420,38 +486,24 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns whether a file is specified and points to an existing, importable file.
+     * Returns whether a file is specified and points to an existing, importable file or an allowed URL.
      * It's used e.g. to determine whether an "Edit mapping" button can be shown.
+     * URL hostnames are not resolved here.
      *
-     * @param  string|null  $file  The file alias or relative path to check.
+     * @param  string|null  $file  The file alias, path or URL to check.
      */
     public static function isFileValid(?string $file): bool
     {
-        if (empty($file)) {
-            return false;
-        }
-
-        $filePath = self::resolvedFilePath($file);
-        if (! file_exists($filePath)) {
-            return false;
-        }
-
-        $dataTypes = array_unique(array_filter(array_keys(Import::getAllDataTypes())));
-
-        return ValidatorFacade::make(
-            ['file' => new File($filePath)],
-            ['file' => ['mimes:'.implode(',', $dataTypes)]],
-        )->passes();
+        return self::fileError($file, resolveHost: false) === null;
     }
 
     /**
-     * Resolves the full file path based on the provided file alias or relative path.
+     * Resolves the full file path or URL based on the provided value.
      *
-     * If the provided file path starts with the '@root/' alias, it retrieves the absolute
-     * path using the Aliases service. Otherwise, it constructs the path by appending the
-     * file to the '@root/' alias.
+     * URLs and aliases are resolved via the Aliases service as they are.
+     * Any other value is treated as a path relative to the '@root' alias.
      *
-     * @param  string|null  $file  The file alias or relative path to be resolved.
+     * @param  string|null  $file  The URL, file alias or relative path to be resolved.
      */
     public static function resolvedFilePath(?string $file): ?string
     {
@@ -459,7 +511,11 @@ abstract class BaseImporter
             return null;
         }
 
-        return str_starts_with($file, '@root/') ? Aliases::get($file) : Aliases::get('@root/'.$file);
+        if (Url::isAbsoluteUrl($file) || str_starts_with($file, '@')) {
+            return Aliases::get($file);
+        }
+
+        return Aliases::get('@root/'.$file);
     }
 
     /**

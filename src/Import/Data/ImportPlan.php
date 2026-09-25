@@ -261,7 +261,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
     public function getImporters(): Collection
     {
         return collect($this->steps ?? [])
-            ->map(fn (array $step) => ImportPlanFacade::createImporter($step))
+            ->map(fn (array|BaseImporter $step) => $step instanceof BaseImporter ? $step : ImportPlanFacade::createImporter($step))
             ->filter()
             ->values();
     }

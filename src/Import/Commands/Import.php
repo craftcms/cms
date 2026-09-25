@@ -126,7 +126,7 @@ abstract class Import extends Command implements PromptsForMissingInput
         $this->components->bulletList($list);
 
         try {
-            $importer->validateSettings();
+            $importer->validate();
         } catch (ValidationException $e) {
             foreach ($e->errors() as $attribute => $messages) {
                 $this->components->error("$attribute: ".implode(' ', $messages));
