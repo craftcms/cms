@@ -32,7 +32,7 @@ trait ConfigurableComponent
 
     public function settingsAttributes(): array
     {
-        $attributes = array_keys(Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class));
+        $attributes = array_keys(Utils::getPublicProperties($this, fn (ReflectionProperty $property) => ! $property->getDeclaringClass()->isAbstract()));
 
         event($event = new DefineSettingsAttributes(
             component: $this instanceof ConfigurableComponentInterface ? $this : throw new RuntimeException(sprintf('%s must implement %s.', static::class, ConfigurableComponentInterface::class)),
