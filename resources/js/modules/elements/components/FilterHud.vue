@@ -120,7 +120,7 @@
 <template>
   <Teleport to="body">
     <form
-      class="fixed z-50 overflow-y-auto"
+      class="filter-hud fixed z-50 overflow-y-auto"
       :style="position"
       @submit.prevent.stop="handleSubmit"
     >
@@ -158,6 +158,11 @@
 </template>
 
 <style scoped lang="scss">
+  .filter-hud {
+    border-radius: var(--c-radius-md);
+    box-shadow: var(--c-shadow-overlay);
+  }
+
   .filter-condition-builder > :deep(div > .condition-group::part(base)) {
     border: 0;
     border-radius: 0;
