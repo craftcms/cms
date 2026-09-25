@@ -3,6 +3,7 @@ import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
 import type {PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A single-line text input, and the base every other `craft-input-*`
@@ -30,7 +31,7 @@ import {property} from 'lit/decorators.js';
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
-export default class CraftInput extends LionInput {
+export default class CraftInput extends HasLabel(LionInput) {
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }

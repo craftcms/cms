@@ -87,13 +87,14 @@
     :disabled="control.mode === 'disabled'"
     @model-value-changed="update"
   >
-    <button
+    <craft-button
       v-if="editable && hasValue"
       type="button"
-      class="clear-btn"
-      :title="t('Clear')"
+      icon="x"
       :aria-label="t('Clear')"
+      variant="plain"
+      size="small"
       @click="clear"
-    ></button>
+    ></craft-button>
   </craft-input-date-time>
 </template>
