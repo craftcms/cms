@@ -24,6 +24,7 @@ use craft\models\Section_SiteSettings;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Section\Enums\SectionType;
 use crafttests\fixtures\SitesFixture;
 use RuntimeException;
 
@@ -121,7 +122,7 @@ class ContentBlockDraftNewSiteTest extends TestCase
         $this->section = new Section();
         $this->section->name = 'Test Block Section';
         $this->section->handle = 'testBlockSection';
-        $this->section->type = Section::TYPE_CHANNEL;
+        $this->section->type = SectionType::Channel;
         $this->section->propagationMethod = PropagationMethod::Custom;
         $this->section->setEntryTypes([$this->ownerEntryType]);
         $this->section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
