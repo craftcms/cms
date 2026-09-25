@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="none">
+  <craft-pane appearance="plain" style="--c-pane-radius: 0">
     <ActivityTimeline
       active
       :url="activityTimelineUrl"
