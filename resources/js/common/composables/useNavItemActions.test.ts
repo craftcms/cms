@@ -62,3 +62,13 @@ it('follows a page whose url changes without it remounting', () => {
   expect(labels('/admin/content/entries')).toEqual([]);
   expect(labels('/admin/content/blog')).toEqual(['Customize sources']);
 });
+
+it('finds the action from a branch whose href carries the site', () => {
+  // A multi-site install stamps `?site=` onto every nav href, but the index
+  // builds its own URL from its route, which doesn't carry it.
+  lend(() => '/admin/content/entries');
+
+  expect(labels('/admin/content/entries?site=default')).toEqual([
+    'Customize sources',
+  ]);
+});

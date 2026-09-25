@@ -9,6 +9,7 @@ export interface CpUser {
   id: number | null;
   thumbHtml: string | null;
   name: string | null;
+  admin: boolean;
 }
 
 export interface CraftData {

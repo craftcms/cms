@@ -223,10 +223,29 @@ it('scopes the list to the current page or explicitly selected source', function
         );
 })->with([
     'explicit' => ['first', 'first', 1],
-    'second page default' => ['second', null, 3],
     'second page fallback' => ['second', 'missing', 3],
     'explicit outside page' => ['second', 'first', 1],
 ]);
+
+it('sends a page that names no source to the source it shows', function () {
+    $a = Section::factory()->create(['type' => SectionType::Channel]);
+    $b = Section::factory()->create(['type' => SectionType::Channel]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$a->uid", 'page' => 'First'],
+        ['type' => ElementSources::TYPE_HEADING, 'key' => 'heading:1', 'heading' => 'Channels', 'page' => 'Second'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$b->uid", 'page' => 'Second'],
+    ]);
+
+    // The nav links the section by its own path, so landing there highlights
+    // it rather than the page's item. The heading before it isn't a source.
+    get("/{$this->cpTrigger}/content/second?viewMode=cards")
+        ->assertRedirectContains("/{$this->cpTrigger}/content/second/{$b->handle}?viewMode=cards");
+
+    // “All entries” shares the page's own URL, so there's nowhere to go.
+    get("/{$this->cpTrigger}/content/first")->assertOk();
+});
 
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
@@ -947,7 +966,8 @@ it('offers no site switcher on an index whose elements are not localized', funct
     Site::factory()->create();
 
     // Users aren't localized, so there is no site to scope the index to.
-    get("/{$this->cpTrigger}/users")
+    // (The bare users index redirects to the source it shows.)
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.siteCrumb', null));
 });

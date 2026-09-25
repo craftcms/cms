@@ -24,6 +24,11 @@
     value: ChoiceValue;
     disabled?: boolean;
     /**
+     * Heads a run of consecutive options sharing it, as an `<optgroup>` when
+     * presented as a select. Other presentations ignore it.
+     */
+    group?: string | null;
+    /**
      * Illustration of the choice, rendered above the radio. `aspectRatio` maps
      * to the CSS property of the same name.
      */
@@ -96,6 +101,27 @@
 
     return [{label: placeholder ?? '', value: ''}, ...options];
   });
+
+  /**
+   * The select's options in runs, one per `group` in the order they appear;
+   * an ungrouped run has no label and renders without an `<optgroup>`.
+   */
+  const selectGroups = computed(() =>
+    selectOptions.value.reduce<
+      Array<{label: string | null; options: ChoiceOption[]}>
+    >((groups, option) => {
+      const label = option.group ?? null;
+      const last = groups.at(-1);
+
+      if (last && last.label === label) {
+        last.options.push(option);
+      } else {
+        groups.push({label, options: [option]});
+      }
+
+      return groups;
+    }, [])
+  );
 
   function inputValue(value: FormValue): string {
     return value === true ? '1' : value === false ? '' : String(value);
@@ -320,15 +346,30 @@
       :aria-invalid="invalid ? 'true' : undefined"
       @change="onSelect"
     >
-      <option
-        v-for="option in selectOptions"
-        :key="inputValue(option.value)"
-        :value="inputValue(option.value)"
-        :selected="selected(option.value)"
-        :disabled="option.disabled"
-      >
-        {{ option.label }}
-      </option>
+      <template v-for="(group, index) in selectGroups" :key="index">
+        <optgroup v-if="group.label !== null" :label="group.label">
+          <option
+            v-for="option in group.options"
+            :key="inputValue(option.value)"
+            :value="inputValue(option.value)"
+            :selected="selected(option.value)"
+            :disabled="option.disabled"
+          >
+            {{ option.label }}
+          </option>
+        </optgroup>
+        <template v-else>
+          <option
+            v-for="option in group.options"
+            :key="inputValue(option.value)"
+            :value="inputValue(option.value)"
+            :selected="selected(option.value)"
+            :disabled="option.disabled"
+          >
+            {{ option.label }}
+          </option>
+        </template>
+      </template>
     </select>
   </craft-select>
   <craft-button-group

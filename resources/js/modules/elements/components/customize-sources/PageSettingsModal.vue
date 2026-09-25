@@ -45,7 +45,7 @@
 <template>
   <ModalForm
     :is-active="isActive"
-    :title="page ? t('Page Settings') : t('New page')"
+    :title="page ? t('Page settings') : t('New page')"
     width="sm"
     @close="emit('close')"
     @submit="submit"

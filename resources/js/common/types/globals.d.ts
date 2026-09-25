@@ -159,6 +159,9 @@ interface CraftStatic {
     elementType: string,
     settings?: ElementSelectorModalSettings
   ): Promise<ElementSelectorModalInstance>;
+  openCustomizeSourcesModal(
+    options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
+  ): Promise<void>;
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
