@@ -3,7 +3,6 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {h, ref} from 'vue';
-  import Empty from '@/common/components/Empty.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {router} from '@inertiajs/vue3';
@@ -188,7 +187,10 @@
 
         <AdminTable :table="editableTable" :reorderable="false">
           <template #empty-row>
-            <Empty :label="t('No import plans yet.')" icon="light/upload" />
+            <craft-empty
+              :label="t('No import plans yet.')"
+              icon="light/upload"
+            />
           </template>
         </AdminTable>
       </craft-pane>
