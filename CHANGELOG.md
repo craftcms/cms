@@ -6,6 +6,7 @@
 - Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
 - Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
 - Fixed a bug where the `attribute()` Twig function was allowed within sandboxed Twig environments, even if it wasn’t listed in `allowedFunctions`.
+- Fixed a bug where Twig array access with a `false` key could return the wrong value when Dev Mode was disabled.
 
 ## 5.11.3 - 2026-09-18
 
