@@ -7,7 +7,10 @@ import {
 
 const meta = {
   title: 'Elements/DataTable',
-  component: DataTable,
+  // The component is generic over its row type, which `Meta<typeof …>` can't
+  // instantiate. Every story drives it through `render`, so the only thing the
+  // cast costs is arg typing that nothing here uses.
+  component: DataTable as Meta['component'],
   args: {
     loading: false,
   },
@@ -27,7 +30,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof DataTable>;
+} satisfies Meta;
 
 export default meta;
 interface DataTableStoryArgs {

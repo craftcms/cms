@@ -1,10 +1,11 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import {
     type Column,
     FlexRender,
     type Row,
     type Table,
   } from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -35,7 +36,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
@@ -235,7 +236,7 @@
   );
 
   function getAriaSortAttribute(
-    column: Column<any>
+    column: Column<CraftTableFeatures, TData>
   ): 'ascending' | 'descending' | 'none' | undefined {
     if (column.getCanSort()) {
       if (column.getIsSorted()) {
@@ -247,8 +248,8 @@
 
   const visibleColumnCount = computed(() => {
     const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter((column: Column<any>) =>
-      column.getIsVisible()
+    const visibleColumns = columns.filter(
+      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
     );
     let columnCount = visibleColumns.length;
 
@@ -269,14 +270,14 @@
 
   const tableStyles = computed(() => {
     const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter((column: Column<any>) =>
-      column.getIsVisible()
+    const visibleColumns = columns.filter(
+      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
     );
 
     const columnCount = visibleColumnCount.value;
 
     const gridDef = visibleColumns.reduce(
-      (acc: Array<string>, column: Column<any>) => {
+      (acc: Array<string>, column: Column<CraftTableFeatures, TData>) => {
         acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
         return acc;
       },
@@ -303,7 +304,7 @@
     };
   });
 
-  function rowLabel(row: Row<any>): string {
+  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
     return row.original.label ?? String(row.original.id);
   }
 
@@ -418,7 +419,9 @@
           <craft-checkbox
             label-sr-only
             .checked="table.getIsAllRowsSelected()"
-            .indeterminate="table.getIsSomeRowsSelected()"
+            .indeterminate="
+              table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+            "
             .disabled="readOnly"
             @model-value-changed="
               onToggleAllSelected(($event.target as HTMLInputElement).checked)
@@ -455,8 +458,7 @@
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
+                :header="header"
               />&nbsp;<craft-icon
                 v-if="
                   header.column.getCanSort() && !header.column.getIsSorted()
@@ -631,16 +633,9 @@
               <span class="sr-only"
                 >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
               </span>
-              <FlexRender
-                :render="cell.column.columnDef.cell"
-                :props="cell.getContext()"
-              />
+              <FlexRender :cell="cell" />
             </div>
-            <FlexRender
-              v-else
-              :render="cell.column.columnDef.cell"
-              :props="cell.getContext()"
-            />
+            <FlexRender v-else :cell="cell" />
           </component>
         </tr>
       </template>

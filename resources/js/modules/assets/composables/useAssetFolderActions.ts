@@ -58,6 +58,12 @@ export function useAssetFolderActions() {
 
   const newFolderOpen = computed(() => newFolderParentId.value !== null);
 
+  function folderName(folderId: number | undefined): string | undefined {
+    if (folderId === undefined) return undefined;
+    const name = table.value?.getRow(`folder:${folderId}`)?.original.folderName;
+    return typeof name === 'string' ? name : undefined;
+  }
+
   function onNewSubfolder(event: Event) {
     const folderId = detail(event)?.folderId;
     if (folderId === undefined) {
@@ -114,10 +120,7 @@ export function useAssetFolderActions() {
     if (!folderId) return;
 
     renameFolderId.value = folderId;
-    renameName.value =
-      action.label ??
-      table.value?.getRow(`folder:${folderId}`)?.original?.folderName ??
-      '';
+    renameName.value = action.label ?? folderName(folderId) ?? '';
     renameError.value = null;
     navigateAfterRename.value = action.navigate ?? false;
   }
@@ -168,9 +171,7 @@ export function useAssetFolderActions() {
     const ids = folderIds(action);
     const label =
       action.label ??
-      (ids.length === 1
-        ? table.value?.getRow(`folder:${ids[0]}`)?.original?.folderName
-        : null) ??
+      (ids.length === 1 ? folderName(ids[0]) : null) ??
       t('Untitled');
     if (
       !ids.length ||

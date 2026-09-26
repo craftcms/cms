@@ -1,9 +1,11 @@
 import {computed, shallowRef} from 'vue';
 import type {Table} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {ElementIndexRow} from '@/modules/elements/composables/useContentIndexData';
 
 interface ElementIndexHandle {
   /** The listing's tanstack table (selection, state, …). */
-  table: Table<any>;
+  table: Table<CraftTableFeatures, ElementIndexRow>;
   /** The index's post-action refresh: clears selection + partial reload. */
   onActionPerformed: () => void;
   /** Re-pull just the results, leaving selection and scroll alone. */

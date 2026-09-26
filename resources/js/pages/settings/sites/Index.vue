@@ -3,7 +3,7 @@
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {Site, SiteGroup} from '@/common/types';
   import ModalForm from '@/common/components/ModalForm.vue';
@@ -100,78 +100,82 @@
     siteIds.value = newIds;
   }
 
-  const columns = ref([
-    columnHelper.accessor('name', {
-      header: () => t('Name'),
-      cell: ({row, getValue}) =>
-        h(
-          CpLink,
-          {
-            href: edit.url({site: row.original.id}),
-            block: true,
-          },
-          () =>
-            h(
-              'div',
-              {
-                class: 'flex gap-2 items-center',
-              },
-              [
-                h('craft-indicator', {
-                  variant: row.original.enabled ? 'success' : 'empty',
-                  appearance: row.original.enabled ? 'outline-fill' : 'outline',
-                }),
-                h('span', getValue()),
-              ]
-            )
-        ),
-    }),
-    columnHelper.accessor('handle', {
-      header: () => t('Handle'),
-      cell: (info) => h('code', info.getValue()),
-    }),
-    columnHelper.accessor('enabled', {
-      header: () => t('Status'),
-      cell: (info) =>
-        h(
-          'craft-badge',
-          {
-            fill: info.getValue() ? 'success' : 'default',
-          },
-          info.getValue() ? t('Enabled') : t('Disabled')
-        ),
-    }),
-    columnHelper.accessor('language', {
-      header: () => t('Language'),
-      cell: (info) => h('code', info.getValue()),
-    }),
-    columnHelper.accessor('primary', {
-      header: () => t('Primary'),
-      cell: (info) =>
-        info.getValue()
-          ? h('craft-icon', {
-              name: 'check',
-            })
-          : '',
-    }),
-    columnHelper.accessor('baseUrl', {
-      header: () => t('Base URL'),
-      cell: (info) => h('code', info.getValue()),
-    }),
-    columnHelper.accessor('group.name', {
-      id: 'group',
-      header: () => t('Group'),
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteSiteButton, {
-        site: row.original,
-        disabled: row.original.primary,
-        class: 'whitespace-normal',
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('name', {
+        header: () => t('Name'),
+        cell: ({row, getValue}) =>
+          h(
+            CpLink,
+            {
+              href: edit.url({site: row.original.id}),
+              block: true,
+            },
+            () =>
+              h(
+                'div',
+                {
+                  class: 'flex gap-2 items-center',
+                },
+                [
+                  h('craft-indicator', {
+                    variant: row.original.enabled ? 'success' : 'empty',
+                    appearance: row.original.enabled
+                      ? 'outline-fill'
+                      : 'outline',
+                  }),
+                  h('span', getValue()),
+                ]
+              )
+          ),
       }),
-    ]),
-  ]);
+      columnHelper.accessor('handle', {
+        header: () => t('Handle'),
+        cell: (info) => h('code', info.getValue()),
+      }),
+      columnHelper.accessor('enabled', {
+        header: () => t('Status'),
+        cell: (info) =>
+          h(
+            'craft-badge',
+            {
+              fill: info.getValue() ? 'success' : 'default',
+            },
+            info.getValue() ? t('Enabled') : t('Disabled')
+          ),
+      }),
+      columnHelper.accessor('language', {
+        header: () => t('Language'),
+        cell: (info) => h('code', info.getValue()),
+      }),
+      columnHelper.accessor('primary', {
+        header: () => t('Primary'),
+        cell: (info) =>
+          info.getValue()
+            ? h('craft-icon', {
+                name: 'check',
+              })
+            : '',
+      }),
+      columnHelper.accessor('baseUrl', {
+        header: () => t('Base URL'),
+        cell: (info) => h('code', info.getValue()),
+      }),
+      columnHelper.accessor('group.name', {
+        id: 'group',
+        header: () => t('Group'),
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteSiteButton, {
+          site: row.original,
+          disabled: row.original.primary,
+          class: 'whitespace-normal',
+        }),
+      ]),
+    ])
+  );
 
-  const sitesTable = useVueTable({
+  const sitesTable = useCraftTable({
     get data() {
       return sites.value;
     },
@@ -185,9 +189,7 @@
         };
       },
     },
-    getCoreRowModel: getCoreRowModel<Site>(),
     getRowId: (row) => row.id.toString(),
-    enableSorting: false,
     defaultColumn: {
       // @ts-expect-error — this is technically invalid, but gives us the behavior we want
       size: 'auto',

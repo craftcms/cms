@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {capitalize, t} from '@craftcms/ui';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -34,65 +34,68 @@
     handle: true,
   });
   const columnHelper = createCraftColumnHelper<ExistingImageTransform>();
-  const columns = ref([
-    columnHelper.link('name', {
-      header: t('Name'),
-      props: ({row}) => ({
-        href: edit({transformHandle: row.original.handle}).url,
-        inertia: true,
-      }),
-    }),
-    columnHelper.handle('handle'),
-    columnHelper.accessor('mode', {
-      header: t('Mode'),
-    }),
-    columnHelper.display({
-      id: 'dimensions',
-      header: t('Dimensions'),
-      cell: ({row}) =>
-        `${row.original.width ?? 'Auto'} x ${row.original.height ?? 'Auto'}`,
-    }),
-
-    columnHelper.accessor('interlace', {
-      header: t('Interlace'),
-      cell: ({row}) =>
-        row.original.interlace ? capitalize(row.original.interlace) : 'None',
-    }),
-
-    columnHelper.accessor('format', {
-      header: t('Format'),
-      cell: ({row}) =>
-        row.original.format ? capitalize(row.original.format) : 'Auto',
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteButton, {
-        confirm: t('Are you sure you want to delete the “{name}” transform?', {
-          name: row.original.name,
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.link('name', {
+        header: t('Name'),
+        props: ({row}) => ({
+          href: edit({transformHandle: row.original.handle}).url,
+          inertia: true,
         }),
-        onClick: () =>
-          router
-            .optimistic<{transforms: Array<ExistingImageTransform>}>(
-              (props) => ({
-                transforms: props.transforms.filter(
-                  ({id}) => id !== row.original.id
-                ),
-              })
-            )
-            .delete(destroy({transformId: row.original.id}), {
-              preserveScroll: true,
-            }),
       }),
-    ]),
-  ]);
-  const table = useVueTable({
+      columnHelper.handle('handle'),
+      columnHelper.accessor('mode', {
+        header: t('Mode'),
+      }),
+      columnHelper.display({
+        id: 'dimensions',
+        header: t('Dimensions'),
+        cell: ({row}) =>
+          `${row.original.width ?? 'Auto'} x ${row.original.height ?? 'Auto'}`,
+      }),
+
+      columnHelper.accessor('interlace', {
+        header: t('Interlace'),
+        cell: ({row}) =>
+          row.original.interlace ? capitalize(row.original.interlace) : 'None',
+      }),
+
+      columnHelper.accessor('format', {
+        header: t('Format'),
+        cell: ({row}) =>
+          row.original.format ? capitalize(row.original.format) : 'Auto',
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteButton, {
+          confirm: t(
+            'Are you sure you want to delete the “{name}” transform?',
+            {
+              name: row.original.name,
+            }
+          ),
+          onClick: () =>
+            router
+              .optimistic<{transforms: Array<ExistingImageTransform>}>(
+                (props) => ({
+                  transforms: props.transforms.filter(
+                    ({id}) => id !== row.original.id
+                  ),
+                })
+              )
+              .delete(destroy({transformId: row.original.id}), {
+                preserveScroll: true,
+              }),
+        }),
+      ]),
+    ])
+  );
+  const table = useCraftTable({
     get data() {
       return props.transforms;
     },
     get columns() {
       return columns.value;
     },
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<ExistingImageTransform>(),
     state: {
       get columnVisibility() {
         return columnVisibility.value;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -39,24 +39,26 @@
 
   useAppLayout({title: props.title, form: null});
   const columnHelper = createCraftColumnHelper<Workflow>();
-  const columns = computed(() => [
-    columnHelper.link('name', {
-      header: t('Name'),
-      props: ({row}) => ({href: edit({workflow: row.original.id}).url}),
-    }),
-    columnHelper.accessor('stages', {
-      header: t('Stages'),
-      enableSorting: false,
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteButton, {
-        confirm: t('Are you sure you want to delete “{name}”?', {
-          name: row.original.name,
-        }),
-        onClick: () => router.delete(destroy({workflow: row.original.id})),
+  const columns = computed(() =>
+    columnHelper.columns([
+      columnHelper.link('name', {
+        header: t('Name'),
+        props: ({row}) => ({href: edit({workflow: row.original.id}).url}),
       }),
-    ]),
-  ]);
+      columnHelper.accessor('stages', {
+        header: t('Stages'),
+        enableSorting: false,
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteButton, {
+          confirm: t('Are you sure you want to delete “{name}”?', {
+            name: row.original.name,
+          }),
+          onClick: () => router.delete(destroy({workflow: row.original.id})),
+        }),
+      ]),
+    ])
+  );
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
@@ -76,7 +78,7 @@
       });
     },
   });
-  const table = useVueTable<Workflow>({
+  const table = useCraftTable<Workflow>({
     get data() {
       return props.data;
     },
@@ -94,7 +96,6 @@
         return {actions: !props.readOnly};
       },
     },
-    getCoreRowModel: getCoreRowModel<Workflow>(),
     ...paginationConfig,
     ...sortingConfig,
   });

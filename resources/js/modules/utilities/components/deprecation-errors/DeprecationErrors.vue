@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui/utilities/translate';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {h, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteLogButton from '@/modules/utilities/components/deprecation-errors/DeleteLogButton.vue';
@@ -20,41 +20,41 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<LogData>();
-  const columns = ref([
-    columnHelper.accessor('message', {
-      header: t('Message'),
-      cell: (info) => h('div', {innerHTML: info.getValue()}),
-      meta: {
-        wrap: true,
-      },
-    }),
-    columnHelper.accessor('origin', {
-      header: t('Origin'),
-      cell: (info) => h('code', {innerHTML: info.getValue()}),
-      meta: {
-        wrap: true,
-      },
-    }),
-    columnHelper.date('lastOccurrence'),
-    columnHelper.display({
-      id: 'stackTrace',
-      header: t('Stack Trace'),
-      cell: ({row}) => h(StackTraceButton, {logId: row.original.id}),
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteLogButton, {logId: row.original.id}),
-    ]),
-  ]);
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('message', {
+        header: t('Message'),
+        cell: (info) => h('div', {innerHTML: info.getValue()}),
+        meta: {
+          wrap: true,
+        },
+      }),
+      columnHelper.accessor('origin', {
+        header: t('Origin'),
+        cell: (info) => h('code', {innerHTML: info.getValue()}),
+        meta: {
+          wrap: true,
+        },
+      }),
+      columnHelper.date('lastOccurrence'),
+      columnHelper.display({
+        id: 'stackTrace',
+        header: t('Stack Trace'),
+        cell: ({row}) => h(StackTraceButton, {logId: row.original.id}),
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteLogButton, {logId: row.original.id}),
+      ]),
+    ])
+  );
 
-  const table = useVueTable({
+  const table = useCraftTable({
     get columns() {
       return columns.value;
     },
     get data() {
       return props.logs;
     },
-    getCoreRowModel: getCoreRowModel<LogData>(),
-    enableSorting: false,
   });
 </script>
 

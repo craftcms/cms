@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
@@ -42,23 +42,25 @@
 
   useAppLayout(() => ({title: props.title}));
   const columnHelper = createCraftColumnHelper<SectionModel>();
-  const columns = ref([
-    columnHelper.link('name', {
-      header: t('Name'),
-      props: ({row}) => ({href: edit({section: row.original.id}).url}),
-    }),
-    columnHelper.accessor('handle', {
-      header: t('Handle'),
-      cell: ({getValue}) =>
-        h('craft-copy-attribute', {value: getValue()}, getValue()),
-    }),
-    columnHelper.accessor('type', {
-      header: t('Type'),
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteSectionButton, {section: row.original}),
-    ]),
-  ]);
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.link('name', {
+        header: t('Name'),
+        props: ({row}) => ({href: edit({section: row.original.id}).url}),
+      }),
+      columnHelper.accessor('handle', {
+        header: t('Handle'),
+        cell: ({getValue}) =>
+          h('craft-copy-attribute', {value: getValue()}, getValue()),
+      }),
+      columnHelper.accessor('type', {
+        header: t('Type'),
+      }),
+      columnHelper.actions(({row}) => [
+        h(DeleteSectionButton, {section: row.original}),
+      ]),
+    ])
+  );
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
@@ -96,14 +98,13 @@
     },
   });
 
-  const sectionTable = useVueTable({
+  const sectionTable = useCraftTable({
     get data() {
       return props.data;
     },
     get columns() {
       return columns.value;
     },
-    getCoreRowModel: getCoreRowModel<SectionModel>(),
     state: {
       get pagination() {
         return paginationState.value;
