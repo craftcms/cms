@@ -6,6 +6,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -20,8 +22,10 @@ use Override;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-class AffiliatedSiteField extends BaseNativeField
+class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'affiliatedSiteId';
 

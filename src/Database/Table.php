@@ -67,6 +67,8 @@ readonly class Table
 
     public const string IMAGETRANSFORMS = 'imagetransforms';
 
+    public const string IMPORT_PLANS = 'import_plans';
+
     public const string INFO = 'info';
 
     public const string MIGRATIONS = 'migrations';

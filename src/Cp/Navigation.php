@@ -238,6 +238,13 @@ readonly class Navigation
                 ->subnav($this->sourceSubnav(User::class, 'users')));
         }
 
+        if (Gate::check('viewImportPlans')) {
+            $navItems->add(new NavItem()
+                ->label(t('Import'))
+                ->url('import')
+                ->icon('arrow-up-to-bracket'));
+        }
+
         // Add any Plugin nav items
         foreach ($this->plugins->getAllPlugins() as $plugin) {
             if (! $plugin->hasCpSection) {

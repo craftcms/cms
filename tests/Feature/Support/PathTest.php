@@ -215,6 +215,46 @@ test('laravel path service only creates the base directory when a subpath is pro
         ->and(File::exists(dirname((string) $composerBackupPath).$ds.'.gitignore'))->toBeTrue();
 });
 
+test('normalizePath returns a normalized path with a trailing separator for an existing path', function () {
+    $ds = DIRECTORY_SEPARATOR;
+
+    expect(Path::normalizePath($this->sandboxPath))->toBe(File::normalizePath($this->sandboxPath).$ds);
+});
+
+test('normalizePath returns false for a nonexistent path', function () {
+    expect(Path::normalizePath($this->sandboxPath.DIRECTORY_SEPARATOR.'does-not-exist'))->toBeFalse();
+});
+
+test('normalizePath returns false for a false input', function () {
+    expect(Path::normalizePath(false))->toBeFalse();
+});
+
+test('isPathWithinRoots returns true immediately for a path under a temp-dir root', function () {
+    $tempRoot = $this->sandboxPath;
+    $path = $tempRoot.DIRECTORY_SEPARATOR.'foo.txt';
+
+    expect(Path::isPathWithinRoots($path, [[$tempRoot, true]]))->toBeTrue();
+});
+
+test('isPathWithinRoots returns false when the path matches no allowed root', function () {
+    $path = $this->sandboxPath.DIRECTORY_SEPARATOR.'foo.txt';
+
+    expect(Path::isPathWithinRoots($path, [[$this->aliases['@storage'], false]]))->toBeFalse();
+});
+
+test('isPathWithinRoots returns true for a path under a non-temp root that is not within any system dir', function () {
+    $path = $this->sandboxPath.DIRECTORY_SEPARATOR.'not-a-system-dir'.DIRECTORY_SEPARATOR.'foo.txt';
+    File::ensureDirectoryExists(dirname($path));
+
+    expect(Path::isPathWithinRoots($path, [[$this->sandboxPath, false]]))->toBeTrue();
+});
+
+test('isPathWithinRoots returns false for a path under a non-temp root that is also within a system dir', function () {
+    $path = $this->aliases['@tests'].DIRECTORY_SEPARATOR.'foo.txt';
+
+    expect(Path::isPathWithinRoots($path, [[$this->sandboxPath, false]]))->toBeFalse();
+});
+
 test('ensurePathIsContained', function (bool $expected, string $path) {
     expect(Path::ensurePathIsContained($path))->toBe($expected);
 })->with([

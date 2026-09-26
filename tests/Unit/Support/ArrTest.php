@@ -217,3 +217,84 @@ test('dotifyKey', function (string|int $expected, string|int $string) {
     ['a.b.c.d', 'a[b][c][d]'],
     [0, 0],
 ]);
+
+test('undotifyKey', function (string|int $expected, string|int $string) {
+    expect(Arr::undotifyKey($string))->toBe($expected);
+})->with([
+    ['foo[bar]', 'foo.bar'],
+    ['sources[custom:5bb5537d][condition]', 'sources.custom:5bb5537d.condition'],
+    ['foo', 'foo'],
+    ['a[b][c][d]', 'a.b.c.d'],
+    [0, 0],
+]);
+
+test('bracketsToArray', function (array $expected, string $string) {
+    expect(Arr::bracketsToArray($string))->toBe($expected);
+})->with([
+    [['foo', 'bar'], 'foo[bar]'],
+    [['sources', 'custom:5bb5537d', 'condition'], 'sources[custom:5bb5537d][condition]'],
+    [['foo'], 'foo'],
+    [['a', 'b', 'c', 'd'], 'a[b][c][d]'],
+]);
+
+test('uniqueDotifiedKeys', function (array $expected, array $array, string $prepend = '') {
+    expect(Arr::uniqueDotifiedKeys($array, $prepend))->toBe($expected);
+})->with([
+    [['title'], ['title' => 'my title'], ''],
+    [
+        ['title', 'plainText', 'myMatrix', 'myMatrix.et1', 'myMatrix.et1.title', 'myMatrix.et1.text', 'myMatrix.et1.notUsed', 'myMatrix.et2', 'myMatrix.et2.title', 'myMatrix.et2.otherField'],
+        [
+            'title' => 'my title',
+            'plainText' => 'my plain text',
+            'myMatrix' => [
+                'et1' => [
+                    [
+                        'title' => 'my title',
+                        'text' => 'my text',
+                    ],
+                    [
+                        'title' => 'my title2',
+                        'text' => 'my text2',
+                        'notUsed' => 'my not used',
+                    ],
+                ],
+                'et2' => [
+                    [
+                        'title' => 'my title3',
+                        'otherField' => 'my other field',
+                    ],
+                ],
+            ],
+        ],
+        '',
+    ],
+    [
+        ['myPrefix.title', 'myPrefix.plainText', 'myPrefix.myMatrix', 'myPrefix.myMatrix.et1', 'myPrefix.myMatrix.et1.title', 'myPrefix.myMatrix.et1.text', 'myPrefix.myMatrix.et1.notUsed', 'myPrefix.myMatrix.et2', 'myPrefix.myMatrix.et2.title', 'myPrefix.myMatrix.et2.otherField'],
+        [
+            'title' => 'my title',
+            'plainText' => 'my plain text',
+            'myMatrix' => [
+                'et1' => [
+                    [
+                        'title' => 'my title',
+                        'text' => 'my text',
+                    ],
+                    [
+                        'title' => 'my title2',
+                        'text' => 'my text2',
+                        'notUsed' => 'my not used',
+                    ],
+                ],
+                'et2' => [
+                    [
+                        'title' => 'my title3',
+                        'otherField' => 'my other field',
+                    ],
+                ],
+            ],
+        ],
+        'myPrefix',
+    ],
+]);
+
+// TODO: add tests for: bracketsToArray and uniqueDotifiedKeys

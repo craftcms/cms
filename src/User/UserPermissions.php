@@ -114,6 +114,7 @@ class UserPermissions
         $this->entryPermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
+        $this->importPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -754,6 +755,39 @@ class UserPermissions
                     label: $class::displayName(),
                 );
             })->filter(),
+        ));
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function importPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'import',
+            heading: t('Import'),
+            permissions: collect([
+                new Permission(
+                    key: 'viewImportPlans',
+                    label: t('View import plans'),
+                    info: t('Allows viewing existing import plans.'),
+                    nested: collect([
+                        new Permission(
+                            key: 'saveImportPlans',
+                            label: t('Save import plans'),
+                            info: t('Allows creating and saving import plans.'),
+                        ),
+                        new Permission(
+                            key: 'deleteImportPlans',
+                            label: t('Delete import plans'),
+                            info: t('Allows deleting import plans.'),
+                        ),
+                        new Permission(
+                            key: 'triggerImportPlans',
+                            label: t('Run import plans'),
+                            info: t('Allows user to run an import plan.'),
+                        ),
+                    ])->filter(),
+                ),
+            ]),
         ));
     }
 
