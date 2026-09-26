@@ -2,8 +2,7 @@
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useTable} from '@tanstack/vue-table';
-  import {craftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -39,8 +38,7 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<TokenData>();
-  const table = useTable({
-    features: craftTableFeatures,
+  const table = useCraftTable({
     get columns() {
       return [
         columnHelper.link('name', {
@@ -86,7 +84,6 @@
         };
       },
     },
-    enableSorting: false,
   });
 </script>
 

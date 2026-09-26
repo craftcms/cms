@@ -1,11 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {createColumnHelper, useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {computed, h, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
@@ -46,7 +43,7 @@
   }>();
 
   const searchTerm = ref(props.searchTerm ?? '');
-  const columnHelper = createColumnHelper<CraftTableFeatures, FieldRow>();
+  const columnHelper = createCraftColumnHelper<FieldRow>();
   const columnVisibility = computed(() => {
     return {
       name: true,
@@ -177,8 +174,7 @@
     },
   });
 
-  const table = useTable({
-    features: craftTableFeatures,
+  const table = useCraftTable({
     get data() {
       return props.data;
     },

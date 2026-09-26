@@ -1,11 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
@@ -110,8 +106,7 @@
     },
   });
 
-  const table = useTable<CraftTableFeatures, EntryTypeRow>({
-    features: craftTableFeatures,
+  const table = useCraftTable<EntryTypeRow>({
     get data() {
       return entryTypes.value;
     },

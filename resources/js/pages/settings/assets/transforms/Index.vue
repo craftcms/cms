@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {capitalize, t} from '@craftcms/ui';
-  import {useTable} from '@tanstack/vue-table';
-  import {craftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -90,15 +89,13 @@
       ]),
     ])
   );
-  const table = useTable({
-    features: craftTableFeatures,
+  const table = useCraftTable({
     get data() {
       return props.transforms;
     },
     get columns() {
       return columns.value;
     },
-    enableSorting: false,
     state: {
       get columnVisibility() {
         return columnVisibility.value;

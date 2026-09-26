@@ -29,26 +29,6 @@ interface LegacyModalInstance {
   destroy?(): void;
 }
 
-declare module '@tanstack/vue-table' {
-  interface ColumnMeta<
-    TFeatures extends TableFeatures,
-    TData extends RowData,
-    TValue extends CellData = CellData,
-  > {
-    wrap?: boolean;
-    // Applies classes to the cell
-    cellClass?: string | Record<string, boolean>;
-    cellTag?: 'td' | 'th';
-    headerTip?: string;
-    headerSrOnly?: boolean;
-    // Applies classes to the header
-    headerClass?: string | Record<string, boolean>;
-    // Applies classes to both the header and cell at once
-    columnClass?: string | Record<string, boolean>;
-    trackSize?: string;
-  }
-}
-
 // Set up interfaces and types
 interface ProgressBarInterface {
   // oxlint-disable-next-line @typescript-eslint/no-misused-new

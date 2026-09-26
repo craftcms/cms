@@ -2,11 +2,8 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {createColumnHelper, useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import CpLink from '@/common/components/CpLink.vue';
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
@@ -22,7 +19,7 @@
     {totalJobs: 0}
   );
 
-  const columnHelper = createColumnHelper<CraftTableFeatures, JobInfo>();
+  const columnHelper = createCraftColumnHelper<JobInfo>();
 
   function getStatusVariant(value: number) {
     if (value === 2 || value === 3) {
@@ -91,8 +88,7 @@
     ])
   );
 
-  const jobsTable = useTable({
-    features: craftTableFeatures,
+  const jobsTable = useCraftTable({
     get data() {
       return props.jobs;
     },

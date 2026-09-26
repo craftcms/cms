@@ -3,8 +3,7 @@
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useTable} from '@tanstack/vue-table';
-  import {craftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {Site, SiteGroup} from '@/common/types';
   import ModalForm from '@/common/components/ModalForm.vue';
@@ -176,8 +175,7 @@
     ])
   );
 
-  const sitesTable = useTable({
-    features: craftTableFeatures,
+  const sitesTable = useCraftTable({
     get data() {
       return sites.value;
     },
@@ -192,7 +190,6 @@
       },
     },
     getRowId: (row) => row.id.toString(),
-    enableSorting: false,
     defaultColumn: {
       // @ts-expect-error — this is technically invalid, but gives us the behavior we want
       size: 'auto',

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui/utilities/translate';
-  import {useTable} from '@tanstack/vue-table';
-  import {craftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {h, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteLogButton from '@/modules/utilities/components/deprecation-errors/DeleteLogButton.vue';
@@ -49,15 +48,13 @@
     ])
   );
 
-  const table = useTable({
-    features: craftTableFeatures,
+  const table = useCraftTable({
     get columns() {
       return columns.value;
     },
     get data() {
       return props.logs;
     },
-    enableSorting: false,
   });
 </script>
 

@@ -9,7 +9,7 @@ import {
   createColumnHelper,
   type DisplayColumnDef,
 } from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {AccessorParam} from '@/modules/admin-table/composables/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';

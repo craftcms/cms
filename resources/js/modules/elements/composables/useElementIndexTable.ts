@@ -1,6 +1,6 @@
 import {computed, shallowRef} from 'vue';
 import type {Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {ElementIndexRow} from '@/modules/elements/composables/useContentIndexData';
 
 interface ElementIndexHandle {

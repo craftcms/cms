@@ -1,11 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
-  import {useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -99,8 +95,7 @@
       }),
     ])
   );
-  const table = useTable<CraftTableFeatures, AssetTransformerIndexData>({
-    features: craftTableFeatures,
+  const table = useCraftTable<AssetTransformerIndexData>({
     get data() {
       return props.transformers;
     },
@@ -112,7 +107,6 @@
         return columnVisibility.value;
       },
     },
-    enableSorting: false,
   });
 </script>
 

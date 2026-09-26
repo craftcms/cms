@@ -1,11 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import migrationsController from '@actions/Utilities/MigrationsController';
-  import {createColumnHelper, useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {computed, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {Form} from '@inertiajs/vue3';
@@ -38,7 +35,7 @@
     ] satisfies Migration[];
   });
 
-  const columnHelper = createColumnHelper<CraftTableFeatures, Migration>();
+  const columnHelper = createCraftColumnHelper<Migration>();
   const columns = ref(
     columnHelper.columns([
       columnHelper.accessor('name', {
@@ -56,8 +53,7 @@
     ])
   );
 
-  const migrationsTable = useTable({
-    features: craftTableFeatures,
+  const migrationsTable = useCraftTable({
     get columns() {
       return columns.value;
     },

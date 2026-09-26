@@ -11,13 +11,11 @@ import {
   type ColumnHelper,
   createColumnHelper,
   type Row,
-  type TableOptions,
-  useTable,
 } from '@tanstack/vue-table';
 import {
-  craftTableFeatures,
   type CraftTableFeatures,
-} from '@/modules/admin-table/tableFeatures';
+  useCraftTable,
+} from '@/modules/admin-table/craftTable';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';
@@ -404,15 +402,13 @@ export function useEditableTable<T extends object>(
 
   const columnVisibility = options.columnVisibility;
 
-  const tableOptions: TableOptions<CraftTableFeatures, T> = {
-    features: craftTableFeatures,
+  const tableOptions: Parameters<typeof useCraftTable<T>>[0] = {
     get data() {
       return normalizedData.value;
     },
     get columns() {
       return columns.value;
     },
-    enableSorting: false,
     ...(columnVisibility && {
       state: {
         get columnVisibility() {
@@ -424,7 +420,7 @@ export function useEditableTable<T extends object>(
 
   Object.assign(tableOptions, {defaultColumn: {size: 'auto'}});
 
-  const table = useTable(tableOptions);
+  const table = useCraftTable(tableOptions);
 
   return {table};
 }

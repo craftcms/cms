@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {
   useElementIndexSelection,

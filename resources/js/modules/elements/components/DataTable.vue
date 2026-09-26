@@ -5,7 +5,7 @@
     type Row,
     type Table,
   } from '@tanstack/vue-table';
-  import type {CraftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -458,8 +458,7 @@
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
+                :header="header"
               />&nbsp;<craft-icon
                 v-if="
                   header.column.getCanSort() && !header.column.getIsSorted()
@@ -634,16 +633,9 @@
               <span class="sr-only"
                 >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
               </span>
-              <FlexRender
-                :render="cell.column.columnDef.cell"
-                :props="cell.getContext()"
-              />
+              <FlexRender :cell="cell" />
             </div>
-            <FlexRender
-              v-else
-              :render="cell.column.columnDef.cell"
-              :props="cell.getContext()"
-            />
+            <FlexRender v-else :cell="cell" />
           </component>
         </tr>
       </template>

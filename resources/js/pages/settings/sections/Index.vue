@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {useTable} from '@tanstack/vue-table';
-  import {craftTableFeatures} from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
@@ -99,8 +98,7 @@
     },
   });
 
-  const sectionTable = useTable({
-    features: craftTableFeatures,
+  const sectionTable = useCraftTable({
     get data() {
       return props.data;
     },

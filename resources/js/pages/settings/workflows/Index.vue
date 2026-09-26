@@ -1,11 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
-  import {useTable} from '@tanstack/vue-table';
-  import {
-    craftTableFeatures,
-    type CraftTableFeatures,
-  } from '@/modules/admin-table/tableFeatures';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -82,8 +78,7 @@
       });
     },
   });
-  const table = useTable<CraftTableFeatures, Workflow>({
-    features: craftTableFeatures,
+  const table = useCraftTable<Workflow>({
     get data() {
       return props.data;
     },
