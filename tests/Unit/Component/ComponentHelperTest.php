@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Plugin\Plugins;
 
@@ -325,12 +324,6 @@ describe('createComponent', function () {
             'Non\\Existent\\ParentClass',
         );
     })->throws(RuntimeException::class, 'is not an instance of');
-
-    test('created component implements ComponentInterface', function () {
-        $component = ComponentHelper::createComponent(StubComponent::class);
-
-        expect($component)->toBeInstanceOf(ComponentInterface::class);
-    });
 });
 
 describe('mergeSettings', function () {

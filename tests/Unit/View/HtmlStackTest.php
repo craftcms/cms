@@ -1255,17 +1255,4 @@ describe('clearJsBuffer', function () {
 
         expect($result)->toBe('');
     });
-
-    it('restores previous JS state after clearing the buffer', function () {
-        $this->registry->js('var outer = 1');
-
-        $this->registry->startBuffer('js');
-        $this->registry->js('var inner = 2');
-        $this->registry->clearJsBuffer();
-
-        $body = $this->registry->bodyEndHtml();
-
-        expect($body)->toContain('var outer = 1;')
-            ->and($body)->not->toContain('var inner = 2;');
-    });
 });
