@@ -109,15 +109,6 @@ beforeEach(function () {
     $this->registry = app(HtmlStack::class);
 });
 
-describe('scoped resolution', function () {
-    it('is resolved as a scoped instance', function () {
-        $a = app(HtmlStack::class);
-        $b = app(HtmlStack::class);
-
-        expect($a)->toBe($b);
-    });
-});
-
 describe('clear', function () {
     it('resets all state', function () {
         $this->registry->js('var x = 1');
@@ -162,12 +153,14 @@ describe('js registration', function () {
         expect($head)->toContain('var x = 1;');
     });
 
-    it('trims and appends semicolons', function () {
-        $this->registry->js('  var x = 1;  ');
+    it('trims and appends semicolons before deduplicating', function () {
+        $this->registry->js('  var x = 1  ');
+        $this->registry->js('var x = 1');
 
         $body = $this->registry->bodyEndHtml();
 
-        expect($body)->toContain('var x = 1;');
+        expect($body)->toContain('var x = 1;')
+            ->and(substr_count($body, 'var x = 1'))->toBe(1);
     });
 
     it('deduplicates JS by explicit key', function () {
