@@ -452,7 +452,6 @@ readonly class TestPropagateElementWrites extends ElementWrites
         bool $saveContent = false,
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
-        bool $recordActivity = true,
     ): bool {
         $this->saveCalls[] = [
             'siteElement' => $element,
