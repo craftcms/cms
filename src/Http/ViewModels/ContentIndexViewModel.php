@@ -865,7 +865,10 @@ abstract class ContentIndexViewModel extends ViewModel
         // Not every element type has a `*` source (assets index per-volume,
         // for example), so mirror the legacy index's behavior and fall back
         // to the first available source.
-        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key']) && ! ($source['disabled'] ?? false));
+        // Headings are keyed too, but only head the sources beneath them.
+        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key'])
+            && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
+            && ! ($source['disabled'] ?? false));
         $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
             ?? array_first($sources);
 

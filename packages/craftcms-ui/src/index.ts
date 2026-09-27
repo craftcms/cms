@@ -74,6 +74,7 @@ export {
   type ReorderDirection,
   type NestedReorderDirection,
   type ReorderOrientation,
+  type ReorderMove,
 } from './components/reorder-button/reorder-button.js';
 export {default as CraftSelectColor} from './components/select-color/select-color.js';
 export {default as CraftSelectRich} from './components/select-rich/select-rich.js';

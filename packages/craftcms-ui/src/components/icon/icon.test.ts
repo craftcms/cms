@@ -33,6 +33,8 @@ async function createIcon(
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  // The components setup stubs icons out; these tests are of the real resolver.
+  setIconResolver(defaultIconResolver);
 });
 
 afterEach(() => {

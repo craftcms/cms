@@ -365,7 +365,7 @@ readonly class Navigation
 
             $item = new NavItem()
                 ->label((string) ($source['label'] ?? ''))
-                ->href($elementType::sourceCpUri($source, $page) ?? $this->sourceQueryUri($indexUri, $key));
+                ->href($this->sourceUri($elementType, $indexUri, $source, $page));
 
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
@@ -382,6 +382,70 @@ readonly class Navigation
             $items,
             fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
         ));
+    }
+
+    /**
+     * The URL the nav links a source by — its own path where the element type
+     * gives it one, the `?source=` query otherwise. Null for a source the nav
+     * doesn't list, or an element type it has no index for.
+     *
+     * For landing somewhere after the sources change: it's the link the nav
+     * will highlight, on whichever index page the source now lives.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function sourceUrl(string $elementType, string $key): ?string
+    {
+        foreach ($this->sourceIndexes($elementType) as [$indexUri, $page]) {
+            $source = collect($this->elementSources->getSources(
+                $elementType,
+                page: $page,
+                siteId: $this->navSiteId(),
+            ))->first(fn (array $source): bool => ($source['key'] ?? null) === $key);
+
+            if ($source !== null) {
+                return Url::url($this->sourceUri($elementType, $indexUri, $source, $page));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The indexes the nav lists an element type's sources under, as
+     * `[index URI, page]` — one per page for entries, as {@see buildTree()}
+     * lays them out.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return list<array{0: string, 1: string|null}>
+     */
+    private function sourceIndexes(string $elementType): array
+    {
+        if ($elementType === Entry::class) {
+            $pages = $this->elementSources->getPages(Entry::class);
+
+            return $pages->isEmpty()
+                ? [['content/entries', null]]
+                : $pages
+                    ->map(fn (string $page) => [sprintf('content/%s', Str::slug($page)), $page])
+                    ->values()
+                    ->all();
+        }
+
+        return match ($elementType) {
+            Asset::class => [['assets', null]],
+            User::class => [['users', null]],
+            default => [],
+        };
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $source
+     */
+    private function sourceUri(string $elementType, string $indexUri, array $source, ?string $page): string
+    {
+        return $elementType::sourceCpUri($source, $page) ?? $this->sourceQueryUri($indexUri, (string) $source['key']);
     }
 
     /**

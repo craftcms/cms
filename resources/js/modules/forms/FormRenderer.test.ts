@@ -2876,8 +2876,8 @@ describe('FormRenderer', () => {
       container.querySelector<HTMLInputElement>('input[name="settings[date]"]')
         ?.value
     ).toBe('2026-08-04');
-    const clearDateTime = container.querySelector<HTMLButtonElement>(
-      'craft-input-date-time > .clear-btn'
+    const clearDateTime = container.querySelector<HTMLElement>(
+      'craft-input-date-time > craft-button[aria-label="Clear"]'
     );
     expect(clearDateTime).not.toBeNull();
     clearDateTime!.click();

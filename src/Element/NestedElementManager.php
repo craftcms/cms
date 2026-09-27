@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
 use CraftCms\Cms\Element\Events\NestedElementsDuplicated;
 use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -1027,13 +1028,26 @@ class NestedElementManager extends Component
                 }
 
                 if (! empty($otherSiteIds)) {
-                    $localizedOwners = $owner::find()
+                    $ownerQuery = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
+                        ->status(null);
+
+                    // If the owner is nested too, retain its own owner, so it doesn't fall back to its primary owner
+                    // (e.g. the canonical element when it's shared with a draft), which may not support the other sites
+                    // (see https://github.com/craftcms/cms/issues/18281)
+                    if (
+                        $owner instanceof NestedElementInterface &&
+                        $ownerQuery instanceof NestedElementQueryInterface &&
+                        $ownerId = $owner->getOwnerId()
+                    ) {
+                        $ownerQuery->ownerId($ownerId);
+                    }
+
+                    $localizedOwners = (clone $ownerQuery)
                         ->siteId($otherSiteIds)
-                        ->status(null)
                         ->all();
 
                     $handledSiteIds = [];
@@ -1054,13 +1068,8 @@ class NestedElementManager extends Component
                         if (
                             ! empty($preexistingOtherSiteIds) &&
                             ! empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
-                            $preexistingLocalizedOwner = $owner::find()
-                                ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->isProvisionalDraft)
-                                ->revisions($owner->getIsRevision())
-                                ->id($owner->id)
+                            $preexistingLocalizedOwner = (clone $ownerQuery)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->status(null)
                                 ->one()
                         ) {
                             $this->saveNestedElements($preexistingLocalizedOwner);

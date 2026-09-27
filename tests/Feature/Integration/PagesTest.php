@@ -34,7 +34,8 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
 })->with([
     ['url' => '/dashboard', 'title' => 'Dashboard'],
     ['url' => '/content/entries', 'title' => 'Entries'],
-    ['url' => '/users', 'title' => 'Users'],
+    // The bare `/users` index redirects to the source it shows.
+    ['url' => '/users/all', 'title' => 'Users'],
 
     [
         'url' => '/settings/users/fields',

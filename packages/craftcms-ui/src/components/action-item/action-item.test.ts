@@ -69,3 +69,18 @@ test('a link in the suffix is flagged', async () => {
 
   expect(flagged(item)).toBe(true);
 });
+
+test('marks its own button as current, not just the host', async () => {
+  const item = document.createElement('craft-action-item');
+  item.textContent = 'Blog';
+  document.body.append(item);
+  await item.updateComplete;
+
+  const button = () => item.shadowRoot?.querySelector('button');
+  expect(button()?.hasAttribute('aria-current')).toBe(false);
+
+  item.current = true;
+  await item.updateComplete;
+
+  expect(button()?.getAttribute('aria-current')).toBe('true');
+});

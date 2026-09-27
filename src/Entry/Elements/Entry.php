@@ -507,20 +507,22 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * @param  array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}  $config
-     * @return array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}
+     * @param  array{condition?: array{conditionRules?: array<array-key, mixed>}, data?: array<string, string>}  $config
+     * @return array{condition?: array{conditionRules?: array<array-key, mixed>}, data?: array<string, string>}
      */
     #[Override]
     public static function modifyCustomSource(array $config): array
     {
-        if (empty($config['condition']['conditionRules'])) {
+        $rules = self::sourceWideConditionRules($config['condition']['conditionRules'] ?? []);
+
+        if ($rules === []) {
             return $config;
         }
 
         // see if it's limited to one section
-        /** @var SectionConditionRule|null $sectionRule */
+        /** @var array{class: class-string, values?: string[]}|null $sectionRule */
         $sectionRule = Arr::first(
-            $config['condition']['conditionRules'],
+            $rules,
             fn (array $rule) => $rule['class'] === SectionConditionRule::class,
         );
         $sectionOptions = $sectionRule['values'] ?? null;
@@ -534,7 +536,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
         $entryTypeRule = Arr::first(
-            $config['condition']['conditionRules'],
+            $rules,
             fn (array $rule) => $rule['class'] === TypeConditionRule::class,
         );
         $entryTypeOptions = $entryTypeRule['values'] ?? null;
@@ -547,6 +549,33 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         return $config;
+    }
+
+    /**
+     * The rules a custom source's condition holds every one of its entries to.
+     *
+     * Conditions saved since rule groups arrived store `{operator, rules}`;
+     * older ones a flat list, implicitly all required. Only an “and” group's
+     * own rules apply source-wide — under “or”, or nested a group down, a rule
+     * limits some entries rather than all of them.
+     *
+     * @param  array<array-key, mixed>  $rules
+     * @return list<array{class: class-string, values?: string[]}>
+     */
+    private static function sourceWideConditionRules(array $rules): array
+    {
+        if (isset($rules['operator']) || isset($rules['rules'])) {
+            if (strtolower((string) ($rules['operator'] ?? 'and')) !== 'and') {
+                return [];
+            }
+
+            $rules = is_array($rules['rules'] ?? null) ? $rules['rules'] : [];
+        }
+
+        return array_values(array_filter(
+            $rules,
+            fn (mixed $rule): bool => is_array($rule) && isset($rule['class']) && is_string($rule['class']),
+        ));
     }
 
     #[Override]

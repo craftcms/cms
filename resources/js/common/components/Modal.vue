@@ -1,6 +1,16 @@
+<script lang="ts">
+  import {shallowReactive} from 'vue';
+
+  /**
+   * The open modals, innermost last. A modal opened from inside another — an
+   * icon picker in a page's settings, say — stacks on top of it.
+   */
+  const openModals = shallowReactive<symbol[]>([]);
+</script>
+
 <script setup lang="ts">
   import {onKeyStroke} from '@vueuse/core';
-  import {computed, shallowRef} from 'vue';
+  import {computed, onBeforeUnmount, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import CornerResizeHandle from '@/common/components/CornerResizeHandle.vue';
   import {useBodyScrollLock} from '@/common/composables/useBodyScrollLock';
@@ -14,6 +24,11 @@
     maxHeight?: string;
     /** Adds a corner handle for dragging the modal to a new size. */
     resizable?: boolean;
+    /**
+     * Whether Escape and a click on the overlay close it. Off for a modal
+     * holding work that closing would throw away — only its own buttons do.
+     */
+    dismissible?: boolean;
   }
 
   const emit = defineEmits<{
@@ -26,11 +41,47 @@
     overlay: true,
     width: 'md',
     resizable: false,
+    dismissible: true,
   });
 
+  const stackId = Symbol('modal');
+
+  function leaveStack(): void {
+    const index = openModals.indexOf(stackId);
+    if (index !== -1) openModals.splice(index, 1);
+  }
+
+  watch(
+    () => props.isActive,
+    (active) => {
+      leaveStack();
+      if (active) openModals.push(stackId);
+    },
+    {immediate: true}
+  );
+  onBeforeUnmount(leaveStack);
+
+  /** Whether this is the innermost open modal — the one Escape is for. */
+  const isTop = computed(() => openModals.at(-1) === stackId);
+
+  /**
+   * Whether this modal opened over another. The one beneath already dims the
+   * page, so a second shade would only darken it further; this one's overlay
+   * still catches clicks, just without the colour.
+   */
+  const isNested = computed(() => openModals.indexOf(stackId) > 0);
+
   onKeyStroke('Escape', () => {
-    emit('close');
+    if (props.isActive && isTop.value && props.dismissible) {
+      emit('close');
+    }
   });
+
+  function onOverlayClick(): void {
+    if (props.dismissible) {
+      emit('close');
+    }
+  }
 
   // The page behind the overlay shouldn't scroll out from under it.
   useBodyScrollLock(() => props.isActive);
@@ -83,7 +134,11 @@
   </Transition>
 
   <Transition name="fade" v-if="overlay">
-    <div class="cp-overlay" v-if="isActive" @click="emit('close')"></div>
+    <div
+      v-if="isActive"
+      :class="{'cp-overlay': true, 'cp-overlay--nested': isNested}"
+      @click="onOverlayClick"
+    ></div>
   </Transition>
 </template>
 
@@ -152,6 +207,10 @@
   .cp-overlay {
     z-index: var(--c-layer-dialog-shade);
     background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .cp-overlay--nested {
+    background-color: transparent;
   }
 
   /* Only animate when the user is cool with it */

@@ -663,7 +663,7 @@ abstract class ElementEditViewModel extends ViewModel
             'id' => 'site-crumb',
             'icon' => Icons::earth(),
             'label' => t($currentSite->getName(), category: 'site'),
-            'actions' => $items,
+            'items' => $items,
         ];
     }
 

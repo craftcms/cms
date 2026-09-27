@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -39,6 +40,21 @@ it('offers deletion on the element’s own screen but not inside a field', funct
 
     expect(descriptorLabels($element, ElementActionContext::Editor))->toContain('Delete')
         ->and(descriptorLabels($element, ElementActionContext::Field))->not->toContain('Delete');
+});
+
+// Craft 5 offers "Delete draft" when a saved draft is open in the editor.
+it('offers draft deletion when editing a draft', function () {
+    $user = User::first();
+    $this->actingAs($user);
+    $draft = app(Drafts::class)->createDraft(contextualEntry(), $user->id);
+
+    $deleteDraft = collect($draft->actionMenuDescriptors())->firstWhere('label', 'Delete draft');
+
+    expect($deleteDraft)->not->toBeNull()
+        ->and($deleteDraft['destructive'])->toBeTrue()
+        ->and($deleteDraft['behavior']['actionUrl'])->toContain('elements/delete-draft')
+        ->and($deleteDraft['behavior']['params']['draftId'])->toBe($draft->draftId)
+        ->and(descriptorLabels($draft, ElementActionContext::Editor))->not->toContain('Delete entry');
 });
 
 it('keeps the element’s own actions in a field', function () {

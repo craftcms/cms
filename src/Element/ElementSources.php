@@ -547,6 +547,10 @@ class ElementSources
 
         $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
         $this->projectConfig->set($path, $sources);
+
+        // Resolved sources are memoized per request; drop them so anything read
+        // after saving — the URL to land on, say — sees what was just saved.
+        unset($this->sources[$elementType]);
     }
 
     /**

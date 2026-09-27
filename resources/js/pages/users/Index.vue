@@ -62,7 +62,7 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" customizable-sources>
     <template #toolbar-actions>
       <CpButtonLink
         v-if="page.props.canRegisterUsers"
