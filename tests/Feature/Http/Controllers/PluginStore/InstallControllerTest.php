@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -49,6 +50,7 @@ it('requires authentication, adminChanges and admin for all routes', function (s
     postJson(action([InstallController::class, $action]))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
     actingAs(User::find()->one());
 
     postJson(action([InstallController::class, $action]))->assertForbidden();

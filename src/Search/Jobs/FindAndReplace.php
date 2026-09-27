@@ -31,6 +31,7 @@ class FindAndReplace extends BatchedJob
         return DB::table(Table::ELEMENTS_SITES)
             ->select(['id', 'title', 'content'])
             ->orderBy('id')
+            ->when($this->find === '', fn (Builder $query) => $query->whereRaw('0 = 1'))
             ->where(fn (Builder $query) => $query
                 ->orWhere('title', 'like', "%$this->find%")
                 ->when(

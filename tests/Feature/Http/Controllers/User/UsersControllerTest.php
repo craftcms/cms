@@ -30,11 +30,6 @@ it('requires login', function () {
 });
 
 describe('create', function () {
-    test('create makes a user draft and redirects to it', function () {
-        get(action([UsersController::class, 'create']))
-            ->assertRedirect();
-    });
-
     test('create redirects to edit screen for new user', function () {
         get(action([UsersController::class, 'create']))
             ->assertRedirectContains('users/');
@@ -67,11 +62,6 @@ describe('create', function () {
 });
 
 describe('edit', function () {
-    test('edit shows a cp screen', function () {
-        get(action([UsersController::class, 'edit']))
-            ->assertSee(t('Profile'));
-    });
-
     // `action()` resolves this controller action to `myaccount`, which is
     // registered first, so another user's screen has to be addressed by URL.
     test('edit can show specific user by ID', function () {

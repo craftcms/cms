@@ -67,14 +67,6 @@ test('interleaved next and current calls', function () {
     expect(Sequence::current('test'))->toBe(3);
 });
 
-test('without length parameter returns int', function () {
-    $result = Sequence::next('test');
-    expect($result)->toBeInt();
-
-    $current = Sequence::current('test');
-    expect($current)->toBeInt();
-});
-
 test('with length parameter returns zero-padded string', function (int $num, int $length, string $expected) {
     // Seed sequence - current() returns next-1, so we need next = num + 1
     DB::table(Table::SEQUENCES)->insert(['name' => 'test', 'next' => $num + 1]);

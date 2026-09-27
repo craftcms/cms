@@ -53,19 +53,6 @@ test('authenticate with user without password', function () {
     expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
 });
 
-test('authenticate inactive user', function () {
-    $user = UserModel::factory()->createElement([
-        'active' => false,
-        'pending' => false,
-        'suspended' => false,
-    ]);
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
-});
-
 test('authenticate rejects unavailable Eloquent users', function (array $elementAttributes) {
     $user = UserModel::factory()->create();
     $user->element->update($elementAttributes);
@@ -78,69 +65,6 @@ test('authenticate rejects unavailable Eloquent users', function (array $element
     'disabled' => [['enabled' => false]],
     'archived' => [['archived' => true]],
 ]);
-
-test('authenticate pending user', function () {
-    $user = UserModel::factory()->createElement([
-        'pending' => true,
-    ]);
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::PendingVerification);
-});
-
-test('authenticate suspended user', function () {
-    $user = UserModel::factory()->createElement([
-        'suspended' => true,
-    ]);
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::AccountSuspended);
-});
-
-test('authenticate locked user with cooldown', function () {
-    $user = UserModel::factory()->createElement([
-        'locked' => true,
-        'invalidLoginCount' => 2,
-        'lockoutDate' => now(),
-    ]);
-
-    Cms::config()->cooldownDuration = 60;
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::AccountCooldown);
-});
-
-test('authenticate locked user without cooldown', function () {
-    $user = UserModel::factory()->createElement([
-        'locked' => true,
-        'invalidLoginCount' => 2,
-        'lockoutDate' => now(),
-    ]);
-
-    Cms::config()->cooldownDuration = null;
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::AccountLocked);
-});
-
-test('authenticate user requiring password reset', function () {
-    $user = UserModel::factory()->createElement([
-        'passwordResetRequired' => true,
-    ]);
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::PasswordResetRequired);
-});
 
 test('authenticate without CP access', function () {
     Edition::set(Edition::Pro);

@@ -44,8 +44,8 @@ trait RespondsWithFlash
         $message = Flash::error($message);
 
         return back()
-            ->with('error', $message)
-            ->with($data);
+            ->with($data)
+            ->with('error', $message);
     }
 
     /** @param array<string, mixed> $data */

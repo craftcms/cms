@@ -35,5 +35,6 @@ it('aborts 403 when user is not admin', function () {
     $request = Request::create('foo');
     $request->setUserResolver(fn () => $nonAdmin);
 
-    $this->middleware->handle($request, fn () => 'passed');
-})->throws(HttpException::class);
+    expect(fn () => $this->middleware->handle($request, fn () => 'passed'))
+        ->toThrow(fn (HttpException $e) => expect($e->getStatusCode())->toBe(403));
+});

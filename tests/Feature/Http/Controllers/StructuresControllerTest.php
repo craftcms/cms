@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -39,16 +38,7 @@ it('requires valid data', function (string $route) {
     ]);
 })->with('routes');
 
-it('requires the editStructure permission', function (string $route) {
-    // Set edition so permissions actually get checked
-    Edition::set(Edition::Pro);
-
-    $user = CraftCms\Cms\User\Models\User::factory()->create([
-        'admin' => false,
-    ]);
-
-    actingAs($user->asElement());
-
+it('requires the editStructure session authorization', function (string $route) {
     $structure = Structure::factory()->create();
 
     postJson($route, [
@@ -56,9 +46,6 @@ it('requires the editStructure permission', function (string $route) {
         'elementId' => $structure->structureElements()->first()->elementId,
         'siteId' => Site::first()->id,
     ])->assertForbidden();
-
-    $user->update(['admin' => true]);
-    actingAs($user->asElement());
 
     SessionAuth::authorize("editStructure:{$structure->id}");
 

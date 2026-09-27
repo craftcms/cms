@@ -33,10 +33,21 @@ describe('sources', function () {
     })->with(['index', 'modal', 'field', 'settings']);
 
     test('memoizes results for same class and context', function () {
-        $sources1 = Entry::sources('index');
-        $sources2 = Entry::sources('index');
+        $resolvedContexts = [];
 
-        expect($sources1)->toBe($sources2);
+        Event::listen(function (ElementSourcesResolving $event) use (&$resolvedContexts) {
+            if ($event->elementType === TestHasSourcesElement::class) {
+                $resolvedContexts[] = $event->context;
+                $event->sources = [['key' => 'resolved-'.count($resolvedContexts)]];
+            }
+        });
+
+        TestHasSourcesElement::sources('index');
+        $sources = TestHasSourcesElement::sources('index');
+        TestHasSourcesElement::sources('modal');
+
+        expect($sources)->toBe([['key' => 'resolved-1']])
+            ->and($resolvedContexts)->toBe(['index', 'modal']);
     });
 
     test('triggers ElementSourcesResolving event', function () {

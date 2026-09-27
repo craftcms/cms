@@ -3,10 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\User\Elements\User;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->entry1 = EntryModel::factory()->create();
@@ -76,12 +82,23 @@ describe('findAll', function () {
 });
 
 describe('get', function () {
-    test('returns element by ID with all draft/revision states', function () {
-        $result = Entry::get($this->entry1->id);
+    test('returns elements regardless of draft, revision, or status', function (Closure $createElementId) {
+        actingAs(User::findOne());
 
-        expect($result)->toBeInstanceOf(Entry::class)
-            ->and($result->id)->toBe($this->entry1->id);
-    });
+        $elementId = $createElementId(Entry::findOne($this->entry1->id));
+
+        expect(Entry::get($elementId)?->id)->toBe($elementId);
+    })->with([
+        'draft' => fn (Entry $entry) => app(Drafts::class)->createDraft($entry)->id,
+        'provisional draft' => fn (Entry $entry) => app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true)->id,
+        'revision' => fn (Entry $entry) => app(Revisions::class)->createRevision($entry),
+        'disabled' => function (Entry $entry) {
+            $entry->enabled = false;
+            Elements::saveElement($entry);
+
+            return $entry->id;
+        },
+    ]);
 
     test('accepts string ID', function () {
         $result = Entry::get((string) $this->entry1->id);

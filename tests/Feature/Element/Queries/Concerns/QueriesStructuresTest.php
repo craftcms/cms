@@ -113,3 +113,21 @@ test('cloned executed structure queries can be further narrowed', function () {
         ->and($query->clone()->descendantOf($elements[0])->count())->toBe(0)
         ->and($query->clone()->structureId(123)->applyAfterQueryCallbacks(collect([[]]))->first())->toBe(['structureId' => 123]);
 });
+
+test('structure params that cannot be resolved keep aborting the query', function (string $param) {
+    $entry = Entry::factory()->createElement();
+    Entry::factory()->create();
+
+    $query = entryQuery()->$param($entry);
+
+    expect($query->count())->toBe(0)
+        ->and($query->all())->toBe([]);
+})->with([
+    'ancestorOf',
+    'descendantOf',
+    'siblingOf',
+    'prevSiblingOf',
+    'nextSiblingOf',
+    'positionedBefore',
+    'positionedAfter',
+]);

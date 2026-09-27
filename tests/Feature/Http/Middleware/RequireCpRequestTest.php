@@ -22,8 +22,9 @@ it('passes through for CP request', function () {
 it('aborts 401 for non-CP request', function () {
     $request = Request::create('/site-page');
 
-    $this->middleware->handle($request, fn () => 'passed');
-})->throws(HttpException::class);
+    expect(fn () => $this->middleware->handle($request, fn () => 'passed'))
+        ->toThrow(fn (HttpException $e) => expect($e->getStatusCode())->toBe(401));
+});
 
 it('passes through for CP root request', function () {
     $request = Request::create('/'.Cms::config()->cpTrigger);
