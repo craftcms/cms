@@ -35,7 +35,7 @@ it('tracks the source, so an XHR-driven index updates like a page visit', () => 
   const source = shallowRef(payload({search: 'first', data: []}));
   const index = useContentIndexData(undefined, source);
 
-  source.value = payload({search: 'second', data: [{id: 1}]});
+  source.value = payload({search: 'second', data: [{id: 1, label: 'Row'}]});
 
   expect(index.search).toBe('second');
   expect(index.data).toHaveLength(1);
