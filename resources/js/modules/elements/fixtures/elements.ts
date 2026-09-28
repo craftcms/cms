@@ -103,7 +103,7 @@ export const sampleEntries: Array<SampleEntry> = [
     section: 'Blog',
     postDate: '2026-07-20',
   },
-];
+].map((entry) => ({...entry, label: entry.title}));
 
 const columnHelper = createColumnHelper<SampleEntry>();
 
