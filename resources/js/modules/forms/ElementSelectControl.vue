@@ -652,17 +652,14 @@
         />
       </div>
 
-      <div
-        class="border border-(--c-color-neutral-border-quiet) rounded-sm inset-shadow-sm bg-(--c-color-neutral-fill-quiet) relative"
-        v-if="ids.length > 0"
-      >
+      <div class="relative" v-if="ids.length > 0">
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
           can't be selected (a single relation) has no use for it.
         -->
         <div
+          class="element-selections-header flex justify-between items-center"
           v-if="selectable"
-          class="flex justify-between items-center border-b border-b-(--c-color-neutral-border-quiet) p-(--c-spacing-sm) shadow-sm"
         >
           <div class="flex items-center gap-2">
             <craft-checkbox
@@ -688,16 +685,32 @@
           </div>
 
           <ActionMenu
-            v-if="hasSelection && bulkActions.length"
             :actions="bulkActions"
+            :class="{
+              invisible: !hasSelection || !bulkActions.length,
+            }"
           >
             <template #invoker="{attributes}">
-              <craft-button type="button" size="small" v-bind="attributes">
+              <craft-button
+                type="button"
+                variant="plain"
+                size="small"
+                v-bind="attributes"
+              >
                 {{ t('Actions') }}
                 <craft-icon name="chevron-down" slot="suffix"></craft-icon>
               </craft-button>
             </template>
           </ActionMenu>
+
+          <craft-badge
+            size="small"
+            class="me-sm"
+            no-prefix
+            v-if="!hasSelection || !bulkActions.length"
+          >
+            {{ ids.length }}/{{ limit }}
+          </craft-badge>
         </div>
         <div class="elements-stage">
           <ElementList
@@ -740,11 +753,6 @@
             </template>
           </ElementList>
         </div>
-        <div class="absolute inset-e-1 inset-be-1" v-if="limit && limit > 1">
-          <craft-badge size="small" no-prefix
-            >{{ ids.length }}/{{ limit }}</craft-badge
-          >
-        </div>
       </div>
 
       <div slot="footer">
@@ -755,7 +763,13 @@
 </template>
 
 <style lang="scss" scoped>
-  .elements-stage {
-    padding: clamp(0.25em, 1%, 1em);
+  .element-selections-header {
+    margin-block-end: var(--c-spacing-md);
+    padding: var(--c-spacing-sm);
+    padding-inline-start: var(--c-spacing-md);
+    background-color: var(--c-color-neutral-fill-quiet);
+    border-start-start-radius: var(--c-radius-md);
+    border-start-end-radius: var(--c-radius-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

@@ -393,6 +393,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-inline: var(--c-spacing-sm);
+    padding: var(--c-spacing-sm);
+    padding-inline-start: var(--c-spacing-md);
   }
 </style>

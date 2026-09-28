@@ -172,7 +172,7 @@
         @click="(event: MouseEvent) => onChipClick(element, event)"
         @dblclick="(event: MouseEvent) => onDoubleClick(element, event)"
       >
-        <div slot="prefix" class="flex items-center px-1 gap-1">
+        <div slot="prefix" class="flex items-center px-md gap-1">
           <slot name="prefix" :element="element" :index="index"></slot>
           <DynamicHtmlRenderer
             v-if="element.thumbHtml"
@@ -237,7 +237,7 @@
     padding: 0;
     list-style: none;
     display: grid;
-    gap: var(--c-spacing-xs);
+    gap: var(--c-spacing-md);
     align-items: start;
   }
 
