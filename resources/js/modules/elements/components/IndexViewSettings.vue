@@ -11,6 +11,8 @@
     options: Array<CheckboxOption>;
     /** The sortable attributes for the "Sort by" select. */
     sortOptions: Array<SortOption>;
+    /** Whether the active sort has an intrinsic direction. */
+    sortDirectionLocked?: boolean;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -107,7 +109,8 @@
               value="asc"
               :aria-label="t('Sort ascending')"
               :variant="ButtonVariant.Fill"
-              :active="sortDirection === 'asc'"
+              .active="sortDirection === 'asc'"
+              .disabled="sortDirectionLocked"
             ></craft-button>
             <craft-button
               type="button"
@@ -115,7 +118,8 @@
               value="desc"
               :aria-label="t('Sort descending')"
               :variant="ButtonVariant.Fill"
-              :active="sortDirection === 'desc'"
+              .active="sortDirection === 'desc'"
+              .disabled="sortDirectionLocked"
             ></craft-button>
           </craft-button-group>
         </div>

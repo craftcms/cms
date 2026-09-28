@@ -55,6 +55,23 @@
   // One site is no choice at all, so the menu only earns its place from two.
   const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
 
+  const visibleSortOptions = computed(() => {
+    const options = props.sortOptions.filter(
+      (option) => option.value !== 'score'
+    );
+
+    return search.value
+      ? [
+          {label: t('Score'), value: 'score', defaultDir: 'desc' as const},
+          ...options,
+        ]
+      : options;
+  });
+
+  const sortDirectionLocked = computed(() =>
+    ['score', 'sortOrder'].includes(sortField.value)
+  );
+
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
@@ -171,7 +188,8 @@
 
           <IndexViewSettings
             :options="columnOptions"
-            :sort-options="sortOptions"
+            :sort-options="visibleSortOptions"
+            :sort-direction-locked="sortDirectionLocked"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
