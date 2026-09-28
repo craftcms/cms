@@ -88,6 +88,9 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
+- `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
+- `CraftCms\Cms\Element\Element::prepareEditScreen()` now accepts a `Symfony\Component\HttpFoundation\Response|CraftCms\Cms\Http\Responses\CpScreenResponse` argument, rather than `yii\web\Response`. Overrides must update their signatures.
+- `CraftCms\Cms\Element\Queries\ElementQuery::statusCondition()` now returns a `Closure` which modifies an `Illuminate\Database\Query\Builder`, rather than a Yii query condition. Overrides must update their signatures and return closures.
 - Fixed a bug where plugin-provided download element actions didn’t trigger file downloads from element indexes. ([#19730](https://github.com/craftcms/cms/pull/19730))
 - Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
 - Fixed a bug where `resave` and `update-statuses` commands reported skipped revisions as root element lookup errors.
@@ -111,11 +114,15 @@
 ### Plugins & Extensibility
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
-- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `CraftCms\Cms\Support\Url::stripCpTrigger()`. ([#19724](https://github.com/craftcms/cms/pull/19724))
+- Plugin settings models must now extend `CraftCms\Cms\Plugin\PluginSettings` rather than `craft\base\Model`.
+- Plugin settings are now validated using Laravel validation rules returned by `CraftCms\Cms\Plugin\PluginSettings::getRules()`, rather than Yii validation rules returned by `rules()`. Validation errors are added via the `$fail` callback or `errors()`, rather than `addError()`.
+- Plugin settings are now persisted based on the settings model’s public properties, via `CraftCms\Cms\Plugin\PluginSettings::configData()`. Settings stored in private properties with getter and setter methods must be redeclared as public properties, or included by overriding `configData()`.
+- `craft\base\Model::attributes()` now declares an `array` return type. Overrides must update their signatures.
 - `CraftCms\Cms\Support\Url::removeParam()` now accepts an array of param names. ([#19724](https://github.com/craftcms/cms/pull/19724))
-- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Removed `CraftCms\Cms\Support\Url::baseUrl()`, `cpHost()`, `encodeParams()`, `host()`, `isFullUrl()`, `removeParams()`, and `rootRelativeUrl()`. (They remain available on `craft\helpers\UrlHelper` through the Yii adapter.) ([#19724](https://github.com/craftcms/cms/pull/19724))
 - Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
