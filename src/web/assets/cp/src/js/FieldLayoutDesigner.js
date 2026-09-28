@@ -1482,9 +1482,10 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
         continue;
       }
 
+      // (relative to the scroll container's mousedown scroll position)
       $item.data('midpoint', {
-        left: offset.left + $item.outerWidth() / 2,
-        top: offset.top + $item.outerHeight() / 2,
+        left: offset.left + this.scrollDeltaX + $item.outerWidth() / 2,
+        top: offset.top + this.scrollDeltaY + $item.outerHeight() / 2,
       });
     }
   },
@@ -1512,8 +1513,8 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
       this.getClosestItem._mouseDiff = Garnish.getDist(
         this.getClosestItem._midpoint.left,
         this.getClosestItem._midpoint.top,
-        this.mouseX,
-        this.mouseY
+        this.mouseX + this.scrollDeltaX,
+        this.mouseY + this.scrollDeltaY
       );
 
       if (
