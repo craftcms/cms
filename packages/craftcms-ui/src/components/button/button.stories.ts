@@ -201,3 +201,40 @@ export const Links: Story = {
     </div>
   `,
 };
+
+/**
+ * Disabled buttons across every variant. `disabled` also removes the link
+ * behaviour from an `href` button, which then renders as plain text rather
+ * than an anchor, and it suppresses the hover, active and focus treatments the
+ * variants otherwise carry.
+ *
+ * Each variant keeps its own colors, muted, rather than all collapsing to one
+ * flat grey — so a disabled primary still reads as the primary action.
+ */
+export const Disabled: Story = {
+  render: () => html`
+    <div class="grid gap-4">
+      <div class="flex gap-2 items-center flex-wrap">
+        ${buttonVariants.map(
+          (variant) => html`
+            <craft-button variant="${variant}" disabled
+              >${variant}</craft-button
+            >
+          `
+        )}
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        <craft-button disabled icon="location">With icon</craft-button>
+        <craft-button disabled icon="gear" aria-label="Settings"></craft-button>
+        <craft-button disabled loading>Loading</craft-button>
+        <craft-button href="#" disabled>Disabled link</craft-button>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+          (size) =>
+            html`<craft-button size="${size}" disabled>${size}</craft-button>`
+        )}
+      </div>
+    </div>
+  `,
+};

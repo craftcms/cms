@@ -471,6 +471,13 @@ export default css`
     color: inherit;
   }
 
+  /* After the variants, whose colors would otherwise paint over Lion's own
+     disabled rule and leave a disabled button looking enabled. */
+  :host([disabled]) {
+    opacity: 0.5;
+    user-select: none;
+  }
+
   .button-content {
     display: flex;
     align-items: center;
