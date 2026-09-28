@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Actions\SuspendUsers;
@@ -88,6 +89,38 @@ it('serializes Copy as a client-side event action', function () {
 
     expect($duplicate['action']['type'])->toBe('http')
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
+});
+
+it('serializes registered download actions for native form submission', function () {
+    $downloadAction = new class extends ElementAction
+    {
+        public static function isDownload(): bool
+        {
+            return true;
+        }
+
+        public function getTriggerLabel(): string
+        {
+            return 'Download entries';
+        }
+    };
+
+    Event::listen(function (ElementActionsResolving $event) use ($downloadAction) {
+        if ($event->elementType === Entry::class) {
+            $event->actions[] = clone $downloadAction;
+        }
+    });
+
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = collect($this->elementActions->serializeActionItems($actions));
+    $download = $items->firstWhere('key', $downloadAction::class);
+
+    expect($download)->not->toBeNull()
+        ->and($download['label'])->toBe('Download entries')
+        ->and($download['action']['type'])->toBe('download')
+        ->and($download['action']['method'])->toBe('POST')
+        ->and($download['action']['url'])->toContain('element-indexes/perform-action')
+        ->and($download['action']['body']['elementAction'])->toBe($downloadAction::class);
 });
 
 it('puts restore first for trashed queries', function () {

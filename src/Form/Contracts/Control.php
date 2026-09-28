@@ -41,6 +41,9 @@ interface Control
      */
     public function emptyValue(): mixed;
 
+    /** Whether a null value is presentation-only and should be omitted from form mutations. */
+    public function omitNullValue(): bool;
+
     /**
      * Returns whether the control renders nested forms — Matrix blocks, a
      * content block.
