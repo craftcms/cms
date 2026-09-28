@@ -20,6 +20,10 @@ export interface SlideoutInstance {
   opener: HTMLElement | null;
   /** See {@link OpenSlideoutOptions.onSaved}. */
   onSaved: ((result: SlideoutSaveResult) => void) | null;
+  /** Derivative owner for a nested element being edited within its owner's draft. */
+  nestedOwnerId?: number;
+  /** Called immediately before saving, never just for opening the editor. */
+  prepareNestedOwner?: () => Promise<number | undefined>;
 }
 
 export interface SlideoutSaveResult {
@@ -35,6 +39,9 @@ export interface SlideoutSaveResult {
 }
 
 export interface OpenSlideoutOptions {
+  /** Save this nested element into the specified derivative owner, never its canonical owner. */
+  nestedOwnerId?: number;
+  prepareNestedOwner?: () => Promise<number | undefined>;
   /** Element to refocus on close. Defaults to whatever had focus at open time. */
   opener?: HTMLElement | null;
   /**

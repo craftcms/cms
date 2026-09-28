@@ -23,7 +23,8 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
-import MatrixControl from './MatrixControl.vue';
+import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
+import NestedElementCardsControl from './nested-elements/NestedElementCardsControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -95,6 +96,10 @@ export function registerFormComponents(
     'craft:field-layout-designer',
     FieldLayoutDesignerControl
   );
-  components.register('craft:matrix', MatrixControl);
+  components.register(
+    'craft:nested-element-blocks',
+    NestedElementBlocksControl
+  );
+  components.register('craft:nested-element-cards', NestedElementCardsControl);
   components.register('craft:content-block', ContentBlockControl);
 }

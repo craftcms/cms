@@ -41,7 +41,7 @@ function matrixIdentityFixture(): array
         'name' => 'Matrix Field',
         'handle' => 'matrixField',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$matrixEntryType->id]],
+        'settings' => ['entryTypes' => [$matrixEntryType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
     ]);
 
     $entryModel = Entry::factory()

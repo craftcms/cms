@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {attrs, t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {attrs, t, type ServerAttributes} from '@craftcms/ui';
+  import {computed, normalizeClass} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
@@ -12,10 +12,7 @@
 
   interface CardElement {
     id: string | number;
-    cardAttributes?: Record<
-      string,
-      string | number | boolean | null | undefined
-    >;
+    cardAttributes?: ServerAttributes;
     cardHeaderHtml?: string;
     cardThumbHtml?: string;
     thumbAlignment?: string;
@@ -61,10 +58,9 @@
   /** Per-card attributes the shared frame passes straight through. */
   function itemClass(id: string | number): unknown {
     const element = props.data.find((candidate) => candidate.id === id);
+    const classes = normalizeClass(element?.cardAttributes?.class).split(/\s+/);
 
-    return {
-      element: true,
-    };
+    return {element: true, error: classes.includes('error')};
   }
 
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
@@ -93,7 +89,9 @@
       return;
     }
 
-    props.selection.handleClick(id, event);
+    if (props.selectable && !readOnly.value) {
+      props.selection.handleClick(id, event);
+    }
   }
 
   function onCardKeydown(
@@ -154,6 +152,7 @@
       :item-class="itemClass"
       :item-attrs="itemAttrs"
       :card-attrs="cardAttrs"
+      :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
       @item-keydown="onCardKeydown"
@@ -193,13 +192,17 @@
 
 <style scoped lang="scss">
   .card-grid-header {
+    margin-block-end: var(--c-spacing-md);
     padding: var(--c-spacing-md);
     background-color: var(--c-color-neutral-fill-quiet);
+    border-start-start-radius: var(--c-radius-md);
+    border-start-end-radius: var(--c-radius-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .card-grid {
     display: grid;
+    gap: var(--c-spacing-md);
     align-items: stretch;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   }
@@ -227,6 +230,10 @@
   // doesn't reshuffle around the gap.
   .card-grid > li.is-dragging-away {
     visibility: hidden;
+  }
+
+  .card-grid :deep(> li > craft-card) {
+    height: 100%;
   }
 
   // craft-thumbnail defaults its own size via :host, so the card thumbnail

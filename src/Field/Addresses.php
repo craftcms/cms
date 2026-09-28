@@ -28,7 +28,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Form;
@@ -369,7 +369,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $sortOrder[] = $uid;
         }
 
-        return MatrixControl::make($context->path)
+        return NestedElementBlocks::make($context->path)
             ->entryTypes(['address' => Address::displayName()])
             ->forms($forms)
             ->minEntries($this->minAddresses)

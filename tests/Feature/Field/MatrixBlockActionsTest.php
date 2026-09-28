@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -52,7 +52,7 @@ function matrixActionsFixture(): array
         'name' => 'Actions Matrix',
         'handle' => 'actionsMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$blockType->id]],
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
     ]);
 
     $entryModel = Entry::factory()
@@ -75,12 +75,12 @@ function matrixActionsFixture(): array
     return [$reloaded, $uid];
 }
 
-function matrixActionsControl(EntryElement $owner): MatrixControl
+function matrixActionsControl(EntryElement $owner): NestedElementBlocks
 {
     /** @var Matrix $field */
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
 
-    /** @var MatrixControl $control */
+    /** @var NestedElementBlocks $control */
     $control = $field->formControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
@@ -91,7 +91,7 @@ function matrixActionsControl(EntryElement $owner): MatrixControl
 }
 
 /** @return list<string> */
-function matrixActionLabels(MatrixControl $control, string $uid): array
+function matrixActionLabels(NestedElementBlocks $control, string $uid): array
 {
     $actions = $control->props($control->getValue())['blocks'][$uid]['actions'] ?? [];
 
@@ -163,7 +163,7 @@ it('keeps single-site status actions when the field does not propagate blocks', 
     /** @var Matrix $field */
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
     $field->propagationMethod = PropagationMethod::None;
-    /** @var MatrixControl $control */
+    /** @var NestedElementBlocks $control */
     $control = $field->formControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
