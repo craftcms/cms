@@ -209,7 +209,7 @@ interface CraftStatic {
     ) => object;
     runQueue?: () => void;
   };
-  broadcaster?: {postMessage(message: LegacyWidgetSettings): void};
+  broadcaster?: BroadcastChannel;
   defaultIndexCriteria: LegacyWidgetSettings;
   systemUid?: string;
   canAccessQueueManager?: boolean;

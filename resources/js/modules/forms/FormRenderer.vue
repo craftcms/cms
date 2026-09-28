@@ -57,6 +57,7 @@
       kind: FormChangeKind
     ): void;
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
+    (event: 'update:payload', payload: FormPayload): void;
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
@@ -280,6 +281,7 @@
         ],
       };
     }
+    emit('update:payload', payload.value);
     emitMutation();
 
     if (focusedPath) {
@@ -341,6 +343,7 @@
     baseline = cloneRaw(source.values);
     payload.value = source;
     rememberControls(source.nodes);
+    emit('update:payload', payload.value);
     emitMutation();
   }
 

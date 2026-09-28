@@ -1,6 +1,6 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
-import {actionClient, t} from '@craftcms/ui';
+import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
@@ -16,6 +16,7 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideFormValueGroup} from '@/modules/forms/formValueGroup';
+import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -227,6 +228,12 @@ export function useElementEditor({saveData}: Options = {}) {
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<ElementEditFormData>({});
+  let refreshGeneration = 0;
+  let nestedElementsReloadPending = false;
+
+  function invalidateFormRefreshes(): void {
+    refreshGeneration++;
+  }
 
   provideFormValueGroup();
 
@@ -294,6 +301,35 @@ export function useElementEditor({saveData}: Options = {}) {
     updatedTimestamps: props.updatedTimestamps,
   });
 
+  useEventListener(
+    () => window.Craft?.broadcaster,
+    'message',
+    (event: MessageEvent) => {
+      const data = event.data;
+      const draftId = autosave.draftId.value ?? props.draftId;
+      if (
+        data.event === 'reorderNestedElements' &&
+        data.canonicalId === props.canonicalId &&
+        (data.draftId === draftId || (data.isProvisionalDraft && !draftId))
+      ) {
+        if (slideout) {
+          if (
+            form.processing ||
+            autosave.hasPendingChanges.value ||
+            hasUnsavedChanges()
+          ) {
+            nestedElementsReloadPending = true;
+            return;
+          }
+
+          void slideout.reload();
+        } else {
+          router.reload();
+        }
+      }
+    }
+  );
+
   // Applying a draft consumes it, and Inertia preserves this component across
   // the visit, so the server's view of the draft is authoritative afterwards.
   watch(
@@ -327,6 +363,7 @@ export function useElementEditor({saveData}: Options = {}) {
         return;
       }
 
+      invalidateFormRefreshes();
       applyingSavedPayload = true;
 
       if (form) {
@@ -354,6 +391,7 @@ export function useElementEditor({saveData}: Options = {}) {
   watch(
     () => pageProps(),
     () => {
+      invalidateFormRefreshes();
       savedForm.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
@@ -386,6 +424,55 @@ export function useElementEditor({saveData}: Options = {}) {
     if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule(kind);
     }
+  }
+
+  async function refreshForm(scope: string[] = formPayload.value?.scope ?? []) {
+    const generation = ++refreshGeneration;
+    const rootScope = formPayload.value?.scope ?? [];
+    const currentValues = renderer.value?.currentValues() ?? values.value;
+    const {data: response} = await actionClient.post(
+      UpdateFieldLayoutController.url(),
+      {
+        ...saveData?.(),
+        ...currentValues,
+        elementType: props.elementType,
+        elementId: props.elementId,
+        draftId: autosave.draftId.value ?? props.draftId,
+        siteId: props.siteId,
+        provisional: draftIsProvisional.value ? 1 : null,
+      },
+      {
+        headers: {
+          'X-Craft-Form-Root-Scope': JSON.stringify(rootScope),
+          'X-Craft-Form-Scope': JSON.stringify(scope),
+        },
+      }
+    );
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    if (!response.form) {
+      throw new Error('The Element Editor did not return a Form payload.');
+    }
+
+    await appendHeadHtml(response.headHtml);
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    applyingSavedPayload = true;
+    savedForm.value = response.form;
+    await nextTick();
+    applyingSavedPayload = false;
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    await appendBodyHtml(response.bodyHtml);
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -435,7 +522,10 @@ export function useElementEditor({saveData}: Options = {}) {
         return transformed;
       },
       // A submission supersedes any in-flight draft write.
-      onBeforeSave: () => autosave.cancel(),
+      onBeforeSave: () => {
+        invalidateFormRefreshes();
+        autosave.cancel();
+      },
       onSuccess: () => {
         autosave.suspend(() => {
           advanceBaseline();
@@ -446,6 +536,7 @@ export function useElementEditor({saveData}: Options = {}) {
         // prompted it — describes values this save has just written, and
         // applying a provisional draft deletes the draft it would write them to.
         autosave.cancel();
+        autosave.acknowledgeChanges();
 
         if (!slideout) {
           // The save itself moved the element's `dateUpdated`; without this the
@@ -508,6 +599,7 @@ export function useElementEditor({saveData}: Options = {}) {
       // Anything already on the autosave debounce — the keystroke that
       // triggered all this — describes values that no longer exist.
       autosave.cancel();
+      autosave.acknowledgeChanges();
     }
   }
 
@@ -516,6 +608,8 @@ export function useElementEditor({saveData}: Options = {}) {
     if (autosave.draftId.value === null) {
       return;
     }
+
+    invalidateFormRefreshes();
 
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
@@ -580,6 +674,28 @@ export function useElementEditor({saveData}: Options = {}) {
     return !props.canAutosave || autosave.status.value !== 'saved';
   }
 
+  if (slideout) {
+    watch(
+      [
+        () => form.processing,
+        () => form.isDirty,
+        autosave.status,
+        autosave.hasPendingChanges,
+      ],
+      () => {
+        if (
+          nestedElementsReloadPending &&
+          !form.processing &&
+          !autosave.hasPendingChanges.value &&
+          !hasUnsavedChanges()
+        ) {
+          nestedElementsReloadPending = false;
+          void slideout.reload();
+        }
+      }
+    );
+  }
+
   // Only on a full page. A panel's unsaved changes are the slideout store's to
   // guard — it prompts on close and on being replaced — and these would fire on
   // the base page's own navigation, including the reload that follows a
@@ -607,6 +723,8 @@ export function useElementEditor({saveData}: Options = {}) {
     onBeforeUnmount(removeNavigationGuard);
   }
 
+  onBeforeUnmount(invalidateFormRefreshes);
+
   return {
     activity,
     activityTimelineVersion,
@@ -620,6 +738,7 @@ export function useElementEditor({saveData}: Options = {}) {
     onSidebarMutation,
     props,
     renderer,
+    refreshForm,
     save,
     sidebarErrors,
     sidebarPayload,

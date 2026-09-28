@@ -1,7 +1,18 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
-import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  provide,
+  shallowRef,
+  type App,
+} from 'vue';
 import FormRenderer from './FormRenderer.vue';
+import {
+  NestedOwnerEditorKey,
+  nestedOwnerContext,
+} from '@/modules/elements/nested-owner';
 import {inputName, isRecord} from './runtime';
 import type {FormPayload, FormValue, FormValues} from './types';
 
@@ -23,6 +34,12 @@ type ElementEditor = {
 export interface EntryFieldLayoutFormHost extends HTMLElement {
   payload: FormPayload | null;
   requestMetadata: () => FormValues;
+}
+
+class SupersededFormRefresh extends Error {}
+
+function scopeContains(scope: string[], candidate: string[]): boolean {
+  return scope.every((segment, index) => candidate[index] === segment);
 }
 
 function parseElementEditor(value: FormValue): ElementEditor | null {
@@ -80,11 +97,20 @@ export function defineEntryFieldLayoutFormHost(
     'craft-entry-field-layout-form',
     class extends HTMLElement {
       readonly #payload = shallowRef<FormPayload | null>(null);
+      #renderedPayload: FormPayload | null = null;
       #app: App | null = null;
+      #refreshEpoch = 0;
+      #refreshSequence = 0;
+      readonly #refreshes = new Map<
+        string,
+        {scope: string[]; sequence: number}
+      >();
       requestMetadata = (): FormValues => ({});
 
       set payload(payload: FormPayload | null) {
+        this.#invalidateRefreshes();
         this.#payload.value = payload;
+        this.#renderedPayload = payload;
       }
 
       get payload(): FormPayload | null {
@@ -97,17 +123,93 @@ export function defineEntryFieldLayoutFormHost(
         }
 
         this.#payload.value = JSON.parse(this.dataset.payload ?? 'null');
+        this.#renderedPayload = this.#payload.value;
         this.#app = createApp(
           defineComponent({
-            setup: () => () =>
-              this.#payload.value
-                ? [
-                    h(FormRenderer, {
-                      payload: this.#payload.value,
-                      refresh: this.#refresh.bind(this),
-                    }),
-                  ]
-                : null,
+            setup: () => {
+              provide(NestedOwnerEditorKey, {
+                prepare: async (path) => {
+                  const form = this.closest('form');
+                  const context = nestedOwnerContext(
+                    this.#renderedPayload,
+                    path
+                  );
+                  if (!form || !context) {
+                    return null;
+                  }
+
+                  const editor = $(form).data('elementEditor') as
+                    | {
+                        settings?: {
+                          isStatic?: boolean;
+                          canCreateDrafts?: boolean;
+                          draftId?: number | null;
+                          canonicalId?: number | null;
+                          isProvisionalDraft?: boolean;
+                        };
+                        saveDraft?: () => Promise<void>;
+                        getDraftElementId?: (id: number) => number;
+                      }
+                    | undefined;
+                  if (!editor || editor.settings?.isStatic) {
+                    return null;
+                  }
+
+                  if (editor.settings?.canCreateDrafts) {
+                    await editor.saveDraft?.();
+                    if (!editor.settings.draftId) {
+                      return null;
+                    }
+                  }
+
+                  const ownerId =
+                    editor.getDraftElementId?.(context.ownerId) ??
+                    context.ownerId;
+                  return {
+                    ...context,
+                    ownerId,
+                    canonicalId: editor.settings?.canonicalId,
+                    draftId: editor.settings?.draftId,
+                    isProvisionalDraft: editor.settings?.isProvisionalDraft,
+                    ownerIsDerivative:
+                      ownerId !== context.ownerId || context.ownerIsDerivative,
+                    ownerIsInDerivativeTree:
+                      ownerId !== context.ownerId ||
+                      context.ownerIsInDerivativeTree,
+                    requiresDerivative: Boolean(
+                      editor.settings?.canCreateDrafts
+                    ),
+                  };
+                },
+                refresh: async () => {
+                  if (!this.#payload.value) {
+                    return;
+                  }
+
+                  try {
+                    this.#payload.value = await this.#refresh(
+                      this.#payload.value.values
+                    );
+                  } catch (error) {
+                    if (!(error instanceof SupersededFormRefresh)) {
+                      throw error;
+                    }
+                  }
+                },
+              });
+              return () =>
+                this.#payload.value
+                  ? [
+                      h(FormRenderer, {
+                        payload: this.#payload.value,
+                        refresh: this.#refresh.bind(this),
+                        'onUpdate:payload': (payload: FormPayload) => {
+                          this.#renderedPayload = payload;
+                        },
+                      }),
+                    ]
+                  : null;
+            },
           })
         );
         this.#app.config.compilerOptions.isCustomElement = (tag) =>
@@ -117,6 +219,8 @@ export function defineEntryFieldLayoutFormHost(
       }
 
       disconnectedCallback(): void {
+        this.#invalidateRefreshes();
+
         if (this.#app) {
           components.uninstall(this.#app);
           this.#app.unmount();
@@ -138,11 +242,17 @@ export function defineEntryFieldLayoutFormHost(
         }
 
         const rootScope = this.#payload.value?.scope ?? [];
+        const scopeKey = JSON.stringify(scope);
+        if (scopeKey === JSON.stringify(rootScope)) {
+          this.#invalidateRefreshes();
+        }
+        const epoch = this.#refreshEpoch;
+        const sequence = ++this.#refreshSequence;
+        this.#refreshes.set(scopeKey, {scope, sequence});
         const data = new URLSearchParams($(form).serialize());
         const metadata = {
           elementType: editor.settings.elementType,
           elementId: editor.settings.elementId,
-          canonicalId: editor.settings.canonicalId,
           draftId: editor.settings.draftId,
           revisionId: editor.settings.revisionId,
           fieldId: editor.settings.fieldId,
@@ -183,11 +293,42 @@ export function defineEntryFieldLayoutFormHost(
           );
         }
 
+        this.#assertCurrentRefresh(scope, epoch, sequence);
+
         await appendHeadHtml(response.headHtml);
+
+        this.#assertCurrentRefresh(scope, epoch, sequence);
+
         await appendBodyHtml(response.bodyHtml);
+
+        this.#assertCurrentRefresh(scope, epoch, sequence);
+
         editor.handleDismissibleTips?.();
 
         return response.form;
+      }
+
+      #invalidateRefreshes(): void {
+        this.#refreshEpoch++;
+        this.#refreshes.clear();
+      }
+
+      #assertCurrentRefresh(
+        scope: string[],
+        epoch: number,
+        sequence: number
+      ): void {
+        if (
+          epoch !== this.#refreshEpoch ||
+          [...this.#refreshes.values()].some(
+            (refresh) =>
+              refresh.sequence > sequence &&
+              (scopeContains(refresh.scope, scope) ||
+                scopeContains(scope, refresh.scope))
+          )
+        ) {
+          throw new SupersededFormRefresh();
+        }
       }
     }
   );
