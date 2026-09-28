@@ -117,6 +117,7 @@
 - Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Removed HTMX.
+- Base site URLs, including `url('')`, `siteUrl('')`, and homepage URLs, now respect the `addTrailingSlashesToUrls` config setting, so they no longer end with a trailing slash by default. The `siteUrl` Twig variable still always ends with a trailing slash. ([#19723](https://github.com/craftcms/cms/pull/19723))
 - Fixed a bug where cached template resolution could ignore the current site, registered template roots, or lookup options. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where orphan cleanup could delete the wrong rows for composite foreign keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where deleting a site could transfer its content despite selecting the delete option. ([#19568](https://github.com/craftcms/cms/pull/19568))

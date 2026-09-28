@@ -231,7 +231,7 @@ test('logout redirects to the post-logout redirect, not back to the previous pag
         ->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect();
 
-    expect($response->headers->get('Location'))->toBe('https://localhost/');
+    expect($response->headers->get('Location'))->toBe('https://localhost');
 });
 
 test('logout honors a configured post-logout redirect', function () {

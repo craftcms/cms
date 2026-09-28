@@ -652,8 +652,14 @@ class Url extends \Illuminate\Support\Facades\URL
             if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
                 $url .= '/';
             }
-        } else {
+        } elseif ($cpUrl) {
             $url = $baseUrl;
+        } else {
+            $url = rtrim($baseUrl, '/');
+
+            if ($url === '' || $generalConfig->addTrailingSlashesToUrls) {
+                $url .= '/';
+            }
         }
 
         return self::_buildUrl($url, $params, $fragment);

@@ -162,7 +162,7 @@ class ResponseTest extends TestCase
     public static function testRedirectDataProvider(): array
     {
         return [
-            ['https://localhost/', ''],
+            ['https://localhost', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
             ['https://localhost/', '/'],
             ['https://localhost/something-relative', '/something-relative'],
