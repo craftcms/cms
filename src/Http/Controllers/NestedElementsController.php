@@ -29,6 +29,7 @@ readonly class NestedElementsController
     public function reorder(NestedElementsRequest $request): Response
     {
         $request->authorizeReorder();
+        Gate::authorize('save', $request->owner());
 
         $this->elements->reorderNestedElements(
             $request->owner(),

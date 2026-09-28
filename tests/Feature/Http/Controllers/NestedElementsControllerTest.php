@@ -14,12 +14,14 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Activity\WorkflowActivityEvent;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
@@ -185,6 +187,47 @@ it('accepts canonical nested element authorization for provisional draft owners'
         'elementIds' => [$nestedEntry->id],
         'offset' => 0,
     ])->assertOk();
+});
+
+it('does not grant or accept card reordering for users who cannot save the owner', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'section' => $section] = nestedElementsControllerCreateMatrixOwnerFixture();
+    $first = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 1, 'First');
+    $second = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 2, 'Second');
+    $viewer = UserModel::factory()
+        ->withPermissions([
+            'accessCp',
+            sprintf('editSite:%s', $owner->getSite()->uid),
+            sprintf('viewEntries:%s', $section->uid),
+            sprintf('viewPeerEntries:%s', $section->uid),
+        ])
+        ->createElement();
+
+    actingAs($viewer);
+
+    postJson(action(UpdateFieldLayoutController::class), [
+        'elementType' => EntryElement::class,
+        'elementId' => $owner->id,
+        'siteId' => $owner->siteId,
+    ])->assertOk();
+
+    $attribute = 'field:matrixField';
+    expect(SessionAuth::checkAuthorization(sprintf('reorderNestedElements::%s::%s', $owner->id, $attribute)))->toBeFalse();
+
+    $this->withSession([
+        SessionAuth::$authAccessParam => [
+            sprintf('manageNestedElements::%s::%s', $owner->id, $attribute),
+            sprintf('reorderNestedElements::%s::%s', $owner->id, $attribute),
+        ],
+    ])->postJson(action([NestedElementsController::class, 'reorder']), [
+        ...nestedElementsControllerPayload($owner, $attribute),
+        'elementIds' => [$second->id],
+        'offset' => 0,
+    ])->assertForbidden();
+
+    expect(nestedElementsControllerOwnerSortOrders($owner->id))->toBe([
+        $first->id => 1,
+        $second->id => 2,
+    ]);
 });
 
 it('validates reorder params', function () {

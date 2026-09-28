@@ -13,6 +13,7 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -35,7 +36,7 @@ trait UpdatesFieldLayout
             new FormContext(
                 namespace: $this->fieldLayoutRootScope(),
                 errors: $element->errors()->getMessages(),
-                mode: ControlMode::Editable,
+                mode: Gate::check('save', $element) ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
         );
