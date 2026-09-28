@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\PageLifecycle;
 use GuzzleHttp\Client;
 use GuzzleHttp\Client as GuzzleClient;
+use Twig\Error\RuntimeError;
 use yii\behaviors\AttributeTypecastBehavior;
 
 beforeEach(function () {
@@ -82,5 +84,35 @@ describe('CoreTwigExtension', function () {
         // which extends FilesystemIterator, which extends DirectoryIterator, so is_a()'s
         // ancestry walk already denies them via the DirectoryIterator entry above.
         'PharData (via DirectoryIterator ancestry)' => [false, PharData::class],
+        // File-writing classes
+        'XMLWriter' => [false, XMLWriter::class],
+        'ZipArchive' => [false, ZipArchive::class],
+        'SQLite3' => [false, SQLite3::class],
+        // *Iterator classes
+        'ArrayIterator' => [false, ArrayIterator::class],
     ]);
+
+    it('blocks create() in string and object templates', function (Closure $render) {
+        expect($render)->toThrow(RuntimeError::class, 'create() cannot be used in string or object templates.');
+    })->with([
+        'renderString()' => fn () => Template::renderString('{{ create("stdClass") ? "created" }}'),
+        'renderTwigString()' => fn () => Template::renderTwigString('{{ create("stdClass") ? "created" }}'),
+        'renderObjectTemplate()' => fn () => Template::renderObjectTemplate('{{ create("stdClass") ? "created" }}', new stdClass),
+        'renderObjectTemplate() with XMLWriter' => fn () => Template::renderObjectTemplate('{% set w = create("XMLWriter") %}', new stdClass),
+        'renderObjectTemplate() with a config array' => fn () => Template::renderObjectTemplate('{{ create({class: "stdClass"}) ? "created" }}', new stdClass),
+        'object template nested in a string template' => fn () => Template::renderString('{{ renderObjectTemplate(t, o) }}', [
+            't' => '{{ create("stdClass") ? "created" }}',
+            'o' => new stdClass,
+        ]),
+    ]);
+
+    it('allows create() again once a string template has finished rendering', function () {
+        try {
+            Template::renderObjectTemplate('{{ create("stdClass") }}', new stdClass);
+        } catch (RuntimeError) {
+        }
+
+        expect(Template::isRenderingStringTemplate())->toBeFalse()
+            ->and(new CoreTwigExtension($this->pageLifecycle)->createFunction(stdClass::class))->toBeInstanceOf(stdClass::class);
+    });
 });

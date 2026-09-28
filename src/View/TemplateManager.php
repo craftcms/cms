@@ -31,6 +31,9 @@ class TemplateManager extends Manager
 
     private bool $isRenderingPageTemplate = false;
 
+    /** How many string or object templates are being rendered, nested ones included. */
+    private int $stringTemplateDepth = 0;
+
     public function __construct(
         Container $container,
         private readonly TemplateResolver $templateResolver,
@@ -106,6 +109,19 @@ class TemplateManager extends Manager
     public function isRenderingPageTemplate(): bool
     {
         return $this->isRenderingPageTemplate;
+    }
+
+    /**
+     * Whether a string or object template is being rendered — including any
+     * template it includes.
+     *
+     * Those templates (title formats, URI formats, system messages, …) are
+     * authored in the control panel or project config rather than on the
+     * filesystem, so some template functions refuse to run inside them.
+     */
+    public function isRenderingStringTemplate(): bool
+    {
+        return $this->stringTemplateDepth > 0;
     }
 
     /** @param array<string, mixed> $variables */
@@ -203,8 +219,8 @@ class TemplateManager extends Manager
     ): string {
         $resolvedRenderer = $this->renderer($renderer);
 
-        return $this->withRenderingState(
-            'string:'.$template,
+        return $this->withStringRenderingState(
+            $template,
             $templateMode,
             fn () => $resolvedRenderer->renderString($template, $variables, $templateMode),
         );
@@ -219,8 +235,8 @@ class TemplateManager extends Manager
     ): string {
         $renderer = $this->twigRenderer();
 
-        return $this->withRenderingState(
-            'string:'.$template,
+        return $this->withStringRenderingState(
+            $template,
             $templateMode,
             fn () => $renderer->renderString($template, $variables, $templateMode, $escapeHtml),
         );
@@ -235,8 +251,8 @@ class TemplateManager extends Manager
     ): string {
         $renderer = $this->twigRenderer();
 
-        return $this->withRenderingState(
-            'string:'.$template,
+        return $this->withStringRenderingState(
+            $template,
             $templateMode,
             fn () => $renderer->renderSandboxedString($template, $variables, $templateMode, $escapeHtml),
         );
@@ -252,8 +268,8 @@ class TemplateManager extends Manager
     ): string {
         $renderer = $this->twigRenderer();
 
-        return $this->withRenderingState(
-            'string:'.$template,
+        return $this->withStringRenderingState(
+            $template,
             $templateMode,
             fn () => $renderer->renderObjectTemplate($template, $object, $variables, $templateMode, $escaperStrategy),
         );
@@ -268,8 +284,8 @@ class TemplateManager extends Manager
     ): string {
         $renderer = $this->twigRenderer();
 
-        return $this->withRenderingState(
-            'string:'.$template,
+        return $this->withStringRenderingState(
+            $template,
             $templateMode,
             fn () => $renderer->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode),
         );
@@ -389,6 +405,17 @@ class TemplateManager extends Manager
         } finally {
             $this->renderingTemplate = $previousTemplate;
             TemplateMode::set($previousTemplateMode);
+        }
+    }
+
+    private function withStringRenderingState(string $template, TemplateMode $templateMode, callable $render): string
+    {
+        $this->stringTemplateDepth++;
+
+        try {
+            return $this->withRenderingState('string:'.$template, $templateMode, $render);
+        } finally {
+            $this->stringTemplateDepth--;
         }
     }
 
