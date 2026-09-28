@@ -107,8 +107,11 @@
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added `CraftCms\Cms\Support\Url::stripCpTrigger()`.
+- `CraftCms\Cms\Support\Url::removeParam()` now accepts an array of param names.
 - Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Removed `CraftCms\Cms\Support\Url::baseUrl()`, `cpHost()`, `encodeParams()`, `host()`, `isFullUrl()`, `removeParams()`, and `rootRelativeUrl()`. (They remain available on `craft\helpers\UrlHelper` through the Yii adapter.)
 - Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 

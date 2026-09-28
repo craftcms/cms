@@ -740,27 +740,7 @@ readonly class Navigation
 
     private function navItemPath(string $url): string
     {
-        return $this->withoutCpTrigger((string) parse_url($url, PHP_URL_PATH));
-    }
-
-    private function withoutCpTrigger(string $path): string
-    {
-        $path = trim(rawurldecode($path), '/');
-        $cpTrigger = trim((string) $this->generalConfig->cpTrigger, '/');
-
-        if ($cpTrigger === '') {
-            return $path;
-        }
-
-        if ($path === $cpTrigger) {
-            return '';
-        }
-
-        if (str_starts_with($path, $cpTrigger.'/')) {
-            return substr($path, strlen($cpTrigger) + 1);
-        }
-
-        return $path;
+        return Url::stripCpTrigger(rawurldecode((string) parse_url($url, PHP_URL_PATH)));
     }
 
     /**
