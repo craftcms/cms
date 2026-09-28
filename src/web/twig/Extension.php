@@ -80,6 +80,7 @@ use PDO;
 use Reflector;
 use SimpleXMLElement;
 use SoapClient;
+use SQLite3;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -97,6 +98,7 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use XMLReader;
+use XMLWriter;
 use XSLTProcessor;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -106,6 +108,7 @@ use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
+use ZipArchive;
 
 /**
  * Class Extension
@@ -1711,6 +1714,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException('No class specified for create().');
         }
 
+        // String and object templates (title formats, URI formats, system messages, etc.) are authored
+        // via the control panel/project config rather than the filesystem, so create() isn't allowed there
+        if (Craft::$app->getView()->getIsRenderingStringTemplate()) {
+            throw new InvalidArgumentException('create() cannot be used in string or object templates.');
+        }
+
         $blocklist = [
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
@@ -1726,6 +1735,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             Process::class,
             SimpleXMLElement::class,
             Reflector::class,
+            SQLite3::class,
+            XMLWriter::class,
+            ZipArchive::class,
         ];
 
         foreach ($blocklist as $c) {
@@ -1738,7 +1750,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
-        if (StringHelper::startsWith(rtrim($class, '\\'), 'Iterator', false)) {
+        if (StringHelper::endsWith(rtrim($class, '\\'), 'Iterator', false)) {
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
