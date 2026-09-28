@@ -252,15 +252,20 @@ window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
     // A Matrix block's `data-id` is its UID — the identity everything else in
     // the field is keyed by — so its element id rides on `data-element-id`.
     // Cards elsewhere put the element id on `data-id` and have no `element-id`.
-    .map((el) => ({
-      type: String(elementType),
-      fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
-      id: el.dataset.elementId ?? el.dataset.id!,
-      draftId: numeric(el.dataset.draftId),
-      revisionId: numeric(el.dataset.revisionId),
-      ownerId: numeric(el.dataset.ownerId),
-      siteId: numeric(el.dataset.siteId),
-    }))
+    .map((el) => {
+      const entryTypeId = numeric(el.dataset.entryTypeId);
+
+      return {
+        type: String(elementType),
+        fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
+        id: el.dataset.elementId ?? el.dataset.id!,
+        draftId: numeric(el.dataset.draftId),
+        revisionId: numeric(el.dataset.revisionId),
+        ownerId: numeric(el.dataset.ownerId),
+        siteId: numeric(el.dataset.siteId),
+        ...(entryTypeId === null ? {} : {data: {entryTypeId}}),
+      };
+    })
     // A block the browser minted has no element behind it yet, so there's
     // nothing for the clipboard to point at — its `data-id` is still a UID.
     .filter((element) => numeric(element.id) !== null);

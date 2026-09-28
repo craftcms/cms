@@ -208,6 +208,43 @@ describe('field input action listeners', () => {
     ]);
   });
 
+  it('copies Vue Matrix cards with the entry type data needed for paste', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <ul>
+          <li data-nested-id="5">
+            <craft-card data-id="5" data-site-id="2" data-owner-id="9" data-entry-type-id="7" data-copyable></craft-card>
+          </li>
+        </ul>
+      </craft-field>
+    `;
+
+    window.dispatchEvent(
+      new CustomEvent('craft:copy-nested-elements', {
+        detail: {
+          selector: '[data-nested-id] > craft-card[data-copyable]',
+          elementType: 'craft\\elements\\Entry',
+          fieldId: 4,
+          trigger: document.querySelector('#trigger'),
+        },
+      })
+    );
+
+    expect(copyElements).toHaveBeenCalledWith([
+      {
+        type: 'craft\\elements\\Entry',
+        fieldId: 4,
+        id: '5',
+        draftId: null,
+        revisionId: null,
+        ownerId: 9,
+        siteId: 2,
+        data: {entryTypeId: 7},
+      },
+    ]);
+  });
+
   it('copies a Matrix block by its element id, not its UID', () => {
     document.body.innerHTML = `
       <craft-field>
