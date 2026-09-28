@@ -14,6 +14,8 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
@@ -187,6 +189,24 @@ it('accepts canonical nested element authorization for provisional draft owners'
         'elementIds' => [$nestedEntry->id],
         'offset' => 0,
     ])->assertOk();
+});
+
+it('grants card reordering when compiling the field and changes only the prepared draft order', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = nestedElementsControllerCreateMatrixOwnerFixture();
+    $first = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 1, 'First');
+    $second = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 2, 'Second');
+
+    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new FormContext);
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
+
+    postJson(action([NestedElementsController::class, 'reorder']), [
+        ...nestedElementsControllerPayload($draft, 'field:matrixField'),
+        'elementIds' => [$first->id],
+        'offset' => 1,
+    ])->assertOk();
+
+    expect(nestedElementsControllerOwnerSortOrders($draft->id))->toBe([$second->id => 1, $first->id => 2])
+        ->and(nestedElementsControllerOwnerSortOrders($owner->id))->toBe([$first->id => 1, $second->id => 2]);
 });
 
 it('does not grant or accept card reordering for users who cannot save the owner', function () {

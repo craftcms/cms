@@ -52,7 +52,7 @@ function matrixActionsFixture(): array
         'name' => 'Actions Matrix',
         'handle' => 'actionsMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$blockType->id]],
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
     ]);
 
     $entryModel = Entry::factory()
@@ -163,7 +163,7 @@ it('keeps single-site status actions when the field does not propagate blocks', 
     /** @var Matrix $field */
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
     $field->propagationMethod = PropagationMethod::None;
-    /** @var MatrixControl $control */
+    /** @var NestedElementBlocks $control */
     $control = $field->formControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),

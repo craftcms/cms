@@ -22,6 +22,9 @@ use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
@@ -458,6 +461,35 @@ it('provides an editor action url for editable nested element cards', function (
             'ownerId' => (string) $fixture['owner']->id,
         ]);
 });
+
+it('renders Matrix cards controls for server-rendered forms', function (string $viewMode, string $listClass) {
+    $fixture = createMatrixOwnerFixture(['viewMode' => $viewMode]);
+    createMatrixNestedEntry($fixture['owner'], $fixture['field'], $fixture['entryType'], 1, 'Nested entry');
+    $owner = EntryElement::find()->id($fixture['owner']->id)->one();
+
+    $payload = app(FieldLayoutCompiler::class)->compile(
+        $owner->getFieldLayout(),
+        $owner,
+        new FormContext,
+    );
+    $manager = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-nested-element-manager');
+    $settings = json_decode($manager->attr('settings'), true, flags: JSON_THROW_ON_ERROR);
+    $cards = $manager->filter(sprintf('.nested-element-cards > ul.elements.%s > li > craft-card.element', $listClass));
+
+    expect($manager->attr('element-type'))->toBe(EntryElement::class)
+        ->and($settings)->toMatchArray([
+            'mode' => 'cards',
+            'canCreate' => true,
+            'sortable' => true,
+            'baseInputName' => 'fields[matrixField]',
+        ])
+        ->and($cards->count())->toBe(1)
+        ->and($cards->filter('.card-titlebar > .card-actions-container > .card-actions > .move-btn')->count())->toBe(1)
+        ->and($cards->html())->toContain('Nested entry', 'data-delete-action');
+})->with([
+    'cards' => [Matrix::VIEW_MODE_CARDS, 'cards'],
+    'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, 'card-grid'],
+]);
 
 it('provides permitted card menu events for the hosting field', function (bool $showInGrid, bool $static, bool $authorized) {
     $user = UserModel::factory()->createElement();
