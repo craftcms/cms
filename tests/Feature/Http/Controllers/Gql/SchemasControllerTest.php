@@ -8,6 +8,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Exceptions\UrlGenerationException;
@@ -45,6 +46,7 @@ it('requires admin access for schema pages and actions', function () {
     $schema = createSchemaForSchemasControllerTest();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
     actingAs(User::findOne());
 
     get(cp_url('graphql/schemas'))->assertForbidden();

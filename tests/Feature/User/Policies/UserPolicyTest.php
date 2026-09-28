@@ -15,12 +15,7 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    $targetUser = createUserTestUser(id: 2);
-    $currentUser = createUserTestUser(id: 1, permissions: ['viewUsers']);
-
-    $result = Gate::forUser($currentUser)->allows('view', $targetUser->asElement());
-
-    expect($result)->toBeBool();
+    expect(Gate::getPolicyFor(UserElement::class))->toBeInstanceOf(UserPolicy::class);
 });
 
 it('supports assignment abilities through the gate', function () {

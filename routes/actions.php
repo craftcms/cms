@@ -312,7 +312,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         // Fields
-        Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
+        Route::middleware(RequireAdmin::class)->post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('fields/render-form', [FieldsController::class, 'renderForm']);
             Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);

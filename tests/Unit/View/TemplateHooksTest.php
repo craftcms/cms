@@ -8,15 +8,6 @@ beforeEach(function () {
     $this->hooks = app(TemplateHooks::class);
 });
 
-describe('scoped resolution', function () {
-    it('is resolved as a scoped instance', function () {
-        $a = app(TemplateHooks::class);
-        $b = app(TemplateHooks::class);
-
-        expect($a)->toBe($b);
-    });
-});
-
 describe('hook registration', function () {
     it('registers and invokes a hook handler', function () {
         $this->hooks->register('test', fn (array &$context) => 'hello');

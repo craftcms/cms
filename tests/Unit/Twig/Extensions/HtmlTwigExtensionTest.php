@@ -31,6 +31,7 @@ describe('HtmlTwigExtension', function () {
             'attr',
             'markdown',
             'parseAttr',
+            'parseRefs',
             'removeClass',
             'sanitize',
         );

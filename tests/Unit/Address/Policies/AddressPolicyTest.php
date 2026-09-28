@@ -13,12 +13,7 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    $address = new Address;
-    $currentUser = createAddressTestUser(id: 1, permissions: ['viewUsers']);
-
-    $result = Gate::forUser($currentUser)->allows('view', $address);
-
-    expect($result)->toBeBool();
+    expect(Gate::getPolicyFor(Address::class))->toBeInstanceOf(AddressPolicy::class);
 });
 
 it('returns false without owner for view', function () {

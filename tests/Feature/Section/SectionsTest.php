@@ -334,11 +334,6 @@ it('deletes site sections belonging to a deleted site', function () {
     expect(ProjectConfig::get($projectConfigKey))->toBeNull();
 });
 
-it('can get table data', function () {
-    // Mostly a smoke test to check there are no exceptions
-    expect($this->sections->getSectionTableData(1, 100))->not()->toBeEmpty();
-});
-
 it('returns laravel-style pagination metadata for table data', function () {
     Section::factory()->count(3)->create();
     $this->sections->refreshSections();

@@ -51,6 +51,7 @@ readonly class ElementHtml
     public function __construct(
         private StatusHtml $statusHtml,
         private ContentHtml $contentHtml,
+        private MenuHtml $menuHtml,
     ) {}
 
     /** @param array<string, mixed> $config */
@@ -1038,7 +1039,7 @@ readonly class ElementHtml
             function () use ($component, $withEdit, $extraItems): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn (array $item) => $item['showInChips'] ?? ! ($item['destructive'] ?? false)
+                    $this->menuHtml->showsInChips(...),
                 );
 
                 foreach ($actionMenuItems as $i => &$item) {

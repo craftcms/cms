@@ -34,6 +34,8 @@ uses(UnitTestCase::class)->in('Unit');
 4. Pull detailed examples from `references/testing-guidelines.md` when needed.
 5. Implement tests using Pest and repo conventions.
 
+Done when: the narrowest run of the new or changed tests passes, and a regression test fails without the fix.
+
 ## Core Rules
 
 - Read nearby tests first and follow their declaration and organization conventions.
@@ -42,7 +44,7 @@ uses(UnitTestCase::class)->in('Unit');
 - Use Boost's `search-docs` for version-specific Pest and Laravel testing syntax. Confirm an assertion or feature before using it.
 - Test observable behavior and application contracts. Cover each changed decision and applicable high-value failure path, but leave framework behavior to framework tests.
 - Run the narrowest relevant test file or filter. Rerun a test after changing it.
-- Do not delete tests or test files without approval.
+- Delete tests only when the code they cover was removed or replaced in the same task, and list them under Changed. Deleting any other test needs approval.
 - Keep test-local abstractions proportional to the repetition they remove. Small one-off helpers such as route wrapper closures or tiny passthrough methods usually shouldn’t exist; inline the setup or request unless the extraction materially improves readability or reuse.
 - Use `CraftCms\Cms\Cms::config()->cpTrigger` when asserting CP URLs; never hard-code `/admin`.
 - Do not instantiate element classes directly with `new` in tests; use factories to ensure database state.

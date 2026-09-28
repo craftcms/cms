@@ -6,7 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
 
 test('version', function () {
-    expect(PHP::version())->not()->toContain('+');
+    expect(PHP::version())->toMatch('/^\d+\.\d+\.\d+$/');
 });
 
 test('configValueAsBool', function () {
@@ -25,7 +25,12 @@ test('configValueAsBool', function () {
 });
 
 test('configValueInBytes', function () {
-    expect(PHP::configValueInBytes('memory_limit'))->toBeNumeric();
+    $memoryLimit = ini_get('memory_limit');
+    ini_set('memory_limit', ' 5G ');
+
+    expect(PHP::configValueInBytes('memory_limit'))->toBe(5 * 1024 ** 3);
+
+    ini_set('memory_limit', $memoryLimit);
 });
 
 test('normalizePaths', function () {

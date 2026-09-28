@@ -7,7 +7,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use Illuminate\Support\Facades\DB;
 
-it('hard deletes soft deleted elements', function () {
+it('hard deletes entry types soft deleted longer ago than the soft delete duration', function () {
     // Not soft deleted
     DB::table(Table::ENTRYTYPES)->insert([
         'name' => 'Test',
