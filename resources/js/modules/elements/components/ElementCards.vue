@@ -86,7 +86,9 @@
   function cardSelectLabel(id: string | number): string | undefined {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    return element?.label ? t('Select {label}', {label: element.label}) : undefined;
+    return element?.label
+      ? t('Select {label}', {label: element.label})
+      : undefined;
   }
 
   function onCardClick(id: string | number, event: MouseEvent) {
