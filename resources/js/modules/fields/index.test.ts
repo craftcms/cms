@@ -5,7 +5,10 @@ const createCopyTextPrompt = vi.hoisted(() => vi.fn());
 const forContainer = vi.hoisted(() => vi.fn());
 const copyElements = vi.hoisted(() => vi.fn());
 
-vi.mock('@/common/slideouts', () => ({openSlideout}));
+vi.mock('@/common/slideouts', () => ({
+  canUseVueSlideout: () => window.Craft?.openSlideout instanceof Function,
+  openSlideout,
+}));
 vi.mock('@craftcms/ui/factory', () => ({createCopyTextPrompt}));
 vi.mock('@/modules/matrix/matrix-entry', () => ({
   MatrixEntry: {forContainer},

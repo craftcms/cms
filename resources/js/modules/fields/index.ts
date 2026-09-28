@@ -1,5 +1,5 @@
 import {createCopyTextPrompt} from '@craftcms/ui/factory';
-import {openSlideout} from '@/common/slideouts';
+import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {MatrixEntry} from '@/modules/matrix/matrix-entry';
 import {
@@ -17,11 +17,6 @@ import {
  * `{type: 'event'}` action descriptor instead, and `runAction()` dispatches it
  * here. `runAction` merges the invoking element in as `detail.trigger`.
  */
-
-/** Whether the Vue slideout stack is available (i.e. we're on an Inertia page). */
-function canUseVueSlideout(): boolean {
-  return window.Craft?.openSlideout instanceof Function;
-}
 
 // `craft:edit-field` — the "Field settings" item. Opens the field's settings
 // screen in a slideout and, on save, re-announces it as the bubbling
