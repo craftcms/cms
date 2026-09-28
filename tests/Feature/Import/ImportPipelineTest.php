@@ -17,13 +17,16 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Jobs\FinishImport;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ImportPlan;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Testing\Fakes\BatchFake;
 
@@ -139,6 +142,17 @@ it('fires the import finished event without failures when no step flagged any', 
     Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures === false);
 });
 
+it('deletes the run’s downloaded files when finishing an import', function () {
+    Event::fake([ImportFinished::class]);
+    $directory = Path::runtime(FinishImport::downloadsPath('run-id'));
+    File::ensureDirectoryExists($directory);
+    File::put("$directory/data.json", '[]');
+
+    new FinishImport($this->importPlan, 'run-id')->handle();
+
+    expect(is_dir($directory))->toBeFalse();
+});
+
 it('gives the pipeline and every step job the same run ID when dispatching an import', function () {
     app(Import::class)->dispatchImport($this->importPlan);
 
@@ -176,6 +190,26 @@ it('flags the run and the step as having failures when an item in an import job 
         ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-1')))->toBeTrue()
         ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-2')))->toBeFalse();
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->hasFailures);
+});
+
+it('skips the first chunk of a step whose file is invalid', function () {
+    Event::fake([ImportChunkStarted::class]);
+    ImportLog::spy();
+    $this->importPlan->steps[0]->file('tests/Fixtures/Import/missing.json');
+
+    ($this->runJob)();
+
+    Event::assertNotDispatched(ImportChunkStarted::class);
+    ImportLog::shouldHaveReceived('warning')->withArgs(fn (string $message) => str_contains($message, 'does not exist.'));
+});
+
+it('doesn’t check the step’s file again in later chunks', function () {
+    Event::fake([ImportChunkStarted::class]);
+    $this->importPlan->steps[0]->file('tests/Fixtures/Import/missing.json');
+
+    ($this->runJob)(1);
+
+    Event::assertDispatched(ImportChunkStarted::class);
 });
 
 it('fires the import started event with the plan’s steps and run ID', function () {

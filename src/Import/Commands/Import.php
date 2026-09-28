@@ -134,11 +134,10 @@ abstract class Import extends Command implements PromptsForMissingInput
             $this->fail('Import configuration is invalid.');
         }
 
-        $filePath = $importer::resolvedFilePath($importer->file);
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
 
         try {
-            $allData = ImportFacade::getFormattedData($filePath);
+            $allData = $importer->withLocalFile(fn (string $filePath) => ImportFacade::getFormattedData($filePath));
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }

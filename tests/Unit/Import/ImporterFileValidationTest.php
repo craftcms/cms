@@ -3,9 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\UrlValidator\UrlValidator;
+use CraftCms\Cms\Tests\Support\Import\TestImporter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -14,55 +13,7 @@ beforeEach(function () {
     $this->packageRoot = dirname(__DIR__, 3);
     Aliases::set('@root', $this->packageRoot);
 
-    $this->importer = new class extends BaseImporter
-    {
-        public static array $resolvedIps = [];
-
-        public static int $lookups = 0;
-
-        public static function targetClass(): string
-        {
-            return stdClass::class;
-        }
-
-        public static function create(): self
-        {
-            return new self;
-        }
-
-        public static function displayName(): string
-        {
-            return 'Test';
-        }
-
-        public function settingsForm(FormContext $context): array
-        {
-            return [];
-        }
-
-        public function refreshSettingsForm(array $settings): void {}
-
-        public function storeSettings(array $settings): void {}
-
-        public function getSettings(): array
-        {
-            return [];
-        }
-
-        public static function getDefaultTransformer(): ?string
-        {
-            return null;
-        }
-
-        protected static function urlValidator(?callable $resolver = null): UrlValidator
-        {
-            return parent::urlValidator(function (string $host): array {
-                self::$lookups++;
-
-                return self::$resolvedIps;
-            });
-        }
-    };
+    $this->importer = new TestImporter;
 
     $this->importer::$resolvedIps = ['93.184.216.34'];
     $this->importer::$lookups = 0;
@@ -103,6 +54,7 @@ it('rejects an invalid local file', function (?string $file, string $message) {
     'dotfile' => ['tests/Fixtures/Import/.hidden.csv', 'is not permitted.'],
     'path traversal' => ['../../../../../../../../../../etc/passwd', 'is not permitted.'],
     'unsupported type' => ['tests/Fixtures/Import/unsupported.txt', 'Only files with these MIME types are allowed'],
+    'contents not matching the extension' => ['tests/Fixtures/Import/json-content.csv', 'don’t match its type (csv).'],
     'stream wrapper' => ['data:text/plain,a', 'Access to this file (data:text/plain,a) is not permitted.'],
 ]);
 
@@ -126,6 +78,19 @@ it('rejects a disallowed hostname without resolving it', function (string $url) 
 it('accepts a URL that resolves to a public IP', function () {
     expect(($this->fileError)('https://example.com/data.json'))->toBeNull()
         ->and($this->importer::$lookups)->toBe(1);
+});
+
+it('accepts a URL with a supported extension or no extension', function (string $url) {
+    expect(($this->fileError)($url))->toBeNull()
+        ->and($this->importer::isFileValid($url))->toBeTrue();
+})->with([
+    'https://example.com/data.json?token=x',
+    'https://example.com/api/entries',
+]);
+
+it('rejects a URL with an unsupported extension', function () {
+    expect(($this->fileError)('https://example.com/data.txt'))->toContain('Only files with these MIME types are allowed')
+        ->and($this->importer::isFileValid('https://example.com/data.txt'))->toBeFalse();
 });
 
 it('rejects a URL that resolves to a disallowed IP', function (array $ips) {

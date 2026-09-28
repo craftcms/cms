@@ -12,6 +12,7 @@ use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ImportPlan;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Bus\Batchable;
 use Illuminate\Support\Facades\Cache;
@@ -81,15 +82,28 @@ class Import extends Job
         $stepLabel = ImportFacade::stepLabel($importPlan, $step);
 
         try {
-            $step->validateSettings();
+            // the file is only checked by the first chunk; later chunks read the local copy it downloaded, if it was a URL
+            if ($this->start === 0) {
+                $step->validate();
+            } else {
+                $step->validateSettings();
+            }
         } catch (ValidationException $e) {
             ImportLog::warning("Skipping import job for invalid step \"$stepLabel\": ".implode(' ', $e->validator->errors()->all()));
 
             return;
         }
 
+        $filePath = $this->filePath;
+
+        // a remote file is downloaded once, by the step's first chunk, into Craft's storage, and the later chunks reuse it;
+        // this assumes all chunk jobs run on the same server - if they don't, it might need to change to storing it on a (shared) disk
+        if ($this->start === 0 && $step::isRemoteFile($step->file)) {
+            $filePath = $step->downloadFile(Path::runtime(FinishImport::downloadsPath($this->runId)));
+        }
+
         // get all the data
-        $allData = ImportFacade::getFormattedData($this->filePath);
+        $allData = ImportFacade::getFormattedData($filePath);
         // discard the part at the start that was already processed
         $data = array_slice($allData, $this->start);
         // count how many items we have to process
@@ -140,7 +154,7 @@ class Import extends Job
 
         // if there's any data items left - add another job to the batch
         if ($dataCount - $chunkLimit > 0) {
-            $this->batch()->add(new self($this->importPlanId, $this->stepUid, $this->filePath, $this->runId, ($this->start + $chunkLimit)));
+            $this->batch()->add(new self($this->importPlanId, $this->stepUid, $filePath, $this->runId, ($this->start + $chunkLimit)));
         }
     }
 

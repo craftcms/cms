@@ -68,6 +68,34 @@ class Import
     }
 
     /**
+     * Returns a local file's data type (its extension), if it's one of the available data types.
+     *
+     * @param  string  $filePath  The path to the file.
+     */
+    public function getDataTypeFromExtension(string $filePath): ?string
+    {
+        $extension = strtolower(File::extension($filePath));
+
+        return isset($this->getAllDataTypes()[$extension]) ? $extension : null;
+    }
+
+    /**
+     * Returns the data type class for a local file, based on its extension.
+     *
+     * @throws Exception if the file isn't of an available data type.
+     */
+    private function dataTypeClass(string $filePath): string
+    {
+        $dataType = $this->getDataTypeFromExtension($filePath);
+
+        if ($dataType === null) {
+            throw new Exception('Unsupported data type: '.File::extension($filePath));
+        }
+
+        return $this->getAllDataTypes()[$dataType];
+    }
+
+    /**
      * Returns the available importer classes.
      * The list includes built-in Element/Model importer classes, extended via `RegisterImporterTypes` event.
      *
@@ -438,15 +466,10 @@ class Import
      */
     private function formatData(string $filePath, string $rawData): ?array
     {
-        $extension = File::extension($filePath);
-        $dataTypes = $this->getAllDataTypes();
-
-        if (! isset($dataTypes[$extension])) {
-            throw new Exception('Unsupported data type: '.$extension);
-        }
+        $dataTypeClass = $this->dataTypeClass($filePath);
 
         try {
-            $data = $dataTypes[$extension]::format($rawData);
+            $data = $dataTypeClass::format($rawData);
         } catch (Throwable $e) {
             ImportLog::error($e->getMessage());
 
@@ -464,15 +487,10 @@ class Import
     public function getDataHeadings(string $filePath): ?array
     {
         $rawData = $this->getRawData($filePath);
-        $extension = File::extension($filePath);
-        $dataTypes = $this->getAllDataTypes();
-
-        if (! isset($dataTypes[$extension])) {
-            throw new Exception('Unsupported data type: '.$extension);
-        }
+        $dataTypeClass = $this->dataTypeClass($filePath);
 
         try {
-            $headings = $dataTypes[$extension]::getHeadings($rawData);
+            $headings = $dataTypeClass::getHeadings($rawData);
         } catch (Throwable $e) {
             ImportLog::error($e->getMessage());
 

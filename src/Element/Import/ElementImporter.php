@@ -352,14 +352,12 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function getSourceDataCols(): array
     {
-        $filePath = BaseImporter::resolvedFilePath($this->file);
-
         // a config can be saved before its file is chosen, and the map screen still renders
-        if ($filePath === null) {
+        if ($this->file === null) {
             return [];
         }
 
-        return Import::getDataHeadings($filePath);
+        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath));
     }
 
     #[Override]

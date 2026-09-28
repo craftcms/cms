@@ -13,19 +13,28 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\Support\File as FileHelper;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Mime\MimeTypes;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -337,25 +346,26 @@ abstract class BaseImporter
 
         $filePath = self::resolvedFilePath($file);
 
-        if (Url::isValidUrl($filePath)) {
+        if (self::isRemoteFile($file)) {
             $urlValidator = static::urlValidator();
 
             if (! $resolveHost) {
                 if (! $urlValidator->validateScheme($filePath) || ! $urlValidator->validateHostname($filePath)) {
                     return t('URL “{url}” is not permitted.', ['url' => $filePath]);
                 }
-
-                return null;
+            } else {
+                try {
+                    $urlValidator->validate($filePath);
+                } catch (UrlValidationException) {
+                    return t('URL “{url}” is not permitted.', ['url' => $filePath]);
+                }
             }
 
-            try {
-                $urlValidator->validate($filePath);
-            } catch (UrlValidationException) {
-                return t('URL “{url}” is not permitted.', ['url' => $filePath]);
-            }
+            // the file's type can only be determined from the response, so it's checked once the file is fetched;
+            // an extension in the URL's path has to be one of the data types though
+            $path = (string) parse_url($filePath, PHP_URL_PATH);
 
-            // todo (iwona): need to check the mime type too
-            return null;
+            return pathinfo($path, PATHINFO_EXTENSION) === '' ? null : self::getExtensionError($path);
         }
 
         // reject any other scheme (e.g. data:, glob://, phar://) so PHP's stream wrappers can't be used
@@ -371,21 +381,187 @@ abstract class BaseImporter
             ]);
         }
 
-        $dataTypes = array_unique(array_filter(array_keys(Import::getAllDataTypes())));
+        return self::getExtensionError($filePath) ?? self::getContentError($filePath);
+    }
 
-        // validate file type (e.g. csv, json, xml)
-        $mimeValidator = ValidatorFacade::make(
+    /**
+     * Returns whether the given file value resolves to a URL.
+     *
+     * @param  string|null  $file  The file alias, path or URL to check.
+     */
+    public static function isRemoteFile(?string $file): bool
+    {
+        $filePath = self::resolvedFilePath($file);
+
+        return $filePath !== null && Url::isValidUrl($filePath);
+    }
+
+    /**
+     * Downloads the importer's remote file into the given directory, checks its type and returns its local path.
+     *
+     * @param  string  $directory  The directory to download the file into.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function downloadFile(string $directory): string
+    {
+        $url = (string) self::resolvedFilePath($this->file);
+        FileHelper::makeDirectory($directory);
+        $tempPath = $directory.DIRECTORY_SEPARATOR.Str::uuid()->toString();
+
+        try {
+            $response = self::fetchUrl($url, $tempPath);
+        } catch (Throwable $e) {
+            @unlink($tempPath);
+
+            throw new InvalidArgumentException(t('Unable to download the file from “{url}”.', ['url' => $url]), previous: $e);
+        }
+
+        $dataType = self::getDataTypeFromContentType($response->header('Content-Type'), $url);
+
+        if ($dataType === null) {
+            @unlink($tempPath);
+
+            throw new InvalidArgumentException(t('Unable to determine the type of the file at “{url}”.', ['url' => $url]));
+        }
+
+        // the readers pick the data type from the extension
+        $filePath = "$tempPath.$dataType";
+        rename($tempPath, $filePath);
+
+        $error = self::getContentError($filePath, $url);
+
+        if ($error !== null) {
+            @unlink($filePath);
+
+            throw new InvalidArgumentException($error);
+        }
+
+        return $filePath;
+    }
+
+    /**
+     * Calls the callback with a local path to the importer's file.
+     * A remote file is downloaded to a temp file first and deleted once the callback returns.
+     *
+     * @param  Closure  $callback  The callback that receives the local file path.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function withLocalFile(Closure $callback): mixed
+    {
+        if (! self::isRemoteFile($this->file)) {
+            return $callback(self::resolvedFilePath($this->file));
+        }
+
+        $filePath = $this->downloadFile(Path::temp());
+
+        try {
+            return $callback($filePath);
+        } finally {
+            @unlink($filePath);
+        }
+    }
+
+    /**
+     * Downloads a URL to the given path, pinning the connection to the IPs the URL was validated against.
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function fetchUrl(string $url, string $destination): Response
+    {
+        $urlValidator = static::urlValidator();
+
+        // validate the URL and resolve it to a known-good set of IPs before opening any connection (guards against SSRF and DNS rebinding)
+        try {
+            $ips = $urlValidator->validate($url);
+        } catch (UrlValidationException $e) {
+            throw new InvalidArgumentException("$url is invalid.", previous: $e);
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT)
+            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
+
+        return Http::create()->withOptions([
+            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::SINK => $destination,
+            // pin the connection to the validated IPs, so cURL doesn't re-resolve the hostname to a different address
+            'curl' => [
+                CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
+            ],
+            RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
+                // validate the IP, in case the cURL handler isn't in use (so CURLOPT_RESOLVE was ignored)
+                $ip = $stats->getHandlerStat('primary_ip');
+                if ($ip && ! $urlValidator->validateIp($ip)) {
+                    throw new InvalidArgumentException("$url is invalid.");
+                }
+            },
+        ])->get($url)->throw();
+    }
+
+    /**
+     * Returns an error message if the file's extension isn't one of the available data types, or null if it is.
+     */
+    private static function getExtensionError(string $filePath): ?string
+    {
+        if (Import::getDataTypeFromExtension($filePath) !== null) {
+            return null;
+        }
+
+        return t('Only files with these MIME types are allowed: {mimeTypes}.', [
+            'mimeTypes' => implode(', ', array_keys(Import::getAllDataTypes())),
+        ]);
+    }
+
+    /**
+     * Returns an error message if a local file's contents don't match the data type of its extension, or null if they do
+     * (or if the extension isn't a data type, which `getExtensionError()` reports).
+     */
+    private static function getContentError(string $filePath, ?string $url = null): ?string
+    {
+        $dataType = Import::getDataTypeFromExtension($filePath);
+
+        if ($dataType === null) {
+            return null;
+        }
+
+        // CSV has no signature, so its contents are often detected as plain text
+        $allowedExtensions = $dataType === 'csv' ? ['csv', 'txt'] : [$dataType];
+
+        $contentsMatch = ValidatorFacade::make(
             ['file' => new File($filePath)],
-            ['file' => ['mimes:'.implode(',', $dataTypes)]]
-        );
+            ['file' => ['mimes:'.implode(',', $allowedExtensions)]],
+        )->passes();
 
-        if ($mimeValidator->fails()) {
-            return t('Only files with these MIME types are allowed: {mimeTypes}.', [
-                'mimeTypes' => implode(', ', $dataTypes),
+        if (! $contentsMatch) {
+            return t('The contents of “{source}” don’t match its type ({dataType}).', [
+                'source' => $url ?? $filePath,
+                'dataType' => $dataType,
             ]);
         }
 
         return null;
+    }
+
+    /**
+     * Returns the data type of a remote file, based on the response's content type, falling back to the URL path's extension,
+     * or null if neither is one of the available data types.
+     */
+    private static function getDataTypeFromContentType(string $contentType, string $url): ?string
+    {
+        $dataTypes = Import::getAllDataTypes();
+        $mimeType = strtolower(trim(explode(';', $contentType)[0]));
+
+        if ($mimeType !== '') {
+            foreach (MimeTypes::getDefault()->getExtensions($mimeType) as $extension) {
+                if (isset($dataTypes[$extension])) {
+                    return $extension;
+                }
+            }
+        }
+
+        return Import::getDataTypeFromExtension((string) parse_url($url, PHP_URL_PATH));
     }
 
     /**

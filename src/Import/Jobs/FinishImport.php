@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Import\Jobs;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -32,9 +34,21 @@ class FinishImport extends Job
      */
     public function handle(): void
     {
+        File::deleteDirectory(Path::runtime(self::downloadsPath($this->runId), create: false));
+
         $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
 
         event(new ImportFinished($this->importPlan, $this->importPlan->steps ?? [], $this->runId, $hasFailures));
+    }
+
+    /**
+     * Returns the runtime-relative path of the directory that the given import run's remote files are downloaded to.
+     *
+     * @param  string  $runId  The unique ID of the import run.
+     */
+    public static function downloadsPath(string $runId): string
+    {
+        return "imports/{$runId}";
     }
 
     /**

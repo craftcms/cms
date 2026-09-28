@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static array getAllDataTypes()
+ * @method static ?string getDataTypeFromExtension(string $filePath)
  * @method static array getAllImporterTypes()
  * @method static ?string getElementImporterTypeFor(string $elementClass)
  * @method static bool dispatchImport(ImportPlanData $importPlan)
