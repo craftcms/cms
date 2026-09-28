@@ -312,10 +312,9 @@ readonly class SaveUserController
             );
         }
 
-        // If this is a new user and email verification isn't required, and we're not
-        // sending them an activation email (e.g. to set their deferred password),
+        // If this is a new user and email verification isn't required,
         // go ahead and activate them now.
-        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault && ! $sendActivationEmail) {
+        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault) {
             $this->users->activateUser($user);
         }
 
