@@ -210,9 +210,7 @@ describe('ElementSelectControl', () => {
 
   it('clears a scalar selection to null', async () => {
     const root = await mount({props: {single: true, limit: 1}, value: 5});
-    menus(root)[0]
-      .actions.find((action: any) => action.label === 'Remove')
-      .onClick();
+    menuItem(menus(root)[0], 'Remove').click();
 
     expect(updates).toEqual([null]);
   });
@@ -804,7 +802,7 @@ describe('ElementSelectControl', () => {
       expect(selectAllBox(root)).not.toBeNull();
       expect(countText(root)).toBe('');
       expect(clearButton(root)).toBeUndefined();
-      expect(actionsMenu(root)).toBeNull();
+      expect(actionsMenu(root)?.classList.contains('invisible')).toBe(true);
     });
 
     it('counts the selection once something is selected', async () => {
@@ -815,7 +813,7 @@ describe('ElementSelectControl', () => {
 
       expect(countText(root)).toContain('1');
       expect(clearButton(root)).toBeDefined();
-      expect(actionsMenu(root)).not.toBeNull();
+      expect(actionsMenu(root)?.classList.contains('invisible')).toBe(false);
     });
 
     it('counts every selected item', async () => {
