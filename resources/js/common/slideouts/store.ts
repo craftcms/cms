@@ -1,6 +1,7 @@
 import {markRaw, reactive, shallowReadonly} from 'vue';
 import {t} from '@craftcms/ui/utilities/translate';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import {stackedPanels} from './panel-stack';
 import {fetchSlideoutPage, type SlideoutPage} from './request';
 import type {
   OpenSlideoutOptions,
@@ -109,7 +110,7 @@ export async function openSlideout(
   // Opening a slideout replaces whatever is stacked above whatever opened it.
   // Double-clicking a second row on an index swaps the panel rather than
   // stacking a second one; opening from inside a panel nests below it.
-  if (!closeAbove(originPanel(opener))) {
+  if (!discardPanels(panelsReplacedBy(opener))) {
     return null;
   }
 
@@ -160,7 +161,7 @@ export function openSlideoutWith(
       ? document.activeElement
       : null);
 
-  if (!closeAbove(originPanel(opener))) {
+  if (!discardPanels(panelsReplacedBy(opener))) {
     return null;
   }
 
@@ -195,32 +196,63 @@ function originPanel(opener: HTMLElement | null): string | null {
   );
 }
 
-/**
- * Close every panel stacked above `panelId`, or all of them when the opener
- * wasn't in a panel at all.
- *
- * Returns false when the user was asked about unsaved changes and declined, in
- * which case nothing is closed.
- */
-function closeAbove(panelId: string | null, {force = false} = {}): boolean {
+/** Ids of the panels stacked above `panelId`, or all of them for `null`. */
+function panelsAbove(panelId: string | null): string[] {
   const index = panelId
     ? panels.findIndex((panel) => panel.id === panelId)
     : -1;
 
-  const doomed = panels.slice(index + 1).map((panel) => panel.id);
+  return panels.slice(index + 1).map((panel) => panel.id);
+}
 
-  if (!doomed.length) {
+/** Ids of the panels a slideout opened from `opener` takes the place of. */
+function panelsReplacedBy(opener: HTMLElement | null): string[] {
+  const origin = originPanel(opener);
+
+  if (origin) {
+    return panelsAbove(origin);
+  }
+
+  // A legacy jQuery slideout has no `data-slideout-id`, but it's still a panel
+  // in the shared stack: only Vue panels on top of it get replaced, not the
+  // ones it was opened over.
+  const stack = stackedPanels();
+  const legacyIndex = opener
+    ? stack.findIndex((panel) => panel.element.contains(opener))
+    : -1;
+
+  if (legacyIndex === -1) {
+    return panelsAbove(null);
+  }
+
+  return panels
+    .filter(
+      (panel) =>
+        stack.findIndex((p) => p.element.dataset.slideoutId === panel.id) >
+        legacyIndex
+    )
+    .map((panel) => panel.id);
+}
+
+/**
+ * Close the given panels, prompting first if any have unsaved changes.
+ *
+ * Returns false when the user was asked and declined, in which case nothing is
+ * closed.
+ */
+function discardPanels(ids: string[], {force = false} = {}): boolean {
+  if (!ids.length) {
     return true;
   }
 
-  if (!force && !confirmDiscard(doomed)) {
+  if (!force && !confirmDiscard(ids)) {
     return false;
   }
 
-  while (panels.length > index + 1) {
+  for (const id of [...ids].reverse()) {
     // No focus restore: a new panel is about to take focus, and handing it
     // back to the old opener first makes it flicker.
-    removePanel(panels[panels.length - 1]!.id, {restoreFocus: false});
+    removePanel(id, {restoreFocus: false});
   }
 
   return true;
@@ -275,7 +307,7 @@ export function closeSlideout(id: string, {force = false} = {}): void {
     return;
   }
 
-  closeAbove(id, {force: true});
+  discardPanels(panelsAbove(id), {force: true});
   removePanel(id);
 }
 

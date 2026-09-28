@@ -247,9 +247,31 @@ export function shadeElement(): HTMLElement {
 
 function syncShade(): void {
   const el = shadeElement();
+  const top = topStackedPanel();
 
-  if (panels.some((panel) => !panel.suppressShade?.())) {
-    el.classList.add('is-visible');
+  if (top && panels.some((panel) => !panel.suppressShade?.())) {
+    // Directly behind the top panel, so it covers the panels below as well as
+    // the page. Panels and shade share a z-index, so DOM order decides.
+    let anchor: ChildNode = bodyLevelAncestor(top.element);
+
+    // Step over the comment/text markers Vue leaves around a teleported
+    // panel, or the shade lands inside its range and is removed along with it.
+    while (
+      anchor.previousSibling &&
+      anchor.previousSibling.nodeType !== Node.ELEMENT_NODE
+    ) {
+      anchor = anchor.previousSibling;
+    }
+
+    if (anchor.previousSibling !== el) {
+      anchor.before(el);
+    }
+
+    if (!el.classList.contains('is-visible')) {
+      // Reflow after the move, so the first open still fades in.
+      void el.offsetWidth;
+      el.classList.add('is-visible');
+    }
 
     return;
   }
@@ -257,6 +279,20 @@ function syncShade(): void {
   el.classList.remove('is-visible');
   // Don't leak a live-preview panel's narrowed shade onto the next slideout.
   el.style.width = '';
+}
+
+/**
+ * The ancestor of `element` that sits directly in `<body>` — the legacy stack
+ * registers its `.slideout`, which lives inside a full-viewport container.
+ */
+function bodyLevelAncestor(element: HTMLElement): HTMLElement {
+  let node = element;
+
+  while (node.parentElement && node.parentElement !== document.body) {
+    node = node.parentElement;
+  }
+
+  return node;
 }
 
 // --- HUDs -----------------------------------------------------------------
