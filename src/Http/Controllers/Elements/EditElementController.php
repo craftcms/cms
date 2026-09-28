@@ -18,7 +18,6 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
@@ -668,14 +667,13 @@ class EditElementController
     ): void {
         $fieldLayout = $element->getFieldLayout();
         $payload = null;
-        $vueForm = $this->request->expectsJson();
 
         if ($fieldLayout !== null) {
             $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
                 $fieldLayout,
                 $element,
                 new FormContext(
-                    namespace: $vueForm ? (InputNamespace::get() ?? []) : [],
+                    namespace: InputNamespace::get() ?? [],
                     errors: $element->errors()->getMessages(),
                     mode: $canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                     refreshable: true,
@@ -683,13 +681,11 @@ class EditElementController
             ));
         }
 
-        $renderer = app(FormHtmlRenderer::class);
         $formContent = match (true) {
             $payload === null => null,
-            $vueForm => Html::tag('craft-entry-field-layout-form', '', [
+            default => Html::tag('craft-entry-field-layout-form', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
-            default => $renderer->render($payload),
         };
         $contentHtml = $contentFn($formContent);
         $sidebarHtml = $sidebarFn();
@@ -732,7 +728,7 @@ class EditElementController
             $contentHtml = implode("\n", $components);
         }
 
-        $response->tabs($payload === null || $vueForm ? [] : $renderer->tabMenu($payload));
+        $response->tabs([]);
         $response->contentHtml($contentHtml);
         $response->metaSidebarHtml($sidebarHtml);
 

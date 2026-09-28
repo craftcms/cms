@@ -119,6 +119,8 @@ it('creates a draft and returns its control panel edit url for json requests', f
         ->status(null)
         ->one();
 
+    expect($response->json('cpEditUrl'))->toBe($draft->getCpEditUrl());
+
     expect($draft)->not->toBeNull()
         ->and($draft->draftId)->toBe($response->json('element.draftId'))
         ->and($draft->getIsUnpublishedDraft())->toBeTrue()

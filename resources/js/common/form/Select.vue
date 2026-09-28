@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type {BaseOption} from '@/common/types';
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
-  import {computed} from 'vue';
+  import {computed, nextTick, useTemplateRef, watch} from 'vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: string | number): void;
@@ -30,14 +30,30 @@
       return props.modelValue.toString();
     },
     set(newValue) {
+      if (
+        !normalizedOptions.value.some(
+          (option) => String(option.value) === String(newValue)
+        )
+      ) {
+        return;
+      }
+
       emit('update:modelValue', newValue);
     },
+  });
+
+  const nativeSelect = useTemplateRef<HTMLSelectElement>('nativeSelect');
+  watch(normalizedOptions, async () => {
+    await nextTick();
+    if (nativeSelect.value) {
+      nativeSelect.value.value = modelProxy.value;
+    }
   });
 </script>
 
 <template>
   <CraftSelect v-model="modelProxy" v-bind="$attrs">
-    <select slot="input">
+    <select ref="nativeSelect" slot="input">
       <option
         v-for="option in normalizedOptions"
         :key="option.value"
