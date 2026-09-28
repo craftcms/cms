@@ -800,7 +800,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         .append(
           $('<craft-button/>', {
             type: 'button',
-            icon: 'x',
+            icon: 'xmark-large',
             size: 'small',
             variant: 'danger-plain',
             'aria-label': Craft.t('app', 'Delete'),

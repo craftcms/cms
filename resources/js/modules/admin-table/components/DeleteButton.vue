@@ -11,7 +11,7 @@
       label?: string;
       icon?: string;
     }>(),
-    {disabled: false, label: t('Delete item'), icon: 'x'}
+    {disabled: false, label: t('Delete item'), icon: 'xmark-large'}
   );
 
   function handleClick(): void {

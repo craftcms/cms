@@ -190,4 +190,27 @@ describe('SelectableCardList', () => {
     expect(item.getAttribute('data-id')).toBe('a');
     expect(item.getAttribute('role')).toBe('listitem');
   });
+
+  it('labels each checkbox from a per-item selectLabel callback', async () => {
+    mount(['a', 'b'], {
+      selectLabel: (id: string, index: number) => `Select item ${id}-${index}`,
+    });
+    await nextTick();
+
+    const labels = [
+      ...container!.querySelectorAll('craft-checkbox label[slot="label"]'),
+    ].map((el) => el.textContent);
+
+    expect(labels).toEqual(['Select item a-0', 'Select item b-1']);
+  });
+
+  it('falls back to a generic label when selectLabel is omitted', async () => {
+    mount(['a']);
+    await nextTick();
+
+    expect(
+      container!.querySelector('craft-checkbox label[slot="label"]')!
+        .textContent
+    ).toBe('Select');
+  });
 });

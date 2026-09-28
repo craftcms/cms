@@ -90,7 +90,7 @@
     <craft-button
       v-if="editable && hasValue"
       type="button"
-      icon="x"
+      icon="xmark-large"
       :aria-label="t('Clear')"
       variant="plain"
       size="small"

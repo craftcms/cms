@@ -324,6 +324,8 @@ class ElementSelect extends Control
             'siteId' => $element->siteId,
             // Only a routable element can be viewed on the front end.
             'url' => $element->getUrl(),
+            // Where the chip's editor slideout loads the element's own edit screen.
+            'cpEditUrl' => $element->getCpEditUrl(),
             'canEdit' => Gate::check('view', $element),
             // A revision is a snapshot; there's nothing to copy from it.
             'canCopy' => ! $element->getIsRevision() && Gate::check('copy', $element),

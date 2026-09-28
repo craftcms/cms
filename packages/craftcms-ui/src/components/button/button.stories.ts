@@ -142,7 +142,7 @@ export const Flush: Story = {
         <craft-button
           variant="plain"
           size="small"
-          icon="x"
+          icon="xmark-large"
           flush="inline-end"
           aria-label="Close"
         ></craft-button>

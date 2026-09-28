@@ -22,8 +22,8 @@ export interface ElementIndexRow extends IndexQueryParams {
   hasDescendants?: boolean;
   /** The element's site, as `structures/move-element` requires. */
   siteId?: number;
-  /** The element's plain-text name, for the row's toggle label. */
-  label?: string;
+  /** The element's plain-text name, for the row's checkbox and (in structure mode) its toggle label. */
+  label: string;
 }
 
 /**

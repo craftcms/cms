@@ -12,6 +12,7 @@
 
   interface CardElement {
     id: string | number;
+    label?: string;
     cardAttributes?: ServerAttributes;
     cardHeaderHtml?: string;
     cardThumbHtml?: string;
@@ -80,6 +81,14 @@
       ...attrs(element.cardAttributes, {exclude: ['class']}),
       'thumb-alignment': element.thumbAlignment ?? undefined,
     };
+  }
+
+  function cardSelectLabel(id: string | number): string | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    return element?.label
+      ? t('Select {label}', {label: element.label})
+      : undefined;
   }
 
   function onCardClick(id: string | number, event: MouseEvent) {
@@ -152,6 +161,7 @@
       :item-class="itemClass"
       :item-attrs="itemAttrs"
       :card-attrs="cardAttrs"
+      :select-label="cardSelectLabel"
       :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
@@ -194,6 +204,9 @@
   .card-grid-header {
     margin-block-end: var(--c-spacing-md);
     padding: var(--c-spacing-md);
+    padding-inline-start: calc(
+      var(--c-spacing-md) + 1px
+    ); // so the checkboxes line up
     background-color: var(--c-color-neutral-fill-quiet);
     border-start-start-radius: var(--c-radius-md);
     border-start-end-radius: var(--c-radius-md);

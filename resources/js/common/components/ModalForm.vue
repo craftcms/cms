@@ -69,7 +69,7 @@
           <slot name="header-actions">
             <craft-button
               type="button"
-              icon="x"
+              icon="xmark-large"
               :aria-label="t('Close')"
               variant="plain"
               size="small"

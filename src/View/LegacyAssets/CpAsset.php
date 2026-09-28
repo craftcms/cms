@@ -66,6 +66,7 @@ class CpAsset implements LegacyAssetInterface
             'share',
             'trash',
             'xmark',
+            'xmark-large',
         ]);
 
         // Define the Craft object

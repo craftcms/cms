@@ -17,6 +17,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
+  import {useSlideout} from '@/common/slideouts/useSlideout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {FormValues} from '@/modules/forms/types';
@@ -32,6 +33,9 @@
     NestedOwnerEditorKey,
     nestedOwnerContext,
   } from '@/modules/elements/nested-owner';
+
+  const contentEl = useTemplateRef<HTMLElement>('content');
+  const slideout = useSlideout();
 
   const props = defineProps<{
     /**
@@ -62,7 +66,10 @@
     submitAction,
     updatePayload,
     workflowReviewLocked,
-  } = useElementEditor({saveData: props.saveData});
+  } = useElementEditor({
+    saveData: props.saveData,
+    root: () => contentEl.value,
+  });
 
   provide(NestedOwnerEditorKey, {
     async prepare(path) {
@@ -138,8 +145,14 @@
     })
   );
 
+  // In a panel, the panel's own screen is what's out of date — not the page
+  // behind it.
   function reload(): void {
-    router.reload();
+    if (slideout) {
+      void slideout.reload();
+    } else {
+      router.reload();
+    }
   }
 
   function primaryAction(options?: FormSaveOptions): void {
@@ -344,7 +357,7 @@
     </div>
   </LayoutSlot>
 
-  <div class="py-3">
+  <div ref="content" class="py-3">
     <CpContainer>
       <FormRenderer
         v-if="formPayload"

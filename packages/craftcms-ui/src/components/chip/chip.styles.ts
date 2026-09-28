@@ -31,7 +31,7 @@ export default css`
     display: flex;
   }
 
-  .cp-chip input[type=checkbox] {
+  .cp-chip input[type='checkbox'] {
     margin-inline-start: var(--c-spacing-md);
     margin-inline-end: 0;
   }

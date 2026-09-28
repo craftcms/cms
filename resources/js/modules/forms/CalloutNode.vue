@@ -47,7 +47,7 @@
       type="button"
       appearance="plain"
       size="small"
-      icon="xmark"
+      icon="xmark-large"
       :aria-label="t('Dismiss')"
       @click="dismiss"
     ></craft-button>

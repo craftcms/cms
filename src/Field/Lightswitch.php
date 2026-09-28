@@ -223,7 +223,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
             return app(StatusHtml::class)->statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
                 'label' => $this->getUiLabel(),
-                'icon' => $value ? 'check' : 'xmark',
+                'icon' => $value ? 'check' : 'xmark-large',
             ]);
         }
 
@@ -231,7 +231,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
             return app(StatusHtml::class)->statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
                 'label' => t($value ? $this->onLabel : $this->offLabel, category: 'site'),
-                'icon' => $value ? 'check' : 'xmark',
+                'icon' => $value ? 'check' : 'xmark-large',
             ]);
         }
 

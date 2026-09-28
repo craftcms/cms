@@ -7,7 +7,16 @@ import {
   shallowReactive,
 } from 'vue';
 import {router} from '@inertiajs/vue3';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import axios from 'axios';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import {
   ScreenPagePropsKey,
   type ScreenPageProps,
@@ -154,7 +163,8 @@ describe('useElementEditor', () => {
    */
   function mount(
     screenProps: Partial<ElementEditPayload>,
-    slideout: ReturnType<typeof slideoutController> | null = null
+    slideout: ReturnType<typeof slideoutController> | null = null,
+    options: Parameters<typeof useElementEditor>[0] = {}
   ) {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
     // `props` as a computed, and the slideout store's panels are `reactive()`.
@@ -166,7 +176,7 @@ describe('useElementEditor', () => {
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
-        editor = useElementEditor();
+        editor = useElementEditor(options);
 
         return () =>
           h('div', [
@@ -1359,5 +1369,171 @@ describe('useElementEditor', () => {
     editor.onSidebarMutation({slug: 'changed'});
 
     expect(schedule).toHaveBeenCalledTimes(2);
+  });
+
+  describe('nested elements in a slideout', () => {
+    const nestedContext = {fieldId: 3, ownerId: 40};
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
+
+    function stubSaveRequest(response: () => Promise<unknown>) {
+      return vi.spyOn(axios, 'request').mockImplementation(response as never);
+    }
+
+    /** A panel whose opener registered `onSaved`, as every opener here does. */
+    function handledSlideout() {
+      const slideout = slideoutController();
+      slideout.saved.mockReturnValue(true);
+
+      return slideout;
+    }
+
+    it('sends the owner it was opened through with every draft save', async () => {
+      const {editor} = mount(
+        payload({canAutosave: true, nestedContext, fresh: true}),
+        slideoutController()
+      );
+
+      await editor.autosave.save();
+
+      expect(postSpy.mock.calls[0]![1]).toMatchObject({
+        fieldId: 3,
+        ownerId: 40,
+        fresh: 1,
+      });
+    });
+
+    it('reports autosaved drafts to the opener', async () => {
+      const slideout = slideoutController();
+      const {editor} = mount(payload({canAutosave: true}), slideout);
+
+      await editor.autosave.save();
+
+      expect(slideout.saved).toHaveBeenCalledWith({
+        draft: true,
+        data: {draftId: 7},
+      });
+    });
+
+    it('saves into the owner draft the opener prepares, then closes', async () => {
+      const slideout = handledSlideout();
+      const prepareNestedOwner = vi.fn().mockResolvedValue(73);
+      Object.assign(slideout.instance, {prepareNestedOwner});
+      const request = stubSaveRequest(() =>
+        Promise.resolve({data: {element: {id: 12}}})
+      );
+      const {editor} = mount(
+        payload({
+          canAutosave: true,
+          nestedContext,
+          saveForDerivativeUrl:
+            '/actions/elements/save-nested-element-for-derivative',
+        }),
+        slideout
+      );
+
+      editor.save({redirect: false});
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(prepareNestedOwner).toHaveBeenCalledOnce();
+      // The nested element has no draft yet, so one is made to move.
+      expect(postSpy).toHaveBeenCalledOnce();
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/elements/save-nested-element-for-derivative',
+        data: expect.objectContaining({
+          newOwnerId: 73,
+          draftId: 7,
+          fieldId: 3,
+          ownerId: 40,
+        }),
+      });
+      await vi.waitFor(() =>
+        expect(slideout.close).toHaveBeenCalledWith({force: true})
+      );
+    });
+
+    it('saves normally when the opener has no owner draft to save into', async () => {
+      const slideout = handledSlideout();
+      Object.assign(slideout.instance, {
+        prepareNestedOwner: vi.fn().mockResolvedValue(undefined),
+      });
+      const request = stubSaveRequest(() => Promise.resolve({data: {}}));
+      const {editor} = mount(payload({nestedContext}), slideout);
+
+      editor.save();
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/entries/save-entry',
+        data: expect.not.objectContaining({newOwnerId: expect.anything()}),
+      });
+    });
+
+    it('announces invalid nested elements when a save fails', async () => {
+      const displayError = vi.fn();
+      vi.stubGlobal('Craft', {cp: {displayError}});
+      const root = document.createElement('div');
+      document.body.append(root);
+      const listener = vi.fn();
+      root.addEventListener('craft:nested-validation', listener);
+      // A plain stand-in rather than a spy: a spy tracks the rejected promise
+      // it returns, and reports that as unhandled.
+      const request = axios.request;
+      axios.request = (() =>
+        Promise.reject(
+          new axios.AxiosError('Bad Request', '400', undefined, undefined, {
+            status: 400,
+            data: {
+              message: 'Couldn’t save entry.',
+              errors: {title: ['Title cannot be blank.']},
+              invalidNestedElementIds: [5],
+            },
+          } as never)
+        )) as never;
+      onTestFinished(() => {
+        axios.request = request;
+      });
+      const {editor} = mount(payload(), handledSlideout(), {
+        root: () => root,
+      });
+
+      editor.save();
+
+      await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+      expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+        ids: [5],
+      });
+      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      root.remove();
+    });
+
+    it('announces a finished save to the rest of the CP', async () => {
+      const displaySuccess = vi.fn();
+      const postMessage = vi.fn();
+      const refresh = vi.fn();
+      vi.stubGlobal('Craft', {
+        cp: {displaySuccess},
+        broadcaster: {
+          postMessage,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        },
+        Preview: {refresh},
+      });
+      stubSaveRequest(() =>
+        Promise.resolve({data: {message: 'Entry saved.', element: {id: 12}}})
+      );
+      const {editor} = mount(payload(), handledSlideout());
+
+      editor.save();
+
+      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
+      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      expect(postMessage).toHaveBeenCalledWith({event: 'saveElement', id: 12});
+      expect(refresh).toHaveBeenCalled();
+    });
   });
 });

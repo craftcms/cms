@@ -139,7 +139,10 @@
               v-if="search"
               @click="search = ''"
             >
-              <craft-icon name="x" :label="t('Clear search')"></craft-icon>
+              <craft-icon
+                name="xmark-large"
+                :label="t('Clear search')"
+              ></craft-icon>
             </craft-button>
             <craft-button
               type="button"

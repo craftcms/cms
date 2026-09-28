@@ -280,7 +280,7 @@ export default class CraftActionItem extends LitElement {
         ></craft-icon>`;
       case AsyncStates.Error:
         return html`<craft-icon
-          name="xmark"
+          name="xmark-large"
           style="color: var(--c-color-danger-on-normal)"
         ></craft-icon>`;
       default:
