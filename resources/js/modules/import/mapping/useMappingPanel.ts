@@ -10,6 +10,7 @@ import {useForm} from '@inertiajs/vue3';
 import {useAppLayout} from '@/common/composables/useAppLayout';
 import {useSlideout} from '@/common/slideouts';
 import {openNestedMapping} from './nested-mapping';
+import {dirtyState} from './paths';
 import {
   type MappingCol,
   MappingContextKey,
@@ -43,14 +44,15 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
    * unsaved-changes prompt. Inertia diffs against the value it was created with, so
-   * a serialization of the trees stands in for them.
+   * a serialization of the trees stands in for them — `dirtyState()`'s, so a cleared
+   * control or a reordered key doesn't read as an edit.
    */
-  const form = useForm({state: JSON.stringify(values)});
+  const form = useForm({state: dirtyState(values)});
 
   watch(
     values,
     () => {
-      form.state = JSON.stringify(values);
+      form.state = dirtyState(values);
     },
     {deep: true}
   );

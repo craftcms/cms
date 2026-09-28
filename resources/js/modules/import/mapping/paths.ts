@@ -196,3 +196,36 @@ export function applySuggestions(
     }
   }
 }
+
+/**
+ * A stable serialization of a step or its mapping trees, for unsaved-changes checks.
+ *
+ * Raw `JSON.stringify` reads as an edit when nothing meaningful changed: keys come back
+ * in another order once the form folds its values in, PHP sends an empty tree as `[]`,
+ * and clearing a control leaves `''` on a key that was never there. Keys are sorted and
+ * empty values and branches dropped, so only a real difference changes the result.
+ */
+export function dirtyState(value: unknown): string {
+  return JSON.stringify(withoutEmpties(value) ?? null);
+}
+
+function withoutEmpties(value: unknown): unknown {
+  if (value === null || value === undefined || value === '') {
+    return undefined;
+  }
+
+  if (typeof value !== 'object') {
+    return value;
+  }
+
+  const entries = Array.isArray(value)
+    ? value.map((item, index) => [String(index), item] as const)
+    : Object.entries(value as Record<string, unknown>);
+
+  const kept = entries
+    .map(([key, item]) => [key, withoutEmpties(item)] as const)
+    .filter(([, item]) => item !== undefined)
+    .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
+
+  return kept.length ? Object.fromEntries(kept) : undefined;
+}

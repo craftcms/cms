@@ -8,7 +8,7 @@
    */
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/spinner/spinner';
-  import {computed, ref, shallowRef} from 'vue';
+  import {computed, onMounted, ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -20,6 +20,7 @@
     MappingValues,
     StepPayload,
   } from '@/modules/import/mapping/types';
+  import {dirtyState} from '@/modules/import/mapping/paths';
   import {
     fetchStepForm,
     takeStepSlideoutContext,
@@ -48,9 +49,10 @@
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
-   * unsaved-changes prompt.
+   * unsaved-changes prompt. Serialized with `dirtyState()`, since folding the form's
+   * values back into the step reorders and fills in keys without changing anything.
    */
-  const form = useForm({state: JSON.stringify(context.step)});
+  const form = useForm({state: dirtyState(context.step)});
 
   useAppLayout(() => ({
     title: props.title,
@@ -58,6 +60,16 @@
     form,
     onSave: done,
   }));
+
+  /**
+   * The form fills in defaults the stored step may not have yet, so the baseline is the
+   * step as the form reports it, not as it was handed in; otherwise the first
+   * `syncFromForm()` would read as an edit.
+   */
+  onMounted(() => {
+    syncFromForm();
+    form.defaults();
+  });
 
   /**
    * Whether the step can be mapped, as the server last reported it. An element importer
@@ -89,7 +101,10 @@
   const mappedCount = computed(() => countLeaves(mappingValues().map));
 
   function mappingValues(): MappingValues {
-    const settings = step.value.settings ?? {};
+    // PHP sends empty settings as `[]`, whose `map` would be `Array.prototype.map`
+    const settings = Array.isArray(step.value.settings)
+      ? {}
+      : (step.value.settings ?? {});
 
     return {
       map: (settings.map ?? {}) as Record<string, unknown>,
@@ -137,7 +152,7 @@
       settings: {...settings, ...mappingValues()},
     };
 
-    form.state = JSON.stringify(step.value);
+    form.state = dirtyState(step.value);
   }
 
   function onChange(): void {
@@ -167,7 +182,7 @@
               ...step.value,
               settings: {...step.value.settings, ...applied},
             };
-            form.state = JSON.stringify(step.value);
+            form.state = dirtyState(step.value);
           },
         },
         t('Edit mapping')

@@ -315,3 +315,24 @@ it('merges a nested panel’s result back into the trees', async () => {
     next.keepMissingNestedElements
   );
 });
+
+it('isn’t dirty when a checkbox is ticked and unticked again', async () => {
+  mount([title]);
+  await settle();
+
+  toggleCheckbox('match');
+  toggleCheckbox('match', false);
+  await nextTick();
+
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(false);
+});
+
+it('is dirty once a column is mapped', async () => {
+  mount([title]);
+  await settle();
+
+  chooseSource('name');
+  await nextTick();
+
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
+});

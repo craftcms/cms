@@ -92,8 +92,12 @@ const urls = {
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
-function mount(canMap: boolean, type: string | null = step.type) {
-  state.values = {type, file: step.file, settings: {}};
+function mount(
+  canMap: boolean,
+  type: string | null = step.type,
+  formSettings: Record<string, unknown> = {}
+) {
+  state.values = {type, file: step.file, settings: formSettings};
   state.context = {
     step: {...structuredClone(step), type},
     payload: payload(),
@@ -458,4 +462,45 @@ it('applies the step and lets the slideout close once it validates', async () =>
   expect(state.context.apply).toHaveBeenCalledWith(
     expect.objectContaining({uid: 'step-1'})
   );
+});
+
+it('isn’t dirty when folding the form back in changes nothing', async () => {
+  mount(true);
+  // PHP sends an empty tree as `[]`, and the form reports its keys in another order.
+  state.context.step.settings = [];
+  state.values = {
+    settings: {},
+    file: step.file,
+    type: step.type,
+    batchSize: '',
+  };
+
+  state.emitChange!();
+  await nextTick();
+
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(false);
+});
+
+it('is dirty once a setting really changes', async () => {
+  mount(true);
+  state.values = {...state.values, file: 'other.csv'};
+
+  state.emitChange!();
+  await nextTick();
+
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
+});
+
+it('isn’t dirty after opening the mapping and cancelling it', async () => {
+  // Cancelling the mapping panel never calls `apply`.
+  state.openStepMapping.mockResolvedValue(true);
+  // The form reports a default the stored step doesn't have yet.
+  mount(true, step.type, {entryType: 'blog'});
+
+  mappingButton().dispatchEvent(new Event('click'));
+  await nextTick();
+  await nextTick();
+
+  expect(state.openStepMapping).toHaveBeenCalled();
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(false);
 });
