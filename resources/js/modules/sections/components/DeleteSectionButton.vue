@@ -34,7 +34,7 @@
       icon
       :loading="form.processing"
     >
-      <craft-icon :label="t('Delete section')" name="x"></craft-icon>
+      <craft-icon :label="t('Delete section')" name="xmark-large"></craft-icon>
     </craft-button>
   </form>
 </template>

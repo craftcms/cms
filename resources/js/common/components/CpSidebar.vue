@@ -64,7 +64,7 @@
         id="sidebar-toggle"
         type="button"
         size="small"
-        icon="x"
+        icon="xmark-large"
         :variant="ButtonVariant.Plain"
         @click="toggleSidebar"
         :aria-label="t('Toggle menu')"

@@ -388,14 +388,17 @@ describe('craft-button icon spacing', () => {
   });
 
   it('adds no space to an icon-only button', async () => {
-    const element = await createButton({icon: 'x', 'aria-label': 'Close'}, '');
+    const element = await createButton(
+      {icon: 'xmark-large', 'aria-label': 'Close'},
+      ''
+    );
 
     expect(content(element)).not.toContain('button-content--spaced-prefix');
   });
 
   it('ignores whitespace-only content', async () => {
     const element = await createButton(
-      {icon: 'x', 'aria-label': 'Close'},
+      {icon: 'xmark-large', 'aria-label': 'Close'},
       '\n  '
     );
 
