@@ -2415,6 +2415,110 @@ describe('FormRenderer', () => {
     expect(mutation).toEqual({});
   });
 
+  it('omits an untouched nested manager when a sibling inside an inline block changes', async () => {
+    const nested = clonePayload();
+    const block = ['settings', 'matrix', 'entries', 'block-a'];
+    const sibling = [...block, 'heading'];
+    const manager = [...block, 'cards'];
+    const nullable = [...block, 'note'];
+    const node = (
+      control: FormControlPayload
+    ): FormPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: control.path.at(-1) ?? ''},
+      control,
+    });
+    Object.assign(nested, {
+      refreshable: false,
+      values: {
+        settings: {
+          matrix: {
+            entries: {
+              'block-a': {
+                type: 'text',
+                heading: 'Before',
+                cards: null,
+                note: null,
+              },
+            },
+            sortOrder: ['block-a'],
+          },
+        },
+      },
+      nodes: [
+        node({
+          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          component: 'craft:nested-element-blocks',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+          },
+          path: ['settings', 'matrix'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'matrix'],
+          forms: [
+            {
+              scope: block,
+              refreshable: false,
+              nodes: [
+                node({
+                  type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                  component: 'craft:text',
+                  props: {inputType: 'text'},
+                  path: sibling,
+                  mode: 'editable',
+                  deltaGroup: ['settings', 'matrix'],
+                }),
+                node({
+                  type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                  component: 'craft:text',
+                  props: {inputType: 'text'},
+                  path: nullable,
+                  mode: 'editable',
+                  deltaGroup: ['settings', 'matrix'],
+                }),
+                node({
+                  type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
+                  component: 'craft:nested-element-cards',
+                  props: {
+                    viewMode: 'cards',
+                    cards: [],
+                    manager: null,
+                    index: null,
+                  },
+                  path: manager,
+                  mode: 'editable',
+                  deltaGroup: ['settings', 'matrix'],
+                  omitNullValue: true,
+                }),
+              ],
+            },
+          ],
+        }),
+      ],
+      errors: [],
+    });
+    let mutation: FormPayload['values'] = {};
+    app.unmount();
+    await mount(nested, {onMutation: (value) => (mutation = value)});
+
+    renderer.setValue(sibling, 'After');
+    await nextTick();
+    expect(mutation).toMatchObject({
+      settings: {
+        matrix: {entries: {'block-a': {heading: 'After', note: null}}},
+      },
+    });
+    expect(JSON.stringify(mutation)).not.toContain('"cards"');
+
+    renderer.setValue(manager, '*');
+    await nextTick();
+    expect(mutation).toMatchObject({
+      settings: {matrix: {entries: {'block-a': {cards: '*'}}}},
+    });
+  });
+
   it('submits complete atomic groups when one member changes', async () => {
     let mutation: FormPayload['values'] = {};
     const atomic = clonePayload();
