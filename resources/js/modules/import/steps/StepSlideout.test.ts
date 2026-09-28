@@ -53,7 +53,10 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
       return () => {
         state.errors = props.errors;
 
-        return h('div', {class: 'form-renderer'});
+        return h('div', {class: 'form-renderer'}, [
+          h('input', {'data-form-control-path': '["file"]'}),
+          h('input', {'data-form-control-path': '["transformer"]'}),
+        ]);
       };
     },
   },
@@ -116,6 +119,12 @@ function mappingButton(): HTMLElement & {disabled: boolean; loading: boolean} {
     disabled: boolean;
     loading: boolean;
   };
+}
+
+function blur(path: string): void {
+  container
+    .querySelector(`[data-form-control-path='${path}']`)!
+    .dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
 }
 
 function spinner(): Element | null {
@@ -279,6 +288,86 @@ it('clears the spinner and keeps the mapping section hidden when a refresh fails
 
   expect(spinner()).toBeNull();
   expect(mappingSection()).toBeNull();
+});
+
+it('checks whether the step can be mapped once the data file field loses focus', async () => {
+  const checking = deferred<{form: FormPayload; canMap: boolean}>();
+  state.fetchStepForm.mockReturnValue(checking.promise);
+  mount(false);
+
+  state.values = {...state.values, file: 'other.csv'};
+  blur('["file"]');
+  await nextTick();
+
+  expect(state.fetchStepForm).toHaveBeenCalledOnce();
+  expect(state.fetchStepForm.mock.calls[0]![1]).toMatchObject({
+    file: 'other.csv',
+  });
+  expect(mappingButton().loading).toBe(true);
+
+  checking.resolve({form: payload(), canMap: true});
+  await checking.promise;
+  await nextTick();
+
+  expect(mappingButton().loading).toBe(false);
+  expect(mappingButton().disabled).toBe(false);
+});
+
+it('doesn’t check again when the data file hasn’t changed', async () => {
+  mount(false);
+
+  blur('["file"]');
+  await nextTick();
+
+  expect(state.fetchStepForm).not.toHaveBeenCalled();
+});
+
+it('doesn’t check when another field loses focus', async () => {
+  mount(false);
+
+  state.values = {...state.values, file: 'other.csv'};
+  blur('["transformer"]');
+  await nextTick();
+
+  expect(state.fetchStepForm).not.toHaveBeenCalled();
+});
+
+it('lets a refresh that starts after a file check decide whether the step can be mapped', async () => {
+  const checking = deferred<{form: FormPayload; canMap: boolean}>();
+  const refreshing = deferred<{form: FormPayload; canMap: boolean}>();
+  state.fetchStepForm
+    .mockReturnValueOnce(checking.promise)
+    .mockReturnValueOnce(refreshing.promise);
+  mount(false);
+
+  state.values = {...state.values, file: 'other.csv'};
+  blur('["file"]');
+  const refresh = state.refresh!({settings: {}});
+
+  refreshing.resolve({form: payload(), canMap: false});
+  await refresh;
+  checking.resolve({form: payload(), canMap: true});
+  await checking.promise;
+  await nextTick();
+
+  expect(mappingButton().disabled).toBe(true);
+  expect(mappingButton().loading).toBe(false);
+});
+
+it('keeps the last reported state when the file check fails', async () => {
+  const checking = deferred<{form: FormPayload; canMap: boolean}>();
+  state.fetchStepForm.mockReturnValue(checking.promise);
+  mount(true);
+
+  state.values = {...state.values, file: 'missing.csv'};
+  blur('["file"]');
+  checking.reject(new Error('Request failed.'));
+  await checking.promise.catch(() => {});
+  await nextTick();
+
+  expect(mappingButton().disabled).toBe(false);
+  expect(mappingButton().loading).toBe(false);
+  expect(state.errorHandler).not.toHaveBeenCalled();
 });
 
 it('shows a spinner on the mapping button while the mapping slideout opens', async () => {

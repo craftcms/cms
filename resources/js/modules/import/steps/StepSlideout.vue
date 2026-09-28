@@ -76,6 +76,16 @@
   const showLoadingType = useDelayedLoading(loadingType);
   let latestRefresh = 0;
 
+  /**
+   * The data file `canMap` was last checked against. The file doesn't change the form, so
+   * it isn't reactive; leaving its field checks it instead, rather than on every keystroke.
+   */
+  let checkedFile = context.step.file;
+  const checkingMap = ref(false);
+  let latestCheck = 0;
+  /** Shared by refreshes and file checks, so whichever started last sets `canMap`. */
+  let latestCanMap = 0;
+
   const mappedCount = computed(() => countLeaves(mappingValues().map));
 
   function mappingValues(): MappingValues {
@@ -180,35 +190,90 @@
     }
   }
 
+  /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
+  function stepForRequest(settings: Record<string, unknown>): StepPayload {
+    return {...step.value, settings: {...settings, ...mappingValues()}};
+  }
+
   async function refresh(values: FormPayload['values']): Promise<FormPayload> {
     syncFromForm();
 
     const request = ++latestRefresh;
+    const canMapRequest = ++latestCanMap;
     const type = step.value.type;
+    checkedFile = step.value.file;
 
     if (type !== formType.value) {
       loadingType.value = true;
     }
 
     try {
-      const response = await fetchStepForm(context.urls.settingsUrl, {
-        ...step.value,
-        settings: {
-          ...((values.settings ?? {}) as Record<string, unknown>),
-          ...mappingValues(),
-        },
-      });
+      const response = await fetchStepForm(
+        context.urls.settingsUrl,
+        stepForRequest((values.settings ?? {}) as Record<string, unknown>)
+      );
 
       // the form drops a response a newer refresh has overtaken, so this does too
       if (request === latestRefresh) {
-        canMap.value = response.canMap;
         formType.value = type;
+      }
+
+      if (canMapRequest === latestCanMap) {
+        canMap.value = response.canMap;
       }
 
       return response.form;
     } finally {
       if (request === latestRefresh) {
         loadingType.value = false;
+      }
+    }
+  }
+
+  function onFocusOut(event: FocusEvent): void {
+    const control =
+      event.target instanceof Element
+        ? event.target.closest('[data-form-control-path]')
+        : null;
+
+    if (
+      control?.getAttribute('data-form-control-path') !== '["file"]' ||
+      (event.relatedTarget instanceof Node &&
+        control.contains(event.relatedTarget))
+    ) {
+      return;
+    }
+
+    syncFromForm();
+
+    if (step.value.file === checkedFile) {
+      return;
+    }
+
+    checkedFile = step.value.file;
+    void checkCanMap();
+  }
+
+  /** Asks the server whether the step can be mapped, without rebuilding the form. */
+  async function checkCanMap(): Promise<void> {
+    const request = ++latestCanMap;
+    const check = ++latestCheck;
+    checkingMap.value = true;
+
+    try {
+      const response = await fetchStepForm(
+        context.urls.settingsUrl,
+        stepForRequest(step.value.settings ?? {})
+      );
+
+      if (request === latestCanMap) {
+        canMap.value = response.canMap;
+      }
+    } catch {
+      // the last reported `canMap` still stands
+    } finally {
+      if (check === latestCheck) {
+        checkingMap.value = false;
       }
     }
   }
@@ -247,7 +312,7 @@
 </script>
 
 <template>
-  <div class="grid gap-6">
+  <div class="grid gap-6" @focusout="onFocusOut">
     <FormRenderer
       ref="renderer"
       :payload="payload"
@@ -274,7 +339,7 @@
       <craft-button
         ref="mappingButton"
         .disabled="!context.editable || !canMap"
-        :loading="openingMapping"
+        :loading="openingMapping || checkingMap"
         @click="editMapping"
       >
         {{ t('Edit mapping') }}
