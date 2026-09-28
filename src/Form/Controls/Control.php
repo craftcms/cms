@@ -153,6 +153,11 @@ abstract class Control implements ControlContract
         return null;
     }
 
+    public function omitNullValue(): bool
+    {
+        return false;
+    }
+
     /** Whether the control renders nested forms. See the contract. */
     public function nestsForms(): bool
     {

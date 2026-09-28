@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -9,7 +10,11 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -84,7 +89,7 @@ it('creates a block when the Form control prefixes both halves of the envelope',
     [$entry, $blockType] = matrixShapeFixture();
     $uid = Str::uuid()->toString();
 
-    // What MatrixControl.vue and matrix-input.ce.ts post for a brand new block.
+    // What NestedElementBlocksControl.vue and matrix-input.ce.ts post for a brand new block.
     saveMatrixShape($entry, [
         'entries' => ["uid:$uid" => ['type' => $blockType->handle, 'title' => 'Fresh']],
         'sortOrder' => ["uid:$uid"],
@@ -146,4 +151,65 @@ it('reorders blocks when only a prefixed sortOrder is posted', function () {
     saveMatrixShape($entry, ['sortOrder' => ["uid:$second", "uid:$first"]]);
 
     expect(matrixShapeBlockUids($entry))->toBe([$second, $first]);
+});
+
+it('retains nested cards when only a sibling field in an outer block is edited', function () {
+    actingAs(User::findOne());
+
+    $text = Field::factory()->create(['handle' => 'siblingText', 'type' => PlainText::class]);
+    $cardType = EntryType::factory()->create(['handle' => 'nestedCardType', 'hasTitleField' => true]);
+    $cards = Field::factory()->create([
+        'handle' => 'nestedCards',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$cardType->id], 'viewMode' => Matrix::VIEW_MODE_CARDS],
+    ]);
+    $blockLayout = FieldLayout::factory()->withContentTab([
+        new CustomField(config: ['fieldUid' => $text->uid]),
+        new CustomField(config: ['fieldUid' => $cards->uid]),
+    ]);
+    $blockType = EntryType::factory()->withFieldLayout($blockLayout)
+        ->create(['handle' => 'outerBlockType', 'hasTitleField' => true]);
+    $outer = Field::factory()->create([
+        'handle' => 'outerBlocks',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $owner = entryQuery()->id(Entry::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($outer))
+        ->create()->id)->one();
+
+    $blockUid = Str::uuid()->toString();
+    $cardUid = Str::uuid()->toString();
+    $owner->setFieldValueFromRequest('outerBlocks', [
+        'entries' => ["uid:$blockUid" => [
+            'type' => $blockType->handle,
+            'title' => 'Outer block',
+            'fields' => [
+                'siblingText' => 'Before',
+                'nestedCards' => [
+                    'entries' => ["uid:$cardUid" => ['type' => $cardType->handle, 'title' => 'Keep me']],
+                    'sortOrder' => [$cardUid],
+                ],
+            ],
+        ]],
+        'sortOrder' => [$blockUid],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    $owner = entryQuery()->id($owner->id)->one();
+    $owner->setFieldValueFromRequest('outerBlocks', [
+        'entries' => ["uid:$blockUid" => [
+            'type' => $blockType->handle,
+            'fields' => ['siblingText' => 'After'],
+        ]],
+        'sortOrder' => [$blockUid],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    $block = entryQuery()->fieldId($outer->id)->ownerId($owner->id)->status(null)->one();
+    expect($block->getFieldValue('siblingText'))->toBe('After')
+        ->and($block->getFieldValue('nestedCards')->status(null)->all())->toHaveCount(1);
+
+    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new FormContext(mode: ControlMode::ReadOnly));
+    expect(SessionAuth::checkAuthorization("manageNestedElements::{$block->id}::field:nestedCards"))->toBeFalse();
 });

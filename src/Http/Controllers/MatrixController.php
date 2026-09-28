@@ -100,7 +100,7 @@ readonly class MatrixController
         abort_if(is_null($entryType), 400, "Invalid entry type ID: $validated[entryTypeId]");
 
         // Any entry type would save, and then the field couldn't render what it
-        // got back — `Form\Controls\Matrix` rejects a block whose type it doesn't
+        // got back — `Form\Controls\NestedElementBlocks` rejects a block whose type it doesn't
         // offer, which takes the whole edit screen down with it.
         abort_if(
             ! in_array($entryType->id, array_column($field->getEntryTypes(), 'id'), true),

@@ -44,6 +44,7 @@ use craft\fields\Users;
 use craft\models\FieldLayout as LegacyFieldLayout;
 use craft\models\FieldLayoutForm;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -409,17 +410,24 @@ it('preserves legacy hooks on each built-in field alias', function(string $field
     'users' => Users::class,
 ]);
 
-it('preserves nullable settings and renderer-native static output on built-in aliases', function() {
+it('preserves nullable settings and renderer-native static output on built-in aliases', function(string $viewMode) {
     expect(new MissingField()->settingsForm())->toBeNull()
         ->and(new MissingField()->getSettingsHtml())->toBeNull();
 
-    $entry = Mockery::mock(Entry::class);
-    $entry->shouldReceive('getSupportedSites')->andReturn([]);
-    $html = new Matrix(['handle' => 'matrix'])->getStaticHtml(null, $entry);
+    $entry = new Entry();
+    $entryType = new EntryType(['name' => 'Block', 'handle' => 'block']);
+    $html = new Matrix([
+        'handle' => 'matrix',
+        'viewMode' => $viewMode,
+        'entryTypes' => [$entryType],
+    ])->getStaticHtml(null, $entry);
 
-    expect($html)->toContain('craft-matrix-input')
+    expect($html)->toContain('Entries can only be created after the entry has been saved.')
         ->not->toContain('data-form-matrix-add');
-});
+})->with([
+    'cards' => Matrix::VIEW_MODE_CARDS,
+    'cards grid' => Matrix::VIEW_MODE_CARDS_GRID,
+]);
 
 it('preserves FieldLayout createForm on its public alias', function() {
     $layout = LegacyFieldLayout::make(Entry::class);

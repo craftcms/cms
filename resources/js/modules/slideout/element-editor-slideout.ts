@@ -279,19 +279,22 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   override handleSubmitError(e: any): void {
     super.handleSubmitError(e);
 
-    // Update the `error` class on nested cards and chips.
-    if (e?.response?.data?.invalidNestedElementIds) {
+    const ids = e?.response?.data?.invalidNestedElementIds;
+    if (Array.isArray(ids)) {
+      this.$content[0]?.dispatchEvent(
+        new CustomEvent('craft:nested-validation', {
+          bubbles: true,
+          detail: {ids},
+        })
+      );
+
       const $cardsAndChips = this.$content
         .find('.element.card, craft-chip')
         .removeClass('error');
       $cardsAndChips.find('span[data-icon="triangle-exclamation"]').remove();
-      if (e.response.data.invalidNestedElementIds.length) {
+      if (ids.length) {
         const $errorCardsAndChips = $cardsAndChips
-          .filter(
-            e.response.data.invalidNestedElementIds
-              .map((id: number) => `[data-id=${id}]`)
-              .join(',')
-          )
+          .filter(ids.map((id: number) => `[data-id=${id}]`).join(','))
           .addClass('error');
         for (let i = 0; i < $errorCardsAndChips.length; i++) {
           const $item = $errorCardsAndChips.eq(i);
