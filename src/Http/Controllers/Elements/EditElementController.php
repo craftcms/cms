@@ -15,12 +15,14 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\Responses\ElementResponse;
@@ -38,6 +40,7 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -63,7 +66,7 @@ class EditElementController
         return $this;
     }
 
-    public function __invoke(): Response|CpScreenResponse
+    public function __invoke(): Response|CpScreenResponse|InertiaResponse
     {
         $strictSite = $this->request->acceptsJson();
         $elementId = $this->request->route('id') ?? $this->request->integer('elementId');
@@ -81,6 +84,11 @@ class EditElementController
 
         if (! $element) {
             abort(400, 'No element was identified by the request.');
+        }
+
+        // Vue slideouts get the same Inertia editor as the entry edit page.
+        if ($element instanceof Entry && $this->request->inertia()) {
+            return app(EditEntryController::class)->render($element);
         }
 
         // If this is an outdated draft, merge in the latest canonical changes
