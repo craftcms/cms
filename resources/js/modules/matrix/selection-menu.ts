@@ -9,7 +9,7 @@ import {t} from '@craftcms/ui/utilities/translate';
  * block or just the selected ones all depend on the selection — and whether
  * "Expand/Collapse all blocks" has anything to do depends on the blocks' own
  * state — which only the browser knows. Both render paths rewrite the server's items through here:
- * MatrixControl as menu props, the legacy input on the rendered
+ * NestedElementBlocksControl as menu props, the legacy input on the rendered
  * `craft-action-item` elements.
  */
 

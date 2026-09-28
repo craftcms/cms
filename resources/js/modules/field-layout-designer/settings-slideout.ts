@@ -1,6 +1,7 @@
 import type {FormPayload, FormValues} from '@/modules/forms/types';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+export {canUseVueSlideout} from '@/common/slideouts';
 
 export interface OpenLayoutSettingsOptions {
   title: string;
@@ -33,18 +34,6 @@ export function takeLayoutSettingsContext(id: string): LayoutSettingsContext {
     throw new Error('Layout component settings context was not found.');
   }
   return context;
-}
-
-/**
- * Whether the Vue slideout stack is available on this page.
- *
- * `SlideoutHost` is only mounted by the Inertia CP shell, and the designer is
- * also reachable from legacy-stack screens via the `fieldLayoutDesigner()`
- * Twig function. The globals are registered when that shell boots, so their
- * presence is the documented signal for "this is an Inertia page".
- */
-export function canUseVueSlideout(): boolean {
-  return window.Craft?.openSlideout instanceof Function;
 }
 
 /**

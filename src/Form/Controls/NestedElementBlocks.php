@@ -37,14 +37,14 @@ use function CraftCms\Cms\t;
  * {@see ElementHelper::nestedElementDelta()} on the way in.
  *
  * @phpstan-type EntryTypeDescriptor array{label: string, icon?: array<string, string>|null, color?: string|null, group?: string|null}
- * @phpstan-type MatrixControlValue array{
+ * @phpstan-type NestedElementBlocksValue array{
  *     entries: array<string, array<string, mixed>>,
  *     sortOrder: list<string>,
  * }
  */
-class Matrix extends Control
+class NestedElementBlocks extends Control
 {
-    /** @var MatrixControlValue */
+    /** @var NestedElementBlocksValue */
     #[\Override]
     protected mixed $value = ['entries' => [], 'sortOrder' => []];
 
@@ -271,7 +271,7 @@ class Matrix extends Control
 
     public function component(): string
     {
-        return 'craft:matrix';
+        return 'craft:nested-element-blocks';
     }
 
     /**
@@ -455,7 +455,7 @@ class Matrix extends Control
         return $forms;
     }
 
-    /** @return MatrixControlValue */
+    /** @return NestedElementBlocksValue */
     private function validatedValue(mixed $value): array
     {
         if (! is_array($value) || ! is_array(Arr::get($value, 'entries')) || ! is_array(Arr::get($value, 'sortOrder'))) {

@@ -15,6 +15,7 @@ use CraftCms\Cms\Cp\Data\NotificationButtonData;
 use CraftCms\Cms\Cp\Data\NotificationData;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
 use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
+use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
@@ -75,6 +76,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    NestedElementCard::class,
                     ChoicePresentation::class,
                     ControlMode::class,
                     ControlPayload::class,

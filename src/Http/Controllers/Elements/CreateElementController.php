@@ -43,7 +43,7 @@ readonly class CreateElementController
         $response = new ElementResponse()->success($element, t('{type} created.', [
             'type' => t('Draft'),
         ]), array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
+            'cpEditUrl' => $this->request->isCpRequest() ? $editUrl : null,
         ]));
 
         if (! $this->request->acceptsJson()) {

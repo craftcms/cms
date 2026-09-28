@@ -6,7 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, useTemplateRef} from 'vue';
+  import {computed, nextTick, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -28,6 +28,10 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import {
+    NestedOwnerEditorKey,
+    nestedOwnerContext,
+  } from '@/modules/elements/nested-owner';
 
   const props = defineProps<{
     /**
@@ -49,6 +53,7 @@
     onSidebarMutation,
     props: payload,
     renderer,
+    refreshForm,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -58,6 +63,36 @@
     updatePayload,
     workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
+
+  provide(NestedOwnerEditorKey, {
+    async prepare(path) {
+      if (payload.readOnly) {
+        return null;
+      }
+
+      if (payload.canAutosave) {
+        await autosave.save();
+        if (autosave.status.value !== 'saved') {
+          return null;
+        }
+        await nextTick();
+      }
+
+      const context = nestedOwnerContext(formPayload.value, path);
+      return context
+        ? {
+            ...context,
+            requiresDerivative: Boolean(payload.canAutosave),
+            canonicalId: payload.canonicalId,
+            draftId: payload.draftId,
+            isProvisionalDraft: payload.isProvisionalDraft,
+          }
+        : null;
+    },
+    async refresh() {
+      await refreshForm();
+    },
+  });
 
   const hasDetails = computed(
     () =>

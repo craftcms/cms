@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Form\Controls\ContentBlock;
-use CraftCms\Cms\Form\Controls\Matrix;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -20,7 +20,7 @@ function nestedControlsForm(): Form
 
     return Form::make([
         Field::make('Content',
-            Matrix::make('matrix')
+            NestedElementBlocks::make('matrix')
                 ->entryTypes(['text' => 'Text'])
                 ->forms([
                     'block-a' => Form::make([
@@ -56,7 +56,7 @@ it('resolves nested Form scopes recursively with one ancestor atomic group', fun
     $contentBlockForm = $contentBlock->forms[0];
     $body = $contentBlockForm->nodes[0]->control;
 
-    expect($matrix->component)->toBe('craft:matrix')
+    expect($matrix->component)->toBe('craft:nested-element-blocks')
         ->and($entryForm->scope)->toBe(['settings', 'matrix', 'entries', 'block-a'])
         ->and($entryForm->refreshable)->toBeTrue()
         ->and($contentBlock->component)->toBe('craft:content-block')
@@ -135,7 +135,7 @@ it('posts the per-block state the browser stack carries in its value', function 
 it('writes the block identity the element clipboard reads off the DOM', function () {
     $form = Form::make([
         Field::make('Content',
-            Matrix::make('matrix')
+            NestedElementBlocks::make('matrix')
                 ->entryTypes(['text' => 'Text'])
                 ->blocks(['block-a' => [
                     'label' => 'Entry 12',
@@ -175,7 +175,7 @@ it('declares which Controls hold nested forms', function () {
 
 it('uses explicit empty canonical values', function () {
     $form = Form::make([
-        Field::make()->control(Matrix::make('matrix')->entryTypes(['text' => 'Text'])),
+        Field::make()->control(NestedElementBlocks::make('matrix')->entryTypes(['text' => 'Text'])),
         Field::make()->control(ContentBlock::make('content')),
     ]);
     $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));

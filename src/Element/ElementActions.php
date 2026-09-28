@@ -176,11 +176,8 @@ class ElementActions
                 continue;
             }
 
-            // NOTE: download actions aren't mapped yet — the `download` primitive
-            // is a GET link and can't POST the selection/body. No entry actions
-            // download today; revisit when bulk asset downloads land.
             $item['action'] = [
-                'type' => 'http',
+                'type' => $action::isDownload() ? 'download' : 'http',
                 'method' => 'POST',
                 'url' => $url,
                 'body' => ['elementAction' => $action::class] + $action->getSettings(),

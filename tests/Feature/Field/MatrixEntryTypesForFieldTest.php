@@ -75,7 +75,7 @@ test('nested element manager view modes use entry types defined by listeners', f
 
     expect($eventCount)->toBe(1)
         ->and($settings['pasteableData']['values'])->toBe([$allowedEntryType->id])
-        ->and(array_column(array_column($settings['createAttributes'], 'attributes'), 'typeId'))->toBe([$allowedEntryType->id]);
+        ->and($settings['createAttributes'])->toBe(['typeId' => $allowedEntryType->id]);
 })->with('nested element manager view modes');
 
 test('nested element manager view modes use all entry types without listeners', function (string $viewMode) {
