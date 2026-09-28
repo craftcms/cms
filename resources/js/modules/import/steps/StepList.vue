@@ -32,6 +32,9 @@
   /** A slideout that couldn't be opened, as opposed to a server validation error. */
   const requestError = ref<string | null>(null);
 
+  /** Which slideout is being opened: `new` for Add, or the uid of the step being edited. */
+  const openingStep = ref<string | null>(null);
+
   const {setItemRef, setHandleRef, getDropState, getRowPosition} =
     useReorderableItems({
       getItemIds: () => steps.value.map((step) => step.uid),
@@ -124,10 +127,16 @@
    * rather than letting the rejection go unhandled, which reads as the button doing nothing.
    */
   async function openStep(
+    key: string,
     options: Parameters<typeof openStepSlideout>[0],
     title: string
   ): Promise<void> {
+    if (openingStep.value !== null) {
+      return;
+    }
+
     requestError.value = null;
+    openingStep.value = key;
 
     try {
       await openStepSlideout(options, title);
@@ -136,6 +145,8 @@
         error instanceof Error && error.message
           ? error.message
           : t('Couldn’t open this step.');
+    } finally {
+      openingStep.value = null;
     }
   }
 
@@ -143,6 +154,7 @@
     const step = newStep();
 
     await openStep(
+      'new',
       {
         step,
         urls: props.urls,
@@ -158,6 +170,7 @@
 
   async function edit(step: StepPayload): Promise<void> {
     await openStep(
+      step.uid,
       {
         step,
         urls: props.urls,
@@ -217,6 +230,7 @@
         <craft-button
           :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
           type="button"
+          :loading="openingStep === step.uid"
           @click="edit(step)"
         >
           {{ editable ? t('Edit') : t('View') }}
@@ -241,6 +255,7 @@
       ref="addButton"
       type="button"
       icon="plus"
+      :loading="openingStep === 'new'"
       @click="add"
     >
       {{ t('Add a step') }}

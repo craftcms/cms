@@ -7,10 +7,12 @@
    * when the import itself is saved.
    */
   import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/spinner/spinner';
   import {computed, ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import {useSlideout} from '@/common/slideouts';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
@@ -42,6 +44,7 @@
   const step = ref<StepPayload>(context.step);
   const mappingButton = ref<HTMLElement | null>(null);
   const mappingMessage = ref<string | null>(null);
+  const openingMapping = ref(false);
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
@@ -62,6 +65,16 @@
    * so this tracks every refresh rather than being derived from the step here.
    */
   const canMap = ref(context.canMap);
+
+  /**
+   * The importer type the rendered form was built for. The form's own type field changes
+   * first, and the fields that depend on it only arrive with the refresh, so the Mapping
+   * section follows this rather than the step's type to appear alongside them.
+   */
+  const formType = ref(context.step.type);
+  const loadingType = ref(false);
+  const showLoadingType = useDelayedLoading(loadingType);
+  let latestRefresh = 0;
 
   const mappedCount = computed(() => countLeaves(mappingValues().map));
 
@@ -122,25 +135,43 @@
   }
 
   async function editMapping(): Promise<void> {
+    if (openingMapping.value) {
+      return;
+    }
+
     syncFromForm();
     mappingMessage.value = null;
+    openingMapping.value = true;
 
-    const opened = await openStepMapping(
-      {
-        step: step.value,
-        urls: context.urls,
-        editable: context.editable,
-        opener: mappingButton.value,
-        apply: (applied) => {
-          step.value = {
-            ...step.value,
-            settings: {...step.value.settings, ...applied},
-          };
-          form.state = JSON.stringify(step.value);
+    let opened: boolean;
+
+    try {
+      opened = await openStepMapping(
+        {
+          step: step.value,
+          urls: context.urls,
+          editable: context.editable,
+          opener: mappingButton.value,
+          apply: (applied) => {
+            step.value = {
+              ...step.value,
+              settings: {...step.value.settings, ...applied},
+            };
+            form.state = JSON.stringify(step.value);
+          },
         },
-      },
-      t('Edit mapping')
-    );
+        t('Edit mapping')
+      );
+    } catch (error) {
+      mappingMessage.value =
+        error instanceof Error && error.message
+          ? error.message
+          : t('Couldn’t open the mapping.');
+
+      return;
+    } finally {
+      openingMapping.value = false;
+    }
 
     if (!opened) {
       mappingMessage.value = t(
@@ -152,17 +183,34 @@
   async function refresh(values: FormPayload['values']): Promise<FormPayload> {
     syncFromForm();
 
-    const response = await fetchStepForm(context.urls.settingsUrl, {
-      ...step.value,
-      settings: {
-        ...((values.settings ?? {}) as Record<string, unknown>),
-        ...mappingValues(),
-      },
-    });
+    const request = ++latestRefresh;
+    const type = step.value.type;
 
-    canMap.value = response.canMap;
+    if (type !== formType.value) {
+      loadingType.value = true;
+    }
 
-    return response.form;
+    try {
+      const response = await fetchStepForm(context.urls.settingsUrl, {
+        ...step.value,
+        settings: {
+          ...((values.settings ?? {}) as Record<string, unknown>),
+          ...mappingValues(),
+        },
+      });
+
+      // the form drops a response a newer refresh has overtaken, so this does too
+      if (request === latestRefresh) {
+        canMap.value = response.canMap;
+        formType.value = type;
+      }
+
+      return response.form;
+    } finally {
+      if (request === latestRefresh) {
+        loadingType.value = false;
+      }
+    }
   }
 
   function setErrors(next: Record<string, string | string[]>): void {
@@ -208,7 +256,11 @@
       @change="onChange"
     />
 
-    <section v-if="canMap">
+    <craft-spinner v-if="showLoadingType" role="status">
+      {{ t('Loading') }}
+    </craft-spinner>
+
+    <section v-if="formType">
       <h3>{{ t('Mapping') }}</h3>
 
       <p>
@@ -221,13 +273,14 @@
 
       <craft-button
         ref="mappingButton"
-        .disabled="!context.editable"
+        .disabled="!context.editable || !canMap"
+        :loading="openingMapping"
         @click="editMapping"
       >
         {{ t('Edit mapping') }}
       </craft-button>
 
-      <p v-if="mappingMessage">{{ mappingMessage }}</p>
+      <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
     </section>
   </div>
 </template>

@@ -75,6 +75,17 @@ function addButton(): HTMLElement {
   return [...container.querySelectorAll<HTMLElement>('craft-button')].at(-1)!;
 }
 
+function isLoading(button: HTMLElement): boolean {
+  return (button as HTMLElement & {loading: boolean}).loading;
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((r) => (resolve = r));
+
+  return {promise, resolve};
+}
+
 beforeEach(() => {
   state.openStepSlideout.mockReset();
   state.openStepSlideout.mockResolvedValue(true);
@@ -245,4 +256,73 @@ it('reports a slideout that fails to open instead of doing nothing', async () =>
   expect(container.querySelector('.error-list')!.textContent).toContain(
     'Request failed.'
   );
+});
+
+it('shows a spinner on the add button while its slideout opens', async () => {
+  const opening = deferred<boolean>();
+  state.openStepSlideout.mockReturnValue(opening.promise);
+  mount([]);
+
+  addButton().dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(isLoading(addButton())).toBe(true);
+
+  opening.resolve(true);
+  await opening.promise;
+  await nextTick();
+
+  expect(isLoading(addButton())).toBe(false);
+});
+
+it('shows a spinner only on the edit button that was clicked', async () => {
+  const opening = deferred<boolean>();
+  state.openStepSlideout.mockReturnValue(opening.promise);
+  mount([step(), step({uid: 'step-2'})]);
+
+  rowButtons(1)[0]!.dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(isLoading(rowButtons(0)[0]!)).toBe(false);
+  expect(isLoading(rowButtons(1)[0]!)).toBe(true);
+  expect(isLoading(addButton())).toBe(false);
+
+  opening.resolve(true);
+  await opening.promise;
+  await nextTick();
+
+  expect(isLoading(rowButtons(1)[0]!)).toBe(false);
+});
+
+it('clears the spinner when a slideout fails to open', async () => {
+  state.openStepSlideout.mockRejectedValue(new Error('Request failed.'));
+  mount();
+
+  rowButtons()[0]!.dispatchEvent(new Event('click'));
+  await nextTick();
+  await nextTick();
+
+  expect(isLoading(rowButtons()[0]!)).toBe(false);
+});
+
+it('ignores other open requests while a slideout is opening', async () => {
+  const opening = deferred<boolean>();
+  state.openStepSlideout.mockReturnValue(opening.promise);
+  mount();
+
+  rowButtons()[0]!.dispatchEvent(new Event('click'));
+  rowButtons()[0]!.dispatchEvent(new Event('click'));
+  addButton().dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(state.openStepSlideout).toHaveBeenCalledOnce();
+
+  opening.resolve(true);
+  await opening.promise;
+  await nextTick();
+
+  addButton().dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(state.openStepSlideout).toHaveBeenCalledTimes(2);
 });
