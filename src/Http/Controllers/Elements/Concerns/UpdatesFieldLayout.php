@@ -114,7 +114,7 @@ trait UpdatesFieldLayout
             throw new BadRequestHttpException("Invalid {$header} header.", $exception);
         }
 
-        if (! is_array($scope) || ! array_is_list($scope) || ! array_all($scope, is_string(...))) {
+        if (! is_array($scope) || ! array_is_list($scope) || ! array_all($scope, fn ($segment) => is_string($segment))) {
             throw new BadRequestHttpException("Invalid {$header} header.");
         }
 
