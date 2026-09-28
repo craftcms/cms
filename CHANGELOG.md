@@ -107,8 +107,11 @@
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added `CraftCms\Cms\Support\Url::stripCpTrigger()`. ([#19724](https://github.com/craftcms/cms/pull/19724))
+- `CraftCms\Cms\Support\Url::removeParam()` now accepts an array of param names. ([#19724](https://github.com/craftcms/cms/pull/19724))
 - Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Removed `CraftCms\Cms\Support\Url::baseUrl()`, `cpHost()`, `encodeParams()`, `host()`, `isFullUrl()`, `removeParams()`, and `rootRelativeUrl()`. (They remain available on `craft\helpers\UrlHelper` through the Yii adapter.) ([#19724](https://github.com/craftcms/cms/pull/19724))
 - Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 
@@ -117,6 +120,7 @@
 - Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Removed HTMX.
+- Base site URLs, including `url('')`, `siteUrl('')`, and homepage URLs, now respect the `addTrailingSlashesToUrls` config setting, so they no longer end with a trailing slash by default. The `siteUrl` Twig variable still always ends with a trailing slash. ([#19723](https://github.com/craftcms/cms/pull/19723))
 - Fixed a bug where cached template resolution could ignore the current site, registered template roots, or lookup options. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where orphan cleanup could delete the wrong rows for composite foreign keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where deleting a site could transfer its content despite selecting the delete option. ([#19568](https://github.com/craftcms/cms/pull/19568))
