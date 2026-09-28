@@ -35,7 +35,7 @@ class UsersControllerTest extends TestCase
     private bool $originalDeferPassword;
     private bool $originalAutoLogin;
     private bool $originalRequireUserAgentAndIp;
-    private ?string $originalRequestMethod;
+    private ?string $originalRequestMethod = null;
 
     /**
      * @dataProvider publicRegistrationDataProvider
