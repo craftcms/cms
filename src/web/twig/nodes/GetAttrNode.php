@@ -10,6 +10,7 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
+use Twig\Node\Expression\ConstantExpression;
 use Twig\Node\Expression\GetAttrExpression;
 use Twig\Node\Node;
 use Twig\Template;
@@ -66,10 +67,10 @@ class GetAttrNode extends GetAttrExpression
                     ->raw($var)
                     ->raw(' instanceof ArrayAccess ? (')
                     ->raw($var)
-                    ->raw('[(string)') // DIFF: `(string)` added
-                    ->subcompile($this->getNode('attribute'))
-                    ->raw('] ?? null) : null)')
+                    ->raw('[')
                 ;
+                $this->compileArrayKey($compiler);
+                $compiler->raw('] ?? null) : null)');
 
                 return;
             }
@@ -83,10 +84,10 @@ class GetAttrNode extends GetAttrExpression
                 ->raw($var . '::class')
                 ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
-                ->raw('[(string)') // DIFF: `(string)` added
-                ->subcompile($this->getNode('attribute'))
-                ->raw('] ?? null) : ')
+                ->raw('[')
             ;
+            $this->compileArrayKey($compiler);
+            $compiler->raw('] ?? null) : ');
         }
 
         if ($this->getAttribute('ignore_strict_check')) {
@@ -154,6 +155,27 @@ class GetAttrNode extends GetAttrExpression
         if ($isShortCircuited) {
             $compiler->raw(')');
         }
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function compileArrayKey(Compiler $compiler): void
+    {
+        $attribute = $this->getNode('attribute');
+
+        if ($attribute instanceof ConstantExpression) {
+            $compiler->subcompile($attribute);
+
+            return;
+        }
+
+        $key = '$' . $compiler->getVarName();
+        $compiler
+            ->raw('((' . $key . ' = ')
+            ->subcompile($attribute)
+            ->raw(') instanceof \Stringable ? (string) ' . $key . ' : ' . $key . ')')
+        ;
     }
 
     /**

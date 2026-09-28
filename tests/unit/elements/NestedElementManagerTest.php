@@ -359,6 +359,58 @@ class NestedElementManagerTest extends TestCase
         self::assertNotSame($defaultSiteNested[0]->id, $newSiteNested[0]->id);
     }
 
+    // Fixed #18281: adding a site to a draft whose unchanged top-level Matrix entry is still shared
+    // with the canonical owner used to throw "Attempting to duplicate an element in an unsupported
+    // site." The top-level entry propagated to the new site, but was then re-fetched there without
+    // its owner context, so it fell back to its primary (canonical) owner, which doesn't exist in
+    // that site, and duplicating its own non-propagating nested entries into the site failed.
+    public function testAddingSiteToDraftDuplicatesDoublyNestedElements(): void
+    {
+        $owner = new Entry([
+            'sectionId' => 3001,
+            'typeId' => 3002,
+            'siteId' => 1,
+            'title' => 'NEM Owner ' . mt_rand(),
+        ]);
+        $owner->setFieldValue('nemPropagatingMatrix', [
+            'new1' => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemText' => 'Top level',
+                    'nemInnerMatrix' => [
+                        'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Nested']],
+                    ],
+                ],
+            ],
+        ]);
+        if (!$this->elements->saveElement($owner)) {
+            throw new InvalidElementException($owner);
+        }
+
+        self::assertNull(Entry::find()->id($owner->id)->siteId(1000)->status(null)->one());
+        $topLevel = $this->_nestedEntries($owner)[0];
+        $nested = $this->_nestedEntries($topLevel)[0];
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $draft->setEnabledForSite([1 => true, 1000 => true]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+
+        $draftInNewSite = Entry::find()->draftId($draft->draftId)->siteId(1000)->status(null)->one();
+        self::assertNotNull($draftInNewSite, 'Draft should have propagated to the new site');
+
+        $newSiteTopLevel = $this->_nestedEntries($draftInNewSite);
+        self::assertCount(1, $newSiteTopLevel);
+        self::assertSame($topLevel->id, $newSiteTopLevel[0]->id);
+
+        $newSiteNested = $this->_nestedEntries($newSiteTopLevel[0]);
+        self::assertCount(1, $newSiteNested);
+        self::assertSame('Nested', $newSiteNested[0]->getFieldValue('nemText'));
+        self::assertNotSame($nested->id, $newSiteNested[0]->id);
+    }
+
     // Models the scenario behind "Avoid internal server error - SQLSTATE Integrity constraint
     // violation on elements_owners" (a11e6d1), "Fix nested element deletion bug when restoring a
     // revision" (#18950 / 5f0dff9), and "Fix another nested element deletion bug" (011db82):

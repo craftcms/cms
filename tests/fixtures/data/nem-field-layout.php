@@ -70,4 +70,33 @@ return [
             ],
         ],
     ],
+    // An owner whose Matrix field propagates to all sites, while its blocks' `nemInnerMatrix`
+    // doesn't propagate, so adding a site duplicates 2nd-level nested entries into it.
+    [
+        'uid' => 'nem-field-layout-prop-owner------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Content',
+                'fields' => [
+                    [
+                        'uid' => 'nem-native-field-prop-owner------uid',
+                        'type' => EntryTitleField::class,
+                        'required' => true,
+                    ],
+                    [
+                        'uid' => 'nem-field-propagating-matrix-----uid',
+                        'name' => 'NEM Propagating Matrix',
+                        'handle' => 'nemPropagatingMatrix',
+                        'type' => Matrix::class,
+                        'propagationMethod' => 'all',
+                        'entryTypes' => [
+                            'nem-entry-type-block-------------uid',
+                        ],
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

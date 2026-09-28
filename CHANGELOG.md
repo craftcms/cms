@@ -8,6 +8,11 @@
 - Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
 - Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
 - Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
+- Fixed a bug where the `attribute()` Twig function was allowed within sandboxed Twig environments, even if it wasn’t listed in `allowedFunctions`.
+- Fixed a bug where Twig array access with a `false` key could return the wrong value when Dev Mode was disabled.
+- Fixed an error that could occur when adding a new site to a draft, if it contained multiple levels of nested content. ([#18281](https://github.com/craftcms/cms/issues/18281))
+- Fixed a bug where dragged items weren’t getting dropped where expected, if their container had scrolled during the drag operation. ([#19721](https://github.com/craftcms/cms/issues/19721))
+- Fixed a bug where publicly-registered users weren’t getting activated and logged in immediately, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-j2r3-x468-c6j5)
 
 ## 5.11.3 - 2026-09-18
