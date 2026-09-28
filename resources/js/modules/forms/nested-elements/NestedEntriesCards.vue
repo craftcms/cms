@@ -272,6 +272,7 @@
           <craft-button
             v-if="canOpen(element as NestedEntry)"
             data-edit-entry
+            variant="plain"
             type="button"
             size="small"
             icon="edit"
@@ -327,6 +328,6 @@
     flex-wrap: wrap;
     gap: var(--c-spacing-sm);
     align-items: center;
-    margin-block: var(--c-spacing-sm);
+    margin-block: var(--c-spacing-md);
   }
 </style>

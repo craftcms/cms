@@ -192,13 +192,17 @@
 
 <style scoped lang="scss">
   .card-grid-header {
+    margin-block-end: var(--c-spacing-md);
     padding: var(--c-spacing-md);
     background-color: var(--c-color-neutral-fill-quiet);
+    border-start-start-radius: var(--c-radius-md);
+    border-start-end-radius: var(--c-radius-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .card-grid {
     display: grid;
+    gap: var(--c-spacing-md);
     align-items: stretch;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   }
@@ -226,6 +230,10 @@
   // doesn't reshuffle around the gap.
   .card-grid > li.is-dragging-away {
     visibility: hidden;
+  }
+
+  .card-grid :deep(> li > craft-card) {
+    height: 100%;
   }
 
   // craft-thumbnail defaults its own size via :host, so the card thumbnail
