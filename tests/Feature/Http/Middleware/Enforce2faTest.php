@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -16,7 +16,7 @@ beforeEach(function () {
 test('allows guest through', function () {
     $this->get('/test-2fa')
         ->assertStatus(200)
-        ->assertSee('ok');
+        ->assertContent('ok');
 });
 
 test('allows user through when 2fa is disabled', function () {
@@ -26,7 +26,7 @@ test('allows user through when 2fa is disabled', function () {
     $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
-        ->assertSee('ok');
+        ->assertContent('ok');
 });
 
 test('allows user through when 2fa is not required', function () {
@@ -36,7 +36,7 @@ test('allows user through when 2fa is not required', function () {
     $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
-        ->assertSee('ok');
+        ->assertContent('ok');
 });
 
 test('redirects user to 2fa setup when required but not active', function () {
@@ -58,12 +58,13 @@ test('allows user through when 2fa is required and active', function () {
     // Force 2FA requirement for all users
     ProjectConfig::set('users.require2fa', 'all');
 
-    // Mock active method
-    $auth = Mockery::mock(app(AuthMethods::class))->makePartial();
-    $auth->shouldReceive('hasActiveMethod')->andReturn(true);
+    Authenticator::create([
+        'userId' => $user->id,
+        'auth2faSecret' => 'secret',
+    ]);
 
     $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
-        ->assertSee('ok');
+        ->assertContent('ok');
 });

@@ -337,20 +337,15 @@ export class DragSort<
   private _precalculateMidpoints(): void {
     this._allMidpoints = new Map();
 
-    const scrollX = win.scrollX;
-    const scrollY = win.scrollY;
-
     for (const item of this.$items) {
-      this._allMidpoints.set(
-        item,
-        this._measureMidpoint(item, scrollX, scrollY)
-      );
+      this._allMidpoints.set(item, this._measureMidpoint(item));
     }
   }
 
   /** Items currently within (or near) the viewport — used for large lists. */
   private _getVisibleItems(): HTMLElement[] {
-    const viewportTop = win.scrollY;
+    // (in the same coordinate space as the midpoints)
+    const viewportTop = win.scrollY + this.scrollDeltaY;
     const viewportBottom = viewportTop + win.innerHeight;
     const visible: HTMLElement[] = [];
 
@@ -389,8 +384,9 @@ export class DragSort<
     let closest: HTMLElement | null = null;
     let closestDist = 0;
     const axis = this.settings!.axis;
-    const vx = this.draggeeVirtualMidpointX!;
-    const vy = this.draggeeVirtualMidpointY!;
+    // (midpoints are relative to the scroll container's pointer-down scroll position)
+    const vx = this.draggeeVirtualMidpointX! + this.scrollDeltaX;
+    const vy = this.draggeeVirtualMidpointY! + this.scrollDeltaY;
 
     const test = (item: HTMLElement): void => {
       const mp = this._getItemMidpoint(item);
@@ -513,23 +509,26 @@ export class DragSort<
     if (cached) {
       return cached;
     }
-    return this._measureMidpoint(item, win.scrollX, win.scrollY);
+    return this._measureMidpoint(item);
   }
 
-  /** Measure an element's page-coords midpoint + box from its bounding rect. */
-  private _measureMidpoint(
-    item: Element,
-    scrollX: number,
-    scrollY: number
-  ): Midpoint {
+  /**
+   * Measure an element's midpoint + box from its bounding rect.
+   *
+   * Coordinates are page-relative, as of when the scroll container was at its
+   * pointer-down scroll position, so they remain valid as it's scrolled.
+   */
+  private _measureMidpoint(item: Element): Midpoint {
     const rect = item.getBoundingClientRect();
+    const offsetX = win.scrollX + this.scrollDeltaX;
+    const offsetY = win.scrollY + this.scrollDeltaY;
     return {
-      x: rect.left + scrollX + rect.width / 2,
-      y: rect.top + scrollY + rect.height / 2,
+      x: rect.left + offsetX + rect.width / 2,
+      y: rect.top + offsetY + rect.height / 2,
       width: rect.width,
       height: rect.height,
-      top: rect.top + scrollY,
-      bottom: rect.bottom + scrollY,
+      top: rect.top + offsetY,
+      bottom: rect.bottom + offsetY,
     };
   }
 
@@ -551,13 +550,8 @@ export class DragSort<
         toUpdate.push(next);
       }
 
-      const scrollX = win.scrollX;
-      const scrollY = win.scrollY;
       for (const item of toUpdate) {
-        this._allMidpoints.set(
-          item,
-          this._measureMidpoint(item, scrollX, scrollY)
-        );
+        this._allMidpoints.set(item, this._measureMidpoint(item));
       }
     } else {
       this._clearMidpoints();

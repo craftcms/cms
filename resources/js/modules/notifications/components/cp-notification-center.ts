@@ -51,7 +51,8 @@ class CpNotificationCenter extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 0.75rem 1rem;
+      padding-block: 0.75rem;
+      padding-inline: 1rem;
     }
 
     .notification-heading {

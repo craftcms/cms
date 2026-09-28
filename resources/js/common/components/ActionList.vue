@@ -22,6 +22,7 @@
    * inside its own `content` slot.
    */
   import {computed, type Component} from 'vue';
+  import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
   import CpLink from '@/common/components/CpLink.vue';
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
@@ -147,6 +148,9 @@
       // Menu affordances; neither of the others renders them.
       '.shortcut': isItem ? action.shortcut : undefined,
       'data-keywords': isItem ? action.keywords : undefined,
+      id: action.id,
+      ...serverAttributes(action.attributes),
+      ...action.attrs,
     });
 
     // A bare `href` makes it a link even without `type: 'link'`.
@@ -491,7 +495,8 @@
      itself, which it has to set inline for the same reason: the shadow
      `::slotted()` rule can't reach inside the slotted content. */
   .action-list__heading {
-    padding: var(--c-spacing-xs) var(--c-spacing-md);
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
     font-size: var(--c-text-sm);
     font-weight: bold;
   }

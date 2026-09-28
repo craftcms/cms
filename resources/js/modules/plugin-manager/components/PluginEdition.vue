@@ -68,7 +68,8 @@
 
   .cp-plugin-edition__name,
   .cp-plugin-edition__trial {
-    padding: 0 calc(var(--c-spacing) * 1.5);
+    padding-block: 0;
+    padding-inline: calc(var(--c-spacing) * 1.5);
   }
 
   .cp-plugin-edition__trial {

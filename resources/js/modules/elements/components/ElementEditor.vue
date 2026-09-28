@@ -6,7 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, nextTick, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -18,10 +18,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {
-    elementFormActionSubmitterKey,
-    useElementEditor,
-  } from '@/modules/elements/composables/useElementEditor';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
@@ -31,6 +28,10 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import {
+    NestedOwnerEditorKey,
+    nestedOwnerContext,
+  } from '@/modules/elements/nested-owner';
 
   const props = defineProps<{
     /**
@@ -52,6 +53,7 @@
     onSidebarMutation,
     props: payload,
     renderer,
+    refreshForm,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -62,7 +64,35 @@
     workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
 
-  provide(elementFormActionSubmitterKey, submitAction);
+  provide(NestedOwnerEditorKey, {
+    async prepare(path) {
+      if (payload.readOnly) {
+        return null;
+      }
+
+      if (payload.canAutosave) {
+        await autosave.save();
+        if (autosave.status.value !== 'saved') {
+          return null;
+        }
+        await nextTick();
+      }
+
+      const context = nestedOwnerContext(formPayload.value, path);
+      return context
+        ? {
+            ...context,
+            requiresDerivative: Boolean(payload.canAutosave),
+            canonicalId: payload.canonicalId,
+            draftId: payload.draftId,
+            isProvisionalDraft: payload.isProvisionalDraft,
+          }
+        : null;
+    },
+    async refresh() {
+      await refreshForm();
+    },
+  });
 
   const hasDetails = computed(
     () =>
@@ -228,7 +258,7 @@
   >
     <div class="element-notices">
       <craft-callout
-        v-if="payload.workflow.convertedToDraft"
+        v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
         variant="warning"
         icon="triangle-exclamation"
         class="mb-4"
@@ -339,6 +369,7 @@
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
       :update-payload="updatePayload"
+      :submit-action="submitAction"
       :sync-location-hash="!isSlideout"
     >
       <template #info>

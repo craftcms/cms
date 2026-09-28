@@ -22,7 +22,9 @@ import {
  *
  * The prefix and suffix regions are only rendered when there is content for
  * them, so a chip with nothing but a label renders neither. The suffix is
- * rendered when the `suffix` slot is filled. The prefix is rendered when the
+ * rendered when the `suffix` slot is filled with an element that has content
+ * of its own, so an empty placeholder waiting for actions takes up no space.
+ * The prefix is rendered when the
  * `prefix`, `icon`, `thumbnail`, or `status` slot is filled, or when the
  * `icon` attribute or `show-status` is set.
  *
@@ -215,7 +217,11 @@ export default class CraftChip extends LitElement {
       hasSlotted(this, 'prefix', 'icon', 'status', 'thumbnail') ||
       this.showStatus ||
       this.icon;
-    const renderSuffix = hasSlotted(this, 'suffix');
+    const renderSuffix = Array.from(this.children).some(
+      (child) =>
+        child.slot === 'suffix' &&
+        (child.childElementCount > 0 || child.textContent.trim() !== '')
+    );
 
     return html`
       <div

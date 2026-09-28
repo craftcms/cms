@@ -101,7 +101,7 @@ describe('craft-callout padding', () => {
       '--_callout-padding-inline:var(--c-callout-padding-inline,var(--c-spacing-sm));'
     );
     expect(cssText).toContain(
-      'padding:var(--_callout-padding-block)var(--_callout-padding-inline);'
+      'padding-block:var(--_callout-padding-block);padding-inline:var(--_callout-padding-inline);'
     );
   });
 

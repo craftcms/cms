@@ -21,6 +21,15 @@ import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return {promise, resolve};
+}
+
 // Only the action client is stubbed; `t()` and the rest of the package are the
 // real thing, the way the composable sees them at runtime.
 vi.mock('@craftcms/ui', async (importOriginal) => ({
@@ -160,14 +169,24 @@ describe('useElementEditor', () => {
         editor = useElementEditor();
 
         return () =>
-          editor.formPayload.value
-            ? h(FormRenderer, {
-                ref: editor.renderer as any,
-                payload: editor.formPayload.value,
-                errors: editor.errors.value,
-                'onUpdate:mutation': editor.onMutation,
-              })
-            : null;
+          h('div', [
+            editor.formPayload.value
+              ? h(FormRenderer, {
+                  ref: editor.renderer as any,
+                  payload: editor.formPayload.value,
+                  errors: editor.errors.value,
+                  'onUpdate:mutation': editor.onMutation,
+                })
+              : null,
+            editor.sidebarPayload.value
+              ? h(FormRenderer, {
+                  ref: editor.sidebarRenderer as any,
+                  payload: editor.sidebarPayload.value,
+                  errors: editor.sidebarErrors.value,
+                  'onUpdate:mutation': editor.onSidebarMutation,
+                })
+              : null,
+          ]);
       },
     });
 
@@ -283,6 +302,67 @@ describe('useElementEditor', () => {
     };
   }
 
+  function sidebarForm(slug: string, autoGenerate = true): FormPayload {
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Slug', instructions: null, required: false},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+            component: 'craft:slug',
+            props: {
+              source: ['title'],
+              ...(autoGenerate ? {} : {autoGenerate: false}),
+            },
+            path: ['slug'],
+            mode: 'editable',
+            deltaGroup: ['slug'],
+            forms: [],
+          },
+        },
+      ],
+      values: {slug},
+      errors: [],
+      globalErrors: [],
+    };
+  }
+
+  function cardsLayout(): FormPayload {
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Cards', instructions: null, required: false},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
+            component: 'craft:nested-element-cards',
+            props: {
+              viewMode: 'cards',
+              manager: null,
+              cards: [],
+              unavailableMessage: null,
+            },
+            path: ['fields', 'matrixField'],
+            mode: 'editable',
+            deltaGroup: ['fields', 'matrixField'],
+            forms: [],
+            omitNullValue: true,
+          },
+        },
+      ],
+      values: {fields: {matrixField: null}},
+      errors: [],
+      globalErrors: [],
+    };
+  }
+
   /** The rendered Title input. */
   function titleInput(): HTMLInputElement {
     return container!.querySelector<HTMLInputElement>('input[name="title"]')!;
@@ -297,6 +377,250 @@ describe('useElementEditor', () => {
     titleInput().dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
   }
+
+  it('generates an empty entry slug from its title until the slug is edited', async () => {
+    vi.stubGlobal('Craft', {
+      ...(globalThis as any).Craft,
+      allowUppercaseInSlug: false,
+      limitAutoSlugsToAscii: true,
+      slugWordSeparator: '-',
+    });
+    mount(
+      payload({
+        form: fieldLayout(''),
+        sidebarForm: sidebarForm(''),
+      })
+    );
+
+    await typeTitle('First Title');
+
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    expect(slugInput.value).toBe('first-title');
+
+    slugInput.value = 'custom-slug';
+    slugInput.dispatchEvent(new Event('input', {bubbles: true}));
+    slugInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await typeTitle('Second Title');
+
+    expect(slugInput.value).toBe('custom-slug');
+  });
+
+  it('continues generating the slug after autosave returns an established slug', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('Craft', {
+      ...(globalThis as any).Craft,
+      allowUppercaseInSlug: false,
+      limitAutoSlugsToAscii: true,
+      slugWordSeparator: '-',
+    });
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        form: fieldLayout('First'),
+        screen: {sidebarForm: sidebarForm('first')},
+      },
+    });
+    mount(
+      payload({
+        canAutosave: true,
+        form: fieldLayout(''),
+        sidebarForm: sidebarForm(''),
+      })
+    );
+
+    await typeTitle('First');
+    await vi.advanceTimersByTimeAsync(1000);
+    await nextTick();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+
+    await typeTitle('First Article');
+
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    expect(slugInput.value).toBe('first-article');
+
+    vi.useRealTimers();
+  });
+
+  it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
+    const {editor} = mount(
+      payload({
+        canAutosave: false,
+        form: fieldLayout('Original title'),
+      })
+    );
+
+    await typeTitle('Edited title');
+    postSpy.mockResolvedValue({
+      data: {form: fieldLayout('Server title')},
+    });
+
+    await editor.refreshForm();
+
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]?.[0]).toContain(
+      '/elements/update-field-layout'
+    );
+    expect(postSpy.mock.calls[0]?.[1]).toMatchObject({
+      elementType: 'craft\\elements\\Entry',
+      elementId: 12,
+      draftId: null,
+      siteId: 1,
+      title: 'Edited title',
+    });
+    expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('canonicalId');
+    expect(titleInput().value).toBe('Edited title');
+  });
+
+  it('omits presentation-only null controls when refreshing an untouched form', async () => {
+    const form = cardsLayout();
+    const {editor} = mount(payload({canAutosave: false, form}));
+    await nextTick();
+    postSpy.mockResolvedValue({data: {form}});
+
+    await editor.refreshForm();
+
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('fields');
+  });
+
+  it('keeps the latest field-layout refresh when responses arrive out of order', async () => {
+    const first = deferred<{data: {form: FormPayload}}>();
+    const second = deferred<{data: {form: FormPayload}}>();
+    postSpy
+      .mockImplementationOnce(() => first.promise)
+      .mockImplementationOnce(() => second.promise);
+    const {editor} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+
+    const firstRefresh = editor.refreshForm();
+    const secondRefresh = editor.refreshForm();
+    second.resolve({data: {form: fieldLayout('Latest title')}});
+    await secondRefresh;
+    await nextTick();
+
+    first.resolve({data: {form: fieldLayout('Stale title')}});
+    await firstRefresh;
+    await nextTick();
+
+    expect(editor.formPayload.value?.values).toEqual({title: 'Latest title'});
+  });
+
+  it('ignores a refresh that predates an authoritative page payload', async () => {
+    const refresh = deferred<{data: {form: FormPayload}}>();
+    postSpy.mockImplementationOnce(() => refresh.promise);
+    const {editor, page} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+
+    const pendingRefresh = editor.refreshForm();
+    page.props = payload({
+      canAutosave: false,
+      form: fieldLayout('Saved title'),
+    });
+    await nextTick();
+
+    refresh.resolve({data: {form: fieldLayout('Stale title')}});
+    await pendingRefresh;
+    await nextTick();
+
+    expect(editor.formPayload.value?.values).toEqual({title: 'Saved title'});
+  });
+
+  it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    mount(payload({draftId: 7}), slideout);
+    await nextTick();
+
+    for (const data of [
+      {canonicalId: 12, draftId: 8},
+      {canonicalId: 13, draftId: 7},
+    ]) {
+      broadcaster.dispatchEvent(
+        new MessageEvent('message', {
+          data: {event: 'reorderNestedElements', ...data},
+        })
+      );
+    }
+    expect(slideout.reload).not.toHaveBeenCalled();
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    expect(slideout.reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+
+  it('defers a matching reorder reload while a slideout has unsaved changes', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        canAutosave: false,
+        draftId: 7,
+        form: fieldLayout('Original title'),
+      }),
+      slideout
+    );
+    await typeTitle('Unsaved title');
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    await nextTick();
+
+    expect(slideout.reload).not.toHaveBeenCalled();
+    expect(editor.form.isDirty).toBe(true);
+    expect(titleInput().value).toBe('Unsaved title');
+    vi.unstubAllGlobals();
+  });
+
+  it('defers a matching reorder reload until the latest autosave is acknowledged', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        form: fieldLayout('Original title'),
+      }),
+      slideout
+    );
+
+    await typeTitle('First saved title');
+    await editor.autosave.save();
+    await typeTitle('Pending title');
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    await nextTick();
+
+    expect(editor.autosave.status.value).toBe('saved');
+    expect(editor.autosave.hasPendingChanges.value).toBe(true);
+    expect(slideout.reload).not.toHaveBeenCalled();
+    expect(titleInput().value).toBe('Pending title');
+
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(editor.autosave.hasPendingChanges.value).toBe(false);
+    expect(slideout.reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
 
   it('reads the panel’s own props inside a slideout, not the page behind it', () => {
     const {editor} = mount(

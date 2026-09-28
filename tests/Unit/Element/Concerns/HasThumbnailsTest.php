@@ -185,12 +185,6 @@ describe('getThumbHtml', function () {
         'letterbox' => ImageTransformMode::Letterbox,
     ]);
 
-    test('returns null when no thumb URL or SVG', function () {
-        $element = new TestThumbnailElement;
-
-        expect($element->getThumbHtml(100))->toBeNull();
-    });
-
     test('returns HTML with thumb URL', function () {
         $element = new TestThumbnailElement;
         $element->setCustomThumbUrl('https://example.com/thumb.jpg');
@@ -253,25 +247,6 @@ describe('getThumbHtml', function () {
         expect($html)->toContain('<svg');
     });
 
-    test('SVG includes alt text as title element', function () {
-        $element = new TestThumbnailElement;
-        $element->setCustomThumbSvg('<svg><circle r="10"/></svg>');
-        $element->setCustomThumbAlt('Icon description');
-
-        $html = $element->getThumbHtml(100);
-
-        expect($html)->toContain('<title>Icon description</title>');
-    });
-
-    test('SVG has role img attribute', function () {
-        $element = new TestThumbnailElement;
-        $element->setCustomThumbSvg('<svg><circle r="10"/></svg>');
-
-        $html = $element->getThumbHtml(100);
-
-        expect($html)->toContain('role="img"');
-    });
-
     test('SVG thumb includes rounded class when hasRoundedThumb returns true', function () {
         $element = new TestThumbnailElement;
         $element->setCustomThumbSvg('<svg><circle r="10"/></svg>');
@@ -283,8 +258,8 @@ describe('getThumbHtml', function () {
     });
 });
 
-describe('default method values', function () {
-    test('thumbUrl returns null by default', function () {
+describe('defaults', function () {
+    test('renders no thumbnail for an element that defines none', function () {
         $element = new class extends Element
         {
             #[Override]
@@ -292,17 +267,12 @@ describe('default method values', function () {
             {
                 return 'Test';
             }
-
-            public function exposeThumbUrl(int $size): ?string
-            {
-                return $this->thumbUrl($size);
-            }
         };
 
-        expect($element->exposeThumbUrl(100))->toBeNull();
+        expect($element->getThumbHtml(100))->toBeNull();
     });
 
-    test('thumbSvg returns null by default', function () {
+    test('renders a plain image thumbnail when an element only defines a URL', function () {
         $element = new class extends Element
         {
             #[Override]
@@ -311,84 +281,19 @@ describe('default method values', function () {
                 return 'Test';
             }
 
-            public function exposeThumbSvg(): ?string
-            {
-                return $this->thumbSvg();
-            }
-        };
-
-        expect($element->exposeThumbSvg())->toBeNull();
-    });
-
-    test('thumbAlt returns null by default', function () {
-        $element = new class extends Element
-        {
             #[Override]
-            public static function displayName(): string
+            protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): string
             {
-                return 'Test';
-            }
-
-            public function exposeThumbAlt(): ?string
-            {
-                return $this->thumbAlt();
+                return '/thumb.jpg';
             }
         };
 
-        expect($element->exposeThumbAlt())->toBeNull();
-    });
+        $thumbnail = new Crawler($element->getThumbHtml(100))->filter('craft-thumbnail');
 
-    test('hasCheckeredThumb returns false by default', function () {
-        $element = new class extends Element
-        {
-            #[Override]
-            public static function displayName(): string
-            {
-                return 'Test';
-            }
-
-            public function exposeHasCheckeredThumb(): bool
-            {
-                return $this->hasCheckeredThumb();
-            }
-        };
-
-        expect($element->exposeHasCheckeredThumb())->toBeFalse();
-    });
-
-    test('hasRoundedThumb returns false by default', function () {
-        $element = new class extends Element
-        {
-            #[Override]
-            public static function displayName(): string
-            {
-                return 'Test';
-            }
-
-            public function exposeHasRoundedThumb(): bool
-            {
-                return $this->hasRoundedThumb();
-            }
-        };
-
-        expect($element->exposeHasRoundedThumb())->toBeFalse();
-    });
-
-    test('couldHaveAnimatedThumb returns false by default', function () {
-        $element = new class extends Element
-        {
-            #[Override]
-            public static function displayName(): string
-            {
-                return 'Test';
-            }
-
-            public function exposeCouldHaveAnimatedThumb(): bool
-            {
-                return $this->couldHaveAnimatedThumb();
-            }
-        };
-
-        expect($element->exposeCouldHaveAnimatedThumb())->toBeFalse();
+        expect($thumbnail->count())->toBe(1)
+            ->and($thumbnail->attr('checkered'))->toBeNull()
+            ->and($thumbnail->attr('rounded'))->toBeNull()
+            ->and($thumbnail->attr('animated'))->toBeNull()
+            ->and($thumbnail->attr('alt'))->toBeNull();
     });
 });

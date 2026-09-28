@@ -25,9 +25,7 @@
     "webpack-dev-server": "catalog:",
     "pkg-dir": "^5.0.0",
     "stylelint": "catalog:legacy",
-    "stylelint-config-standard": "catalog:legacy",
     "stylelint-config-standard-scss": "catalog:legacy",
-    "stylelint-prettier": "catalog:",
     "stylelint-use-logical-spec": "catalog:",
     "tailwindcss": "catalog:legacy",
     "vue-apexcharts": "^1.7.0"

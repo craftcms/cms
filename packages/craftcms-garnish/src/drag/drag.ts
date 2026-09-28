@@ -238,7 +238,6 @@ export class Drag<S extends DragSettings = DragSettings> extends BaseDrag<S> {
 
     // --- Inlined tail of BaseDrag.startDragging (minus onBeforeDragStart) ---
     this.dragging = true;
-    this.setScrollContainer();
     this.onDragStart();
     // Mute activate events while dragging (legacy parity), exactly as
     // BaseDrag.startDragging does.

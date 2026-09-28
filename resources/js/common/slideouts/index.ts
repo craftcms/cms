@@ -15,6 +15,11 @@ export type {
   SlideoutSaveResult,
 } from './types';
 
+/** Whether the Vue slideout stack is available on the current page. */
+export function canUseVueSlideout(): boolean {
+  return window.Craft?.openSlideout instanceof Function;
+}
+
 /**
  * Expose the opener on `window.Craft` so legacy bundles — and anyone poking at
  * the console — can open a Vue slideout without importing anything.

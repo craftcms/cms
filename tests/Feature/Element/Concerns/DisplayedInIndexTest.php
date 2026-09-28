@@ -4,59 +4,17 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
 use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 
-/**
- * Test Entry class that exposes protected methods from DisplayedInIndex trait
- */
-class TestEntryForDisplayedInIndex extends Entry
-{
-    public static function exposeDefineSortOptions(): array
-    {
-        return self::defineSortOptions();
-    }
-
-    public static function exposeDefineTableAttributes(): array
-    {
-        return self::defineTableAttributes();
-    }
-
-    public static function exposeDefineDefaultTableAttributes(string $source): array
-    {
-        return self::defineDefaultTableAttributes($source);
-    }
-
-    public static function exposeDefineCardAttributes(): array
-    {
-        return self::defineCardAttributes();
-    }
-
-    public static function exposeDefineDefaultCardAttributes(): array
-    {
-        return self::defineDefaultCardAttributes();
-    }
-
-    public static function exposePrepElementQueryForTableAttribute(
-        ElementQueryInterface $elementQuery,
-        string $attribute,
-    ): void {
-        self::prepElementQueryForTableAttribute($elementQuery, $attribute);
-    }
-
-    public static function exposeIndexElements(
-        ElementQueryInterface $elementQuery,
-        ?string $sourceKey,
-    ): array {
-        return self::indexElements($elementQuery, $sourceKey);
-    }
-}
+use function Pest\Laravel\actingAs;
 
 /**
  * Test Entry class without URIs to test conditional behavior
@@ -116,24 +74,9 @@ describe('tableAttributes', function () {
         $attributes = TestEntryWithoutStatuses::tableAttributes();
         expect($attributes)->not->toHaveKey('status');
     });
-});
-
-describe('defineTableAttributes', function () {
-    test('returns base attributes from parent', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineTableAttributes();
-        expect($attributes)->toBeArray();
-        expect($attributes)->toHaveKey('dateCreated');
-        expect($attributes)->toHaveKey('dateUpdated');
-        expect($attributes)->toHaveKey('id');
-        expect($attributes)->toHaveKey('uid');
-        expect($attributes)->toHaveKey('status');
-        expect($attributes)->toHaveKey('link');
-        expect($attributes)->toHaveKey('slug');
-        expect($attributes)->toHaveKey('uri');
-    });
 
     test('includes entry-specific attributes', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineTableAttributes();
+        $attributes = Entry::tableAttributes();
         expect($attributes)->toHaveKey('section');
         expect($attributes)->toHaveKey('type');
         expect($attributes)->toHaveKey('authors');
@@ -163,36 +106,16 @@ describe('defaultTableAttributes', function () {
         $attributes = Entry::defaultTableAttributes('singles');
         expect($attributes)->toBeArray();
         expect($attributes)->toContain('status');
+        expect($attributes)->not->toContain('section');
         expect($attributes)->not->toContain('postDate');
         expect($attributes)->not->toContain('expiryDate');
         expect($attributes)->not->toContain('authors');
         expect($attributes)->toContain('link');
     });
-});
 
-describe('defineDefaultTableAttributes', function () {
-    test('includes section attribute for all entries source', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('*');
-        expect($attributes)->toContain('section');
-    });
-
-    test('excludes section attribute for singles source', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('singles');
-        expect($attributes)->not->toContain('section');
-    });
-
-    test('excludes date and author attributes for singles source', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('singles');
-        expect($attributes)->not->toContain('postDate');
-        expect($attributes)->not->toContain('expiryDate');
-        expect($attributes)->not->toContain('authors');
-    });
-
-    test('includes date and author attributes for non-singles sources', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('section:blog');
-        expect($attributes)->toContain('postDate');
-        expect($attributes)->toContain('expiryDate');
-        expect($attributes)->toContain('authors');
+    test('returns default attributes for a section source', function () {
+        $attributes = Entry::defaultTableAttributes('section:blog');
+        expect($attributes)->toBe(['status', 'postDate', 'expiryDate', 'authors', 'link']);
     });
 });
 
@@ -231,30 +154,9 @@ describe('sortOptions', function () {
         expect($firstComplex)->toHaveKey('label');
         expect($firstComplex)->toHaveKey('orderBy');
     });
-});
-
-describe('defineSortOptions', function () {
-    test('returns entry-specific sort options structure', function () {
-        $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        expect($options)->toBeArray();
-        expect($options)->toHaveKey('title');
-        expect($options)->toHaveKey('slug');
-        expect($options)->toHaveKey('uri');
-    });
-
-    test('includes complex sort options', function () {
-        $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        $complexOptions = array_filter($options, is_array(...));
-        $attributes = array_column($complexOptions, 'attribute');
-
-        expect($attributes)->toContain('section');
-        expect($attributes)->toContain('type');
-        expect($attributes)->toContain('postDate');
-        // expiryDate doesn't have an 'attribute' key
-    });
 
     test('section sort option has callable orderBy', function () {
-        $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
+        $options = Entry::sortOptions();
         $sectionOption = Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'section')) ?? null;
 
         expect($sectionOption)->not->toBeNull();
@@ -262,7 +164,7 @@ describe('defineSortOptions', function () {
     });
 
     test('entry type sort option has callable orderBy with database connection parameter', function () {
-        $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
+        $options = Entry::sortOptions();
         $typeOption = Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'type')) ?? null;
 
         expect($typeOption)->not->toBeNull();
@@ -320,9 +222,9 @@ describe('cardAttributes', function () {
     });
 });
 
-describe('defineCardAttributes', function () {
+describe('entry cardAttributes', function () {
     test('returns entry-specific card attributes', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineCardAttributes();
+        $attributes = Entry::cardAttributes();
         expect($attributes)->toBeArray();
         expect($attributes)->toHaveKey('section');
         expect($attributes)->toHaveKey('type');
@@ -336,7 +238,7 @@ describe('defineCardAttributes', function () {
     });
 
     test('entry card attributes have placeholder callbacks', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineCardAttributes();
+        $attributes = Entry::cardAttributes();
         expect($attributes['section']['placeholder'])->toBeCallable();
         expect($attributes['type']['placeholder'])->toBeCallable();
         expect($attributes['authors']['placeholder'])->toBeCallable();
@@ -346,7 +248,7 @@ describe('defineCardAttributes', function () {
     });
 
     test('parent attribute placeholder returns HTML string', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineCardAttributes();
+        $attributes = Entry::cardAttributes();
         $placeholder = $attributes['parent']['placeholder'];
         $result = $placeholder();
         expect($result)->toBeString();
@@ -355,17 +257,8 @@ describe('defineCardAttributes', function () {
 });
 
 describe('defaultCardAttributes', function () {
-    test('returns default card attributes', function () {
-        $attributes = Entry::defaultCardAttributes();
-        expect($attributes)->toBeArray();
-    });
-});
-
-describe('defineDefaultCardAttributes', function () {
-    test('returns empty array by default', function () {
-        $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultCardAttributes();
-        expect($attributes)->toBeArray();
-        expect($attributes)->toBeEmpty();
+    test('returns no default card attributes for entries', function () {
+        expect(Entry::defaultCardAttributes())->toBe([]);
     });
 });
 
@@ -430,11 +323,19 @@ describe('attributePreviewHtml', function () {
     });
 });
 
-describe('defineSearchableAttributes', function () {
-    test('can be overridden in subclasses', function () {
-        // Entry should have its own searchable attributes
-        $attributes = Entry::searchableAttributes();
-        expect($attributes)->toBeArray();
+describe('searchableAttributes', function () {
+    test('returns the attributes the element type defines', function () {
+        expect(User::searchableAttributes())->toBe(['username', 'fullName', 'firstName', 'lastName', 'email']);
+    });
+
+    test('ElementSearchableAttributesResolving listeners can modify the attributes', function () {
+        Event::listen(function (ElementSearchableAttributesResolving $event) {
+            if ($event->elementType === User::class) {
+                $event->attributes = [...array_diff($event->attributes, ['email']), 'affiliatedSite'];
+            }
+        });
+
+        expect(User::searchableAttributes())->toBe(['username', 'fullName', 'firstName', 'lastName', 'affiliatedSite']);
     });
 });
 
@@ -464,64 +365,32 @@ describe('indexElementCount', function () {
         $count = Entry::indexElementCount($query, null);
         expect($count)->toBe(1);
     });
-
-    test('accepts source key parameter', function () {
-        $query = entryQuery();
-        $count = Entry::indexElementCount($query, '*');
-        expect($count)->toBeInt();
-    });
 });
 
 describe('prepElementQueryForTableAttribute', function () {
-    test('method can be called for ancestors attribute', function () {
-        $query = entryQuery();
-        // This should not throw an exception
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'ancestors');
-        expect(true)->toBeTrue();
-    });
+    test('eager-loads what table columns need', function (string $attribute, ?array $expectedWith) {
+        actingAs(User::findOne());
 
-    test('method can be called for parent attribute', function () {
         $query = entryQuery();
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'parent');
-        expect(true)->toBeTrue();
-    });
 
-    test('method can be called for revisionNotes attribute', function () {
-        $query = entryQuery();
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'revisionNotes');
-        expect(true)->toBeTrue();
-    });
+        Entry::indexData($query, null, ['mode' => 'table', 'tableColumns' => [$attribute]], '*', 'index', false, false);
 
-    test('method can be called for revisionCreator attribute', function () {
-        $query = entryQuery();
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'revisionCreator');
-        expect(true)->toBeTrue();
-    });
-
-    test('method can be called for drafts attribute', function () {
-        $query = entryQuery();
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'drafts');
-        expect(true)->toBeTrue();
-    });
-
-    test('method can be called for authors attribute (Entry override)', function () {
-        $query = entryQuery();
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'authors');
-        expect(true)->toBeTrue();
-    });
-
-    test('does nothing for unknown attributes', function () {
-        $query = entryQuery();
-        // This should not throw an exception
-        TestEntryForDisplayedInIndex::exposePrepElementQueryForTableAttribute($query, 'unknownAttribute');
-        expect(true)->toBeTrue();
-    });
+        expect($query->with)->toBe($expectedWith);
+    })->with([
+        'ancestors' => ['ancestors', [['ancestors', ['status' => null]]]],
+        'parent' => ['parent', [['parent', ['status' => null]]]],
+        'revisionNotes' => ['revisionNotes', ['currentRevision']],
+        'revisionCreator' => ['revisionCreator', ['currentRevision.revisionCreator']],
+        'drafts' => ['drafts', [['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]]],
+        'authors' => ['authors', [['authors', ['status' => null]]]],
+        'attribute without relations' => ['id', null],
+    ]);
 });
 
 describe('indexElements', function () {
     test('returns empty array for empty query', function () {
         $query = entryQuery();
-        $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, null);
+        $elements = Entry::indexElements($query, null);
         expect($elements)->toBeArray();
         expect($elements)->toBeEmpty();
     });
@@ -530,7 +399,7 @@ describe('indexElements', function () {
         EntryModel::factory()->count(3)->create();
 
         $query = entryQuery();
-        $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, null);
+        $elements = Entry::indexElements($query, null);
         expect($elements)->toBeArray();
         expect($elements)->toHaveCount(3);
         expect($elements[0])->toBeInstanceOf(Entry::class);
@@ -540,7 +409,7 @@ describe('indexElements', function () {
         EntryModel::factory()->count(5)->create();
 
         $query = entryQuery()->limit(2);
-        $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, null);
+        $elements = Entry::indexElements($query, null);
         expect($elements)->toHaveCount(2);
     });
 
@@ -548,7 +417,7 @@ describe('indexElements', function () {
         EntryModel::factory()->count(2)->create();
 
         $query = entryQuery();
-        $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, '*');
+        $elements = Entry::indexElements($query, '*');
         expect($elements)->toBeArray();
         expect($elements)->toHaveCount(2);
     });

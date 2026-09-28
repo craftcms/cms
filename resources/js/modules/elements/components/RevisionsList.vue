@@ -132,7 +132,7 @@
     </div>
   </div>
 
-  <div v-for="item in sections.footer" :key="item.id" class="ml-6 mt-4">
+  <div v-for="item in sections.footer" :key="item.id" class="ms-6 mt-4">
     <CpLink :href="item.href!">
       {{ item.label }}
       <craft-icon name="circle-arrow-right"></craft-icon>

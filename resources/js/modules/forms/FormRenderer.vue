@@ -28,6 +28,7 @@
     valueAt,
     visitControls,
   } from './runtime';
+  import {useFormValueGroup} from './formValueGroup';
   import type {
     FormChange,
     FormChangeKind,
@@ -56,6 +57,7 @@
       kind: FormChangeKind
     ): void;
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
+    (event: 'update:payload', payload: FormPayload): void;
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
@@ -74,6 +76,7 @@
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
   const values = reactive(cloneRaw(props.payload.values));
+  const unregisterValueSource = useFormValueGroup()?.register(values);
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
@@ -85,7 +88,7 @@
       canonical(valueAt(values, props.payload.scope)),
     ],
   ]);
-  const knownControlPaths = new Map<string, string[]>();
+  const knownControls = new Map<string, FormControlPayload>();
   const touchedPaths = new Set<string>();
   /**
    * Dotted paths of every control changed since the form was last reset.
@@ -95,7 +98,7 @@
    */
   const changedPaths = ref(new Set<string>());
   const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
-  rememberControlPaths(props.payload.nodes);
+  rememberControls(props.payload.nodes);
   provide(FormFailure, invalidate);
   provide(FormControlOverrides, slots);
   provide(
@@ -129,7 +132,10 @@
     () => props.disabled,
     () => emitMutation()
   );
-  onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
+  onBeforeUnmount(() => {
+    refreshTimers.forEach(clearTimeout);
+    unregisterValueSource?.();
+  });
 
   function onControlChange(change: FormChange): void {
     recordChange(change);
@@ -243,7 +249,7 @@
     )?.dataset.formControlPath;
 
     mergeMissing(values, refreshed.values);
-    rememberControlPaths(refreshed.nodes);
+    rememberControls(refreshed.nodes);
     visitControls(refreshed.nodes, (control) => {
       if (control.mode !== 'editable') {
         setPathValue(
@@ -275,6 +281,7 @@
         ],
       };
     }
+    emit('update:payload', payload.value);
     emitMutation();
 
     if (focusedPath) {
@@ -324,7 +331,7 @@
     );
     touchedPaths.clear();
     changedPaths.value.clear();
-    knownControlPaths.clear();
+    knownControls.clear();
 
     // Replaced in place rather than reassigned: the reactive object is handed
     // to every Control below, nested Forms included.
@@ -335,7 +342,8 @@
     Object.assign(values, cloneRaw(source.values));
     baseline = cloneRaw(source.values);
     payload.value = source;
-    rememberControlPaths(source.nodes);
+    rememberControls(source.nodes);
+    emit('update:payload', payload.value);
     emitMutation();
   }
 
@@ -428,9 +436,9 @@
     canSubmit: () => !renderError.value,
   });
 
-  function rememberControlPaths(nodes: FormNodePayload[]): void {
+  function rememberControls(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>
-      knownControlPaths.set(JSON.stringify(control.path), control.path)
+      knownControls.set(JSON.stringify(control.path), control)
     );
   }
 
@@ -466,14 +474,22 @@
   ): FormValue {
     const value = cloneRaw(valueAt(source, groupPath));
 
-    for (const [key, controlPath] of knownControlPaths) {
+    if (
+      knownControls.get(JSON.stringify(groupPath))?.omitNullValue &&
+      value == null
+    ) {
+      return undefined;
+    }
+
+    for (const [key, control] of knownControls) {
       if (
-        !editablePaths.has(key) &&
-        controlPath
+        (!editablePaths.has(key) ||
+          (control.omitNullValue && valueAt(source, control.path) == null)) &&
+        control.path
           .slice(0, groupPath.length)
           .every((segment, index) => segment === groupPath[index])
       ) {
-        unsetValue(value, controlPath.slice(groupPath.length));
+        unsetValue(value, control.path.slice(groupPath.length));
       }
     }
 

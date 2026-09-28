@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSourceForm;
 use CraftCms\Cms\Element\ElementSources;
@@ -37,6 +38,8 @@ readonly class ElementSourcesController
                     'type' => $source['type'],
                     'label' => $source['label'] ?? null,
                     'heading' => $source['heading'] ?? null,
+                    // Shown under the label, as the legacy modal did.
+                    'handle' => $source['data']['handle'] ?? null,
                     'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
                     // ElementSources synthesizes a keyless blank heading as a
                     // separator. Nothing can address it by Control path and
@@ -110,7 +113,7 @@ readonly class ElementSourcesController
         return $page;
     }
 
-    public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig): Response
+    public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig, Navigation $navigation): Response
     {
         $elementType = $request->elementType();
         $multiPage = $elementType::multiPageSources();
@@ -217,9 +220,16 @@ readonly class ElementSourcesController
             ));
         }
 
+        // Where the index should land next: the source being edited, by the link
+        // the nav gives it — on whichever page it now lives.
+        $landingSource = $request->input('landingSource');
+        $redirect = is_string($landingSource) && $landingSource !== ''
+            ? $navigation->sourceUrl($elementType, $landingSource)
+            : null;
+
         return $this->asSuccess(t('Source settings saved'), data: [
             'disabledSourceKeys' => $disabledSourceKeys,
-        ]);
+        ], redirect: $redirect);
     }
 
     /**

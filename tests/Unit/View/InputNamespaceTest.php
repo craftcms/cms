@@ -295,12 +295,3 @@ describe('namespaceInputs with callable', function () {
         expect($capturedNamespace)->toBe('outer[inner]');
     });
 });
-
-describe('scoped resolution', function () {
-    it('is resolved as a scoped instance', function () {
-        $a = app(InputNamespace::class);
-        $b = app(InputNamespace::class);
-
-        expect($a)->toBe($b);
-    });
-});

@@ -124,7 +124,8 @@
     display: grid;
     justify-items: center;
     gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-xl) var(--c-spacing-md);
+    padding-block: var(--c-spacing-xl);
+    padding-inline: var(--c-spacing-md);
     text-align: center;
     color: var(--c-text-quiet);
   }

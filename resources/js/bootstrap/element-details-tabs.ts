@@ -3,6 +3,7 @@ import type {Component} from 'vue';
 import type {
   ElementEditPayload,
   ElementEditPayloadUpdater,
+  ElementFormActionSubmitter,
 } from '@/modules/elements/composables/useElementEditor';
 
 export interface ElementDetailsTabContext {
@@ -10,6 +11,7 @@ export interface ElementDetailsTabContext {
   active: boolean;
   refreshToken: number;
   updatePayload: ElementEditPayloadUpdater;
+  submitAction: ElementFormActionSubmitter;
 }
 
 export interface ElementDetailsTabStatus {

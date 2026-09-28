@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -32,10 +33,21 @@ describe('sources', function () {
     })->with(['index', 'modal', 'field', 'settings']);
 
     test('memoizes results for same class and context', function () {
-        $sources1 = Entry::sources('index');
-        $sources2 = Entry::sources('index');
+        $resolvedContexts = [];
 
-        expect($sources1)->toBe($sources2);
+        Event::listen(function (ElementSourcesResolving $event) use (&$resolvedContexts) {
+            if ($event->elementType === TestHasSourcesElement::class) {
+                $resolvedContexts[] = $event->context;
+                $event->sources = [['key' => 'resolved-'.count($resolvedContexts)]];
+            }
+        });
+
+        TestHasSourcesElement::sources('index');
+        $sources = TestHasSourcesElement::sources('index');
+        TestHasSourcesElement::sources('modal');
+
+        expect($sources)->toBe([['key' => 'resolved-1']])
+            ->and($resolvedContexts)->toBe(['index', 'modal']);
     });
 
     test('triggers ElementSourcesResolving event', function () {
@@ -76,6 +88,29 @@ describe('modifyCustomSource', function () {
         $result = Entry::modifyCustomSource($config);
 
         expect($result)->toBe($config);
+    });
+
+    test('reads a condition saved as a rule group', function () {
+        $section = Section::factory()->create(['handle' => 'news']);
+        $sectionRule = ['class' => SectionConditionRule::class, 'values' => [$section->uid]];
+
+        // An empty group, as project config stores it once `rules` is dropped.
+        expect(Entry::modifyCustomSource(['condition' => ['conditionRules' => ['operator' => 'and']]]))
+            ->not->toHaveKey('data');
+
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => ['operator' => 'and', 'rules' => [$sectionRule]]],
+        ])['data']['handle'] ?? null)->toBe('news');
+
+        // Under “or”, the rule limits some entries, not the whole source.
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => ['operator' => 'or', 'rules' => [$sectionRule]]],
+        ]))->not->toHaveKey('data');
+
+        // Conditions saved before rule groups: a flat list, all required.
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => [$sectionRule]],
+        ])['data']['handle'] ?? null)->toBe('news');
     });
 });
 

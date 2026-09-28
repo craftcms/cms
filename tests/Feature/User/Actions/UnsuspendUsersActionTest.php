@@ -31,6 +31,8 @@ it('unsuspends users via the Laravel perform-action route', function () {
         'criteria' => ['status' => null],
     ])->assertOk();
 
+    expect(User::find()->id($user->id)->status(null)->one()->suspended)->toBeTrue();
+
     postJson(action(PerformElementActionController::class), [
         'context' => 'index',
         'source' => '*',
@@ -44,6 +46,5 @@ it('unsuspends users via the Laravel perform-action route', function () {
         'criteria' => ['status' => User::STATUS_SUSPENDED],
     ])->assertOk();
 
-    expect(User::find()->id($user->id)->status(null)->one())
-        ->not()->toBeNull();
+    expect(User::find()->id($user->id)->status(null)->one()->suspended)->toBeFalse();
 });

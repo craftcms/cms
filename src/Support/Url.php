@@ -52,21 +52,6 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns whether a given string appears to be a "full" URL (absolute, root-relative or protocol-relative).
-     */
-    public static function isFullUrl(string $url): bool
-    {
-        if (static::isAbsoluteUrl($url)) {
-            return true;
-        }
-        if (static::isRootRelativeUrl($url)) {
-            return true;
-        }
-
-        return static::isProtocolRelativeUrl($url);
-    }
-
-    /**
      * Returns a query string based on the given params.
      *
      * Param names and values will be encoded, except for `{` and `}` characters.
@@ -129,26 +114,18 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Removes a query string param from a URL.
-     */
-    public static function removeParam(string $url, string $param): string
-    {
-        return static::removeParams($url, [$param]);
-    }
-
-    /**
      * Removes query string params from a URL.
      *
-     * @param  string[]  $params
+     * @param  string|string[]  $param
      */
-    public static function removeParams(string $url, array $params): string
+    public static function removeParam(string $url, string|array $param): string
     {
         // Extract any params/fragment from the base URL
         [$url, $urlParams, $fragment] = self::_extractParams($url);
 
         // Remove the params
-        foreach ($params as $param) {
-            unset($urlParams[$param]);
+        foreach ((array) $param as $name) {
+            unset($urlParams[$name]);
         }
 
         // Rebuild
@@ -230,16 +207,6 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Encodes a URL’s query string param values, except for `/`, `{`, and `}` characters.
-     */
-    public static function encodeParams(string $url): string
-    {
-        [$url, $params, $fragment] = self::_extractParams($url);
-
-        return self::_buildUrl($url, $params, $fragment);
-    }
-
-    /**
      * Encodes non-alphanumeric characters in a URL, except reserved characters and already-encoded characters.
      */
     public static function encodeUrl(string $url): string
@@ -258,20 +225,6 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns a root-relative URL based on the given URL.
-     */
-    public static function rootRelativeUrl(string $url): string
-    {
-        if (static::isAbsoluteUrl($url) || static::isProtocolRelativeUrl($url) || static::isRootRelativeUrl($url)) {
-            $path = Uri::of($url)->path();
-
-            return $path === '/' ? '/' : '/'.ltrim($path, '/');
-        }
-
-        return '/'.ltrim($url, '/');
-    }
-
-    /**
      * Returns either a control panel or a site URL, depending on the request type.
      *
      * @param  array|string|false|null  $params  The query params to add to the URL. If `false`, any existing params will be removed.
@@ -279,8 +232,8 @@ class Url extends \Illuminate\Support\Facades\URL
     /** @param array<string, mixed>|string|false|null $params */
     public static function url(string $path = '', array|string|false|null $params = null, ?string $scheme = null): string
     {
-        // Return $path if it appears to be an absolute URL.
-        if (static::isFullUrl($path)) {
+        // Return $path if it appears to be an absolute, root-relative, or protocol-relative URL.
+        if (static::isAbsoluteUrl($path) || str_starts_with($path, '/')) {
             if ($params) {
                 $path = static::urlWithParams($path, $params);
             } elseif ($params === false) {
@@ -295,9 +248,8 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         $path = trim($path, '/');
-        $request = request();
 
-        if ($request->isCpRequest()) {
+        if (request()->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -305,7 +257,7 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && ! app()->runningInConsole() && $request->secure()) {
+        if ($scheme === null && self::isSecureRequest()) {
             $scheme = 'https';
         }
 
@@ -379,9 +331,7 @@ class Url extends \Illuminate\Support\Facades\URL
         $generalConfig = Cms::config();
         $path = $generalConfig->actionTrigger.'/'.trim($path, '/');
 
-        $request = request();
-
-        if ($generalConfig->headlessMode || $request->isCpRequest()) {
+        if ($generalConfig->headlessMode || request()->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -389,7 +339,7 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && ! app()->runningInConsole() && $request->secure()) {
+        if ($scheme === null && self::isSecureRequest()) {
             $scheme = 'https';
         }
 
@@ -438,7 +388,7 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         // Is the current request over SSL?
-        if (! app()->runningInConsole() && request()->secure()) {
+        if (self::isSecureRequest()) {
             return 'https';
         }
 
@@ -447,21 +397,10 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns either the current site’s base URL or the control panel’s base URL, depending on the type of request this is.
+     * Returns the current site’s base URL.
      *
-     * @throws SiteNotFoundException if this is a site request and yet there's no current site for some reason
-     */
-    public static function baseUrl(): string
-    {
-        if (request()->isCpRequest()) {
-            return static::baseCpUrl();
-        }
-
-        return static::baseSiteUrl();
-    }
-
-    /**
-     * Returns the current site’s base URL (with a trailing slash).
+     * The URL will have a trailing slash if the current site has a base URL. Otherwise it falls back to the
+     * request’s root URL, which won’t.
      *
      * @throws SiteNotFoundException if there's no current site for some reason
      */
@@ -483,7 +422,10 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns the control panel’s base URL (with a trailing slash) (sans control panel trigger).
+     * Returns the control panel’s base URL (sans control panel trigger).
+     *
+     * The URL will have a trailing slash if the `baseCpUrl` config setting is set. Otherwise it falls back to
+     * the request’s root URL, which won’t, or to the current site’s base URL for console requests.
      */
     public static function baseCpUrl(): string
     {
@@ -496,21 +438,16 @@ class Url extends \Illuminate\Support\Facades\URL
         return self::fallbackBaseUrl();
     }
 
+    private static function isSecureRequest(): bool
+    {
+        return ! app()->runningInConsole() && request()->secure();
+    }
+
     private static function fallbackBaseUrl(): string
     {
         return app()->runningInConsole()
             ? static::baseSiteUrl()
             : url('/');
-    }
-
-    /**
-     * Returns the host info for the control panel or the current site, depending on the request type.
-     *
-     * @throws SiteNotFoundException
-     */
-    public static function host(): string
-    {
-        return static::hostInfo(static::baseUrl());
     }
 
     /**
@@ -521,14 +458,6 @@ class Url extends \Illuminate\Support\Facades\URL
     public static function siteHost(): string
     {
         return static::hostInfo(static::baseSiteUrl());
-    }
-
-    /**
-     * Returns the control panel's host.
-     */
-    public static function cpHost(): string
-    {
-        return static::hostInfo(static::baseCpUrl());
     }
 
     /**
@@ -566,6 +495,29 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         return implode('/', array_filter([$cpTrigger, $path]));
+    }
+
+    /**
+     * Removes the control panel trigger from the beginning of the given path.
+     */
+    public static function stripCpTrigger(string $path): string
+    {
+        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $path = trim($path, '/');
+
+        if ($cpTrigger === '') {
+            return $path;
+        }
+
+        if ($path === $cpTrigger) {
+            return '';
+        }
+
+        if (str_starts_with($path, "$cpTrigger/")) {
+            return substr($path, strlen($cpTrigger) + 1);
+        }
+
+        return $path;
     }
 
     /**
@@ -637,7 +589,7 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         if ($scheme === null && ! static::isAbsoluteUrl($baseUrl)) {
-            $scheme = ! app()->runningInConsole() && $request->secure() ? 'https' : 'http';
+            $scheme = self::isSecureRequest() ? 'https' : 'http';
         }
 
         if ($scheme !== null) {
@@ -652,8 +604,14 @@ class Url extends \Illuminate\Support\Facades\URL
             if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
                 $url .= '/';
             }
-        } else {
+        } elseif ($cpUrl) {
             $url = $baseUrl;
+        } else {
+            $url = rtrim($baseUrl, '/');
+
+            if ($url === '' || $generalConfig->addTrailingSlashesToUrls) {
+                $url .= '/';
+            }
         }
 
         return self::_buildUrl($url, $params, $fragment);

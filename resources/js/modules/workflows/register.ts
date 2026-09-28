@@ -42,6 +42,10 @@ export function registerWorkflowComponents(
             indicator: payload.workflow.current.statusIndicator,
           }
         : null,
-    props: ({payload, updatePayload}) => ({payload, updatePayload}),
+    props: ({payload, updatePayload, submitAction}) => ({
+      payload,
+      updatePayload,
+      submitAction,
+    }),
   });
 }

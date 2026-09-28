@@ -303,7 +303,3 @@ test('upper', function (string $expected, string $string, ?string $language = nu
     ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
     ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
 ]);
-
-test('uuidPattern', function () {
-    expect(Str::uuidPattern())->not()->toBeEmpty();
-});

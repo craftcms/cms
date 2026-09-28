@@ -23,7 +23,8 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
-import MatrixControl from './MatrixControl.vue';
+import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
+import NestedElementCardsControl from './nested-elements/NestedElementCardsControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -33,6 +34,7 @@ import TemplateContentNode from './TemplateContentNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
 import HandleControl from './HandleControl.vue';
+import SlugControl from './SlugControl.vue';
 import HiddenControl from './HiddenControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
@@ -60,6 +62,7 @@ export function registerFormComponents(
   components.register('craft:line-break', LineBreakNode);
   components.register('craft:separator', SeparatorNode);
   components.register('craft:handle', HandleControl);
+  components.register('craft:slug', SlugControl);
   components.register('craft:hidden-field', HiddenFieldNode);
   components.register('craft:hidden', HiddenControl);
   components.register('craft:text', TextControl);
@@ -93,6 +96,10 @@ export function registerFormComponents(
     'craft:field-layout-designer',
     FieldLayoutDesignerControl
   );
-  components.register('craft:matrix', MatrixControl);
+  components.register(
+    'craft:nested-element-blocks',
+    NestedElementBlocksControl
+  );
+  components.register('craft:nested-element-cards', NestedElementCardsControl);
   components.register('craft:content-block', ContentBlockControl);
 }

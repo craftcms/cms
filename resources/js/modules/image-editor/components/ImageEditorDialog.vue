@@ -860,6 +860,7 @@
 
   .straightening {
     max-width: 400px;
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
   }
 </style>

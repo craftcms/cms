@@ -23,6 +23,7 @@ use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -51,6 +52,7 @@ readonly class ElementHtml
     public function __construct(
         private StatusHtml $statusHtml,
         private ContentHtml $contentHtml,
+        private MenuHtml $menuHtml,
     ) {}
 
     /** @param array<string, mixed> $config */
@@ -86,6 +88,7 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
@@ -95,7 +98,7 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'show-thumb' => $config['showThumb'],
+            'show-thumb' => $thumbHtml !== null,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
@@ -130,19 +133,8 @@ readonly class ElementHtml
             ]);
         }
 
-        if ($config['showThumb']) {
-            $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
-            if ($component instanceof Thumbable) {
-                $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
-                $html .= $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
-            } else {
-                /** @var Chippable&Iconic $component */
-                $icon = $component->getIcon();
-                if ($icon || $icon === '0') {
-                    $html .= Icon::make()->name($icon)->slot('icon');
-                }
-            }
-            $html .= Html::endTag('div');
+        if ($thumbHtml !== null) {
+            $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
         }
 
         if ($config['selectable']) {
@@ -233,6 +225,28 @@ readonly class ElementHtml
         } // .element
 
         return $html.Html::endTag('craft-chip');
+    }
+
+    /**
+     * Returns a chip’s thumbnail or icon HTML, or `null` if the component doesn’t have one.
+     */
+    private function chipThumbHtml(Chippable $component, string $size): ?string
+    {
+        if ($component instanceof Thumbable) {
+            $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+
+            return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        }
+
+        if ($component instanceof Iconic) {
+            $icon = $component->getIcon();
+
+            if ($icon || $icon === '0') {
+                return (string) Icon::make()->name($icon)->slot('icon');
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -356,6 +370,9 @@ readonly class ElementHtml
      *   case the Duplicate and Delete items carry self-contained
      *   `elements/duplicate`/`nested-elements/delete` actions instead of
      *   relying on a hosting manager
+     * - `nestedActionEvents` – Whether structured card data should replace
+     *   nested actions with `craft:nested-element-action` events for a Vue
+     *   host that prepares the owner draft before handling them
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
@@ -378,6 +395,35 @@ readonly class ElementHtml
     }
 
     /**
+     * @param  array<string, mixed>  $config
+     * @return list<array<string, mixed>>
+     */
+    public function elementCardActionItems(ElementInterface $element, array $config = []): array
+    {
+        $config = $this->normalizeCardConfig($element, $config);
+        if (! $config['showActionMenu']) {
+            return [];
+        }
+
+        $items = array_filter(
+            $element->getActionMenuItems(),
+            fn (array $item): bool => ($item['showInChips'] ?? ! ($item['destructive'] ?? false))
+                && ! str_starts_with($item['id'] ?? '', 'action-edit-'),
+        );
+
+        foreach ($items as &$item) {
+            if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
+                $item['action'] = $this->nestedCardAction($element, 'copy');
+            }
+        }
+        unset($item);
+
+        return ActionMenu::make()
+            ->menuItems([...$items, ...$this->nestedCardActionItems($element, $config, withActions: true)])
+            ->getItems();
+    }
+
+    /**
      * Renders the header (titlebar) portion of an element’s card.
      *
      * Accepts the same `$config` settings as {@see elementCardHtml()}.
@@ -389,12 +435,54 @@ readonly class ElementHtml
 
         [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
 
+        return $this->cardTitlebarHtml(
+            $this->elementCardLabelHtml($element, $config),
+            $this->cardActionsHtml($element, $config, $showEditButton, $editAction),
+            $config['selectable'] ? $config['id'] : null,
+        );
+    }
+
+    /**
+     * Composes a card from the parts returned by the individual part methods,
+     * so structured card data (e.g. {@see NestedElementCard}) can be rendered
+     * as HTML without its element.
+     *
+     * The thumbnail goes in the card component's `thumbnail` slot, so
+     * `$contentHtml` should come from {@see elementCardContentHtml()} with
+     * `withThumb` disabled.
+     *
+     * @param  array<string, mixed>  $attributes  From {@see elementCardAttributes()}
+     */
+    public function composeElementCardHtml(
+        array $attributes,
+        string $labelHtml,
+        string $actionsHtml,
+        string $contentHtml,
+        string $footerHtml = '',
+        string $thumbHtml = '',
+        string $thumbAlignment = 'end',
+        bool $selectable = false,
+    ): string {
+        if ($thumbHtml !== '') {
+            $attributes['thumb-alignment'] = $thumbAlignment;
+        }
+
+        return Html::beginTag('craft-card', $attributes).
+            $this->cardTitlebarHtml($labelHtml, $actionsHtml, $selectable ? (string) $attributes['id'] : null).
+            ($thumbHtml !== '' ? Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']) : '').
+            $contentHtml.
+            $footerHtml.
+            Html::endTag('craft-card');
+    }
+
+    private function cardTitlebarHtml(string $labelHtml, string $actionsHtml, ?string $checkboxCardId): string
+    {
         return Html::beginTag('div', ['class' => 'card-titlebar']).
-            $this->elementCardLabelHtml($element, $config).
+            $labelHtml.
             Html::beginTag('div', ['class' => 'card-actions-container']).
             Html::beginTag('div', ['class' => 'card-actions']).
-            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            $this->cardActionsHtml($element, $config, $showEditButton, $editAction).
+            ($checkboxCardId !== null ? $this->componentCheckboxHtml(sprintf('%s-label', $checkboxCardId)) : '').
+            $actionsHtml.
             Html::endTag('div'). // .card-actions
             Html::endTag('div'). // .card-actions-container
             Html::endTag('div'); // .card-titlebar
@@ -639,6 +727,7 @@ readonly class ElementHtml
             'returnUrl' => null,
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
+            'nestedActionEvents' => false,
             'selectable' => false,
             'showActionMenu' => false,
             'showNestedActions' => false,
@@ -656,38 +745,29 @@ readonly class ElementHtml
     }
 
     /**
-     * Builds the server-rendered nested-context items for a card's action
-     * menu.
-     *
-     * `showNestedActions` requests Move forward/backward (when `sortable`),
-     * Duplicate, and Delete items — marked with `data-move-forward-action`,
-     * `data-move-backward-action`, `data-duplicate-action`, and
-     * `data-delete-action` — for the hosting controller (e.g. the nested
-     * element manager) to wire up; the items carry no behavior of their own.
-     * The permission-bound items only render when the current user passes
-     * the corresponding gate (mirroring the card's
-     * `data-duplicatable`/`data-deletable` attributes), so client-supplied
-     * render configs (`app/render-elements`) can request them but never
-     * grant them.
+     * Builds nested actions for both card renderers. The HTML manager wires
+     * the data attributes, owner-context data carries self-contained HTTP
+     * actions, and a Vue host can request events that prepare the owner draft.
      *
      * @param  array<string, mixed>  $config
      * @return list<array<string, mixed>>
      */
-    private function nestedCardActionItems(ElementInterface $element, array $config): array
+    private function nestedCardActionItems(ElementInterface $element, array $config, bool $withActions = false): array
     {
         if (! $config['showNestedActions'] || ! Gate::check('view', $element)) {
             return [];
         }
 
         $items = [];
+        $showInGrid = $config['showInGrid'] ?? false;
 
         if ($config['sortable']) {
-            $showInGrid = $config['showInGrid'] ?? false;
             $ltr = I18N::getLocale()->getOrientation() === 'ltr';
 
             $items[] = [
                 'icon' => $showInGrid ? ($ltr ? 'arrow-left' : 'arrow-right') : 'arrow-up',
                 'label' => $showInGrid ? t('Move forward') : t('Move up'),
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'move-forward') : null,
                 'attributes' => [
                     'data' => ['move-forward-action' => true],
                 ],
@@ -695,6 +775,7 @@ readonly class ElementHtml
             $items[] = [
                 'icon' => $showInGrid ? ($ltr ? 'arrow-right' : 'arrow-left') : 'arrow-down',
                 'label' => $showInGrid ? t('Move backward') : t('Move down'),
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'move-backward') : null,
                 'attributes' => [
                     'data' => ['move-backward-action' => true],
                 ],
@@ -705,16 +786,13 @@ readonly class ElementHtml
             $item = [
                 'icon' => 'clone',
                 'label' => t('Duplicate'),
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'duplicate') : null,
                 'attributes' => [
                     'data' => ['duplicate-action' => true],
                 ],
             ];
 
-            // With a known owner context (`showNestedActions` as an array —
-            // the data path, where no `Craft.NestedElementManager` wires the
-            // markers), the item carries a self-contained duplicate action,
-            // mirroring the legacy manager's `duplicateElement()` request.
-            if (is_array($config['showNestedActions'])) {
+            if (! $config['nestedActionEvents'] && is_array($config['showNestedActions'])) {
                 $item['action'] = 'elements/duplicate';
                 $item['params'] = [
                     'elementType' => $element::class,
@@ -734,15 +812,13 @@ readonly class ElementHtml
                     'type' => $element::lowerDisplayName(),
                 ])),
                 'destructive' => true,
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'delete') : null,
                 'attributes' => [
                     'data' => ['delete-action' => true],
                 ],
             ];
 
-            // With a known owner context (`showNestedActions` as an array —
-            // the data path, where no `Craft.NestedElementManager` wires the
-            // markers), the item carries a self-contained delete action.
-            if (is_array($config['showNestedActions'])) {
+            if (! $config['nestedActionEvents'] && is_array($config['showNestedActions'])) {
                 $item['action'] = 'nested-elements/delete';
                 $item['params'] = $config['showNestedActions'] + ['elementId' => $element->id];
                 $item['confirm'] = t('Are you sure you want to delete the selected {type}?', [
@@ -753,7 +829,39 @@ readonly class ElementHtml
             $items[] = $item;
         }
 
+        if ($withActions && $config['nestedActionEvents'] && $config['sortable'] && ($config['canPaste'] ?? false)) {
+            $items[] = [
+                'icon' => 'duplicate',
+                'color' => Color::Fuchsia,
+                'label' => t($showInGrid ? 'Paste {type} before' : 'Paste {type} above', [
+                    'type' => $element::lowerDisplayName(),
+                ]),
+                'action' => $this->nestedCardAction($element, 'paste'),
+            ];
+        }
+
         return $items;
+    }
+
+    /** @return array{type: string, name: string, detail: array{action: string, elementId: int|null, bulkLabel?: string}} */
+    private function nestedCardAction(ElementInterface $element, string $action): array
+    {
+        $bulkLabel = match ($action) {
+            'copy' => t('Copy selected {type}', ['type' => $element::pluralLowerDisplayName()]),
+            'delete' => t('Delete selected {type}', ['type' => $element::pluralLowerDisplayName()]),
+            'duplicate' => t('Duplicate selected {type}', ['type' => $element::pluralLowerDisplayName()]),
+            default => null,
+        };
+
+        return [
+            'type' => 'event',
+            'name' => 'craft:nested-element-action',
+            'detail' => Arr::whereNotNull([
+                'action' => $action,
+                'elementId' => $element->id,
+                'bulkLabel' => $bulkLabel,
+            ]),
+        ];
     }
 
     /**
@@ -902,7 +1010,7 @@ readonly class ElementHtml
         );
     }
 
-    private function elementOwnerIsCanonical(ElementInterface $element): bool
+    public function elementOwnerIsCanonical(ElementInterface $element): bool
     {
         // figure out if the element has any non-canonical owners
         $ownerIsCanonical = false;
@@ -1026,7 +1134,7 @@ readonly class ElementHtml
             function () use ($component, $withEdit, $extraItems): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn (array $item) => $item['showInChips'] ?? ! ($item['destructive'] ?? false)
+                    $this->menuHtml->showsInChips(...),
                 );
 
                 foreach ($actionMenuItems as $i => &$item) {

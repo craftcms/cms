@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <div class="fixed bottom-2 right-2 flex gap-2 justify-end items-center p-2">
+  <div class="fixed bottom-2 inset-e-2 flex gap-2 justify-end items-center p-2">
     <div class="bg-blue-50 border border-blue-500 py-1 px-4 rounded">
       {{ announcement ?? 'No announcement' }}
     </div>

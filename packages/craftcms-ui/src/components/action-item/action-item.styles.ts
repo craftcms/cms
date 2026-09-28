@@ -14,7 +14,7 @@ export default css`
     background-color: transparent;
 
     font: inherit;
-    text-align: left;
+    text-align: start;
     display: flex;
     width: 100%;
     align-items: center;

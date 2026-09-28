@@ -3,6 +3,7 @@ import {inputStyles} from '@src/styles/form.styles';
 import styles from './input-file.styles.js';
 import CraftSelectedFileList from './selected-file-list.js';
 import {html} from 'lit';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A file input: a button that opens the file dialog, and a list of
@@ -22,7 +23,7 @@ import {html} from 'lit';
  * @slot file-select-button - The button that opens the file dialog. Supplied
  *   by the component; slotting your own replaces it.
  */
-export default class CraftInputFile extends LionInputFile {
+export default class CraftInputFile extends HasLabel(LionInputFile) {
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }

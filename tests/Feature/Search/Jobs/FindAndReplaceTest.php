@@ -5,42 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Queue\BatchedJob;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
-
-it('extends BatchedJob', function () {
-    $job = new FindAndReplace(
-        find: 'foo',
-        replace: 'bar',
-    );
-
-    expect($job)->toBeInstanceOf(BatchedJob::class);
-});
-
-it('can be instantiated with find and replace strings', function () {
-    $job = new FindAndReplace(
-        find: 'old text',
-        replace: 'new text',
-    );
-
-    expect($job->find)->toBe('old text')
-        ->and($job->replace)->toBe('new text');
-});
-
-it('can be dispatched to the queue', function () {
-    Queue::fake();
-
-    $job = new FindAndReplace(
-        find: 'search',
-        replace: 'replace',
-    );
-
-    dispatch($job);
-
-    Queue::assertPushed(FindAndReplace::class);
-});
 
 it('provides a description with find and replace values', function () {
     $job = new FindAndReplace(
@@ -52,17 +20,6 @@ it('provides a description with find and replace values', function () {
 
     expect($description)->toContain('old')
         ->and($description)->toContain('new');
-});
-
-it('handles case with no matching content', function () {
-    $job = new FindAndReplace(
-        find: 'nonexistent-text-that-does-not-exist-anywhere',
-        replace: 'replacement',
-    );
-
-    $job->handle();
-
-    expect(true)->toBeTrue();
 });
 
 it('replaces text in element titles', function () {
@@ -89,7 +46,21 @@ it('replaces text in element titles', function () {
     expect($updated->title)->toBe('Hello Universe Title');
 });
 
-it('handles empty find string gracefully', function () {
+it('leaves content unchanged when the find string is empty', function () {
+    $result = Entry::factory()
+        ->withField('body', PlainText::class, value: 'Body text')
+        ->createElementWithFields(['title' => 'Entry title']);
+    $originalRow = DB::table(Table::ELEMENTS_SITES)
+        ->where('elementId', $result->element->id)
+        ->first(['title', 'content']);
+
+    $updates = 0;
+    DB::listen(function (QueryExecuted $query) use (&$updates) {
+        if (str_starts_with(strtolower($query->sql), 'update') && str_contains($query->sql, Table::ELEMENTS_SITES)) {
+            $updates++;
+        }
+    });
+
     $job = new FindAndReplace(
         find: '',
         replace: 'something',
@@ -97,7 +68,15 @@ it('handles empty find string gracefully', function () {
 
     $job->handle();
 
-    expect(true)->toBeTrue();
+    expect($updates)->toBe(0);
+
+    $entry = EntryElement::findOne($result->element->id);
+
+    expect($entry->title)->toBe('Entry title')
+        ->and($entry->getFieldValue('body'))->toBe('Body text')
+        ->and(DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $result->element->id)
+            ->first(['title', 'content']))->toEqual($originalRow);
 });
 
 it('can replace with empty string', function () {

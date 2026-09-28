@@ -7,6 +7,7 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,7 @@ it('requires authentication for the graphiql cp page', function () {
 
 it('requires admin access for the graphiql cp page', function () {
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
     actingAs(User::findOne());
 
     get(cp_url('graphql/explore'))->assertForbidden();

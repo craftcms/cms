@@ -102,6 +102,7 @@ Run relevant fast checks if available (`php -l`, `python3 -m json.tool`, `vp che
 - Don't `git checkout --ours`/`--theirs` a whole file as a shortcut — it throws away
   one side's intent by construction, exactly what step 2–3 exist to avoid.
 - Don't run `git commit` to conclude the merge unless the user asked for that —
-  resolving and staging is the deliverable; committing is a separate, explicit step.
+  resolving and staging is the deliverable. Finish by listing the staged merge under
+  Blocked on me as ready to commit, rather than stopping mid-resolution to ask.
 - Don't delete/restore files based on which side "looks bigger" — always check
   *why* one side deleted something (step 3) before deciding.

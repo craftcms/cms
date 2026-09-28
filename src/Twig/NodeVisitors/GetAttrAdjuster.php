@@ -49,6 +49,14 @@ class GetAttrAdjuster implements NodeVisitorInterface
             $attributes['spread'] = $node->getAttribute('spread');
         }
 
+        // Preserve the attributes set for `attribute()` function calls, so SandboxNodeVisitor can still enforce the
+        // `allowedFunctions` allowlist
+        foreach (['sandboxed_function_name', 'sandboxed_function'] as $name) {
+            if ($node->hasAttribute($name)) {
+                $attributes[$name] = $node->getAttribute($name);
+            }
+        }
+
         $getAttrNode = new GetAttrNode($nodes, $attributes, $node->getTemplateLine());
 
         if ($isDefinedTest) {

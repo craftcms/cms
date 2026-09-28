@@ -9,11 +9,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Notification;
 
 use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\post;
@@ -511,3 +513,64 @@ it('handles base64 photo without filename extension', function () {
     $user = User::find()->email('noext@example.com')->one();
     expect($user)->not->toBeNull();
 });
+
+it('activates, notifies, and logs in public registrants based on user settings', function (
+    bool $deactivateByDefault,
+    bool $requireEmailVerification,
+    bool $deferPassword,
+    string $expectedStatus,
+    ?string $expectedLink,
+    bool $expectLoggedIn,
+) {
+    Notification::fake();
+    Edition::set(Edition::Pro);
+    ProjectConfig::set('users.deactivateByDefault', $deactivateByDefault);
+    ProjectConfig::set('users.requireEmailVerification', $requireEmailVerification);
+    Cms::config()->deferPublicRegistrationPassword = $deferPassword;
+    Cms::config()->autoLoginAfterAccountActivation = true;
+
+    postJson(action(SaveUserController::class), array_filter([
+        'username' => 'registrant',
+        'email' => 'registrant@example.com',
+        'password' => $deferPassword ? null : 'SuperSecret123!',
+    ]))->assertOk();
+
+    $user = User::find()
+        ->email('registrant@example.com')
+        ->status(null)
+        ->addSelect(['users.password'])
+        ->one();
+
+    expect($user->getStatus())->toBe($expectedStatus)
+        ->and($user->password === null)->toBe($deferPassword)
+        ->and(Auth::check())->toBe($expectLoggedIn);
+
+    if ($expectedStatus === User::STATUS_ACTIVE) {
+        expect($user->unverifiedEmail)->toBeNull();
+    }
+
+    if ($expectedLink === null) {
+        Notification::assertNothingSent();
+    } else {
+        Notification::assertSentToTimes($user, ActivationNotification::class, 1);
+        Notification::assertSentTo(
+            $user,
+            ActivationNotification::class,
+            function (ActivationNotification $notification) use ($user, $expectedLink) {
+                $mailable = $notification->toMail($user);
+
+                return $mailable->to[0]['address'] === 'registrant@example.com'
+                    && str_contains(urldecode((string) $mailable->variables['link']), $expectedLink);
+            },
+        );
+    }
+})->with([
+    'verification required' => [false, true, false, User::STATUS_PENDING, 'verifyemail?code=', false],
+    'verification required, deferred password' => [false, true, true, User::STATUS_PENDING, 'set-password?code=', false],
+    'no verification' => [false, false, false, User::STATUS_ACTIVE, null, true],
+    'no verification, deferred password' => [false, false, true, User::STATUS_ACTIVE, 'set-password?code=', true],
+    'deactivated, verification required' => [true, true, false, User::STATUS_INACTIVE, null, false],
+    'deactivated, verification required, deferred password' => [true, true, true, User::STATUS_INACTIVE, null, false],
+    'deactivated, no verification' => [true, false, false, User::STATUS_INACTIVE, null, false],
+    'deactivated, no verification, deferred password' => [true, false, true, User::STATUS_INACTIVE, null, false],
+]);

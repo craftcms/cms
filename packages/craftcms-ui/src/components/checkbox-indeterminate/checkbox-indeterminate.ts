@@ -84,7 +84,7 @@ export default class CraftCheckboxIndeterminate extends SsrChoiceInputMixin(
         }
 
         ::slotted(*) {
-          padding-left: 0;
+          padding-inline-start: 0;
         }
       `,
     ];

@@ -10,6 +10,12 @@
     defineProps<
       ModalProps & {
         loading?: boolean;
+        /**
+         * Disables the default submit button — while there's nothing to submit
+         * yet, say. Submitting with Enter still emits `submit`, so the handler
+         * must check too.
+         */
+        submitDisabled?: boolean;
         title?: string;
         resetLabel?: string;
         submitLabel?: string;
@@ -18,6 +24,7 @@
     {
       title: undefined,
       overlay: true,
+      dismissible: true,
       loading: false,
       resetLabel: t('Cancel'),
       submitLabel: t('Save'),
@@ -38,6 +45,7 @@
     :height="height"
     :max-height="maxHeight"
     :resizable="resizable"
+    :dismissible="dismissible"
   >
     <form @submit.prevent="submitHandler">
       <!--
@@ -122,6 +130,7 @@
           type="submit"
           variant="primary"
           :loading="loading"
+          :disabled="submitDisabled || undefined"
         >
           {{ submitLabel }}
         </craft-button>

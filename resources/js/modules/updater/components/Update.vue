@@ -193,14 +193,14 @@
 
   .note {
     background: var(--c-color-warning-fill-quiet);
-    border-left: 3px solid var(--c-color-warning-border-quiet);
+    border-inline-start: 3px solid var(--c-color-warning-border-quiet);
     padding: var(--c-spacing-md);
     margin-block-end: var(--c-spacing-md);
     border-radius: var(--c-radius-sm);
 
     &.ineligible {
       background: var(--c-color-neutral-fill-quiet);
-      border-left-color: var(--c-color-neutral-border-quiet);
+      border-inline-start-color: var(--c-color-neutral-border-quiet);
     }
 
     p {

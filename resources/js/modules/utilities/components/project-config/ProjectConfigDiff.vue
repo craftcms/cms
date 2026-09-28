@@ -106,7 +106,8 @@
 
   .diff-line {
     display: block;
-    padding: 0.125em 0.5em;
+    padding-block: 0.125em;
+    padding-inline: 0.5em;
   }
 
   .diff-line--add {
@@ -127,6 +128,6 @@
   .diff-show-all {
     padding: var(--c-spacing-md);
     text-align: center;
-    border-top: 1px solid var(--c-color-neutral-border-quiet);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

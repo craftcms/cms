@@ -30,7 +30,21 @@ vi.mock('@craftcms/ui/vue/CraftSelectRich.vue', () => ({
 }));
 
 vi.mock('@/modules/elements/components/IndexViewSettings.vue', () => ({
-  default: {name: 'IndexViewSettings', render: () => h('div')},
+  default: {
+    name: 'IndexViewSettings',
+    props: ['sortOptions', 'sortDirectionLocked'],
+    render(this: {
+      sortOptions: Array<{label: string; value: string}>;
+      sortDirectionLocked: boolean;
+    }) {
+      return h('view-settings', {
+        'data-options': this.sortOptions
+          .map((option) => option.value)
+          .join(','),
+        'data-direction-locked': String(this.sortDirectionLocked),
+      });
+    },
+  },
 }));
 
 vi.mock('@/modules/elements/components/FilterHud.vue', () => ({
@@ -151,4 +165,56 @@ it('ignores a change the user did not make', () => {
   );
 
   expect(onSiteChange).not.toHaveBeenCalled();
+});
+
+it('omits the shared cell when there is no site menu and no statuses', () => {
+  mount({});
+
+  // An empty cell would still take its grid gap.
+  expect(container!.querySelector('.element-toolbar__status')).toBeNull();
+});
+
+it('puts the site menu and the status menu in one cell', () => {
+  mount({
+    sites: [site(1, 'default', 'Default'), site(2, 'fr', 'French')],
+    siteHandle: 'default',
+    statusOptions: [{label: 'All', value: ''}],
+  });
+
+  const cell = container!.querySelector('.element-toolbar__status')!;
+
+  expect(cell.querySelector('.element-toolbar__site')).not.toBeNull();
+  expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
+});
+
+it('offers score while searching and locks its direction', () => {
+  mount({
+    search: 'needle',
+    sortField: 'score',
+    sortOptions: [
+      {label: 'Title', value: 'title', defaultDir: 'asc'},
+      {label: 'Date', value: 'dateCreated', defaultDir: 'desc'},
+    ],
+  });
+
+  const settings = container!.querySelector('view-settings')!;
+
+  expect(settings.getAttribute('data-options')).toBe('score,title,dateCreated');
+  expect(settings.getAttribute('data-direction-locked')).toBe('true');
+});
+
+it('removes score without a search and locks custom ordering', () => {
+  mount({
+    sortField: 'sortOrder',
+    sortOptions: [
+      {label: 'Score', value: 'score', defaultDir: 'desc'},
+      {label: 'Custom', value: 'sortOrder', defaultDir: 'asc'},
+      {label: 'Title', value: 'title', defaultDir: 'asc'},
+    ],
+  });
+
+  const settings = container!.querySelector('view-settings')!;
+
+  expect(settings.getAttribute('data-options')).toBe('sortOrder,title');
+  expect(settings.getAttribute('data-direction-locked')).toBe('true');
 });

@@ -105,7 +105,7 @@
     display: grid;
     grid-template-columns: 1.5rem 1fr;
     align-items: center;
-    text-align: left;
+    text-align: start;
     background-color: transparent;
     padding-inline: var(--c-spacing-md) var(--c-spacing-lg);
     padding-block: var(--c-spacing-md);
@@ -140,7 +140,8 @@
   .release-badge {
     background: var(--c-color-danger-fill-loud);
     color: var(--c-color-danger-on-loud);
-    padding: 0.125em 0.5em;
+    padding-block: 0.125em;
+    padding-inline: 0.5em;
     border-radius: var(--c-radius-sm);
     font-size: 0.75em;
     font-weight: 600;
@@ -154,7 +155,7 @@
 
   .release-notes {
     padding: var(--c-spacing-md);
-    border-top: 1px solid var(--_border-color);
+    border-block-start: 1px solid var(--_border-color);
     background-color: var(--c-surface-overlay);
   }
 

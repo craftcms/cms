@@ -266,12 +266,14 @@ class TwigRenderer implements TwigRendererInterface
             return $callback();
         }
 
-        $extension->enableSandbox();
+        // enableSandbox() and disableSandbox() are deprecated as of Twig 3.29
+        $checker = $extension->getChecker();
+        $checker->setSandboxed(true);
 
         try {
             return $callback();
         } finally {
-            $extension->disableSandbox();
+            $checker->setSandboxed(false);
         }
     }
 

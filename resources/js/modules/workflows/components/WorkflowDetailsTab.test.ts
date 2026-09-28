@@ -5,7 +5,6 @@ import type {
   ElementEditPayload,
   ElementEditPayloadUpdater,
 } from '@/modules/elements/composables/useElementEditor';
-import {elementFormActionSubmitterKey} from '@/modules/elements/composables/useElementEditor';
 import WorkflowUserReviewActions from '../user-review/WorkflowUserReviewActions.vue';
 import WorkflowDetailsTab from './WorkflowDetailsTab.vue';
 
@@ -139,6 +138,7 @@ describe('WorkflowDetailsTab', () => {
         h(WorkflowDetailsTab, {
           payload: elementPayload.value,
           updatePayload,
+          submitAction,
         }),
     });
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -146,7 +146,6 @@ describe('WorkflowDetailsTab', () => {
       'craft:user-review-workflow-stage-actions',
       WorkflowUserReviewActions
     );
-    app.provide(elementFormActionSubmitterKey, submitAction);
     app.mount(container);
 
     const submitReview = [

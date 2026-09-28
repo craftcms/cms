@@ -17,7 +17,7 @@ Playwright execution (the `components-browser` vitest project), same
 Litmus test: would someone browsing Storybook to learn the component's API
 benefit from seeing this as a named example? If not, it's a browser test,
 not a story — don't reach for the nearest existing `play()`-based story to
-copy its pattern without asking that first.
+copy its pattern without applying that test first.
 
 ## Document a11y requirements for new components and a11y-relevant changes
 Create or update a `<component>.a11y.md` file next to a component (see `button/button.a11y.md`, `thumbnail/thumbnail.a11y.md`) whenever: creating a new component, fixing an accessibility regression, or adding/changing any behavior that could affect accessibility — even if the change isn't accessibility-motivated. That covers keyboard navigation, focus order, and screen-reader behavior (accessible names, announcements) same as it covers motion, contrast, target size, cognitive load, zoom/reflow, and anything else in `.ai/rules/accessibility.md`'s scope — none of these is the sole trigger, and none is excluded. The file is a `## Requirements` checklist, one requirement per line, each noting what verifies it — a `.test.ts`/`.browser.test.ts` case, or a Storybook `play()` assertion only when that requirement is itself a documented example (see the story-vs-browser-test rule above). Write the checklist first, unchecked, then use it as the spec for the tests/story you add; check an item off only once something actually verifies it. This is in addition to, not instead of, the automated axe-core pass every story already gets — the checklist covers what axe can't catch.

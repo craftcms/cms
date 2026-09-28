@@ -458,9 +458,10 @@
     flex: 0 0 auto;
     font: inherit;
     max-width: 100%;
-    margin-right: -18px;
+    margin-inline-end: -18px;
     min-width: 0;
-    padding: 3px 0;
+    padding-block: 3px;
+    padding-inline: 0;
   }
 
   .mixed-input__text:focus {
@@ -473,11 +474,11 @@
 
   .mixed-input__text-measure {
     display: inline-block;
-    left: -9999px;
-    margin-right: 0;
+    inset-inline-start: -9999px;
+    margin-inline-end: 0;
     max-width: none;
     position: absolute;
-    top: -9999px;
+    inset-block-start: -9999px;
     visibility: hidden;
     white-space: pre;
   }
@@ -493,7 +494,8 @@
     font-size: var(--c-text-sm);
     gap: 0.25rem;
     line-height: 1.3;
-    padding: 0.125rem 0.4rem;
+    padding-block: 0.125rem;
+    padding-inline: 0.4rem;
   }
 
   .mixed-input__token--editable {

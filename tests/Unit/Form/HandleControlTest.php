@@ -17,7 +17,10 @@ it('resolves and renders an editable handle with its relative source path', func
     $payload = app(FormResolver::class)->resolve(
         Form::make([
             Field::make('Name', Text::make('identity.name')),
-            Field::make('Handle', Handle::make('identity.handle')->source('name'))->required(),
+            Field::make('Handle', Handle::make('identity.handle')
+                ->source('name')
+                ->maxLength(64)
+                ->placeholder('exampleHandle'))->required(),
         ]),
         new FormContext(
             namespace: 'settings',
@@ -31,9 +34,13 @@ it('resolves and renders an editable handle with its relative source path', func
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
     $bodyHtml = HtmlStack::bodyHtml();
 
-    expect($payload->nodes[1]->control?->props)->toBe(['source' => ['name']])
+    expect($payload->nodes[1]->control?->props)->toBe([
+        'source' => ['name'],
+        'maxLength' => 64,
+        'placeholder' => 'exampleHandle',
+    ])
         ->and($crawler->filter('input[name="settings[identity][name]"][value="Example handle"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-input-handle input[name="settings[identity][handle]"][value="exampleHandle"][required][aria-invalid="true"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-handle input[name="settings[identity][handle]"][value="exampleHandle"][maxlength="64"][placeholder="exampleHandle"][required][aria-invalid="true"]'))->toHaveCount(1)
         ->and($bodyHtml)->toContain('new Craft.HandleGenerator')
         ->toContain('form-settings-identity-name-input')
         ->toContain('form-settings-identity-handle-input');

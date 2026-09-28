@@ -5,8 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -32,12 +34,6 @@ describe('generate', function () {
 
         postJson(action([RecoveryCodesController::class, 'generate']))
             ->assertStatus(423);
-    });
-
-    it('generates recovery codes successfully', function () {
-        postJson(action([RecoveryCodesController::class, 'generate']))
-            ->assertOk()
-            ->assertJsonStructure(['message', 'codes']);
     });
 
     it('returns success message with codes array', function () {
@@ -101,19 +97,6 @@ describe('download', function () {
         postJson(action([RecoveryCodesController::class, 'download']))->assertBadRequest();
     });
 
-    it('downloads recovery codes as text file', function () {
-        // First generate codes
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        $response = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk();
-
-        expect($response->headers->get('Content-Type'))->toStartWith('text/plain');
-        expect($response->headers->get('Content-Disposition'))->toContain('attachment');
-    });
-
     it('file contains correct headers', function () {
         $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
@@ -127,82 +110,24 @@ describe('download', function () {
         expect($response->headers->get('Content-Disposition'))->toContain('.txt');
     });
 
-    it('file contains system name', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        $content = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk()
-            ->getContent();
-
-        expect($content)->toContain('Recovery Codes for');
-    });
-
-    it('file contains user account info', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
+    it('file contains the site, account, instructions and every recovery code', function () {
+        $codes = app(AuthMethods::class)->getMethod(RecoveryCodes::class)->generateRecoveryCodes();
         $user = User::findOne();
-        $content = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk()
-            ->getContent();
-
-        expect($content)->toContain('Account:');
-        expect($content)->toContain($user->email);
-    });
-
-    it('file contains all recovery codes', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $codes = $recoveryCodes->generateRecoveryCodes();
 
         $content = postJson(action([RecoveryCodesController::class, 'download']))
             ->assertOk()
             ->getContent();
 
-        foreach ($codes as $code) {
-            if ($code) {
-                expect($content)->toContain($code);
-            }
+        expect($content)
+            ->toContain('Recovery Codes for '.Cms::systemName())
+            ->toContain('Website:   '.Sites::getPrimarySite()->getBaseUrl())
+            ->toContain("Account:   $user->username ($user->email)")
+            ->toContain('Generated: ')
+            ->toContain('backup form of verification')
+            ->toContain('Each code can only be used once');
+
+        foreach (array_filter($codes) as $code) {
+            expect($content)->toContain("- $code\n");
         }
-    });
-
-    it('file contains generation date', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        $content = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk()
-            ->getContent();
-
-        expect($content)->toContain('Generated:');
-    });
-
-    it('file contains website information', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        $content = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk()
-            ->getContent();
-
-        expect($content)->toContain('Website:');
-    });
-
-    it('file contains usage instructions', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        $content = postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertOk()
-            ->getContent();
-
-        expect($content)->toContain('backup form of verification');
-        expect($content)->toContain('Each code can only be used once');
     });
 });

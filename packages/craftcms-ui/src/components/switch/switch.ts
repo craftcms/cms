@@ -5,6 +5,7 @@ import {baseFieldStyles} from '@src/styles/form.styles';
 import {html, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 function splitIds(value: string | null): string[] {
   return (value ?? '').split(/\s+/).filter(Boolean);
@@ -35,7 +36,7 @@ type SyntheticChangeEvent = Event & {[SYNTHETIC_CHANGE]?: boolean};
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftSwitch extends LionSwitch {
+export default class CraftSwitch extends HasLabel(LionSwitch) {
   static override get styles() {
     return [...super.styles, baseFieldStyles, styles];
   }

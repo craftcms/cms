@@ -23,7 +23,8 @@ export default css`
   }
 
   .text-expander__loading {
-    padding: var(--c-spacing-sm) var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     color: var(--c-text-quiet);
   }
 `;

@@ -68,6 +68,7 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     // to "button" also skips that runtime cost. (LionButtonSubmit's constructor
     // sets this to "submit"; we override it after super().)
     this.type = 'button';
+    this.addEventListener('mousedown', this.#releaseOnDragEnd);
   }
 
   override connectedCallback() {
@@ -114,6 +115,28 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       this.announcementTimer = null;
     }
   }
+
+  /**
+   * Lion marks a pressed button `active` on mousedown and waits for the next
+   * mouseup to clear it. A button that starts a native drag — a reorder
+   * handle, say — never gets that mouseup: the drag swallows it, and the
+   * button stays `active` (and looks selected) until the next click anywhere.
+   * So for as long as this press lasts, the end of a drag counts as its
+   * release too, clearing `active` just as Lion's mouseup would have.
+   */
+  #releaseOnDragEnd = () => {
+    const release = () => {
+      this.active = false;
+      stop();
+    };
+    const stop = () => {
+      document.removeEventListener('dragend', release, true);
+      document.removeEventListener('mouseup', stop, true);
+    };
+
+    document.addEventListener('dragend', release, true);
+    document.addEventListener('mouseup', stop, true);
+  };
 
   /**
    * Reports that a toggle was activated, for the owner of `active` to act on.
@@ -330,9 +353,18 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    */
   @property({reflect: true, type: Boolean}) inherit: boolean = false;
 
-  /** Size of the button. Defaults to "medium" */
-  @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
-    'medium';
+  /**
+   * Size of the button. Defaults to "medium".
+   *
+   * `xsmall` draws below the 24px minimum target size, so it keeps a
+   * `--c-size-touch-target-sm` hit area around the smaller visible box.
+   */
+  @property({reflect: true}) size:
+    | 'zero'
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large' = 'medium';
 
   /** The value submitted with the form or used for selection in a radio button-group */
   @property({reflect: true}) value: string;

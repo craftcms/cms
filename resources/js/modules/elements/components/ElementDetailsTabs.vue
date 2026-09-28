@@ -13,6 +13,7 @@
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
+    ElementFormActionSubmitter,
   } from '@/modules/elements/composables/useElementEditor';
 
   type ElementDetailsTab = DetailsTab &
@@ -25,6 +26,7 @@
     payload: ElementEditPayload;
     activityTimelineVersion: number;
     updatePayload: ElementEditPayloadUpdater;
+    submitAction: ElementFormActionSubmitter;
     syncLocationHash?: boolean;
   }>();
 
@@ -81,6 +83,7 @@
       active: activeTabId === tab.id,
       refreshToken: props.activityTimelineVersion,
       updatePayload: props.updatePayload,
+      submitAction: props.submitAction,
     };
 
     return (tab as ElementDetailsTab).props?.(context) ?? {};

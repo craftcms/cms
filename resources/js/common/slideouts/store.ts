@@ -125,6 +125,8 @@ export async function openSlideout(
     error: null,
     opener,
     onSaved: options.onSaved ?? null,
+    nestedOwnerId: options.nestedOwnerId,
+    prepareNestedOwner: options.prepareNestedOwner,
     width: options.width ?? null,
   });
 
@@ -176,6 +178,7 @@ export function openSlideoutWith(
     error: null,
     opener,
     onSaved: options.onSaved ?? null,
+    nestedOwnerId: options.nestedOwnerId,
     width: options.width ?? null,
   });
 

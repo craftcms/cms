@@ -110,7 +110,8 @@
     display: flex;
     width: 100%;
     min-height: 150px;
-    padding: 24px 16px;
+    padding-block: 24px;
+    padding-inline: 16px;
     border: 0;
     border-radius: 0;
     white-space: normal;

@@ -123,7 +123,13 @@
     // The site leads the trail on every screen, not just the ones that know
     // they're site-specific: which site you're editing frames everything
     // below it. Only present on a multi-site install.
-    const trail = siteCrumb.value ? [siteCrumb.value, ...merged] : merged;
+    //
+    // A screen that writes its own stands down the shared one — an element
+    // editor's lists just the sites that element propagates to, which is the
+    // better answer there.
+    const ownsSiteCrumb = merged.some((crumb) => crumb.id === 'site-crumb');
+    const trail =
+      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged;
 
     return trail.length > 0 ? trail : null;
   });
@@ -632,6 +638,10 @@ Content
 Content view
  */
   .cp-content-view {
+    /* Lets what's inside (e.g. the element index toolbar) respond to the room
+       the content actually has, rather than the viewport. */
+    container: cp-content-view / inline-size;
+
     @media (width >= var(--breakpoint-md)) {
       /* The content's half of the fold sum above. */
       min-width: calc(600rem / 16);
@@ -642,6 +652,7 @@ Content view
     /* The default lives in `cp.css`; a page passing a length overrides it
        inline through `contentMaxWidth`. */
     max-width: var(--cp-content-max-width);
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
   }
 </style>

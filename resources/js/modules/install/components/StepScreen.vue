@@ -26,7 +26,7 @@
     </div>
     <div>
       <h1 ref="headingEl" tabindex="-1" class="mb-4">{{ heading }}</h1>
-      <div class="grid gap-3 md:pr-6">
+      <div class="grid gap-3 md:pe-6">
         <slot></slot>
       </div>
     </div>

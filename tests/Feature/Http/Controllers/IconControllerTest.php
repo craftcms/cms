@@ -7,7 +7,6 @@ use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -101,7 +100,7 @@ describe('iconSvg', function () {
             ->assertOk()
             ->json();
 
-        expect($json['iconSvg'])->toBeString();
+        expect($json['iconSvg'])->toBe('');
     });
 
     test('svg rejects icon names that could be used for path traversal', function (string $icon) {
@@ -119,61 +118,24 @@ describe('pickerOptions', function () {
         get(action([IconController::class, 'pickerOptions']))
             ->assertOk()
             ->assertHeader('content-type', 'application/json')
-            ->assertJsonStructure(['listHtml']);
+            ->assertJsonStructure(['icons' => [['name', 'svg']]]);
     });
 
-    test('pickerOptions returns valid HTML list with icon buttons', function () {
-        $json = get(action([IconController::class, 'pickerOptions']))
+    test('pickerOptions lists each icon by name with its SVG', function () {
+        $icons = collect(get(action([IconController::class, 'pickerOptions']))
             ->assertOk()
-            ->json();
+            ->json('icons'));
 
-        expect($json['listHtml'])
-            ->toBeString()
-            ->toContain('<li>')
-            ->toContain('<button')
-            ->toContain('</li>');
-    });
+        $gear = $icons->firstWhere('name', 'gear');
 
-    test('pickerOptions includes SVG content in buttons', function () {
-        $json = get(action([IconController::class, 'pickerOptions']))
-            ->assertOk()
-            ->json();
-
-        expect($json['listHtml'])
-            ->toContain('<svg');
-    });
-
-    test('pickerOptions sets icon values and accessible labels on buttons', function () {
-        $json = get(action([IconController::class, 'pickerOptions']))
-            ->assertOk()
-            ->json();
-
-        $gear = new Crawler($json['listHtml'])->filter('button[title="gear"]');
-
-        expect($gear->attr('value'))->toBe('gear');
-        expect($json['listHtml'])
-            ->toContain('aria-label=')
-            ->toContain('title=')
-            ->toContain('class="icon-picker--icon"');
-    });
-
-    test('pickerOptions validates search parameter accepts string', function () {
-        get(action([IconController::class, 'pickerOptions'], ['search' => 'gear']))
-            ->assertOk();
+        expect($gear)->not->toBeNull()
+            ->and($gear['svg'])->toContain('<svg');
     });
 
     test('pickerOptions validates search parameter rejects non-string', function () {
         postJson(action([IconController::class, 'pickerOptions']), [
             'search' => 123,
         ])->assertJsonValidationErrors(['search']);
-    });
-
-    test('pickerOptions validates freeOnly parameter accepts boolean', function () {
-        get(action([IconController::class, 'pickerOptions'], ['freeOnly' => true]))
-            ->assertOk();
-
-        get(action([IconController::class, 'pickerOptions'], ['freeOnly' => false]))
-            ->assertOk();
     });
 
     test('pickerOptions validates freeOnly parameter rejects non-boolean', function () {
@@ -187,13 +149,13 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        $html = $json['listHtml'];
+        $names = collect($json['icons'])->pluck('name')->all();
 
         // Should contain free icons (checking for a known free icon: '0')
-        expect($html)->toContain('title="gear"');
+        expect($names)->toContain('gear');
 
         // Should not contain pro icons (checking for a known pro icon: '00')
-        expect($html)->not->toContain('title="00"');
+        expect($names)->not->toContain('00');
     });
 
     test('pickerOptions includes pro icons when freeOnly is false', function () {
@@ -201,12 +163,12 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        $html = $json['listHtml'];
+        $names = collect($json['icons'])->pluck('name')->all();
 
         // Should contain both free and pro icons
-        expect($html)
-            ->toContain('title="gear"')  // free icon
-            ->toContain('title="00"'); // pro icon
+        expect($names)
+            ->toContain('gear')  // free icon
+            ->toContain('00'); // pro icon
     });
 
     test('pickerOptions defaults freeOnly to true', function () {
@@ -214,10 +176,10 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        $html = $json['listHtml'];
+        $names = collect($json['icons'])->pluck('name')->all();
 
         // Should not contain pro icons by default
-        expect($html)->not->toContain('title="00"');
+        expect($names)->not->toContain('00');
     });
 
     test('pickerOptions filters icons by search term', function () {
@@ -225,12 +187,11 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        $html = $json['listHtml'];
+        $names = collect($json['icons'])->pluck('name')->all();
 
         // Should contain icons matching 'cog' in name or terms
-        expect($html)
-            ->toContain('title="gear"')
-            ->toBeString();
+        expect($names)
+            ->toContain('gear');
     });
 
     test('pickerOptions handles multi-word search', function () {
@@ -238,10 +199,10 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        $html = $json['listHtml'];
+        $names = collect($json['icons'])->pluck('name')->all();
 
         // Should find icons that match both terms
-        expect($html)->toContain('title="gear"');
+        expect($names)->toContain('gear');
     });
 
     test('pickerOptions returns empty list for non-matching search', function () {
@@ -249,7 +210,7 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        expect($json['listHtml'])->toBe('');
+        expect($json['icons'])->toBe([]);
     });
 
     test('pickerOptions treats empty search string as no search', function () {
@@ -262,12 +223,12 @@ describe('pickerOptions', function () {
             ->json();
 
         // Both should return the same result (all free icons)
-        expect($jsonWithEmpty['listHtml'])->toBe($jsonWithoutSearch['listHtml']);
+        expect($jsonWithEmpty['icons'])->toBe($jsonWithoutSearch['icons']);
     });
 
     test('pickerOptions caches results for non-search requests', function () {
-        Cache::forget('icon-picker-options-list-html:free');
-        Cache::forget('icon-picker-options-list-html');
+        Cache::forget('icon-picker-options-icons:free');
+        Cache::forget('icon-picker-options-icons');
 
         // First request should generate HTML
         $firstResponse = get(action([IconController::class, 'pickerOptions']))
@@ -279,12 +240,12 @@ describe('pickerOptions', function () {
             ->assertOk()
             ->json();
 
-        expect($firstResponse['listHtml'])->toBe($secondResponse['listHtml']);
+        expect($firstResponse['icons'])->toBe($secondResponse['icons']);
     });
 
     test('pickerOptions uses separate cache keys for freeOnly true and false', function () {
-        Cache::forget('icon-picker-options-list-html:free');
-        Cache::forget('icon-picker-options-list-html');
+        Cache::forget('icon-picker-options-icons:free');
+        Cache::forget('icon-picker-options-icons');
 
         $freeOnlyResponse = get(action([IconController::class, 'pickerOptions'], ['freeOnly' => true]))
             ->assertOk()
@@ -295,22 +256,22 @@ describe('pickerOptions', function () {
             ->json();
 
         // Results should be different (all icons has more content)
-        expect(Cache::has('icon-picker-options-list-html:free'))->toBeTrue();
-        expect(Cache::has('icon-picker-options-list-html'))->toBeTrue();
+        expect(Cache::has('icon-picker-options-icons:free'))->toBeTrue();
+        expect(Cache::has('icon-picker-options-icons'))->toBeTrue();
     });
 
     test('pickerOptions does not cache search requests', function () {
-        Cache::forget('icon-picker-options-list-html:free');
-        Cache::forget('icon-picker-options-list-html');
+        Cache::forget('icon-picker-options-icons:free');
+        Cache::forget('icon-picker-options-icons');
 
         // Search requests should not be cached
         $searchResponse = get(action([IconController::class, 'pickerOptions'], ['search' => 'zero']))
             ->assertOk()
             ->json();
 
-        expect($searchResponse['listHtml'])->toBeString();
+        expect($searchResponse['icons'])->toBeArray();
 
-        expect(Cache::has('icon-picker-options-list-html:free'))->toBeFalse();
-        expect(Cache::has('icon-picker-options-list-html'))->toBeFalse();
+        expect(Cache::has('icon-picker-options-icons:free'))->toBeFalse();
+        expect(Cache::has('icon-picker-options-icons'))->toBeFalse();
     });
 });

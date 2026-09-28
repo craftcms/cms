@@ -2,10 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -87,12 +95,49 @@ test('finish indexing session returns stop response', function () {
         ->assertJson(['stop' => 999]);
 });
 
-test('finish indexing session accepts deleteFolder and deleteAsset parameters', function () {
+test('finish indexing session deletes the reviewed folders and assets', function (bool $listEmptyFolders) {
+    config()->set('filesystems.disks.asset-indexes', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-indexes'),
+    ]);
+    Storage::fake('asset-indexes');
+    Storage::disk('asset-indexes')->put('missing/.keep', '');
+    Storage::disk('asset-indexes')->put('photo.jpg', 'photo');
+
+    $volume = Volume::factory()->create(['fs' => 'asset-indexes']);
+    $rootFolder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $folder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $rootFolder->id,
+        'name' => 'missing',
+        'path' => 'missing/',
+    ]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $rootFolder->id,
+        'filename' => 'photo.jpg',
+    ]);
+
+    $session = AssetIndexer::createIndexingSession(
+        [Volumes::getVolumeById($volume->id)],
+        listEmptyFolders: $listEmptyFolders,
+    );
+
     postJson(action([AssetIndexesController::class, 'finishIndexingSession']), [
-        'sessionId' => 999,
-        'deleteFolder' => [1, 2, 3],
-        'deleteAsset' => [4, 5, 6],
+        'sessionId' => $session->id,
+        'deleteFolder' => [$folder->id],
+        'deleteAsset' => [$asset->id],
     ])
         ->assertOk()
-        ->assertJson(['stop' => 999]);
-});
+        ->assertJson(['stop' => $session->id]);
+
+    expect(AssetIndexingSession::find($session->id))->toBeNull()
+        ->and(VolumeFolder::find($folder->id))->toBeNull()
+        ->and(Asset::find()->id($asset->id)->status(null)->exists())->toBeFalse()
+        ->and(Storage::disk('asset-indexes')->exists('missing'))->toBe(! $listEmptyFolders);
+
+    Storage::disk('asset-indexes')->assertExists('photo.jpg');
+})->with([
+    'listing empty folders' => true,
+    'not listing empty folders' => false,
+]);

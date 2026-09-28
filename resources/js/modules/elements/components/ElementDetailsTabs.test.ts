@@ -22,6 +22,7 @@ vi.mock('./RevisionsList.vue', () => ({default: {render: () => null}}));
 
 let app: App | undefined;
 let container: HTMLElement | undefined;
+const submitAction = vi.fn();
 
 function payload(): ElementEditPayload {
   return {
@@ -106,6 +107,7 @@ function mountWithOverlay(overlaid?: Ref<boolean>): void {
               payload: payload(),
               activityTimelineVersion: 0,
               updatePayload: vi.fn(),
+              submitAction,
             },
             {info: () => h('div', 'Info content')}
           );
@@ -129,12 +131,13 @@ describe('ElementDetailsTabs', () => {
       props: {
         payload: Object,
         active: Boolean,
+        submitAction: Function,
       },
       setup: (props) => () =>
         h(
           'div',
           {class: 'plugin-content'},
-          `${props.payload?.elementId}:${props.active}`
+          `${props.payload?.elementId}:${props.active}:${typeof props.submitAction}`
         ),
     });
     const PluginTabActions = defineComponent({
@@ -176,6 +179,7 @@ describe('ElementDetailsTabs', () => {
                 payload: payload(),
                 activityTimelineVersion: 0,
                 updatePayload: vi.fn(),
+                submitAction,
               },
               {
                 info: () => h('div', {class: 'info-content'}, 'Info content'),
@@ -202,7 +206,11 @@ describe('ElementDetailsTabs', () => {
       component: PluginTab,
       headerActionsComponent: PluginTabActions,
       order: 5,
-      props: ({payload, active}) => ({payload, active}),
+      props: ({payload, active, submitAction}) => ({
+        payload,
+        active,
+        submitAction,
+      }),
     });
     await nextTick();
 
@@ -259,7 +267,7 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
 
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
-      '1:true'
+      '1:true:function'
     );
     expect(container.querySelector('.plugin-actions')?.textContent).toBe(
       '1:true'
@@ -279,7 +287,7 @@ describe('ElementDetailsTabs', () => {
     ]);
     expect(tabs().selectedIndex).toBe(0);
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
-      '1:false'
+      '1:false:function'
     );
 
     select(4);
@@ -316,6 +324,7 @@ describe('ElementDetailsTabs', () => {
       payload: payload(),
       activityTimelineVersion: 0,
       updatePayload: vi.fn(),
+      submitAction,
       syncLocationHash: true,
     });
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -358,6 +367,7 @@ describe('ElementDetailsTabs', () => {
             payload: payload(),
             activityTimelineVersion: 0,
             updatePayload: vi.fn(),
+            submitAction,
             syncLocationHash: true,
           }),
       })

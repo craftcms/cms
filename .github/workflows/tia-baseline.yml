@@ -1,6 +1,6 @@
 name: 'ci / Pest'
 on:
-  push: { branches: [6.x] }
+  push: {branches: [6.x]}
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +14,32 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with: {fetch-depth: 0}
+
+      - name: Restore Custom Elements Manifest
+        id: cem
+        uses: actions/cache@v4
+        with:
+          path: packages/craftcms-ui/dist/custom-elements.json
+          key: cem-${{ hashFiles('packages/craftcms-ui/src/components/**', 'packages/craftcms-ui/custom-elements-manifest.config.mjs', 'packages/craftcms-ui/package.json', 'packages/craftcms-ui/tsconfig.json') }}
+
+      - name: Setup Vite+
+        if: steps.cem.outputs.cache-hit != 'true'
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+          run-install: false
+
+      - name: Generate Custom Elements Manifest
+        if: steps.cem.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile --filter @craftcms/ui
+          vp run @craftcms/ui#build:manifest
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Copy tests .env
         shell: bash
@@ -33,11 +58,11 @@ jobs:
           coverage: 'pcov'
         env:
           SKIP_ARCH: true
-      
+
       - name: Resolve TIA baseline path
         id: baseline
         run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
- 
+
       - name: Upload TIA baseline
         uses: actions/upload-artifact@v4
         with:

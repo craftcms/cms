@@ -46,7 +46,11 @@
     {
       "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
       "component": "craft:group",
-      "props": {"label": "Field Limit"},
+      "props": {
+        "label": "Field Limit",
+        "asField": true,
+        "instructions": "The maximum number of characters or bytes the field is allowed to have."
+      },
       "uid": "plain-text-field-limit",
       "children": [
         {
@@ -54,13 +58,13 @@
           "component": "craft:field",
           "props": {
             "label": "Maximum",
-            "instructions": "The maximum number of characters or bytes the field is allowed to have.",
+            "instructions": null,
             "required": false
           },
           "control": {
             "type": "CraftCms\\Cms\\Form\\Controls\\Number",
             "component": "craft:number",
-            "props": {"inputType": "number", "min": 1},
+            "props": {"inputType": "number", "min": 1, "size": 3},
             "path": ["settings", "fieldLimit"],
             "mode": "editable",
             "deltaGroup": ["settings"]

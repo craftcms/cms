@@ -77,3 +77,41 @@ describe('Breadcrumbs', () => {
     expect(classes[1]).toBeNull();
   });
 });
+
+describe('Breadcrumbs switcher', () => {
+  it('invokes the switcher with an xsmall button', async () => {
+    const container = mount([
+      {
+        label: 'All entries',
+        href: '/admin/content/entries',
+        items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+      },
+    ]);
+    await nextTick();
+
+    const invoker = container.querySelector('craft-button');
+
+    // Smaller than the crumb text beside it, with its target area floored by
+    // the size rather than the visible box.
+    expect(invoker?.getAttribute('size')).toBe('xsmall');
+  });
+});
+
+it('does not pull the switcher flush against the crumb label', async () => {
+  const container = mount([
+    {
+      label: 'All entries',
+      href: '/admin/content/entries',
+      items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+    },
+  ]);
+  await nextTick();
+
+  const invoker = container.querySelector('craft-button')!;
+  await (invoker as unknown as {updateComplete?: Promise<unknown>})
+    .updateComplete;
+
+  // `flush` puts a negative inline margin on both sides of the invoker, which
+  // eats the gap the breadcrumb item leaves before its suffix.
+  expect(invoker.hasAttribute('flush')).toBe(false);
+});

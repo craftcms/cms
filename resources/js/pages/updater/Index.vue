@@ -159,7 +159,7 @@
   }
 
   .updater-graphic {
-    margin-bottom: var(--c-spacing-lg);
+    margin-block-end: var(--c-spacing-lg);
 
     .spinner {
       --size: 4rem;
@@ -177,7 +177,7 @@
   }
 
   .updater-status {
-    margin-bottom: var(--c-spacing-lg);
+    margin-block-end: var(--c-spacing-lg);
     max-width: 600px;
 
     p {
@@ -187,7 +187,8 @@
 
     :deep(code) {
       background: var(--c-color-neutral-fill-quiet);
-      padding: 0.125em 0.375em;
+      padding-block: 0.125em;
+      padding-inline: 0.375em;
       border-radius: var(--c-radius-sm);
       font-family: var(--c-font-mono);
       font-size: 0.875em;
@@ -208,8 +209,8 @@
     max-width: 600px;
     max-height: 200px;
     overflow: auto;
-    text-align: left;
-    margin-top: var(--c-spacing-md);
+    text-align: start;
+    margin-block-start: var(--c-spacing-md);
 
     p {
       white-space: pre-wrap;
@@ -228,7 +229,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--c-spacing-sm) var(--c-spacing-lg);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-lg);
     border-radius: var(--c-radius-md);
     font-weight: 500;
     text-decoration: none;
@@ -246,7 +248,8 @@
     }
 
     &.big {
-      padding: var(--c-spacing-md) var(--c-spacing-xl);
+      padding-block: var(--c-spacing-md);
+      padding-inline: var(--c-spacing-xl);
       font-size: 1rem;
     }
   }

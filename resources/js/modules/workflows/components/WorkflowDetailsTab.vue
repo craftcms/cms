@@ -1,25 +1,20 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {computed, inject} from 'vue';
+  import {computed} from 'vue';
   import type {
     ElementEditorActions,
     ElementEditPayload,
     ElementEditPayloadUpdater,
+    ElementFormActionSubmitter,
   } from '@/modules/elements/composables/useElementEditor';
-  import {elementFormActionSubmitterKey} from '@/modules/elements/composables/useElementEditor';
   import WorkflowDraftReviews from './WorkflowDraftReviews.vue';
   import WorkflowReviewPanel from './WorkflowReviewPanel.vue';
 
   const props = defineProps<{
     payload: ElementEditPayload;
     updatePayload: ElementEditPayloadUpdater;
+    submitAction: ElementFormActionSubmitter;
   }>();
-
-  const submitAction = inject(elementFormActionSubmitterKey);
-
-  if (!submitAction) {
-    throw new Error('WorkflowDetailsTab requires an element editor.');
-  }
 
   const applyDraftAction = computed(() =>
     props.payload.workflow.current?.canApply
@@ -65,7 +60,7 @@
           <craft-button
             type="button"
             :variant="ButtonVariant.Primary"
-            @click="submitAction(applyDraftAction)"
+            @click="props.submitAction(applyDraftAction)"
           >
             {{ applyDraftAction.label }}
           </craft-button>

@@ -15,7 +15,11 @@ import {getTsProgram, typeParserPlugin} from '@wc-toolkit/type-parser';
 const SKIPPED_TYPE_NOTICE = '[type-parser] - Skipped parsing type';
 const consoleWarn = console.warn;
 console.warn = (...args) => {
-  if (args.some((arg) => typeof arg === 'string' && arg.includes(SKIPPED_TYPE_NOTICE))) {
+  if (
+    args.some(
+      (arg) => typeof arg === 'string' && arg.includes(SKIPPED_TYPE_NOTICE)
+    )
+  ) {
     return;
   }
   consoleWarn(...args);

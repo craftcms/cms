@@ -8,6 +8,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
+use CraftCms\Cms\ProjectConfig\Commands\CheckCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
 use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
 use CraftCms\Cms\ProjectConfig\Commands\GetCommand;
@@ -67,6 +68,7 @@ class ProjectConfigServiceProvider extends ServiceProvider
     {
         $this->commands([
             ApplyCommand::class,
+            CheckCommand::class,
             DiffCommand::class,
             ExportCommand::class,
             GetCommand::class,

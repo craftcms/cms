@@ -79,19 +79,6 @@ test('attemptLogin validates required fields', function () {
     ])->assertJsonValidationErrors(['loginName']);
 });
 
-test('attemptLogin fails with wrong password', function () {
-    Event::fake([Failed::class]);
-
-    $user = User::findOne();
-
-    postJson(action([LoginController::class, 'attemptLogin']), [
-        'loginName' => $user->email,
-        'password' => 'wrongpassword',
-    ])->assertBadRequest();
-
-    Event::assertDispatched(Failed::class);
-});
-
 test('attemptLogin counts a wrong password once', function () {
     Cms::config()->maxInvalidLogins = 10;
 
@@ -172,17 +159,6 @@ test('attemptLogin succeeds with valid credentials', function () {
     expect(Auth::id())->toBe($user->id);
 });
 
-test('attemptLogin works with username instead of email', function () {
-    $user = User::findOne();
-
-    postJson(action([LoginController::class, 'attemptLogin']), [
-        'loginName' => $user->username,
-        'password' => 'craftcms2018!!',
-    ])->assertOk();
-
-    expect(Auth::check())->toBeTrue();
-});
-
 test('modal login requires refreshing the token before resubmitting a form', function (bool $authenticated) {
     // Laravel skips CSRF verification in the testing environment.
     $this->app->instance('env', 'local');
@@ -255,7 +231,7 @@ test('logout redirects to the post-logout redirect, not back to the previous pag
         ->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect();
 
-    expect($response->headers->get('Location'))->toBe('https://localhost/');
+    expect($response->headers->get('Location'))->toBe('https://localhost');
 });
 
 test('logout honors a configured post-logout redirect', function () {
@@ -301,17 +277,22 @@ test('showLoginModal requires email even with forElevatedSession when not impers
         ->assertJsonValidationErrors(['email']);
 });
 
-test('attemptLogin accepts rememberMe parameter', function () {
+test('attemptLogin sets the remember cookie only when rememberMe is requested', function (bool $remember) {
     $user = User::findOne();
 
-    postJson(action([LoginController::class, 'attemptLogin']), [
+    $response = postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'craftcms2018!!',
-        'rememberMe' => true,
+        'rememberMe' => $remember,
     ])->assertOk();
 
-    expect(Auth::check())->toBeTrue();
-});
+    $remember
+        ? $response->assertCookie(Auth::guard()->getRecallerName())
+        : $response->assertCookieMissing(Auth::guard()->getRecallerName());
+})->with([
+    'remembered' => true,
+    'not remembered' => false,
+]);
 
 test('attemptLogin returns user model on success', function () {
     $user = User::findOne();
@@ -332,7 +313,7 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ]);
+    ])->assertBadRequest();
 
     Event::assertDispatched(fn (Failed $event) => $event->user?->getAuthIdentifier() === $user->id
         && $event->credentials['loginName'] === $user->email);

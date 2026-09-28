@@ -79,7 +79,10 @@ class Choice extends Control
      * the radio in the Radios presentation. Its `aspectRatio` maps to the CSS
      * property of the same name.
      *
-     * @param  list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * `group` heads a run of consecutive options sharing it, when presented as
+     * a select; other presentations ignore it.
+     *
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {

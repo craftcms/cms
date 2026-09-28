@@ -218,7 +218,7 @@ export default css`
         var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
     );
     padding-inline: var(--c-spacing-sm);
-    border-left: var(--_subnav-rule) solid transparent;
+    border-inline-start: var(--_subnav-rule) solid transparent;
     /*border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);*/
   }
 
@@ -296,7 +296,7 @@ export default css`
   /* No room to indent, so the stand-ins sit directly under their parent. */
   :host([icon-only]) .subnav {
     margin: 0;
-    border-left: none;
+    border-inline-start: none;
     padding-inline: 0;
   }
 
@@ -395,7 +395,8 @@ export default css`
     position: relative;
     border: 0;
     width: 60%;
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
     inset-block-start: calc(var(--c-spacing-sm) * -1);
     border-block-start: 1px solid
       color-mix(transparent, var(--c-color-neutral-border-quiet));

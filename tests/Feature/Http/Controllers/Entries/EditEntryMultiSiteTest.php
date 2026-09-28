@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -60,8 +61,14 @@ it('leads the breadcrumbs with a site switcher', function () {
             ->where('crumbs', function (Collection $crumbs) {
                 $siteCrumb = $crumbs->first();
 
-                return ($siteCrumb['icon'] ?? null) === 'earth'
-                    && collect($siteCrumb['actions'] ?? [])
+                // Already canonical: the client fetches `<name>.svg` with none
+                // of PHP's alias map, so `earth` — the Craft 5 alias — 404s in
+                // the browser.
+                $icon = $siteCrumb['icon'] ?? null;
+
+                return is_string($icon)
+                    && Icons::resolveIconName($icon) === $icon
+                    && collect($siteCrumb['items'] ?? [])
                         ->pluck('label')
                         ->contains($this->secondSite->name);
             })
@@ -74,7 +81,7 @@ it('points each site switcher link at the same element on that site', function (
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('crumbs', function (Collection $crumbs) {
-                $actions = collect($crumbs->first()['actions'] ?? []);
+                $actions = collect($crumbs->first()['items'] ?? []);
 
                 return $actions->every(fn (array $action) => str_contains(
                     (string) $action['href'],

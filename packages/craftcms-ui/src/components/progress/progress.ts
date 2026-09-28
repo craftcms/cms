@@ -28,8 +28,8 @@ export default class CraftProgress extends LitElement {
 
     canvas {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset-block-start: 0;
+      inset-inline-start: 0;
       width: var(--_size);
       height: var(--_size);
     }

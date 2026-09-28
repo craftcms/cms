@@ -1134,14 +1134,14 @@
 
 <style lang="scss">
   .tableview td.checkbox-cell {
-    padding-right: 7px;
+    padding-inline-end: 7px;
     width: 12px !important;
     position: relative;
   }
 
   .tableview td.checkbox-cell .checkbox {
     position: absolute;
-    top: calc(50% - 6px);
+    inset-block-start: calc(50% - 6px);
   }
 
   .tableview.loading {
@@ -1153,11 +1153,11 @@
   }
 
   .vue-admin-table .toolbar {
-    margin-bottom: var(--padding);
+    margin-block-end: var(--padding);
   }
 
   .vue-admin-table.vue-admin-table-padded .toolbar {
-    margin-bottom: 14px;
+    margin-block-end: 14px;
   }
 
   .vue-admin-table-padded .tablepane {
@@ -1177,19 +1177,18 @@
   }
 
   .vue-admin-table-buttons {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
 
   .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
-    margin-bottom: 0;
+    margin-block-end: 0;
   }
 
   .vue-admin-table-footer {
     background-color: #fff;
-    border-top: 1px solid #f3f7fc;
-    bottom: 0;
-    margin-bottom: calc(var(--xl) * -1);
-    margin-top: 14px;
+    border-block-start: 1px solid #f3f7fc;
+    inset-block-end: 0;
+    margin-block: 14px calc(var(--xl) * -1);
     position: sticky;
     min-height: 44px;
     z-index: 1;
@@ -1203,10 +1202,8 @@
 
   .vue-admin-tablepane + .vue-admin-table-footer {
     --pane-padding-default: calc(var(--padding) - 2px);
-    margin-left: calc(var(--pane-padding, var(--pane-padding-default)) * -1);
-    margin-right: calc(var(--pane-padding, var(--pane-padding-default)) * -1);
-    padding-left: calc(var(--pane-padding, var(--pane-padding-default)));
-    padding-right: calc(var(--pane-padding, var(--pane-padding-default)));
+    margin-inline: calc(var(--pane-padding, var(--pane-padding-default)) * -1);
+    padding-inline: calc(var(--pane-padding, var(--pane-padding-default)));
   }
 
   .detail-cursor-pointer {

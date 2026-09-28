@@ -8,7 +8,9 @@ use CraftCms\Cms\Support\Url;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\get;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 it('redirects installer page requests to the dashboard when Craft is installed', function () {
@@ -44,7 +46,9 @@ it('aborts control panel requests with the Craft 5 install message when Craft is
     Cms::setIsInstalled(false);
     config()->set('app.debug', false);
 
-    get(cp_url('login'))->assertServiceUnavailable();
+    getJson(cp_url('login'))
+        ->assertServiceUnavailable()
+        ->assertJsonPath('message', t('Craft isn’t installed yet.'));
 });
 
 it('redirects control panel requests to the installer when Craft is not installed in debug mode', function () {

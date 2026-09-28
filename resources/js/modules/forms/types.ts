@@ -1,3 +1,5 @@
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+
 type GeneratedFormPayload = CraftCms.Cms.Form.FormPayload;
 type GeneratedFormNodePayload = GeneratedFormPayload['nodes'][number];
 type GeneratedFormControlPayload = NonNullable<
@@ -33,6 +35,24 @@ export interface FormProperties {
   [key: string]: FormPropertyValue;
 }
 
+export type TextControlProps = {
+  inputType?: string;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
+  maxLength?: number;
+  placeholder?: string;
+  inputMode?: string;
+  autofocus?: boolean;
+  autocomplete?: boolean | string;
+  autocorrect?: boolean;
+  autocapitalize?: boolean;
+  size?: number;
+  dir?: string;
+  monospace?: boolean;
+  textExpanderTriggers?: TextExpanderTriggers;
+};
+
 /**
  * `emptyValue` stays omitted rather than being retyped: `FormValue` is
  * recursive, and threading another branch of it through the payload puts
@@ -41,13 +61,15 @@ export interface FormProperties {
  */
 export type FormControlPayload<Props extends object = FormProperties> = Omit<
   GeneratedFormControlPayload,
-  'props' | 'forms' | 'reactive' | 'emptyValue' | 'nestsForms'
+  'props' | 'forms' | 'reactive' | 'emptyValue' | 'nestsForms' | 'omitNullValue'
 > & {
   props: Props;
   forms?: NestedFormPayload[];
   reactive?: boolean;
   /** Whether the control renders nested forms. Shipped only when true. */
   nestsForms?: boolean;
+  /** Omit presentation-only null values from mutations. Shipped only when true. */
+  omitNullValue?: boolean;
 };
 
 export type FormNodePayload<
@@ -75,7 +97,7 @@ export type FormPayload<
  * them. `NestedFormPayload.scope` always ends in the bare UUID, so a control holding a
  * freshly minted block has to look its form up under both.
  *
- * @see CraftCms\Cms\Form\Controls\Matrix
+ * @see CraftCms\Cms\Form\Controls\NestedElementBlocks
  */
 export type NestedElementValue = {
   entries: {[uid: string]: NestedElementEntryValue};

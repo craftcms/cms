@@ -507,8 +507,7 @@ $menuBorderRadius: $mediumBorderRadius;
   width: calc(30rem / 16);
   height: calc(30rem / 16);
   min-height: auto;
-  padding-left: 0;
-  padding-right: 0;
+  padding-inline: 0;
 
   &:not(:hover):not(:active):not(.active):not([aria-expanded='true']) {
     background-color: transparent;
@@ -519,7 +518,8 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin h6-styles {
-  margin: 14px 0 3px;
+  margin-block: 14px 3px;
+  margin-inline: 0;
   font-size: 11px;
   line-height: 1.2;
   color: $lightTextColor;
@@ -529,7 +529,8 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin token-styles {
   display: inline-block;
   border-radius: $smallBorderRadius;
-  padding: 3px 7px;
+  padding-block: 3px;
+  padding-inline: 7px;
   font-size: 12px;
   line-height: 14px;
   color: $textColor;
@@ -543,7 +544,8 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin menu-styles {
   z-index: 100;
   border-radius: $menuBorderRadius;
-  padding: 0 14px;
+  padding-block: 0;
+  padding-inline: 14px;
   overflow: auto;
   background: $white;
   user-select: none;
@@ -553,8 +555,10 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin menu-item-styles {
-  margin: 0 -14px;
-  padding: 10px 14px;
+  margin-block: 0;
+  margin-inline: -14px;
+  padding-block: 10px;
+  padding-inline: 14px;
   color: $menuOptionColor;
   text-decoration: none;
   white-space: nowrap;
@@ -721,7 +725,8 @@ $menuBorderRadius: $mediumBorderRadius;
   .h5,
   h6,
   .h6 {
-    margin: 24px 0 16px;
+    margin-block: 24px 16px;
+    margin-inline: 0;
     font-weight: 600;
   }
 
@@ -765,7 +770,8 @@ $menuBorderRadius: $mediumBorderRadius;
 
   ul,
   ol {
-    margin: 1em 0;
+    margin-block: 1em;
+    margin-inline: 0;
     padding-inline-start: 2em;
   }
 
@@ -774,14 +780,16 @@ $menuBorderRadius: $mediumBorderRadius;
   }
 
   li + li {
-    margin-top: 0.25em;
+    margin-block-start: 0.25em;
   }
 
   blockquote {
-    margin: 16px 0;
+    margin-block: 16px;
+    margin-inline: 0;
 
     &:not(.note) {
-      padding: 0 16px;
+      padding-block: 0;
+      padding-inline: 16px;
       color: $mediumTextColor;
       border-inline-start: 4px solid $hairlineColor;
     }
@@ -827,7 +835,7 @@ $menuBorderRadius: $mediumBorderRadius;
         @include icon;
         opacity: 1;
         position: absolute;
-        top: 15px;
+        inset-block-start: 15px;
         inset-inline-start: 16px;
         font-size: 24px;
         width: 24px;

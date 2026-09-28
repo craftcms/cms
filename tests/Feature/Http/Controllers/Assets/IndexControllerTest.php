@@ -347,7 +347,7 @@ it('provides current-folder actions and moves relative to its parent', function 
 
     get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/parent/managed']))
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->where('breadcrumbs.2.actions', function ($actions) use ($folder, $parent, $root, $volumeModel): bool {
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->where('breadcrumbs.2.items', function ($actions) use ($folder, $parent, $root, $volumeModel): bool {
             $actions = $actions->keyBy('label');
             $rename = $actions->get('Rename folder')['action']['detail'];
             $move = $actions->get('Move folder')['action']['detail'];

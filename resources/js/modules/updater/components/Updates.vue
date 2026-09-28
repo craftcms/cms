@@ -286,7 +286,8 @@
   */
   :deep(blockquote) {
     margin: 0;
-    padding: 0.5em 1em;
+    padding-block: 0.5em;
+    padding-inline: 1em;
     border-radius: var(--c-radius-md);
     border: 1px solid var(--c-color-neutral-border-quiet);
     background-color: var(--c-color-neutral-fill-quiet);

@@ -23,8 +23,15 @@ vi.mock('@inertiajs/vue3', () => ({
   router: {visit: vi.fn(), prefetch: vi.fn()},
   usePage: () => ({props: {}}),
 }));
+// Customize Sources is for admins, where admin changes are allowed.
+const craft = vi.hoisted(() => ({admin: true, allowAdminChanges: true}));
+
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({site: {handle: 'default'}}),
+  default: () => ({
+    site: {handle: 'default'},
+    currentUser: {value: {admin: craft.admin}},
+    allowAdminChanges: {value: craft.allowAdminChanges},
+  }),
 }));
 
 // Rendered inline rather than teleported: there's no screen shell here to
@@ -147,6 +154,27 @@ it('offers it only on pages that opt in', async () => {
 
   expect(useNavItemActions()('/admin/entries')).toEqual([]);
 });
+
+it.each([
+  ['a non-admin', {admin: false, allowAdminChanges: true}],
+  [
+    'anyone where admin changes are off',
+    {admin: true, allowAdminChanges: false},
+  ],
+])(
+  'offers it to nobody but admins who can make changes — not %s',
+  async (_, as) => {
+    Object.assign(craft, as);
+
+    try {
+      await mountPage({customizableSources: true});
+
+      expect(useNavItemActions()('/admin/entries')).toEqual([]);
+    } finally {
+      Object.assign(craft, {admin: true, allowAdminChanges: true});
+    }
+  }
+);
 
 it('takes the gear back when the page goes', async () => {
   await mountPage({customizableSources: true});

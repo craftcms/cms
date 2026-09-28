@@ -25,7 +25,8 @@ export default css`
     grid-template-areas: 'icon description action';
     grid-template-columns: auto 1fr minmax(0, max-content);
     align-items: start;
-    padding: var(--_callout-padding-block) var(--_callout-padding-inline);
+    padding-block: var(--_callout-padding-block);
+    padding-inline: var(--_callout-padding-inline);
     border: 1px solid transparent;
   }
 
@@ -87,7 +88,8 @@ export default css`
   ::slotted(code) {
     font-size: 0.9em;
     display: inline-flex;
-    padding: 0 var(--c-spacing-sm);
+    padding-block: 0;
+    padding-inline: var(--c-spacing-sm);
     border: 1px solid rgba(0, 0, 0, 0.2);
     background-color: rgba(0, 0, 0, 0.05);
     border-radius: var(--c-radius-sm);
