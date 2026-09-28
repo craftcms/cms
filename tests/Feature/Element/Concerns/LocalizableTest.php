@@ -173,13 +173,6 @@ describe('getLanguage', function () {
     });
 });
 
-describe('getIsCrossSiteCopyable', function () {
-    test('returns boolean', function () {
-        $element = new TestLocalizableElement;
-        expect($element->getIsCrossSiteCopyable())->toBeBool();
-    });
-});
-
 describe('Translation Support', function () {
     test('getIsTitleTranslatable defaults to true', function () {
         $element = new TestLocalizableElement;

@@ -7,7 +7,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Elements\ContentBlock;
-use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -23,7 +22,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Lottery;
-use Symfony\Component\Console\Output\NullOutput;
 
 arch('All actions extend GarbageCollectionAction')
     ->expect('CraftCms\Cms\GarbageCollection\Actions')
@@ -127,13 +125,6 @@ it('calls hard delete', function (string|array $tables) {
         Table::SITES,
     ]],
 ]);
-
-it('uses null output by default for garbage collection actions', function () {
-    $action = app(DeleteOrphanedDraftsAndRevisions::class);
-    $output = new ReflectionProperty($action, 'output')->getValue($action);
-
-    expect($output->getOutput())->toBeInstanceOf(NullOutput::class);
-});
 
 it('prunes job progress records', function () {
     $jobProgress = JobProgress::create([

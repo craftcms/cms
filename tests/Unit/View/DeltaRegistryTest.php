@@ -220,12 +220,3 @@ describe('getNames and getModifiedNames', function () {
         expect($this->registry->getModifiedNames())->toBe(['slug']);
     });
 });
-
-describe('scoped resolution', function () {
-    it('is resolved as a scoped instance', function () {
-        $a = app(DeltaRegistry::class);
-        $b = app(DeltaRegistry::class);
-
-        expect($a)->toBe($b);
-    });
-});

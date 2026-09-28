@@ -2,30 +2,51 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Events\ElementRendering;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    // Create a test entry for each test
-    $this->entry = EntryModel::factory()->create();
+    $this->entry = EntryModel::factory()->createElement(['title' => 'Fish & Chips']);
 
-    // Load it from an ElementQuery so all data is properly set
-    $this->entry = entryQuery()->id($this->entry->id)->one();
+    $this->templatesPath = Aliases::getAll()['@templates'] ?? null;
+    $this->tempDir = sys_get_temp_dir().'/craft-renderable-test-'.uniqid();
+
+    File::ensureDirectoryExists($this->tempDir.'/_partials/entry');
+    Aliases::set('@templates', $this->tempDir);
 
     actingAs(User::findOne());
 });
 
-describe('render', function () {
-    test('returns markup', function () {
-        $markup = $this->entry->render();
+afterEach(function () {
+    File::deleteDirectory($this->tempDir);
 
-        expect($markup)->toBeInstanceOf(HtmlString::class);
+    $this->templatesPath === null
+        ? Aliases::remove('@templates')
+        : Aliases::set('@templates', $this->templatesPath);
+});
+
+describe('render', function () {
+    test('renders the element’s partial template with the element and variables', function () {
+        File::put($this->tempDir.'/_partials/entry.twig', '{{ entry.id }}|{{ greeting }}');
+
+        expect((string) $this->entry->render(['greeting' => 'Hello']))->toBe("{$this->entry->id}|Hello");
+    });
+
+    test('prefers the partial template for the entry’s type', function () {
+        File::put($this->tempDir.'/_partials/entry.twig', 'generic');
+        File::put($this->tempDir."/_partials/entry/{$this->entry->getType()->handle}.twig", 'type-specific');
+
+        expect((string) $this->entry->render())->toBe('type-specific');
+    });
+
+    test('falls back to a paragraph with the encoded element label', function () {
+        expect((string) $this->entry->render())->toBe('<p>Fish &amp; Chips</p>');
     });
 
     test('ElementRendering event allows setting custom output', function () {
@@ -41,33 +62,14 @@ describe('render', function () {
     });
 
     test('ElementRendering event can modify variables and templates', function () {
-        $capturedVariables = null;
+        File::put($this->tempDir.'/_partials/entry.twig', 'default');
+        File::put($this->tempDir.'/custom.twig', '{{ greeting }}');
 
-        Event::listen(function (ElementRendering $event) use (&$capturedVariables) {
-            $event->variables = array_merge($event->variables, ['foo' => 'bar']);
-            $capturedVariables = $event->variables;
+        Event::listen(function (ElementRendering $event) {
+            $event->templates = [['template' => 'custom', 'priority' => 1]];
+            $event->variables['greeting'] = 'Changed';
         });
 
-        $this->entry->render();
-
-        expect($capturedVariables)->toHaveKey('foo');
-        expect($capturedVariables['foo'])->toBe('bar');
-    });
-});
-
-describe('partialTemplatePathCandidates', function () {
-    test('returns correct candidates', function () {
-        $reflection = new ReflectionClass($this->entry);
-        $method = $reflection->getMethod('partialTemplatePathCandidates');
-
-        $candidates = $method->invoke($this->entry);
-
-        expect($candidates)->toBeArray();
-
-        $refHandle = $this->entry::refHandle();
-        if ($refHandle) {
-            $hasBaseCandidate = collect($candidates)->contains(fn ($candidate) => str_contains((string) $candidate['template'], Cms::config()->partialTemplatesPath.'/'.$refHandle));
-            expect($hasBaseCandidate)->toBeTrue();
-        }
+        expect((string) $this->entry->render(['greeting' => 'Hello']))->toBe('Changed');
     });
 });

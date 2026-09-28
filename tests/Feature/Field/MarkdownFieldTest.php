@@ -234,6 +234,7 @@ it('validates markdown link settings', function () {
     ]);
 
     expect($field->validate())->toBeTrue()
+        ->and($field->linkSettingsAdvancedFields)->toBe(['urlSuffix', 'title'])
         ->and($invalidTypeField->validate())->toBeFalse()
         ->and($invalidTypeField->errors()->has('linkSettingsTypes'))->toBeTrue()
         ->and($invalidAdvancedField->validate())->toBeFalse()
@@ -276,26 +277,16 @@ it('prefers submitted nested link settings over persisted flat settings', functi
         ->and($field->linkSettingsShowLabelField)->toBeTrue();
 });
 
-it('keeps supported markdown link advanced field settings', function () {
+it('passes the editor stats setting to the form control', function (bool $showStats) {
     $field = new MarkdownField([
         'name' => 'Body',
         'handle' => 'body',
-        'linkSettingsAdvancedFields' => ['urlSuffix', 'title'],
-    ]);
-
-    expect($field->linkSettingsAdvancedFields)->toBe(['urlSuffix', 'title']);
-});
-
-it('can show editor stats', function () {
-    $field = new MarkdownField([
-        'name' => 'Body',
-        'handle' => 'body',
-        'showStats' => true,
+        'showStats' => $showStats,
     ]);
 
     expect($field->validate())->toBeTrue()
-        ->and($field->showStats)->toBeTrue();
-});
+        ->and($field->formControl(new FieldContext('body'))->props()['showStats'])->toBe($showStats);
+})->with([true, false]);
 
 it('sanitizes rendered html with the configured html sanitizer', function () {
     HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(

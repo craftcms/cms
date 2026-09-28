@@ -53,6 +53,8 @@ Also read `CHANGELOG` between the two versions. Look especially for entries ment
 
 ## 4. Verify
 
+Done when: every file in §2 is ported or noted as unchanged upstream, and every check below passes.
+
 - **Lock files (6.x):** `yii2-adapter/` has its own `composer.lock`, which the adapter's Codeception suite installs from. Update Twig there too (`composer update twig/twig` from `yii2-adapter/`), or CI runs the adapter tests against the old Twig version and fails on any API the new code relies on. If Composer refuses a partial update because other packages are locked below what `composer.json` now requires, update those alongside Twig (with `-W` if needed), then check that every changed package's version matches the root `composer.lock`.
 - **Tests:** run `vendor/bin/codecept run unit web/twig`. This needs the test database named in `tests/.env` to exist.
 - **Static analysis and coding standards:** run `vendor/bin/phpstan analyse` and `vendor/bin/ecs check` on the changed files.

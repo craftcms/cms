@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -71,9 +73,11 @@ test('switchToLicensedEdition returns success even when edition is correct', fun
 
 test('switchToLicensedEdition switches to licensed edition when wrong', function () {
     Edition::set(Edition::Pro);
+    Cache::put(License::CACHE_KEY_LICENSE_INFO, ['craft' => ['edition' => 'solo']]);
+    Cache::put('editionTestableDomain@localhost', false);
 
     postJson(action([EditionController::class, 'switchToLicensedEdition']))
         ->assertOk();
 
-    expect(Edition::get()->value)->toBeLessThanOrEqual(Edition::Pro->value);
+    expect(Edition::get())->toBe(Edition::Solo);
 });

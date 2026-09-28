@@ -84,6 +84,7 @@
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
 - Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
+- Fixed a bug where `resave` and `update-statuses` commands reported skipped revisions as root element lookup errors.
 
 ### Users & Auth
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
@@ -219,6 +220,8 @@
 - Fixed a bug where the Assets index’s folder dialogs could render behind other overlays, lose their centering, or not focus their name field. ([#19682](https://github.com/craftcms/cms/pull/19682))
 - Fixed a bug where combobox fields rendered through the Form API displayed their label twice. ([#19694](https://github.com/craftcms/cms/pull/19694))
 - Fixed various bugs with Customize Sources modals. ([#19713](https://github.com/craftcms/cms/pull/19713))
+- Fixed a bug where migrations that wrote to the project config had to be defensive about its `readOnly` state. ([#19726](https://github.com/craftcms/cms/pull/19726))
+- Fixed an error that could occur when saving elements, if their field layouts still referenced legacy component classes. ([#19719](https://github.com/craftcms/cms/pull/19719))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

@@ -53,9 +53,7 @@ return new class extends Migration
 
         $projectConfig = app(ProjectConfig::class);
         $muteEvents = $projectConfig->muteEvents;
-        $readOnly = $projectConfig->readOnly;
         $projectConfig->muteEvents = true;
-        $projectConfig->readOnly = false;
 
         try {
             foreach ($projectConfig->get() as $key => $config) {
@@ -67,7 +65,6 @@ return new class extends Migration
             }
         } finally {
             $projectConfig->muteEvents = $muteEvents;
-            $projectConfig->readOnly = $readOnly;
         }
     }
 

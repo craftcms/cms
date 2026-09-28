@@ -12,11 +12,13 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\UserEmailVerifying;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
@@ -112,8 +114,8 @@ abstract readonly class AuthenticationController
         $request = request();
 
         // if this is a front-end request and a template exists for the requested path, render it
-        if (! $request->isCpRequest() && view()->exists($request->craftPath())) {
-            return view($request->craftPath(), $data);
+        if (! $request->isCpRequest() && app(TemplateResolver::class)->exists($request->craftPath(), TemplateMode::Site)) {
+            return new TemplateRoute($request->craftPath(), $data, publicOnly: false)->handle($request);
         }
 
         TemplateMode::set(TemplateMode::Cp);

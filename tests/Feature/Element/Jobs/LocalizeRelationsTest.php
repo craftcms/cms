@@ -6,35 +6,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
-use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
-
-it('extends Job', function () {
-    $job = new LocalizeRelations(fieldId: 1);
-
-    expect($job)->toBeInstanceOf(Job::class);
-});
-
-it('can be instantiated with field id', function () {
-    $job = new LocalizeRelations(fieldId: 42);
-
-    expect($job->fieldId)->toBe(42);
-});
-
-it('can be dispatched to the queue', function () {
-    Queue::fake();
-
-    $job = new LocalizeRelations(fieldId: 1);
-
-    dispatch($job);
-
-    Queue::assertPushed(LocalizeRelations::class);
-});
 
 it('provides a description', function () {
     $job = new LocalizeRelations(fieldId: 1);
@@ -44,12 +20,26 @@ it('provides a description', function () {
     expect($description)->toContain('Localizing relations');
 });
 
-it('handles case with no global relations', function () {
-    $job = new LocalizeRelations(fieldId: 99999);
+it('leaves global relations for other fields untouched', function () {
+    $field = Field::factory()->create();
+    $otherField = Field::factory()->create();
+    $now = now();
 
-    $job->handle();
+    $otherRelationId = DB::table(Table::RELATIONS)->insertGetId([
+        'fieldId' => $otherField->id,
+        'sourceId' => Entry::factory()->create()->id,
+        'sourceSiteId' => null,
+        'targetId' => Entry::factory()->create()->id,
+        'sortOrder' => 1,
+        'uid' => Str::uuid(),
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+    ]);
 
-    expect(true)->toBeTrue();
+    new LocalizeRelations(fieldId: $field->id)->handle();
+
+    expect(DB::table(Table::RELATIONS)->where('fieldId', $otherField->id)->pluck('sourceSiteId', 'id')->all())
+        ->toBe([$otherRelationId => null]);
 });
 
 it('can be retried after localizing a relation fails', function () {

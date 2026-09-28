@@ -42,4 +42,12 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Regression tests
 
-- After a bug fix or behavior change is verified working, propose adding a test that covers it — don't leave that as an unprompted afterthought.
+- After a bug fix or behavior change, add a regression test that covers it and list it under Changed.
+
+## Working through tasks
+
+- When a step doesn't need my input, keep going. Put status notes in the same message as your next action. Stop and ask only when you can't continue without me, or before anything destructive.
+
+## Reporting
+
+- End every long run (one that edits files or spans many steps) with three headings: **Blocked on me** (decisions or approvals you need, or "Nothing"), **Changed** (what you changed), **Found** (issues noticed but not acted on).

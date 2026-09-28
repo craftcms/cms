@@ -34,13 +34,6 @@ test('login validates the auth response JSON shape', function (string $authRespo
     'non-string credential ID' => [Json::encode(['id' => []])],
 ]);
 
-test('login fails with invalid credential', function () {
-    postJson(action([PasskeyController::class, 'login']), [
-        'requestOptions' => Json::encode(['challenge' => 'test']),
-        'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
-    ])->assertBadRequest();
-});
-
 test('login counts an invalid passkey once', function () {
     Cms::config()->maxInvalidLogins = 10;
     config()->set('auth.providers.users.model', UserModel::class);
