@@ -19,7 +19,7 @@
     // The server sends the element's edit URL, which is null when it has none.
     url?: string | null;
     thumbHtml?: string;
-    label?: string;
+    label: string;
   }
 
   const props = withDefaults(
@@ -206,7 +206,9 @@
               })
             "
           >
-            <label slot="label">{{ t('Select') }}</label>
+            <label slot="label">{{
+              t('Select {label}', {label: element.label})
+            }}</label>
           </craft-checkbox>
 
           <div class="thumb-actions">

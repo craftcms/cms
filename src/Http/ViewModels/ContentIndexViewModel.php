@@ -1108,6 +1108,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
+            'label' => $element->getUiLabel(),
             ...$this->extraRowData($element),
             ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
             ...collect($attributes)
@@ -1139,8 +1140,6 @@ abstract class ContentIndexViewModel extends ViewModel
             // Required by `structures/move-element`, which validates
             // structureId/elementId/siteId before it will move anything.
             'siteId' => $element->siteId,
-            // Plain-text name for the row's expand/collapse toggle.
-            'label' => $element->getUiLabel(),
         ];
     }
 
@@ -1249,6 +1248,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
             return [
                 'id' => $this->rowId($element),
+                'label' => $element->getUiLabel(),
                 ...$this->extraRowData($element),
                 'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
                 'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),

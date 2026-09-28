@@ -12,12 +12,11 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   /**
-   * The element data a chip draws. Everything past `id` and `label` is optional,
-   * so a caller with nothing but ids still gets a usable list.
+   * The element data a chip draws. Everything past `id` and `label` is optional.
    */
   interface ChipElement {
     id: number;
-    label?: string;
+    label: string;
     siteId?: number | string | null;
     /**
      * Already resolved to a fill and a label — which statuses exist, and what
@@ -56,9 +55,8 @@
 
   const ids = computed(() => props.data.map((element) => element.id));
 
-  /** Falls back to the id, so a list of bare ids still reads as something. */
   function labelFor(element: ChipElement): string {
-    return element.label ?? String(element.id);
+    return element.label;
   }
 
   const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
