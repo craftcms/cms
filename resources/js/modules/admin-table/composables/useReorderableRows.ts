@@ -1,4 +1,11 @@
-import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
+import {
+  nextTick,
+  onMounted,
+  onUnmounted,
+  shallowRef,
+  triggerRef,
+  watch,
+} from 'vue';
 import {
   type DragState,
   type DropState,
@@ -13,10 +20,12 @@ export interface UseReorderableRowsOptions {
 }
 
 export function useReorderableRows(options: UseReorderableRowsOptions) {
-  const rowRefs = ref<Map<string, HTMLTableRowElement>>(new Map());
-  const handleRefs = ref<Map<string, HTMLElement>>(new Map());
-  const cleanupFns = ref<Map<string, () => void>>(new Map());
+  const rowRefs = shallowRef<Map<string, HTMLTableRowElement>>(new Map());
+  const handleRefs = shallowRef<Map<string, HTMLElement>>(new Map());
+  const cleanupFns = new Map<string, () => void>();
   let monitorCleanup: (() => void) | null = null;
+  let mounted = false;
+  let refreshScheduled = false;
 
   const {registerItem, getDragState, getDropState, setupMonitor} =
     useDragAndDrop({
@@ -25,31 +34,52 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
     });
 
   function setRowRef(el: HTMLTableRowElement | null, rowId: string) {
+    if (rowRefs.value.get(rowId) === el) return;
+
     if (el) {
       rowRefs.value.set(rowId, el);
     } else {
       rowRefs.value.delete(rowId);
     }
+
+    triggerRef(rowRefs);
+    scheduleRefreshRegistrations();
   }
 
   function setHandleRef(el: HTMLElement | null, rowId: string) {
+    if (handleRefs.value.get(rowId) === el) return;
+
     if (el) {
       handleRefs.value.set(rowId, el);
     } else {
       handleRefs.value.delete(rowId);
     }
+
+    triggerRef(handleRefs);
+    scheduleRefreshRegistrations();
+  }
+
+  function scheduleRefreshRegistrations() {
+    if (!mounted || refreshScheduled) return;
+
+    refreshScheduled = true;
+    void nextTick(() => {
+      refreshScheduled = false;
+
+      if (mounted) {
+        refreshRegistrations();
+      }
+    });
   }
 
   function refreshRegistrations() {
+    cleanupFns.forEach((fn) => fn());
+    cleanupFns.clear();
+
     if (!options.enabled()) {
       return;
     }
 
-    // Clean up existing registrations
-    cleanupFns.value.forEach((fn) => fn());
-    cleanupFns.value.clear();
-
-    // Register each row
     const rowIds = options.getRowIds();
     rowIds.forEach((rowId, index) => {
       const id = String(rowId);
@@ -58,7 +88,7 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
 
       if (rowEl) {
         const cleanup = registerItem(rowEl, handleEl ?? null, id, index);
-        cleanupFns.value.set(id, cleanup);
+        cleanupFns.set(id, cleanup);
       }
     });
   }
@@ -67,19 +97,26 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
   watch(
     () => options.getRowIds(),
     () => {
-      nextTick(refreshRegistrations);
+      scheduleRefreshRegistrations();
     },
     {deep: true}
   );
 
+  watch(
+    () => options.enabled(),
+    () => scheduleRefreshRegistrations()
+  );
+
   onMounted(() => {
-    // Setup the monitor
+    mounted = true;
     monitorCleanup = setupMonitor();
-    nextTick(refreshRegistrations);
+    scheduleRefreshRegistrations();
   });
 
   onUnmounted(() => {
-    cleanupFns.value.forEach((fn) => fn());
+    mounted = false;
+    cleanupFns.forEach((fn) => fn());
+    cleanupFns.clear();
     monitorCleanup?.();
   });
 
