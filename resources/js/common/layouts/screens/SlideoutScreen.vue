@@ -413,7 +413,7 @@
               @click="close"
               data-slideout-close
             >
-              <craft-icon name="xmark" :label="t('Close')"></craft-icon>
+              <craft-icon name="xmark-large" :label="t('Close')"></craft-icon>
             </craft-button>
           </div>
         </div>

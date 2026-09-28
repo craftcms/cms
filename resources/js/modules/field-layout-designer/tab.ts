@@ -171,7 +171,7 @@ export class Tab extends Base {
         {type: 'hr'},
         {
           label: Craft.t('app', 'Remove'),
-          icon: 'xmark',
+          icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {
             this.destroy();

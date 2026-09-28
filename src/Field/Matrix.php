@@ -1210,7 +1210,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
             'type' => $type,
         ]), hidden: false);
-        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
+        $items[] = $this->selectionAction('deselect', 'xmark-large', t('Deselect all {type}', [
             'type' => $type,
         ]));
         $items[] = ['type' => 'hr'];

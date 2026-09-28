@@ -653,7 +653,10 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
                 @mousedown=${(e: Event) => e.preventDefault()}
                 @click=${this.#clear}
               >
-                <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+                <craft-icon
+                  name="xmark-large"
+                  style="font-size: 0.8em"
+                ></craft-icon>
               </craft-button>`
             : nothing}
           <craft-icon
