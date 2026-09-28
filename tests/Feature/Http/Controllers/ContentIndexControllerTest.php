@@ -358,6 +358,18 @@ it('sends a plain-text label alongside the card HTML in cards view mode', functi
         );
 });
 
+it('sends the Untitled fallback text when an entry has no title', function () {
+    $type = EntryType::factory()->create(['hasTitleField' => false]);
+    $entry = EntryModel::factory()->forEntryType($type)->createElement(['title' => '']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+            ->where('data.0.label', fn (string $label) => str_contains($label, 'Untitled'))
+        );
+});
+
 it('authorizes structure moves once the structure index has loaded', function () {
     $structure = Structure::factory()->create();
     $section = Section::factory()->create([
