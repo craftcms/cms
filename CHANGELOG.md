@@ -22,6 +22,7 @@
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
 - Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
+- Fixed a bug where Shift-selecting a shorter range didn’t deselect items outside the new range. ([#19727](https://github.com/craftcms/cms/pull/19727))
 - Fixed a bug where select inputs could lose their selected value if their options were loaded asynchronously. ([#19728](https://github.com/craftcms/cms/pull/19728))
 
 ### Assets
