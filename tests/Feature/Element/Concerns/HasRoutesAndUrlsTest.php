@@ -141,10 +141,9 @@ describe('getUrl', function () {
         $element = new TestRoutableElement;
         $element->siteId = $this->primarySiteId;
         $element->uri = Element::HOMEPAGE_URI;
+        Sites::getSiteById($this->primarySiteId)->setBaseUrl('https://localhost/');
 
-        $url = $element->getUrl();
-
-        expect($url)->not->toContain(Element::HOMEPAGE_URI);
+        expect($element->getUrl())->toBe('https://localhost');
     });
 
     test('ElementUrlResolving event can set custom URL', function () {
