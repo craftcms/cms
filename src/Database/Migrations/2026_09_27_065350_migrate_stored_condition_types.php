@@ -142,9 +142,7 @@ return new class extends Migration
         }
 
         $muteEvents = $projectConfig->muteEvents;
-        $readOnly = $projectConfig->readOnly;
         $projectConfig->muteEvents = true;
-        $projectConfig->readOnly = false;
 
         try {
             foreach ($projectConfig->get() as $key => $config) {
@@ -160,7 +158,6 @@ return new class extends Migration
             $projectConfig->saveModifiedConfigData();
         } finally {
             $projectConfig->muteEvents = $muteEvents;
-            $projectConfig->readOnly = $readOnly;
         }
     }
 
