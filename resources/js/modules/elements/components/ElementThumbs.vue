@@ -206,7 +206,9 @@
               })
             "
           >
-            <label slot="label">{{ t('Select') }}</label>
+            <label slot="label">{{
+              t('Select {label}', {label: element.label})
+            }}</label>
           </craft-checkbox>
 
           <div class="thumb-actions">

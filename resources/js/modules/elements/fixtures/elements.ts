@@ -15,6 +15,7 @@ export interface SampleEntry {
   status: string;
   section: string;
   postDate: string;
+  label?: string;
 }
 
 export const sampleEntries: Array<SampleEntry> = [

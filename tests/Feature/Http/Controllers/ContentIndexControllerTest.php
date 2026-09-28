@@ -318,6 +318,26 @@ it('emits a level and descendant flag per row in structure mode', function () {
         );
 });
 
+it('sends a plain-text label for every row in flat table mode', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+        );
+});
+
+it('sends a plain-text label alongside the card HTML in cards view mode', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get("/{$this->cpTrigger}/content/entries?viewMode=cards")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+        );
+});
+
 it('authorizes structure moves once the structure index has loaded', function () {
     $structure = Structure::factory()->create();
     $section = Section::factory()->create([

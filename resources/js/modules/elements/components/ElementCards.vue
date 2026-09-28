@@ -12,6 +12,7 @@
 
   interface CardElement {
     id: string | number;
+    label?: string;
     cardAttributes?: Record<
       string,
       string | number | boolean | null | undefined
@@ -86,6 +87,12 @@
     };
   }
 
+  function cardSelectLabel(id: string | number): string | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    return element ? t('Select {label}', {label: element.label}) : undefined;
+  }
+
   function onCardClick(id: string | number, event: MouseEvent) {
     const element = props.data.find((candidate) => candidate.id === id);
 
@@ -154,6 +161,7 @@
       :item-class="itemClass"
       :item-attrs="itemAttrs"
       :card-attrs="cardAttrs"
+      :select-label="cardSelectLabel"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
       @item-keydown="onCardKeydown"

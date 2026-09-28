@@ -49,8 +49,8 @@
         id: Id,
         index: number
       ) => Record<string, unknown> | undefined;
-      /** The select checkbox's accessible label. */
-      selectLabel?: string;
+      /** The select checkbox's accessible label, resolved per item. */
+      selectLabel?: (id: Id, index: number) => string | undefined;
     }>(),
     {
       selectable: false,
@@ -250,7 +250,9 @@
               .disabled="readOnly || !selection.canSelect(id)"
               @model-value-changed="onCheckboxChange(id, $event)"
             >
-              <label slot="label">{{ selectLabel ?? t('Select') }}</label>
+              <label slot="label">{{
+                selectLabel?.(id, index) ?? t('Select')
+              }}</label>
             </craft-checkbox>
             <slot name="label" :id="id" :index="index" />
           </div>
