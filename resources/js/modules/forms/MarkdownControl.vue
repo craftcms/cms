@@ -13,6 +13,7 @@
     maxLength?: number;
     toolbarButtons?: string[];
     showToolbar?: boolean;
+    showStats?: boolean;
     types?: LinkTypeConfig[];
     showLabelField?: boolean;
     advancedFields?: string[];
@@ -42,6 +43,7 @@
     :max-length="control.props.maxLength"
     .toolbarButtons="control.props.toolbarButtons ?? []"
     :show-toolbar="control.props.showToolbar ?? true"
+    :show-stats="control.props.showStats ?? false"
     .linkTypes="control.props.types ?? []"
     .showLinkLabelField="control.props.showLabelField ?? false"
     .linkAdvancedFields="control.props.advancedFields ?? []"

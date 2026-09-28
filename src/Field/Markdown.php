@@ -263,6 +263,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->maxLength($this->charLimit)
             ->toolbarButtons($this->toolbarButtons)
             ->showToolbar($this->showToolbar)
+            ->showStats($this->showStats)
             ->types($this->linkPickerConfig())
             ->showLabelField($this->linkSettingsShowLabelField)
             ->advancedFields($this->linkSettingsAdvancedFields)

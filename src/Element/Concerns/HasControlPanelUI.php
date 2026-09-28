@@ -503,24 +503,7 @@ JS, [
             return $items;
         }
 
-        return array_values(array_filter($items, self::showsInChips(...)));
-    }
-
-    /**
-     * Whether an action belongs in a chip or card, as opposed to the element's
-     * own editor.
-     *
-     * Every non-destructive action is shown by default; an item opts in or out
-     * explicitly with `showInChips`. Destructive ones are held back because the
-     * screen around them owns a different destructive action — a relation
-     * field's Remove detaches the element rather than deleting it — and the two
-     * sitting together invites picking the wrong one.
-     *
-     * @param  array<string, mixed>  $item
-     */
-    private static function showsInChips(array $item): bool
-    {
-        return (bool) ($item['showInChips'] ?? ! ($item['destructive'] ?? false));
+        return array_values(array_filter($items, app(MenuHtml::class)->showsInChips(...)));
     }
 
     /**

@@ -23,12 +23,7 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    $user = UserModel::factory()->create();
-    $element = createElementPolicyElement();
-
-    $result = Gate::forUser($user)->allows('view', $element);
-
-    expect($result)->toBeBool();
+    expect(Gate::getPolicyFor(createElementPolicyElement()))->toBeInstanceOf(ElementPolicy::class);
 });
 
 it('returns null from before for non-elements', function () {

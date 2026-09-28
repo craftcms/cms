@@ -28,7 +28,10 @@ it('selects thumbnail modes for each relationship presentation', function (strin
 
     expect($element[$key])->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
     if ($key === 'cardThumbHtml') {
-        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail');
+        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail')
+            ->and($element)->not->toHaveKey('thumbHtml');
+    } else {
+        expect($element)->not->toHaveKeys(['cardHeaderHtml', 'cardContentHtml', 'cardThumbHtml']);
     }
 })->with([
     'list' => ['list', 'thumbHtml', 'fit', 30],

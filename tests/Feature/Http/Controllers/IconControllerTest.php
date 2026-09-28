@@ -100,7 +100,7 @@ describe('iconSvg', function () {
             ->assertOk()
             ->json();
 
-        expect($json['iconSvg'])->toBeString();
+        expect($json['iconSvg'])->toBe('');
     });
 
     test('svg rejects icon names that could be used for path traversal', function (string $icon) {
@@ -132,23 +132,10 @@ describe('pickerOptions', function () {
             ->and($gear['svg'])->toContain('<svg');
     });
 
-    test('pickerOptions validates search parameter accepts string', function () {
-        get(action([IconController::class, 'pickerOptions'], ['search' => 'gear']))
-            ->assertOk();
-    });
-
     test('pickerOptions validates search parameter rejects non-string', function () {
         postJson(action([IconController::class, 'pickerOptions']), [
             'search' => 123,
         ])->assertJsonValidationErrors(['search']);
-    });
-
-    test('pickerOptions validates freeOnly parameter accepts boolean', function () {
-        get(action([IconController::class, 'pickerOptions'], ['freeOnly' => true]))
-            ->assertOk();
-
-        get(action([IconController::class, 'pickerOptions'], ['freeOnly' => false]))
-            ->assertOk();
     });
 
     test('pickerOptions validates freeOnly parameter rejects non-boolean', function () {

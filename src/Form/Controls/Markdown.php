@@ -32,6 +32,8 @@ class Markdown extends Control
 
     private bool $showToolbar = true;
 
+    private bool $showStats = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $markdown = Html::tag('craft-markdown-field', Html::encode((string) ($value ?? '')), [
@@ -42,6 +44,7 @@ class Markdown extends Control
             'max-length' => $control->props['maxLength'] ?? null,
             'toolbar-buttons' => Json::encode($control->props['toolbarButtons'] ?? []),
             'show-toolbar' => (bool) ($control->props['showToolbar'] ?? true) && $attributes['name'] !== null,
+            'show-stats' => (bool) ($control->props['showStats'] ?? false),
             'link-types' => Json::encode($control->props['types'] ?? []),
             'show-link-label-field' => $control->props['showLabelField'] ?? false,
             'link-advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
@@ -98,6 +101,13 @@ class Markdown extends Control
         return $this;
     }
 
+    public function showStats(bool $showStats = true): static
+    {
+        $this->showStats = $showStats;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -107,6 +117,7 @@ class Markdown extends Control
             'maxLength' => $this->maxLength,
             'toolbarButtons' => $this->toolbarButtons,
             'showToolbar' => $this->showToolbar,
+            'showStats' => $this->showStats,
             ...$this->linkFieldSettingsProps(),
             ...$this->textExpanderProps(),
         ]);

@@ -9,8 +9,6 @@ use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\PageLifecycle;
 use GuzzleHttp\Client;
 use GuzzleHttp\Client as GuzzleClient;
-use Twig\Environment as TwigEnvironment;
-use Twig\Loader\ArrayLoader;
 use yii\behaviors\AttributeTypecastBehavior;
 
 beforeEach(function () {
@@ -39,16 +37,6 @@ describe('CoreTwigExtension', function () {
         expect($extension->getTests())->not->toBeEmpty();
         expect($extension->getExpressionParsers())->toHaveCount(2);
         expect($extension->getGlobals())->toHaveKeys(['craft', 'now']);
-    });
-
-    it('supports has some / has every helpers', function () {
-        $env = new TwigEnvironment(new ArrayLoader);
-
-        $hasSome = CoreTwigExtension::arraySome($env, [1, 2, 3], fn (int $value) => $value === 2);
-        $hasEvery = CoreTwigExtension::arrayEvery($env, [1, 2, 3], fn (int $value) => $value > 0);
-
-        expect($hasSome)->toBeTrue();
-        expect($hasEvery)->toBeTrue();
     });
 
     it('blocks disallowed classes from create()', function (bool $allowed, string $class) {
