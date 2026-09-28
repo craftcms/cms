@@ -30,7 +30,21 @@ vi.mock('@craftcms/ui/vue/CraftSelectRich.vue', () => ({
 }));
 
 vi.mock('@/modules/elements/components/IndexViewSettings.vue', () => ({
-  default: {name: 'IndexViewSettings', render: () => h('div')},
+  default: {
+    name: 'IndexViewSettings',
+    props: ['sortOptions', 'sortDirectionLocked'],
+    render(this: {
+      sortOptions: Array<{label: string; value: string}>;
+      sortDirectionLocked: boolean;
+    }) {
+      return h('view-settings', {
+        'data-options': this.sortOptions
+          .map((option) => option.value)
+          .join(','),
+        'data-direction-locked': String(this.sortDirectionLocked),
+      });
+    },
+  },
 }));
 
 vi.mock('@/modules/elements/components/FilterHud.vue', () => ({
@@ -171,4 +185,36 @@ it('puts the site menu and the status menu in one cell', () => {
 
   expect(cell.querySelector('.element-toolbar__site')).not.toBeNull();
   expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
+});
+
+it('offers score while searching and locks its direction', () => {
+  mount({
+    search: 'needle',
+    sortField: 'score',
+    sortOptions: [
+      {label: 'Title', value: 'title', defaultDir: 'asc'},
+      {label: 'Date', value: 'dateCreated', defaultDir: 'desc'},
+    ],
+  });
+
+  const settings = container!.querySelector('view-settings')!;
+
+  expect(settings.getAttribute('data-options')).toBe('score,title,dateCreated');
+  expect(settings.getAttribute('data-direction-locked')).toBe('true');
+});
+
+it('removes score without a search and locks custom ordering', () => {
+  mount({
+    sortField: 'sortOrder',
+    sortOptions: [
+      {label: 'Score', value: 'score', defaultDir: 'desc'},
+      {label: 'Custom', value: 'sortOrder', defaultDir: 'asc'},
+      {label: 'Title', value: 'title', defaultDir: 'asc'},
+    ],
+  });
+
+  const settings = container!.querySelector('view-settings')!;
+
+  expect(settings.getAttribute('data-options')).toBe('sortOrder,title');
+  expect(settings.getAttribute('data-direction-locked')).toBe('true');
 });

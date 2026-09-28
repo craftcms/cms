@@ -1,4 +1,5 @@
-import {computed, type Ref, watch} from 'vue';
+import {computed, ref, type Ref, watch} from 'vue';
+import type {SortingState, Updater} from '@tanstack/vue-table';
 import {
   createIndexVisitor,
   type IndexVisitor,
@@ -26,12 +27,7 @@ interface UseElementIndexSortOptions {
   visitor?: IndexVisitor;
 }
 
-/**
- * The index supports a single sort, stored as an array (so multi-column sort
- * can be enabled later). Keep only valid items (those with a field) and clamp
- * to the first — this also self-heals any extra/garbage entries that may have
- * accumulated in persisted state.
- */
+/** Keep valid, unique sort items in priority order. */
 function normalizeSort(
   items: Array<SortItem> | Record<string, SortItem> | undefined
 ): Array<SortItem> {
@@ -39,7 +35,19 @@ function normalizeSort(
   // (`{0: {...}}`), so persisted/rehydrated state can come back as an object
   // rather than an array. Coerce to an array before filtering.
   const list = Array.isArray(items) ? items : items ? Object.values(items) : [];
-  return list.filter((item) => !!item?.field).slice(0, 1);
+  const seen = new Set<string>();
+  const normalized = list.filter((item) => {
+    if (!item?.field || seen.has(item.field)) {
+      return false;
+    }
+
+    seen.add(item.field);
+    return true;
+  });
+
+  return normalized[0]?.field === 'score'
+    ? normalized.slice(0, 1)
+    : normalized.filter((item) => item.field !== 'score');
 }
 
 function sortItemsToQuery(items: Array<SortItem>) {
@@ -70,6 +78,7 @@ export function useElementIndexSort(
   const sourceKey = () => props.source?.key ?? '*';
 
   const persistedSort = () => viewState.value.sources?.[sourceKey()]?.sort;
+  const confirmedSort = ref(normalizeSort(props.sort ?? persistedSort()));
 
   function setPersistedSort(sort: Array<SortItem>): void {
     const sources = {...viewState.value.sources};
@@ -77,8 +86,12 @@ export function useElementIndexSort(
     viewState.value.sources = sources;
   }
 
-  const {sortingState, sortingConfig, onSortingChange} = useServerSort({
-    initialState: normalizeSort(props.sort ?? persistedSort()),
+  const {
+    sortingState,
+    sortingConfig: serverSortingConfig,
+    onSortingChange: changeServerSort,
+  } = useServerSort({
+    initialState: confirmedSort.value.slice(0, 1),
     // A non-page index keeps its query in the visitor, not in the URL.
     currentQuery: () => visitor.currentQuery(),
     onChange: ({query}) => {
@@ -92,14 +105,60 @@ export function useElementIndexSort(
     () => props.sort,
     (sort) => {
       const next = normalizeSort(sort);
-      sortingState.value = next.map((item) => ({
+      confirmedSort.value = next;
+      sortingState.value = next.slice(0, 1).map((item) => ({
         id: item.field,
         desc: item.direction === 'desc',
       }));
-      setPersistedSort(next);
+      if (next[0]?.field !== 'score') {
+        setPersistedSort(next);
+      }
       options.onSortChange?.(next);
     }
   );
+
+  function onSortingChange(updater: Updater<SortingState>): void {
+    const active =
+      updater instanceof Function ? updater(sortingState.value) : updater;
+    const requestedPrimary = active[0];
+
+    if (!requestedPrimary) {
+      return;
+    }
+
+    if (requestedPrimary.id === 'score') {
+      changeServerSort([{id: 'score', desc: true}]);
+      return;
+    }
+
+    const primary =
+      requestedPrimary.id === 'sortOrder'
+        ? {...requestedPrimary, desc: false}
+        : requestedPrimary;
+
+    const historySource =
+      confirmedSort.value[0]?.field === 'score'
+        ? normalizeSort(persistedSort())
+        : confirmedSort.value;
+    const history = historySource.filter(
+      (item) => item.field !== primary.id && item.field !== 'score'
+    );
+
+    changeServerSort([
+      primary,
+      ...history.map((item) => ({
+        id: item.field,
+        desc: item.direction === 'desc',
+      })),
+    ]);
+    confirmedSort.value = [
+      {
+        field: primary.id,
+        direction: primary.desc ? 'desc' : 'asc',
+      },
+      ...history,
+    ];
+  }
 
   // On load, if the URL doesn't specify a sort but we have one persisted from a
   // previous visit, restore it. The page folds this into one mount-time restore
@@ -144,9 +203,11 @@ export function useElementIndexSort(
       onSortingChange([
         {
           id: field,
-          desc: option
-            ? option.defaultDir === 'desc'
-            : (sortingState.value[0]?.desc ?? false),
+          desc:
+            field === 'score' ||
+            (option
+              ? option.defaultDir === 'desc'
+              : (sortingState.value[0]?.desc ?? false)),
         },
       ]);
     },
@@ -157,6 +218,8 @@ export function useElementIndexSort(
     set: (direction) =>
       onSortingChange([{id: sortField.value, desc: direction === 'desc'}]),
   });
+
+  const sortingConfig = {...serverSortingConfig, onSortingChange};
 
   return {
     sortingState,
