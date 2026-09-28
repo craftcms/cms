@@ -8,7 +8,7 @@
 - Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
 - Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
 - Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752, GHSA-j2r3-x468-c6j5)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-j2r3-x468-c6j5)
 
 ## 5.11.3 - 2026-09-18
 
