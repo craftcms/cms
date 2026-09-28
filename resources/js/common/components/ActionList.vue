@@ -22,6 +22,7 @@
    * inside its own `content` slot.
    */
   import {computed, type Component} from 'vue';
+  import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
   import CpLink from '@/common/components/CpLink.vue';
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
@@ -147,6 +148,9 @@
       // Menu affordances; neither of the others renders them.
       '.shortcut': isItem ? action.shortcut : undefined,
       'data-keywords': isItem ? action.keywords : undefined,
+      id: action.id,
+      ...serverAttributes(action.attributes),
+      ...action.attrs,
     });
 
     // A bare `href` makes it a link even without `type: 'link'`.

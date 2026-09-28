@@ -156,6 +156,16 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
     selectRange(id, true);
   }
 
+  function replaceRange(id: Id): void {
+    if (!canWrite()) return;
+
+    const index = indexOf(id);
+    if (index === -1) return;
+
+    store.clear();
+    selectRange(id, true);
+  }
+
   /**
    * A checkbox reporting its new state.
    *
@@ -169,8 +179,7 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
     if (!canWrite(id)) return;
 
     if (shiftKey && anchorIndex.value !== null) {
-      // The anchor is preserved across a range select.
-      selectRange(id, checked);
+      replaceRange(id);
       return;
     }
 
@@ -237,7 +246,7 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
     if (indexOf(id) === -1) return;
 
     if (event.shiftKey && anchorIndex.value !== null) {
-      selectRange(id, click.value === 'toggle' ? !isSelected(id) : true);
+      replaceRange(id);
     } else if (event.metaKey || event.ctrlKey || click.value === 'toggle') {
       toggle(id);
     } else {
