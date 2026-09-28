@@ -17,6 +17,8 @@
   } from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -33,6 +35,8 @@
      * fills the rest in.
      */
     url?: string | null;
+    /** The element's control panel edit screen, if it has one. */
+    cpEditUrl?: string | null;
     canEdit?: boolean;
     canCopy?: boolean;
     draftId?: number | null;
@@ -606,8 +610,36 @@
    */
   function openEditor(value: number | string): void {
     const element = presentation(value);
+    const elementType = props.control.props.elementType;
 
-    Craft.createElementEditor(props.control.props.elementType, {
+    if (canUseVueSlideout()) {
+      // The element's own edit screen, the way an element index opens it.
+      // Elements picked since the last render don't know it yet; entries can
+      // still get their editor through the generic edit action.
+      const href =
+        element.cpEditUrl ??
+        (elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
+          ? EditElementController.url(undefined, {
+              query: {
+                elementType,
+                elementId: element.id,
+                siteId: element.siteId ?? null,
+              },
+            })
+          : null);
+
+      if (href) {
+        void openSlideout(href, {
+          // Registering a handler keeps a save from reloading the page behind,
+          // which would throw away the owner's unsaved edits.
+          onSaved: () => {},
+        });
+
+        return;
+      }
+    }
+
+    Craft.createElementEditor(elementType, {
       elementId: element.id,
       siteId: element.siteId ?? null,
     });

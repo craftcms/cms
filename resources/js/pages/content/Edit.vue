@@ -4,19 +4,16 @@
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // Entry-specific keys (EntryEditViewModel) remain props.
   const props = defineProps<{
-    saveId: number | null;
-    siteId: number | null;
+    saveParams: Record<string, number | string | null>;
     entryTypeId: number | null;
     sectionHandle: string | null;
   }>();
 
-  // What `entries/save-entry` needs to resolve the entry it's saving. The
-  // field layout and meta fields are collected by the pipeline itself.
-  const saveData = () => ({
-    entryId: props.saveId,
-    siteId: props.siteId,
-    typeId: props.entryTypeId,
-  });
+  // What the save action needs to resolve the entry it's saving: an entry id
+  // for `entries/save-entry`, or a generic element identity for nested entries,
+  // which save through `elements/save`. The field layout and meta fields are
+  // collected by the pipeline itself.
+  const saveData = () => ({...props.saveParams});
 </script>
 
 <template>

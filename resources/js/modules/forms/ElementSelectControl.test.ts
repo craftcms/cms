@@ -14,8 +14,15 @@ const stub = vi.hoisted(() => {
     })
   );
 
-  return {show, destroy, createElementSelectorModal};
+  const openSlideout = vi.fn(async () => null);
+
+  return {show, destroy, createElementSelectorModal, openSlideout};
 });
+
+vi.mock('@/common/slideouts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/common/slideouts')>()),
+  openSlideout: stub.openSlideout,
+}));
 
 // The control opens the selector itself now. The real factory mounts a second
 // Vue app and pulls in the whole element index, so the seam it is driven
@@ -114,6 +121,7 @@ describe('ElementSelectControl', () => {
     stub.createElementSelectorModal.mockClear();
     stub.show.mockClear();
     stub.destroy.mockClear();
+    stub.openSlideout.mockClear();
   });
 
   let updates: Array<number[] | number | null>;
@@ -723,6 +731,53 @@ describe('ElementSelectControl', () => {
         'CraftCms\\Cms\\Elements\\Entry',
         expect.objectContaining({elementId: 5})
       );
+    });
+
+    it('opens entries in a Vue slideout when the page hosts one', async () => {
+      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+      const root = await mount({
+        props: {elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry'},
+        value: [5],
+      });
+
+      doubleClick(chip(root));
+
+      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).toHaveBeenCalledOnce();
+      const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
+      const params = new URL(href, 'https://example.test').searchParams;
+      expect(params.get('elementId')).toBe('5');
+    });
+
+    it('opens an element’s own edit screen in a Vue slideout', async () => {
+      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+      const root = await mount({
+        props: {
+          elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
+          elements: [
+            {id: 5, label: 'Some asset', cpEditUrl: '/admin/assets/edit/5'},
+          ],
+        },
+        value: [5],
+      });
+
+      doubleClick(chip(root));
+
+      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).toHaveBeenCalledWith(
+        '/admin/assets/edit/5',
+        expect.objectContaining({onSaved: expect.any(Function)})
+      );
+    });
+
+    it('keeps elements without an edit screen in the legacy editor', async () => {
+      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+      const root = await mount({value: [5]});
+
+      doubleClick(chip(root));
+
+      expect(stub.openSlideout).not.toHaveBeenCalled();
+      expect(createElementEditor).toHaveBeenCalledOnce();
     });
 
     it('stays put when the double-click lands on the chip’s checkbox', async () => {
