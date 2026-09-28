@@ -220,7 +220,7 @@ readonly class License
             currentEdition: $pluginInfo['edition'],
             currentEditionName: ucfirst((string) $pluginInfo['edition']),
             licenseEdition: $licenseInfo['edition'],
-            licenseEditionName: ucfirst($licenseInfo['edition'] ?? 'standard'),
+            licenseEditionName: Html::encode(ucfirst($licenseInfo['edition'] ?? 'standard')),
             version: $pluginInfo['version'],
             status: $licenseInfo['status'],
         );
@@ -287,7 +287,7 @@ readonly class License
                     'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.',
                     [
                         'name' => $licenseData->name,
-                        'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
+                        'detachUrl' => "$consoleUrl/licenses/plugins/".(int) $licenseData->id,
                         'buyUrl' => currentUser()?->isAdmin() && $this->generalConfig->allowAdminChanges
                             ? Url::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
@@ -310,7 +310,7 @@ readonly class License
         }
 
         $licensedDomain = Cache::get('licensedDomain');
-        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+        $domainLink = Html::a(Html::encode($licensedDomain), "http://$licensedDomain", [
             'rel' => 'noopener',
             'target' => '_blank',
         ]);

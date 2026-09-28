@@ -350,8 +350,9 @@ class AuthMethods
     public function verifyMethod(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser();
+        $wasActive = $this->getMethod($methodClass, $user)->isActive();
 
-        $verify = function () use ($methodClass, $user, $args): bool {
+        $verify = function () use ($methodClass, $user, $args, $wasActive): bool {
             $verified = DB::transaction(function () use ($methodClass, $user, $args): bool {
                 if ($user) {
                     DB::table(Table::USERS)
@@ -398,6 +399,12 @@ class AuthMethods
                 }
 
                 craftAuth()->login($authUser, $remember);
+            } elseif (! $wasActive && $this->getMethod($methodClass)->isActive()) {
+                // The method was just set up, raising the bar for accessing this account.
+                // Any other sessions were established before that, so they can’t be trusted anymore.
+                if ($identity = currentUserElement()) {
+                    $this->users->destroyOtherSessions($identity);
+                }
             }
 
             return true;
