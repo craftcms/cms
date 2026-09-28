@@ -485,6 +485,22 @@ describe('generated URLs', function () {
         'alias base' => ['@urlTestSite', 'https://other.test/news'],
     ]);
 
+    it('applies addTrailingSlashesToUrls to base site URLs', function (string $baseUrl, bool $addTrailingSlashes, string $expected) {
+        Cms::config()->addTrailingSlashesToUrls = $addTrailingSlashes;
+        $target = Site::factory()->create(['baseUrl' => $baseUrl]);
+        Sites::refreshSites();
+        Sites::getCurrentSite()->setBaseUrl($baseUrl);
+
+        expect(Url::siteUrl())->toBe($expected)
+            ->and(Url::url(''))->toBe($expected)
+            ->and(Url::siteUrl('', ['foo' => 'bar']))->toBe("$expected?foo=bar")
+            ->and(Url::siteUrl(siteId: $target->id))->toBe($expected);
+    })->with([
+        'without trailing slashes' => ['https://localhost/en/', false, 'https://localhost/en'],
+        'with trailing slashes' => ['https://localhost/en', true, 'https://localhost/en/'],
+        'root-relative without trailing slashes' => ['/', false, '/'],
+    ]);
+
     it('throws for invalid site IDs', function () {
         expect(fn () => Url::siteUrl('', null, null, 12892))
             ->toThrow(Exception::class, 'Invalid site ID: 12892');
