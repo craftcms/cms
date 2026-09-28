@@ -766,7 +766,9 @@
   .element-selections-header {
     margin-block-end: var(--c-spacing-md);
     padding: var(--c-spacing-sm);
-    padding-inline-start: var(--c-spacing-md);
+    padding-inline-start: calc(
+      var(--c-spacing-md) + 1px
+    ); // so the checkboxes line up
     background-color: var(--c-color-neutral-fill-quiet);
     border-start-start-radius: var(--c-radius-md);
     border-start-end-radius: var(--c-radius-md);
