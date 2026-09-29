@@ -383,7 +383,7 @@ it('fails on a change request and restores the current stage when review is requ
 
     $failedReview = $this->workflows->reviewData($this->draft, $this->author);
     expect($firstRun->status)->toBe(WorkflowStatus::Failed)
-        ->and(collect($failedReview->runs)->first()->stages[0]->icon)->toBe('xmark')
+        ->and(collect($failedReview->runs)->first()->stages[0]->icon)->toBe('xmark-large')
         ->and($failedReview->actionProps['canRequestReviewAgain'])->toBeTrue()
         ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canRequestReviewAgain'])->toBeFalse();
 

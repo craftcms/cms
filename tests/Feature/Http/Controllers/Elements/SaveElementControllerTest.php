@@ -20,9 +20,11 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
@@ -45,6 +47,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -897,6 +900,7 @@ describe('storeForDerivative', function () {
             'draftId' => $fixture['draftBlock']->draftId,
             'newOwnerId' => $fixture['ownerDraft']->id,
             'title' => 'Updated Block Title',
+            'fields' => ['innerText' => 'Staged matrix value'],
         ]);
 
         $response->assertOk()
@@ -927,5 +931,42 @@ describe('storeForDerivative', function () {
                 ->where('id', $fixture['draftBlock']->draftId)
                 ->exists())
             ->toBeFalse();
+
+        $editUrl = $savedBlock->getCpEditUrl();
+        expect($editUrl)->toContain("edit/{$fixture['canonicalBlock']->id}");
+
+        $slideout = getJson(action(EditElementController::class, [
+            'elementId' => $savedBlock->id,
+            'siteId' => $savedBlock->siteId,
+            'ownerId' => $fixture['ownerDraft']->id,
+            'fieldId' => $fixture['field']->id,
+        ]), [
+            'X-Inertia' => 'true',
+            'X-Craft-Container-Id' => 'slideout-1',
+        ])->assertOk();
+        expect($slideout->json('props.content'))->toContain('Staged matrix value')
+            ->toMatch('/name="[^"]+\[elementId\]" value="'.$savedBlock->id.'"/');
+        expect(Entry::find()->id($fixture['canonicalBlock']->id)->status(null)->one()->getFieldValue('innerText'))
+            ->toBe('Canonical matrix value');
+
+        $ownerDraft = Entry::find()->id($fixture['ownerDraft']->id)->drafts(null)->status(null)->one();
+        $control = $fixture['field']->formControl(new FieldContext(
+            path: 'matrixField',
+            value: $ownerDraft->getFieldValue('matrixField'),
+            element: $ownerDraft,
+        ));
+        $initialCard = collect($control->props()['cards'])->firstWhere('id', $savedBlock->id);
+        parse_str((string) parse_url($initialCard['editUrl'], PHP_URL_QUERY), $initialCardEditQuery);
+        expect(parse_url($initialCard['editUrl'], PHP_URL_PATH))->toBe(parse_url(action(EditElementController::class), PHP_URL_PATH))
+            ->and($initialCardEditQuery)->toMatchArray([
+                'elementId' => (string) $savedBlock->id,
+                'siteId' => (string) $savedBlock->siteId,
+                'fieldId' => (string) $fixture['field']->id,
+                'ownerId' => (string) $fixture['ownerDraft']->id,
+            ])
+            ->and($initialCard['cardAttributes']['data']['cp-url'])->toBe($editUrl)
+            ->and($initialCard['cardAttributes']['data']['owner-id'])->toBe($fixture['ownerDraft']->id)
+            ->and($initialCard['cardAttributes']['data']['field-id'])->toBe($fixture['field']->id);
+
     });
 });

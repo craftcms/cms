@@ -1,5 +1,6 @@
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import styles from './reorder-button.styles.js';
 import {t} from '@src/utilities/translate';
 import '../action-menu/action-menu.js';
@@ -12,6 +13,14 @@ export type ReorderDirection = 'up' | 'down';
 /** The directions a `nested` reorder button can emit. */
 export type NestedReorderDirection = ReorderDirection | 'indent' | 'outdent';
 export type ReorderOrientation = 'vertical' | 'horizontal';
+
+/** Somewhere else the item can be moved to, beyond its own list. */
+export interface ReorderMove {
+  /** Reported back in `craft-move`'s `detail.value`. */
+  value: string;
+  label: string;
+  icon?: string | null;
+}
 
 /**
  * @summary A drag handle that also exposes "Move up"/"Move down" actions via a
@@ -29,6 +38,8 @@ export type ReorderOrientation = 'vertical' | 'horizontal';
  *   regardless of orientation: `'up'` always means toward the start of the list
  *   ("Move forward" when horizontal) and `'down'` toward the end. A `nested`
  *   button can also emit `'indent'` and `'outdent'`.
+ * @fires {CustomEvent<{value: string}>} craft-move - Emitted when the user
+ *   chooses one of the `moves`. `event.detail.value` is that move's `value`.
  */
 export default class CraftReorderButton extends LitElement {
   static override styles = [styles];
@@ -51,6 +62,12 @@ export default class CraftReorderButton extends LitElement {
    * up/forward action, `last` the down/backward one.
    */
   @property({reflect: true}) orientation: ReorderOrientation = 'vertical';
+
+  /**
+   * Somewhere else the item can go, listed after the reorder actions — "Move
+   * to {page}", say, for an item that can change lists. A JS property only.
+   */
+  @property({attribute: false}) moves: ReorderMove[] = [];
 
   /** Theme variant forwarded to the underlying invoker button. */
   @property({reflect: true}) variant: string = 'plain';
@@ -106,6 +123,20 @@ export default class CraftReorderButton extends LitElement {
     this.dispatchEvent(
       new CustomEvent<{direction: NestedReorderDirection}>('craft-reorder', {
         detail: {direction},
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _move(value: string) {
+    if (this.disabled) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent<{value: string}>('craft-move', {
+        detail: {value},
         bubbles: true,
         composed: true,
       })
@@ -193,6 +224,20 @@ export default class CraftReorderButton extends LitElement {
                   data-action="outdent"
                   >${t('Outdent')}</craft-action-item
                 >
+              `
+            : nothing}
+          ${this.moves.length > 0
+            ? html`
+                <hr class="separator" />
+                ${this.moves.map(
+                  (move) => html`
+                    <craft-action-item
+                      icon="${ifDefined(move.icon ?? undefined)}"
+                      @click="${() => this._move(move.value)}"
+                      >${move.label}</craft-action-item
+                    >
+                  `
+                )}
               `
             : nothing}
         </div>

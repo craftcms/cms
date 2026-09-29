@@ -17,9 +17,22 @@ interface PasswordConfirmationOptions<T> {
 
 export interface UseSettingsSaveOptions<T extends object> {
   transform?: (data: T) => object;
-  onSuccess?: () => void;
+  /** Receives the response data when saving from a slideout. */
+  onSuccess?: (data?: any) => void;
+  /** Called with a failed slideout save's response data, before the errors are applied. */
+  onError?: (data: any) => void;
   /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
   onBeforeSave?: () => void;
+  /**
+   * Awaited before submitting; resolving `false` calls the save off. For work
+   * the submission depends on, like creating the draft it will save.
+   */
+  prepare?: () => Promise<boolean>;
+  /**
+   * Whether a successful slideout save closes the panel even when it was asked
+   * to stay open — when what was being edited no longer exists as it was.
+   */
+  forceClose?: () => boolean;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -145,7 +158,7 @@ export function useSettingsSave<T extends object>(
 
         form.processing = false;
         showMessagesFromResponse(response.data);
-        options.onSuccess?.();
+        options.onSuccess?.(response.data);
 
         // An opener that registered `onSaved` refreshes itself, and knows
         // better than we do what actually needs refreshing. Before the close:
@@ -156,7 +169,7 @@ export function useSettingsSave<T extends object>(
         // which keeps the panel open. `force` because the form can still read
         // dirty right after a save — Inertia only clears that when its
         // defaults are updated, which the page behind does on reload.
-        if (redirect !== false) {
+        if (redirect !== false || options.forceClose?.()) {
           slideout!.close({force: true});
         }
 
@@ -194,6 +207,10 @@ export function useSettingsSave<T extends object>(
             });
 
           return;
+        }
+
+        if (error.response?.data) {
+          options.onError?.(error.response.data);
         }
 
         const errors = error.response?.data?.errors;
@@ -264,21 +281,37 @@ export function useSettingsSave<T extends object>(
         });
     }
 
-    if (passwordConfirmation?.required(form.data())) {
-      void elevatedSession
-        .require({
-          minimumRemainingSeconds: passwordConfirmation.minimumRemainingSeconds,
-        })
-        .then((confirmed) => {
-          if (confirmed) {
-            submit();
-          }
-        });
+    if (options.prepare) {
+      const prepare = options.prepare;
+      void prepare().then((ready) => {
+        if (ready) {
+          confirmAndSubmit();
+        }
+      });
 
       return;
     }
 
-    submit();
+    confirmAndSubmit();
+
+    function confirmAndSubmit(): void {
+      if (passwordConfirmation?.required(form.data())) {
+        void elevatedSession
+          .require({
+            minimumRemainingSeconds:
+              passwordConfirmation.minimumRemainingSeconds,
+          })
+          .then((confirmed) => {
+            if (confirmed) {
+              submit();
+            }
+          });
+
+        return;
+      }
+
+      submit();
+    }
   }
 
   return {save};

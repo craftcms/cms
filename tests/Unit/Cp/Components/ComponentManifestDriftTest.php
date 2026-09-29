@@ -197,65 +197,6 @@ function cpDriftWcOnlyAllowlist(): array
 }
 
 /**
- * PHP hostAttributes keys that are expected to have NO web-component attribute
- * counterpart — genuine server-side / structural concerns. Used only to label
- * the informational "PHP-only" section of the report; it does not gate any
- * assertion.
- *
- * Keyed by tagName; values are PHP hostAttributes keys.
- *
- * @return array<string, list<string>>
- */
-function cpDriftExpectedPhpOnly(): array
-{
-    return [
-        // Global / structural HTML attributes the WC does not declare in the
-        // manifest. `aria-label` is here because naming an element is the
-        // consumer's job — no component declares an attribute for it.
-        '*' => ['id', 'class', 'style', 'role', 'aria', 'aria-label', 'data', 'slot'],
-
-        // craft-button: `type`/`disabled` are native/global; `active` and `command`
-        // are PHP conveniences (pressed state, Invoker Commands API).
-        'craft-button' => ['type', 'active', 'disabled', 'command'],
-
-        // craft-field: `label` is a WC slot; `readonly`/`disabled` are native;
-        // `label-sr-only` is Lion-inherited (not in the manifest).
-        'craft-field' => ['label', 'label-sr-only', 'readonly', 'disabled'],
-
-        // craft-switch: native input state / a slot, not declared manifest attributes.
-        'craft-switch' => ['checked', 'disabled', 'label'],
-
-        // craft-input / craft-textarea: Lion-inherited control properties
-        // (not in the manifest, which only lists own declarations). They must
-        // live on the host because Lion pushes them onto the slotted control
-        // on upgrade (LionInput/LionTextarea `updated()`), clobbering
-        // server-rendered attributes with its defaults otherwise.
-        'craft-input' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
-        // craft-input-copy extends craft-input, inheriting the same
-        // Lion-pushed control properties.
-        'craft-input-copy' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
-        'craft-input-money' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
-        'craft-select' => ['label', 'label-sr-only', 'name', 'disabled', 'required'],
-        // craft-input-password / craft-input-color extend LionInput directly (no
-        // craft-input host props), so they only carry the Lion-pushed control
-        // props; `type` is owned by the component (password reveal / color
-        // picker), not server-set.
-        'craft-input-password' => ['placeholder', 'name', 'disabled', 'readonly'],
-        'craft-input-color' => ['placeholder', 'name', 'disabled', 'readonly'],
-        'craft-textarea' => ['placeholder', 'name', 'disabled', 'readonly', 'rows'],
-
-        // craft-icon: `data-color` is the global palette-scoping attribute
-        // (colorable.css), not a declared component property.
-        'craft-icon' => ['data-color'],
-
-        // craft-tabs: `selected-index` is declared by LionTabs, so it is a real
-        // public input but absent from the manifest, which only lists own
-        // declarations.
-        'craft-tabs' => ['selected-index'],
-    ];
-}
-
-/**
  * Genuine, currently-UNRESOLVED coverage drift: WC attributes that are real
  * public inputs the PHP builder does not yet emit. Deliberately NOT waved
  * through the allowlist — surfacing them is the point. A tripwire test guards
@@ -284,7 +225,7 @@ function cpDriftKnownGaps(): array
  *     name: string, class: class-string<ViewComponent>, tag: string,
  *     tagInManifest: bool, error: ?string,
  *     wcAttrs: list<string>, phpKeys: list<string>,
- *     uncovered: list<string>, knownGaps: list<string>, phpOnly: list<string>,
+ *     uncovered: list<string>, knownGaps: list<string>,
  * }>
  */
 function cpDriftAnalyze(): array
@@ -306,7 +247,6 @@ function cpDriftAnalyze(): array
             'phpKeys' => [],
             'uncovered' => [],
             'knownGaps' => [],
-            'phpOnly' => [],
         ];
 
         try {
@@ -336,13 +276,6 @@ function cpDriftAnalyze(): array
                     $row['knownGaps'][] = $attr;
                 } else {
                     $row['uncovered'][] = $attr;
-                }
-            }
-
-            // PHP keys with no WC attribute counterpart (informational).
-            foreach ($phpKeys as $key) {
-                if (! in_array($key, $row['wcAttrs'], true)) {
-                    $row['phpOnly'][] = $key;
                 }
             }
         } catch (Throwable $e) {
@@ -460,65 +393,4 @@ describe('known unresolved gaps (tripwire)', function () {
             }
         }
     });
-});
-
-it('prints a full drift report', function () {
-    $rows = cpDriftAnalyze();
-
-    $expectedPhpOnly = cpDriftExpectedPhpOnly();
-    $globalPhpOnly = $expectedPhpOnly['*'] ?? [];
-
-    $lines = [];
-    $lines[] = '';
-    $lines[] = '=========================================================================';
-    $lines[] = ' CP component <-> web-component attribute drift report';
-    $lines[] = ' manifest: packages/craftcms-ui/dist/custom-elements.json';
-    $lines[] = '=========================================================================';
-
-    $risky = cpDriftCamelCaseImplicitAttributes();
-    $lines[] = ' convention (implicit-attribute properties): '
-        .($risky ? implode(', ', array_map(fn ($r) => "<{$r['tag']}> {$r['attr']}", $risky)) : '(none — clean)');
-    $lines[] = '=========================================================================';
-
-    foreach ($rows as $name => $row) {
-        $lines[] = '';
-        $lines[] = sprintf('• %s  =>  %s  (<%s>)', $name, class_basename($row['class']), $row['tag']);
-
-        if ($row['error'] !== null) {
-            $lines[] = '    ERROR: '.$row['error'];
-
-            continue;
-        }
-
-        if (! $row['tagInManifest']) {
-            $lines[] = '    FRICTION: tag is not a manifest custom element — no WC API to compare against.';
-
-            continue;
-        }
-
-        $lines[] = '    WC attrs   : '.($row['wcAttrs'] ? implode(', ', $row['wcAttrs']) : '(none)');
-        $lines[] = '    PHP keys   : '.($row['phpKeys'] ? implode(', ', $row['phpKeys']) : '(none)');
-
-        $lines[] = '    WC missing from PHP (undocumented): '
-            .($row['uncovered'] ? implode(', ', $row['uncovered']) : '(none)');
-
-        $lines[] = '    WC missing from PHP (KNOWN GAP)   : '
-            .($row['knownGaps'] ? implode(', ', $row['knownGaps']) : '(none)');
-
-        // Split PHP-only into expected (structural/native) vs. worth-a-look.
-        $expected = array_merge($globalPhpOnly, $expectedPhpOnly[$row['tag']] ?? []);
-        $unexpectedPhpOnly = array_values(array_diff($row['phpOnly'], $expected));
-        $lines[] = '    PHP-only (expected): '
-            .($row['phpOnly'] ? implode(', ', array_intersect($row['phpOnly'], $expected)) : '(none)');
-        $lines[] = '    PHP-only (review)  : '
-            .($unexpectedPhpOnly ? implode(', ', $unexpectedPhpOnly) : '(none)');
-    }
-
-    $lines[] = '';
-    $lines[] = '=========================================================================';
-
-    fwrite(STDOUT, implode("\n", $lines)."\n");
-
-    // Always passes — this test exists to emit the report.
-    expect(true)->toBeTrue();
 });

@@ -35,21 +35,6 @@
   const imageEditorOpen = ref(props.editingImage);
 
   /**
-   * The preview is server-rendered HTML, so its Edit Image button is wired by
-   * delegation once the fragment lands rather than by a template listener.
-   */
-  function onPreviewReady(element: HTMLElement): void {
-    element.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement | null;
-
-      if (target?.closest('[data-image-editor]')) {
-        event.preventDefault();
-        imageEditorOpen.value = true;
-      }
-    });
-  }
-
-  /**
    * Mirrors the editor's open state in `?editing`, so it can be linked to and
    * survives a refresh. `replaceState` rather than an Inertia visit: it's UI
    * state.
@@ -101,13 +86,7 @@
     <!-- The file preview sits above the meta fields, as in the legacy
       editor's sidebar. -->
     <template v-if="previewFragment" #details-header>
-      <div class="asset-preview">
-        <HtmlFragmentRenderer
-          :fragment="previewFragment"
-          class="mb-4"
-          @ready="onPreviewReady"
-        />
-      </div>
+      <HtmlFragmentRenderer :fragment="previewFragment" class="asset-preview" />
     </template>
   </ElementEditor>
 
@@ -132,5 +111,10 @@
     height: auto;
     max-width: 100%;
     max-height: 190px;
+    box-shadow: var(--c-shadow-2xl);
+  }
+
+  .asset-preview :deep(.preview-thumb-container) {
+    overflow: hidden;
   }
 </style>

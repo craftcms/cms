@@ -582,6 +582,7 @@ it('saves a draft owner that holds a block minted before the draft existed', fun
 });
 
 it('badges a block’s own field when that block was edited through a draft', function () {
+    $this->fixture['field']->viewMode = Matrix::VIEW_MODE_BLOCKS;
     // A block that exists on the canonical owner, then edited through a
     // provisional draft, is duplicated as a draft with a canonical behind it —
     // which is what gives it something to be "modified" against.

@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Http\Routing\ActionRouteResolver;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -211,13 +212,7 @@ class RequestMixin
             $path = (string) preg_replace('/\/\/+/', '/', trim($request->decodedPath(), '/'));
 
             if ($request->isCpRequest()) {
-                $cpTrigger = trim((string) $generalConfig->cpTrigger, '/');
-
-                if ($cpTrigger !== '' && $path === $cpTrigger) {
-                    $path = '';
-                } elseif ($cpTrigger !== '' && str_starts_with($path.'/', $cpTrigger.'/')) {
-                    $path = ltrim(substr($path, strlen($cpTrigger)), '/');
-                }
+                $path = Url::stripCpTrigger($path);
             }
 
             $actionTrigger = trim($generalConfig->actionTrigger, '/');

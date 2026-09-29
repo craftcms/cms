@@ -73,7 +73,7 @@ export default class CraftSelectedFileList extends LionSelectedFileList {
   }
 
   override _removeButtonContentTemplate() {
-    return html`<craft-icon name="x"></craft-icon>`;
+    return html`<craft-icon name="xmark-large"></craft-icon>`;
   }
 
   override _listItemBeforeTemplate(file: InputFile) {

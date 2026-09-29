@@ -30,6 +30,7 @@ import './modules/slideout';
 import './modules/fields';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
+import './modules/customize-sources';
 import './modules/element-label';
 import './modules/form-observer';
 import './modules/interval-manager';

@@ -86,7 +86,7 @@
         });
 
         items.push({
-          icon: 'xmark',
+          icon: 'xmark-large',
           label: t('Uninstall'),
           variant: 'danger',
           action: {

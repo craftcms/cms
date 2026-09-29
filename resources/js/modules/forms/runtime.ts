@@ -121,8 +121,11 @@ export function ignoreModelValueInitialization(
 export function formChangeFromEvent(
   change: FormChange | Event
 ): FormChange | null {
+  // A component that doesn't declare `change` lets the listener fall through
+  // to its root, so a child component's own `change` payload — a condition
+  // builder's config, say — can arrive here. Only a real FormChange counts.
   if (!(change instanceof Event)) {
-    return change;
+    return isFormChange(change) ? change : null;
   }
 
   const detail = change instanceof CustomEvent ? change.detail : null;

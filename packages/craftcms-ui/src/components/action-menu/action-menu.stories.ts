@@ -57,7 +57,7 @@ const meta = {
           <craft-action-item variant="danger" icon="rotate">
             Replace
           </craft-action-item>
-          <craft-action-item variant="danger" icon="x">
+          <craft-action-item variant="danger" icon="xmark-large">
             Remove
           </craft-action-item>
         </div>

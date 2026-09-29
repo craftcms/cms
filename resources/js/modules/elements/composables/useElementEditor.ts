@@ -1,8 +1,11 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
-import {actionClient, t} from '@craftcms/ui';
+import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
-import {useScreenPageProps} from '@/common/composables/screen';
+import {
+  useScreenPageProps,
+  type ScreenPageProps,
+} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {
   FormChangeKind,
@@ -16,6 +19,7 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideFormValueGroup} from '@/modules/forms/formValueGroup';
+import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -100,6 +104,11 @@ export interface ElementEditPayload {
   editorActions: ElementEditorActions;
   autosaveUrl: string;
   discardDraftUrl: string;
+  saveForDerivativeUrl?: string;
+  /** The owner a nested element is being edited through. See `contextParams()`. */
+  nestedContext?: {fieldId: number | null; ownerId: number} | null;
+  /** A brand-new element being filled in for the first time. */
+  fresh?: boolean;
   isProvisionalDraft: boolean;
   draftId: number | null;
   canAutosave: boolean;
@@ -154,6 +163,11 @@ interface Options {
    * whatever the type's save action needs to resolve the element it's saving.
    */
   saveData?: () => FormValues;
+  /**
+   * Where the screen's content is rendered. Failed saves announce invalid
+   * nested elements from here, so the nested element fields inside hear it.
+   */
+  root?: () => HTMLElement | null | undefined;
 }
 
 /**
@@ -164,7 +178,7 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData}: Options = {}) {
+export function useElementEditor({saveData, root}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -227,6 +241,12 @@ export function useElementEditor({saveData}: Options = {}) {
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<ElementEditFormData>({});
+  let refreshGeneration = 0;
+  let nestedElementsReloadPending = false;
+
+  function invalidateFormRefreshes(): void {
+    refreshGeneration++;
+  }
 
   provideFormValueGroup();
 
@@ -252,8 +272,24 @@ export function useElementEditor({saveData}: Options = {}) {
 
   useSiteStatuses(form);
 
+  /**
+   * Params every request about the element carries besides its identity.
+   *
+   * A nested element resolves through its primary owner unless it's told
+   * otherwise, so each request names the owner it's being edited through —
+   * which may be a draft of it. A fresh element says so on each save, so the
+   * server propagates it to all of its sites.
+   */
+  function contextParams(): FormValues {
+    return {
+      ...props.nestedContext,
+      ...(props.fresh ? {fresh: 1} : {}),
+    };
+  }
+
   const autosave = useElementAutosave(form, {
     url: props.autosaveUrl,
+    params: contextParams,
     elementType: props.elementType,
     elementId: props.canonicalId,
     siteId: props.siteId,
@@ -264,7 +300,12 @@ export function useElementEditor({saveData}: Options = {}) {
     // has to re-baseline against what the save just wrote — otherwise it reads
     // our own keystrokes back as an edit from elsewhere. `activity` is
     // initialized just below; this only ever runs after a save settles.
-    onSaved: (timestamps) => activity.rebase(timestamps),
+    onSaved: (timestamps, response) => {
+      activity.rebase(timestamps);
+      // The draft is what an opener shows until the element is saved, so it
+      // hears about each one — debounced on its side.
+      slideout?.saved({draft: true, data: response as ScreenPageProps});
+    },
   });
 
   /**
@@ -293,6 +334,35 @@ export function useElementEditor({saveData}: Options = {}) {
     isProvisionalDraft: () => draftIsProvisional.value,
     updatedTimestamps: props.updatedTimestamps,
   });
+
+  useEventListener(
+    () => window.Craft?.broadcaster,
+    'message',
+    (event: MessageEvent) => {
+      const data = event.data;
+      const draftId = autosave.draftId.value ?? props.draftId;
+      if (
+        data.event === 'reorderNestedElements' &&
+        data.canonicalId === props.canonicalId &&
+        (data.draftId === draftId || (data.isProvisionalDraft && !draftId))
+      ) {
+        if (slideout) {
+          if (
+            form.processing ||
+            autosave.hasPendingChanges.value ||
+            hasUnsavedChanges()
+          ) {
+            nestedElementsReloadPending = true;
+            return;
+          }
+
+          void slideout.reload();
+        } else {
+          router.reload();
+        }
+      }
+    }
+  );
 
   // Applying a draft consumes it, and Inertia preserves this component across
   // the visit, so the server's view of the draft is authoritative afterwards.
@@ -327,6 +397,7 @@ export function useElementEditor({saveData}: Options = {}) {
         return;
       }
 
+      invalidateFormRefreshes();
       applyingSavedPayload = true;
 
       if (form) {
@@ -354,6 +425,7 @@ export function useElementEditor({saveData}: Options = {}) {
   watch(
     () => pageProps(),
     () => {
+      invalidateFormRefreshes();
       savedForm.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
@@ -388,16 +460,114 @@ export function useElementEditor({saveData}: Options = {}) {
     }
   }
 
+  /**
+   * Re-renders the field layout from the server, keeping unsaved values.
+   *
+   * Resolves with the server's response once it's been applied, or nothing
+   * when a newer refresh superseded it.
+   */
+  async function refreshForm(
+    scope: string[] = formPayload.value?.scope ?? []
+  ): Promise<FormValues | undefined> {
+    const generation = ++refreshGeneration;
+    const rootScope = formPayload.value?.scope ?? [];
+    const currentValues = renderer.value?.currentValues() ?? values.value;
+    const {data: response} = await actionClient.post(
+      UpdateFieldLayoutController.url(),
+      {
+        ...saveData?.(),
+        ...currentValues,
+        ...contextParams(),
+        elementType: props.elementType,
+        elementId: props.elementId,
+        draftId: autosave.draftId.value ?? props.draftId,
+        siteId: props.siteId,
+        provisional: draftIsProvisional.value ? 1 : null,
+      },
+      {
+        headers: {
+          'X-Craft-Form-Root-Scope': JSON.stringify(rootScope),
+          'X-Craft-Form-Scope': JSON.stringify(scope),
+        },
+      }
+    );
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    if (!response.form) {
+      throw new Error('The Element Editor did not return a Form payload.');
+    }
+
+    await appendHeadHtml(response.headHtml);
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    applyingSavedPayload = true;
+    savedForm.value = response.form;
+    await nextTick();
+    applyingSavedPayload = false;
+
+    if (generation !== refreshGeneration) {
+      return;
+    }
+
+    await appendBodyHtml(response.bodyHtml);
+
+    return response;
+  }
+
   // Set for the duration of one submission when an alternate action owns it,
   // so the shared save pipeline (elevated sessions, error handling, the
   // processing flag) is reused rather than reimplemented per action.
   const pendingAction = ref<ElementFormAction | null>(null);
   const activityTimelineVersion = ref(0);
 
+  /**
+   * The owner draft a nested element's changes are being saved into, when the
+   * opener asked for that. Set just before each save; see `prepareNestedOwner`.
+   */
+  const nestedOwnerId = ref<number | null>(null);
+
+  async function prepareNestedOwner(): Promise<boolean> {
+    nestedOwnerId.value = null;
+
+    try {
+      const ownerId = await slideout!.instance.prepareNestedOwner!();
+
+      if (!ownerId) {
+        return true;
+      }
+
+      // Only a draft of the nested element can be moved into the owner's draft.
+      if (autosave.draftId.value === null) {
+        await autosave.save();
+      }
+
+      if (autosave.draftId.value === null) {
+        throw new Error(t('Could not save the nested entry draft.'));
+      }
+
+      nestedOwnerId.value = ownerId;
+
+      return true;
+    } catch (error) {
+      window.Craft?.cp?.displayError(
+        error instanceof Error ? error.message : t('Couldn’t save.')
+      );
+
+      return false;
+    }
+  }
+
   const {save} = useSettingsSave(
     form,
     () => ({
       url:
+        (nestedOwnerId.value !== null ? props.saveForDerivativeUrl : null) ??
         pendingAction.value?.actionUrl ??
         props.editorActions.primary.actionUrl ??
         (autosave.draftId.value !== null ? props.applyDraftUrl : props.saveUrl),
@@ -426,6 +596,11 @@ export function useElementEditor({saveData}: Options = {}) {
           }
         }
 
+        Object.assign(transformed, contextParams());
+        if (nestedOwnerId.value !== null) {
+          Object.assign(transformed, {newOwnerId: nestedOwnerId.value});
+        }
+
         const action = pendingAction.value ?? props.editorActions.primary;
         Object.assign(transformed, action.params);
         if (action.redirect) {
@@ -434,9 +609,36 @@ export function useElementEditor({saveData}: Options = {}) {
 
         return transformed;
       },
+      prepare: slideout?.instance.prepareNestedOwner
+        ? prepareNestedOwner
+        : undefined,
+      // Saved into the owner's draft, the nested draft this panel was editing
+      // is gone, so there's nothing left to keep editing.
+      forceClose: () => nestedOwnerId.value !== null,
+      onError: (data) => {
+        if (data?.message) {
+          window.Craft?.cp?.displayError(data.message);
+        }
+
+        if (Array.isArray(data?.invalidNestedElementIds)) {
+          root?.()?.dispatchEvent(
+            new CustomEvent('craft:nested-validation', {
+              bubbles: true,
+              detail: {ids: data.invalidNestedElementIds},
+            })
+          );
+        }
+      },
       // A submission supersedes any in-flight draft write.
-      onBeforeSave: () => autosave.cancel(),
-      onSuccess: () => {
+      onBeforeSave: () => {
+        invalidateFormRefreshes();
+        autosave.cancel();
+      },
+      onSuccess: (data) => {
+        if (slideout) {
+          announceSaved(data);
+        }
+
         autosave.suspend(() => {
           advanceBaseline();
           advanceSidebarBaseline();
@@ -446,6 +648,7 @@ export function useElementEditor({saveData}: Options = {}) {
         // prompted it — describes values this save has just written, and
         // applying a provisional draft deletes the draft it would write them to.
         autosave.cancel();
+        autosave.acknowledgeChanges();
 
         if (!slideout) {
           // The save itself moved the element's `dateUpdated`; without this the
@@ -508,7 +711,52 @@ export function useElementEditor({saveData}: Options = {}) {
       // Anything already on the autosave debounce — the keystroke that
       // triggered all this — describes values that no longer exist.
       autosave.cancel();
+      autosave.acknowledgeChanges();
     }
+  }
+
+  /**
+   * Catches the screen up with a change it made to one of its nested elements
+   * — one created, saved, moved or deleted from inside it.
+   *
+   * Saving a nested element into this one bumps this one's `dateUpdated`.
+   * That's this screen's own doing, not someone else's edit, so the activity
+   * poll is re-baselined on what the server now reports rather than left to
+   * flag it.
+   */
+  async function refreshAfterNestedChange(): Promise<void> {
+    const response = await refreshForm();
+
+    if (response && 'updatedTimestamp' in response) {
+      activity.rebase({
+        element: (response.updatedTimestamp as number | null) ?? null,
+        canonical:
+          (response.canonicalUpdatedTimestamp as number | null) ?? null,
+      });
+    }
+  }
+
+  /**
+   * What a save from inside a panel tells the rest of the CP, since the page
+   * behind it isn't reloaded: the confirmation, other tabs and element indexes
+   * (via the broadcaster), and Live Preview.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function announceSaved(data: any): void {
+    const craft = window.Craft;
+
+    if (data?.message) {
+      craft?.cp?.displaySuccess(data.message, data.notificationSettings);
+    }
+
+    if (data?.element?.id) {
+      craft?.broadcaster?.postMessage({
+        event: 'saveElement',
+        id: data.element.id,
+      });
+    }
+
+    craft?.Preview?.refresh?.();
   }
 
   /** Throws away the provisional draft, reverting to the canonical element. */
@@ -517,6 +765,8 @@ export function useElementEditor({saveData}: Options = {}) {
       return;
     }
 
+    invalidateFormRefreshes();
+
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
     reverting++;
@@ -524,6 +774,7 @@ export function useElementEditor({saveData}: Options = {}) {
 
     try {
       await actionClient.post(props.discardDraftUrl, {
+        ...contextParams(),
         elementType: props.elementType,
         elementId: props.canonicalId,
         siteId: props.siteId,
@@ -580,6 +831,28 @@ export function useElementEditor({saveData}: Options = {}) {
     return !props.canAutosave || autosave.status.value !== 'saved';
   }
 
+  if (slideout) {
+    watch(
+      [
+        () => form.processing,
+        () => form.isDirty,
+        autosave.status,
+        autosave.hasPendingChanges,
+      ],
+      () => {
+        if (
+          nestedElementsReloadPending &&
+          !form.processing &&
+          !autosave.hasPendingChanges.value &&
+          !hasUnsavedChanges()
+        ) {
+          nestedElementsReloadPending = false;
+          void slideout.reload();
+        }
+      }
+    );
+  }
+
   // Only on a full page. A panel's unsaved changes are the slideout store's to
   // guard — it prompts on close and on being replaced — and these would fire on
   // the base page's own navigation, including the reload that follows a
@@ -607,6 +880,8 @@ export function useElementEditor({saveData}: Options = {}) {
     onBeforeUnmount(removeNavigationGuard);
   }
 
+  onBeforeUnmount(invalidateFormRefreshes);
+
   return {
     activity,
     activityTimelineVersion,
@@ -620,6 +895,8 @@ export function useElementEditor({saveData}: Options = {}) {
     onSidebarMutation,
     props,
     renderer,
+    refreshAfterNestedChange,
+    refreshForm,
     save,
     sidebarErrors,
     sidebarPayload,

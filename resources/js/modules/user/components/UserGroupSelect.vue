@@ -104,7 +104,7 @@
         <craft-button
           v-if="editable"
           slot="suffix"
-          icon="x"
+          icon="xmark-large"
           type="button"
           size="small"
           @click="removeGroup(group.id)"

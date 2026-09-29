@@ -295,7 +295,7 @@
                   {
                     label: t('Remove'),
                     variant: 'danger',
-                    icon: 'x',
+                    icon: 'xmark-large',
                     onClick: () => removeItem(entryType.id),
                   },
                 ]

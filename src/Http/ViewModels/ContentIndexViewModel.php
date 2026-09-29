@@ -865,7 +865,10 @@ abstract class ContentIndexViewModel extends ViewModel
         // Not every element type has a `*` source (assets index per-volume,
         // for example), so mirror the legacy index's behavior and fall back
         // to the first available source.
-        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key']) && ! ($source['disabled'] ?? false));
+        // Headings are keyed too, but only head the sources beneath them.
+        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key'])
+            && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
+            && ! ($source['disabled'] ?? false));
         $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
             ?? array_first($sources);
 
@@ -1105,6 +1108,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
+            'label' => $element->getUiLabel(),
             ...$this->extraRowData($element),
             ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
             ...collect($attributes)
@@ -1136,8 +1140,6 @@ abstract class ContentIndexViewModel extends ViewModel
             // Required by `structures/move-element`, which validates
             // structureId/elementId/siteId before it will move anything.
             'siteId' => $element->siteId,
-            // Plain-text name for the row's expand/collapse toggle.
-            'label' => $element->getUiLabel(),
         ];
     }
 
@@ -1246,6 +1248,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
             return [
                 'id' => $this->rowId($element),
+                'label' => $element->getUiLabel(),
                 ...$this->extraRowData($element),
                 'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
                 'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),

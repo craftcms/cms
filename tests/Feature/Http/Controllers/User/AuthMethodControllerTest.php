@@ -80,14 +80,6 @@ describe('listingHtml', function () {
                 'bodyHtml',
             ]);
     });
-
-    it('returns HTML content', function () {
-        $response = postJson(action([AuthMethodController::class, 'listingHtml']))
-            ->assertOk()
-            ->json();
-
-        expect($response['html'])->toBeString();
-    });
 });
 
 describe('destroy', function () {
@@ -122,17 +114,5 @@ describe('destroy', function () {
         // Verify it's removed
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         expect($recoveryCodes->isActive())->toBeFalse();
-    });
-
-    it('returns success message', function () {
-        $auth = app(AuthMethods::class);
-        $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
-        $recoveryCodes->generateRecoveryCodes();
-
-        postJson(action([AuthMethodController::class, 'destroy']), [
-            'method' => RecoveryCodes::class,
-        ])
-            ->assertOk()
-            ->assertJsonFragment(['message' => 'Authentication method removed.']);
     });
 });

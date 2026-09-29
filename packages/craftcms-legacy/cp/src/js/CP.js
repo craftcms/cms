@@ -2524,7 +2524,7 @@ Craft.CP.Notification = Garnish.Base.extend(
       button.setAttribute('size', 'small');
       button.setAttribute('icon', '');
       const icon = document.createElement('craft-icon');
-      icon.setAttribute('name', 'xmark');
+      icon.setAttribute('name', 'xmark-large');
       icon.setAttribute('label', label);
       button.append(icon);
 

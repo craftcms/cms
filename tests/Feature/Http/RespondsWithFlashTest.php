@@ -27,7 +27,7 @@ class TestFlashController extends Controller
 
     public function failure()
     {
-        return $this->asFailure('Failure message', ['error' => 'details']);
+        return $this->asFailure('Failure message', ['error' => 'details', 'key' => 'value']);
     }
 
     public function failureWithoutData()
@@ -108,8 +108,11 @@ it('asSuccess redirects with flash for HTML request', function () {
 });
 
 it('asFailure redirects with flash for HTML request', function () {
-    post('/test-flash/failure')
-        ->assertRedirect();
+    post('/test-flash/failure', ['title' => 'Posted title'])
+        ->assertRedirect()
+        ->assertSessionHas('error', 'Failure message')
+        ->assertSessionHas('key', 'value')
+        ->assertSessionHasInput('title', 'Posted title');
 });
 
 it('asFailure puts validation messages in the error bag and keeps its summary message', function () {

@@ -196,7 +196,7 @@ export default class CraftCopyButton extends LitElement {
         </slot>
 
         <slot name="error-icon" part="error-icon" hidden>
-          <craft-icon name="x"></craft-icon>
+          <craft-icon name="xmark-large"></craft-icon>
         </slot>
 
         <craft-visually-hidden>Copy to clipboard</craft-visually-hidden>

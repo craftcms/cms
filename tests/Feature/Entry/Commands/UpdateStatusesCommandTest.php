@@ -5,12 +5,16 @@ declare(strict_types=1);
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -133,4 +137,40 @@ it('skips entries that already have the correct stored status', function () {
         ->assertSuccessful();
 
     expect(DB::table(Table::ENTRIES)->where('id', $unchangedEntry->id)->value('status'))->toBe(EntryElement::STATUS_LIVE);
+});
+
+it('reports entries owned by a revision as skipped revisions', function () {
+    DateTimeHelper::pause(new DateTime('2026-03-24 12:00:00', new DateTimeZone('UTC')));
+
+    $field = Field::factory()->create(['type' => ContentBlock::class]);
+    Fields::refreshFields();
+
+    $owner = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement(['postDate' => '2026-03-24 10:00:00']);
+    $revisionId = app(Revisions::class)->createRevision($owner);
+
+    $nested = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->title('Nested entry')
+        ->create([
+            'primaryOwnerId' => $revisionId,
+            'fieldId' => $field->id,
+            'status' => EntryElement::STATUS_PENDING,
+            'postDate' => '2026-03-24 11:00:00',
+        ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $nested->id,
+        'ownerId' => $revisionId,
+        'sortOrder' => 1,
+    ]);
+
+    $this->artisan('craft:update-statuses')
+        ->expectsOutputToContain("error: Skipped resaving Nested entry ({$nested->id}) because it's a revision.")
+        ->assertSuccessful();
+
+    expect(DB::table(Table::ENTRIES)->where('id', $nested->id)->value('status'))->toBe(EntryElement::STATUS_PENDING);
 });

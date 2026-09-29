@@ -54,7 +54,7 @@
         <craft-button
           slot="header-actions"
           type="button"
-          icon="x"
+          icon="xmark-large"
           :aria-label="t('Close')"
           variant="plain"
           size="small"

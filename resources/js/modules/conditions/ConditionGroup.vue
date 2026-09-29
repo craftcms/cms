@@ -103,7 +103,7 @@
         slot="header-actions"
         v-if="!root && editor.editable()"
         type="button"
-        icon="xmark"
+        icon="xmark-large"
         variant="danger-plain"
         size="small"
         :aria-label="t('Remove group')"

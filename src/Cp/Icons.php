@@ -52,7 +52,7 @@ readonly class Icons
         'plugin' => 'plug',
         'rarr' => 'arrow-right',
         'refresh' => 'arrows-rotate',
-        'remove' => 'xmark',
+        'remove' => 'xmark-large',
         'rightangle' => 'angle-right',
         'rotate' => 'rotate-left',
         'routes' => 'signs-post',

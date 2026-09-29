@@ -97,7 +97,9 @@ describe('DateTimeControl', () => {
     expect(input).not.toBeNull();
     expect(input!.dateValue).toBe('');
     expect(input!.timeValue).toBe('');
-    expect(container!.querySelector('.clear-btn')).toBeNull();
+    expect(
+      container!.querySelector('craft-button[aria-label="Clear"]')
+    ).toBeNull();
   });
 
   it('renders the value it was given', async () => {
@@ -111,6 +113,8 @@ describe('DateTimeControl', () => {
 
     expect(input.dateValue).toBe('2026-08-07');
     expect(input.timeValue).toBe('14:30');
-    expect(container!.querySelector('.clear-btn')).not.toBeNull();
+    expect(
+      container!.querySelector('craft-button[aria-label="Clear"]')
+    ).not.toBeNull();
   });
 });

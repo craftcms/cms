@@ -116,6 +116,8 @@ it('returns updated field layout data for existing elements', function () {
             ->where('element.slug', 'updated-title')
             ->where('form.scope', ['editor', 'entry'])
             ->where('form.values.editor.entry.title', 'Updated Title')
+            ->where('updatedTimestamp', $entry->dateUpdated->getTimestamp())
+            ->where('canonicalUpdatedTimestamp', $entry->dateUpdated->getTimestamp())
             ->has('form.nodes')
             ->has('initialDeltaValues')
             ->has('headHtml')

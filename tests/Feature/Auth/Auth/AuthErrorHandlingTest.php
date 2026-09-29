@@ -14,61 +14,29 @@ beforeEach(function () {
     Session::flush();
 });
 
-test('getAuthError for inactive user', function () {
-    $user = UserModel::factory()->createElement([
-        'active' => false,
-        'pending' => false,
-        'suspended' => false,
-    ]);
+dataset('unavailable user states', [
+    'inactive' => [['active' => false, 'pending' => false, 'suspended' => false], 60, AuthError::InvalidCredentials],
+    'pending' => [['pending' => true], 60, AuthError::PendingVerification],
+    'suspended' => [['suspended' => true], 60, AuthError::AccountSuspended],
+    'locked with cooldown' => [fn () => ['locked' => true, 'invalidLoginCount' => 2, 'lockoutDate' => now()], 60, AuthError::AccountCooldown],
+    'locked without cooldown' => [fn () => ['locked' => true, 'invalidLoginCount' => 2, 'lockoutDate' => now()], null, AuthError::AccountLocked],
+    'password reset required' => [['passwordResetRequired' => true], 60, AuthError::PasswordResetRequired],
+]);
 
-    $result = $this->auth->getAuthError($user);
+test('getAuthError reports why the user cannot sign in', function (array $attributes, ?int $cooldownDuration, AuthError $expected) {
+    Cms::config()->cooldownDuration = $cooldownDuration;
+    $user = UserModel::factory()->createElement($attributes);
 
-    expect($result)->toBe(AuthError::InvalidCredentials);
-});
+    expect($this->auth->getAuthError($user))->toBe($expected);
+})->with('unavailable user states');
 
-test('getAuthError for pending user', function () {
-    $user = UserModel::factory()->pending()->createElement();
+test('authenticate rejects a correct password with the user state error', function (array $attributes, ?int $cooldownDuration, AuthError $expected) {
+    Cms::config()->cooldownDuration = $cooldownDuration;
+    $user = UserModel::factory()->createElement($attributes);
 
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::PendingVerification);
-});
-
-test('getAuthError for suspended user', function () {
-    $user = UserModel::factory()->suspended()->createElement();
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::AccountSuspended);
-});
-
-test('getAuthError for locked user with cooldown', function () {
-    $user = UserModel::factory()->locked()->createElement();
-
-    Cms::config()->cooldownDuration = 60;
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::AccountCooldown);
-});
-
-test('getAuthError for locked user no cooldown', function () {
-    $user = UserModel::factory()->locked()->createElement();
-
-    Cms::config()->cooldownDuration = null;
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::AccountLocked);
-});
-
-test('getAuthError for password reset required', function () {
-    $user = UserModel::factory()->createElement(['passwordResetRequired' => true]);
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::PasswordResetRequired);
-});
+    expect($this->auth->authenticate($user, ['password' => 'password']))->toBeFalse()
+        ->and($this->auth->authError)->toBe($expected);
+})->with('unavailable user states');
 
 test('getAuthError uses explicit CP context or defaults to the request', function (bool $cpRequest, ?bool $cpContext, ?AuthError $expected) {
     Edition::set(Edition::Pro);

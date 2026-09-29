@@ -609,7 +609,9 @@
                 })
               "
             >
-              <label slot="label">{{ t('Select row') }}</label>
+              <label slot="label">{{
+                t('Select {label}', {label: rowLabel(row)})
+              }}</label>
             </craft-checkbox>
           </td>
           <component

@@ -344,6 +344,15 @@ export function useElementEditor(
       showErrors(data.errors);
     }
 
+    if (Array.isArray(data.invalidNestedElementIds)) {
+      toValue(options.regions.content)?.dispatchEvent(
+        new CustomEvent('craft:nested-validation', {
+          bubbles: true,
+          detail: {ids: data.invalidNestedElementIds},
+        })
+      );
+    }
+
     if (data.errorSummary) {
       showErrorSummary(
         data.errorSummary,
@@ -425,11 +434,42 @@ export function useElementEditor(
       return;
     }
 
-    // A save from anywhere other than the form itself hasn't been through the
-    // editor's change tracking yet; saving the draft first keeps the tab error
-    // indicators in sync with what's about to be submitted.
-    if (event.type !== 'submit' && instance.settings.canCreateDrafts) {
-      await instance.saveDraft();
+    try {
+      // A save outside the form hasn't passed through change tracking yet.
+      if (event.type !== 'submit' && instance.settings.canCreateDrafts) {
+        await instance.saveDraft();
+      }
+
+      const panel = options.slideout?.instance;
+      if (panel?.prepareNestedOwner) {
+        panel.nestedOwnerId = await panel.prepareNestedOwner();
+      }
+
+      if (panel?.nestedOwnerId) {
+        if (!instance.settings.draftId) {
+          await instance.saveDraft();
+        }
+
+        if (!instance.settings.draftId) {
+          throw new Error(
+            craft().t('app', 'Could not save the nested entry draft.')
+          );
+        }
+
+        instance.settings.saveParams = {
+          ...instance.settings.saveParams,
+          action: 'elements/save-nested-element-for-derivative',
+          newOwnerId: panel.nestedOwnerId,
+        };
+      }
+    } catch (error) {
+      craft().cp.displayError(
+        error instanceof Error
+          ? error.message
+          : craft().t('app', 'Couldn’t save.')
+      );
+
+      return;
     }
 
     saving.value = true;

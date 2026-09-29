@@ -13,6 +13,7 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -35,7 +36,7 @@ trait UpdatesFieldLayout
             new FormContext(
                 namespace: $this->fieldLayoutRootScope(),
                 errors: $element->errors()->getMessages(),
-                mode: ControlMode::Editable,
+                mode: Gate::check('save', $element) ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
         );
@@ -114,7 +115,7 @@ trait UpdatesFieldLayout
             throw new BadRequestHttpException("Invalid {$header} header.", $exception);
         }
 
-        if (! is_array($scope) || ! array_is_list($scope) || ! array_all($scope, is_string(...))) {
+        if (! is_array($scope) || ! array_is_list($scope) || ! array_all($scope, fn ($segment) => is_string($segment))) {
             throw new BadRequestHttpException("Invalid {$header} header.");
         }
 

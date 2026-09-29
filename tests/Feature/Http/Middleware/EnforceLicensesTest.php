@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
@@ -37,7 +38,10 @@ it('passes through if no license issues', function () {
     putenv('CRAFT_NO_TRIALS=true');
 
     $mockLicense = Mockery::mock(License::class)->makePartial();
-    $mockLicense->shouldReceive('issues')->with(false)->andReturn([]);
+    $mockLicense->shouldReceive('issues')
+        ->once()
+        ->with([LicenseKeyStatus::Trial->value, LicenseKeyStatus::Astray->value, 'wrong_edition'])
+        ->andReturn([]);
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');

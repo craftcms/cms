@@ -31,6 +31,11 @@ export default css`
     display: flex;
   }
 
+  .cp-chip input[type='checkbox'] {
+    margin-inline-start: var(--c-spacing-md);
+    margin-inline-end: 0;
+  }
+
   /*
    * Appearance tiers, mirroring craft-callout so the two read at the same
    * intensity for a given variant. The variant remaps the generic

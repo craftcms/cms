@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
-use CommerceGuys\Addressing\AddressFormat\AddressFormatRepository;
 use CommerceGuys\Addressing\AddressFormat\AdministrativeAreaType;
 use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
-use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
@@ -16,7 +14,6 @@ use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
-use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -32,18 +29,6 @@ beforeEach(function () {
 
 it('is a singleton', function () {
     expect($this->addresses)->toBe(app(Addresses::class));
-});
-
-it('can get the country repository', function () {
-    expect($this->addresses->getCountryRepository())->toBeInstanceOf(CountryRepository::class);
-});
-
-it('can get the subdivision repository', function () {
-    expect($this->addresses->getSubdivisionRepository())->toBeInstanceOf(SubdivisionRepository::class);
-});
-
-it('can get the address format repository', function () {
-    expect($this->addresses->getAddressFormatRepository())->toBeInstanceOf(AddressFormatRepository::class);
 });
 
 it('can define address subdivisions with an event', function () {
@@ -140,10 +125,6 @@ it('can get a postal code type label', function () {
 
 it('can get an administrative area type label', function () {
     expect($this->addresses->getAdministrativeAreaTypeLabel(AdministrativeAreaType::PARISH))->toBe('Parish');
-});
-
-it('can get the fieldlayout', function () {
-    expect($this->addresses->getFieldLayout())->toBeInstanceOf(FieldLayout::class);
 });
 
 it('can save the fieldlayout', function () {

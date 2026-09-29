@@ -170,15 +170,17 @@ final class UpdateStatusesCommand extends Command implements Isolatable
         $label = $label !== '' ? "$label ($entry->id)" : sprintf('%s %s', $entry::lowerDisplayName(), $entry->id);
 
         try {
-            if (ElementHelper::isRevision($entry)) {
-                throw new InvalidElementException($entry, "Skipped resaving $label because it's a revision.");
-            }
+            $isRevision = ElementHelper::isRevision($entry);
         } catch (Throwable $exception) {
             throw new InvalidElementException(
                 $entry,
                 "Skipped resaving $label due to an error obtaining its root element: {$exception->getMessage()}",
                 previous: $exception,
             );
+        }
+
+        if ($isRevision) {
+            throw new InvalidElementException($entry, "Skipped resaving $label because it's a revision.");
         }
     }
 }

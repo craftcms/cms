@@ -272,7 +272,8 @@ export default class CraftInputDateTime extends LitElement {
     // of its own each input is announced only as an edit field, so a person
     // tabbing between them is told twice that they are somewhere they can
     // type and never which half they are in.
-    input.setAttribute('aria-label', PART_LABELS[part]?.() ?? part);
+    input.label = PART_LABELS[part]?.() ?? part;
+    input.labelSrOnly = true;
   }
 
   #onModelValueChanged = (event: Event) => {

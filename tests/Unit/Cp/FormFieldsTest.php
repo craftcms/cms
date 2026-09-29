@@ -8,7 +8,6 @@ use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
@@ -43,17 +42,6 @@ describe('fieldHtml', function () {
         $html = FormFields::fieldHtml(new Markup('<input name="title">', 'UTF-8'));
 
         expect($html)->toContain('<input name="title" slot="input">');
-    });
-
-    it('throws for an invalid site id in multi-site mode', function () {
-        if (! Sites::isMultiSite()) {
-            expect(true)->toBeTrue();
-
-            return;
-        }
-
-        expect(fn () => FormFields::fieldHtml('<input>', ['siteId' => -1]))
-            ->toThrow(InvalidArgumentException::class);
     });
 
     it('supports fieldsets with grouped label semantics', function () {

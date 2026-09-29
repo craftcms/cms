@@ -130,7 +130,7 @@
           v-if="editor.editable()"
           type="button"
           class="ms-auto self-center"
-          icon="xmark"
+          icon="xmark-large"
           variant="danger-plain"
           size="small"
           :aria-label="t('Remove')"

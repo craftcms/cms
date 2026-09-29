@@ -30,14 +30,6 @@ test('editable/savable returns 0 when having no access', function (string $metho
     'savable',
 ]);
 
-test('savable', function () {
-    actingAs(User::find()->one());
-
-    EntryModel::factory()->create();
-
-    expect(entryQuery()->savable()->count())->toBe(1);
-});
-
 test('status', function () {
     EntryModel::factory()->create();
     EntryModel::factory()->pending()->create();

@@ -32,18 +32,21 @@ trait RespondsWithFlash
 
         request()->flash();
 
-        Flash::error($message);
-
         // Attributes with no messages must not reach the session error bag:
         // Inertia's middleware resolves each entry's first message and 500s
         // on an empty one.
         $errors = array_filter($data['errors'] ?? []);
 
+        $response = back()->with($data);
+
         if ($errors !== []) {
-            return back()->with($data)->withErrors($errors);
+            $response->withErrors($errors);
         }
 
-        return back()->with($data);
+        // After `$data`, so an `error` key in it can't replace the message.
+        Flash::error($message);
+
+        return $response;
     }
 
     /** @param array<string, mixed> $data */

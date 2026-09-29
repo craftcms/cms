@@ -33,7 +33,9 @@
 </script>
 
 <template>
-  <Teleport v-if="panels.length" to="body">
-    <SlideoutPanel v-for="panel in panels" :key="panel.id" :instance="panel" />
+  <!-- One teleport per panel, so each is appended to `<body>` as it opens and
+    lands above a legacy slideout opened before it. -->
+  <Teleport v-for="panel in panels" :key="panel.id" to="body">
+    <SlideoutPanel :instance="panel" />
   </Teleport>
 </template>
