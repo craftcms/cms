@@ -21,6 +21,7 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {router} from '@inertiajs/vue3';
+  import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -129,6 +130,37 @@
       ? appendIndexQuery(props.sourceHref, query)
       : props.route.url(query);
   }
+
+  function actionRow(detail: BulkActionEventDetail) {
+    if (detail.elementIds.length !== 1) {
+      return null;
+    }
+
+    const id = String(detail.elementIds[0]);
+
+    return (elementIndex.data.find((row) => String(row.id) === id) ?? null) as {
+      cpEditUrl: string | null;
+      viewUrl: string | null;
+    } | null;
+  }
+
+  function editElement(detail: BulkActionEventDetail): void {
+    const row = actionRow(detail);
+    const url = row?.cpEditUrl;
+
+    if (url) {
+      quickEdit.openEditor(url, detail.trigger);
+    }
+  }
+
+  function viewElement(detail: BulkActionEventDetail): void {
+    const row = actionRow(detail);
+    const url = row?.viewUrl;
+
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+    }
+  }
 </script>
 
 <template>
@@ -150,6 +182,8 @@
     :source="elementIndex.source?.key"
     :context="elementIndex.context"
     @action-performed="onActionPerformed"
+    @edit="editElement"
+    @view="viewElement"
   >
     <template #header>
       <ElementIndexToolbar

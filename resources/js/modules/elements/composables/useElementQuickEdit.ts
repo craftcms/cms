@@ -71,6 +71,10 @@ export function useElementQuickEdit(
     refreshResults();
   }
 
+  function openEditor(url: string, opener: HTMLElement | null = null): void {
+    void open(url, {opener, onSaved});
+  }
+
   /**
    * The row (table) or card (cards view) an event landed in.
    *
@@ -144,11 +148,8 @@ export function useElementQuickEdit(
     // Two fast clicks leave a text selection behind.
     window.getSelection()?.removeAllRanges();
 
-    void open(element.dataset.cpUrl!, {
-      opener: row instanceof HTMLElement ? row : null,
-      onSaved,
-    });
+    openEditor(element.dataset.cpUrl!, row instanceof HTMLElement ? row : null);
   }
 
-  return {onDblClick};
+  return {onDblClick, openEditor};
 }
