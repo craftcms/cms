@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlFragment;
 use Override;
@@ -80,23 +77,7 @@ class AssetEditViewModel extends ElementEditViewModel
             return null;
         }
 
-        return [
-            'assetId' => $this->asset->id,
-            'filename' => $this->asset->getFilename(),
-            'focalPoint' => $this->asset->getHasFocalPoint()
-                ? $this->asset->getFocalPoint()
-                : null,
-            // The image's own dimensions, so the crop orientation can start on
-            // whichever way round the picture already is. Named apart from
-            // `orientation` below, which is the locale's text direction.
-            'imageWidth' => $this->asset->getWidth(),
-            'imageHeight' => $this->asset->getHeight(),
-            'imageEditorRatios' => Cms::config()->imageEditorRatios,
-            // Only Imagick can rotate by a fraction of a degree; GD rounds.
-            'allowDegreeFractions' => Images::getIsImagick(),
-            // Picks which cropper handles get the left and right labels.
-            'orientation' => I18N::getLocale()->getOrientation(),
-        ];
+        return $this->asset->getImageEditorSettings();
     }
 
     /**
