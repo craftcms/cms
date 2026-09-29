@@ -3,7 +3,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref, watch} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -209,14 +209,14 @@
 
 <template>
   <LayoutSlot v-if="canSave" name="content-actions">
-    <CpLink
-      variant="accent"
-      appearance="button"
+    <CpButtonLink
+      variant="primary"
+      icon="plus"
       :href="create().url"
       :inertia="false"
     >
       {{ t('New import plan') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <CpContainer class="@container">
