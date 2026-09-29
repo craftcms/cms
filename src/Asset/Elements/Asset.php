@@ -297,6 +297,12 @@ class Asset extends Element
     public ?UploadedFile $uploadSource = null;
 
     /**
+     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
+     * place of sampling the file again.
+     */
+    public ?ImageColors $uploadColors = null;
+
+    /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
      */
     public bool $avoidFilenameConflicts = false;
@@ -2942,6 +2948,7 @@ JS;
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
             $names['sanitizeOnUpload'],
+            $names['uploadColors'],
         );
 
         $names['extension'] = true;
@@ -3441,7 +3448,7 @@ JS;
 
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->colors = Images::colors($tempPath);
+                $this->colors = $this->uploadColors ?? Images::colors($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;
@@ -3460,6 +3467,7 @@ JS;
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
+        $this->uploadColors = null;
     }
 
     /**
