@@ -11,6 +11,7 @@
 - Fixed a bug where dragged items weren’t getting dropped where expected, if their container had scrolled during the drag operation. ([#19721](https://github.com/craftcms/cms/issues/19721))
 - Fixed a bug where publicly-registered users weren’t getting activated and logged in immediately, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a bug where changing an entry’s type could cause values for fields shared by both entry types to be lost. ([#19737](https://github.com/craftcms/cms/issues/19737))
+- Fixed an error that could occur when running the `setup/php-session-table` and `setup/db-cache-table` commands. ([#19742](https://github.com/craftcms/cms/pull/19742))
 
 ## 5.11.3 - 2026-09-18
 
