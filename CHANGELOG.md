@@ -6,6 +6,8 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Control panel success, notice, and error messages now go through a single message system instead of several different ones, and are no longer shown twice or lost between pages.
+- Messages now stack, newest first, and spread out on hover or focus. A “Skip to messages” link reaches them from the keyboard. They can be swiped away, errors and messages with actions stay until dismissed, and errors are announced to screen readers immediately.
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
@@ -109,6 +111,13 @@
 - Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
+- Added `CraftCms\Cms\Support\Flash::all()`, `make()`, and `push()`, and a `$target` argument to `Flash::success()`, `error()`, and `notice()` for showing a message in an inline outlet rather than the default message display.
+- Added the `messages` Inertia shared prop, which carries every flashed control panel message with its type, settings, and id.
+- Added `useMessages()` and `useMessageOutlet()` for showing control panel messages from Vue, and the `craft-message` window event for showing them from anywhere else.
+- `asSuccess()` and `asFailure()` JSON responses now include a `messages` list on control panel requests, and `asSuccess()` no longer also flashes the message to the session for JSON responses.
+- `asFailure()` now flashes its message even when the response has validation errors.
+- Deprecated the `flash` Inertia shared prop. `messages` should be used instead.
+- Removed `useFlash()`, `useFlashMessages()`, and the `FlashMessages` Vue component. `useMessages()` should be used instead.
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 
 ### System
