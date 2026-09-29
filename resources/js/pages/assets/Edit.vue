@@ -111,5 +111,10 @@
     height: auto;
     max-width: 100%;
     max-height: 190px;
+    box-shadow: var(--c-shadow-2xl);
+  }
+
+  .asset-preview :deep(.preview-thumb-container) {
+    overflow: hidden;
   }
 </style>
