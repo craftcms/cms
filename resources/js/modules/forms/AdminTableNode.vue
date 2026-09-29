@@ -39,6 +39,7 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import type {FormNodePayload, FormValues} from './types';
 
   interface TableColumn {
@@ -132,6 +133,7 @@
       deleteUrl: string | null;
       deleteConfirmMessage: string | null;
       bulkDeletable: boolean;
+      deleteModalUrl: string | null;
       bulkActions: BulkActionDescriptor[];
       statusActions: BulkActionSingle[];
       statusFilterOptions: StatusFilterOption[];
@@ -854,7 +856,21 @@
       });
   }
 
+  const deletingRow = ref<TableRow | null>(null);
+
+  function onModalDeleted(): void {
+    const row = deletingRow.value;
+    deletingRow.value = null;
+    rows.value = rows.value.filter((r) => r.id !== row?.id);
+    refreshTable();
+  }
+
   async function deleteRow(row: TableRow): Promise<void> {
+    if (props.node.props.deleteModalUrl) {
+      deletingRow.value = row;
+      return;
+    }
+
     const message = props.node.props.deleteConfirmMessage ?? t('Are you sure?');
 
     if (!confirm(message)) {
@@ -1095,5 +1111,13 @@
         </template>
       </AdminTable>
     </component>
+    <AdminTableDeleteModal
+      v-if="deletingRow && node.props.deleteModalUrl"
+      :modal-url="node.props.deleteModalUrl"
+      :delete-url="node.props.deleteUrl!"
+      :row-id="deletingRow.id!"
+      @close="deletingRow = null"
+      @deleted="onModalDeleted"
+    />
   </div>
 </template>

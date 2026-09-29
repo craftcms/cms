@@ -58,6 +58,8 @@ class Table implements Node
 
     private bool $bulkDeletable = false;
 
+    private ?string $deleteModalUrl = null;
+
     /** @var list<array<string, mixed>> */
     private array $bulkActions = [];
 
@@ -254,12 +256,19 @@ class Table implements Node
      *
      * `$bulk` enables row selection and posts `{ids: <row ids>}` to the same endpoint.
      * Enable it only if the endpoint handles `ids` as well as `id`.
+     *
+     * `$modalUrl` replaces the per-row confirmation with a modal Form, for deletions that need
+     * more input (where to move a deleted record's data, say). It's requested via GET with
+     * `{id: <row id>}` and must return JSON `{form: FormPayload, title?: string,
+     * submitLabel?: string}`; submitting posts the Form's values plus `id` to `$url`. Bulk
+     * deletion still uses the plain confirmation.
      */
-    public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false): static
+    public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false, ?string $modalUrl = null): static
     {
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
         $this->bulkDeletable = $bulk;
+        $this->deleteModalUrl = $modalUrl;
 
         return $this;
     }
@@ -455,6 +464,7 @@ class Table implements Node
             'deleteUrl' => $this->deleteUrl,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
             'bulkDeletable' => $this->bulkDeletable,
+            'deleteModalUrl' => $this->deleteModalUrl,
             'bulkActions' => $this->bulkActions,
             'statusActions' => $this->statusActions,
             'statusFilterOptions' => $this->resolveStatusFilterOptions(),
