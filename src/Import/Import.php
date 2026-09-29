@@ -166,7 +166,7 @@ class Import
 
         // for each step in the $importPlan
         foreach ($importPlan->steps as $key => $step) {
-            $filePath = BaseImporter::resolvedFilePath($step->file);
+            $filePath = BaseImporter::resolvedSourcePath($step->source);
 
             // name for this batch of jobs
             $steps[$key]['name'] = self::stepLabel($importPlan, $step);

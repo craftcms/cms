@@ -14,7 +14,7 @@ vi.mock('@/common/slideouts', () => ({
 const step: StepPayload = {
   uid: 'step-1',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
-  file: 'people.csv',
+  source: 'people.csv',
   transformer: null,
   batchSize: null,
   settings: {},

@@ -11,7 +11,7 @@ it('treats empty values, missing keys and empty branches alike', () => {
   expect(
     dirtyState({
       type: 'entry',
-      file: '',
+      source: '',
       transformer: null,
       settings: [],
       map: {title: '', body: {nested: null}},

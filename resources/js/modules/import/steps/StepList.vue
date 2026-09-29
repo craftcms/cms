@@ -69,7 +69,7 @@
       // a plain UUID: the server caps a step's uid at 36 characters
       uid: crypto.randomUUID(),
       type: null,
-      file: null,
+      source: null,
       transformer: null,
       batchSize: null,
       settings: {},
@@ -87,7 +87,7 @@
       ? (typeLabels.value[step.type] ?? step.type)
       : t('Choose an importer');
 
-    return [label, step.file].filter(Boolean).join(' — ');
+    return [label, step.source].filter(Boolean).join(' — ');
   }
 
   function reorder(from: number, to: number): void {

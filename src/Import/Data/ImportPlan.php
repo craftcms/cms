@@ -26,7 +26,7 @@ use function CraftCms\Cms\t;
 
 /**
  * A named, handled import plan: an ordered list of steps, each of which pairs an importer type
- * with its own file, transformer, settings and mapping.
+ * with its own source, transformer, settings and mapping.
  */
 class ImportPlan extends Component implements CpEditable, Validatable
 {
@@ -38,7 +38,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * @var array<int, BaseImporter>|null An ordered list of steps, each an importer holding its own
-     *                                    uid, file, transformer, batch size and settings.
+     *                                    uid, source, transformer, batch size and settings.
      */
     public ?array $steps = null;
 

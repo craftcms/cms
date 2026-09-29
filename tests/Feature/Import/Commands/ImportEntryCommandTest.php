@@ -27,7 +27,7 @@ const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the 
 const MATCH_CRITERIA_QUESTION = 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, ID will be used for matching.';
 
 beforeEach(function () {
-    // resolvedFilePath() resolves against @root, which points at the Testbench skeleton in tests
+    // resolvedSourcePath() resolves against @root, which points at the Testbench skeleton in tests
     $this->originalRoot = Aliases::get('@root');
     Aliases::set('@root', dirname(__DIR__, 4));
 
@@ -58,8 +58,8 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $this->command = fn (string $file, array $options = []) => $this->artisan('craft:import:entry', [
-        'file' => 'tests/Fixtures/Import/'.$file,
+    $this->command = fn (string $source, array $options = []) => $this->artisan('craft:import:entry', [
+        'source' => 'tests/Fixtures/Import/'.$source,
         '--site' => Sites::getPrimarySite()->handle,
         '--transformer' => EntryTransformer::class,
         '--section' => $this->section->uid,
@@ -172,7 +172,7 @@ it('accepts match criteria entered through the prompt with a leading "="', funct
 
 it('prompts for the transformer when the option is omitted, defaulting it when left empty', function () {
     $this->artisan('craft:import:entry', [
-        'file' => 'tests/Fixtures/Import/entries-plain-text.json',
+        'source' => 'tests/Fixtures/Import/entries-plain-text.json',
         '--site' => Sites::getPrimarySite()->handle,
         '--matchCriteria' => '={"title":"title"}',
         '--section' => $this->section->uid,

@@ -27,11 +27,11 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     actingAs(User::find()->one());
 
-    // BaseImporter::resolvedFilePath() resolves everything against @root, which points at the
+    // BaseImporter::resolvedSourcePath() resolves everything against @root, which points at the
     // Testbench skeleton during tests - point it at the package so the fixtures are reachable
     $this->originalRoot = Aliases::get('@root');
     Aliases::set('@root', dirname(__DIR__, 4));
-    $this->file = 'tests/Fixtures/Import/entries-plain-text.json';
+    $this->source = 'tests/Fixtures/Import/entries-plain-text.json';
 
     $innerPlainTextField = Field::factory()->create([
         'name' => 'Inner Plain Text',
@@ -93,7 +93,7 @@ beforeEach(function () {
     $this->entryStep = fn (array $settings = [], array $overrides = []) => array_merge([
         'uid' => Str::uuid7()->toString(),
         'type' => EntryImporter::class,
-        'file' => $this->file,
+        'source' => $this->source,
         'transformer' => null,
         'batchSize' => null,
         'settings' => array_merge([
@@ -123,7 +123,7 @@ it('saves an import with several steps of different types in one request', funct
         [
             'uid' => Str::uuid7()->toString(),
             'type' => SystemMessageImporter::class,
-            'file' => $this->file,
+            'source' => $this->source,
             'transformer' => null,
             'batchSize' => 25,
             'settings' => [],
@@ -149,13 +149,13 @@ it('rejects an import with no steps', function () {
 });
 
 it('reports a step’s own validation errors against that step', function () {
-    $step = ($this->entryStep)([], ['file' => 'tests/Fixtures/Import/does-not-exist.json']);
+    $step = ($this->entryStep)([], ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
 
     $response = ($this->saveImportPlan)([$step])->assertStatus(400);
 
     // the key is a flat dotted string, which is how the step list on the edit screen
     // matches an error back to the row that caused it
-    expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.file");
+    expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.source");
 
     expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
@@ -170,14 +170,14 @@ it('validates a draft step without saving the import', function () {
 });
 
 it('reports a draft step’s validation errors before the import is ever saved', function () {
-    $step = ($this->entryStep)([], ['file' => 'tests/Fixtures/Import/does-not-exist.json']);
+    $step = ($this->entryStep)([], ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
 
     $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
         'step' => $step,
     ]);
 
     $response->assertStatus(422);
-    expect(array_keys($response->json('errors')))->toContain('file');
+    expect(array_keys($response->json('errors')))->toContain('source');
 });
 
 it('returns a container field’s destination columns for an unsaved step', function () {
@@ -242,9 +242,9 @@ it('reports a step whose field layout hasn’t resolved as not mappable', functi
     expect($response->json('canMap'))->toBeFalse();
 });
 
-it('reports a step with no file as not mappable', function () {
+it('reports a step with no source as not mappable', function () {
     $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
-        'step' => ($this->entryStep)([], ['file' => null]),
+        'step' => ($this->entryStep)([], ['source' => null]),
     ]);
 
     expect($response->json('canMap'))->toBeFalse();
@@ -257,7 +257,7 @@ it('reports an unsaved users step as mappable', function () {
         'step' => [
             'uid' => Str::uuid7()->toString(),
             'type' => UserImporter::class,
-            'file' => $this->file,
+            'source' => $this->source,
             'transformer' => null,
             'batchSize' => null,
             'settings' => ['site' => Sites::getPrimarySite()->handle],
@@ -348,7 +348,7 @@ it('saves and maps a model importer step', function () {
         [
             'uid' => Str::uuid7()->toString(),
             'type' => SystemMessageImporter::class,
-            'file' => $this->file,
+            'source' => $this->source,
             'transformer' => null,
             'batchSize' => null,
             'settings' => [

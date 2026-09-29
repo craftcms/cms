@@ -40,7 +40,7 @@ use function CraftCms\Cms\t;
 
 abstract class BaseImporter
 {
-    public protected(set) ?string $file = null;
+    public protected(set) ?string $source = null;
 
     public protected(set) string|BaseTransformer|null $transformer = null;
 
@@ -86,7 +86,7 @@ abstract class BaseImporter
     {
         if (! empty($config)) {
             $this->uid = $config['uid'] ?? null;
-            $this->file($config['file']);
+            $this->source($config['source']);
             $this->transformer($config['transformer'] ?? null);
             $this->batchSize($config['batchSize'] ?? null);
 
@@ -150,14 +150,14 @@ abstract class BaseImporter
     abstract public static function getDefaultTransformer(): ?string;
 
     /**
-     * Sets the path or URL of the file that contains the data to be imported.
+     * Sets the path or URL of the source that contains the data to be imported.
      * The value is stored as given; it's checked by `validate()`.
      *
-     * @param  string|null  $file  The file alias, path or URL to set.
+     * @param  string|null  $source  The source alias, path or URL to set.
      */
-    public function file(?string $file): self
+    public function source(?string $source): self
     {
-        $this->file = $file;
+        $this->source = $source;
 
         return $this;
     }
@@ -241,11 +241,11 @@ abstract class BaseImporter
     public static function getRules(): array
     {
         return array_merge([
-            'file' => [
+            'source' => [
                 'required',
                 'string',
                 'max:255',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateFile($value, $attribute, $fail, $validator),
+                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateSource($value, $attribute, $fail, $validator),
             ],
             'transformer' => [
                 'nullable',
@@ -278,7 +278,7 @@ abstract class BaseImporter
         return [
             'uid' => $this->uid,
             'type' => static::class,
-            'file' => $this->file,
+            'source' => $this->source,
             'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
             'batchSize' => $this->batchSize,
             'settings' => [
@@ -310,16 +310,16 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates a provided file path or URL based on its location, existence and MIME type.
+     * Validates a provided source path or URL based on its location, existence and MIME type.
      *
-     * @param  mixed  $value  The file path, alias or URL to validate.
+     * @param  mixed  $value  The source path, alias or URL to validate.
      * @param  string  $attribute  The name of the attribute being validated.
      * @param  Closure  $fail  A callback function to report validation failures.
      * @param  Validator  $validator  The validator instance performing the validation.
      */
-    public static function validateFile(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateSource(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
-        $error = self::fileError($value);
+        $error = self::sourceError($value);
 
         if ($error !== null) {
             $fail($attribute, $error);
@@ -331,69 +331,69 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns an error message if the file path or URL can't be used for import, or null if it can.
+     * Returns an error message if the source path or URL can't be used for import, or null if it can.
      * Hostname resolution (DNS lookup) can be skipped for URLs via `$resolveHost`.
      */
-    private static function fileError(?string $file, bool $resolveHost = true): ?string
+    private static function sourceError(?string $source, bool $resolveHost = true): ?string
     {
-        if (empty($file)) {
-            return t('File must be provided.');
+        if (empty($source)) {
+            return t('Source must be provided.');
         }
 
-        if (! Url::isAbsoluteUrl($file) && ! str_starts_with($file, '@') && new Filesystem()->isAbsolutePath($file)) {
+        if (! Url::isAbsoluteUrl($source) && ! str_starts_with($source, '@') && new Filesystem()->isAbsolutePath($source)) {
             return t('File paths must be relative to the project root or start with an alias.');
         }
 
-        $filePath = self::resolvedFilePath($file);
+        $sourcePath = self::resolvedSourcePath($source);
 
-        if (self::isRemoteFile($file)) {
+        if (self::isRemoteSource($source)) {
             $urlValidator = static::urlValidator();
 
             if (! $resolveHost) {
-                if (! $urlValidator->validateScheme($filePath) || ! $urlValidator->validateHostname($filePath)) {
-                    return t('URL “{url}” is not permitted.', ['url' => $filePath]);
+                if (! $urlValidator->validateScheme($sourcePath) || ! $urlValidator->validateHostname($sourcePath)) {
+                    return t('URL “{url}” is not permitted.', ['url' => $sourcePath]);
                 }
             } else {
                 try {
-                    $urlValidator->validate($filePath);
+                    $urlValidator->validate($sourcePath);
                 } catch (UrlValidationException) {
-                    return t('URL “{url}” is not permitted.', ['url' => $filePath]);
+                    return t('URL “{url}” is not permitted.', ['url' => $sourcePath]);
                 }
             }
 
-            // the file's type can only be determined from the response, so it's checked once the file is fetched;
+            // the source's type can only be determined from the response, so it's checked once the file is fetched;
             // an extension in the URL's path has to be one of the data types though
-            $path = (string) parse_url($filePath, PHP_URL_PATH);
+            $path = (string) parse_url($sourcePath, PHP_URL_PATH);
 
             return pathinfo($path, PATHINFO_EXTENSION) === '' ? null : self::getExtensionError($path);
         }
 
         // reject any other scheme (e.g. data:, glob://, phar://) so PHP's stream wrappers can't be used
-        if (Url::isAbsoluteUrl($filePath) || ! self::isFilepathAllowed($filePath)) {
-            return t('Access to this file ({filePath}) is not permitted.', [
-                'filePath' => $filePath,
+        if (Url::isAbsoluteUrl($sourcePath) || ! self::isFilepathAllowed($sourcePath)) {
+            return t('Access to this file ({sourcePath}) is not permitted.', [
+                'sourcePath' => $sourcePath,
             ]);
         }
 
-        if (! is_file($filePath) || ! is_readable($filePath)) {
-            return t('File “{filePath}” does not exist.', [
-                'filePath' => $filePath,
+        if (! is_file($sourcePath) || ! is_readable($sourcePath)) {
+            return t('File “{sourcePath}” does not exist.', [
+                'sourcePath' => $sourcePath,
             ]);
         }
 
-        return self::getExtensionError($filePath) ?? self::getContentError($filePath);
+        return self::getExtensionError($sourcePath) ?? self::getContentError($sourcePath);
     }
 
     /**
-     * Returns whether the given file value resolves to a URL.
+     * Returns whether the given source value resolves to a URL.
      *
-     * @param  string|null  $file  The file alias, path or URL to check.
+     * @param  string|null  $source  The source alias, path or URL to check.
      */
-    public static function isRemoteFile(?string $file): bool
+    public static function isRemoteSource(?string $source): bool
     {
-        $filePath = self::resolvedFilePath($file);
+        $sourcePath = self::resolvedSourcePath($source);
 
-        return $filePath !== null && Url::isValidUrl($filePath);
+        return $sourcePath !== null && Url::isValidUrl($sourcePath);
     }
 
     /**
@@ -405,7 +405,7 @@ abstract class BaseImporter
      */
     public function downloadFile(string $directory): string
     {
-        $url = (string) self::resolvedFilePath($this->file);
+        $url = (string) self::resolvedSourcePath($this->source);
         FileHelper::makeDirectory($directory);
         $tempPath = $directory.DIRECTORY_SEPARATOR.Str::uuid()->toString();
 
@@ -450,8 +450,8 @@ abstract class BaseImporter
      */
     public function withLocalFile(Closure $callback): mixed
     {
-        if (! self::isRemoteFile($this->file)) {
-            return $callback(self::resolvedFilePath($this->file));
+        if (! self::isRemoteSource($this->source)) {
+            return $callback(self::resolvedSourcePath($this->source));
         }
 
         $filePath = $this->downloadFile(Path::temp());
@@ -501,11 +501,11 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns an error message if the file's extension isn't one of the available data types, or null if it is.
+     * Returns an error message if the source's extension isn't one of the available data types, or null if it is.
      */
-    private static function getExtensionError(string $filePath): ?string
+    private static function getExtensionError(string $sourcePath): ?string
     {
-        if (Import::getDataTypeFromExtension($filePath) !== null) {
+        if (Import::getDataTypeFromExtension($sourcePath) !== null) {
             return null;
         }
 
@@ -515,12 +515,12 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns an error message if a local file's contents don't match the data type of its extension, or null if they do
+     * Returns an error message if a local source's contents don't match the data type of its extension, or null if they do
      * (or if the extension isn't a data type, which `getExtensionError()` reports).
      */
-    private static function getContentError(string $filePath, ?string $url = null): ?string
+    private static function getContentError(string $sourcePath, ?string $url = null): ?string
     {
-        $dataType = Import::getDataTypeFromExtension($filePath);
+        $dataType = Import::getDataTypeFromExtension($sourcePath);
 
         if ($dataType === null) {
             return null;
@@ -530,13 +530,13 @@ abstract class BaseImporter
         $allowedExtensions = $dataType === 'csv' ? ['csv', 'txt'] : [$dataType];
 
         $contentsMatch = ValidatorFacade::make(
-            ['file' => new File($filePath)],
-            ['file' => ['mimes:'.implode(',', $allowedExtensions)]],
+            ['source' => new File($sourcePath)],
+            ['source' => ['mimes:'.implode(',', $allowedExtensions)]],
         )->passes();
 
         if (! $contentsMatch) {
             return t('The contents of “{source}” don’t match its type ({dataType}).', [
-                'source' => $url ?? $filePath,
+                'source' => $url ?? $sourcePath,
                 'dataType' => $dataType,
             ]);
         }
@@ -545,7 +545,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns the data type of a remote file, based on the response's content type, falling back to the URL path's extension,
+     * Returns the data type of a remote source, based on the response's content type, falling back to the URL path's extension,
      * or null if neither is one of the available data types.
      */
     private static function getDataTypeFromContentType(string $contentType, string $url): ?string
@@ -662,36 +662,36 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns whether a file is specified and points to an existing, importable file or an allowed URL.
+     * Returns whether a source is specified and points to an existing, importable source or an allowed URL.
      * It's used e.g. to determine whether an "Edit mapping" button can be shown.
      * URL hostnames are not resolved here.
      *
-     * @param  string|null  $file  The file alias, path or URL to check.
+     * @param  string|null  $source  The source alias, path or URL to check.
      */
-    public static function isFileValid(?string $file): bool
+    public static function isSourceValid(?string $source): bool
     {
-        return self::fileError($file, resolveHost: false) === null;
+        return self::sourceError($source, resolveHost: false) === null;
     }
 
     /**
-     * Resolves the full file path or URL based on the provided value.
+     * Resolves the full source path or URL based on the provided value.
      *
      * URLs and aliases are resolved via the Aliases service as they are.
      * Any other value is treated as a path relative to the '@root' alias.
      *
-     * @param  string|null  $file  The URL, file alias or relative path to be resolved.
+     * @param  string|null  $source  The URL, source alias or relative path to be resolved.
      */
-    public static function resolvedFilePath(?string $file): ?string
+    public static function resolvedSourcePath(?string $source): ?string
     {
-        if (is_null($file)) {
+        if (is_null($source)) {
             return null;
         }
 
-        if (Url::isAbsoluteUrl($file) || str_starts_with($file, '@')) {
-            return Aliases::get($file);
+        if (Url::isAbsoluteUrl($source) || str_starts_with($source, '@')) {
+            return Aliases::get($source);
         }
 
-        return Aliases::get('@root/'.$file);
+        return Aliases::get('@root/'.$source);
     }
 
     /**

@@ -98,8 +98,8 @@ abstract class ModelImporter extends BaseImporter
     #[Override]
     public function getSourceDataCols(): array
     {
-        // a config can be saved before its file is chosen, and the map screen still renders
-        if ($this->file === null) {
+        // a config can be saved before its source is chosen, and the map screen still renders
+        if ($this->source === null) {
             return [];
         }
 

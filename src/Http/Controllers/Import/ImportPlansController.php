@@ -185,13 +185,13 @@ class ImportPlansController
      *
      * An element importer resolves its field layout from whatever it's importing into — an
      * entry type, a volume — so until that's chosen there are no destination columns to map
-     * onto, and without a valid file there are no incoming ones either.
+     * onto, and without a valid source there are no incoming ones either.
      *
      * @param  BaseImporter|null  $importer  The step's importer, or null when it has no type yet.
      */
     private function canMapStep(?BaseImporter $importer): bool
     {
-        if ($importer === null || ! BaseImporter::isFileValid($importer->file)) {
+        if ($importer === null || ! BaseImporter::isSourceValid($importer->source)) {
             return false;
         }
 
@@ -207,7 +207,7 @@ class ImportPlansController
             'step' => ['required', 'array'],
             'step.uid' => ['nullable', 'string', 'max:36'],
             'step.type' => ['nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
-            'step.file' => ['nullable', 'string'],
+            'step.source' => ['nullable', 'string'],
             'step.transformer' => ['nullable', 'string'],
             'step.batchSize' => ['nullable', 'integer'],
             'step.settings' => ['nullable', 'array'],
@@ -227,7 +227,7 @@ class ImportPlansController
 
     /**
      * Returns the mapping structure for a draft step: its destination columns, the source
-     * columns read from its file, and a best guess at a mapping between the two.
+     * columns read from its source, and a best guess at a mapping between the two.
      */
     public function stepMapping(): JsonResponse
     {
@@ -331,7 +331,7 @@ class ImportPlansController
             'step' => ['required', 'array'],
             'step.uid' => ['nullable', 'string', 'max:36'],
             'step.type' => [$requireType ? 'required' : 'nullable', 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
-            'step.file' => ['nullable', 'string'],
+            'step.source' => ['nullable', 'string'],
             'step.transformer' => ['nullable', 'string'],
             'step.batchSize' => ['nullable', 'integer'],
             'step.settings' => ['nullable', 'array'],

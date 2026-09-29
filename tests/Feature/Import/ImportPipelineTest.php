@@ -33,19 +33,19 @@ use Illuminate\Support\Testing\Fakes\BatchFake;
 beforeEach(function () {
     Bus::fake();
 
-    // resolvedFilePath() resolves against @root, which points at the Testbench skeleton in tests
+    // resolvedSourcePath() resolves against @root, which points at the Testbench skeleton in tests
     $this->originalRoot = Aliases::get('@root');
     Aliases::set('@root', dirname(__DIR__, 3));
 
-    $this->filePath = SystemMessageImporter::resolvedFilePath('tests/Fixtures/Import/entries-plain-text.json');
+    $this->filePath = SystemMessageImporter::resolvedSourcePath('tests/Fixtures/Import/entries-plain-text.json');
 
     $this->importPlan = new ImportPlanData([
         'name' => 'Pipeline Plan',
         'handle' => 'pipelinePlan',
         'uid' => 'plan-uid',
         'steps' => [
-            new SystemMessageImporter(['uid' => 'step-1', 'file' => 'tests/Fixtures/Import/entries-plain-text.json']),
-            new SystemMessageImporter(['uid' => 'step-2', 'file' => 'tests/Fixtures/Import/entries-plain-text.json']),
+            new SystemMessageImporter(['uid' => 'step-1', 'source' => 'tests/Fixtures/Import/entries-plain-text.json']),
+            new SystemMessageImporter(['uid' => 'step-2', 'source' => 'tests/Fixtures/Import/entries-plain-text.json']),
         ],
     ]);
 
@@ -192,10 +192,10 @@ it('flags the run and the step as having failures when an item in an import job 
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->hasFailures);
 });
 
-it('skips the first chunk of a step whose file is invalid', function () {
+it('skips the first chunk of a step whose source is invalid', function () {
     Event::fake([ImportChunkStarted::class]);
     ImportLog::spy();
-    $this->importPlan->steps[0]->file('tests/Fixtures/Import/missing.json');
+    $this->importPlan->steps[0]->source('tests/Fixtures/Import/missing.json');
 
     ($this->runJob)();
 
@@ -203,9 +203,9 @@ it('skips the first chunk of a step whose file is invalid', function () {
     ImportLog::shouldHaveReceived('warning')->withArgs(fn (string $message) => str_contains($message, 'does not exist.'));
 });
 
-it('doesn’t check the step’s file again in later chunks', function () {
+it('doesn’t check the step’s source again in later chunks', function () {
     Event::fake([ImportChunkStarted::class]);
-    $this->importPlan->steps[0]->file('tests/Fixtures/Import/missing.json');
+    $this->importPlan->steps[0]->source('tests/Fixtures/Import/missing.json');
 
     ($this->runJob)(1);
 

@@ -18,10 +18,10 @@ beforeEach(function () {
     $this->importer::$resolvedIps = ['93.184.216.34'];
     $this->importer::$lookups = 0;
 
-    $this->fileError = function (?string $value): ?string {
+    $this->sourceError = function (?string $value): ?string {
         $error = null;
 
-        $this->importer::validateFile($value, 'file', function (string $attribute, ?string $message = null) use (&$error) {
+        $this->importer::validateSource($value, 'source', function (string $attribute, ?string $message = null) use (&$error) {
             $error = $message ?? $attribute;
         }, Validator::make([], []));
 
@@ -33,9 +33,9 @@ afterEach(function () {
     Aliases::set('@root', $this->originalRoot);
 });
 
-it('accepts a valid local file', function (string $file) {
-    expect(($this->fileError)($file))->toBeNull()
-        ->and($this->importer::isFileValid($file))->toBeTrue();
+it('accepts a valid local file', function (string $source) {
+    expect(($this->sourceError)($source))->toBeNull()
+        ->and($this->importer::isSourceValid($source))->toBeTrue();
 })->with([
     'tests/Fixtures/Import/entries.csv',
     'tests/Fixtures/Import/entries-plain-text.json',
@@ -43,11 +43,11 @@ it('accepts a valid local file', function (string $file) {
     '@root/tests/Fixtures/Import/entries.csv',
 ]);
 
-it('rejects an invalid local file', function (?string $file, string $message) {
-    expect(($this->fileError)($file))->toContain($message)
-        ->and($this->importer::isFileValid($file))->toBeFalse();
+it('rejects an invalid local file', function (?string $source, string $message) {
+    expect(($this->sourceError)($source))->toContain($message)
+        ->and($this->importer::isSourceValid($source))->toBeFalse();
 })->with([
-    'empty' => [null, 'File must be provided.'],
+    'empty' => [null, 'Source must be provided.'],
     'absolute path' => ['/etc/passwd', 'File paths must be relative to the project root or start with an alias.'],
     'missing file' => ['tests/Fixtures/Import/missing.csv', 'does not exist.'],
     'directory' => ['tests/Fixtures/Import', 'does not exist.'],
@@ -59,8 +59,8 @@ it('rejects an invalid local file', function (?string $file, string $message) {
 ]);
 
 it('rejects a URL with a scheme other than http or https', function (string $url) {
-    expect(($this->fileError)($url))->toBe("URL “{$url}” is not permitted.")
-        ->and($this->importer::isFileValid($url))->toBeFalse();
+    expect(($this->sourceError)($url))->toBe("URL “{$url}” is not permitted.")
+        ->and($this->importer::isSourceValid($url))->toBeFalse();
 })->with([
     'file:///etc/passwd',
     'php://filter/resource=/etc/passwd',
@@ -68,7 +68,7 @@ it('rejects a URL with a scheme other than http or https', function (string $url
 ]);
 
 it('rejects a disallowed hostname without resolving it', function (string $url) {
-    expect(($this->fileError)($url))->toBe("URL “{$url}” is not permitted.")
+    expect(($this->sourceError)($url))->toBe("URL “{$url}” is not permitted.")
         ->and($this->importer::$lookups)->toBe(0);
 })->with([
     'https://169.254.169.254/data.json',
@@ -76,54 +76,54 @@ it('rejects a disallowed hostname without resolving it', function (string $url) 
 ]);
 
 it('accepts a URL that resolves to a public IP', function () {
-    expect(($this->fileError)('https://example.com/data.json'))->toBeNull()
+    expect(($this->sourceError)('https://example.com/data.json'))->toBeNull()
         ->and($this->importer::$lookups)->toBe(1);
 });
 
 it('accepts a URL with a supported extension or no extension', function (string $url) {
-    expect(($this->fileError)($url))->toBeNull()
-        ->and($this->importer::isFileValid($url))->toBeTrue();
+    expect(($this->sourceError)($url))->toBeNull()
+        ->and($this->importer::isSourceValid($url))->toBeTrue();
 })->with([
     'https://example.com/data.json?token=x',
     'https://example.com/api/entries',
 ]);
 
 it('rejects a URL with an unsupported extension', function () {
-    expect(($this->fileError)('https://example.com/data.txt'))->toContain('Only files with these MIME types are allowed')
-        ->and($this->importer::isFileValid('https://example.com/data.txt'))->toBeFalse();
+    expect(($this->sourceError)('https://example.com/data.txt'))->toContain('Only files with these MIME types are allowed')
+        ->and($this->importer::isSourceValid('https://example.com/data.txt'))->toBeFalse();
 });
 
 it('rejects a URL that resolves to a disallowed IP', function (array $ips) {
     $this->importer::$resolvedIps = $ips;
 
-    expect(($this->fileError)('https://example.com/data.json'))->toBe('URL “https://example.com/data.json” is not permitted.');
+    expect(($this->sourceError)('https://example.com/data.json'))->toBe('URL “https://example.com/data.json” is not permitted.');
 })->with([
     'loopback' => [['127.0.0.1']],
     'cloud metadata' => [['169.254.169.254']],
     'unresolvable' => [[]],
 ]);
 
-it('checks a URL without resolving it in isFileValid()', function () {
+it('checks a URL without resolving it in isSourceValid()', function () {
     $this->importer::$resolvedIps = ['127.0.0.1'];
 
-    expect($this->importer::isFileValid('https://example.com/data.json'))->toBeTrue()
+    expect($this->importer::isSourceValid('https://example.com/data.json'))->toBeTrue()
         ->and($this->importer::$lookups)->toBe(0)
-        ->and(($this->fileError)('https://example.com/data.json'))->not->toBeNull();
+        ->and(($this->sourceError)('https://example.com/data.json'))->not->toBeNull();
 });
 
 it('throws for an unknown alias', function () {
-    ($this->fileError)('@nope/data.csv');
+    ($this->sourceError)('@nope/data.csv');
 })->throws(InvalidArgumentException::class);
 
 it('resolves relative paths against @root and leaves URLs and aliases as they are', function () {
-    expect(BaseImporter::resolvedFilePath('tests/Fixtures/Import/entries.csv'))->toBe("{$this->packageRoot}/tests/Fixtures/Import/entries.csv")
-        ->and(BaseImporter::resolvedFilePath('@root/data.csv'))->toBe("{$this->packageRoot}/data.csv")
-        ->and(BaseImporter::resolvedFilePath('https://example.com/data.json'))->toBe('https://example.com/data.json')
-        ->and(BaseImporter::resolvedFilePath(null))->toBeNull();
+    expect(BaseImporter::resolvedSourcePath('tests/Fixtures/Import/entries.csv'))->toBe("{$this->packageRoot}/tests/Fixtures/Import/entries.csv")
+        ->and(BaseImporter::resolvedSourcePath('@root/data.csv'))->toBe("{$this->packageRoot}/data.csv")
+        ->and(BaseImporter::resolvedSourcePath('https://example.com/data.json'))->toBe('https://example.com/data.json')
+        ->and(BaseImporter::resolvedSourcePath(null))->toBeNull();
 });
 
-it('stores the file as given and leaves checking it to validate()', function () {
-    expect($this->importer->file('https://example.com/data.json')->file)->toBe('https://example.com/data.json')
-        ->and($this->importer->file('tests/Fixtures/Import/missing.csv')->file)->toBe('tests/Fixtures/Import/missing.csv')
+it('stores the source as given and leaves checking it to validate()', function () {
+    expect($this->importer->source('https://example.com/data.json')->source)->toBe('https://example.com/data.json')
+        ->and($this->importer->source('tests/Fixtures/Import/missing.csv')->source)->toBe('tests/Fixtures/Import/missing.csv')
         ->and(fn () => $this->importer->validate())->toThrow(ValidationException::class, 'does not exist.');
 });

@@ -89,13 +89,13 @@
   let latestRefresh = 0;
 
   /**
-   * The data file `canMap` was last checked against. The file doesn't change the form, so
+   * The data source `canMap` was last checked against. The source doesn't change the form, so
    * it isn't reactive; leaving its field checks it instead, rather than on every keystroke.
    */
-  let checkedFile = context.step.file;
+  let checkedSource = context.step.source;
   const checkingMap = ref(false);
   let latestCheck = 0;
-  /** Shared by refreshes and file checks, so whichever started last sets `canMap`. */
+  /** Shared by refreshes and source checks, so whichever started last sets `canMap`. */
   let latestCanMap = 0;
 
   const mappedCount = computed(() => countLeaves(mappingValues().map));
@@ -142,7 +142,7 @@
     step.value = {
       ...step.value,
       type: (values.type as string) || null,
-      file: (values.file as string) || null,
+      source: (values.source as string) || null,
       transformer: (values.transformer as string) || null,
       batchSize:
         batchSize === null || batchSize === undefined || batchSize === ''
@@ -200,7 +200,7 @@
 
     if (!opened) {
       mappingMessage.value = t(
-        'Choose what this step imports into, and a data file, before mapping.'
+        'Choose what this step imports into, and a data source, before mapping.'
       );
     }
   }
@@ -216,7 +216,7 @@
     const request = ++latestRefresh;
     const canMapRequest = ++latestCanMap;
     const type = step.value.type;
-    checkedFile = step.value.file;
+    checkedSource = step.value.source;
 
     if (type !== formType.value) {
       loadingType.value = true;
@@ -252,7 +252,7 @@
         : null;
 
     if (
-      control?.getAttribute('data-form-control-path') !== '["file"]' ||
+      control?.getAttribute('data-form-control-path') !== '["source"]' ||
       (event.relatedTarget instanceof Node &&
         control.contains(event.relatedTarget))
     ) {
@@ -261,11 +261,11 @@
 
     syncFromForm();
 
-    if (step.value.file === checkedFile) {
+    if (step.value.source === checkedSource) {
       return;
     }
 
-    checkedFile = step.value.file;
+    checkedSource = step.value.source;
     void checkCanMap();
   }
 

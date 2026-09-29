@@ -38,7 +38,7 @@ abstract class Import extends Command implements PromptsForMissingInput
 
     protected function configure(): void
     {
-        $this->addArgument('file', InputArgument::REQUIRED, '`@root`-relative path to the file containing the data you want to import.');
+        $this->addArgument('source', InputArgument::REQUIRED, 'The aliased or @root-relative path to a file or a URL containing the data you want to import.');
 
         if (static::importerClass()::isElementImporter()) {
             $this->addOption('site', null, InputOption::VALUE_OPTIONAL, 'The handle of the site you want to import into.');
@@ -100,7 +100,7 @@ abstract class Import extends Command implements PromptsForMissingInput
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $config = [
             'type' => static::importerClass(),
-            'file' => $this->argument('file'),
+            'source' => $this->argument('source'),
             'transformer' => $this->option('transformer') ?: $responses['transformer'] ?: null,
             'settings' => $settings,
         ];
@@ -119,7 +119,7 @@ abstract class Import extends Command implements PromptsForMissingInput
 
         $list = [
             "Import Type: `{$importer::targetClass()}`",
-            "File: `$importer->file`",
+            "Source: `$importer->source`",
             'Transformer: '.($importer->transformer ? "`{$importer->transformerAsString()}`" : 'NULL'),
             'Match Criteria: '.($importer->matchCriteria ? json_encode($importer->matchCriteria) : 'NULL'),
         ];
@@ -184,9 +184,8 @@ abstract class Import extends Command implements PromptsForMissingInput
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
-            'file' => fn () => text(
-                label: 'The `@root`-relative path to the file containing the data you want to import',
+            'source' => fn () => text(
+                label: 'The aliased or @root-relative path to a file or a URL containing the data you want to import.',
                 required: true,
                 validate: [
                     'string',

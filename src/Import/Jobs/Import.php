@@ -98,7 +98,7 @@ class Import extends Job
 
         // a remote file is downloaded once, by the step's first chunk, into Craft's storage, and the later chunks reuse it;
         // this assumes all chunk jobs run on the same server - if they don't, it might need to change to storing it on a (shared) disk
-        if ($this->start === 0 && $step::isRemoteFile($step->file)) {
+        if ($this->start === 0 && $step::isRemoteSource($step->source)) {
             $filePath = $step->downloadFile(Path::runtime(FinishImport::downloadsPath($this->runId)));
         }
 

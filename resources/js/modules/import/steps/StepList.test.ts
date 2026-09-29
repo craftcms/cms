@@ -28,7 +28,7 @@ function step(overrides: Partial<StepPayload> = {}): StepPayload {
   return {
     uid: 'step-1',
     type: importerTypes[0]!.value,
-    file: 'people.csv',
+    source: 'people.csv',
     transformer: null,
     batchSize: null,
     settings: {},
@@ -125,7 +125,7 @@ it('opens the slideout for a step read out of its reactive model', async () => {
   expect(state.openStepSlideout.mock.calls[0]![0].step.uid).toBe('step-1');
 });
 
-it('summarizes a step by its importer type and file', () => {
+it('summarizes a step by its importer type and source', () => {
   mount();
 
   expect(container.querySelector('li')!.textContent).toContain(
@@ -140,27 +140,27 @@ it('appends a step the add slideout hands back', async () => {
   await nextTick();
 
   const {step: draft, apply} = state.openStepSlideout.mock.calls[0]![0];
-  apply({...draft, type: importerTypes[1]!.value, file: 'assets.csv'});
+  apply({...draft, type: importerTypes[1]!.value, source: 'assets.csv'});
   await nextTick();
 
   expect(steps.value).toHaveLength(1);
-  expect(steps.value![0]!.file).toBe('assets.csv');
+  expect(steps.value![0]!.source).toBe('assets.csv');
   expect(steps.value![0]!.uid).toBe(draft.uid);
 });
 
 it('replaces the edited step in place, keeping its uid', async () => {
-  mount([step(), step({uid: 'step-2', file: 'other.csv'})]);
+  mount([step(), step({uid: 'step-2', source: 'other.csv'})]);
 
   rowButtons(1)[0]!.dispatchEvent(new Event('click'));
   await nextTick();
 
   state.openStepSlideout.mock.calls[0]![0].apply(
-    step({uid: 'ignored', file: 'edited.csv'})
+    step({uid: 'ignored', source: 'edited.csv'})
   );
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
-  expect(steps.value![1]!.file).toBe('edited.csv');
+  expect(steps.value![1]!.source).toBe('edited.csv');
 });
 
 it('removes a step once the deletion is confirmed', async () => {
@@ -206,7 +206,7 @@ it('ignores a reorder that would move a step off either end', async () => {
 
 it('shows a server error on the step it belongs to', () => {
   mount([step(), step({uid: 'step-2'})], {
-    errors: {'steps.step-2.file': ['File does not exist.']},
+    errors: {'steps.step-2.source': ['File does not exist.']},
   });
 
   const rows = [...container.querySelectorAll('li')];
@@ -230,7 +230,7 @@ it('keeps a list error and a row error apart', () => {
   mount([step()], {
     errors: {
       steps: ['An import plan needs at least one step.'],
-      'steps.step-1.file': ['File does not exist.'],
+      'steps.step-1.source': ['File does not exist.'],
     },
   });
 

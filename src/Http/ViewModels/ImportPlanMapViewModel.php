@@ -20,12 +20,12 @@ class ImportPlanMapViewModel extends ViewModel
         private readonly bool $canSave = true,
     ) {}
 
-    /** @return array{uid: string|null, file: string|null} */
+    /** @return array{uid: string|null, source: string|null} */
     public function step(): array
     {
         return [
             'uid' => $this->importer->uid,
-            'file' => $this->importer->file,
+            'source' => $this->importer->source,
         ];
     }
 

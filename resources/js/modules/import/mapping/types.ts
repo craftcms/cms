@@ -66,7 +66,7 @@ export interface MappingGroup {
 export interface StepPayload {
   uid: string;
   type: string | null;
-  file: string | null;
+  source: string | null;
   transformer: string | null;
   batchSize: number | null;
   settings: Record<string, unknown>;

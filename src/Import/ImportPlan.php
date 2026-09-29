@@ -33,7 +33,7 @@ class ImportPlan
      * Instantiates an importer from an import plan step, applying its properties and decoded
      * settings via setter methods.
      *
-     * @param  array  $step  The step array, shaped `{uid, type, file, transformer, settings}`.
+     * @param  array  $step  The step array, shaped `{uid, type, source, transformer, settings}`.
      */
     public static function createImporter(array $step): ?BaseImporter
     {

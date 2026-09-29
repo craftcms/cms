@@ -14,14 +14,14 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-it('getSettingsRules covers a step’s settings while getRules adds its file and transformer', function () {
+it('getSettingsRules covers a step’s settings while getRules adds its source and transformer', function () {
     $settingsRules = ElementImporter::getSettingsRules();
     $fullRules = ElementImporter::getRules();
 
-    expect($settingsRules)->not->toHaveKey('file')
+    expect($settingsRules)->not->toHaveKey('source')
         ->and($settingsRules)->not->toHaveKey('transformer')
         ->and($settingsRules)->toHaveKeys(['settings.map', 'settings.site'])
-        ->and($fullRules)->toHaveKeys(['file', 'transformer', 'settings.map', 'settings.site']);
+        ->and($fullRules)->toHaveKeys(['source', 'transformer', 'settings.map', 'settings.site']);
 });
 
 it('keeps the import’s own name and handle off the step rules', function () {
@@ -30,28 +30,28 @@ it('keeps the import’s own name and handle off the step rules', function () {
         ->and(new ImportPlanData()->getRules())->toHaveKeys(['name', 'handle', 'steps']);
 });
 
-it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site', function () {
+it('validateSettings throws with settings-only errors for an ad-hoc importer missing source/site', function () {
     $importer = EntryImporter::create();
 
     try {
         $importer->validateSettings();
         expect(false)->toBeTrue('Expected a ValidationException to be thrown.');
     } catch (ValidationException $e) {
-        expect($e->errors())->not->toHaveKey('file')
+        expect($e->errors())->not->toHaveKey('source')
             ->and($e->errors())->toHaveKey('settings.site')
             ->and($e->errors())->not->toHaveKey('name')
             ->and($e->errors())->not->toHaveKey('handle');
     }
 });
 
-it('validate throws for a step missing its file', function () {
+it('validate throws for a step missing its source', function () {
     $importer = EntryImporter::create();
 
     try {
         $importer->validate();
         expect(false)->toBeTrue('Expected a ValidationException to be thrown.');
     } catch (ValidationException $e) {
-        expect($e->errors())->toHaveKey('file')
+        expect($e->errors())->toHaveKey('source')
             ->and($e->errors())->toHaveKey('settings.site');
     }
 });

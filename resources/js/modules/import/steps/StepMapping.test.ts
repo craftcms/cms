@@ -72,7 +72,7 @@ const outerMatrix = col({
 const step: StepPayload = {
   uid: 'step-uid',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
-  file: 'people.csv',
+  source: 'people.csv',
   transformer: null,
   batchSize: null,
   settings: {},

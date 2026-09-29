@@ -54,7 +54,7 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
         state.errors = props.errors;
 
         return h('div', {class: 'form-renderer'}, [
-          h('input', {'data-form-control-path': '["file"]'}),
+          h('input', {'data-form-control-path': '["source"]'}),
           h('input', {'data-form-control-path': '["transformer"]'}),
         ]);
       };
@@ -76,7 +76,7 @@ function payload(): FormPayload {
 const step: StepPayload = {
   uid: 'step-1',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
-  file: 'people.csv',
+  source: 'people.csv',
   transformer: null,
   batchSize: null,
   settings: {},
@@ -97,7 +97,7 @@ function mount(
   type: string | null = step.type,
   formSettings: Record<string, unknown> = {}
 ) {
-  state.values = {type, file: step.file, settings: formSettings};
+  state.values = {type, source: step.source, settings: formSettings};
   state.context = {
     step: {...structuredClone(step), type},
     payload: payload(),
@@ -294,18 +294,18 @@ it('clears the spinner and keeps the mapping section hidden when a refresh fails
   expect(mappingSection()).toBeNull();
 });
 
-it('checks whether the step can be mapped once the data file field loses focus', async () => {
+it('checks whether the step can be mapped once the data source field loses focus', async () => {
   const checking = deferred<{form: FormPayload; canMap: boolean}>();
   state.fetchStepForm.mockReturnValue(checking.promise);
   mount(false);
 
-  state.values = {...state.values, file: 'other.csv'};
-  blur('["file"]');
+  state.values = {...state.values, source: 'other.csv'};
+  blur('["source"]');
   await nextTick();
 
   expect(state.fetchStepForm).toHaveBeenCalledOnce();
   expect(state.fetchStepForm.mock.calls[0]![1]).toMatchObject({
-    file: 'other.csv',
+    source: 'other.csv',
   });
   expect(mappingButton().loading).toBe(true);
 
@@ -317,10 +317,10 @@ it('checks whether the step can be mapped once the data file field loses focus',
   expect(mappingButton().disabled).toBe(false);
 });
 
-it('doesn’t check again when the data file hasn’t changed', async () => {
+it('doesn’t check again when the data source hasn’t changed', async () => {
   mount(false);
 
-  blur('["file"]');
+  blur('["source"]');
   await nextTick();
 
   expect(state.fetchStepForm).not.toHaveBeenCalled();
@@ -329,14 +329,14 @@ it('doesn’t check again when the data file hasn’t changed', async () => {
 it('doesn’t check when another field loses focus', async () => {
   mount(false);
 
-  state.values = {...state.values, file: 'other.csv'};
+  state.values = {...state.values, source: 'other.csv'};
   blur('["transformer"]');
   await nextTick();
 
   expect(state.fetchStepForm).not.toHaveBeenCalled();
 });
 
-it('lets a refresh that starts after a file check decide whether the step can be mapped', async () => {
+it('lets a refresh that starts after a source check decide whether the step can be mapped', async () => {
   const checking = deferred<{form: FormPayload; canMap: boolean}>();
   const refreshing = deferred<{form: FormPayload; canMap: boolean}>();
   state.fetchStepForm
@@ -344,8 +344,8 @@ it('lets a refresh that starts after a file check decide whether the step can be
     .mockReturnValueOnce(refreshing.promise);
   mount(false);
 
-  state.values = {...state.values, file: 'other.csv'};
-  blur('["file"]');
+  state.values = {...state.values, source: 'other.csv'};
+  blur('["source"]');
   const refresh = state.refresh!({settings: {}});
 
   refreshing.resolve({form: payload(), canMap: false});
@@ -358,13 +358,13 @@ it('lets a refresh that starts after a file check decide whether the step can be
   expect(mappingButton().loading).toBe(false);
 });
 
-it('keeps the last reported state when the file check fails', async () => {
+it('keeps the last reported state when the source check fails', async () => {
   const checking = deferred<{form: FormPayload; canMap: boolean}>();
   state.fetchStepForm.mockReturnValue(checking.promise);
   mount(true);
 
-  state.values = {...state.values, file: 'missing.csv'};
-  blur('["file"]');
+  state.values = {...state.values, source: 'missing.csv'};
+  blur('["source"]');
   checking.reject(new Error('Request failed.'));
   await checking.promise.catch(() => {});
   await nextTick();
@@ -439,7 +439,7 @@ it('ignores repeat clicks on the mapping button while the slideout opens', async
 it('keeps the slideout open and shows the errors when the draft step is invalid', async () => {
   mount(true);
   state.validateStep.mockRejectedValue({
-    response: {data: {errors: {file: ['File must be provided.']}}},
+    response: {data: {errors: {source: ['Source must be provided.']}}},
   });
 
   const onSave = state.layout.mock.calls.at(-1)![0].onSave;
@@ -448,7 +448,7 @@ it('keeps the slideout open and shows the errors when the draft step is invalid'
 
   expect(state.context.apply).not.toHaveBeenCalled();
   expect(state.errors).toEqual([
-    {path: ['file'], messages: ['File must be provided.']},
+    {path: ['source'], messages: ['Source must be provided.']},
   ]);
 });
 
@@ -470,7 +470,7 @@ it('isn’t dirty when folding the form back in changes nothing', async () => {
   state.context.step.settings = [];
   state.values = {
     settings: {},
-    file: step.file,
+    source: step.source,
     type: step.type,
     batchSize: '',
   };
@@ -483,7 +483,7 @@ it('isn’t dirty when folding the form back in changes nothing', async () => {
 
 it('is dirty once a setting really changes', async () => {
   mount(true);
-  state.values = {...state.values, file: 'other.csv'};
+  state.values = {...state.values, source: 'other.csv'};
 
   state.emitChange!();
   await nextTick();

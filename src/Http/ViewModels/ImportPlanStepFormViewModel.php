@@ -49,9 +49,9 @@ class ImportPlanStepFormViewModel extends ViewModel
                 ->placeholder(t('Please select'))
                 ->reactive())
                 ->instructions(t('What this step imports.')),
-            FormField::make(t('Data File'), Text::make('file')
+            FormField::make(t('Data Source'), Text::make('source')
                 ->placeholder('@root/resources/my-data.json'))
-                ->instructions(t('The aliased or @root-relative path or a URL to the file containing the data you want this step to import.'))
+                ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
                 ->required()
                 ->visible($hasType),
             FormField::make(t('Transformer'), Text::make('transformer')
@@ -66,7 +66,7 @@ class ImportPlanStepFormViewModel extends ViewModel
             values: [
                 'uid' => $this->importer?->uid,
                 'type' => $this->importer !== null ? $this->importer::class : null,
-                'file' => $this->importer?->file,
+                'source' => $this->importer?->source,
                 'batchSize' => $this->batchSize,
             ],
             mode: $mode,
