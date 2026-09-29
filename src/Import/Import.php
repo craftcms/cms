@@ -22,7 +22,6 @@ use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
@@ -292,11 +291,16 @@ class Import
             $data = ['matchCriteria' => $matchCriteria] + $data;
         }
 
-        if (! empty($additionalMatchCriteria)) {
-            $matchCriteria = Arr::undot(array_replace(
-                Arr::dot($data['matchCriteria'] ?? []),
-                Arr::dot($additionalMatchCriteria)
-            ));
+        // criteria for a container's nested rows are passed down to them below, rather than matched on at this level
+        $levelAdditionalMatchCriteria = array_filter(
+            $additionalMatchCriteria,
+            fn ($value, $key) => ! is_array($value) || ! self::isContainerData($data[$key] ?? null),
+            ARRAY_FILTER_USE_BOTH,
+        );
+
+        // if this level has any additional match criteria, use it
+        if (! empty($levelAdditionalMatchCriteria)) {
+            $matchCriteria = array_replace($data['matchCriteria'] ?? [], $levelAdditionalMatchCriteria);
             $data = ['matchCriteria' => $matchCriteria] + $data;
         }
 
@@ -312,6 +316,7 @@ class Import
             }
 
             $value = $criteria[$key] ?? [];
+            $nestedAdditionalMatchCriteria = is_array($additionalMatchCriteria[$key] ?? null) ? $additionalMatchCriteria[$key] : [];
 
             if (! is_array($value)) {
                 continue;
@@ -330,14 +335,31 @@ class Import
                     $this->resolveMatchCriteria(
                         $item,
                         $type !== null ? ($value[$type] ?? []) : $value,
-                        $type !== null ? ($additionalMatchCriteria[$type] ?? []) : ($additionalMatchCriteria[$key] ?? []),
+                        $type !== null ? ($nestedAdditionalMatchCriteria[$type] ?? []) : $nestedAdditionalMatchCriteria,
                     );
                 }
                 unset($item);
             } else {
-                $this->resolveMatchCriteria($data[$key], $value, $additionalMatchCriteria[$key] ?? []);
+                $this->resolveMatchCriteria($data[$key], $value, $nestedAdditionalMatchCriteria);
             }
         }
+    }
+
+    /**
+     * Determines whether a data value holds nested rows (e.g. matrix blocks or addresses),
+     * rather than a plain value such as a list of related element IDs.
+     */
+    private static function isContainerData(mixed $value): bool
+    {
+        if (! is_array($value) || $value === []) {
+            return false;
+        }
+
+        if (! array_is_list($value)) {
+            return true;
+        }
+
+        return array_any($value, fn ($item) => is_array($item));
     }
 
     /**
