@@ -40,9 +40,9 @@ class ImportHelper
      */
     public static function normalizeMatchCriteriaFromImporterConfig(BaseImporter $importer): array
     {
-        // the order of importance is:
-        // matchCriteria coming from the UI or file-based config (those two never exist together), are merged with and overwritten by
+        // for the same key, the order of importance is (see Import::importItem()):
         // matchCriteria coming from the incoming data, are merged with and overwritten by
+        // matchCriteria coming from the UI or file-based config (those two never exist together), are merged with and overwritten by
         // the BaseTransformer::additionalMatchCriteria() values (if custom transformer is specified)
 
         // get the map

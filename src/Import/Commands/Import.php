@@ -73,7 +73,7 @@ abstract class Import extends Command implements PromptsForMissingInput
                 ]
             ), 'transformer')
             ->addIf(! $this->option('matchCriteria'), fn () => text(
-                label: 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, ID will be used for matching.',
+                label: 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, all items will be imported as new.',
                 validate: [
                     'string',
                 ]

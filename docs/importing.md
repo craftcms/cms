@@ -2,10 +2,10 @@
 
 ## 1. What the feature does
 
-Bulk-imports data from a JSON, CSV or XML file into Craft elements (entries, assets, users,
-addresses-as-nested-content) or into opted-in Eloquent models. It can create new records or find
-and update existing ones, and it understands nested content (Matrix, Addresses, Content Blocks)
-to arbitrary depth.
+Bulk-imports data from a JSON, CSV or XML source (a local file or a URL) into Craft elements
+(entries, assets, users, addresses-as-nested-content) or into opted-in Eloquent models. It can
+create new records or find and update existing ones, and it understands nested content (Matrix,
+Addresses, Content Blocks) to arbitrary depth.
 
 Three ways to drive it: the control panel, a PHP config file, or the CLI.
 
@@ -15,7 +15,7 @@ Three ways to drive it: the control panel, a PHP config file, or the CLI.
 
 An **import plan** is a named, handled, ordered list of **steps**
 (`src/Import/Data/ImportPlan.php`, service `src/Import/ImportPlan.php`). Each step is one
-importer instance with its own `uid`, `type` (the importer FQCN), `file`, `transformer`,
+importer instance with its own `uid`, `type` (the importer FQCN), `source`, `transformer`,
 `batchSize` and `settings` (importer-specific settings plus `map`, `matchCriteria`,
 `clearableItems` and, for elements, `keepMissingNestedElements`). Two flavours:
 
@@ -24,9 +24,13 @@ importer instance with its own `uid`, `type` (the importer FQCN), `file`, `trans
   `Config::get('craft.import')`.
 
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
-database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:51`) merges DB rows with
-file closures, keys by handle, sorts by name, and memoises. An invalid file-based plan is
-**skipped and logged** as a warning rather than blowing up the list.
+database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:51`) lists DB plans
+first, in their saved `sortOrder` (then name, then handle), followed by file-based plans sorted
+by name. The result is keyed by handle and memoised. An invalid file-based plan is **skipped and
+logged** as a warning rather than blowing up the list.
+
+New and duplicated editable plans are appended to the end of the order (`nextSortOrder()`);
+`reorderImportPlans(array $uids)` saves a new order.
 
 ### File-based plan shape
 
@@ -40,7 +44,7 @@ return [
         ->handle('entriesFromFile')
         ->steps([
             EntryImporter::create()
-                ->file('resources/import/entry-with-plain-text.json')
+                ->source('resources/import/entry-with-plain-text.json')
                 ->site('default')
                 ->matchCriteria(['title' => 'title']),
         ]),
@@ -55,24 +59,72 @@ does that work, which is why one step can span multiple sections and entry types
 
 `steps` is stored as JSON, one entry per step, built by `BaseImporter::toArrayData()`. On load,
 `ImportPlan::createImporter()` instantiates `$step['type']`, and `BaseImporter::__construct()`
-applies `file`, `transformer` and `batchSize`, then replays each `settings` key through the
-importer's public setter of the same name (keys without a matching setter are ignored). The
-target class is fixed by the importer subclass itself, so it isn't stored.
+applies `source`, `transformer` and `batchSize`, then replays each `settings` key through the
+importer's public setter of the same name (keys without a matching setter are ignored). Steps
+whose importer can't be created are left out. The target class is fixed by the importer
+subclass itself, so it isn't stored.
+
+### Sources
+
+A step's `source` is a `@root`-relative path, an aliased path (`@root/...`, `@storage/...`) or
+an http(s) URL, resolved by `BaseImporter::resolvedSourcePath()`. Absolute filesystem paths are
+rejected.
+
+`BaseImporter::sourceError()` (used by the `source` validation rule) checks that:
+
+- the alias is defined;
+- the value isn't some other scheme (`data:`, `phar://`, …), a dotfile, or inside a restricted
+  directory;
+- a local file exists and is readable, its extension is a registered data type, and its contents
+  match that type (CSV also accepts content detected as `txt`).
+
+URLs are checked with a `UrlValidator` that rejects reserved IP ranges. The download
+(`downloadFile()`) pins the connection to the validated IPs to guard against SSRF and DNS
+rebinding, and doesn't follow redirects. A remote file's data type comes from the response's
+`Content-Type`, falling back to the URL path's extension, and its contents are then checked like
+a local file's.
+
+File-based plans are validated every time they're loaded, so their URLs are checked without
+resolving the hostname (`resolveHost: false`); the import job validates the step fully before
+downloading. `withLocalFile(Closure $callback)` hands a local path to one-off callers (the CLI,
+mapping), downloading a remote source to a temp file and deleting it afterwards.
 
 ---
 
 ## 3. Running an import plan
 
-`Import::dispatchImport()` (`src/Import/Import.php:133`) builds one `Import` job per step,
-fires `ImportDispatching` (cancellable), then dispatches a single `ImportPipeline` job so
-the whole plan shows as one named queue item. `ImportPipeline` wraps each step in its
-own `Bus::batch(...)->allowFailures()` and chains them, so steps run sequentially and
-one bad step doesn't kill the plan. `ImportDispatched` fires afterwards.
+`Import::dispatchImport()` (`src/Import/Import.php:162`) generates a `runId`, builds one
+`Import` job per step, fires `ImportDispatching` (cancellable), then dispatches a single
+`ImportPipeline` job so the whole plan shows as one named queue item. `ImportPipeline` wraps
+each step in its own `Bus::batch(...)->allowFailures()` and chains them, followed by a
+`FinishImport` job, so steps run sequentially and one bad step doesn't kill the plan.
+`ImportDispatched` fires afterwards.
 
-The `Import` job re-reads the file each time, slices off already-processed rows,
+The `Import` job re-reads the data each time, slices off already-processed rows,
 processes the step's `batchSize` items (default 5; **0 disables batching** and does everything
 in one job), and re-adds itself to the batch for the remainder. Per-item failures are
 logged and skipped, not fatal.
+
+The first chunk of a step runs the step's full `validate()`, and if the source is a URL it
+downloads it once into `runtime/imports/{runId}`. Later chunks only run `validateSettings()` and
+reuse that local copy, which assumes all chunks run on the same server. `FinishImport` deletes
+the run's download directory.
+
+### Run lifecycle events
+
+| Event | Fired | Extra payload |
+| --- | --- | --- |
+| `ImportStarted` | when `ImportPipeline` starts | `steps` |
+| `ImportStepStarted` | by a step's first chunk | `step` |
+| `ImportChunkStarted` | before each chunk | `step`, `offset`, `limit` |
+| `ImportChunkFinished` | after each chunk | `step`, `offset`, `count`, `hasFailures` |
+| `ImportStepFinished` | in the step batch's `finally` | `step`, `hasFailures` |
+| `ImportFinished` | by `FinishImport` | `steps`, `hasFailures` |
+
+All of them carry `importPlan` and `runId`. Failures are tracked across jobs through cache flags
+(`FinishImport::hasFailuresCacheKey()` / `stepHasFailuresCacheKey()`). The CLI fires
+`ImportStarted`, `ImportStepStarted`, `ImportStepFinished` and `ImportFinished` with a `null`
+`importPlan`, but no chunk events.
 
 ---
 
@@ -104,6 +156,9 @@ and its validation.
 No importer sets default match criteria in the base classes — with none set, everything is
 imported as new.
 
+`importItem(array $data): ElementInterface|Model|null` returns the element or model the data was
+imported into.
+
 Extra importer types — including importers for plugin-defined element types and models — register
 via the `RegisterImporterTypes` event (`$event->importers`).
 
@@ -111,7 +166,7 @@ via the `RegisterImporterTypes` event (`$event->importers`).
 
 ## 5. Per-item pipeline
 
-`Import::importItem()` (`src/Import/Import.php:190`):
+`Import::importItem()` (`src/Import/Import.php:219`):
 
 1. `ItemImporting` event (cancellable, can rewrite `$data`).
 2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
@@ -119,7 +174,9 @@ via the `RegisterImporterTypes` event (`$event->importers`).
 4. Resolve match criteria.
 5. Apply clearable items.
 6. Hand to the importer's `importItem()`.
-7. `ItemImported` event.
+7. `ItemImported` event, carrying the returned `importedItem`.
+
+Both item events also carry the `runId` (`null` outside a run).
 
 ### Match criteria
 
@@ -159,10 +216,12 @@ is accepted and expanded). Behaviour:
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
    via Fractal meta.
-4. Split the result into native attributes, custom fields, and container properties. Attributes
-   are applied via `$this->setAttributesForImport($element, $attributes)` on the importer (base
-   implementation strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`;
-   `AssetImporter` overrides it to resolve filename/folder/temp-file handling and download).
+4. Split the result into native attributes, custom fields, and container properties. The
+   reserved keys (`matchCriteria`, `clearableItems`, `keepMissingNestedElements`) are never
+   treated as fields. Attributes are applied via
+   `$this->setAttributesForImport($element, $attributes)` on the importer (base implementation
+   strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
+   overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimisation**: snapshots attribute values and serialized field
    values; if nothing changed, the element is never saved. Skipped for new elements or
    when container data is present. A special case catches content blocks, whose
@@ -170,7 +229,7 @@ is accepted and expanded). Behaviour:
 6. Validation scenario: `SCENARIO_LIVE` when `enabled && getEnabledForSite()`,
    otherwise `SCENARIO_ESSENTIALS`.
 7. Enable keep-flags, save, restore flags in a `finally`.
-8. Log any nested elements pruned during the save.
+8. Return the element.
 
 Container *properties* (as opposed to fields) go through
 `$element->importIntoContainerAttribute()` — only `User` defines it, for `addresses`.
@@ -290,8 +349,9 @@ children:
 ]]
 ```
 
-Opt-in per field, per level — an outer field can keep while an inner one prunes.
-Pruned ids are captured via an `ElementDeleted` listener and logged.
+A flat list of (dot-notation) handles is accepted too and expanded into `__keep__: true` leaves.
+Opt-in per field, per level — an outer field can keep while an inner one prunes. Pruning is
+Craft's normal save behaviour, so it isn't tracked or logged.
 
 ---
 
@@ -303,14 +363,24 @@ Nav: **Import**. Permissions group `import`: `viewImportPlans`
 Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPlansController`:
 
 - `import` — two tables, editable and file-based. Editable rows get Edit, Duplicate, Delete
-  and Run; file-based rows get Run only. Run queues the plan via `dispatchImport()`.
+  and Run; file-based rows get Run only. Run queues the plan via `dispatchImport()`. With
+  `saveImportPlans`, the editable table can be reordered by drag and drop (`import/reorder`,
+  rolled back client-side if the request fails).
 - `import/new|{handle}` — name, handle, description, then the **Steps** list
-  (`modules/import/steps/StepList.vue`). Each step opens a slideout (`StepSlideout.vue`):
-  importer type (reactive select), the importer's own settings form, data file, transformer
-  and batch size, plus a **Mapping** summary with an "Edit mapping" button. Choosing the
-  importer type for an element import (Entries / Assets / Users) *is* choosing the element
-  type — there's no separate "Element Type" field. A step is validated (`import/validate-step`)
-  before its slideout can close.
+  (`modules/import/steps/StepList.vue`). Each step opens a slideout (`StepSlideout.vue`), with a
+  loading state on the button while it opens: importer type (reactive select, with a spinner
+  while the form for a new type loads), the importer's own settings form, **Data Source**
+  (a path, alias or URL), transformer and batch size, plus a **Mapping** section with an
+  "Edit mapping" button. Choosing the importer type for an element import (Entries / Assets /
+  Users) *is* choosing the element type — there's no separate "Element Type" field. A step is
+  validated (`import/validate-step`) before its slideout can close, and the unsaved-changes
+  prompt only appears if something actually changed (`dirtyState()` in
+  `modules/import/mapping/paths.ts`).
+- The "Edit mapping" button is shown as soon as the step has a type, and disabled until the step
+  can be mapped (`canMap`: it knows what it imports into and its source passes `sourceError()`).
+  The source is re-checked when its field loses focus, and any problem is shown under the field.
+  The file is only downloaded and parsed once the mapping is opened; a read error at that point
+  is shown under the source field too, until the source changes.
 - The mapping table: **Destination / Incoming data / Match / Clear**. The incoming-data select
   is a combobox that shows each column's first-row value as a hint, and the most likely
   column is pre-selected (`ImportHelper::suggestMapValues()`). Attributes with
@@ -333,20 +403,23 @@ defined one.
 One command per importer, each extending the abstract `CraftCms\Cms\Import\Commands\Import`:
 
 ```
-craft:import:entry {file} [--site=] [--section=] [--entryType=] [--transformer=] [--matchCriteria=]
-craft:import:asset {file} [--site=] [--volume=] [--transformer=] [--matchCriteria=]
-craft:import:user {file} [--site=] [--transformer=] [--matchCriteria=]
-craft:import:system-message {file} [--transformer=] [--matchCriteria=]
+craft:import:entry {source} [--site=] [--section=] [--entryType=] [--transformer=] [--matchCriteria=]
+craft:import:asset {source} [--site=] [--volume=] [--transformer=] [--matchCriteria=]
+craft:import:user {source} [--site=] [--transformer=] [--matchCriteria=]
+craft:import:system-message {source} [--transformer=] [--matchCriteria=]
 ```
 
-Aliases: `import/entry`, `import/asset`, `import/user`, `import/system-message`. `{file}` is
-prompted if missing, as are any missing options; `--site` is only added for element
-importers and only prompted on multisite. `--matchCriteria` is JSON.
+Aliases: `import/entry`, `import/asset`, `import/user`, `import/system-message`. `{source}` is an
+aliased or `@root`-relative path, or a URL, and is prompted if missing, as are any missing
+options; `--site` is only added for element importers and only prompted on multisite.
+`--matchCriteria` is JSON.
 
-A command builds a one-off importer via `ImportPlan::createImporter()` and imports every item
-synchronously — it doesn't go through a plan or the queue. To add a command for your own
-importer, extend `Import`, implement `importerClass()`, add any extra prompts via
-`getAdditionalOptions()`, and register it with `$this->commands()`.
+A command builds a one-off importer via `ImportPlan::createImporter()`, validates it (printing
+errors per attribute and failing if it's invalid), reads the data via `withLocalFile()` (so a
+URL is downloaded to a temp file), and imports every item synchronously — it doesn't go through
+a plan or the queue. It fires the run lifecycle events (see §3) without an import plan. To add a
+command for your own importer, extend `Import`, implement `importerClass()`, add any extra
+prompts via `getAdditionalOptions()`, and register it with `$this->commands()`.
 
 No command takes a `--map`, so CLI mapping is the transformer's job.
 
@@ -360,9 +433,12 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
 - `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`. Registering a new
   importable element type or model means contributing a concrete `ElementImporter` or
   `ModelImporter` subclass that implements `targetClass()`.
-- `ItemImporting` / `ItemImported`, `ImportPlanSaving` / `ImportPlanSaved`,
-  `ImportDispatching` / `ImportDispatched`.
+- `ItemImporting` / `ItemImported` (the latter with `$importedItem`),
+  `ImportPlanSaving` / `ImportPlanSaved`, `ImportDispatching` / `ImportDispatched`.
   The `*ing` variants are cancellable.
+- Run lifecycle: `ImportStarted`, `ImportStepStarted`, `ImportChunkStarted`,
+  `ImportChunkFinished`, `ImportStepFinished`, `ImportFinished` — all keyed by `runId`
+  (see §3).
 - Transformers: extend `ElementTransformer` (or the per-type one) and override
   `transform()`; or implement `additionalMatchCriteria()`. Transformers can also be
   given as a class string or an `fn($element) => ...` closure string.

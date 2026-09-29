@@ -121,7 +121,7 @@ class Import
 
     /**
      * Returns the registered `ElementImporter` subclass (core or plugin-registered) whose
-     * `elementClass()` matches the given element type, or null if none is registered for it.
+     * `targetClass()` matches the given element type, or null if none is registered for it.
      *
      * @param  string  $elementClass  The element type's FQCN.
      */
@@ -138,7 +138,7 @@ class Import
 
     /**
      * Returns the registered `ModelImporter` subclass (core or plugin-registered) whose
-     * `modelClass()` matches the given model, or null if none is registered for it.
+     * `targetClass()` matches the given model, or null if none is registered for it.
      *
      * @param  string  $modelClass  The model's FQCN.
      */
@@ -232,17 +232,16 @@ class Import
             $data = ImportHelper::remapData($importer->map, $data);
         }
 
-        // the order or priority in which match criteria is used (the higher the priority, the more important it is):
-        // 1. matchCriteria coming from the importer config (either UI- or file-based);
-        //      those values are the same for all the items in the import (it doesn't change for the entire import step),
-        //      which is why we grab it once, in the Import job
-        // 2. matchCriteria coming from the data
+        // match criteria come from three places, applied in this order, so for the same key
+        // a later one overrides an earlier one (in-data < importer config < transformer):
+        // 1. matchCriteria coming from the data
         //      those values can differ from data item to data item, and they're a "simple" array of key => value pairs where
         //      the key is the property, field handle or column name in the system
-        //      the value is the handle used to locate the data in the incoming dataset,
-        //      for example: I want to match on a title field value, the value I want to match on is "my first title",
-        //      and it's stored in the incoming dataset as ["incomingTitle" => "my first title"];
-        //      the matchCriteria value in the data should be listed as ["matchCriteria" => ["title" => "incomingTitle"]]
+        //      a string value is replaced by the item's own value for that key (from the item or its `fields`), if it has one;
+        //      otherwise (or if it isn't a string) the value is used to match on as it is
+        // 2. matchCriteria coming from the importer config (either UI- or file-based);
+        //      those values are the same for all the items in the import (it doesn't change for the entire import step),
+        //      which is why we grab it once, in the Import job
         // 3. matchCriteria coming from the BaseTransformer::additionalMatchCriteria() method - if the import uses a transformer that has it
         //      those values can be computed dynamically based on the incoming data and can impact the array returned by that method;
         //      the array should be an array of key-value pairs where

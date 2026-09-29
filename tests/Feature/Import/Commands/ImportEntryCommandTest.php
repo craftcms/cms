@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)';
 
-const MATCH_CRITERIA_QUESTION = 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, ID will be used for matching.';
+const MATCH_CRITERIA_QUESTION = 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, all items will be imported as new.';
 
 beforeEach(function () {
     // resolvedSourcePath() resolves against @root, which points at the Testbench skeleton in tests
