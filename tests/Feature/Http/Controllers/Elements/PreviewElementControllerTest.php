@@ -125,17 +125,11 @@ it('redirects to the canonical edit url when the requested draft is invalid', fu
         'slug' => 'canonical-title',
     ]);
 
-    $redirect = redirect($entry->getCpEditUrl());
-
-    $request = Mockery::mock(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($redirect);
-
-    $response = new PreviewElementController($request)->__invoke($entry->id, "-$entry->slug");
-
-    expect($response)->toBe($redirect);
+    get(action(PreviewElementController::class, [
+        'id' => $entry->id,
+        'slug' => "-$entry->slug",
+        'draftId' => 999999,
+    ]))->assertRedirect($entry->getCpEditUrl());
 });
 
 it('returns a bad request when no element matches the preview request', function () {

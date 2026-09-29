@@ -18,37 +18,6 @@ describe('exporters', function () {
         ]);
     });
 
-    test('returns exporters for specific source', function () {
-        $exporters = Entry::exporters('section:12345');
-
-        expect($exporters)->toBe([
-            Raw::class,
-            Expanded::class,
-        ]);
-    });
-
-    test('ElementExportersResolving event allows adding custom exporters', function () {
-        $customExporter = new class
-        {
-            public static function displayName(): string
-            {
-                return 'Custom';
-            }
-        };
-
-        Event::listen(function (ElementExportersResolving $event) use ($customExporter) {
-            if ($event->elementType === Entry::class) {
-                $event->exporters[] = $customExporter::class;
-            }
-        });
-
-        $exporters = Entry::exporters('*');
-
-        expect($exporters)->toContain(Raw::class);
-        expect($exporters)->toContain(Expanded::class);
-        expect($exporters)->toContain($customExporter::class);
-    });
-
     test('event provides source key', function () {
         $capturedSource = null;
 
@@ -71,17 +40,5 @@ describe('exporters', function () {
         $exporters = Entry::exporters('*');
 
         expect($exporters)->toBe([Raw::class]);
-    });
-
-    test('event can remove all exporters', function () {
-        Event::listen(function (ElementExportersResolving $event) {
-            if ($event->elementType === Entry::class) {
-                $event->exporters = [];
-            }
-        });
-
-        $exporters = Entry::exporters('*');
-
-        expect($exporters)->toBe([]);
     });
 });

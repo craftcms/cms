@@ -600,7 +600,7 @@ trait QueriesStructures
             self::applyHasDescendantsInternal($elementQuery, $elementQuery->hasDescendants);
         }
 
-        if ($elementQuery->ancestorOf) {
+        if ($elementQuery->ancestorOf !== null) {
             $ancestorOf = $elementQuery->normalizeStructureParamValue('ancestorOf');
 
             $elementQuery
@@ -613,7 +613,7 @@ trait QueriesStructures
                 );
         }
 
-        if ($elementQuery->descendantOf) {
+        if ($elementQuery->descendantOf !== null) {
             $descendantOf = $elementQuery->normalizeStructureParamValue('descendantOf');
 
             $elementQuery
@@ -627,7 +627,7 @@ trait QueriesStructures
         }
 
         foreach (['siblingOf', 'prevSiblingOf', 'nextSiblingOf'] as $param) {
-            if (! $elementQuery->$param) {
+            if ($elementQuery->$param === null) {
                 continue;
             }
 
@@ -668,7 +668,7 @@ trait QueriesStructures
             }
         }
 
-        if ($elementQuery->positionedBefore) {
+        if ($elementQuery->positionedBefore !== null) {
             $positionedBefore = $elementQuery->normalizeStructureParamValue('positionedBefore');
 
             $elementQuery
@@ -676,7 +676,7 @@ trait QueriesStructures
                 ->where('structureelements.root', $positionedBefore->root);
         }
 
-        if ($elementQuery->positionedAfter) {
+        if ($elementQuery->positionedAfter !== null) {
             $positionedAfter = $elementQuery->normalizeStructureParamValue('positionedAfter');
 
             $elementQuery

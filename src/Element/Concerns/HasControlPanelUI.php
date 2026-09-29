@@ -400,10 +400,20 @@ JS, [
         $items = [...$items, ...$this->extraActionMenuDescriptors($context)];
 
         // Destructive items sort last and are flagged so the menu can style them.
+        $isNewSite = match (true) {
+            $isUnpublishedDraft => true,
+            $isDraft => ! static::find()
+                ->id($this->getCanonicalId())
+                ->siteId($this->siteId)
+                ->status(null)
+                ->exists(),
+            default => false,
+        };
+
+        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            $isCurrent &&
-            Gate::check('deleteForSite', $canonical) &&
+            (($isCurrent && Gate::check('deleteForSite', $canonical)) || ($canDeleteDraft && $isNewSite)) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -449,28 +459,51 @@ JS, [
             ];
         }
 
+        if (! $isCurrent && $canDeleteDraft) {
+            if ($canDeleteForSite) {
+                $items[] = [
+                    'label' => mb_ucfirst(t('Delete {type} for this site', ['type' => t('draft')])),
+                    'icon' => 'remove',
+                    'destructive' => true,
+                    'behavior' => [
+                        'type' => 'submit',
+                        'actionUrl' => Url::actionUrl('elements/delete-for-site'),
+                        'params' => [
+                            'elementId' => $this->getCanonicalId(),
+                            'siteId' => $this->siteId,
+                            'draftId' => $this->draftId,
+                        ],
+                        'redirect' => Crypt::encrypt("$redirectUrl#"),
+                        'confirm' => t('Are you sure you want to delete the {type} for this site?', [
+                            'type' => static::lowerDisplayName(),
+                        ]),
+                    ],
+                ];
+            }
+
+            $items[] = [
+                'label' => mb_ucfirst(t('Delete {type}', ['type' => t('draft')])),
+                'icon' => 'trash',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('elements/delete-draft'),
+                    'params' => [
+                        'elementId' => $this->getCanonicalId(),
+                        'siteId' => $this->siteId,
+                        'draftId' => $this->draftId,
+                    ],
+                    'redirect' => Crypt::encrypt((string) $canonical->getCpEditUrl()),
+                    'confirm' => t('Are you sure you want to delete this {type}?', ['type' => t('draft')]),
+                ],
+            ];
+        }
+
         if ($context->isEditor()) {
             return $items;
         }
 
-        return array_values(array_filter($items, self::showsInChips(...)));
-    }
-
-    /**
-     * Whether an action belongs in a chip or card, as opposed to the element's
-     * own editor.
-     *
-     * Every non-destructive action is shown by default; an item opts in or out
-     * explicitly with `showInChips`. Destructive ones are held back because the
-     * screen around them owns a different destructive action — a relation
-     * field's Remove detaches the element rather than deleting it — and the two
-     * sitting together invites picking the wrong one.
-     *
-     * @param  array<string, mixed>  $item
-     */
-    private static function showsInChips(array $item): bool
-    {
-        return (bool) ($item['showInChips'] ?? ! ($item['destructive'] ?? false));
+        return array_values(array_filter($items, app(MenuHtml::class)->showsInChips(...)));
     }
 
     /**

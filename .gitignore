@@ -22,6 +22,9 @@ test-results/
 tests/Browser/Screenshots/
 resources/hot
 
+# Agent spec files
+specs/
+
 # Test database(s)
 database/*.sqlite
 

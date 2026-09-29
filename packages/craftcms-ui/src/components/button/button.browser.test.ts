@@ -373,3 +373,46 @@ describe('[size=xsmall]', () => {
     expect(below).toBe(button);
   });
 });
+
+describe('[disabled]', () => {
+  async function mountPair(variant: string): Promise<{
+    enabled: CraftButton;
+    disabled: CraftButton;
+  }> {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    const holder = document.createElement('div');
+    holder.innerHTML = `
+      <craft-button variant="${variant}">On</craft-button>
+      <craft-button variant="${variant}" disabled>Off</craft-button>`;
+    document.body.append(holder);
+
+    const [enabled, disabled] = [
+      ...holder.querySelectorAll<CraftButton>('craft-button'),
+    ];
+    await enabled!.updateComplete;
+    await disabled!.updateComplete;
+
+    return {enabled: enabled!, disabled: disabled!};
+  }
+
+  it('mutes a disabled button', async () => {
+    const {enabled, disabled} = await mountPair('fill');
+
+    expect(getComputedStyle(enabled).opacity).toBe('1');
+    expect(getComputedStyle(disabled).opacity).toBe('0.5');
+  });
+
+  it('keeps the variant’s own fill rather than repainting it', async () => {
+    // Lion's own disabled rule paints a flat grey; the variants override it, so
+    // muting is what has to carry the state.
+    const {enabled, disabled} = await mountPair('fill');
+
+    expect(getComputedStyle(disabled).backgroundColor).toBe(
+      getComputedStyle(enabled).backgroundColor
+    );
+  });
+});

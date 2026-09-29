@@ -44,5 +44,6 @@ A clean run is a real, required gate — but it is not proof of conformance.
 Automated tools reliably catch maybe a third to half of real-world WCAG
 issues; the rest need a deliberate, manual pass.
 
-A clean automated run is a floor, not a finish line — treat it as one
-required check among several, not proof that a change is done.
+Done when: axe is clean, the component's `.a11y.md` items are each verified
+by a test, and you've reported a keyboard and forced-colors check of the
+changed UI.

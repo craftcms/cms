@@ -24,7 +24,7 @@
       :disabled="site.primary"
       @click="modalActive = true"
     >
-      <craft-icon name="x" :label="t('Delete site')"></craft-icon>
+      <craft-icon name="xmark-large" :label="t('Delete site')"></craft-icon>
     </craft-button>
 
     <DeleteSiteModal

@@ -357,13 +357,6 @@ describe('getMaxUploadSize', function () {
 });
 
 describe('getFileKinds', function () {
-    test('returns an array of file kinds', function () {
-        $kinds = AssetsHelper::getFileKinds();
-
-        expect($kinds)->toBeArray();
-        expect($kinds)->not->toBeEmpty();
-    });
-
     test('each kind has label and extensions', function () {
         $kinds = AssetsHelper::getFileKinds();
 

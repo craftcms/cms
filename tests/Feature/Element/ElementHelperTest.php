@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -172,8 +173,15 @@ test('builds editor and revisions urls', function () {
 });
 
 test('detects multisite elements', function () {
-    $entry = Entry::factory()->createElement();
-    Site::factory()->create();
+    $secondarySite = Site::factory()->create();
 
-    expect(ElementHelper::isMultiSite($entry))->toBeBool();
+    $multiSiteEntry = Entry::factory()
+        ->forSection(Section::factory()->withSites($secondarySite)->create())
+        ->createElement();
+    $singleSiteEntry = Entry::factory()
+        ->forSection(Section::factory()->create())
+        ->createElement();
+
+    expect(ElementHelper::isMultiSite($multiSiteEntry))->toBeTrue()
+        ->and(ElementHelper::isMultiSite($singleSiteEntry))->toBeFalse();
 });

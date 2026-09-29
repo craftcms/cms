@@ -217,7 +217,7 @@ export class Element extends Base {
         }
         items.push({
           label: Craft.t('app', 'Remove'),
-          icon: 'xmark',
+          icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {
             this.destroy();

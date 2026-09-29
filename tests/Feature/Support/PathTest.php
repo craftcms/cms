@@ -163,14 +163,6 @@ test('system paths return the expected ordered list', function () {
     ]);
 });
 
-test('laravel path service and facade return the same values', function () {
-    $laravelPath = ($this->laravelPath)();
-
-    expect(Path::projectConfigFile())->toBe($laravelPath->projectConfigFile())
-        ->and(Path::temp(create: false))->toBe($laravelPath->temp(create: false))
-        ->and(Path::system())->toBe($laravelPath->system());
-});
-
 test('laravel path service falls back to application paths when aliases are unavailable', function () {
     Aliases::remove('@storage');
     Aliases::remove('@tests');

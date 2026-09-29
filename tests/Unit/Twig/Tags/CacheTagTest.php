@@ -30,14 +30,20 @@ it('renders dynamic content when cache is bypassed via unless', function () {
     expect(trim((string) $result2))->toBe('Second');
 });
 
-it('renders with explicit key', function () {
-    $result = $this->manager->renderString('{% cache using key "explicit-key" %}Keyed content{% endcache %}');
+it('skips path-scoped caching in the console', function () {
+    $result1 = $this->manager->renderString('{% cache using key "explicit-key" %}Hello{% endcache %}');
+    $result2 = $this->manager->renderString('{% cache using key "explicit-key" %}Goodbye{% endcache %}');
 
-    expect(trim((string) $result))->toBe('Keyed content');
+    expect(trim((string) $result1))->toBe('Hello')
+        ->and(trim((string) $result2))->toBe('Goodbye');
 });
 
-it('renders globally cached content', function () {
-    $result = $this->manager->renderString('{% cache globally %}Global content{% endcache %}');
+it('caches global content keyed by its template location', function () {
+    $template = '{% cache globally %}{{ message }}{% endcache %}';
 
-    expect(trim((string) $result))->toBe('Global content');
+    $result1 = $this->manager->renderString($template, ['message' => 'Hello']);
+    $result2 = $this->manager->renderString($template, ['message' => 'Goodbye']);
+
+    expect(trim((string) $result1))->toBe('Hello')
+        ->and(trim((string) $result2))->toBe('Hello');
 });

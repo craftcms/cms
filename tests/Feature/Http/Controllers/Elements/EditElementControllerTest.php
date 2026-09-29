@@ -9,6 +9,10 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -17,6 +21,8 @@ use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
+use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -227,10 +233,41 @@ it('returns a json editor payload for the current element', function () {
  * detached from the document, so the settings travel as a prop instead.
  */
 it('sends element editor settings as a prop to an Inertia slideout', function () {
+    Queue::fake();
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volume->id,
+        'folderId' => $this->folder->id,
+        'filename' => 'prop-delivery.jpg',
+    ]);
+
+    $response = getJson(action(EditElementController::class, [
+        'elementType' => $asset::class,
+        'elementId' => $asset->id,
+        'siteId' => $asset->siteId,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Craft-Container-Id' => 'slideout-1',
+    ])->assertOk();
+
+    expect($response->json('component'))->toBe('cp/Screen')
+        ->and($response->json('props.screen.elementEditorSettings'))
+        ->toMatchArray([
+            'elementId' => $asset->id,
+            'canonicalId' => $asset->id,
+            'isStatic' => false,
+            'isProvisionalDraft' => false,
+        ])
+        // The jQuery hand-off is the other branch's job, and emitting both
+        // would double-instantiate the editor.
+        ->and($response->json('props.bodyHtml'))
+        ->not->toContain('elementEditorSettings');
+});
+
+it('renders the entry editor for an entry opened in an Inertia slideout', function () {
     $entry = EntryModel::factory()
         ->forSection($this->section)
         ->forEntryType($this->entryType)
-        ->createElement(['title' => 'Prop Delivery', 'slug' => 'prop-delivery']);
+        ->createElement(['title' => 'Slideout Entry', 'slug' => 'slideout-entry']);
 
     $response = getJson(action(EditElementController::class, [
         'elementType' => $entry::class,
@@ -241,17 +278,40 @@ it('sends element editor settings as a prop to an Inertia slideout', function ()
         'X-Craft-Container-Id' => 'slideout-1',
     ])->assertOk();
 
-    expect($response->json('props.screen.elementEditorSettings'))
-        ->toMatchArray([
-            'elementId' => $entry->id,
-            'canonicalId' => $entry->id,
-            'isStatic' => false,
-            'isProvisionalDraft' => false,
+    expect($response->json('component'))->toBe('content/Edit')
+        ->and($response->json('props.elementId'))->toBe($entry->id)
+        ->and($response->json('props.saveUrl'))->toContain('entries/save-entry')
+        ->and($response->json('props.saveParams'))->toMatchArray([
+            'entryId' => $entry->id,
+            'siteId' => $entry->siteId,
         ])
-        // The jQuery hand-off is the other branch's job, and emitting both
-        // would double-instantiate the editor.
-        ->and($response->json('props.bodyHtml'))
-        ->not->toContain('elementEditorSettings');
+        ->and($response->json('props.nestedContext'))->toBeNull();
+});
+
+it('renders a nested entry through the owner it was opened from', function () {
+    ['field' => $field, 'ownerDraft' => $ownerDraft, 'block' => $block] = createEditElementMatrixFixture();
+
+    $response = getJson(action(EditElementController::class, [
+        'elementId' => $block->id,
+        'siteId' => $block->siteId,
+        'fieldId' => $field->id,
+        'ownerId' => $ownerDraft->id,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Craft-Container-Id' => 'slideout-1',
+    ])->assertOk();
+
+    expect($response->json('component'))->toBe('content/Edit')
+        ->and($response->json('props.saveUrl'))->toContain('elements/save')
+        ->and($response->json('props.saveForDerivativeUrl'))->toContain('elements/save-nested-element-for-derivative')
+        ->and($response->json('props.saveParams'))->toMatchArray([
+            'elementType' => Entry::class,
+            'elementId' => $block->id,
+        ])
+        ->and($response->json('props.nestedContext'))->toBe([
+            'fieldId' => $field->id,
+            'ownerId' => $ownerDraft->id,
+        ]);
 });
 
 it('prevalidates enabled live elements and returns an error summary', function () {
@@ -326,3 +386,56 @@ it('uses the editor’s own site crumb rather than the shared one', function () 
             return true;
         });
 });
+
+/** @return array{field: FieldInterface, owner: Entry, ownerDraft: Entry, block: Entry} */
+function createEditElementMatrixFixture(): array
+{
+    $blockType = EntryType::factory()
+        ->withField(Field::factory()->create(['handle' => 'innerText', 'type' => PlainText::class]))
+        ->create(['handle' => 'matrixBlock', 'hasTitleField' => true]);
+
+    $matrixField = Field::factory()->create([
+        'handle' => 'matrixField',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+
+    $ownerType = EntryType::factory()
+        ->withField($matrixField)
+        ->create(['handle' => 'owner', 'hasTitleField' => true]);
+
+    $section = Section::factory()->withEntryTypes($ownerType)->create(['handle' => 'owners']);
+
+    $owner = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->createElement(['title' => 'Owner Entry', 'slug' => 'owner-entry']);
+
+    EntryTypesFacade::refreshEntryTypes();
+    FieldsFacade::invalidateCaches();
+
+    /** @var Entry $owner */
+    $owner = Entry::find()->id($owner->id)->status(null)->one();
+    $owner->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            'new:1' => [
+                'type' => $blockType->handle,
+                'title' => 'Block 1',
+                'enabled' => true,
+            ],
+        ],
+        'sortOrder' => ['new:1'],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    $owner = Entry::find()->id($owner->id)->status(null)->one();
+    /** @var Entry $ownerDraft */
+    $ownerDraft = app(Drafts::class)->createDraft($owner, auth()->id(), name: 'Owner Draft');
+
+    return [
+        'field' => FieldsFacade::getFieldById($matrixField->id),
+        'owner' => $owner,
+        'ownerDraft' => $ownerDraft,
+        'block' => $owner->getFieldValue('matrixField')->status(null)->one(),
+    ];
+}

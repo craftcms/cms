@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
@@ -21,6 +22,7 @@ it('needs authentication for the routes', function (string $method, array $route
     $this->$method(action($route))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
 
     actingAs(User::find()->one());
 

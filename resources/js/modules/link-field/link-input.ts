@@ -285,7 +285,7 @@ export class LinkInput extends Base<LinkInputSettings> {
         },
       },
       {
-        icon: 'xmark',
+        icon: 'xmark-large',
         label: Craft.t('app', 'Remove'),
         destructive: true,
         onActivate: () => {

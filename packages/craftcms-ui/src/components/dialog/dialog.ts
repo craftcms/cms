@@ -246,7 +246,7 @@ export default class CraftDialog extends LitElement {
               aria-label=${t('Close')}
               @click=${() => this.requestClose()}
             >
-              <craft-icon name="xmark"></craft-icon>
+              <craft-icon name="xmark-large"></craft-icon>
             </button>`}
       </header>
     `;

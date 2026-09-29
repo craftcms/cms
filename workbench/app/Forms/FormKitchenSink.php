@@ -24,9 +24,9 @@ use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
 use CraftCms\Cms\Form\Controls\Markdown;
-use CraftCms\Cms\Form\Controls\Matrix;
 use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Controls\Money;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
@@ -85,7 +85,7 @@ class FormKitchenSink
             'lightswitch' => Lightswitch::class,
             'link' => Link::class,
             'markdown' => Markdown::class,
-            'matrix' => Matrix::class,
+            'matrix' => NestedElementBlocks::class,
             'missing' => MissingControl::class,
             'money' => Money::class,
             'number' => Number::class,
@@ -398,7 +398,7 @@ class FormKitchenSink
             ];
         }
 
-        if ($component === Matrix::class) {
+        if ($component === NestedElementBlocks::class) {
             $form = Form::make([
                 Field::make('Nested heading', Text::make('heading')->value('Matrix block value')),
             ]);
@@ -411,14 +411,14 @@ class FormKitchenSink
             ];
 
             return [
-                'Empty' => $this->control('Matrix', Matrix::make('matrix')
+                'Empty' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
                     ->forms(['example-block' => $form])),
-                'Populated' => $this->control('Matrix', Matrix::make('matrix')
+                'Populated' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
                     ->forms(['example-block' => $form])
                     ->value($value)),
-                'Entry limits' => $this->control('Matrix', Matrix::make('matrix')
+                'Entry limits' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
                     ->forms(['example-block' => $form])
                     ->minEntries(1)

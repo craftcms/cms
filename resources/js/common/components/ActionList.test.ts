@@ -83,6 +83,31 @@ describe('ActionList', () => {
     expect(button.feedback).toEqual(feedback);
   });
 
+  it('retains server action IDs and HTML attributes', async () => {
+    const container = mount({
+      actions: [
+        {
+          id: 'plugin-action',
+          label: 'Plugin action',
+          attributes: {
+            class: 'plugin-action',
+            data: {elementId: '42'},
+            aria: {controls: 'plugin-target'},
+          },
+        },
+      ],
+      as: 'craft-action-item',
+    });
+    await nextTick();
+
+    const item = container.querySelector('craft-action-item')!;
+
+    expect(item.id).toBe('plugin-action');
+    expect(item.classList.contains('plugin-action')).toBe(true);
+    expect(item.getAttribute('data-elementId')).toBe('42');
+    expect(item.getAttribute('aria-controls')).toBe('plugin-target');
+  });
+
   it('routes a link action through Inertia rather than the shadow anchor', async () => {
     const container = mount({
       actions: [

@@ -7,6 +7,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+afterEach(function () {
+    Schema::dropIfExists('values');
+});
+
 it('can order by a fixed order', function () {
     Schema::create('values', function (Blueprint $table) {
         $table->id();
@@ -20,23 +24,12 @@ it('can order by a fixed order', function () {
         ['name' => 'four'],
     ]);
 
-    $values = DB::table('values')->get();
-    expect($values[0]->name)->toBe('one');
-    expect($values[1]->name)->toBe('three');
-    expect($values[2]->name)->toBe('two');
-    expect($values[3]->name)->toBe('four');
-
     $values = DB::table('values')->orderBy(new FixedOrderExpression('name', [
-        'one',
+        'four',
         'two',
         'three',
-        'four',
-    ]))->get();
+        'one',
+    ]))->pluck('name')->all();
 
-    expect($values[0]->name)->toBe('one');
-    expect($values[1]->name)->toBe('two');
-    expect($values[2]->name)->toBe('three');
-    expect($values[3]->name)->toBe('four');
-
-    Schema::drop('values');
+    expect($values)->toBe(['four', 'two', 'three', 'one']);
 });

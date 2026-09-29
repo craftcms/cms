@@ -2,54 +2,35 @@
 
 declare(strict_types=1);
 
+use Carbon\CarbonInterval;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 
-it('purges pending users with stale activation codes', function () {
-    $this->markTestSkipped('Currently causes lock timeouts');
+beforeEach(function () {
+    $this->user = User::find()->id(UserModel::factory()->createElement(['pending' => true])->id)->one();
 
-    Cms::config()->purgePendingUsersDuration = 60 * 60 * 24;
+    Password::broker()->createToken($this->user);
+    DB::table('password_reset_tokens')
+        ->where('email', $this->user->email)
+        ->update(['created_at' => now()->subDays(10)]);
+});
 
-    $user1Element = Element::factory()->create([
-        'type' => User::class,
-        'dateDeleted' => null,
-    ]);
-    DB::table(Table::ELEMENTS_SITES)->insert([
-        'elementId' => $user1Element->id,
-        'siteId' => 1,
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
-    ]);
-
-    CraftCms\Cms\User\Models\User::factory()->create([
-        'id' => $user1Element->id,
-        'pending' => true,
-        'verificationCodeIssuedDate' => now(),
-    ]);
-
-    $user2Element = Element::factory()->create([
-        'type' => User::class,
-        'dateDeleted' => null,
-    ]);
-    DB::table(Table::ELEMENTS_SITES)->insert([
-        'elementId' => $user2Element->id,
-        'siteId' => 1,
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
-    ]);
-
-    CraftCms\Cms\User\Models\User::factory()->create([
-        'id' => $user2Element->id,
-        'pending' => true,
-        'verificationCodeIssuedDate' => now()->subWeek()->format('Y-m-d H:i:s'),
-    ]);
+it('purges pending users with expired activation tokens', function () {
+    Cms::config()->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
 
     app(PurgePendingUsers::class)();
 
-    expect($user1Element->fresh()->dateDeleted)->toBeNull();
-    expect($user2Element->fresh()->dateDeleted)->not()->toBeNull();
+    expect(User::find()->id($this->user->id)->status(null)->exists())->toBeFalse();
+});
+
+it('does not purge pending users when the purge duration is zero', function () {
+    Cms::config()->purgePendingUsersDuration = 0;
+
+    app(PurgePendingUsers::class)();
+
+    expect(User::find()->id($this->user->id)->status(null)->exists())->toBeTrue();
 });

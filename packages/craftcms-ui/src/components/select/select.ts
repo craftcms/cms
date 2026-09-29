@@ -4,6 +4,7 @@ import {html} from 'lit';
 import '../option/option.js';
 import '../icon/icon.js';
 import {property} from 'lit/decorators.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A dropdown built on the native `<select>`, with Craft's field
@@ -22,7 +23,7 @@ import {property} from 'lit/decorators.js';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftSelect extends LionSelect {
+export default class CraftSelect extends HasLabel(LionSelect) {
   static override get styles() {
     return [...super.styles, styles];
   }

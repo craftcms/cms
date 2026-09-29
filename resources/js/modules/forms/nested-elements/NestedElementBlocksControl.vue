@@ -41,10 +41,10 @@
   } from '@/modules/matrix/selection-menu';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {useElementSize} from '@vueuse/core';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
-  import FormNodeList from './FormNodeList.vue';
+  import FormNodeList from '../FormNodeList.vue';
+  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
   import type {ActionItems} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import {
@@ -56,8 +56,8 @@
     type FormValues,
     type NestedElementValue,
     type NestedFormPayload,
-  } from './types';
-  import {FieldActionItems, inputName, isRecord, valueAt} from './runtime';
+  } from '../types';
+  import {FieldActionItems, inputName, isRecord, valueAt} from '../runtime';
 
   /** What a block is called, what it looks like, and what can be done to it. */
   type BlockPresentation = {
@@ -77,7 +77,7 @@
     color?: string | null;
     group?: string | null;
   };
-  type MatrixProps = {
+  type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
     addLabel: string;
     minEntries?: number | null;
@@ -127,18 +127,17 @@
     entryType?: string;
     trigger?: unknown;
   };
-  type MatrixValue = NestedElementValue;
 
   const props = defineProps<{
-    control: FormControlPayload<MatrixProps>;
-    value: MatrixValue;
+    control: FormControlPayload<NestedElementBlocksProps>;
+    value: NestedElementValue;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: MatrixValue, kind: 'discrete'): void;
+    (event: 'update:value', value: NestedElementValue, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();
@@ -267,86 +266,10 @@
       name: type.label,
     }))
   );
-  /**
-   * How to offer the entry types. One button each while they fit; a menu once
-   * they don't, or once there are groups to file them under. Craft 5 collapsed
-   * the row the same way.
-   *
-   * The row's natural width is measured while it's shown and remembered, so the
-   * two states can't chase each other: what's compared is always the width the
-   * buttons would take, not the width they're taking now.
-   */
-  const addArea = ref<HTMLElement>();
-  const addButtons = ref<HTMLElement>();
-  const {width: addAreaWidth} = useElementSize(addArea);
-  const buttonsWidth = ref(0);
-  const entryTypeGroups = computed(() => {
-    const groups = new Map<string, EntryType[]>();
-
-    for (const type of props.control.props.entryTypes ?? []) {
-      const group = type.group ?? '';
-      groups.set(group, [...(groups.get(group) ?? []), type]);
-    }
-
-    return [...groups];
-  });
-  const addFromMenu = computed(
-    () =>
-      entryTypeGroups.value.length > 1 ||
-      (buttonsWidth.value > 0 &&
-        addAreaWidth.value > 0 &&
-        addAreaWidth.value < buttonsWidth.value)
-  );
-  /**
-   * The add menu's button shows the same loading state the add buttons do.
-   *
-   * `ActionMenu` renders its invoker once (`v-once` keeps Vue from patching DOM
-   * the overlay has moved), so bindings on it never update. Set on the element
-   * instead, after each render — the menu comes and goes with `addFromMenu`.
-   */
-  watch(
-    [adding, busy, addFromMenu],
-    () => {
-      const invoker = addArea.value?.querySelector<
-        HTMLElement & {loading: boolean; disabled: boolean}
-      >('[slot="invoker"] craft-button');
-
-      if (invoker) {
-        invoker.loading = adding.value !== null;
-        invoker.disabled = busy.value;
-      }
-    },
-    {flush: 'post'}
-  );
-
-  /** Craft 5's threshold: past this many, the menu is worth searching. */
-  const addMenuSearchable = computed(
-    () => (props.control.props.entryTypes?.length ?? 0) > 5
-  );
-
-  watch(
-    [addButtons, () => props.control.props.entryTypes],
-    async () => {
-      await nextTick();
-
-      if (addButtons.value) {
-        buttonsWidth.value = addButtons.value.scrollWidth;
-      }
-    },
-    {immediate: true}
-  );
-
-  const addMenuActions = computed<ActionItems>(() =>
-    entryTypeGroups.value.map(([group, types]) => ({
-      type: 'group' as const,
-      ...(group === '' ? {} : {heading: group}),
-      items: types.map((type) => ({
-        label: t('Add {type}', {type: type.label}),
-        icon: type.icon?.name ?? 'plus',
-        iconColor: type.color ?? undefined,
-        disabled: busy.value,
-        onClick: () => void addBlock(type.value),
-      })),
+  const createChoices = computed(() =>
+    (props.control.props.entryTypes ?? []).map((type) => ({
+      ...type,
+      icon: type.icon?.name,
     }))
   );
 
@@ -1657,44 +1580,14 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" ref="addArea" class="mt-3">
-        <ActionMenu
-          v-if="addFromMenu"
-          :actions="addMenuActions"
-          :searchable="addMenuSearchable"
+      <div v-if="canAdd" class="mt-3">
+        <NestedEntriesCreateButton
+          :choices="createChoices"
           :label="control.props.addLabel"
-        >
-          <template #invoker="{attributes}">
-            <craft-button
-              v-bind="attributes"
-              type="button"
-              variant="dashed"
-              icon="plus"
-            >
-              {{ control.props.addLabel }}
-            </craft-button>
-          </template>
-        </ActionMenu>
-        <div v-else ref="addButtons" class="flex flex-wrap gap-1 items-center">
-          <craft-button
-            v-for="type in control.props.entryTypes"
-            :key="type.value"
-            type="button"
-            variant="dashed"
-            :icon="type.icon?.name ?? 'plus'"
-            :data-color="type.color ?? undefined"
-            :loading="adding === type.value"
-            :disabled="busy"
-            :data-form-matrix-add="type.value"
-            @click.stop.prevent="addBlock(type.value)"
-          >
-            {{
-              control.props.entryTypes?.length === 1
-                ? control.props.addLabel
-                : t('Add {type}', {type: type.label})
-            }}
-          </craft-button>
-        </div>
+          :adding="adding"
+          :disabled="busy"
+          @create="addBlock($event)"
+        />
         <craft-button
           v-if="pasteable.length"
           type="button"

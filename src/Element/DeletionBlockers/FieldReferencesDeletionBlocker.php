@@ -112,7 +112,7 @@ JS, [
                 ]),
             ],
             [
-                'icon' => 'xmark',
+                'icon' => 'xmark-large',
                 'label' => t('Ignore {numReferences, plural, =1{reference} other{references}}', [
                     'numReferences' => $this->referenceCount,
                 ]),

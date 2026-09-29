@@ -1,10 +1,10 @@
 import {createApp, h, nextTick, reactive, shallowRef, type Ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ActionItems} from '@/common/types';
-import type {FormControlPayload} from './types';
+import type {FormControlPayload} from '../types';
 
 // `craft-action-menu` is a Lion overlay and doesn't bootstrap under happy-dom.
-// These tests are about which items MatrixControl composes, so stand in for it
+// These tests are about which items NestedElementBlocksControl composes, so stand in for it
 // and record the props each block's menu is handed.
 const menuStub = vi.hoisted(() => ({
   instances: [] as Array<{actions: ActionItems}>,
@@ -48,11 +48,11 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
   };
 });
 
-import MatrixControl from './MatrixControl.vue';
-import {FieldActionItems} from './runtime';
+import NestedElementBlocksControl from './NestedElementBlocksControl.vue';
+import {FieldActionItems} from '../runtime';
 import {isBlockCollapsed} from '@/modules/matrix/collapsed-blocks';
 
-describe('MatrixControl', () => {
+describe('NestedElementBlocksControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
 
@@ -70,8 +70,8 @@ describe('MatrixControl', () => {
 
   const control = (): FormControlPayload =>
     ({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
-      component: 'craft:matrix',
+      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+      component: 'craft:nested-element-blocks',
       props: {
         entryTypes: [{value: 'newType', label: 'New Type'}],
         addLabel: 'Add an entry',
@@ -110,7 +110,7 @@ describe('MatrixControl', () => {
     document.body.append(container);
     app = createApp({
       setup: () => () =>
-        h(MatrixControl, {
+        h(NestedElementBlocksControl, {
           control: {
             ...control(),
             props: {...control().props, ...props},
@@ -1310,7 +1310,7 @@ describe('MatrixControl', () => {
     document.body.append(container);
     app = createApp({
       setup: () => () =>
-        h(MatrixControl, {
+        h(NestedElementBlocksControl, {
           control: control(),
           value: {
             entries: {'block-a': {type: 'newType', enabled: true}},

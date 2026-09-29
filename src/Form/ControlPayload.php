@@ -30,6 +30,7 @@ readonly class ControlPayload implements JsonSerializable
         public bool $reactive = false,
         public mixed $emptyValue = null,
         public bool $nestsForms = false,
+        public bool $omitNullValue = false,
     ) {}
 
     /** @return array<string, mixed> */
@@ -45,6 +46,7 @@ readonly class ControlPayload implements JsonSerializable
         ] + ($this->reactive ? ['reactive' => true] : [])
             + ($this->emptyValue === null ? [] : ['emptyValue' => $this->emptyValue])
             + ($this->nestsForms ? ['nestsForms' => true] : [])
+            + ($this->omitNullValue ? ['omitNullValue' => true] : [])
             + ($this->forms === [] ? [] : ['forms' => array_map(
                 fn (NestedFormPayload $form): array => $form->jsonSerialize(),
                 $this->forms,

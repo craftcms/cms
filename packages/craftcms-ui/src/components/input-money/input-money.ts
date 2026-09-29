@@ -204,7 +204,7 @@ export default class CraftInputMoney extends CraftInput {
         @mousedown=${(event: Event) => event.preventDefault()}
         @click=${this.#clear}
       >
-        <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+        <craft-icon name="xmark-large" style="font-size: 0.8em"></craft-icon>
       </craft-button>
     </div>`;
   }

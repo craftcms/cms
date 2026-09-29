@@ -20,3 +20,6 @@ Under Testbench, `app()->runningInConsole()` returns true even for `get()`/`post
 `RequestedSite::get()` had this bug: it ignored `?site=` in every test, so the CP always resolved to the primary site. Fixed by widening the guard to `(! app()->runningInConsole() || app()->runningUnitTests())`.
 
 If a request-only code path mysteriously does nothing in a test, check for a console guard before suspecting the test.
+
+## Admin-guard tests must grant accessCp to the non-admin
+A demoted admin or factory user has no permissions on Pro, so CP routes 403 at `can:accessCp` before `RequireAdmin`/`RequireAdminChanges`/session-auth checks run. When asserting a non-admin is forbidden, grant `accessCp` first (`UserPermissions::saveUserPermissions($id, ['accessCp'])` or `withPermissions(['accessCp'])`), otherwise the test passes even if the admin guard is removed.

@@ -12,6 +12,7 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
@@ -91,10 +92,13 @@ class MigrateCommand extends Command implements Isolatable
     public function handle(
         Updates $updates,
         Plugins $plugins,
+        ProjectConfig $projectConfig,
     ): int {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
         }
+
+        $this->prepareProjectConfig($projectConfig);
 
         $this->updates = $updates;
         $this->plugins = $plugins;
@@ -112,6 +116,20 @@ class MigrateCommand extends Command implements Isolatable
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Makes sure the project config YAML exists in case any migrations need to check incoming YAML values,
+     * or allows project config changes without overwriting pending YAML changes.
+     */
+    private function prepareProjectConfig(ProjectConfig $projectConfig): void
+    {
+        if ($projectConfig->writeYamlAutomatically && ! $projectConfig->getDoesExternalConfigExist()) {
+            $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically(false);
+        }
     }
 
     private function getMigrator(string $track): Migrator
