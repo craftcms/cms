@@ -2107,6 +2107,7 @@ JS, [
             'height' => $height,
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
+            'class' => ['flex', 'items-center', 'justify-center'],
         ]);
     }
 
@@ -2567,14 +2568,6 @@ JS, [
 
         // See if we can show a thumbnail
         try {
-            // Is the image editable, and is the user allowed to edit?
-            $user = currentUser();
-            $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
-            $editable = (
-                $this->getSupportsImageEditor() &&
-                $user?->can('editImage', $this)
-            );
-
             $previewInner = match ($this->kind) {
                 FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
@@ -2601,65 +2594,14 @@ JS, [
                     'id' => 'thumb-container',
                     'class' => array_filter([
                         'preview-thumb-container',
-                        'button-fade',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
+                    'data' => [
+                        'theme' => 'dark',
+                    ],
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
-
-            if ($previewable || $editable) {
-                $isMobile = request()->isMobileBrowser(true);
-                $imageButtonHtml = Html::beginTag('div', [
-                    'class' => array_filter([
-                        'image-actions',
-                        'buttons',
-                        ($isMobile ? 'is-mobile' : null),
-                    ]),
-                ]);
-
-                if ($previewable) {
-                    $imageButtonHtml .= Html::button(t('Preview'), [
-                        'id' => 'preview-btn',
-                        'class' => ['btn', 'preview-btn'],
-                        'aria-label' => t('Preview'),
-                    ]);
-
-                    $previewBtnId = InputNamespace::namespaceId('preview-btn');
-                    $settings = [];
-                    $width = $this->getWidth();
-                    $height = $this->getHeight();
-                    if ($width && $height) {
-                        $settings['startingWidth'] = $width;
-                        $settings['startingHeight'] = $height;
-                    }
-                    $jsSettings = Json::encode($settings);
-                    $js = <<<JS
-$('#$previewBtnId').on('activate', () => {
-    new Craft.PreviewFileModal($this->id, null, $jsSettings)
-});
-JS;
-                    HtmlStack::js($js);
-                }
-
-                // The edit screen delegates on this attribute to open its
-                // image editor dialog; no behavior is wired here.
-                if ($editable) {
-                    $imageButtonHtml .= Html::button(t('Edit Image'), [
-                        'id' => 'edit-btn',
-                        'class' => ['btn', 'edit-btn'],
-                        'data' => ['image-editor' => true],
-                    ]);
-                }
-
-                $imageButtonHtml .= Html::endTag('div'); // .image-actions
-
-                if (request()->isMobileBrowser(true)) {
-                    $previewThumbHtml .= $imageButtonHtml;
-                } else {
-                    $previewThumbHtml = Html::appendToTag($previewThumbHtml, $imageButtonHtml);
-                }
-            }
 
             $html .= $previewThumbHtml;
         } catch (RuntimeException) {
@@ -2696,7 +2638,6 @@ JS;
     public function getSidebarHtml(bool $static): string
     {
         return implode("\n", [
-            // Omit preview button on sidebar of slideouts
             $this->getPreviewHtml(),
             parent::getSidebarHtml($static),
         ]);
