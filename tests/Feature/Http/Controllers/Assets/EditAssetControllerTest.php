@@ -131,7 +131,7 @@ it('rejects an id that doesn’t resolve to an asset', function () {
     get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
 });
 
-it('fills the image preview’s background with a gradient between the image’s edge colors', function () {
+it('shows the image preview’s placeholder over a gradient between the image’s edge colors', function () {
     AssetModel::whereKey($this->asset->id)->update(['colors' => json_encode([
         'dominant' => '#3a6ea5',
         'grid' => [
@@ -145,7 +145,7 @@ it('fills the image preview’s background with a gradient between the image’s
             ->where('previewFragment.html', fn (string $html): bool => str_contains(
                 $html,
                 'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #cc0000, #0000cc)',
-            ))
+            ) && str_contains($html, 'placeholder="data:image/png;base64,'))
         );
 });
 

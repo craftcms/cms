@@ -116,6 +116,18 @@ export default css`
       0 var(--_checker-half);
   }
 
+  .thumbnail--placeholder {
+    background: var(--_placeholder) center / contain no-repeat;
+  }
+
+  .thumbnail--placeholder.thumbnail--crop {
+    background-size: cover;
+  }
+
+  .thumbnail--placeholder.thumbnail--stretch {
+    background-size: 100% 100%;
+  }
+
   .thumbnail--rounded .thumbnail__image,
   .thumbnail--rounded .thumbnail__cover,
   .thumbnail--rounded ::slotted(img),

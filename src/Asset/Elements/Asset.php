@@ -1728,7 +1728,39 @@ JS, [
             'height' => $height,
             'srcset' => $sizes ? $this->getSrcset($sizes, $transform) : false,
             'alt' => $this->thumbAlt(),
+            'style' => $this->imgPlaceholderStyle(),
         ]));
+    }
+
+    /**
+     * Paints the image's placeholder behind an `<img>` tag, so something resembling the image shows while it loads.
+     *
+     * Nothing takes it down once the image has loaded, so it's left off images with transparent regions, where it
+     * would show through.
+     *
+     * @return array<string, string>
+     */
+    private function imgPlaceholderStyle(): array
+    {
+        $grid = $this->colors->grid ?? [];
+
+        foreach ($grid as $row) {
+            foreach ($row as $color) {
+                if (strlen($color) > 7) {
+                    return [];
+                }
+            }
+        }
+
+        $placeholderUrl = $this->getPlaceholderDataUrl();
+
+        if ($placeholderUrl === null) {
+            return [];
+        }
+
+        return [
+            'background' => "url($placeholderUrl) center / cover no-repeat",
+        ];
     }
 
     /**
@@ -2098,6 +2130,12 @@ JS, [
     }
 
     #[Override]
+    protected function thumbPlaceholderUrl(): ?string
+    {
+        return $this->getPlaceholderDataUrl();
+    }
+
+    #[Override]
     protected function hasCheckeredThumb(): bool
     {
         if ($this->isFolder) {
@@ -2133,6 +2171,7 @@ JS, [
             'height' => $height,
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
+            'placeholder' => $this->getPlaceholderDataUrl(),
             'class' => ['flex', 'items-center', 'justify-center'],
         ]);
     }

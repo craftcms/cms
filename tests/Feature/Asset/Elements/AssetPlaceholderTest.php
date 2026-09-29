@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\PreviewHandlers\Image;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * @param  list<list<string>>  $grid
@@ -62,4 +68,44 @@ it('is null without a color grid', function (?ImageColors $colors) {
 
 it('is null for files that aren’t images', function () {
     expect(placeholderAsset([['#3a6ea5']], FileKind::Pdf->value)->getPlaceholderDataUrl())->toBeNull();
+});
+
+describe('as a background', function () {
+    beforeEach(function () {
+        config()->set('filesystems.disks.test-disk', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/asset-placeholder-test/test-disk'),
+        ]);
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $this->asset = AssetModel::factory()->createElement([
+            'volumeId' => Volume::factory()->create(['fs' => 'test-disk'])->id,
+            'kind' => FileKind::Image->value,
+        ]);
+    });
+
+    it('paints the placeholder behind <img> tags', function () {
+        $this->asset->colors = new ImageColors(grid: [['#3a6ea5']]);
+
+        expect(new Crawler((string) $this->asset->getImg(['width' => 100, 'height' => 100]))->filter('img')->attr('style'))
+            ->toBe("background: url({$this->asset->getPlaceholderDataUrl()}) center / cover no-repeat;");
+    });
+
+    it('leaves the placeholder off <img> tags for images with transparent regions', function (?ImageColors $colors) {
+        $this->asset->colors = $colors;
+
+        expect(new Crawler((string) $this->asset->getImg(['width' => 100, 'height' => 100]))->filter('img')->attr('style'))->toBeNull();
+    })->with([
+        'transparent' => [new ImageColors(grid: [['#3a6ea5', '#3a6ea500']])],
+        'not sampled yet' => [null],
+    ]);
+
+    it('paints the placeholder behind the file preview until it loads', function () {
+        $this->asset->colors = new ImageColors(grid: [['#3a6ea5']]);
+
+        $img = new Crawler(new Image($this->asset)->getPreviewHtml())->filter('img');
+
+        expect($img->attr('style'))->toBe("background: url({$this->asset->getPlaceholderDataUrl()}) center / 100% 100% no-repeat;")
+            ->and($img->attr('onload'))->toStartWith("this.style.background = '';");
+    });
 });

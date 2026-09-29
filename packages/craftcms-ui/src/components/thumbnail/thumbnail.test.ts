@@ -99,6 +99,63 @@ describe('craft-thumbnail', () => {
   });
 });
 
+describe('craft-thumbnail placeholder', () => {
+  const placeholder = 'data:image/png;base64,iVBORw0KGgo=';
+
+  function placeholderStyle(element: CraftThumbnail): string {
+    return box(element).style.getPropertyValue('--_placeholder');
+  }
+
+  it('shows the placeholder until the image loads', async () => {
+    const element = await createThumbnail({src: 'a.png', placeholder});
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      true
+    );
+    expect(placeholderStyle(element)).toBe(`url("${placeholder}")`);
+
+    image(element)!.dispatchEvent(new Event('load'));
+    await element.updateComplete;
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      false
+    );
+    expect(placeholderStyle(element)).toBe('');
+  });
+
+  it('shows the placeholder again for a new image', async () => {
+    const element = await createThumbnail({src: 'a.png', placeholder});
+    image(element)!.dispatchEvent(new Event('load'));
+    await element.updateComplete;
+
+    element.src = 'b.png';
+    await element.updateComplete;
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      true
+    );
+  });
+
+  it('has no placeholder without an image to stand in for', async () => {
+    const element = await createThumbnail({placeholder}, '<svg></svg>');
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      false
+    );
+  });
+
+  it('doesn’t change the image’s accessible name', async () => {
+    const element = await createThumbnail({
+      src: 'a.png',
+      alt: 'An asset',
+      placeholder,
+    });
+
+    expect(image(element)?.getAttribute('alt')).toBe('An asset');
+    expect(element.shadowRoot!.querySelectorAll('img')).toHaveLength(1);
+  });
+});
+
 describe('craft-thumbnail modes', () => {
   it('defaults to fit without changing the image or wrapper contract', async () => {
     const element = document.createElement('craft-thumbnail');
