@@ -83,6 +83,24 @@ readonly class ImageColors implements Arrayable, JsonSerializable
     }
 
     /**
+     * Returns the average color of the image’s top edge, as a hex string, or `null` if there’s no grid.
+     */
+    #[AllowedInSandbox]
+    public function top(): ?string
+    {
+        return $this->averageColor($this->grid[0] ?? []);
+    }
+
+    /**
+     * Returns the average color of the image’s bottom edge, as a hex string, or `null` if there’s no grid.
+     */
+    #[AllowedInSandbox]
+    public function bottom(): ?string
+    {
+        return $this->averageColor(array_last($this->grid) ?? []);
+    }
+
+    /**
      * Averages colors’ red, green, and blue channels. Alpha channels are ignored.
      *
      * @param  list<string>  $colors

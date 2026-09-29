@@ -52,6 +52,16 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::string(),
                         'description' => 'The average color of the image’s right edge as a hex string, or null if there’s no grid.',
                     ],
+                    'top' => [
+                        'name' => 'top',
+                        'type' => Type::string(),
+                        'description' => 'The average color of the image’s top edge as a hex string, or null if there’s no grid.',
+                    ],
+                    'bottom' => [
+                        'name' => 'bottom',
+                        'type' => Type::string(),
+                        'description' => 'The average color of the image’s bottom edge as a hex string, or null if there’s no grid.',
+                    ],
                 ];
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);

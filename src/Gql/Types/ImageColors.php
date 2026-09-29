@@ -17,6 +17,8 @@ class ImageColors extends ObjectType
         return match ($resolveInfo->fieldName) {
             'left' => $source->left(),
             'right' => $source->right(),
+            'top' => $source->top(),
+            'bottom' => $source->bottom(),
             default => $source->{$resolveInfo->fieldName},
         };
     }

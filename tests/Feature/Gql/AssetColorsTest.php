@@ -10,7 +10,7 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
     Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { colors { dominant grid left right } } }")
+    graphQL("{ asset(id: {$asset->id}) { colors { dominant grid left right top bottom } } }")
         ->assertOk()
         ->assertJsonPath('data.asset.colors', $expected);
 })->with([
@@ -21,11 +21,13 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
             'grid' => [['#ff0000', '#3a6ea5', '#0000ff'], ['#990000', '#3a6ea5', '#000099']],
             'left' => '#cc0000',
             'right' => '#0000cc',
+            'top' => '#68258c',
+            'bottom' => '#46256a',
         ],
     ],
     'inconclusive' => [
         ['dominant' => null, 'grid' => []],
-        ['dominant' => null, 'grid' => [], 'left' => null, 'right' => null],
+        ['dominant' => null, 'grid' => [], 'left' => null, 'right' => null, 'top' => null, 'bottom' => null],
     ],
     'not sampled yet' => [null, null],
 ]);
