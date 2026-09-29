@@ -63,13 +63,6 @@ const meta = {
     'show-time': showFlagArgType,
   },
   decorators: [inField],
-  parameters: {
-    // The date and time inputs have no accessible name of their own: each is a
-    // Lion field whose label slot is empty, and a wrapping `craft-field` names
-    // the pair rather than the parts. Surfaced rather than gated until the
-    // component gives them sub-labels — see the docs page.
-    a11y: {test: 'todo'},
-  },
   // Render from args alone so every control drives the story. Stories below
   // vary the args, not the template.
   render: (args) => template(args),
