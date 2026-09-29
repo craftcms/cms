@@ -21,7 +21,7 @@
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
-- Fixed a bug where the Edit and View bulk actions did nothing on element indexes.
+- Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
 - Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
 - Fixed an accessibility issue where the Date, Time, and Time zone inputs within `<craft-input-date-time>` didn’t have individual accessible names. ([#19741](https://github.com/craftcms/cms/pull/19741))
 - Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
