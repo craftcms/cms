@@ -633,7 +633,7 @@ it('stores the colors of an indexed image', function () {
 
         expect($asset->colors->dominant)->toBe('#c81e28')
             ->and($asset->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
-            ->and(Asset::findOrFail($asset->id)->colors)->toBe($asset->colors->toArray());
+            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($asset->colors->toArray());
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -663,7 +663,7 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
         Asset::whereKey($asset->id)->update(['colors' => json_encode($stored)]);
 
         expect($index()->colors->toArray())->toBe($stored)
-            ->and(Asset::findOrFail($asset->id)->colors)->toBe($stored);
+            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($stored);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
