@@ -33,6 +33,13 @@ it('reports malformed JSON when reading headings', function () {
         ->and($result['error'])->toStartWith('Invalid JSON:');
 });
 
+it('reports JSON that isn’t an array or object', function () {
+    $result = Json::format('"just a string"');
+
+    expect($result['success'])->toBeFalse()
+        ->and($result['error'])->toStartWith('Invalid JSON:');
+});
+
 // getHeadings()
 
 it('returns top-level keys for a flat JSON array', function () {

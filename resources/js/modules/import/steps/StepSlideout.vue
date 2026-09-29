@@ -26,7 +26,7 @@
     takeStepSlideoutContext,
     validateStep,
   } from './step-slideout';
-  import {openStepMapping} from './step-mapping';
+  import {openStepMapping, StepMappingUnavailableError} from './step-mapping';
 
   const props = defineProps<{
     contextId: string;
@@ -77,6 +77,34 @@
    * so this tracks every refresh rather than being derived from the step here.
    */
   const canMap = ref(context.canMap);
+  /** Why the data source can't be used, as the server last reported it. */
+  const sourceError = ref(context.sourceError);
+
+  /**
+   * Why the data source couldn't be read when the mapping was opened. It's only found out by
+   * reading the file, which refreshes don't do, so it stands until the source changes.
+   */
+  const sourceReadError = ref<{source: string | null; message: string} | null>(
+    null
+  );
+
+  /** The validation errors, plus the data source's own problem under its field. */
+  const formErrors = computed<FormPayload['errors']>(() => {
+    const message =
+      sourceError.value ??
+      (sourceReadError.value?.source === step.value.source
+        ? sourceReadError.value.message
+        : null);
+
+    if (
+      !message ||
+      errors.value.some((error) => error.path.join('.') === 'source')
+    ) {
+      return errors.value;
+    }
+
+    return [...errors.value, {path: ['source'], messages: [message]}];
+  });
 
   /**
    * The importer type the rendered form was built for. The form's own type field changes
@@ -168,10 +196,8 @@
     mappingMessage.value = null;
     openingMapping.value = true;
 
-    let opened: boolean;
-
     try {
-      opened = await openStepMapping(
+      await openStepMapping(
         {
           step: step.value,
           urls: context.urls,
@@ -188,20 +214,24 @@
         t('Edit mapping')
       );
     } catch (error) {
+      if (
+        error instanceof StepMappingUnavailableError &&
+        error.attribute === 'source'
+      ) {
+        sourceReadError.value = {
+          source: step.value.source,
+          message: error.message,
+        };
+
+        return;
+      }
+
       mappingMessage.value =
         error instanceof Error && error.message
           ? error.message
           : t('Couldn’t open the mapping.');
-
-      return;
     } finally {
       openingMapping.value = false;
-    }
-
-    if (!opened) {
-      mappingMessage.value = t(
-        'Choose what this step imports into, and a data source, before mapping.'
-      );
     }
   }
 
@@ -235,6 +265,7 @@
 
       if (canMapRequest === latestCanMap) {
         canMap.value = response.canMap;
+        sourceError.value = response.sourceError;
       }
 
       return response.form;
@@ -283,6 +314,7 @@
 
       if (request === latestCanMap) {
         canMap.value = response.canMap;
+        sourceError.value = response.sourceError;
       }
     } catch {
       // the last reported `canMap` still stands
@@ -331,7 +363,7 @@
     <FormRenderer
       ref="renderer"
       :payload="payload"
-      :errors="errors"
+      :errors="formErrors"
       :refresh="payload.refreshable ? refresh : undefined"
       @change="onChange"
     />

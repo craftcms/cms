@@ -1,7 +1,11 @@
 import {expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type {StepPayload} from '@/modules/import/mapping/types';
-import {openStepMapping, takeStepMappingContext} from './step-mapping';
+import {
+  openStepMapping,
+  StepMappingUnavailableError,
+  takeStepMappingContext,
+} from './step-mapping';
 
 const state = vi.hoisted(() => ({
   openSlideoutWith: vi.fn(),
@@ -103,4 +107,25 @@ it('leaves an already-mapped leaf unflagged', async () => {
 
   expect(context.values.map).toEqual({title: 'email'});
   expect(context.suggestedMap).toEqual({});
+});
+
+it('throws with the server’s reason and attribute when the step can’t be mapped', async () => {
+  vi.spyOn(actionClient, 'post').mockResolvedValue({
+    data: {
+      available: false,
+      message: 'The data in “people.csv” couldn’t be read.',
+      attribute: 'source',
+    },
+  } as never);
+
+  const opening = openStepMapping(
+    {step, urls, editable: true, opener: null, apply: () => {}},
+    'Edit mapping'
+  );
+
+  await expect(opening).rejects.toBeInstanceOf(StepMappingUnavailableError);
+  await expect(opening).rejects.toMatchObject({
+    message: 'The data in “people.csv” couldn’t be read.',
+    attribute: 'source',
+  });
 });

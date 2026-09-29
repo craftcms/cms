@@ -40,7 +40,7 @@ class ImportPlanMapViewModel extends ViewModel
     {
         // memoized alongside destinationCols(): both are asked for twice per page — once for
         // the screen, once to work out the suggestions — and this one parses the data file
-        return $this->sourceDataCols ??= $this->importer->getSourceDataCols();
+        return $this->sourceDataCols ??= $this->importer->getSourceDataCols() ?? [];
     }
 
     /**

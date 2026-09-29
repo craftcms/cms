@@ -497,6 +497,13 @@ class Import
             return null;
         }
 
+        // data types report data they can't parse as a `success`/`error` pair rather than headings
+        if (($headings['success'] ?? null) === false) {
+            ImportLog::error($headings['error'] ?? 'Unable to parse data.');
+
+            return null;
+        }
+
         return array_merge([['label' => 'Please select', 'value' => '']], $headings);
     }
 

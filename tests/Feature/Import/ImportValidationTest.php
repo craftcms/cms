@@ -116,3 +116,49 @@ it('excludes an invalid file-based import from getAllImportPlans', function () {
         ->and($imports->getNonEditableImportPlans()->has('invalidFileImport'))->toBeFalse()
         ->and($imports->getImportPlanByHandle('invalidFileImport'))->toBeNull();
 });
+
+it('excludes only the file-based import whose source alias isn’t defined', function () {
+    Config::set('craft.import', [
+        'badAlias' => fn () => new ImportPlanData()
+            ->name('Bad Alias')
+            ->handle('badAlias')
+            ->steps([['type' => EntryImporter::class, 'source' => '@nope/entries.json']]),
+    ]);
+
+    $imports = app(ImportPlan::class);
+
+    expect(fn () => $imports->getAllImportPlans())->not->toThrow(Throwable::class)
+        ->and($imports->getAllImportPlans()->has('badAlias'))->toBeFalse();
+});
+
+it('reports a step without a source instead of failing', function () {
+    $importPlan = new ImportPlanData()
+        ->name('No Source')
+        ->handle('noSource')
+        ->steps([['type' => EntryImporter::class]]);
+
+    expect($importPlan->validate())->toBeFalse()
+        ->and($importPlan->errors()->keys())->toContain('steps.'.$importPlan->steps[0]->uid.'.source');
+});
+
+it('leaves out a step whose importer can’t be created instead of failing', function () {
+    $importPlan = new ImportPlanData()
+        ->name('Bad Type')
+        ->handle('badType')
+        ->steps([['type' => 'NotARealImporter', 'source' => 'entries.csv']]);
+
+    expect($importPlan->steps)->toBe([]);
+});
+
+it('doesn’t resolve URL hostnames when validating a file-based import', function () {
+    $step = new EntryImporter(['type' => EntryImporter::class, 'source' => 'https://unresolvable.invalid/entries.json']);
+
+    $fileBased = new ImportPlanData()->name('Remote')->handle('remote')->steps([$step]);
+    $editable = new ImportPlanData(['editable' => true])->name('Remote')->handle('remote')->steps([$step]);
+
+    $fileBased->validate();
+    $editable->validate();
+
+    expect($fileBased->errors()->keys())->not->toContain("steps.{$step->uid}.source")
+        ->and($editable->errors()->keys())->toContain("steps.{$step->uid}.source");
+});

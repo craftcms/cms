@@ -86,7 +86,7 @@ abstract class BaseImporter
     {
         if (! empty($config)) {
             $this->uid = $config['uid'] ?? null;
-            $this->source($config['source']);
+            $this->source($config['source'] ?? null);
             $this->transformer($config['transformer'] ?? null);
             $this->batchSize($config['batchSize'] ?? null);
 
@@ -237,15 +237,29 @@ abstract class BaseImporter
 
     /**
      * Defines the validation rules for an import step using this importer.
+     * URL hostname resolution (DNS lookup) can be skipped via `$resolveHost`.
+     *
+     * @param  bool  $resolveHost  Whether to resolve a URL's hostname when validating the source.
      */
-    public static function getRules(): array
+    public static function getRules(bool $resolveHost = true): array
     {
         return array_merge([
             'source' => [
                 'required',
                 'string',
-                'max:255',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateSource($value, $attribute, $fail, $validator),
+                'max:2048',
+                function (string $attribute, mixed $value, Closure $fail) use ($resolveHost) {
+                    // a non-string value is reported by the `string` rule
+                    if (! is_string($value)) {
+                        return;
+                    }
+
+                    $error = self::sourceError($value, $resolveHost);
+
+                    if ($error !== null) {
+                        $fail($error);
+                    }
+                },
             ],
             'transformer' => [
                 'nullable',
@@ -310,31 +324,13 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates a provided source path or URL based on its location, existence and MIME type.
-     *
-     * @param  mixed  $value  The source path, alias or URL to validate.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  A callback function to report validation failures.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     */
-    public static function validateSource(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        $error = self::sourceError($value);
-
-        if ($error !== null) {
-            $fail($attribute, $error);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Returns an error message if the source path or URL can't be used for import, or null if it can.
      * Hostname resolution (DNS lookup) can be skipped for URLs via `$resolveHost`.
+     *
+     * @param  string|null  $source  The source alias, path or URL to check.
+     * @param  bool  $resolveHost  Whether to resolve a URL's hostname.
      */
-    private static function sourceError(?string $source, bool $resolveHost = true): ?string
+    public static function sourceError(?string $source, bool $resolveHost = true): ?string
     {
         if (empty($source)) {
             return t('Source must be provided.');
@@ -344,9 +340,13 @@ abstract class BaseImporter
             return t('File paths must be relative to the project root or start with an alias.');
         }
 
-        $sourcePath = self::resolvedSourcePath($source);
+        try {
+            $sourcePath = self::resolvedSourcePath($source);
+        } catch (InvalidArgumentException) {
+            return t('The alias in “{source}” isn’t defined.', ['source' => $source]);
+        }
 
-        if (self::isRemoteSource($source)) {
+        if (Url::isValidUrl($sourcePath)) {
             $urlValidator = static::urlValidator();
 
             if (! $resolveHost) {
@@ -361,11 +361,9 @@ abstract class BaseImporter
                 }
             }
 
-            // the source's type can only be determined from the response, so it's checked once the file is fetched;
-            // an extension in the URL's path has to be one of the data types though
-            $path = (string) parse_url($sourcePath, PHP_URL_PATH);
-
-            return pathinfo($path, PATHINFO_EXTENSION) === '' ? null : self::getExtensionError($path);
+            // the source's type can only be determined from the response (e.g. export.php can return JSON),
+            // so it's checked once the file is fetched
+            return null;
         }
 
         // reject any other scheme (e.g. data:, glob://, phar://) so PHP's stream wrappers can't be used
@@ -509,8 +507,8 @@ abstract class BaseImporter
             return null;
         }
 
-        return t('Only files with these MIME types are allowed: {mimeTypes}.', [
-            'mimeTypes' => implode(', ', array_keys(Import::getAllDataTypes())),
+        return t('Only files of these types are allowed: {fileTypes}.', [
+            'fileTypes' => implode(', ', array_keys(Import::getAllDataTypes())),
         ]);
     }
 
@@ -642,9 +640,10 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns the names of the columns/properties that we're importing from (the ones from the data source).
+     * Returns the names of the columns/properties that we're importing from (the ones from the data source),
+     * or null if the data couldn't be parsed.
      */
-    public function getSourceDataCols(): array
+    public function getSourceDataCols(): ?array
     {
         return [];
     }
@@ -659,18 +658,6 @@ abstract class BaseImporter
     {
         // by default, this doesn't do anything
         return null;
-    }
-
-    /**
-     * Returns whether a source is specified and points to an existing, importable source or an allowed URL.
-     * It's used e.g. to determine whether an "Edit mapping" button can be shown.
-     * URL hostnames are not resolved here.
-     *
-     * @param  string|null  $source  The source alias, path or URL to check.
-     */
-    public static function isSourceValid(?string $source): bool
-    {
-        return self::sourceError($source, resolveHost: false) === null;
     }
 
     /**

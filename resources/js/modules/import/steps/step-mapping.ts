@@ -57,10 +57,23 @@ export function takeStepMappingContext(contextId: string): StepMappingContext {
 export interface StepMappingStructure {
   available: boolean;
   message?: string;
+  /** The step attribute an unavailable step's message is about, e.g. `source`. */
+  attribute?: string;
   destinationCols?: MappingColEntry[];
   sourceDataCols?: SourceDataCol[];
   values?: MappingValues;
   suggestions?: SuggestedMap;
+}
+
+/** Thrown when a step can't be mapped yet, carrying the step attribute that's in the way, if any. */
+export class StepMappingUnavailableError extends Error {
+  constructor(
+    message: string,
+    public readonly attribute: string | null = null
+  ) {
+    super(message);
+    this.name = 'StepMappingUnavailableError';
+  }
 }
 
 /** Asks the server for a draft step's mapping structure. */
@@ -74,9 +87,9 @@ export async function fetchStepMapping(
 }
 
 /**
- * Returns false when the panel was not opened — either the step isn't ready to be
- * mapped yet, or the user declined to discard unsaved changes in a panel this one
- * would have replaced.
+ * Returns false when the user declined to discard unsaved changes in a panel this one
+ * would have replaced. Throws with the server's reason when the step can't be mapped
+ * yet — e.g. nothing to import into is chosen, or its data source can't be read.
  */
 export async function openStepMapping(
   options: OpenStepMappingOptions,
@@ -85,7 +98,10 @@ export async function openStepMapping(
   const data = await fetchStepMapping(options.urls.mappingUrl, options.step);
 
   if (!data.available) {
-    return false;
+    throw new StepMappingUnavailableError(
+      data.message ?? '',
+      data.attribute ?? null
+    );
   }
 
   const values = cloneValues(

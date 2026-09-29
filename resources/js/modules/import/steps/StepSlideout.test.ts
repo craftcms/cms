@@ -2,6 +2,7 @@ import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {FormPayload} from '@/modules/forms/types';
 import type {StepPayload} from '@/modules/import/mapping/types';
+import {StepMappingUnavailableError} from './step-mapping';
 import StepSlideout from './StepSlideout.vue';
 
 const state = vi.hoisted(() => ({
@@ -27,7 +28,8 @@ vi.mock('@/common/slideouts', () => ({
   useSlideout: () => null,
 }));
 
-vi.mock('./step-mapping', () => ({
+vi.mock('./step-mapping', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./step-mapping')>()),
   openStepMapping: state.openStepMapping,
 }));
 
@@ -102,6 +104,7 @@ function mount(
     step: {...structuredClone(step), type},
     payload: payload(),
     canMap,
+    sourceError: null,
     urls,
     editable: true,
     apply: vi.fn(),
@@ -203,6 +206,23 @@ it('disables the mapping button again when a refresh reports it unmappable', asy
   await state.refresh!({settings: {}});
   await nextTick();
 
+  expect(mappingButton().disabled).toBe(true);
+});
+
+it('shows the data source’s problem under its field when a refresh reports one', async () => {
+  mount(true);
+  state.fetchStepForm.mockResolvedValue({
+    form: payload(),
+    canMap: false,
+    sourceError: 'File “people.csv” does not exist.',
+  });
+
+  await state.refresh!({settings: {}});
+  await nextTick();
+
+  expect(state.errors).toEqual([
+    {path: ['source'], messages: ['File “people.csv” does not exist.']},
+  ]);
   expect(mappingButton().disabled).toBe(true);
 });
 
@@ -389,6 +409,28 @@ it('shows a spinner on the mapping button while the mapping slideout opens', asy
   await nextTick();
 
   expect(mappingButton().loading).toBe(false);
+});
+
+it('shows a data source that can’t be read under its field, not under the button', async () => {
+  state.openStepMapping.mockRejectedValue(
+    new StepMappingUnavailableError(
+      'The data in “people.csv” couldn’t be read.',
+      'source'
+    )
+  );
+  mount(true);
+
+  mappingButton().dispatchEvent(new Event('click'));
+  await nextTick();
+  await nextTick();
+
+  expect(state.errors).toEqual([
+    {
+      path: ['source'],
+      messages: ['The data in “people.csv” couldn’t be read.'],
+    },
+  ]);
+  expect(mappingSection()!.querySelector('[role="alert"]')).toBeNull();
 });
 
 it('reports a mapping slideout that fails to open and clears the spinner', async () => {

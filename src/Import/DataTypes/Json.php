@@ -61,7 +61,13 @@ class Json implements DataTypeInterface
      */
     private static function getData(string $data): array
     {
-        return JsonHelper::decode($data);
+        $array = JsonHelper::decode($data);
+
+        if (! is_array($array)) {
+            throw new InvalidArgumentException('The data must be a JSON array or object.');
+        }
+
+        return $array;
     }
 
     /**

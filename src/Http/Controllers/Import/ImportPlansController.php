@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Url;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -166,6 +167,7 @@ class ImportPlansController
     {
         $importer = $this->draftImporter(requireType: false);
         $batchSize = $this->request->input('step.batchSize');
+        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
 
         return new JsonResponse([
             'form' => new ImportPlanStepFormViewModel(
@@ -176,26 +178,21 @@ class ImportPlansController
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
                 $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
             )->form(),
-            'canMap' => $this->canMapStep($importer),
+            'canMap' => $this->hasDestination($importer) && $sourceError === null,
+            // shown under the source field; a step whose source is yet to be entered isn't flagged
+            'sourceError' => ! empty($importer?->source) ? $sourceError : null,
         ]);
     }
 
     /**
-     * Returns whether a step has settled enough for its data to be mapped.
+     * Returns whether a step knows what it's importing into, so it has destination columns to map onto.
      *
      * An element importer resolves its field layout from whatever it's importing into — an
-     * entry type, a volume — so until that's chosen there are no destination columns to map
-     * onto, and without a valid source there are no incoming ones either.
-     *
-     * @param  BaseImporter|null  $importer  The step's importer, or null when it has no type yet.
+     * entry type, a volume — so until that's chosen there's nothing to map onto.
      */
-    private function canMapStep(?BaseImporter $importer): bool
+    private function hasDestination(?BaseImporter $importer): bool
     {
-        if ($importer === null || ! BaseImporter::isSourceValid($importer->source)) {
-            return false;
-        }
-
-        return ! $importer instanceof ElementImporter || ! empty($importer->fieldLayout);
+        return $importer !== null && (! $importer instanceof ElementImporter || ! empty($importer->fieldLayout));
     }
 
     /**
@@ -233,17 +230,31 @@ class ImportPlansController
     {
         $importer = $this->draftImporter();
 
-        // the panel's button is hidden until this passes, so reaching here means the step
+        // the panel's mapping button is hidden until this passes, so reaching here means the step
         // changed between the last refresh and the click
-        if (! $this->canMapStep($importer)) {
-            return $this->asJsonSuccess(null, [
-                'available' => false,
-                'message' => t('Choose what this step imports into before mapping its data.'),
-            ]);
+        if (! $this->hasDestination($importer)) {
+            return $this->mappingUnavailable(t('Choose what this step imports into before mapping its data.'));
+        }
+
+        // validate the data source (which can be a URL too)
+        $sourceError = BaseImporter::sourceError($importer->source, resolveHost: false);
+
+        if ($sourceError !== null) {
+            return $this->mappingUnavailable($sourceError, 'source');
+        }
+
+        // the file is only downloaded (if it's a URL) and parsed once the mapping is asked for
+        try {
+            $sourceDataCols = $importer->getSourceDataCols();
+        } catch (Exception $e) {
+            return $this->mappingUnavailable($e->getMessage(), 'source');
+        }
+
+        if ($sourceDataCols === null) {
+            return $this->mappingUnavailable(t('The data in “{source}” couldn’t be read.', ['source' => $importer->source]), 'source');
         }
 
         $destinationCols = $importer->getDestinationCols();
-        $sourceDataCols = $importer->getSourceDataCols();
 
         return $this->asJsonSuccess(null, [
             'available' => true,
@@ -252,6 +263,19 @@ class ImportPlansController
             'values' => new ImportPlanMapViewModel($importer)->values(),
             'suggestions' => ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
         ]);
+    }
+
+    /**
+     * Returns the response for a step whose data can't be mapped, naming the step attribute
+     * the message is about, if it's about one.
+     */
+    private function mappingUnavailable(string $message, ?string $attribute = null): JsonResponse
+    {
+        return $this->asJsonSuccess(null, array_filter([
+            'available' => false,
+            'message' => $message,
+            'attribute' => $attribute,
+        ], fn ($value) => $value !== null));
     }
 
     /**
@@ -298,7 +322,13 @@ class ImportPlansController
             ];
         }
 
-        $sourceDataCols = $importer->getSourceDataCols();
+        // the source columns only feed the suggestions, so there are none if the file can't be read
+        try {
+            $sourceDataCols = $importer->getSourceDataCols() ?? [];
+        } catch (Exception) {
+            $sourceDataCols = [];
+        }
+
         $allDestinationCols = array_merge(...array_column($groups, 'destinationCols'));
 
         // the top-level columns are thrown in so a heading that exactly matches one of them

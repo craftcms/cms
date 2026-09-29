@@ -247,7 +247,8 @@ it('reports a step with no source as not mappable', function () {
         'step' => ($this->entryStep)([], ['source' => null]),
     ]);
 
-    expect($response->json('canMap'))->toBeFalse();
+    expect($response->json('canMap'))->toBeFalse()
+        ->and($response->json('sourceError'))->toBeNull();
 });
 
 it('reports an unsaved users step as mappable', function () {
@@ -275,6 +276,38 @@ it('refuses to build the mapping for a step whose layout hasn’t resolved', fun
     $response->assertOk();
     expect($response->json('available'))->toBeFalse()
         ->and($response->json('message'))->not->toBeEmpty();
+});
+
+it('refuses to build the mapping for a step whose source can’t be used, with the reason', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
+        'step' => ($this->entryStep)([], ['source' => '@nope/entries.json']),
+    ]);
+
+    $response->assertOk();
+    expect($response->json('available'))->toBeFalse()
+        ->and($response->json('message'))->toBe('The alias in “@nope/entries.json” isn’t defined.')
+        ->and($response->json('attribute'))->toBe('source');
+});
+
+it('refuses to build the mapping for a step whose source can’t be parsed', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
+        'step' => ($this->entryStep)([], ['source' => 'tests/Fixtures/Import/broken.xml']),
+    ]);
+
+    $response->assertOk();
+    expect($response->json('available'))->toBeFalse()
+        ->and($response->json('message'))->toBe('The data in “tests/Fixtures/Import/broken.xml” couldn’t be read.')
+        ->and($response->json('attribute'))->toBe('source');
+});
+
+it('reports a step with an undefined alias as not mappable instead of failing', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+        'step' => ($this->entryStep)([], ['source' => '@nope/entries.json']),
+    ]);
+
+    $response->assertOk();
+    expect($response->json('canMap'))->toBeFalse()
+        ->and($response->json('sourceError'))->toBe('The alias in “@nope/entries.json” isn’t defined.');
 });
 
 it('persists both levels’ keepMissingNestedElements decisions with the step', function () {

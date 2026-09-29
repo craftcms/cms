@@ -31,12 +31,15 @@ export interface StepFormResponse {
    * destination columns until its field layout resolves, which only the server can tell.
    */
   canMap: boolean;
+  /** Why the step's data source can't be used, shown under its field. */
+  sourceError: string | null;
 }
 
 export interface StepSlideoutContext {
   step: StepPayload;
   payload: FormPayload;
   canMap: boolean;
+  sourceError: string | null;
   urls: StepUrls;
   editable: boolean;
   apply(step: StepPayload): void;
@@ -69,7 +72,11 @@ export async function fetchStepForm(
     throw new Error('The import step did not return a Form payload.');
   }
 
-  return {form: data.form as FormPayload, canMap: Boolean(data.canMap)};
+  return {
+    form: data.form as FormPayload,
+    canMap: Boolean(data.canMap),
+    sourceError: data.sourceError ?? null,
+  };
 }
 
 /**
@@ -92,7 +99,10 @@ export async function openStepSlideout(
   title: string
 ): Promise<boolean> {
   const step = cloneStep(options.step);
-  const {form, canMap} = await fetchStepForm(options.urls.settingsUrl, step);
+  const {form, canMap, sourceError} = await fetchStepForm(
+    options.urls.settingsUrl,
+    step
+  );
 
   return openContextSlideout(
     registry,
@@ -104,6 +114,7 @@ export async function openStepSlideout(
       step,
       payload: form,
       canMap,
+      sourceError,
       urls: options.urls,
       editable: options.editable,
       apply: options.apply,

@@ -121,6 +121,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Normalize an array of steps (which could be an array or arrays) into an array of BaseImporter objects.
+     * Steps whose importer can't be created are left out.
      *
      * @return array<int, BaseImporter>|null
      */
@@ -134,6 +135,9 @@ class ImportPlan extends Component implements CpEditable, Validatable
         foreach ($steps as $step) {
             if (is_array($step)) {
                 $step = ImportPlanFacade::createImporter($step);
+            }
+            if ($step === null) {
+                continue;
             }
             if (empty($step->uid)) {
                 $step->uid = Str::uuid7()->toString();
@@ -205,6 +209,9 @@ class ImportPlan extends Component implements CpEditable, Validatable
     /**
      * Validates each step against its own importer type's rules, folding any errors back into
      * the import plan's error bag under `steps.<key>.<attribute>`.
+     *
+     * File-based import plans are validated whenever they're loaded, so their URLs' hostnames aren't
+     * resolved here; the import job validates the step fully before downloading its file.
      */
     #[Override]
     public function afterValidate(?Validator $validator = null): void
@@ -216,7 +223,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
         foreach ($this->steps ?? [] as $i => $step) {
             $key = $step->uid ?? $i;
 
-            foreach (self::stepErrors($step) as $attribute => $messages) {
+            foreach (self::stepErrors($step, resolveHost: $this->isEditable()) as $attribute => $messages) {
                 $validator->errors()->add("steps.$key.$attribute", ...$messages);
             }
         }
@@ -227,10 +234,11 @@ class ImportPlan extends Component implements CpEditable, Validatable
      * validating the import plan as a whole, and by the step slideout to check a draft step
      * before it lets the step close.
      *
-     * @param  array<string, mixed>  $step  The step to validate.
-     * @return array<string, array<int, string>> Validation messages keyed by attribute.
+     * @param  array<string, mixed>|BaseImporter  $step  The step to validate.
+     * @param  bool  $resolveHost  Whether to resolve the hostname of the step's source URL.
+     * @return array<string, array<int, string>>
      */
-    public static function stepErrors(array|BaseImporter $step): array
+    public static function stepErrors(array|BaseImporter $step, bool $resolveHost = true): array
     {
         if (is_array($step)) {
             $type = $step['type'] ?? null;
@@ -248,7 +256,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return ['type' => $typeValidator->errors()->get('type')];
         }
 
-        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules());
+        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost));
 
         return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
     }

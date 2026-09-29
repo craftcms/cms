@@ -18,24 +18,16 @@ beforeEach(function () {
     $this->importer::$resolvedIps = ['93.184.216.34'];
     $this->importer::$lookups = 0;
 
-    $this->sourceError = function (?string $value): ?string {
-        $error = null;
-
-        $this->importer::validateSource($value, 'source', function (string $attribute, ?string $message = null) use (&$error) {
-            $error = $message ?? $attribute;
-        }, Validator::make([], []));
-
-        return $error;
-    };
+    $this->sourceError = fn (?string $value): ?string => $this->importer::sourceError($value);
 });
 
 afterEach(function () {
     Aliases::set('@root', $this->originalRoot);
 });
 
-it('accepts a valid local file', function (string $source) {
-    expect(($this->sourceError)($source))->toBeNull()
-        ->and($this->importer::isSourceValid($source))->toBeTrue();
+it('accepts a valid local file', function (string $file) {
+    expect(($this->sourceError)($file))->toBeNull()
+        ->and($this->importer::sourceError($file, resolveHost: false))->toBeNull();
 })->with([
     'tests/Fixtures/Import/entries.csv',
     'tests/Fixtures/Import/entries-plain-text.json',
@@ -43,9 +35,9 @@ it('accepts a valid local file', function (string $source) {
     '@root/tests/Fixtures/Import/entries.csv',
 ]);
 
-it('rejects an invalid local file', function (?string $source, string $message) {
-    expect(($this->sourceError)($source))->toContain($message)
-        ->and($this->importer::isSourceValid($source))->toBeFalse();
+it('rejects an invalid local file', function (?string $file, string $message) {
+    expect(($this->sourceError)($file))->toContain($message)
+        ->and($this->importer::sourceError($file, resolveHost: false))->not->toBeNull();
 })->with([
     'empty' => [null, 'Source must be provided.'],
     'absolute path' => ['/etc/passwd', 'File paths must be relative to the project root or start with an alias.'],
@@ -53,14 +45,14 @@ it('rejects an invalid local file', function (?string $source, string $message) 
     'directory' => ['tests/Fixtures/Import', 'does not exist.'],
     'dotfile' => ['tests/Fixtures/Import/.hidden.csv', 'is not permitted.'],
     'path traversal' => ['../../../../../../../../../../etc/passwd', 'is not permitted.'],
-    'unsupported type' => ['tests/Fixtures/Import/unsupported.txt', 'Only files with these MIME types are allowed'],
+    'unsupported type' => ['tests/Fixtures/Import/unsupported.txt', 'Only files of these types are allowed'],
     'contents not matching the extension' => ['tests/Fixtures/Import/json-content.csv', 'don’t match its type (csv).'],
     'stream wrapper' => ['data:text/plain,a', 'Access to this file (data:text/plain,a) is not permitted.'],
 ]);
 
 it('rejects a URL with a scheme other than http or https', function (string $url) {
     expect(($this->sourceError)($url))->toBe("URL “{$url}” is not permitted.")
-        ->and($this->importer::isSourceValid($url))->toBeFalse();
+        ->and($this->importer::sourceError($url, resolveHost: false))->not->toBeNull();
 })->with([
     'file:///etc/passwd',
     'php://filter/resource=/etc/passwd',
@@ -80,18 +72,14 @@ it('accepts a URL that resolves to a public IP', function () {
         ->and($this->importer::$lookups)->toBe(1);
 });
 
-it('accepts a URL with a supported extension or no extension', function (string $url) {
+it('accepts a URL regardless of its extension', function (string $url) {
     expect(($this->sourceError)($url))->toBeNull()
-        ->and($this->importer::isSourceValid($url))->toBeTrue();
+        ->and($this->importer::sourceError($url, resolveHost: false))->toBeNull();
 })->with([
     'https://example.com/data.json?token=x',
     'https://example.com/api/entries',
+    'https://example.com/export.php?format=json',
 ]);
-
-it('rejects a URL with an unsupported extension', function () {
-    expect(($this->sourceError)('https://example.com/data.txt'))->toContain('Only files with these MIME types are allowed')
-        ->and($this->importer::isSourceValid('https://example.com/data.txt'))->toBeFalse();
-});
 
 it('rejects a URL that resolves to a disallowed IP', function (array $ips) {
     $this->importer::$resolvedIps = $ips;
@@ -103,17 +91,26 @@ it('rejects a URL that resolves to a disallowed IP', function (array $ips) {
     'unresolvable' => [[]],
 ]);
 
-it('checks a URL without resolving it in isSourceValid()', function () {
+it('checks a URL without resolving it when asked to', function () {
     $this->importer::$resolvedIps = ['127.0.0.1'];
 
-    expect($this->importer::isSourceValid('https://example.com/data.json'))->toBeTrue()
+    expect($this->importer::sourceError('https://example.com/data.json', resolveHost: false))->toBeNull()
         ->and($this->importer::$lookups)->toBe(0)
         ->and(($this->sourceError)('https://example.com/data.json'))->not->toBeNull();
 });
 
-it('throws for an unknown alias', function () {
-    ($this->sourceError)('@nope/data.csv');
-})->throws(InvalidArgumentException::class);
+it('rejects an unknown alias', function () {
+    expect(($this->sourceError)('@nope/data.csv'))->toBe('The alias in “@nope/data.csv” isn’t defined.')
+        ->and($this->importer::sourceError('@nope/data.csv', resolveHost: false))->not->toBeNull();
+});
+
+it('skips resolving a URL’s hostname when the rules ask it to', function () {
+    $this->importer::$resolvedIps = ['127.0.0.1'];
+
+    expect(Validator::make(['source' => 'https://example.com/data.json'], ['source' => TestImporter::getRules(resolveHost: false)['source']])->passes())->toBeTrue()
+        ->and($this->importer::$lookups)->toBe(0)
+        ->and(Validator::make(['source' => 'https://example.com/data.json'], ['source' => TestImporter::getRules()['source']])->passes())->toBeFalse();
+});
 
 it('resolves relative paths against @root and leaves URLs and aliases as they are', function () {
     expect(BaseImporter::resolvedSourcePath('tests/Fixtures/Import/entries.csv'))->toBe("{$this->packageRoot}/tests/Fixtures/Import/entries.csv")
