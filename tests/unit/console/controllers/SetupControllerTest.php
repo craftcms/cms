@@ -42,7 +42,7 @@ class SetupControllerTest extends ConsoleTest
             'enableSchemaCache' => true,
         ]);
         // Keep setup migrations independent of Codeception's shared PDO transaction.
-        $db->pdo = new PDO($db->dsn, $db->username, $db->password, $db->attributes ?? []);
+        $db->pdo = new PDO($db->dsn, $db->username, $db->password, $db->attributes);
         $cache = new DbCache(['db' => $db, 'cacheTable' => Table::CACHE]);
         $db->schemaCache = $cache;
         Craft::$app->set('db', $db);
