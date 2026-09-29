@@ -32,6 +32,10 @@ class DbCache extends YiiDbCache
      */
     protected function setValue($key, $value, $duration): bool
     {
+        $enableSchemaCache = $this->db->enableSchemaCache;
+        // Writing schema metadata to this cache must not trigger another schema cache write.
+        $this->db->enableSchemaCache = false;
+
         try {
             // Make sure the table exists
             $table = $this->db->getTableSchema($this->cacheTable);
@@ -70,6 +74,8 @@ class DbCache extends YiiDbCache
         } catch (Throwable $e) {
             Craft::warning("Unable to update or insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
+        } finally {
+            $this->db->enableSchemaCache = $enableSchemaCache;
         }
     }
 
@@ -79,6 +85,10 @@ class DbCache extends YiiDbCache
     protected function addValue($key, $value, $duration): bool
     {
         $this->gc();
+
+        $enableSchemaCache = $this->db->enableSchemaCache;
+        // Writing schema metadata to this cache must not trigger another schema cache write.
+        $this->db->enableSchemaCache = false;
 
         try {
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
@@ -92,6 +102,8 @@ class DbCache extends YiiDbCache
         } catch (Exception $e) {
             Craft::warning("Unable to insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
+        } finally {
+            $this->db->enableSchemaCache = $enableSchemaCache;
         }
     }
 }
