@@ -41,6 +41,7 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
   import {firstMessages} from '@/common/slideouts/errors';
+  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -310,14 +311,14 @@
       return;
     }
 
+    showMessagesFromResponse(result.data);
+
     const handled = slideout?.saved({data: result.data});
 
     slideout?.close({force: true});
 
     if (!handled) {
-      // The controller flashes its success message to the session even on the
-      // JSON branch, so refreshing the page behind surfaces it and picks up
-      // whatever changed.
+      // Refresh the page behind to pick up whatever changed.
       router.reload();
     }
   }

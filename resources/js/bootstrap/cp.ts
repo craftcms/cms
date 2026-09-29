@@ -12,6 +12,7 @@ import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {elementDetailsTabRegistry} from './element-details-tabs.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
+import {setUpInertiaMessages} from '@/modules/messages/inertia';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -116,6 +117,9 @@ const Cp = {
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
 
+    // Before the app mounts, so the first page's messages have somewhere to go.
+    setUpInertiaMessages();
+
     await createInertiaApp({
       resolve: async (name) => {
         const page = await resolveInertiaPage(name);
@@ -132,7 +136,6 @@ const Cp = {
 
     handleNonInertiaRequests();
     handleAccessibleRouting();
-    ensureLegacyNotificationContainer();
     registerSlideoutGlobals();
 
     bootedCallbacks.forEach((callback) => callback(this));
@@ -161,40 +164,6 @@ function handleAccessibleRouting() {
 
     announce(t('Navigated to {title} page', {title: props.title}));
   });
-}
-
-/**
- * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
- * notifications, …) appends into `#notifications`, which only the Twig layout
- * renders. Create it for Inertia pages — outside the Vue root, so page visits
- * can't clobber legacy-appended notifications — and re-point the CP
- * singleton's cached (empty) reference if it booted before the container
- * existed.
- */
-function ensureLegacyNotificationContainer() {
-  if (!document.getElementById('notifications')) {
-    const container = document.createElement('div');
-    container.id = 'notifications';
-    container.setAttribute('role', 'status');
-    document.body.appendChild(container);
-  }
-
-  // Which corner notifications stack in — the user's preference, which the
-  // Twig layout writes onto `<body>` as the same class.
-  const position = (Craft as {notificationPosition?: string})
-    .notificationPosition;
-
-  if (
-    ![...document.body.classList].some((name) =>
-      name.startsWith('notifications--')
-    )
-  ) {
-    document.body.classList.add(`notifications--${position ?? 'end-start'}`);
-  }
-
-  if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
-    Craft.cp.$notificationContainer = $('#notifications');
-  }
 }
 
 function handleNonInertiaRequests() {

@@ -11,7 +11,7 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
-@import './notifications.css';
+@import './messages.css';
 @import './slideout.css';
 
 :root {

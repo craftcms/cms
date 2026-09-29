@@ -1,0 +1,258 @@
+/**
+ * The default message display: messages drawn by `Craft.cp.displayNotification()`
+ * (`Craft.CP.Notification` in `CP.js`), plus the "Entry copied." card
+ * `Craft.cp.copyElements()` shows.
+ *
+ * Modelled on Sonner: the newest sits nearest the screen edge with the others
+ * stacked behind it, and the stack spreads out while it's hovered, pressed or
+ * holds focus (the "Skip to messages" link moves focus to it).
+ * `Craft.cp.updateNotificationStack()` sets the custom properties below.
+ *
+ * The container is the `<cp-messages id="messages">` element, which the Twig
+ * layout and the Inertia root view both render. Its `position` attribute holds
+ * the user's `notificationPosition` preference.
+ */
+.cp-messages {
+  --messages-gap: var(--c-spacing-md);
+  --messages-lift: var(--c-spacing-md);
+  --messages-direction: -1;
+  --messages-inset: var(--c-spacing-md);
+  --messages-duration: 400ms;
+  position: fixed;
+  z-index: var(--c-layer-notification);
+  inset-block-end: calc(
+    var(--messages-inset) + var(--cp-debug-bar-height, 0px)
+  );
+  inset-inline-start: var(--messages-inset);
+  width: calc(356rem / 16);
+  max-width: calc(100% - 2 * var(--messages-inset));
+
+  @media (width < calc(600rem / 16)) {
+    --messages-inset: calc(16rem / 16);
+    width: auto;
+    max-width: none;
+    inset-inline: var(--messages-inset);
+  }
+
+  &:not(:has(.notification)) {
+    pointer-events: none;
+  }
+
+  /* top */
+  &[position^='start-'] {
+    --messages-direction: 1;
+    inset-block: var(--messages-inset) auto;
+  }
+
+  /* right */
+  &[position$='-end'] {
+    inset-inline: auto var(--messages-inset);
+
+    @media (width < calc(600rem / 16)) {
+      inset-inline: var(--messages-inset);
+    }
+  }
+}
+
+.cp-messages .messages-stack {
+  position: relative;
+  isolation: isolate;
+  block-size: calc(
+    var(--messages-front-height, 0px) + var(--messages-behind, 0) *
+      var(--messages-lift)
+  );
+  transition: block-size var(--messages-duration) ease;
+}
+
+.cp-messages[data-expanded] .messages-stack {
+  block-size: calc(
+    var(--messages-height, 0px) + max(var(--messages-count, 1) - 1, 0) *
+      var(--messages-gap)
+  );
+}
+
+.cp-messages .notification {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  transform-origin: center bottom;
+  transform: translateY(var(--swipe-amount, 0px))
+    translateY(
+      calc(
+        var(--messages-direction) * var(--message-index, 0) *
+          var(--messages-lift)
+      )
+    )
+    scale(calc(1 - var(--message-index, 0) * 0.05));
+  transition:
+    transform var(--messages-duration) ease,
+    opacity var(--messages-duration) ease,
+    block-size var(--messages-duration) ease;
+  border-radius: var(--c-radius-lg);
+  background-color: var(--c-surface-overlay);
+  box-shadow:
+    0 0 0 1px var(--c-color-neutral-border-quiet),
+    var(--c-shadow-overlay);
+  color: var(--c-text-default);
+
+  .cp-messages[position^='start-'] & {
+    inset-block: 0 auto;
+    transform-origin: center top;
+  }
+
+  .notification-inner {
+    display: flex;
+    padding-block: calc(var(--c-spacing) * 2.5);
+    padding-inline: calc(var(--c-spacing) * 3.5);
+  }
+
+  .notification-body {
+    display: grid;
+    grid-template-columns: calc(20rem / 16) 1fr;
+    gap: var(--c-spacing-md);
+    width: 100%;
+  }
+
+  .notification-icon {
+    margin-block-start: calc(var(--c-spacing) * 0.5);
+    font-size: calc(20rem / 16);
+    color: var(--c-color-info-on-quiet);
+
+    svg {
+      fill: currentcolor;
+    }
+  }
+
+  &[data-type='success'] .notification-icon {
+    color: var(--c-color-success-on-quiet);
+  }
+
+  &[data-type='error'] .notification-icon {
+    color: var(--c-color-danger-on-quiet);
+  }
+
+  .notification-main {
+    margin: calc(var(--c-spacing) * -2.5);
+    padding: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+  }
+
+  .notification-message {
+    font-weight: var(--font-weight-bold);
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .notification-details {
+    margin-block-start: var(--c-spacing-xs);
+  }
+
+  .notification-close-btn {
+    margin-block-start: calc(var(--c-spacing) * -1);
+    margin-inline: calc(var(--c-spacing) * 2) calc(var(--c-spacing) * -1.5);
+  }
+}
+
+.cp-messages:not([data-expanded]) .notification[data-stack-behind] {
+  block-size: var(--messages-front-height);
+  overflow: hidden;
+
+  > * {
+    opacity: 0;
+  }
+}
+
+.cp-messages .notification > * {
+  transition: opacity var(--messages-duration) ease;
+}
+
+.cp-messages .notification[data-stack-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cp-messages[data-expanded] .notification {
+  transform: translateY(var(--swipe-amount, 0px))
+    translateY(
+      calc(
+        var(--messages-direction) *
+          (var(--message-offset, 0px) + var(--message-index, 0) *
+            var(--messages-gap))
+      )
+    );
+}
+
+.cp-messages .notification[data-swiping] {
+  transition: none;
+}
+
+.cp-messages .notification.notification--entering,
+.cp-messages[data-expanded] .notification.notification--entering {
+  opacity: 0;
+  transform: translateY(calc(var(--messages-direction) * -100%));
+}
+
+.cp-messages .notification.notification--leaving,
+.cp-messages[data-expanded] .notification.notification--leaving {
+  opacity: 0;
+  transform: translateY(var(--swipe-amount, 0px))
+    translateY(calc(var(--messages-direction) * -100%));
+  transition-duration: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-messages .messages-stack,
+  .cp-messages .notification,
+  .cp-messages .notification > * {
+    transition: none;
+  }
+}
+
+/* The copied-element card: a gradient frame and the copied elements' chips,
+   stacked with each one behind the last. */
+.cp-messages .copied-elements-notification {
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--c-color-fuchsia-fill-loud),
+    var(--c-color-violet-fill-loud),
+    var(--c-color-indigo-fill-loud)
+  );
+
+  .notification-icon {
+    color: var(--c-color-fuchsia-fill-loud);
+  }
+
+  .notification-inner {
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-surface-overlay);
+  }
+
+  .copied-elements {
+    position: relative;
+    margin-block-end: calc(var(--c-spacing) * -2.5);
+    padding-block-end: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* `CP.js` offsets each chip after the first and sets its `--overlay-opacity`. */
+  .copied-element-chip:not(:first-child) {
+    position: absolute;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      display: block;
+      background-color: color-mix(
+        var(--c-surface-overlay) calc(var(--overlay-opacity, 0) * 100%),
+        transparent
+      );
+    }
+  }
+}
+
+body:not(:has(.cp-messages .notification)) [data-messages-skip-link] {
+  display: none;
+}
