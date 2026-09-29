@@ -35,6 +35,7 @@
 - Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Image assets now store their dominant color, which is determined when their file is uploaded, replaced, or indexed. ([#19740](https://github.com/craftcms/cms/pull/19740))
 - Asset edit sidebars now tint the space around image previews with the image’s dominant color. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added the `dominantColor` field to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
 - Added `CraftCms\Cms\Asset\Elements\Asset::$dominantColor`. ([#19740](https://github.com/craftcms/cms/pull/19740))
 - Added `CraftCms\Cms\Image\Images::dominantColor()`. ([#19740](https://github.com/craftcms/cms/pull/19740))
