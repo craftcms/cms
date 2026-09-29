@@ -328,6 +328,13 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     private ElementCollection $_addresses;
 
     /**
+     * @var array<int|string, array<string, mixed>>|null Normalized address data from an import, saved once the user is.
+     *
+     * @see importIntoContainerAttribute()
+     */
+    private ?array $importedAddressData = null;
+
+    /**
      * @see getAddressManager()
      */
     private NestedElementManager $_addressManager;
@@ -2354,6 +2361,11 @@ JS, [
         return true;
     }
 
+    /**
+     * Returns the mapping columns for an importable container property, or null if it isn't one.
+     *
+     * @return list<array<mixed>>|null
+     */
     public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
     {
         return match ($property) {
@@ -2368,6 +2380,9 @@ JS, [
      * Special method that can be used to import data into a container-type attribute.
      * It handles normalizing value for import and saving the data.
      * It returns indication of whether it changed any pre-existing data.
+     *
+     * @param  array<string, mixed>  $attribute
+     * @param  array<string, mixed>  $item
      */
     public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
     {
@@ -2376,12 +2391,11 @@ JS, [
         // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
         if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
             $addressesField = new Addresses;
-            $addresses = ElementCollection::make($addressesField->normalizeValueForImport($item['addresses'], $importer, $this));
-            $this->_addresses = $addresses;
+            $this->importedAddressData = $addressesField->normalizeValueForImport($item['addresses'], $importer, $this);
 
             Event::listen(function (ElementSaved $event) use ($addressesField) {
-                if ($event->element === $this && $this->_addresses->isNotEmpty()) {
-                    $addresses = $addressesField->createAddressesFromSerializedData($this->_addresses->all(), $event->element, true);
+                if ($event->element === $this && ! empty($this->importedAddressData)) {
+                    $addresses = $addressesField->createAddressesFromSerializedData($this->importedAddressData, $event->element, true);
                     foreach ($addresses as $address) {
                         Elements::saveElement($address);
                     }

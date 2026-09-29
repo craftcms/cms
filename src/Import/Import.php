@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\DataTypes\Csv;
+use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
 use CraftCms\Cms\Import\Events\ImportDispatched;
@@ -36,18 +37,14 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
-use function CraftCms\Cms\t;
-
 #[Singleton]
 class Import
 {
-    public function __construct(
-        private readonly ImportPlan $imports,
-    ) {}
-
     /**
      * Returns the available data type classes, keyed by extension.
      * The list includes built-in json/csv/xml data type map, extended via `RegisterDataTypes` event listeners.
+     *
+     * @return array<class-string<DataTypeInterface>>
      */
     public function getAllDataTypes(): array
     {
@@ -98,7 +95,7 @@ class Import
      * Returns the available importer classes.
      * The list includes built-in Element/Model importer classes, extended via `RegisterImporterTypes` event.
      *
-     * @return array The available importer classes.
+     * @return list<class-string<BaseImporter>>
      */
     public function getAllImporterTypes(): array
     {
@@ -197,13 +194,7 @@ class Import
      */
     public static function stepLabel(ImportPlanData $importPlan, BaseImporter $step): string
     {
-        $type = $step::class ?? null;
-
-        return sprintf(
-            '%s: %s',
-            $importPlan->name,
-            is_string($type) && class_exists($type) ? $type::displayName() : t('Unknown importer'),
-        );
+        return sprintf('%s: %s', $importPlan->name, $step::displayName());
     }
 
     /**
@@ -211,8 +202,8 @@ class Import
      * then hands the item to the importer and fires the imported event.
      *
      * @param  BaseImporter  $importer  The importer config to import into.
-     * @param  array  $data  The raw item data being imported.
-     * @param  array  $matchCriteria  any criteria that should be used to match incoming data against existing elements
+     * @param  array<string, mixed>  $data  The raw item data being imported.
+     * @param  array<string, mixed>  $matchCriteria  any criteria that should be used to match incoming data against existing elements
      * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
     public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
@@ -262,6 +253,10 @@ class Import
     /**
      * Resolves the match criteria so that the returned array contains keys that represent the fields/attributes/properties to update
      * and values containing the incoming data values (not keys).
+     *
+     * @param  array<mixed>  $data
+     * @param  array<mixed>  $criteria
+     * @param  array<mixed>  $additionalMatchCriteria
      */
     private function resolveMatchCriteria(array &$data, array $criteria, array $additionalMatchCriteria): void
     {
@@ -365,6 +360,9 @@ class Import
     /**
      * Clears out any handles marked as clearable in $clearableItems whose incoming value is missing or empty,
      * forcing them to null so they're explicitly applied (rather than silently left untouched) further downstream.
+     *
+     * @param  array<mixed>  $data
+     * @param  array<mixed>  $clearableItems
      */
     private function applyClearableItems(array &$data, array $clearableItems): void
     {
@@ -467,6 +465,7 @@ class Import
      * Return the formatted data, throws on failure.
      *
      * @param  string  $filePath  The path to the file to read and format.
+     * @return array<mixed>
      */
     public function getFormattedData(string $filePath): array
     {
@@ -484,6 +483,8 @@ class Import
 
     /**
      * Determines the data type from the file extension and delegates formatting to that type's `format()`, logging and returning null on error.
+     *
+     * @return array<string, mixed>|null
      */
     private function formatData(string $filePath, string $rawData): ?array
     {
@@ -504,6 +505,7 @@ class Import
      * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
+     * @return list<array{label: string, value: string}>|null
      */
     public function getDataHeadings(string $filePath): ?array
     {
@@ -532,8 +534,9 @@ class Import
      * Runs a Fractal transformer over the raw item data (with config/element as meta) and returns the transformed array.
      *
      * @param  BaseImporter  $importer  The importer config providing the transformer.
-     * @param  array  $data  The raw item data to transform.
+     * @param  array<string, mixed>  $data  The raw item data to transform.
      * @param  mixed  $element  The element associated with the item, if any.
+     * @return array<string, mixed>
      */
     final public function processData(BaseImporter $importer, array $data, mixed $element): array
     {

@@ -19,7 +19,7 @@ class ItemImporting
      * A cancelled item doesn't fire `ItemImported`, so listeners tracking imported elements won't see it.
      *
      * @param  BaseImporter  $importer  The importer config for this event.
-     * @param  array  $data  The raw data about to be imported - before remapping.
+     * @param  array<string, mixed>  $data  The raw data about to be imported - before remapping.
      * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
     public function __construct(

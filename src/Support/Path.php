@@ -262,6 +262,12 @@ class Path
         return File::normalizePath($path).DIRECTORY_SEPARATOR;
     }
 
+    /**
+     * Returns whether a normalized path is within one of the allowed roots, and not within a system directory
+     * unless the root it's in is a known temp directory.
+     *
+     * @param  list<array{string|false, bool}>  $allowedRoots  The roots, each paired with whether it’s a known temp directory.
+     */
     public static function isPathWithinRoots(string $path, array $allowedRoots): bool
     {
         $inAllowedRoot = false;

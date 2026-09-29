@@ -39,7 +39,7 @@ abstract class ElementImporter extends BaseImporter
     public protected(set) ?string $fieldLayout = null;
 
     /**
-     * @var array|null
+     * @var array<string, mixed>|null
      *
      * array => a tree keyed by field handle, mirroring $matchCriteria's shape (including a
      *  `fields` segment and provider/entry-type handle for each level of nesting). Since a
@@ -81,7 +81,7 @@ abstract class ElementImporter extends BaseImporter
             'context' => $context,
             'nodes' => [
                 FormField::make(t('Site'), Choice::make('site')
-                    ->value($this->site?->handle ?? Sites::getPrimarySite()->handle)
+                    ->value($this->site->handle ?? Sites::getPrimarySite()->handle)
                     ->options($availableSites))
                     ->instructions(t('The site you want to import the data into'))
                     ->required(),
@@ -125,7 +125,7 @@ abstract class ElementImporter extends BaseImporter
      */
     public function site(string|int|Site|null $site): self
     {
-        $resolved = static::normalizeSite($site);
+        $resolved = self::normalizeSite($site);
 
         if ($resolved === null) {
             throw new InvalidArgumentException(is_numeric($site)
@@ -151,7 +151,7 @@ abstract class ElementImporter extends BaseImporter
             return $this;
         }
 
-        $fieldLayout = static::normalizeFieldLayout($value, create: true);
+        $fieldLayout = self::normalizeFieldLayout($value, create: true);
 
         if ($fieldLayout === null) {
             throw new InvalidArgumentException(is_numeric($value)
@@ -179,9 +179,9 @@ abstract class ElementImporter extends BaseImporter
      * Sets the container field handles that should keep nested elements missing from the
      * incoming data instead of pruning them, and returns the current instance.
      *
-     * @param  array|null  $keepMissingNestedElements  The field handles to keep, either as the nested
-     *                                                 `__keep__`-leaf tree (matching $matchCriteria's
-     *                                                 shape) or a flat list of dot-notation handles to keep.
+     * @param  array<int|string, mixed>|null  $keepMissingNestedElements  The field handles to keep, either as the nested
+     *                                                                    `__keep__`-leaf tree (matching $matchCriteria's
+     *                                                                    shape) or a flat list of dot-notation handles to keep.
      */
     public function keepMissingNestedElements(?array $keepMissingNestedElements = null): self
     {
@@ -243,7 +243,7 @@ abstract class ElementImporter extends BaseImporter
             return false;
         }
 
-        if (static::normalizeSite($value) === null) {
+        if (self::normalizeSite($value) === null) {
             $fail($attribute, t('“{site}” is not a valid site handle.', [
                 'site' => $value,
             ]));
@@ -272,7 +272,7 @@ abstract class ElementImporter extends BaseImporter
         }
 
         // has to exist (never create a layout as a side effect of validation)
-        $fieldLayout = static::normalizeFieldLayout($value, true);
+        $fieldLayout = self::normalizeFieldLayout($value, true);
         if ($fieldLayout === null) {
             $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
                 'fieldLayout' => $value,
@@ -461,7 +461,7 @@ abstract class ElementImporter extends BaseImporter
             $value instanceof Site => $value,
             $value === null => Sites::getPrimarySite(),
             is_numeric($value) => Sites::getSiteById((int) $value),
-            default => static::siteByUidOrNull($value) ?? Sites::getSiteByHandle($value),
+            default => self::siteByUidOrNull($value) ?? Sites::getSiteByHandle($value),
         };
     }
 
@@ -481,6 +481,8 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Prepares a new element instance for import.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
     {
@@ -503,6 +505,8 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Sets element's importable attributes.
+     *
+     * @param  array<string, mixed>  $attributes
      */
     public function setAttributesForImport(ElementInterface $element, array $attributes): void
     {
@@ -610,6 +614,9 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Snapshots the element's current values for the given attribute handles.
+     *
+     * @param  list<string>  $handles
+     * @return array<string, mixed>
      */
     private function snapshotAttributeValues(ElementInterface $element, array $handles): array
     {
@@ -624,6 +631,9 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Snapshots the element's current serialized values for the given field handles.
+     *
+     * @param  list<string>  $handles
+     * @return array<string, mixed>
      */
     private function snapshotFieldValues(ElementInterface $element, array $handles): array
     {
@@ -642,15 +652,14 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Compares the given old attribute values against the element's current values.
+     *
+     * @param  array<string, mixed>  $oldValues
      */
     private function attributeValuesChanged(ElementInterface $element, array $oldValues): bool
     {
         return array_any($oldValues, fn ($oldValue, $handle) => $oldValue != $element->$handle);
     }
 
-    /**
-     * Compares the given old serialized field values against the element's current values.
-     */
     /**
      * Returns whether the incoming data fills a container field that the element has no nested
      * elements for yet - a case comparing serialized values can't detect.
@@ -679,6 +688,11 @@ abstract class ElementImporter extends BaseImporter
         return false;
     }
 
+    /**
+     * Compares the given old serialized field values against the element's current values.
+     *
+     * @param  array<string, mixed>  $oldValues
+     */
     private function fieldValuesChanged(ElementInterface $element, array $oldValues): bool
     {
         $fieldLayout = $element->getFieldLayout();
@@ -700,6 +714,8 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Prepares a new element or looks up an existing one via a match criteria query, applying site ID.
+     *
+     * @param  array<string, mixed>  $data
      */
     private function getRootElement(array &$data): ElementInterface
     {
@@ -723,13 +739,6 @@ abstract class ElementImporter extends BaseImporter
             // and the values from incoming data should have been applied to it
             $criteria = $data['matchCriteria'];
 
-            // if we still don't have criteria, return a new Element
-            if (empty($criteria)) {
-                $element->siteId = $this->site?->id;
-
-                return $element;
-            }
-
             Typecast::configure($query, $criteria);
 
             // ensure we use the config's siteId, not one from the matchCriteria
@@ -745,7 +754,10 @@ abstract class ElementImporter extends BaseImporter
     }
 
     /**
-     * Runs each field's `normalizeValueForImport()` (if defined) over the incoming field data.
+     * Runs each field's `normalizeValueForImport()` over the incoming field data.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
     private function normalizeFields(ElementInterface $rootElement, array $data): array
     {
@@ -757,12 +769,8 @@ abstract class ElementImporter extends BaseImporter
 
         foreach ($data as $handle => $value) {
             $field = $fieldLayout->getFieldByHandle($handle);
-            // if we don't have a field, or it doesn't have a normalizeValueForImport() method,
-            // we don't have to worry about extra normalization, so carry on
+            // if we don't have a field, we don't have to worry about extra normalization, so carry on
             if (! $field) {
-                continue;
-            }
-            if (! method_exists($field, 'normalizeValueForImport')) {
                 continue;
             }
 

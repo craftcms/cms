@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
@@ -46,10 +47,13 @@ abstract class BaseImporter
 
     public protected(set) ?int $batchSize = null;
 
+    /**
+     * @var array<mixed> The mapping configuration, keyed by what to import into.
+     */
     public protected(set) array $map = [];
 
     /**
-     * @var Closure|array|null
+     * @var array<mixed>|null
      *
      * array => key is what to import into (e.g. a field handle or attribute name)
      *  value is the name/key/property from the incoming data;
@@ -63,7 +67,7 @@ abstract class BaseImporter
     public protected(set) ?array $matchCriteria = null;
 
     /**
-     * @var array|null
+     * @var array<mixed>|null
      *
      * array => key is the field/attribute handle to clear when the incoming data doesn't provide a value for it
      *  (or provides an empty one); value is truthy (1/true) to mark it as clearable;
@@ -80,7 +84,7 @@ abstract class BaseImporter
     /**
      * Sets `$this->uid` from a config array if provided.
      *
-     * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
+     * @param  array<string, mixed>|null  $config  Optional config array, potentially containing a `uid` key.
      */
     public function __construct(?array $config = null)
     {
@@ -126,21 +130,29 @@ abstract class BaseImporter
 
     /**
      * Defines the type-specific settings nodes and context for this importer form.
+     *
+     * @return array{context?: FormContext, nodes?: list<Node>}
      */
     abstract public function settingsForm(FormContext $context): array;
 
     /**
      * Renders the importer-specific part of the settings form.
+     *
+     * @param  array<string, mixed>  $settings
      */
     abstract public function refreshSettingsForm(array $settings): void;
 
     /**
      * Gives importers a chance to store their specific settings.
+     *
+     * @param  array<string, mixed>  $settings
      */
     abstract public function storeSettings(array $settings): void;
 
     /**
      * Returns an array of importer-specific settings.
+     *
+     * @return array<string, mixed>
      */
     abstract public function getSettings(): array;
 
@@ -185,7 +197,7 @@ abstract class BaseImporter
     /**
      * Sets the mapping configuration for the importer.
      *
-     * @param  array  $map  The mapping configuration array.
+     * @param  array<mixed>  $map  The mapping configuration array.
      */
     public function map(array $map): self
     {
@@ -198,7 +210,7 @@ abstract class BaseImporter
      * Sets the criteria to be used for matching the element we're importing into
      * and returns the current instance.
      *
-     * @param  array|null  $matchCriteria  The criteria to match against.
+     * @param  array<mixed>|null  $matchCriteria  The criteria to match against.
      */
     public function matchCriteria(?array $matchCriteria): self
     {
@@ -217,8 +229,8 @@ abstract class BaseImporter
      * Sets the field/attribute handles that should be cleared on import when no data is provided
      * for them or the provided value is empty, and returns the current instance.
      *
-     * @param  array|null  $clearableItems  The handles to mark as clearable, either as a nested map with truthy
-     *                                      leaves (matching $matchCriteria's shape) or a flat list of dot-notation handles.
+     * @param  array<mixed>|null  $clearableItems  The handles to mark as clearable, either as a nested map with truthy
+     *                                             leaves (matching $matchCriteria's shape) or a flat list of dot-notation handles.
      */
     public function clearableItems(?array $clearableItems = null): self
     {
@@ -240,6 +252,7 @@ abstract class BaseImporter
      * URL hostname resolution (DNS lookup) can be skipped via `$resolveHost`.
      *
      * @param  bool  $resolveHost  Whether to resolve a URL's hostname when validating the source.
+     * @return array<string, Closure|list<string|Closure>>
      */
     public static function getRules(bool $resolveHost = true): array
     {
@@ -274,6 +287,8 @@ abstract class BaseImporter
     /**
      * Defines the validation rules for the importer's execution settings, independent of
      * whether the importer is ever persisted/named (e.g. an ad-hoc CLI-built importer).
+     *
+     * @return array<string, Closure|list<string|Closure>>
      */
     public static function getSettingsRules(): array
     {
@@ -286,6 +301,8 @@ abstract class BaseImporter
 
     /**
      * Builds the step data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
+     *
+     * @return array{uid: string|null, type: class-string<static>, source: string|null, transformer: string|null, batchSize: int|null, settings: array<string, mixed>}
      */
     public function toArrayData(): array
     {
@@ -623,7 +640,7 @@ abstract class BaseImporter
      * @param  string  $attribute  The name of the attribute being validated.
      * @param  Closure  $fail  The callback function to invoke when validation fails.
      * @param  Validator  $validator  The validator instance performing the validation.
-     * @param  array  $params  Additional context params for the validation.
+     * @param  array<string, mixed>  $params  Additional context params for the validation.
      */
     public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
@@ -633,6 +650,8 @@ abstract class BaseImporter
 
     /**
      * Returns the names of the columns/properties/fields that we're importing into.
+     *
+     * @return array<int|string, array<string, mixed>>
      */
     public function getDestinationCols(): array
     {
@@ -642,6 +661,8 @@ abstract class BaseImporter
     /**
      * Returns the names of the columns/properties that we're importing from (the ones from the data source),
      * or null if the data couldn't be parsed.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getSourceDataCols(): ?array
     {
@@ -652,7 +673,7 @@ abstract class BaseImporter
      * No-op base implementation; subclasses override to actually perform the import
      * and return the element or model the data was imported into, if any.
      *
-     * @param  array  $data  The data for the item being imported.
+     * @param  array<string, mixed>  $data  The data for the item being imported.
      */
     public function importItem(array $data): ElementInterface|Model|null
     {

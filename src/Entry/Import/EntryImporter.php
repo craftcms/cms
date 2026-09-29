@@ -185,7 +185,7 @@ class EntryImporter extends ElementImporter
             return false;
         }
 
-        if (static::normalizeSection($value) === null) {
+        if (self::normalizeSection($value) === null) {
             $fail($attribute, t('No Section found for “{section}”.', [
                 'section' => $value,
             ]));
@@ -205,7 +205,7 @@ class EntryImporter extends ElementImporter
             return false;
         }
 
-        if (static::normalizeEntryType($value) === null) {
+        if (self::normalizeEntryType($value) === null) {
             $fail($attribute, t('No Entry Type found for “{entryType}”.', [
                 'entryType' => $value,
             ]));
@@ -290,6 +290,11 @@ class EntryImporter extends ElementImporter
         parent::setAttributesForImport($element, $attributes);
     }
 
+    /**
+     * Returns the sections that can be imported into, as choice options.
+     *
+     * @return list<array{label: string, value: string}>
+     */
     protected function availableSections(): array
     {
         return Sections::getAllSections()->map(fn ($section) => [
@@ -298,6 +303,11 @@ class EntryImporter extends ElementImporter
         ])->all();
     }
 
+    /**
+     * Returns the selected section’s entry types, as choice options.
+     *
+     * @return list<array{label: string, value: string}>
+     */
     protected function availableEntryTypes(): array
     {
         if ($this->section === null) {

@@ -42,7 +42,7 @@ class EntryTransformer extends ElementTransformer
     protected function normalizeTypeId(mixed $value, ElementInterface $element): ?int
     {
         if ($value === null) {
-            /** @var $element Entry */
+            /** @var Entry $element */
             return $element->getTypeId();
         }
 
@@ -58,7 +58,7 @@ class EntryTransformer extends ElementTransformer
             return $type?->id;
         }
 
-        /** @var $element Entry */
+        /** @var Entry $element */
         return $element->getTypeId();
     }
 }

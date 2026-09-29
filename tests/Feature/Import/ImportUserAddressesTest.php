@@ -135,3 +135,10 @@ it('does not create any addresses when the addresses key is absent', function ()
     expect($user)->not()->toBeNull();
     expect(Address::find()->ownerId($user->id)->count())->toBe(0);
 });
+
+it('returns address elements from the imported user', function () {
+    $user = $this->importer->importItem(($this->userData)([$this->address]));
+
+    expect($user->getAddresses()->all())->toHaveCount(1)
+        ->each->toBeInstanceOf(Address::class);
+});

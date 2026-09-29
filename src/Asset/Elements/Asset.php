@@ -3386,6 +3386,11 @@ JS;
         return Path::isPathWithinRoots($tempFilePath, $allowedRoots);
     }
 
+    /**
+     * Returns the root paths a temp file is allowed to live in, each paired with whether it’s a known temp directory.
+     *
+     * @return list<array{string|false, bool}>
+     */
     public static function getAllowedTempFileRoots(): array
     {
         return [

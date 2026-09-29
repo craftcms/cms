@@ -306,6 +306,8 @@ class Arr extends \Illuminate\Support\Arr
     /**
      * Normalizes the string from bracket notation into an array.
      * `foo[bar][baz]` => `['foo', 'bar', 'baz']`
+     *
+     * @return list<string>
      */
     public static function bracketsToArray(string $string): array
     {
@@ -316,6 +318,9 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns an array of unique dot-notated keys from a given multidimensional array.
+     *
+     * @param  array<array-key, mixed>  $array
+     * @return list<string>
      */
     public static function uniqueDotifiedKeys(array $array, string $prepend = ''): array
     {

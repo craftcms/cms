@@ -10,6 +10,9 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
+/**
+ * @property array<int, array<string, mixed>>|null $steps
+ */
 class ImportPlan extends BaseModel
 {
     use HasUid;

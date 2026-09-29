@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Events;
 
 use CraftCms\Cms\Import\Data\ImportPlan;
+use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
@@ -17,7 +18,7 @@ class ImportDispatching
     /**
      * Carries the steps and import plan for a cancellable pre-dispatch event.
      *
-     * @param  array  $steps  The queue job steps to be dispatched.
+     * @param  array<int, array{name: string, uid: string|null, job: ImportJob}>  $steps  The queue job steps to be dispatched.
      */
     public function __construct(
         public array $steps,

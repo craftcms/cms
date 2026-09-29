@@ -1048,6 +1048,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      * The custom field values must be nested under a "fields" key.
      *
      * The value has to be an array; each item in the array represents an address.
+     *
+     * @return array<int|string, array<string, mixed>>
      */
     #[Override]
     public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array

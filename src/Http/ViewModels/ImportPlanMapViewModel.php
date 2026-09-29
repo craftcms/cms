@@ -10,8 +10,10 @@ use CraftCms\Cms\Support\ImportHelper;
 
 class ImportPlanMapViewModel extends ViewModel
 {
+    /** @var array<int|string, array<string, mixed>>|null */
     private ?array $destinationCols = null;
 
+    /** @var list<array{label: string, value: string}>|null */
     private ?array $sourceDataCols = null;
 
     public function __construct(
@@ -29,13 +31,13 @@ class ImportPlanMapViewModel extends ViewModel
         ];
     }
 
-    /** @return array<int, array<string, mixed>> */
+    /** @return array<int|string, array<string, mixed>> */
     public function destinationCols(): array
     {
         return $this->destinationCols ??= $this->importer->getDestinationCols();
     }
 
-    /** @return array<array-key, mixed> */
+    /** @return list<array{label: string, value: string}> */
     public function sourceDataCols(): array
     {
         // memoized alongside destinationCols(): both are asked for twice per page — once for

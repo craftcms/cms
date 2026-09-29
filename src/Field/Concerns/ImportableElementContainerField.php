@@ -19,6 +19,9 @@ trait ImportableElementContainerField
 {
     /**
      * @see ImportableElementContainerFieldInterface::normalizeNestedEntryForImport()
+     *
+     * @param  array<string, mixed>  $dataItem
+     * @return array<string, mixed>
      */
     public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
@@ -80,6 +83,8 @@ trait ImportableElementContainerField
      * By default, let mapping validation pass.
      *
      * @see ImportableElementContainerFieldInterface::validateMapping()
+     *
+     * @param  array<string, mixed>  $params
      */
     public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {

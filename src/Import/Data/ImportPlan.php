@@ -50,6 +50,11 @@ class ImportPlan extends Component implements CpEditable, Validatable
      */
     public bool $editable = false;
 
+    /**
+     * Creates the import plan, decoding JSON-encoded steps into importers.
+     *
+     * @param  array<string, mixed>  $config
+     */
     public function __construct(array $config = [])
     {
         $importers = [];
@@ -123,6 +128,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
      * Normalize an array of steps (which could be an array or arrays) into an array of BaseImporter objects.
      * Steps whose importer can't be created are left out.
      *
+     * @param  array<array-key, array<string, mixed>|BaseImporter>  $steps
      * @return array<int, BaseImporter>|null
      */
     private static function normalizeSteps(array $steps): ?array
@@ -150,7 +156,9 @@ class ImportPlan extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Serializes the import plan's steps into an array of arrays.'
+     * Serializes the import plan's steps into an array of arrays.
+     *
+     * @return array<int, array<string, mixed>>|null
      */
     public function serializeSteps(): ?array
     {
@@ -244,7 +252,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             $type = $step['type'] ?? null;
             $stepArray = $step;
         } else {
-            $type = $step::class ?? null;
+            $type = $step::class;
             $stepArray = $step->toArrayData();
         }
 
@@ -276,6 +284,8 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Returns a plain array snapshot of the import plan's properties.
+     *
+     * @return array{name: string|null, handle: string|null, description: string|null, steps: array<int, BaseImporter>|null, uid: string|null}
      */
     public function getConfig(): array
     {

@@ -37,7 +37,6 @@ class Json implements DataTypeInterface
             return ['success' => false, 'error' => $error];
         }
 
-        //        $keys = static::collectUniqueKeys($array);
         $keys = Arr::uniqueDotifiedKeys($array);
 
         $headings = [];
@@ -58,6 +57,8 @@ class Json implements DataTypeInterface
 
     /**
      * Thin wrapper around the app's JsonHelper::decode.
+     *
+     * @return array<mixed>
      */
     private static function getData(string $data): array
     {
@@ -68,19 +69,5 @@ class Json implements DataTypeInterface
         }
 
         return $array;
-    }
-
-    /**
-     * Recursively walks a nested array collecting keys by reference.
-     */
-    private static function collectKeysFromArray(array $array, array &$keys): void
-    {
-        foreach ($array as $key => $value) {
-            $keys[$key] ??= [];
-
-            if (is_array($value)) {
-                self::collectKeysFromArray($value, $keys[$key]);
-            }
-        }
     }
 }

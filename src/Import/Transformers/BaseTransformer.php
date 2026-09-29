@@ -25,7 +25,8 @@ abstract class BaseTransformer extends TransformerAbstract
      * like: return ['myFieldHandle' => $data['myIncomingKey']];
      *
      * @param  BaseImporter  $importer  The importer configuration.
-     * @param  array  $data  The data being imported.
+     * @param  array<string, mixed>  $data  The data being imported.
+     * @return array<mixed>
      */
     public function additionalMatchCriteria(BaseImporter $importer, array $data): array
     {

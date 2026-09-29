@@ -59,6 +59,16 @@ it('reports malformed XML instead of throwing', function () {
         ->and($result['error'])->toStartWith('Invalid XML:');
 });
 
+it('reports empty data instead of throwing', function () {
+    expect(Xml::format(''))->toBe(['success' => false, 'error' => 'Invalid XML: The data must be an XML document.'])
+        ->and(Xml::getHeadings(''))->toBe(['success' => false, 'error' => 'Invalid XML: The data must be an XML document.']);
+});
+
+it('formats an empty root element into no rows', function () {
+    expect(Xml::format('<entries/>'))->toBe(['success' => true, 'data' => []])
+        ->and(Xml::getHeadings('<entries/>'))->toBe([]);
+});
+
 // getHeadings()
 
 it('returns dot-notation headings for XML elements', function () {

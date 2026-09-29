@@ -151,8 +151,8 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
                 'prefixedHandle' => $prefixedHandle,
                 'prefixedHandleAsArray' => $prefixedHandleAsArray,
                 'isContainer' => false,
-                'canBeMatchCriteria' => $part['canBeMatchCriteria'] ?? false,
-                'canBeCleared' => $part['canBeCleared'] ?? true,
+                'canBeMatchCriteria' => false,
+                'canBeCleared' => true,
             ];
         }
 

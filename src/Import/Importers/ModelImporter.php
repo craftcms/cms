@@ -161,6 +161,8 @@ abstract class ModelImporter extends BaseImporter
 
     /**
      * Creates a new model or looks up an existing one via a match-criteria `where()` query.
+     *
+     * @param  array<string, mixed>  $data
      */
     private function getModel(array $data): BaseModel
     {

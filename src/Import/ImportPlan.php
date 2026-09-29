@@ -23,7 +23,7 @@ use Throwable;
 class ImportPlan
 {
     /**
-     * @param  LaravelCollection|null  $importPlans  The cached collection of import plans.
+     * @param  LaravelCollection<array-key, ImportPlanData>|null  $importPlans  The cached collection of import plans.
      */
     public function __construct(
         private ?LaravelCollection $importPlans = null,
@@ -33,7 +33,7 @@ class ImportPlan
      * Instantiates an importer from an import plan step, applying its properties and decoded
      * settings via setter methods.
      *
-     * @param  array  $step  The step array, shaped `{uid, type, source, transformer, settings}`.
+     * @param  array<string, mixed>  $step  The step array, shaped `{uid, type, source, transformer, settings}`.
      */
     public static function createImporter(array $step): ?BaseImporter
     {
@@ -47,6 +47,8 @@ class ImportPlan
     /**
      * Lazily loads/caches all import plans, merging DB-stored import plans, in their saved order,
      * with the file-based `craft.import` config, sorted by name, keyed by handle.
+     *
+     * @return LaravelCollection<array-key, ImportPlanData>
      */
     public function getAllImportPlans(): LaravelCollection
     {
@@ -79,6 +81,8 @@ class ImportPlan
 
     /**
      * Filters all import plans down to editable (DB-backed) ones.
+     *
+     * @return LaravelCollection<array-key, ImportPlanData>
      */
     public function getEditableImportPlans(): LaravelCollection
     {
@@ -87,6 +91,8 @@ class ImportPlan
 
     /**
      * Filters all import plans down to non-editable (file-based) ones.
+     *
+     * @return LaravelCollection<array-key, ImportPlanData>
      */
     public function getNonEditableImportPlans(): LaravelCollection
     {

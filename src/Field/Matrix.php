@@ -2274,6 +2274,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * Returned should be an array containing 'sortOrder' and 'entries' keys.
      * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
      * or by "new:X" key where X is an incremented integer
+     *
+     * @return array{sortOrder?: list<int|string>, entries?: array<int|string, array<string, mixed>>}
      */
     #[Override]
     public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array

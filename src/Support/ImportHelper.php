@@ -13,6 +13,15 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Fields;
 
+/**
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed}
+ * @phpstan-type PrefixedHandles array{string, string, string, string, list<string>, string, string}
+ * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
+ * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
+ * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
+ * @phpstan-type MappableLeaf array{path: string, segments: list<string>}
+ * @phpstan-type IncomingCol array{segments: list<string>, value: string}
+ */
 class ImportHelper
 {
     public static function prepKeyForAutoMatching(string $key): string
@@ -25,6 +34,12 @@ class ImportHelper
         return Arr::join($fragments, '.');
     }
 
+    /**
+     * Flattens a list of `{label, value}` options into a `value => label` array, skipping empty values.
+     *
+     * @param  array<array{label: string, value: int|string}>  $array
+     * @return array<int|string, string>
+     */
     public static function flattenLabelValueArray(array $array): array
     {
         return collect($array)
@@ -37,6 +52,8 @@ class ImportHelper
      * Normalizes match criteria coming from an importer config (UI or file-based)
      * into an array where keys are the fields/attributes/properties to update,
      * and values containing the incoming data keys.
+     *
+     * @return array<mixed>
      */
     public static function normalizeMatchCriteriaFromImporterConfig(BaseImporter $importer): array
     {
@@ -46,7 +63,7 @@ class ImportHelper
         // the BaseTransformer::additionalMatchCriteria() values (if custom transformer is specified)
 
         // get the map
-        $map = $importer->map ?? [];
+        $map = $importer->map;
 
         // get the matchCriteria that are coming from the UI or from a file-based config
         $matchCriteria = $importer->matchCriteria ?? [];
@@ -67,6 +84,11 @@ class ImportHelper
         return Arr::undot($dottedMatchCriteria);
     }
 
+    /**
+     * Returns the properties of the importer’s target class that are marked as importable.
+     *
+     * @return list<ImportableProperty>
+     */
     public static function getImportableProperties(BaseImporter $importer): array
     {
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
@@ -99,6 +121,11 @@ class ImportHelper
         }, $properties);
     }
 
+    /**
+     * Returns the importable properties of the importer’s target class that are containers.
+     *
+     * @return list<ImportableProperty>
+     */
     public static function getImportableContainerProperties(BaseImporter $importer): array
     {
         $importableProperties = self::getImportableProperties($importer);
@@ -113,6 +140,11 @@ class ImportHelper
         return $importableContainerProperties;
     }
 
+    /**
+     * Returns the mapping columns for each importable element in the given field layout.
+     *
+     * @return list<array<mixed>>
+     */
     public static function getDestinationColsForFieldLayout(
         ?FieldLayout $fieldLayout,
         ?FieldInterface $ownerField = null,
@@ -137,6 +169,11 @@ class ImportHelper
         return $cols;
     }
 
+    /**
+     * Returns the mapping columns for each importable element in a property’s field layout.
+     *
+     * @return list<array<mixed>>
+     */
     public static function getDestinationColsForProperty(
         BaseImporter $importer,
         string $property,
@@ -184,6 +221,8 @@ class ImportHelper
     /**
      * Recursively checks whether every value in the given array is empty (null or an empty string),
      * treating a nested array as empty only if all of its own values are empty too.
+     *
+     * @param  array<mixed>  $data
      */
     public static function isEmptyImportEntryData(array $data): bool
     {
@@ -204,6 +243,12 @@ class ImportHelper
         return true;
     }
 
+    /**
+     * Returns the input names and handle variants a mapping column uses: for the map, match criteria,
+     * clearable items, the plain handle, the handle as an array, and the keep-missing-nested-elements inputs.
+     *
+     * @return PrefixedHandles
+     */
     public static function getPrefixedHandlesForMapping(
         string $attribute,
         ?FieldInterface $ownerField,
@@ -235,6 +280,10 @@ class ImportHelper
 
     /**
      * Rebuilds raw import data into the shape described by the map.
+     *
+     * @param  array<mixed>  $map
+     * @param  array<mixed>  $data
+     * @return array<mixed>
      */
     public static function remapData(array $map, array $data): array
     {
@@ -244,6 +293,10 @@ class ImportHelper
     /**
      * Maps one level of `$map` against `$currentData`, following each rule and recursing into
      * nested maps or lists.
+     *
+     * @param  array<mixed>  $map
+     * @param  array<mixed>  $rootData
+     * @return MappedNode
      */
     protected static function mapNode(
         array $map,
@@ -330,6 +383,10 @@ class ImportHelper
     /**
      * Works out what raw data a nested rule should read from, and whether it's a list of rows,
      * a type-grouped set, or a single group.
+     *
+     * @param  array<mixed>  $rule
+     * @param  array<mixed>  $rootData
+     * @return MappingSource|null
      */
     protected static function findSourceForRule(
         string $targetKey,
@@ -383,6 +440,9 @@ class ImportHelper
     /**
      * Resolves a dotted `$path` inside `$data` to an array value, or `null` if the path is
      * missing or doesn't resolve to an array.
+     *
+     * @param  array<mixed>  $data
+     * @return MappingSource|null
      */
     protected static function getArrayAtPath(array $data, string $path, string $basePath, string $sourceKey): ?array
     {
@@ -402,6 +462,11 @@ class ImportHelper
     /**
      * Maps a single row of an inline-typed (flat, `type`-per-row) block list, dispatching
      * to only the rule's submap matching the row's own `type` when the rule declares one.
+     *
+     * @param  array<mixed>  $rule
+     * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $row
+     * @return array<mixed>
      */
     protected static function mapRowByOwnType(array $rule, array $rootData, array $row, ?string $basePath): array
     {
@@ -415,6 +480,11 @@ class ImportHelper
     /**
      * Maps a raw value that's grouped by block type (each type holding its own list of rows)
      * into one flat list of mapped rows.
+     *
+     * @param  array<mixed>  $blockTypeMap
+     * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $sourceValue
+     * @return MappedNode
      */
     protected static function mapGroupedBlocksByType(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
     {
@@ -450,6 +520,11 @@ class ImportHelper
 
     /**
      * Maps `$row` against `$typeMap`, tagging the result with its block `$type`.
+     *
+     * @param  array<mixed>  $typeMap
+     * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $row
+     * @return array<mixed>
      */
     protected static function mapRowForType(string $type, array $typeMap, array $rootData, array $row, ?string $basePath): array
     {
@@ -458,6 +533,9 @@ class ImportHelper
 
     /**
      * Reads a single value out of the data for a plain (non-array) rule.
+     *
+     * @param  array<mixed>  $rootData
+     * @return MappedScalar
      */
     protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
     {
@@ -481,6 +559,8 @@ class ImportHelper
     /**
      * Finds the path that all of a rule's leaf values share, so a nested map can be resolved
      * to one source.
+     *
+     * @param  array<mixed>  $map
      */
     protected static function sharedSourcePath(array $map, ?string $currentBasePath): ?string
     {
@@ -490,7 +570,7 @@ class ImportHelper
             return null;
         }
 
-        $common = explode('.', (string) array_shift($paths));
+        $common = explode('.', array_shift($paths));
 
         // Narrow the shared path down to what every leaf path has in common.
         foreach ($paths as $path) {
@@ -520,6 +600,9 @@ class ImportHelper
 
     /**
      * Collects every leaf (string) rule path inside a map, relative to the current base path.
+     *
+     * @param  array<mixed>  $map
+     * @return list<string>
      */
     protected static function collectLeafPaths(array $map, ?string $currentBasePath): array
     {
@@ -544,6 +627,8 @@ class ImportHelper
     /**
      * Checks whether a raw value looks like it's grouped by block type, rather than being a
      * block's own set of fields.
+     *
+     * @param  array<mixed>  $rule
      */
     protected static function blockLooksGroupedByType(array $rule, mixed $sourceValue): bool
     {
@@ -580,6 +665,7 @@ class ImportHelper
     /**
      * Walks a dotted `$path` inside `$data`, returning whether it was found and its value.
      *
+     * @param  array<mixed>  $data
      * @return array{found: bool, value: mixed}
      */
     protected static function findPath(array $data, string $path): array
@@ -617,10 +703,10 @@ class ImportHelper
      * still fall back to a heading that names less of its path, but a heading claimed by a
      * full-path match is never offered as a fallback.
      *
-     * @param  array  $destinationCols  Same shape sent to the mapping screen: a list of column
-     *                                  arrays, `MappingColSet` arrays (`subfields`), or gaps.
-     * @param  array  $sourceDataCols  List of `{label, value}` arrays.
-     * @param  array  $map  The current (possibly partially saved) map tree.
+     * @param  array<mixed>  $destinationCols  Same shape sent to the mapping screen: a list of column arrays, `MappingColSet` arrays (`subfields`), or gaps.
+     * @param  list<array{label: string, value: string}>  $sourceDataCols  List of `{label, value}` arrays.
+     * @param  array<mixed>  $map  The current (possibly partially saved) map tree.
+     * @return array<mixed>
      */
     public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map): array
     {
@@ -652,6 +738,9 @@ class ImportHelper
      * Normalizes a key into the segments it should be auto-matched on. They're lowercased so a
      * heading can be spelled however its author liked — `matrixouter`, `matrix-inner` and
      * `plain-text` all line up with the handles they name.
+     *
+     * @param  string|list<string>  $key
+     * @return list<string>
      */
     private static function matchSegments(string|array $key): array
     {
@@ -671,6 +760,9 @@ class ImportHelper
      * The column has to name the destination's own handle, and everything in front of that has
      * to appear in order — but not necessarily back to back, because a destination path also
      * carries segments the data never does, such as a nested entry's entry type handle.
+     *
+     * @param  list<string>  $destinationSegments
+     * @param  list<string>  $sourceSegments
      */
     private static function matchScore(array $destinationSegments, array $sourceSegments): ?int
     {
@@ -700,6 +792,10 @@ class ImportHelper
     /**
      * Collects every destination leaf that still needs a value, keeping each one's map path
      * alongside the normalized segments it should be matched on.
+     *
+     * @param  array<mixed>  $destinationCols
+     * @param  array<mixed>  $map
+     * @param  list<MappableLeaf>  $leaves
      */
     private static function collectMappableLeaves(array $destinationCols, array $map, array &$leaves): void
     {
@@ -730,6 +826,10 @@ class ImportHelper
     /**
      * Scores each leaf against every incoming column that describes it, then assigns the most
      * specific matches first.
+     *
+     * @param  list<MappableLeaf>  $leaves
+     * @param  list<IncomingCol>  $incomingCols
+     * @param  array<mixed>  $suggestions
      */
     private static function assignSuggestions(array $leaves, array $incomingCols, array &$suggestions): void
     {

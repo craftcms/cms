@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Import\DataTypes;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use Exception;
+use InvalidArgumentException;
 use Override;
 
 class Xml implements DataTypeInterface
@@ -57,11 +58,23 @@ class Xml implements DataTypeInterface
 
     /**
      * Converts an XML string to array via SimpleXML + JSON round-trip, unwrapping the first key if it's itself an array.
+     *
+     * @return array<mixed>
      */
     private static function getData(string $data): array
     {
         $xmlObj = simplexml_load_string($data);
+
+        if ($xmlObj === false) {
+            throw new InvalidArgumentException('The data must be an XML document.');
+        }
+
         $array = JsonHelper::decode(json_encode($xmlObj));
+
+        // an empty root element has no rows to unwrap
+        if (! is_array($array) || $array === []) {
+            return [];
+        }
 
         $firstKey = array_key_first($array);
         if (is_array($array[$firstKey])) {

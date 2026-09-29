@@ -845,6 +845,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
      * The custom field values can be nested under a "fields" key or straight in the top-level array.
      *
      * The value has to be an array; each item in the array represents a field inside this singular nested entry.
+     *
+     * @return array<string, mixed>
      */
     #[Override]
     public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array

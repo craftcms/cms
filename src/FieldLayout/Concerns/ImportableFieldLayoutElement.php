@@ -12,6 +12,8 @@ trait ImportableFieldLayoutElement
 {
     /**
      * @see ImportableFieldLayoutElementInterface::getFieldsForMapping()
+     *
+     * @return array<string, mixed>
      */
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
     {
@@ -27,7 +29,7 @@ trait ImportableFieldLayoutElement
             'prefixedHandle' => $prefixedHandle,
             'prefixedHandleAsArray' => $prefixedHandleAsArray,
             'isContainer' => false,
-            'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
+            'canBeMatchCriteria' => $this->canBeMatchCriteria(),
             'canBeCleared' => $this->canBeCleared(),
         ];
     }

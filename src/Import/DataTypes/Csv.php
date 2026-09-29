@@ -58,6 +58,8 @@ class Csv implements DataTypeInterface
 
     /**
      * Uses PhpSpreadsheet's CSV reader to load the string into a 2D array.
+     *
+     * @return array<int, array<int, mixed>>
      */
     private static function getData(string $data): array
     {

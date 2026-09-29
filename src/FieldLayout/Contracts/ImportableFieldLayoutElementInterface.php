@@ -18,6 +18,8 @@ interface ImportableFieldLayoutElementInterface
      *
      * Additionally, for the CustomField instances,
      * the underlying Field can implement the getFieldsForImportMapping() method to further customise this.
+     *
+     * @return array<mixed>
      */
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array;
 

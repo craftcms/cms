@@ -58,6 +58,12 @@ class ImportEntry extends Import
         ]);
     }
 
+    /**
+     * Returns an array of entry type options for the given section.
+     * Key is the UID, value is the name.
+     *
+     * @return array<string, string>
+     */
     private function entryTypeOptions(?string $section): array
     {
         if ($section === null) {

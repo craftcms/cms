@@ -17,7 +17,7 @@ final readonly class ItemImported
      * Promotes the importer config, imported data, import run ID and the imported element or model into a readonly event payload fired after import.
      *
      * @param  BaseImporter  $importer  The importer config for this event.
-     * @param  array  $data  The imported data.
+     * @param  array<string, mixed>  $data  The imported data.
      * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      * @param  ElementInterface|Model|null  $importedItem  The element or model the data was imported into (also when it was unchanged and not re-saved), if any.
      */

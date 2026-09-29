@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\ImportHelper;
 
 class ElementTransformer extends BaseTransformer
 {
+    /**
+     * @var list<array<string, mixed>>|null The importable property descriptors, resolved on first transform.
+     */
     public ?array $props = null;
 
     /**
@@ -32,6 +35,7 @@ class ElementTransformer extends BaseTransformer
      * Returns the transformed data array, ready to be imported into an Element.
      *
      * @param  mixed  $item  The raw item data to transform.
+     * @return array<string, mixed>
      *
      * @throws \ReflectionException
      */
@@ -107,6 +111,8 @@ class ElementTransformer extends BaseTransformer
 
     /**
      * Looks up a raw property value from the item and calls a `normalize{PropName}()` method if defined on the transformer, else returns the raw or default value.
+     *
+     * @param  array<string, mixed>  $prop
      */
     private function normalizePropertyValue(mixed $item, array $prop, ElementInterface $element): mixed
     {

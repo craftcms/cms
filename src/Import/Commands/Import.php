@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Commands;
 
+use Closure;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Import\Events\ImportStarted;
@@ -59,7 +60,7 @@ abstract class Import extends Command implements PromptsForMissingInput
     public function handle(): int
     {
         $options = form()
-            ->addIf(static::importerClass()::isElementImporter() && ! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
+            ->addIf($this->hasOption('site') && ! $this->input->getOption('site') && Sites::isMultiSite(), fn ($form) => select(
                 label: 'Which site you want to import into?',
                 options: Sites::getAllSites()
                     ->mapWithKeys(fn (Site $site) => [$site->handle => $site->name])
@@ -179,7 +180,7 @@ abstract class Import extends Command implements PromptsForMissingInput
     /**
      * Prompt for missing input arguments using the returned questions.
      *
-     * @return array<string, string>
+     * @return array<string, Closure>
      */
     protected function promptForMissingArgumentsUsing(): array
     {
@@ -196,6 +197,8 @@ abstract class Import extends Command implements PromptsForMissingInput
 
     /**
      * Returns an array of additional options that concrete classes should prompt for if missing.
+     *
+     * @return array<string, array{prompt: Closure, condition?: bool}>
      */
     protected function getAdditionalOptions(): array
     {
@@ -204,6 +207,8 @@ abstract class Import extends Command implements PromptsForMissingInput
 
     /**
      * Strips a leading `=` from a match-criteria string and JSON-decodes it, returning null if not prefixed.
+     *
+     * @return array<string, mixed>|null
      */
     private static function normalizeMatchCriteria(string $matchCriteria): ?array
     {

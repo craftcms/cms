@@ -97,9 +97,7 @@ class ImportPlansController
 
     private function stepTypeLabel(BaseImporter $step): string
     {
-        $type = $step::class ?? null;
-
-        return is_string($type) && class_exists($type) ? $type::displayName() : t('Unknown importer');
+        return $step::displayName();
     }
 
     public function create(): CpScreenResponse
@@ -181,7 +179,7 @@ class ImportPlansController
             )->form(),
             'canMap' => $this->hasDestination($importer) && $sourceError === null,
             // shown under the source field; a step whose source is yet to be entered isn't flagged
-            'sourceError' => ! empty($importer?->source) ? $sourceError : null,
+            'sourceError' => ! empty($importer->source) ? $sourceError : null,
         ]);
     }
 
@@ -381,6 +379,9 @@ class ImportPlansController
 
     /**
      * Returns a tree holding only `$path`'s branch of `$tree`, still rooted at the top level.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
      */
     private static function subtree(array $tree, string $path): array
     {

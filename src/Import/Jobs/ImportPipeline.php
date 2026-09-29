@@ -20,7 +20,7 @@ class ImportPipeline extends Job
     /**
      * Promotes steps, import plan and run ID, then calls the parent constructor.
      *
-     * @param  array  $steps  The steps to run in this pipeline.
+     * @param  array<int, array{name: string, uid: string|null, job: Import}>  $steps  The steps to run in this pipeline.
      * @param  ImportPlanData  $importPlan  The import plan this pipeline belongs to.
      * @param  string  $runId  The unique ID of this import run.
      */

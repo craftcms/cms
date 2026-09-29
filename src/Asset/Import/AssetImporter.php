@@ -160,7 +160,7 @@ class AssetImporter extends ElementImporter
             return false;
         }
 
-        if (static::normalizeVolume($value) === null) {
+        if (self::normalizeVolume($value) === null) {
             $fail($attribute, t('No Volume found for “{volume}”.', [
                 'volume' => $value,
             ]));
@@ -184,6 +184,7 @@ class AssetImporter extends ElementImporter
     #[Override]
     public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
     {
+        /** @var Asset $element */
         $element = parent::prepareNewRootElementForImport($data, $element);
 
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
@@ -210,14 +211,15 @@ class AssetImporter extends ElementImporter
     #[Override]
     public function prepareRootElementImportQuery(ElementInterface $element, ElementQueryInterface $query): ElementQueryInterface
     {
-        /** @var $element Asset */
-        /** @var $query AssetQuery */
+        /** @var Asset $element */
+        /** @var AssetQuery $query */
         return $query->volumeId($element->getVolumeId());
     }
 
     #[Override]
     public function setAttributesForImport(ElementInterface $element, array $attributes): void
     {
+        /** @var Asset $element */
         // ensure we're not changing volume ID compared to what we chose in the field layout provider step
         unset($attributes['volumeId']);
 
@@ -239,6 +241,9 @@ class AssetImporter extends ElementImporter
         } elseif (isset($attributes['filename'])) {
             $attributes['filename'] = AssetsHelper::prepareAssetName($attributes['filename']);
         }
+
+        // this is just a placeholder like in AssetsHelper::tempFilePath()
+        $extension = 'tmp';
 
         // avoid filename conflicts
         if (isset($attributes['filename'])) {
@@ -297,6 +302,11 @@ class AssetImporter extends ElementImporter
         parent::setAttributesForImport($element, $attributes);
     }
 
+    /**
+     * Returns the volumes that can be imported into, as choice options.
+     *
+     * @return list<array{label: string, value: string}>
+     */
     protected function availableVolumes(): array
     {
         return Volumes::getAllVolumes()->map(fn ($volume) => [
