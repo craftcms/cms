@@ -211,7 +211,7 @@
           "
           .disabled="!editable || steps.length < 2"
           :position="getRowPosition(index)"
-          @reorder="
+          @craft-reorder="
             reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
           "
         ></craft-reorder-button>

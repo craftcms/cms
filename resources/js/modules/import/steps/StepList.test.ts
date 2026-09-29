@@ -187,7 +187,9 @@ it('reorders a step when its handle asks to move', async () => {
 
   container
     .querySelector('craft-reorder-button')!
-    .dispatchEvent(new CustomEvent('reorder', {detail: {direction: 'down'}}));
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
+    );
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-2', 'step-1']);
@@ -198,7 +200,9 @@ it('ignores a reorder that would move a step off either end', async () => {
 
   container
     .querySelector('craft-reorder-button')!
-    .dispatchEvent(new CustomEvent('reorder', {detail: {direction: 'up'}}));
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
+    );
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);

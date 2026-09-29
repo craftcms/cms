@@ -68,6 +68,10 @@
     overflow-x: auto;
   }
 
+  .mapping-table :deep(th) {
+    text-align: start;
+  }
+
   .mapping-table__destination {
     width: 20%;
   }

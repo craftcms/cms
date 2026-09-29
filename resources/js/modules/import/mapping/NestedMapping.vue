@@ -10,6 +10,7 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import MappingTable from './MappingTable.vue';
   import {checkedValue, getAt, isChecked, keepFlagPath, setAt} from './paths';
   import {takeNestedMappingContext} from './nested-mapping';
@@ -49,20 +50,22 @@
 </script>
 
 <template>
-  <div>
-    <craft-checkbox
-      v-if="context.col.canKeepMissingNestedElements"
-      :label="
-        t('Keep existing nested elements missing from the imported data.')
-      "
-      .checked="keepMissingChecked"
-      :disabled="!context.editable"
-      @model-value-changed="onKeepMissingChanged"
-    ></craft-checkbox>
+  <CpContainer>
+    <craft-field-group class="py-4">
+      <craft-checkbox
+        v-if="context.col.canKeepMissingNestedElements"
+        :label="
+          t('Keep existing nested elements missing from the imported data.')
+        "
+        .checked="keepMissingChecked"
+        :disabled="!context.editable"
+        @model-value-changed="onKeepMissingChanged"
+      ></craft-checkbox>
 
-    <section v-for="(group, index) in context.groups" :key="index">
-      <h3>{{ group.providerName ?? context.fieldName }}</h3>
-      <MappingTable :cols="group.destinationCols" />
-    </section>
-  </div>
+      <section v-for="(group, index) in context.groups" :key="index">
+        <h3>{{ group.providerName ?? context.fieldName }}</h3>
+        <MappingTable :cols="group.destinationCols" />
+      </section>
+    </craft-field-group>
+  </CpContainer>
 </template>

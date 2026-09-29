@@ -193,6 +193,14 @@ afterEach(() => {
   container.remove();
 });
 
+it('renders the mapping table inside the container field group, like other slideout forms', () => {
+  mount([title]);
+
+  expect(
+    container.querySelector('.cp-container > craft-field-group table')
+  ).not.toBeNull();
+});
+
 it('writes a chosen source column to the destination column’s path', async () => {
   mount([title]);
   await settle();

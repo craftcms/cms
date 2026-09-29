@@ -168,6 +168,16 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+it('renders the form and mapping inside the container field group, like other slideout forms', () => {
+  mount(true);
+
+  const group = container.querySelector('.cp-container > craft-field-group');
+
+  expect(group).not.toBeNull();
+  expect(group!.querySelector('.form-renderer')).not.toBeNull();
+  expect(group!.querySelector('section')).not.toBeNull();
+});
+
 it('hides the mapping section until an importer type is chosen', () => {
   mount(false, null);
 

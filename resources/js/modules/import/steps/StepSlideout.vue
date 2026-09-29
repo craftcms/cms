@@ -11,6 +11,7 @@
   import {computed, onMounted, ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import {useSlideout} from '@/common/slideouts';
@@ -359,40 +360,34 @@
 </script>
 
 <template>
-  <div class="grid gap-6" @focusout="onFocusOut">
-    <FormRenderer
-      ref="renderer"
-      :payload="payload"
-      :errors="formErrors"
-      :refresh="payload.refreshable ? refresh : undefined"
-      @change="onChange"
-    />
+  <CpContainer @focusout="onFocusOut">
+    <craft-field-group class="py-4">
+      <FormRenderer
+        ref="renderer"
+        :payload="payload"
+        :errors="formErrors"
+        :refresh="payload.refreshable ? refresh : undefined"
+        @change="onChange"
+      />
 
-    <craft-spinner v-if="showLoadingType" role="status">
-      {{ t('Loading') }}
-    </craft-spinner>
+      <craft-spinner v-if="showLoadingType" role="status">
+        {{ t('Loading') }}
+      </craft-spinner>
 
-    <section v-if="formType">
-      <h3>{{ t('Mapping') }}</h3>
+      <section v-if="formType">
+        <h3 class="pbe-2">{{ t('Mapping') }}</h3>
 
-      <p>
-        {{
-          mappedCount === 0
-            ? t('Nothing mapped yet.')
-            : t('{count} columns mapped.', {count: mappedCount})
-        }}
-      </p>
+        <craft-button
+          ref="mappingButton"
+          .disabled="!context.editable || !canMap"
+          :loading="openingMapping || checkingMap"
+          @click="editMapping"
+        >
+          {{ t('Edit mapping') }}
+        </craft-button>
 
-      <craft-button
-        ref="mappingButton"
-        .disabled="!context.editable || !canMap"
-        :loading="openingMapping || checkingMap"
-        @click="editMapping"
-      >
-        {{ t('Edit mapping') }}
-      </craft-button>
-
-      <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
-    </section>
-  </div>
+        <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
+      </section>
+    </craft-field-group>
+  </CpContainer>
 </template>

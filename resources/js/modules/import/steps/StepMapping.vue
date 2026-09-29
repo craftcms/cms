@@ -7,6 +7,7 @@
    * leaves the step behind untouched.
    */
   import {t} from '@craftcms/ui';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import MappingTable from '@/modules/import/mapping/MappingTable.vue';
   import {useMappingPanel} from '@/modules/import/mapping/useMappingPanel';
   import {takeStepMappingContext} from './step-mapping';
@@ -31,15 +32,17 @@
 </script>
 
 <template>
-  <div>
-    <p>
-      {{
-        t(
-          'If you see any selections marked in blue, they were auto-selected as closest matches from the incoming data. Change them if they’re not right.'
-        )
-      }}
-    </p>
+  <CpContainer>
+    <craft-field-group class="py-4">
+      <p>
+        {{
+          t(
+            'If you see any selections marked in blue, they were auto-selected as closest matches from the incoming data. Change them if they’re not right.'
+          )
+        }}
+      </p>
 
-    <MappingTable :cols="context.destinationCols" />
-  </div>
+      <MappingTable :cols="context.destinationCols" />
+    </craft-field-group>
+  </CpContainer>
 </template>
