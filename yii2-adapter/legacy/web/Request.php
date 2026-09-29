@@ -1464,7 +1464,9 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             if (!$site && Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
-            return $site;
+            if ($site !== null) {
+                return $site;
+            }
         }
 
         $sites = Sites::getAllSites(false);
