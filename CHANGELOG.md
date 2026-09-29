@@ -14,7 +14,7 @@
 - Fixed a bug where dragged items weren’t getting dropped where expected, if their container had scrolled during the drag operation. ([#19721](https://github.com/craftcms/cms/issues/19721))
 - Fixed a bug where publicly-registered users weren’t getting activated and logged in immediately, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-hq78-cm2m-h24h)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-6m9q-c5q4-3732)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-6m9q-c5q4-3732)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-j2r3-x468-c6j5)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-q2rx-mr36-8rh5)
 
