@@ -216,17 +216,21 @@ readonly class ElementAttributeRenderer
             'rel' => 'noopener',
             'target' => '_blank',
             'title' => t('Visit webpage'),
-            'aria-label' => t('View'),
         ]).
             Html::tag('span', Icons::svg('world'), [
                 'class' => ['cp-icon', 'small', 'inline-flex'],
             ]).
+            Html::tag('span', t('View'), ['class' => 'sr-only']).
+            Html::tag('span', t('Opens in a new window'), ['class' => 'sr-only']).
             Html::endTag('a');
     }
 
     public function uriAttributeHtml(?string $value, ?string $url): string
     {
-        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+        $content = Html::tag('span', $value, ['dir' => 'ltr']).
+            Html::tag('span', t('Opens in a new window'), ['class' => 'sr-only']);
+
+        return Html::a($content, $url, [
             'href' => $url,
             'rel' => 'noopener',
             'target' => '_blank',

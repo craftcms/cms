@@ -197,3 +197,20 @@ it('renders non-homepage uris as breakable text', function () {
         ->toContain('>foo/<wbr>bar<')
         ->not->toContain('<svg');
 });
+
+it('announces that uri links open in a new window', function () {
+    $uriHtml = $this->renderer->uriAttributeHtml('path/to/page', 'https://example.test/path/to/page');
+
+    expect($uriHtml)
+        ->toContain('target="_blank"')
+        ->toContain('<span class="sr-only">Opens in a new window</span></a>');
+});
+
+it('announces that link attribute links open in a new window', function () {
+    $linkHtml = $this->renderer->linkAttributeHtml('https://example.test');
+
+    expect($linkHtml)
+        ->toContain('target="_blank"')
+        ->toContain('<span class="sr-only">View</span><span class="sr-only">Opens in a new window</span></a>')
+        ->not->toContain('aria-label=');
+});
