@@ -87,6 +87,11 @@ readonly class ElementHtml
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
+        // A chip only reserves room for a thumbnail when there's one to show.
+        // `$config['showThumb']` still reaches the reload settings unchanged,
+        // so a chip picks up a thumbnail added after it first rendered.
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : '';
+
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
@@ -95,7 +100,7 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'show-thumb' => $config['showThumb'],
+            'show-thumb' => $thumbHtml !== '',
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
@@ -130,19 +135,8 @@ readonly class ElementHtml
             ]);
         }
 
-        if ($config['showThumb']) {
-            $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
-            if ($component instanceof Thumbable) {
-                $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
-                $html .= $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
-            } else {
-                /** @var Chippable&Iconic $component */
-                $icon = $component->getIcon();
-                if ($icon || $icon === '0') {
-                    $html .= Icon::make()->name($icon)->slot('icon');
-                }
-            }
-            $html .= Html::endTag('div');
+        if ($thumbHtml !== '') {
+            $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
         }
 
         if ($config['selectable']) {
@@ -264,6 +258,24 @@ readonly class ElementHtml
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      */
+    /**
+     * The thumbnail (or, for components without one, the icon) a chip shows,
+     * or an empty string when there's nothing to show.
+     */
+    private function chipThumbHtml(Chippable $component, string $size): string
+    {
+        if ($component instanceof Thumbable) {
+            $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+
+            return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
+        }
+
+        /** @var Chippable&Iconic $component */
+        $icon = $component->getIcon();
+
+        return $icon || $icon === '0' ? (string) Icon::make()->name($icon)->slot('icon') : '';
+    }
+
     /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
     {
