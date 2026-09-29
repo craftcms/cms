@@ -58,7 +58,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Reporting
 
-- End every long run (one that edits files or spans many steps) with three headings: **Blocked on me** (decisions or approvals you need, or "Nothing"), **Changed** (what you changed), **Found** (issues noticed but not acted on).
+- End every long run (one that edits files or spans many steps) with three headings: **Blocked** (decisions or approvals you need, or omit if nothing), **Changed** (what you changed), **Found** (issues noticed but not acted on).
 
 === foundation rules ===
 
