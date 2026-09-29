@@ -277,8 +277,12 @@
             v-for="(column, key) in control.props.columns"
             :key="key"
             scope="col"
+            :class="column.class"
           >
             {{ column.heading ?? column.label }}
+            <craft-info-icon v-if="column.info">{{
+              column.info
+            }}</craft-info-icon>
           </th>
           <th
             v-if="

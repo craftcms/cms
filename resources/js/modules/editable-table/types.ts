@@ -11,6 +11,8 @@ export interface EditableTableColumn {
   type: EditableTableCellType | string;
   class?: string;
   heading?: string;
+  /** Tooltip shown beside the column heading. */
+  info?: string;
   width?: string | number;
   placeholder?: string;
   rows?: number;
