@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
@@ -15,6 +16,10 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Imagick;
+use Intervention\Image\Colors\ColorExtractor;
+use Intervention\Image\Colors\Oklch\Channels\Lightness;
+use Intervention\Image\Colors\Oklch\Colorspace as OklchColorspace;
+use Intervention\Image\Colors\Rgb\Colorspace as RgbColorspace;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
@@ -22,6 +27,7 @@ use Intervention\Image\Exceptions\MissingDependencyException;
 use Intervention\Image\FileExtension;
 use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Interfaces\ColorInterface;
 use Intervention\Image\Interfaces\DriverInterface;
 use Jcupitt\Vips\Image as VipsImage;
 use Throwable;
@@ -31,6 +37,18 @@ use function CraftCms\Cms\maxPowerCaptain;
 #[Singleton]
 class Images
 {
+    /** The longest side, in pixels, images are scaled down to before their dominant color is sampled. */
+    private const int DOMINANT_COLOR_SAMPLE_SIZE = 100;
+
+    /** How many dominant colors are considered when passing over near-black and near-white ones. */
+    private const int DOMINANT_COLOR_CANDIDATES = 5;
+
+    /** Oklch lightness below which a dominant color counts as black. */
+    private const float DOMINANT_COLOR_BLACK_LIGHTNESS = 0.2;
+
+    /** Oklch lightness above which a dominant color counts as white. */
+    private const float DOMINANT_COLOR_WHITE_LIGHTNESS = 0.95;
+
     /** @var string[] */
     private array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
@@ -263,6 +281,58 @@ class Images
         }
 
         return $image;
+    }
+
+    /**
+     * Returns the image's dominant color as a hex string (e.g. `#3a6ea5`), or
+     * `false` if it can't be determined.
+     *
+     * The image is scaled down first, since the colors of a thumbnail are
+     * representative and every pixel of one can be sampled quickly. Its
+     * dominant colors are then clustered by Intervention, and near-black and
+     * near-white ones are passed over in favor of the most dominant other
+     * color, if there is one — a photo on a white backdrop is about what's in
+     * front of it.
+     */
+    public function dominantColor(string $filePath): string|false
+    {
+        if (File::isSvg($filePath) && ! $this->getCanRasterizeSvg()) {
+            return false;
+        }
+
+        try {
+            $image = $this->loadImage($filePath, rasterize: true, svgSize: self::DOMINANT_COLOR_SAMPLE_SIZE);
+            $intervention = $image instanceof Raster ? $image->getInterventionImage() : null;
+
+            if (! $intervention) {
+                return false;
+            }
+
+            $palette = new ColorExtractor(
+                $intervention->scaleDown(self::DOMINANT_COLOR_SAMPLE_SIZE, self::DOMINANT_COLOR_SAMPLE_SIZE),
+            )->dominant(self::DOMINANT_COLOR_CANDIDATES);
+        } catch (Throwable $e) {
+            Log::info("Couldn’t determine the dominant color of $filePath: {$e->getMessage()}");
+
+            return false;
+        }
+
+        $colors = iterator_to_array($palette, false);
+
+        if ($colors === []) {
+            return false;
+        }
+
+        $color = Arr::first($colors, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $colors[0];
+
+        return $color->toColorspace(RgbColorspace::class)->toHex(prefix: true);
+    }
+
+    private function isNearBlackOrWhite(ColorInterface $color): bool
+    {
+        $lightness = $color->toColorspace(OklchColorspace::class)->channel(Lightness::class)->value();
+
+        return $lightness < self::DOMINANT_COLOR_BLACK_LIGHTNESS || $lightness > self::DOMINANT_COLOR_WHITE_LIGHTNESS;
     }
 
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool

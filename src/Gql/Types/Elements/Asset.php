@@ -49,6 +49,11 @@ class Asset extends Element
             return $source->getSrcset($arguments['sizes']);
         }
 
+        // An inconclusive dominant color is as good as an unknown one to API consumers
+        if ($fieldName === 'dominantColor') {
+            return $source->dominantColor ?: null;
+        }
+
         return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 

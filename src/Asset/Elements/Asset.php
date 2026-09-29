@@ -173,6 +173,12 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
+    /**
+     * What's stored in place of a dominant color that couldn't be determined, so the image isn't
+     * sampled again every time it's indexed.
+     */
+    private const string INCONCLUSIVE_DOMINANT_COLOR = '#------';
+
     private static string $_displayName;
 
     /**
@@ -226,6 +232,20 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     public ?int $size = null;
+
+    /**
+     * @var string|false|null The image's dominant color, as a hex string (e.g. `#3a6ea5`), `false` if it couldn't
+     *                        be determined, or `null` if it hasn't been yet
+     *
+     * Determined from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
+     *
+     * @see Images::dominantColor()
+     */
+    #[AllowedInSandbox]
+    public string|false|null $dominantColor = null {
+        // What's stored for an inconclusive color reads as `false`
+        set(string|false|null $value) => $value === self::INCONCLUSIVE_DOMINANT_COLOR ? false : $value;
+    }
 
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
@@ -2484,6 +2504,15 @@ JS, [
         $this->_focalPoint = $value;
     }
 
+    #[Override]
+    public function setAttributesFromRequest(array $values): void
+    {
+        // Determined from the file itself when one comes in, not by whoever's saving.
+        unset($values['dominantColor']);
+
+        parent::setAttributesFromRequest($values);
+    }
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -2599,6 +2628,7 @@ JS, [
                     'data' => [
                         'theme' => 'dark',
                     ],
+                    'style' => $this->previewBackgroundStyle(),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
@@ -2609,6 +2639,34 @@ JS, [
         }
 
         return $html;
+    }
+
+    /**
+     * Tints the space around a letterboxed image with the image's own color.
+     *
+     * The tint is a gradient from 75% to 95% opacity, layered over black
+     * rather than the dark theme's background color, so the color darkens
+     * a little, more toward the top.
+     *
+     * The dominant color is only ever written by the server, but it ends up in
+     * a `style` attribute, so anything that isn't a plain hex color is ignored.
+     *
+     * @return array<string, string>
+     */
+    private function previewBackgroundStyle(): array
+    {
+        if (
+            $this->kind !== FileKind::Image->value ||
+            ! is_string($this->dominantColor) ||
+            ! preg_match('/^#[0-9a-f]{6}$/i', $this->dominantColor)
+        ) {
+            return [];
+        }
+
+        return [
+            'background-color' => '#000',
+            'background-image' => "linear-gradient({$this->dominantColor}bf, {$this->dominantColor}f2)",
+        ];
     }
 
     private function _updatePreviewThumbJs(): string
@@ -2968,6 +3026,10 @@ JS;
                 $model->focalPoint = null;
             }
 
+            $model->dominantColor = $this->dominantColor === false
+                ? self::INCONCLUSIVE_DOMINANT_COLOR
+                : $this->dominantColor;
+
             $model->save();
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
@@ -3276,6 +3338,7 @@ JS;
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
+            $this->dominantColor = null;
         }
 
         // If there was a new file involved, update file data.
@@ -3284,9 +3347,11 @@ JS;
 
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
+                $this->dominantColor = Images::dominantColor($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;
+                $this->dominantColor = null;
             }
 
             $this->size = filesize($tempPath);

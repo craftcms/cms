@@ -94,6 +94,11 @@ class Asset extends Element
                 'type' => Type::listOf(Type::float()),
                 'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
             ],
+            'dominantColor' => [
+                'name' => 'dominantColor',
+                'type' => Type::string(),
+                'description' => 'The image’s dominant color as a hex string (e.g. `#3a6ea5`), or null if it’s not an image or its dominant color isn’t known.',
+            ],
             'kind' => [
                 'name' => 'kind',
                 'type' => Type::nonNull(Type::string()),

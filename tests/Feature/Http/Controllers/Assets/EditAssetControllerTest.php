@@ -130,3 +130,29 @@ it('re-keys rename errors onto the field that posts them', function () {
 it('rejects an id that doesn’t resolve to an asset', function () {
     get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
 });
+
+it('tints the image preview with the image’s dominant color', function () {
+    AssetModel::whereKey($this->asset->id)->update(['dominantColor' => '#3a6ea5']);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains(
+                $html,
+                'background-color: #000; background-image: linear-gradient(#3a6ea5bf, #3a6ea5f2)',
+            ))
+        );
+});
+
+it('leaves the preview background alone without a usable dominant color', function (?string $color) {
+    AssetModel::whereKey($this->asset->id)->update(['dominantColor' => $color]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains($html, 'thumb-container')
+                && ! str_contains($html, 'style='))
+        );
+})->with([
+    'unknown' => [null],
+    'inconclusive' => ['#------'],
+    'not a hex color' => ['red;x'],
+]);
