@@ -12,21 +12,18 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef, watch} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import CpTopBar from '@/common/components/CpTopBar.vue';
-  import FlashMessages from '@/common/components/FlashMessages.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
-  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
-  import {useFlash} from '@/common/composables/useFlash';
   import {useFieldHighlight} from '@/common/composables/useFieldHighlight';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
@@ -193,12 +190,6 @@
     emit('save', options);
   }
 
-  // Announce flash messages to screen readers.
-  const {announce} = useAnnouncer();
-  const {errorFlash, successFlash} = useFlash();
-  watch(successFlash, (newMessage) => announce(newMessage));
-  watch(errorFlash, (newMessage) => announce(newMessage));
-
   useAppendHtml();
 
   // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
@@ -279,7 +270,6 @@
                         </slot>
                       </LayoutSlotOutlet>
                       <CalloutReadOnly v-if="readOnly" />
-                      <FlashMessages />
                       <div
                         :class="{
                           'cp-content-view': true,

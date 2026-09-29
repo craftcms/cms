@@ -1,7 +1,7 @@
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {getElementLevelDelta, moveElement} from '@actions/StructuresController';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import {
   getCoreRowModel,
   type RowSelectionState,
@@ -228,7 +228,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     structureView.toggle(id);
   }
 
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   function hasActiveFilter(): boolean {
     const rules = elementIndex.currentCondition?.conditionRules;
@@ -328,8 +328,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       }
 
       if (exceeds) {
-        flash(
-          'error',
+        messages.error(
           t('This structure only allows {max} levels.', {
             max: structure.maxLevels,
           })
@@ -343,14 +342,13 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
         parentId: placement.parentId,
       });
     } catch (error: any) {
-      flash(
-        'error',
+      messages.error(
         error?.response?.data?.message ?? t('Couldn’t save the new position.')
       );
       return;
     }
 
-    flash('success', t('New position saved.'));
+    messages.success(t('New position saved.'));
 
     if (
       placement.newParentId !== undefined &&

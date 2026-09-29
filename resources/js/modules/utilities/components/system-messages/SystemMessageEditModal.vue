@@ -8,7 +8,7 @@
     store,
   } from '@actions/Utilities/SystemMessagesController';
   import type {SelectOption} from '@/common/types';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
 
@@ -36,7 +36,7 @@
     ): void;
   }>();
 
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   const feedback = ref<{
     icon?: string;
     variant: string;
@@ -111,7 +111,7 @@
         });
 
         if (closeOnSuccess) {
-          flash('success', t('Message saved.'), {duration: -1});
+          messages.success(t('Message saved.'));
           emit('close');
         } else {
           feedback.value = {

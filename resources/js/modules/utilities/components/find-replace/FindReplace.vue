@@ -4,6 +4,7 @@
   import {useForm} from '@inertiajs/vue3';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import InlineFlash from '@/common/components/InlineFlash.vue';
+  import {messageTargetHeaders} from '@/modules/messages';
 
   const form = useForm({
     find: '',
@@ -13,6 +14,7 @@
   function submit() {
     form.clearErrors();
     form.submit(findAndReplaceController(), {
+      headers: messageTargetHeaders('find-replace'),
       onSuccess: () => {
         form.reset();
       },
@@ -41,7 +43,7 @@
         <craft-button type="submit" :loading="form.processing" variant="accent">
           {{ t('Find and Replace') }}
         </craft-button>
-        <InlineFlash :is-active="form.recentlySuccessful" />
+        <InlineFlash target="find-replace" :busy="form.processing" />
       </div>
     </div>
   </form>
