@@ -70,6 +70,12 @@
     emit('reorder', next);
   }
 
+  function setSortDirection(direction: 'asc' | 'desc') {
+    if (!props.sortDirectionLocked) {
+      sortDirection.value = direction;
+    }
+  }
+
   function closePopover(event: MouseEvent) {
     if (event.currentTarget instanceof HTMLElement) {
       event.currentTarget.dispatchEvent(
@@ -98,28 +104,28 @@
             v-model="sortField"
             :options="sortOptions"
           />
-          <craft-button-group
-            @change="
-              (event: CustomEvent) => (sortDirection = event.detail.value)
-            "
-          >
+          <craft-button-group>
             <craft-button
               type="button"
               icon="asc"
               value="asc"
               :aria-label="t('Sort ascending')"
+              :aria-pressed="sortDirection === 'asc'"
               :variant="ButtonVariant.Fill"
               .active="sortDirection === 'asc'"
               .disabled="sortDirectionLocked"
+              @click="setSortDirection('asc')"
             ></craft-button>
             <craft-button
               type="button"
               icon="desc"
               value="desc"
               :aria-label="t('Sort descending')"
+              :aria-pressed="sortDirection === 'desc'"
               :variant="ButtonVariant.Fill"
               .active="sortDirection === 'desc'"
               .disabled="sortDirectionLocked"
+              @click="setSortDirection('desc')"
             ></craft-button>
           </craft-button-group>
         </div>
