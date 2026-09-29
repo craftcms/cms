@@ -64,7 +64,7 @@
         id="sidebar-toggle"
         type="button"
         size="small"
-        icon="x"
+        icon="xmark-large"
         :variant="ButtonVariant.Plain"
         @click="toggleSidebar"
         :aria-label="t('Toggle menu')"
@@ -109,7 +109,12 @@
   }
 
   .cp-sidebar[data-mode='docked'] {
-    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+    height: calc(
+      100dvh - var(--cp-top-bar-visible-height, 0px) - var(
+          --cp-debug-bar-height,
+          0px
+        )
+    );
     max-height: 100%;
     transform: none;
     position: sticky;

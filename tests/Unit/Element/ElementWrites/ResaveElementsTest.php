@@ -122,7 +122,7 @@ it('rethrows save errors when continueOnError is disabled', function () {
     Event::assertNotDispatched(ElementsResaved::class);
 });
 
-it('wraps revision skips with a fallback label when no UI label exists', function () {
+it('skips revisions with a fallback label when no UI label exists', function () {
     $element = new TestResaveElement(['id' => 42]);
     $element->revision = true;
     $query = mockResaveQuery([$element]);
@@ -137,7 +137,7 @@ it('wraps revision skips with a fallback label when no UI label exists', functio
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $element &&
         $event->position === 1 &&
         $event->exception instanceof InvalidElementException &&
-        $event->exception->getMessage() === "Skipped resaving test element 42 due to an error obtaining its root element: Skipped resaving test element 42 because it's a revision.");
+        $event->exception->getMessage() === "Skipped resaving test element 42 because it's a revision.");
 });
 
 it('wraps root lookup errors with the element UI label', function () {

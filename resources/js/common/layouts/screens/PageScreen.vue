@@ -15,6 +15,8 @@
   import {computed, provide, useTemplateRef, watch} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
+  import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
+  import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
@@ -169,6 +171,19 @@
       subnav.value.length > 0
   );
 
+  // The top bar scrolls away with the page, so the sidebar and the details
+  // pane are only as tall as the viewport below whatever's still showing of it.
+  const topBar = useTemplateRef<{$el: HTMLElement}>('topBar');
+  const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
+  // The details pane and the sidebar both stop short of Laravel Debugbar.
+  const debugBarHeight = useDebugBarHeight();
+  const pageScreenStyle = computed(() => ({
+    '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    ...(debugBarHeight.value === null
+      ? {}
+      : {'--cp-debug-bar-height': `${debugBarHeight.value}px`}),
+  }));
+
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
   const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
@@ -213,8 +228,13 @@
   />
   <div
     :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+    :style="pageScreenStyle"
   >
-    <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
+    <CpTopBar
+      ref="topBar"
+      :crumbs="crumbs"
+      :has-context-menu="hasContextMenu"
+    />
     <div class="cp">
       <div class="cp__sidebar">
         <!-- No props: the sidebar reads the shared store directly, and renders
@@ -377,7 +397,7 @@
                       </div>
                     </div>
                     <aside v-show="hasDetails" class="cp-content__details">
-                      <div class="sticky top-0 h-screen">
+                      <div class="cp-content__details-pane">
                         <ContentDetails
                           ref="detailsColumn"
                           :resizer="detailsResizer"
@@ -570,6 +590,15 @@ Content
     justify-self: stretch;
   }
 
+  .cp-content__details-pane {
+    position: sticky;
+    inset-block-start: 0;
+    height: calc(
+      100dvh - var(--cp-top-bar-visible-height, 0px) -
+        var(--cp-debug-bar-height, 0px)
+    );
+  }
+
   .cp-content__footer {
     display: grid;
     align-content: center;
@@ -638,6 +667,10 @@ Content
 Content view
  */
   .cp-content-view {
+    /* Lets what's inside (e.g. the element index toolbar) respond to the room
+       the content actually has, rather than the viewport. */
+    container: cp-content-view / inline-size;
+
     @media (width >= var(--breakpoint-md)) {
       /* The content's half of the fold sum above. */
       min-width: calc(600rem / 16);

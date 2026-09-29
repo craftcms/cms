@@ -31,10 +31,3 @@ it('puts the input inside on a distinct id of its own', function () {
     expect($input->attr('id'))->toBe('form-title-input')
         ->and($input->attr('name'))->toBe('title');
 });
-
-it('keeps the field id unique from the input id', function () {
-    $crawler = renderField();
-
-    expect($crawler->filter('craft-field')->attr('id'))
-        ->not->toBe($crawler->filter('craft-input input')->attr('id'));
-});

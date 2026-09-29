@@ -3,6 +3,7 @@ import {inputStyles} from '@src/styles/form.styles';
 import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
 import {css} from 'lit';
 import {property} from 'lit/decorators.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A group of radios sharing one name, for a choice where exactly one
@@ -20,9 +21,8 @@ import {property} from 'lit/decorators.js';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages for the group as a whole.
  */
-export default class CraftRadioGroup extends SsrChoiceGroupMixin(
-  LionRadioGroup,
-  'radio'
+export default class CraftRadioGroup extends HasLabel(
+  SsrChoiceGroupMixin(LionRadioGroup, 'radio')
 ) {
   /**
    * Lays the options out as a row of tiles rather than a stacked list, for

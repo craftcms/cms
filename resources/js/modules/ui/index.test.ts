@@ -29,7 +29,7 @@ it('renders a legacy chromeless button without a fill', async () => {
   await import('./index');
 
   const button = window.Craft.ui.createButton({
-    icon: 'xmark',
+    icon: 'xmark-large',
     label: 'Cancel',
     class: 'chromeless notification-close-btn',
   })[0];

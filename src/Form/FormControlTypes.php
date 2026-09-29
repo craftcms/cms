@@ -27,9 +27,10 @@ use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
 use CraftCms\Cms\Form\Controls\Markdown;
-use CraftCms\Cms\Form\Controls\Matrix;
 use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
+use CraftCms\Cms\Form\Controls\NestedElementCards;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
@@ -73,9 +74,10 @@ class FormControlTypes extends TypeRegistry
         Lightswitch::class,
         Link::class,
         Markdown::class,
-        Matrix::class,
         Missing::class,
         Money::class,
+        NestedElementBlocks::class,
+        NestedElementCards::class,
         Number::class,
         PermissionTree::class,
         Range::class,

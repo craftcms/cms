@@ -861,7 +861,7 @@ class Workflows
                     WorkflowActivityType::Submit => 'clipboard-list-check',
                     WorkflowActivityType::Comment => 'comment',
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => 'check',
-                    WorkflowActivityType::Reject, WorkflowActivityType::StageFailed => 'xmark',
+                    WorkflowActivityType::Reject, WorkflowActivityType::StageFailed => 'xmark-large',
                     WorkflowActivityType::RequestReview, WorkflowActivityType::Restart => 'rotate',
                     default => 'rotate',
                 },

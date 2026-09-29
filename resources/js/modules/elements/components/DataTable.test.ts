@@ -96,6 +96,41 @@ describe('DataTable', () => {
     expect(selected(root)).toHaveLength(rows(root).length);
   });
 
+  it("labels each row's checkbox with that row's own title, Untitled included", () => {
+    const {root} = mount({
+      table: createSampleTable({
+        data: [
+          {
+            id: 1,
+            title: 'Welcome to Craft 6',
+            status: 'live',
+            section: 'Blog',
+            postDate: '2026-07-06',
+            label: 'Welcome to Craft 6',
+          },
+          {
+            id: 2,
+            title: '',
+            status: 'live',
+            section: 'Blog',
+            postDate: '2026-07-05',
+            label: 'Untitled entry',
+          },
+        ],
+      }),
+    });
+
+    const labels = rows(root).map(
+      (row) =>
+        row.querySelector('craft-checkbox label[slot="label"]')?.textContent
+    );
+
+    expect(labels).toEqual([
+      'Select Welcome to Craft 6',
+      'Select Untitled entry',
+    ]);
+  });
+
   it('leads structure rows with the toggle, then the handle, then the checkbox', () => {
     const {root} = mount({structure: true, reorderable: true});
 

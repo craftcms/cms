@@ -55,6 +55,23 @@
   // One site is no choice at all, so the menu only earns its place from two.
   const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
 
+  const visibleSortOptions = computed(() => {
+    const options = props.sortOptions.filter(
+      (option) => option.value !== 'score'
+    );
+
+    return search.value
+      ? [
+          {label: t('Score'), value: 'score', defaultDir: 'desc' as const},
+          ...options,
+        ]
+      : options;
+  });
+
+  const sortDirectionLocked = computed(() =>
+    ['score', 'sortOrder'].includes(sortField.value)
+  );
+
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
@@ -122,7 +139,10 @@
               v-if="search"
               @click="search = ''"
             >
-              <craft-icon name="x" :label="t('Clear search')"></craft-icon>
+              <craft-icon
+                name="xmark-large"
+                :label="t('Clear search')"
+              ></craft-icon>
             </craft-button>
             <craft-button
               type="button"
@@ -171,7 +191,8 @@
 
           <IndexViewSettings
             :options="columnOptions"
-            :sort-options="sortOptions"
+            :sort-options="visibleSortOptions"
+            :sort-direction-locked="sortDirectionLocked"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
@@ -198,17 +219,21 @@
     grid-template-columns: repeat(3, auto);
     grid-template-areas: 'status state state' 'filter filter filter' 'actions actions actions';
 
-    @media screen and (min-width: 480px) {
+    @container cp-content-view (width >= 480px) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas: 'status filter state' 'actions actions actions';
     }
 
-    @media (width >= var(--breakpoint-sm)) {
+    @container cp-content-view (width >= var(--breakpoint-sm)) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'status filter state actions';
     }
+  }
+
+  .element-toolbar :first-child {
+    grid-column-start: status-start;
   }
 
   /* Site and status share a cell rather than the grid gaining a column, so

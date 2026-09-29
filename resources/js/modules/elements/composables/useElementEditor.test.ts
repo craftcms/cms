@@ -7,7 +7,16 @@ import {
   shallowReactive,
 } from 'vue';
 import {router} from '@inertiajs/vue3';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import axios from 'axios';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import {
   ScreenPagePropsKey,
   type ScreenPageProps,
@@ -20,6 +29,15 @@ import type {FormPayload} from '@/modules/forms/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+
+  return {promise, resolve};
+}
 
 // Only the action client is stubbed; `t()` and the rest of the package are the
 // real thing, the way the composable sees them at runtime.
@@ -145,7 +163,8 @@ describe('useElementEditor', () => {
    */
   function mount(
     screenProps: Partial<ElementEditPayload>,
-    slideout: ReturnType<typeof slideoutController> | null = null
+    slideout: ReturnType<typeof slideoutController> | null = null,
+    options: Parameters<typeof useElementEditor>[0] = {}
   ) {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
     // `props` as a computed, and the slideout store's panels are `reactive()`.
@@ -157,7 +176,7 @@ describe('useElementEditor', () => {
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
-        editor = useElementEditor();
+        editor = useElementEditor(options);
 
         return () =>
           h('div', [
@@ -322,6 +341,38 @@ describe('useElementEditor', () => {
     };
   }
 
+  function cardsLayout(): FormPayload {
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Cards', instructions: null, required: false},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
+            component: 'craft:nested-element-cards',
+            props: {
+              viewMode: 'cards',
+              manager: null,
+              cards: [],
+              unavailableMessage: null,
+            },
+            path: ['fields', 'matrixField'],
+            mode: 'editable',
+            deltaGroup: ['fields', 'matrixField'],
+            forms: [],
+            omitNullValue: true,
+          },
+        },
+      ],
+      values: {fields: {matrixField: null}},
+      errors: [],
+      globalErrors: [],
+    };
+  }
+
   /** The rendered Title input. */
   function titleInput(): HTMLInputElement {
     return container!.querySelector<HTMLInputElement>('input[name="title"]')!;
@@ -401,6 +452,226 @@ describe('useElementEditor', () => {
     expect(slugInput.value).toBe('first-article');
 
     vi.useRealTimers();
+  });
+
+  it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
+    const {editor} = mount(
+      payload({
+        canAutosave: false,
+        form: fieldLayout('Original title'),
+      })
+    );
+
+    await typeTitle('Edited title');
+    postSpy.mockResolvedValue({
+      data: {form: fieldLayout('Server title')},
+    });
+
+    await editor.refreshForm();
+
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]?.[0]).toContain(
+      '/elements/update-field-layout'
+    );
+    expect(postSpy.mock.calls[0]?.[1]).toMatchObject({
+      elementType: 'craft\\elements\\Entry',
+      elementId: 12,
+      draftId: null,
+      siteId: 1,
+      title: 'Edited title',
+    });
+    expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('canonicalId');
+    expect(titleInput().value).toBe('Edited title');
+  });
+
+  it('doesn’t report its own nested changes as someone else’s edit', async () => {
+    let serverStamp = 1;
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('update-field-layout')
+        ? {
+            data: {
+              form: fieldLayout('Original title'),
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              activity: [],
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const {editor} = mount(
+      payload({
+        activityUrl: '/actions/elements/recent-activity',
+        updatedTimestamps: {element: 1, canonical: 1},
+        form: fieldLayout('Original title'),
+      })
+    );
+    await editor.activity.poll();
+
+    // Saving a nested element into the element bumps its `dateUpdated`.
+    serverStamp = 2;
+    await editor.refreshAfterNestedChange();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+
+    // Something that changes it afterwards is still someone else's edit.
+    serverStamp = 3;
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(true);
+  });
+
+  it('omits presentation-only null controls when refreshing an untouched form', async () => {
+    const form = cardsLayout();
+    const {editor} = mount(payload({canAutosave: false, form}));
+    await nextTick();
+    postSpy.mockResolvedValue({data: {form}});
+
+    await editor.refreshForm();
+
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('fields');
+  });
+
+  it('keeps the latest field-layout refresh when responses arrive out of order', async () => {
+    const first = deferred<{data: {form: FormPayload}}>();
+    const second = deferred<{data: {form: FormPayload}}>();
+    postSpy
+      .mockImplementationOnce(() => first.promise)
+      .mockImplementationOnce(() => second.promise);
+    const {editor} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+
+    const firstRefresh = editor.refreshForm();
+    const secondRefresh = editor.refreshForm();
+    second.resolve({data: {form: fieldLayout('Latest title')}});
+    await secondRefresh;
+    await nextTick();
+
+    first.resolve({data: {form: fieldLayout('Stale title')}});
+    await firstRefresh;
+    await nextTick();
+
+    expect(editor.formPayload.value?.values).toEqual({title: 'Latest title'});
+  });
+
+  it('ignores a refresh that predates an authoritative page payload', async () => {
+    const refresh = deferred<{data: {form: FormPayload}}>();
+    postSpy.mockImplementationOnce(() => refresh.promise);
+    const {editor, page} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+
+    const pendingRefresh = editor.refreshForm();
+    page.props = payload({
+      canAutosave: false,
+      form: fieldLayout('Saved title'),
+    });
+    await nextTick();
+
+    refresh.resolve({data: {form: fieldLayout('Stale title')}});
+    await pendingRefresh;
+    await nextTick();
+
+    expect(editor.formPayload.value?.values).toEqual({title: 'Saved title'});
+  });
+
+  it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    mount(payload({draftId: 7}), slideout);
+    await nextTick();
+
+    for (const data of [
+      {canonicalId: 12, draftId: 8},
+      {canonicalId: 13, draftId: 7},
+    ]) {
+      broadcaster.dispatchEvent(
+        new MessageEvent('message', {
+          data: {event: 'reorderNestedElements', ...data},
+        })
+      );
+    }
+    expect(slideout.reload).not.toHaveBeenCalled();
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    expect(slideout.reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+
+  it('defers a matching reorder reload while a slideout has unsaved changes', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        canAutosave: false,
+        draftId: 7,
+        form: fieldLayout('Original title'),
+      }),
+      slideout
+    );
+    await typeTitle('Unsaved title');
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    await nextTick();
+
+    expect(slideout.reload).not.toHaveBeenCalled();
+    expect(editor.form.isDirty).toBe(true);
+    expect(titleInput().value).toBe('Unsaved title');
+    vi.unstubAllGlobals();
+  });
+
+  it('defers a matching reorder reload until the latest autosave is acknowledged', async () => {
+    const broadcaster = new EventTarget();
+    vi.stubGlobal('Craft', {broadcaster});
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        form: fieldLayout('Original title'),
+      }),
+      slideout
+    );
+
+    await typeTitle('First saved title');
+    await editor.autosave.save();
+    await typeTitle('Pending title');
+
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {
+        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
+      })
+    );
+    await nextTick();
+
+    expect(editor.autosave.status.value).toBe('saved');
+    expect(editor.autosave.hasPendingChanges.value).toBe(true);
+    expect(slideout.reload).not.toHaveBeenCalled();
+    expect(titleInput().value).toBe('Pending title');
+
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(editor.autosave.hasPendingChanges.value).toBe(false);
+    expect(slideout.reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
   });
 
   it('reads the panel’s own props inside a slideout, not the page behind it', () => {
@@ -1140,5 +1411,171 @@ describe('useElementEditor', () => {
     editor.onSidebarMutation({slug: 'changed'});
 
     expect(schedule).toHaveBeenCalledTimes(2);
+  });
+
+  describe('nested elements in a slideout', () => {
+    const nestedContext = {fieldId: 3, ownerId: 40};
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
+
+    function stubSaveRequest(response: () => Promise<unknown>) {
+      return vi.spyOn(axios, 'request').mockImplementation(response as never);
+    }
+
+    /** A panel whose opener registered `onSaved`, as every opener here does. */
+    function handledSlideout() {
+      const slideout = slideoutController();
+      slideout.saved.mockReturnValue(true);
+
+      return slideout;
+    }
+
+    it('sends the owner it was opened through with every draft save', async () => {
+      const {editor} = mount(
+        payload({canAutosave: true, nestedContext, fresh: true}),
+        slideoutController()
+      );
+
+      await editor.autosave.save();
+
+      expect(postSpy.mock.calls[0]![1]).toMatchObject({
+        fieldId: 3,
+        ownerId: 40,
+        fresh: 1,
+      });
+    });
+
+    it('reports autosaved drafts to the opener', async () => {
+      const slideout = slideoutController();
+      const {editor} = mount(payload({canAutosave: true}), slideout);
+
+      await editor.autosave.save();
+
+      expect(slideout.saved).toHaveBeenCalledWith({
+        draft: true,
+        data: {draftId: 7},
+      });
+    });
+
+    it('saves into the owner draft the opener prepares, then closes', async () => {
+      const slideout = handledSlideout();
+      const prepareNestedOwner = vi.fn().mockResolvedValue(73);
+      Object.assign(slideout.instance, {prepareNestedOwner});
+      const request = stubSaveRequest(() =>
+        Promise.resolve({data: {element: {id: 12}}})
+      );
+      const {editor} = mount(
+        payload({
+          canAutosave: true,
+          nestedContext,
+          saveForDerivativeUrl:
+            '/actions/elements/save-nested-element-for-derivative',
+        }),
+        slideout
+      );
+
+      editor.save({redirect: false});
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(prepareNestedOwner).toHaveBeenCalledOnce();
+      // The nested element has no draft yet, so one is made to move.
+      expect(postSpy).toHaveBeenCalledOnce();
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/elements/save-nested-element-for-derivative',
+        data: expect.objectContaining({
+          newOwnerId: 73,
+          draftId: 7,
+          fieldId: 3,
+          ownerId: 40,
+        }),
+      });
+      await vi.waitFor(() =>
+        expect(slideout.close).toHaveBeenCalledWith({force: true})
+      );
+    });
+
+    it('saves normally when the opener has no owner draft to save into', async () => {
+      const slideout = handledSlideout();
+      Object.assign(slideout.instance, {
+        prepareNestedOwner: vi.fn().mockResolvedValue(undefined),
+      });
+      const request = stubSaveRequest(() => Promise.resolve({data: {}}));
+      const {editor} = mount(payload({nestedContext}), slideout);
+
+      editor.save();
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/entries/save-entry',
+        data: expect.not.objectContaining({newOwnerId: expect.anything()}),
+      });
+    });
+
+    it('announces invalid nested elements when a save fails', async () => {
+      const displayError = vi.fn();
+      vi.stubGlobal('Craft', {cp: {displayError}});
+      const root = document.createElement('div');
+      document.body.append(root);
+      const listener = vi.fn();
+      root.addEventListener('craft:nested-validation', listener);
+      // A plain stand-in rather than a spy: a spy tracks the rejected promise
+      // it returns, and reports that as unhandled.
+      const request = axios.request;
+      axios.request = (() =>
+        Promise.reject(
+          new axios.AxiosError('Bad Request', '400', undefined, undefined, {
+            status: 400,
+            data: {
+              message: 'Couldn’t save entry.',
+              errors: {title: ['Title cannot be blank.']},
+              invalidNestedElementIds: [5],
+            },
+          } as never)
+        )) as never;
+      onTestFinished(() => {
+        axios.request = request;
+      });
+      const {editor} = mount(payload(), handledSlideout(), {
+        root: () => root,
+      });
+
+      editor.save();
+
+      await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+      expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+        ids: [5],
+      });
+      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      root.remove();
+    });
+
+    it('announces a finished save to the rest of the CP', async () => {
+      const displaySuccess = vi.fn();
+      const postMessage = vi.fn();
+      const refresh = vi.fn();
+      vi.stubGlobal('Craft', {
+        cp: {displaySuccess},
+        broadcaster: {
+          postMessage,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        },
+        Preview: {refresh},
+      });
+      stubSaveRequest(() =>
+        Promise.resolve({data: {message: 'Entry saved.', element: {id: 12}}})
+      );
+      const {editor} = mount(payload(), handledSlideout());
+
+      editor.save();
+
+      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
+      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      expect(postMessage).toHaveBeenCalledWith({event: 'saveElement', id: 12});
+      expect(refresh).toHaveBeenCalled();
+    });
   });
 });

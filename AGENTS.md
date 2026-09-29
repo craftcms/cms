@@ -50,7 +50,17 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Regression tests
 
-- After a bug fix or behavior change is verified working, propose adding a test that covers it — don't leave that as an unprompted afterthought.
+- Apply the `test-audit` authoring gate after a bug fix or behavior change. Add a
+  regression test only when it closes a genuine behavior-coverage gap, and
+  demonstrate that it fails on the pre-fix code for the intended reason.
+
+## Working through tasks
+
+- When a step doesn't need my input, keep going. Put status notes in the same message as your next action. Stop and ask only when you can't continue without me, or before anything destructive.
+
+## Reporting
+
+- End every long run (one that edits files or spans many steps) with three headings: **Blocked** (decisions or approvals you need, or omit if nothing), **Changed** (what you changed), **Found** (issues noticed but not acted on).
 
 === foundation rules ===
 

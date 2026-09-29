@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -46,12 +47,6 @@ describe('creationOptions', function () {
 
         postJson(action([PasskeysController::class, 'creationOptions']))
             ->assertStatus(423);
-    });
-
-    it('returns passkey creation options', function () {
-        postJson(action([PasskeysController::class, 'creationOptions']))
-            ->assertOk()
-            ->assertJsonStructure(['options']);
     });
 
     it('returns WebAuthn options with required fields', function () {
@@ -108,13 +103,27 @@ describe('delete', function () {
             ->assertJsonValidationErrorFor('uid');
     });
 
-    it('returns a success message', function () {
-        // This test would need a real passkey to delete; for now we just verify
-        // the response shape when the passkey doesn't exist.
+    it('deletes the current user’s passkey', function () {
+        $passkey = WebAuthn::factory()->create(['userId' => User::findOne()->id]);
+        $otherPasskey = WebAuthn::factory()->create();
+
         postJson(action([PasskeysController::class, 'delete']), [
-            'uid' => 'non-existent-uid',
+            'uid' => $passkey->uid,
         ])
             ->assertOk()
-            ->assertJsonStructure(['message']);
+            ->assertJson(['message' => t('Passkey deleted.')]);
+
+        expect(WebAuthn::whereKey($passkey->id)->exists())->toBeFalse()
+            ->and(WebAuthn::whereKey($otherPasskey->id)->exists())->toBeTrue();
+    });
+
+    it('does not delete another user’s passkey', function () {
+        $otherPasskey = WebAuthn::factory()->create();
+
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => $otherPasskey->uid,
+        ])->assertOk();
+
+        expect(WebAuthn::whereKey($otherPasskey->id)->exists())->toBeTrue();
     });
 });

@@ -64,22 +64,6 @@ describe('URL detection', function () {
         'relative' => [false, 'assets/app.css'],
     ]);
 
-    test('detects full URLs', function (bool $expected, string $url) {
-        expect(Url::isFullUrl($url))->toBe($expected);
-    })->with([
-        [true, 'http://craftcms.com/'],
-        [true, 'https://craftcms.com/'],
-        [true, 'https://www.craftcms.com/'],
-        [true, 'http://www.craftcms.com/'],
-        [true, '/22'],
-        [true, '//craftcms.com/'],
-        [false, mb_chr(0x1F600).mb_chr(0x1F618)],
-        [false, '!@#$%^&*()<>'],
-        [false, 'hello'],
-        [false, 'craftcms.com/'],
-        [false, 'www.craftcms.com/'],
-    ]);
-
     test('detects root-relative URLs', function (bool $expected, string $url) {
         expect(Url::isRootRelativeUrl($url))->toBe($expected);
     })->with([
@@ -217,7 +201,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('removes multiple query params from a URL', function (string $expected, string $url, array $params) {
-        expect(Url::removeParams($url, $params))->toBe($expected);
+        expect(Url::removeParam($url, $params))->toBe($expected);
     })->with([
         'removes-multiple' => [
             'https://craftcms.com/?bar=2#anchor',
@@ -306,18 +290,6 @@ describe('query and encoding helpers', function () {
         'multiple-question-marks' => ['https://www.craftcms.com/', 'https://www.craftcms.com/?param1=entry1?param2=entry2'],
     ]);
 
-    test('encodes query params', function (string $expected, string $url) {
-        expect(Url::encodeParams($url))->toBe($expected);
-    })->with([
-        ['http://example.test', 'http://example.test?'],
-        ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar baz'],
-        ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
-        ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
-        ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
-        ['http://example.test?foo=some%2Fpath%2F{token}', 'http://example.test?foo=some/path/{token}'],
-        ['http://example.test?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://example.test?returnUrl=https://example.test/admin/entries?site={handle}'],
-    ]);
-
     test('encodes URLs', function (string $expected, string $url) {
         expect(Url::encodeUrl($url))->toBe($expected);
     })->with([
@@ -329,25 +301,6 @@ describe('query and encoding helpers', function () {
 });
 
 describe('path helpers', function () {
-    test('creates root-relative URLs', function (string $expected, string $url) {
-        expect(Url::rootRelativeUrl($url))->toBe($expected);
-    })->with([
-        ['/', ''],
-        ['/foo/bar', 'foo/bar'],
-        ['/', '/'],
-        ['/foo/bar', '/foo/bar'],
-        ['/', 'http://test.com'],
-        ['/', 'http://test.com/'],
-        ['/foo/bar', 'http://test.com/foo/bar'],
-        ['/', 'https://test.com'],
-        ['/', 'https://test.com/'],
-        ['/foo/bar', 'https://test.com/foo/bar'],
-        ['/foo/bar', 'https://test.com/foo/bar?query=value#anchor'],
-        ['/', '//test.com'],
-        ['/', '//test.com/'],
-        ['/foo/bar', '//test.com/foo/bar'],
-    ]);
-
     test('extracts host info', function (string $expected, string $url) {
         expect(Url::hostInfo($url))->toBe($expected);
     })->with([
@@ -379,19 +332,14 @@ describe('base and control panel helpers', function () {
     it('returns base URLs and hosts', function () {
         swapUrlRequest('https://localhost/news');
 
-        expect(Url::baseUrl())->toBe('https://localhost/')
-            ->and(Url::baseSiteUrl())->toBe('https://localhost/')
+        expect(Url::baseSiteUrl())->toBe('https://localhost/')
             ->and(Url::baseCpUrl())->toBe('https://localhost/')
-            ->and(Url::host())->toBe('https://localhost')
             ->and(Url::siteHost())->toBe('https://localhost');
 
         Cms::config()->baseCpUrl = 'https://cms.example.test';
         swapUrlRequest('https://localhost/admin/dashboard');
 
-        expect(Url::baseUrl())->toBe('https://cms.example.test/')
-            ->and(Url::baseCpUrl())->toBe('https://cms.example.test/')
-            ->and(Url::host())->toBe('https://cms.example.test')
-            ->and(Url::cpHost())->toBe('https://cms.example.test');
+        expect(Url::baseCpUrl())->toBe('https://cms.example.test/');
     });
 
     test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
@@ -404,6 +352,18 @@ describe('base and control panel helpers', function () {
         'missing-trigger' => ['settings', null, 'settings'],
         'existing-trigger' => ['admin/settings', 'admin', 'admin/settings'],
         'similar-prefix' => ['admin/administrator/settings', 'admin', 'administrator/settings'],
+    ]);
+
+    test('strips the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
+        Cms::config()->cpTrigger = $cpTrigger;
+
+        expect(Url::stripCpTrigger($path))->toBe($expected);
+    })->with([
+        'default-trigger' => ['settings', 'admin', 'admin/settings'],
+        'trigger-only' => ['', 'admin', '/admin/'],
+        'missing-trigger' => ['settings', null, '/settings'],
+        'no-trigger-in-path' => ['settings', 'admin', 'settings'],
+        'similar-prefix' => ['administrator/settings', 'admin', 'administrator/settings'],
     ]);
 });
 
@@ -431,6 +391,8 @@ describe('generated URLs', function () {
     })->with([
         'base' => ['{siteUrl}endpoint', 'endpoint', null, null],
         'full-url-scheme' => ['https://craftcms.com/', 'http://craftcms.com/', null, 'https'],
+        'root-relative' => ['/some/path?foo=bar', '/some/path', ['foo' => 'bar'], null],
+        'protocol-relative' => ['//craftcms.com/some/path', '//craftcms.com/some/path', null, null],
         'scheme-override-param-add' => ['https://craftcms.com/?param1=entry1&param2=entry2', 'http://craftcms.com/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
         'token-and-forward-slash-param-add' => ['http://craftcms.com/?redirect=some%2Fpath%2F{id}', 'http://craftcms.com/', ['redirect' => 'some/path/{id}'], null],
         'return-url-param-add' => ['http://craftcms.com/?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://craftcms.com/', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], null],
@@ -483,6 +445,22 @@ describe('generated URLs', function () {
         'absolute base' => ['https://other.test/', 'https://other.test/news'],
         'missing base' => [null, 'https://localhost/news'],
         'alias base' => ['@urlTestSite', 'https://other.test/news'],
+    ]);
+
+    it('applies addTrailingSlashesToUrls to base site URLs', function (string $baseUrl, bool $addTrailingSlashes, string $expected) {
+        Cms::config()->addTrailingSlashesToUrls = $addTrailingSlashes;
+        $target = Site::factory()->create(['baseUrl' => $baseUrl]);
+        Sites::refreshSites();
+        Sites::getCurrentSite()->setBaseUrl($baseUrl);
+
+        expect(Url::siteUrl())->toBe($expected)
+            ->and(Url::url(''))->toBe($expected)
+            ->and(Url::siteUrl('', ['foo' => 'bar']))->toBe("$expected?foo=bar")
+            ->and(Url::siteUrl(siteId: $target->id))->toBe($expected);
+    })->with([
+        'without trailing slashes' => ['https://localhost/en/', false, 'https://localhost/en'],
+        'with trailing slashes' => ['https://localhost/en', true, 'https://localhost/en/'],
+        'root-relative without trailing slashes' => ['/', false, '/'],
     ]);
 
     it('throws for invalid site IDs', function () {

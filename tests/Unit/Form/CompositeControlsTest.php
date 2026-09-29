@@ -25,6 +25,7 @@ function compositeControlsForm(): Form
                 ->rows(6)
                 ->placeholder('Write <Markdown>')
                 ->toolbarButtons(['bold', 'link'])
+                ->showStats()
                 ->textExpanderTriggers([
                     ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'options' => [
                         ['label' => 'Ada Lovelace', 'value' => '@ada'],
@@ -99,6 +100,7 @@ it('resolves documented composite Control shapes and properties', function () {
         'rows' => 6,
         'placeholder' => 'Write <Markdown>',
         'toolbarButtons' => ['bold', 'link'],
+        'showStats' => true,
         'textExpanderTriggers' => [
             ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'options' => [
                 ['label' => 'Ada Lovelace', 'value' => '@ada'],
@@ -120,7 +122,7 @@ it('resolves documented composite Control shapes and properties', function () {
 
 it('renders composite Controls with nested submission names and escaped values', function () {
     $crawler = compositeControlsCrawler();
-    $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html]');
+    $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html][show-stats]');
     $textExpander = $crawler->filter('craft-text-expander');
 
     expect($markdown)->toHaveCount(1)

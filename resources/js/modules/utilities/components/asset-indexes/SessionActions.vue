@@ -44,7 +44,7 @@
       :loading="isStopping"
       @click="handleStop(sessionId)"
     >
-      <craft-icon name="x" slot="prefix"></craft-icon>
+      <craft-icon name="xmark-large" slot="prefix"></craft-icon>
       {{ t('Discard') }}
     </craft-button>
   </div>

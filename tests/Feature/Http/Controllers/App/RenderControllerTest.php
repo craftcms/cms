@@ -11,7 +11,6 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -262,13 +261,11 @@ test('render markdown sanitizes preview html when requested', function () {
     ]);
 });
 
-test('render markdown matches the markdown service output', function () {
-    $markdown = "## Heading\n\n| A | B |\n| - | - |\n| 1 | 2 |";
-
+test('render markdown renders GFM tables', function () {
     postJson(action([RenderController::class, 'markdown']), [
-        'markdown' => $markdown,
+        'markdown' => "## Heading\n\n| A | B |\n| - | - |\n| 1 | 2 |",
         'flavor' => MarkdownService::FLAVOR_GFM,
     ])->assertExactJson([
-        'html' => Markdown::parse($markdown, MarkdownService::FLAVOR_GFM),
+        'html' => "<h2>Heading</h2>\n<table>\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>\n",
     ]);
 });

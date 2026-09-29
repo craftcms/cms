@@ -47,7 +47,11 @@ test('index cards include the server-rendered nested actions', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('users/Addresses')
-            ->where('data.elements.0.cardActionsHtml', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action'))
+            ->where('data.elements.0.cardActionsHtml', function (string $html): bool {
+                $html = html_entity_decode($html);
+
+                return str_contains($html, 'elements/duplicate') && str_contains($html, 'nested-elements/delete');
+            })
             ->where('contentFragment.html', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action')));
 });
 

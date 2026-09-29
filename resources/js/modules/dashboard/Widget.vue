@@ -151,7 +151,7 @@
             v-if="widget.settingsForm"
             slot="actions"
             type="button"
-            icon="x"
+            icon="xmark-large"
             size="small"
             variant="plain"
             :aria-label="t('Cancel')"

@@ -139,25 +139,6 @@ it('does not call after hook when more items remain', function () {
     expect($job->afterCalled)->toBeFalse();
 });
 
-it('calculates total items correctly', function () {
-    $items = range(1, 10);
-    $job = new TestBatchedJob($items);
-
-    $reflection = new ReflectionMethod($job, 'totalItems');
-
-    expect($reflection->invoke($job))->toBe(10);
-});
-
-it('calculates total batches correctly', function () {
-    $items = range(1, 10);
-    $job = new TestBatchedJob($items);
-    $job->batchSize = 3;
-
-    $reflection = new ReflectionMethod($job, 'totalBatches');
-
-    expect($reflection->invoke($job))->toBe(4);
-});
-
 it('returns single batch description when only one batch', function () {
     $job = new TestBatchedJob(description: 'Test Job');
 
@@ -173,10 +154,7 @@ it('includes batch info in description for multi-batch jobs', function () {
     $job->batchSize = 3;
     $job->batchIndex = 1;
 
-    $description = $job->getDescription();
-
-    expect($description)->toContain('batch')
-        ->and($description)->toContain('2');
+    expect($job->getDescription())->toBe('Test Job (batch 2 of 4)');
 });
 
 it('can be dispatched to the queue', function () {

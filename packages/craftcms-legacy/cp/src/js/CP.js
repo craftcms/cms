@@ -2158,7 +2158,7 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
 
   createCloseButton() {
     return Craft.ui.createButton({
-      icon: 'xmark',
+      icon: 'xmark-large',
       label: Craft.t('app', 'Cancel'),
       class: 'chromeless notification-close-btn',
     });

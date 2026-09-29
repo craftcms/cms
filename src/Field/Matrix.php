@@ -42,7 +42,8 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
+use CraftCms\Cms\Form\Controls\NestedElementCards;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -552,6 +553,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function formControl(FieldContext $context): Control
     {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
+            return $this->nestedElementCardsControl($context);
+        }
+
         $entryTypes = collect($this->getEntryTypes())
             ->mapWithKeys(fn (EntryType $type): array => [$type->handle => [
                 'label' => t($type->name, category: 'site'),
@@ -592,12 +597,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
-                new FormContext,
+                new FormContext(mode: $context->mode === ControlMode::Editable ? $context->form->mode : $context->mode),
             );
             $sortOrder[] = $uid;
         }
 
-        return MatrixControl::make($context->path)
+        return NestedElementBlocks::make($context->path)
             ->entryTypes($entryTypes)
             ->elementType(Entry::class)
             ->blocks($blocks)
@@ -698,7 +703,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * and so the permission checks stay on the server. Behavior travels with each
      * item as a declarative `action` descriptor — the instance-local ones as a
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
-     * the invoking element (see `resources/js/modules/forms/MatrixControl.vue`).
+     * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
      *
      * @return list<array<string, mixed>>
      */
@@ -818,7 +823,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         // Shown only once there's something on the clipboard that fits, which
-        // only the browser knows — see `MatrixControl.vue`.
+        // only the browser knows — see `NestedElementBlocksControl.vue`.
         $items[] = [
             'icon' => 'duplicate',
             'color' => Color::Fuchsia,
@@ -1155,10 +1160,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
-        // The Form's Matrix control renders blocks whatever the view mode (see
-        // `formControl()`), and this menu only reaches that control, so it
-        // always offers the block items.
-        $items = $this->maxEntries !== 1 ? $this->blockViewActionMenuItems($context->element) : [];
+        $items = match (true) {
+            $this->maxEntries === 1 => [],
+            in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID]) => [$this->cardsCopyAction()],
+            default => $this->blockViewActionMenuItems($context->element),
+        };
 
         $parentItems = parent::fieldLayoutActionMenuItems($context);
 
@@ -1171,6 +1177,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         return [...$items, ...$parentItems];
+    }
+
+    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false,action:array<string,mixed>} */
+    private function cardsCopyAction(): array
+    {
+        return $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            '.nested-element-cards .elements > li > .element[data-copyable], [data-nested-id] > craft-card[data-copyable]',
+        );
     }
 
     /** @return list<array<string,mixed>> */
@@ -1195,7 +1210,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
             'type' => $type,
         ]), hidden: false);
-        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
+        $items[] = $this->selectionAction('deselect', 'xmark-large', t('Deselect all {type}', [
             'type' => $type,
         ]));
         $items[] = ['type' => 'hr'];
@@ -1466,8 +1481,43 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
+    /** The Cards and Cards Grid view modes manage their entries outside the owner form. */
+    private function nestedElementCardsControl(FieldContext $context): NestedElementCards
+    {
+        $owner = $context->element;
+        $editable = $context->mode === ControlMode::Editable
+            && $context->form->mode === ControlMode::Editable
+            && ! ($owner?->getIsRevision() ?? false);
+        $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
+        $control = NestedElementCards::make($context->path)
+            ->viewMode($this->viewMode)
+            ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => Entry::pluralDisplayName(),
+                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
+            ]));
+
+        $data = $this->entryManager()->getCardsData($owner, $config);
+
+        return $control
+            ->manager($data === null ? null : Arr::except($data, ['elements']))
+            ->cards($data['elements'] ?? []);
+    }
+
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
     private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
+    {
+        $config = $this->nestedElementManagerConfig($value, $owner, $static);
+
+        return $this->viewMode === self::VIEW_MODE_INDEX
+            ? $this->entryManager()->getIndexHtml($owner, $config)
+            : $this->entryManager()->getCardsHtml($owner, $config);
+    }
+
+    /**
+     * @param  EntryQuery<Entry>|ElementCollection<int,Entry>|null  $value
+     * @return array<string, mixed>
+     */
+    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
     {
         if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
             if ($owner?->hasEagerLoadedElements($this->handle)) {
@@ -1491,7 +1541,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $config = [
             'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
+            'nestedActionEvents' => true,
             'prevalidate' => false,
+            'static' => $static,
         ];
 
         if (! $static) {
@@ -1521,16 +1573,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'maxElements' => $this->maxEntries,
             ];
 
-            if ($owner->errors()->has($this->handle)) {
+            if ($owner?->errors()->has($this->handle)) {
                 $config['prevalidate'] = true;
             }
         }
 
-        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
-            return $this->entryManager()->getCardsHtml($owner, $config);
+        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
+            return $config;
         }
 
-        $config += [
+        return $config + [
             'allowedViewModes' => array_filter([
                 ElementIndexViewMode::Cards,
                 $this->includeTableView ? ElementIndexViewMode::Table : null,
@@ -1548,8 +1600,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        return $this->entryManager()->getIndexHtml($owner, $config);
     }
 
     private function createButtonLabel(): string

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
@@ -13,7 +14,7 @@ use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -129,12 +130,6 @@ describe('getAltActions', function () {
 });
 
 describe('getActionMenuItems', function () {
-    test('returns array of menu items', function () {
-        $items = $this->entry->getActionMenuItems();
-
-        expect($items)->toBeArray();
-    });
-
     test('includes destructive items with destructive flag', function () {
         $items = $this->entry->getActionMenuItems();
 
@@ -425,19 +420,19 @@ describe('getMetadata', function () {
     });
 });
 
-describe('prepareEditScreen', function () {
-    test('can be called without errors', function () {
-        $response = new CpScreenResponse;
-        $containerId = 'test-container-id';
-
-        expect(fn () => $this->entry->prepareEditScreen($response, $containerId))
-            ->not->toThrow(Exception::class);
-    });
-});
-
 describe('getCrumbs', function () {
-    test('returns array', function () {
-        expect($this->entry->getCrumbs())->toBeArray();
+    test('leads from the entries index to the entry’s section', function () {
+        $section = $this->entry->getSection();
+
+        $crumbs = array_map(
+            fn (ActionItem $crumb) => [$crumb->label, $crumb->href],
+            $this->entry->getCrumbs(),
+        );
+
+        expect($crumbs)->toBe([
+            ['Entries', Url::cpUrl('content/entries')],
+            [$section->name, Url::cpUrl("content/entries/{$section->handle}")],
+        ]);
     });
 });
 

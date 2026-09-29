@@ -69,3 +69,37 @@ it('blocks both moves for an only child', async () => {
 
   expect(reordered).not.toHaveBeenCalled();
 });
+
+it('lists moves after the reorder actions and reports the chosen one', async () => {
+  const button = document.createElement(
+    'craft-reorder-button'
+  ) as CraftReorderButton;
+  document.body.append(button);
+  await button.updateComplete;
+
+  expect(button.shadowRoot?.querySelector('hr')).toBeNull();
+
+  const moved = vi.fn();
+  button.addEventListener('craft-move', moved);
+  button.moves = [
+    {value: 'blog', label: 'Move to Blog'},
+    {value: 'news', label: 'Move to News', icon: 'newspaper'},
+  ];
+  await button.updateComplete;
+
+  const items = [
+    ...(button.shadowRoot?.querySelectorAll('craft-action-item') ?? []),
+  ];
+  const labels = items.map((item) => item.textContent?.trim());
+
+  expect(labels.slice(-2)).toEqual(['Move to Blog', 'Move to News']);
+
+  items.at(-1)!.click();
+
+  expect(moved).toHaveBeenCalledOnce();
+  expect(moved.mock.calls[0]![0]).toMatchObject({
+    bubbles: true,
+    composed: true,
+    detail: {value: 'news'},
+  });
+});

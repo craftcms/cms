@@ -66,7 +66,18 @@ test('install validates edition', function () {
 });
 
 test('install returns success message on successful installation', function () {
-    postJson(action([PluginsController::class, 'install'], ['test-plugin']))->assertOk();
+    $plugins = app(Plugins::class);
+    $plugins->enablePlugin('test-plugin');
+    $plugins->uninstallPlugin('test-plugin');
+
+    expect($plugins->isPluginInstalled('test-plugin'))->toBeFalse();
+
+    postJson(action([PluginsController::class, 'install'], ['test-plugin']))
+        ->assertOk()
+        ->assertJsonPath('message', 'Plugin installed.');
+
+    expect($plugins->isPluginInstalled('test-plugin'))->toBeTrue()
+        ->and($plugins->isPluginEnabled('test-plugin'))->toBeTrue();
 });
 
 test('missing component actions target plugin CP routes', function (string $action, string $label) {

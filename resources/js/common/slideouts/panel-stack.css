@@ -15,13 +15,10 @@
      than removed on close, so it must not swallow clicks in between —
      removing it on a `transitionend` that may never fire would. */
   pointer-events: none;
-  /* One below `.slideout-container` / `.slideout-panel`, which both sit at
-     100. The Vue stack teleports its panels into `<body>` and the legacy
-     stack appends its own, so their relative DOM order isn't something this
-     module can rely on to keep the shade underneath — the z-index does it
-     instead. Nothing else in the CP occupies 99 but tooltips, which belong
-     under the shade anyway. */
-  z-index: var(--c-layer-shade);
+  /* Level with `.slideout-container` / `.slideout-panel`: `panel-stack.ts`
+     moves the shade to just before the top panel, so DOM order puts it over
+     every panel but that one. */
+  z-index: var(--c-layer-overlay);
 }
 
 .cp-slideout-shade.is-visible {

@@ -44,12 +44,7 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    $entry = new Entry;
-    $user = createEntryTestUser([]);
-
-    $result = Gate::forUser($user)->allows('view', $entry);
-
-    expect($result)->toBeBool();
+    expect(Gate::getPolicyFor(Entry::class))->toBeInstanceOf(EntryPolicy::class);
 });
 
 it('returns false without section for view', function () {

@@ -28,7 +28,10 @@ it('selects thumbnail modes for each relationship presentation', function (strin
 
     expect($element[$key])->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
     if ($key === 'cardThumbHtml') {
-        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail');
+        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail')
+            ->and($element)->not->toHaveKey('thumbHtml');
+    } else {
+        expect($element)->not->toHaveKeys(['cardHeaderHtml', 'cardContentHtml', 'cardThumbHtml']);
     }
 })->with([
     'list' => ['list', 'thumbHtml', 'fit', 30],
@@ -180,3 +183,13 @@ it('renders a scalar element selection without changing list selection semantics
         ->and($crawler->filter('craft-field > [slot="input"] craft-entry-select-input'))->toHaveCount(1)
         ->and($crawler->filter("craft-chip input[name=\"{$name}\"]")->attr('value'))->toBe((string) $entry->id);
 })->with([false, true]);
+
+it('gives each chip its element’s edit screen', function () {
+    $asset = AssetModel::factory()->createElement();
+
+    $element = ElementSelect::make('related')->elementType($asset::class)
+        ->props([$asset->id])['elements'][0];
+
+    expect($element['cpEditUrl'])->toBe($asset->getCpEditUrl())
+        ->and($element['cpEditUrl'])->not->toBeNull();
+});

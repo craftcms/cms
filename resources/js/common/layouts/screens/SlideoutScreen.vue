@@ -413,7 +413,7 @@
               @click="close"
               data-slideout-close
             >
-              <craft-icon name="xmark" :label="t('Close')"></craft-icon>
+              <craft-icon name="xmark-large" :label="t('Close')"></craft-icon>
             </craft-button>
           </div>
         </div>
@@ -614,29 +614,23 @@
   }
 
   /* Wide enough to seat the column in the flow beside the content. */
-  @container slideout (width >= 960px) {
+  @container slideout (width > 700px) {
+    /* Sized by its panels plus the rail, so closing it hands the room back. */
     .slideout-screen__details {
       --cp-details-overlay: 0;
 
-      flex: 0 1 calc(350rem / 16);
-      min-inline-size: calc(300rem / 16);
-
-      /* Closed, it hands the track back — the floor included, or the rail
-         would keep reserving it. */
-      &:has(craft-tabs[collapsed]) {
-        flex: 0 0 auto;
-        min-inline-size: 0;
-      }
+      flex: 0 0 auto;
     }
 
     /* Room of its own, so the panels stay in the flow. */
     .slideout-screen__details :deep(craft-tabs::part(panels)) {
       position: static;
-      inline-size: auto;
+      inline-size: calc(350rem / 16);
       min-inline-size: 0;
       max-inline-size: none;
       overflow: visible;
       border-inline-start: 0;
+      box-shadow: none;
     }
   }
 

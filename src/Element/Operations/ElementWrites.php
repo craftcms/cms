@@ -225,11 +225,13 @@ readonly class ElementWrites
                             $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s',
                                 $element::lowerDisplayName(), $element->id);
                             try {
-                                if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
-                                }
+                                $isRevision = ElementHelper::isRevision($element);
                             } catch (Throwable $rootException) {
                                 throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: ".$rootException->getMessage());
+                            }
+
+                            if ($isRevision) {
+                                throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
                             }
                         }
 
@@ -707,10 +709,13 @@ readonly class ElementWrites
                 // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
                 // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
                 // something changed, even if this nested element was saved independently of its owner.
+                // Unpublished drafts are canonical too, but they aren't part of their owner's content until
+                // they're published — which touches the owners then.
                 if (
                     ! $element->propagating &&
                     $element instanceof NestedElementInterface &&
                     $element->getIsCanonical() &&
+                    ! $element->getIsDraft() &&
                     isset($element->touchOwnersOnSave) &&
                     $element->touchOwnersOnSave
                 ) {

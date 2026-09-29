@@ -10,6 +10,7 @@ import '../option/option.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 export interface ComboboxOptionData {
   /** Extra text matched against the query, in addition to label/value. */
@@ -77,7 +78,7 @@ interface VisibleEntry {
  * it. Prefer the native events above: they are the contract this package
  * supports, and they carry the component as `event.target`.
  */
-export default class CraftCombobox extends LionCombobox {
+export default class CraftCombobox extends HasLabel(LionCombobox) {
   /** Lets the combobox post its value with its form, through `ElementInternals`. */
   static formAssociated = true;
 
@@ -652,7 +653,10 @@ export default class CraftCombobox extends LionCombobox {
                 @mousedown=${(e: Event) => e.preventDefault()}
                 @click=${this.#clear}
               >
-                <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+                <craft-icon
+                  name="xmark-large"
+                  style="font-size: 0.8em"
+                ></craft-icon>
               </craft-button>`
             : nothing}
           <craft-icon

@@ -3,11 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\UnionType;
 
 beforeEach(function () {
     app(Gql::class)->flushCaches();
@@ -66,12 +71,21 @@ it('reports query permissions for common schema scopes', function () {
         ->and(GqlHelper::canQueryAssets())->toBeFalse();
 });
 
-it('creates union types and full-access schemas', function () {
-    $unionType = GqlHelper::getUnionType('SomeUnion', ['one', 'two'], fn () => 'one');
-    $schema = GqlHelper::createFullAccessSchema();
+it('creates and registers union types that resolve elements by their GraphQL type name', function () {
+    $entryType = EntryType::factory()->create(['handle' => 'article']);
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    EntryTypes::refreshEntryTypes();
+    $entry = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
 
-    expect($unionType)->toBeInstanceOf(UnionType::class)
-        ->and($schema->scope)->not->toBeEmpty();
+    $articleType = new ObjectType(['name' => 'article_Entry', 'fields' => ['id' => Type::id()]]);
+    $pageType = new ObjectType(['name' => 'page_Entry', 'fields' => ['id' => Type::id()]]);
+
+    $unionType = GqlHelper::getUnionType('SomeUnion', [$articleType, $pageType]);
+
+    expect($unionType->name)->toBe('SomeUnion')
+        ->and($unionType->getTypes())->toBe([$articleType, $pageType])
+        ->and($unionType->resolveType($entry, null, Mockery::mock(ResolveInfo::class)))->toBe('article_Entry')
+        ->and(GqlHelper::getUnionType('SomeUnion', [$pageType]))->toBe($unionType);
 });
 
 it('wraps gql types in non-null wrappers', function () {

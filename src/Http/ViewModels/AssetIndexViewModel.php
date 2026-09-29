@@ -228,7 +228,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
                 $crumb['attrs'] = [
                     'data-current-folder-id' => (string) $folder->id,
                 ];
-                $crumb['actions'] = $this->currentFolderActions($folder, $info);
+                $crumb['items'] = $this->currentFolderActions($folder, $info);
             }
 
             $crumbs[] = $crumb;

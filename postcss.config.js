@@ -2,8 +2,8 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 
 /**
- * A media query can't read a custom property, so `var(--breakpoint-*)` inside
- * one is substituted here instead, from the same declarations the stylesheets
+ * A media or container query can't read a custom property, so
+ * `var(--breakpoint-*)` inside one is substituted here instead, from the same declarations the stylesheets
  * publish and `useCpBreakpoints` reads. Authoring stays plain CSS an editor can
  * parse, and the widths have one home.
  */
@@ -34,6 +34,28 @@ function breakpoints() {
   return widths;
 }
 
+function resolveBreakpoints(rule) {
+  if (!rule.params.includes('--breakpoint-')) {
+    return;
+  }
+
+  rule.params = rule.params.replace(BREAKPOINT, (match, name) => {
+    const width = breakpoints().get(name);
+
+    if (!width) {
+      throw rule.error(`Unknown breakpoint \`${name}\`.`);
+    }
+
+    return width;
+  });
+
+  if (rule.params.includes('--breakpoint-')) {
+    throw rule.error(
+      `Couldn't resolve every breakpoint in \`@${rule.name} ${rule.params}\`.`
+    );
+  }
+}
+
 const breakpointVars = {
   postcssPlugin: 'craft-breakpoint-vars',
   Once: (_root, {result}) => {
@@ -45,27 +67,8 @@ const breakpointVars = {
     });
   },
   AtRule: {
-    media: (rule) => {
-      if (!rule.params.includes('--breakpoint-')) {
-        return;
-      }
-
-      rule.params = rule.params.replace(BREAKPOINT, (match, name) => {
-        const width = breakpoints().get(name);
-
-        if (!width) {
-          throw rule.error(`Unknown breakpoint \`${name}\`.`);
-        }
-
-        return width;
-      });
-
-      if (rule.params.includes('--breakpoint-')) {
-        throw rule.error(
-          `Couldn't resolve every breakpoint in \`@media ${rule.params}\`.`
-        );
-      }
-    },
+    media: resolveBreakpoints,
+    container: resolveBreakpoints,
   },
 };
 

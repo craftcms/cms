@@ -97,6 +97,23 @@ readonly class MenuHtml
         return $items->values()->all();
     }
 
+    /**
+     * Whether an action belongs in a chip or card, as opposed to the component's
+     * own editor.
+     *
+     * Every non-destructive action is shown by default; an item opts in or out
+     * explicitly with `showInChips`. Destructive ones are held back because the
+     * screen around them owns a different destructive action — a relation
+     * field's Remove detaches the element rather than deleting it — and the two
+     * sitting together invites picking the wrong one.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    public function showsInChips(array $item): bool
+    {
+        return (bool) ($item['showInChips'] ?? ! ($item['destructive'] ?? false));
+    }
+
     /** @param array<string, mixed> $config */
     public function menuItem(array $config, string $menuId): string
     {

@@ -2068,7 +2068,7 @@ JS, [
                     return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
                         'label' => t('Two-Step Verification'),
-                        'icon' => $enabled ? 'check' : 'xmark',
+                        'icon' => $enabled ? 'check' : 'xmark-large',
                     ]);
                 }
                 if (! $enabled) {
@@ -2091,7 +2091,7 @@ JS, [
                     return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $value ? Color::Teal : Color::Gray,
                         'label' => t('Credentialed'),
-                        'icon' => $value ? 'check' : 'xmark',
+                        'icon' => $value ? 'check' : 'xmark-large',
                     ]);
                 }
         }

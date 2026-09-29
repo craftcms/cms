@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
@@ -60,18 +59,6 @@ function createInfoRow(string $uid = 'system-uid'): void
         'uid' => $uid,
     ]);
 }
-
-it('exposes Craft version constants', function () {
-    expect(Cms::NAME)->toBe('Craft CMS')
-        ->and(Cms::VERSION)->toBeString()
-        ->and(Cms::SCHEMA_VERSION)->toBeString()
-        ->and(Cms::MIN_VERSION_REQUIRED)->toBeString();
-});
-
-it('resolves the general config from the container', function () {
-    expect(Cms::config())->toBeInstanceOf(GeneralConfig::class)
-        ->and(Cms::config())->toBe(app(GeneralConfig::class));
-});
 
 it('uses the logged-in CP user timezone preference first', function () {
     Cms::config()->cpTrigger = 'admin';

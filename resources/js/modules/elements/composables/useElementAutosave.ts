@@ -30,6 +30,11 @@ export interface ElementAutosaveOptions {
   isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
   enabled: boolean;
+  /**
+   * Extra params sent with every save, such as a nested element's owner, which
+   * the server needs to resolve it through the owner it's being edited in.
+   */
+  params?: () => FormValues;
   /** How long to wait after the last edit before saving, per change kind. */
   debounceMs?: Partial<Record<FormChangeKind, number>>;
   /**
@@ -38,10 +43,13 @@ export interface ElementAutosaveOptions {
    * upstream edits has to re-baseline against these or it will report this
    * write as someone else's.
    */
-  onSaved?: (timestamps: {
-    element: number | null;
-    canonical: number | null;
-  }) => void;
+  onSaved?: (
+    timestamps: {
+      element: number | null;
+      canonical: number | null;
+    },
+    response: FormValues
+  ) => void;
 }
 
 export interface ElementAutosaveDependencies {
@@ -88,6 +96,11 @@ export function useElementAutosave<T extends object>(
   const formPayload = computed(() => saved.value.form);
   const screenPayload = computed(() => saved.value.screen);
   const modified = computed(() => saved.value.modified);
+  const changeGeneration = ref(0);
+  const acknowledgedGeneration = ref(0);
+  const hasPendingChanges = computed(
+    () => acknowledgedGeneration.value < changeGeneration.value
+  );
 
   let inFlight: Promise<void> | null = null;
   let pending = false;
@@ -95,6 +108,7 @@ export function useElementAutosave<T extends object>(
   let cancelled = false;
 
   async function send(): Promise<void> {
+    const savingGeneration = changeGeneration.value;
     status.value = 'saving';
     error.value = null;
     httpStatus.value = null;
@@ -105,6 +119,7 @@ export function useElementAutosave<T extends object>(
       elementType: options.elementType,
       elementId: options.elementId,
       siteId: options.siteId,
+      ...options.params?.(),
     };
     Object.assign(payload, form.data());
 
@@ -140,11 +155,18 @@ export function useElementAutosave<T extends object>(
         modified: data.modifiedAttributes ?? [],
       };
       status.value = 'saved';
+      acknowledgedGeneration.value = Math.max(
+        acknowledgedGeneration.value,
+        savingGeneration
+      );
 
-      options.onSaved?.({
-        element: data.updatedTimestamp ?? null,
-        canonical: data.canonicalUpdatedTimestamp ?? null,
-      });
+      options.onSaved?.(
+        {
+          element: data.updatedTimestamp ?? null,
+          canonical: data.canonicalUpdatedTimestamp ?? null,
+        },
+        data
+      );
     } catch (e) {
       // Our own abort, not a failure.
       if (cancelled) {
@@ -228,6 +250,7 @@ export function useElementAutosave<T extends object>(
     }
 
     delay.value = delays[kind];
+    changeGeneration.value++;
     armed = true;
     void debounced();
   }
@@ -264,6 +287,10 @@ export function useElementAutosave<T extends object>(
     saved.value = {form: null, screen: null, modified: []};
   }
 
+  function acknowledgeChanges(): void {
+    acknowledgedGeneration.value = changeGeneration.value;
+  }
+
   /**
    * Abandons the in-flight save and any queued follow-up — the one coalesced
    * behind a request already out, and the one a keystroke armed but whose
@@ -288,6 +315,7 @@ export function useElementAutosave<T extends object>(
     error: readonly(error),
     httpStatus: readonly(httpStatus),
     modified,
+    hasPendingChanges,
     form: formPayload,
     screen: screenPayload,
     save,
@@ -296,5 +324,6 @@ export function useElementAutosave<T extends object>(
     suspend,
     setDraftId,
     clearSaved,
+    acknowledgeChanges,
   };
 }

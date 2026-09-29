@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
@@ -196,4 +198,40 @@ it('bumps every ancestor’s dateUpdated when a doubly-nested Matrix block is sa
         ->one();
     expect($revisionInnerBlockEntry)->not->toBeNull()
         ->and($revisionInnerBlockEntry->getFieldValue('blockText'))->toBe('updated content');
+});
+
+it('leaves the owner’s dateUpdated alone when an unpublished nested draft is saved', function () {
+    $blockEntryType = EntryTypeModel::factory()->create(['handle' => 'unpublishedBlock', 'hasTitleField' => true]);
+    EntryTypes::refreshEntryTypes();
+
+    $matrixField = Field::factory()->create([
+        'handle' => 'unpublishedMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockEntryType->id]],
+    ]);
+    Fields::refreshFields();
+
+    $ownerEntryType = EntryTypeModel::factory()->withField($matrixField)->create(['handle' => 'unpublishedOwner']);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($ownerEntryType)->create();
+    Sections::refreshSections();
+
+    $ownerModel = EntryModel::factory()->forSection($section)->forEntryType($ownerEntryType)->create();
+    $owner = EntryElement::find()->id($ownerModel->id)->status(null)->one();
+    $originalOwnerDateUpdated = $owner->dateUpdated->getTimestamp();
+
+    Sleep::sleep(1);
+
+    $block = new EntryElement([
+        'fieldId' => $matrixField->id,
+        'ownerId' => $owner->id,
+        'typeId' => $blockEntryType->id,
+        'siteId' => $owner->siteId,
+    ]);
+    $block->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+    expect(app(Drafts::class)->saveElementAsDraft($block, markAsSaved: false))->toBeTrue()
+        ->and($block->getIsUnpublishedDraft())->toBeTrue();
+
+    $refetchedOwner = EntryElement::find()->id($owner->id)->status(null)->one();
+    expect($refetchedOwner->dateUpdated->getTimestamp())->toBe($originalOwnerDateUpdated);
 });

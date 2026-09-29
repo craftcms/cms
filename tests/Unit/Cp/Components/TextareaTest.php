@@ -61,9 +61,15 @@ describe('textarea', function () {
             ->and($html)->toContain(' readonly');
     });
 
-    it('omits autofocus on a mobile browser but honors it otherwise for any user', function () {
-        expect(Textarea::make()->id('i')->autofocus()->toHtml())->toContain(' autofocus');
-    });
+    it('omits autofocus on a mobile browser but honors it otherwise for any user', function (string $userAgent, bool $autofocused) {
+        request()->headers->set('User-Agent', $userAgent);
+
+        expect(str_contains(Textarea::make()->id('i')->autofocus()->toHtml(), ' autofocus'))->toBe($autofocused);
+    })->with([
+        'desktop' => ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15', true],
+        'mobile' => ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', false],
+        'tablet' => ['Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', false],
+    ]);
 
     it('reflects maxlength on the native textarea', function () {
         $html = Textarea::make()->id('i')->maxlength(255)->toHtml();

@@ -62,13 +62,15 @@ export type TextControlProps = {
  */
 export type FormControlPayload<Props extends object = FormProperties> = Omit<
   GeneratedFormControlPayload,
-  'props' | 'forms' | 'reactive' | 'emptyValue' | 'nestsForms'
+  'props' | 'forms' | 'reactive' | 'emptyValue' | 'nestsForms' | 'omitNullValue'
 > & {
   props: Props;
   forms?: NestedFormPayload[];
   reactive?: boolean;
   /** Whether the control renders nested forms. Shipped only when true. */
   nestsForms?: boolean;
+  /** Omit presentation-only null values from mutations. Shipped only when true. */
+  omitNullValue?: boolean;
 };
 
 export type FormNodePayload<
@@ -96,7 +98,7 @@ export type FormPayload<
  * them. `NestedFormPayload.scope` always ends in the bare UUID, so a control holding a
  * freshly minted block has to look its form up under both.
  *
- * @see CraftCms\Cms\Form\Controls\Matrix
+ * @see CraftCms\Cms\Form\Controls\NestedElementBlocks
  */
 export type NestedElementValue = {
   entries: {[uid: string]: NestedElementEntryValue};

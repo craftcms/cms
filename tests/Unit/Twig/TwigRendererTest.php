@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\File;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\EscaperExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Sandbox\SecurityError;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Yiisoft\Arrays\ArrayableInterface;
 
@@ -259,6 +260,10 @@ describe('sandboxed rendering', function () {
     it('does not allow Facade calls in sandbox', function () {
         $this->manager->renderSandboxedString('{{ Config.get("app.name") }}');
     })->throws(SecurityNotAllowedMethodError::class);
+
+    it('does not allow the attribute() function in sandbox', function () {
+        $this->manager->renderSandboxedString('{{ attribute(_context, "foo") }}');
+    })->throws(SecurityError::class);
 
     it('renders sandboxed templates', function () {
         Event::fake([TemplateRendering::class, TemplateRendered::class]);

@@ -1,4 +1,9 @@
-import type {ActionFeedback, BaseAction, VariantKey} from '@craftcms/ui';
+import type {
+  ActionFeedback,
+  BaseAction,
+  ServerAttributes,
+  VariantKey,
+} from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 import type {UrlMethodPair} from '@inertiajs/core';
 import type {Component} from 'vue';
@@ -103,7 +108,9 @@ export interface ActionItemDisplay {
 
 export interface ActionItemButton {
   type?: 'button';
+  id?: string;
   label: string;
+  attributes?: ServerAttributes;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /**
@@ -149,8 +156,10 @@ export interface ActionItemButton {
 
 export interface ActionItemLink {
   type: 'link';
+  id?: string;
   href: string;
   label: string;
+  attributes?: ServerAttributes;
   icon?: string;
   /**
    * A rendered SVG to use in place of a named icon, for the things that bring
@@ -179,6 +188,7 @@ export interface ActionItemLink {
   selected?: boolean;
   variant?: VariantKey | string;
   hidden?: boolean;
+  disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   action?: BaseAction;

@@ -12,7 +12,7 @@
    */
   interface ListElement {
     id: number;
-    label?: string;
+    label: string;
     siteId?: number | string | null;
     status?: {fill: string; label: string; draft: boolean} | null;
     url?: string | null;
