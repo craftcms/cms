@@ -46,6 +46,11 @@ class HandleInertiaRequests extends Middleware
         $htmlStack = app(HtmlStack::class);
 
         app(InternalAssetRegistry::class)->register(CpAsset::class);
+
+        foreach (Cp::sharedModules() as $specifier => $url) {
+            $htmlStack->jsImport($specifier, $url);
+        }
+
         View::composer('app', function ($view) use ($htmlStack) {
             $view->with([
                 'headHtml' => $htmlStack->headHtml(),
