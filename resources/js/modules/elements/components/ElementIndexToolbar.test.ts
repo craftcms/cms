@@ -1,14 +1,13 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, h, type App} from 'vue';
+import {createApp, h, nextTick, reactive, type App, type Component} from 'vue';
 import type {IndexSite} from '@/modules/elements/types/sites';
 
 vi.mock('@craftcms/ui', () => ({
   t: (message: string) => message,
   Appearance: {Fill: 'fill'},
+  ButtonVariant: {Fill: 'fill'},
 }));
 
-// The toolbar's own controls aren't under test here, so they're reduced to
-// inert markup — the real ones are Lit elements that never upgrade in happy-dom.
 vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
   default: {name: 'CraftInput', render: () => h('input')},
 }));
@@ -29,22 +28,24 @@ vi.mock('@craftcms/ui/vue/CraftSelectRich.vue', () => ({
   },
 }));
 
-vi.mock('@/modules/elements/components/IndexViewSettings.vue', () => ({
+vi.mock('@/common/form/Select.vue', () => ({
   default: {
-    name: 'IndexViewSettings',
-    props: ['sortOptions', 'sortDirectionLocked'],
+    name: 'Select',
+    props: ['options', 'modelValue'],
     render(this: {
-      sortOptions: Array<{label: string; value: string}>;
-      sortDirectionLocked: boolean;
+      options: Array<{label: string; value: string}>;
+      modelValue: string;
     }) {
-      return h('view-settings', {
-        'data-options': this.sortOptions
-          .map((option) => option.value)
-          .join(','),
-        'data-direction-locked': String(this.sortDirectionLocked),
+      return h('select-stub', {
+        'data-options': this.options.map((option) => option.value).join(','),
+        'data-value': this.modelValue,
       });
     },
   },
+}));
+
+vi.mock('@/common/form/CheckboxGroup.vue', () => ({
+  default: {name: 'CheckboxGroup', render: () => h('checkbox-group-stub')},
 }));
 
 vi.mock('@/modules/elements/components/FilterHud.vue', () => ({
@@ -70,27 +71,39 @@ function mount(props: Record<string, unknown>) {
   document.body.append(container);
 
   const onSiteChange = vi.fn();
+  const onSortDirectionUpdate = vi.fn();
+  const toolbarProps: Record<string, unknown> = {
+    search: '',
+    status: '',
+    mode: 'table',
+    sortField: 'title',
+    sortDirection: 'asc',
+    tableColumns: [],
+    conditions: null,
+    columnOptions: [],
+    sortOptions: [],
+    ...props,
+  };
+  const state = reactive({
+    sortDirection: (toolbarProps.sortDirection ?? 'asc') as 'asc' | 'desc',
+  });
 
   app = createApp({
     render: () =>
-      h(ElementIndexToolbar, {
-        search: '',
-        status: '',
-        mode: 'table',
-        sortField: 'title',
-        sortDirection: 'asc',
-        tableColumns: [],
-        conditions: null,
-        columnOptions: [],
-        sortOptions: [],
+      h(ElementIndexToolbar as Component, {
+        ...toolbarProps,
+        sortDirection: state.sortDirection,
         onSiteChange,
-        ...props,
+        'onUpdate:sortDirection': (value: 'asc' | 'desc') => {
+          state.sortDirection = value;
+          onSortDirectionUpdate(value);
+        },
       }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
 
-  return {onSiteChange};
+  return {onSiteChange, onSortDirectionUpdate, state};
 }
 
 function siteMenu(): HTMLElement | null {
@@ -197,10 +210,13 @@ it('offers score while searching and locks its direction', () => {
     ],
   });
 
-  const settings = container!.querySelector('view-settings')!;
+  const select = container!.querySelector('select-stub')!;
+  const descending = container!.querySelector<
+    HTMLElement & {disabled: boolean}
+  >('craft-button[aria-label="Sort descending"]')!;
 
-  expect(settings.getAttribute('data-options')).toBe('score,title,dateCreated');
-  expect(settings.getAttribute('data-direction-locked')).toBe('true');
+  expect(select.getAttribute('data-options')).toBe('score,title,dateCreated');
+  expect(descending.disabled).toBe(true);
 });
 
 it('removes score without a search and locks custom ordering', () => {
@@ -213,8 +229,38 @@ it('removes score without a search and locks custom ordering', () => {
     ],
   });
 
-  const settings = container!.querySelector('view-settings')!;
+  const select = container!.querySelector('select-stub')!;
+  const descending = container!.querySelector<
+    HTMLElement & {disabled: boolean}
+  >('craft-button[aria-label="Sort descending"]')!;
 
-  expect(settings.getAttribute('data-options')).toBe('sortOrder,title');
-  expect(settings.getAttribute('data-direction-locked')).toBe('true');
+  expect(select.getAttribute('data-options')).toBe('sortOrder,title');
+  expect(descending.disabled).toBe(true);
+});
+
+it('changes sort direction when its actual direction button is clicked', async () => {
+  const {onSortDirectionUpdate, state} = mount({
+    sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
+  });
+  const ascending = container!.querySelector<HTMLElement & {active: boolean}>(
+    'craft-button[aria-label="Sort ascending"]'
+  )!;
+  const descending = container!.querySelector<HTMLElement & {active: boolean}>(
+    'craft-button[aria-label="Sort descending"]'
+  )!;
+
+  expect(ascending.active).toBe(true);
+  expect(descending.active).toBe(false);
+  expect(ascending.getAttribute('aria-pressed')).toBe('true');
+  expect(descending.getAttribute('aria-pressed')).toBe('false');
+
+  descending.click();
+  await nextTick();
+
+  expect(onSortDirectionUpdate).toHaveBeenCalledWith('desc');
+  expect(state.sortDirection).toBe('desc');
+  expect(ascending.active).toBe(false);
+  expect(descending.active).toBe(true);
+  expect(ascending.getAttribute('aria-pressed')).toBe('false');
+  expect(descending.getAttribute('aria-pressed')).toBe('true');
 });
