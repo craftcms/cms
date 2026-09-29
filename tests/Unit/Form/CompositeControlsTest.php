@@ -165,6 +165,20 @@ it('preserves keyed Table rows in payloads and PHP submission names', function (
         ->and($crawler->filter('textarea[name="settings[rows][site-one][name]"]')->text())->toBe('Primary');
 });
 
+it('passes a custom add row label through Table payloads and HTML', function () {
+    $form = Form::make([
+        Field::make()->control(Table::make('rows')
+            ->columns(['name' => ['heading' => 'Name', 'type' => 'singleline']])
+            ->allowAdd()
+            ->addRowLabel('Add a coupon')),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($payload->nodes[0]->control->props['addRowLabel'])->toBe('Add a coupon')
+        ->and($crawler->filter('craft-button[command="--add-row"]')->text())->toContain('Add a coupon');
+});
+
 it('renders text expanders for text and textarea Controls', function () {
     $triggers = [
         ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'source' => 'users/text-expander-options'],

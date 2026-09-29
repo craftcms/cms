@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
   import {t} from '@craftcms/ui';
-  import {useEventListener, useMutationObserver} from '@vueuse/core';
+  import {
+    useEventListener,
+    useMutationObserver,
+    useResizeObserver,
+  } from '@vueuse/core';
   import {EditableTable} from '../editable-table';
   import type {
     EditableTableColumns,
@@ -16,6 +20,7 @@
     allowAdd?: boolean;
     allowDelete?: boolean;
     allowReorder?: boolean;
+    addRowLabel?: string;
     minRows?: number;
     maxRows?: number;
     keyed?: boolean;
@@ -58,6 +63,15 @@
       childList: true,
     }
   );
+
+  // Tables rendered inside an inactive tab start out hidden, and the editable
+  // table only initializes itself once visible — which it otherwise only
+  // rechecks on window resize.
+  useResizeObserver(host, () => {
+    if (instance && !instance.initialized) {
+      instance.initializeIfVisible();
+    }
+  });
 
   onMounted(renderTable);
   onBeforeUnmount(() => instance?.destroy());
@@ -300,7 +314,7 @@
     </table>
     <div v-if="editable && control.props.allowAdd">
       <craft-button type="button" command="--add-row">
-        {{ t('Add a row') }}
+        {{ control.props.addRowLabel ?? t('Add a row') }}
       </craft-button>
     </div>
   </div>

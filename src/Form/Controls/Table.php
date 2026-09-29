@@ -25,6 +25,8 @@ class Table extends Control
 
     private bool $allowReorder = false;
 
+    private ?string $addRowLabel = null;
+
     private ?int $minRows = null;
 
     private ?int $maxRows = null;
@@ -54,6 +56,7 @@ class Table extends Control
             'allowAdd' => (bool) ($control->props['allowAdd'] ?? false),
             'allowDelete' => (bool) ($control->props['allowDelete'] ?? false),
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
+            'addRowLabel' => $control->props['addRowLabel'] ?? null,
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
             'defaultValues' => $control->props['defaultValues'] ?? [],
@@ -93,6 +96,13 @@ class Table extends Control
     public function allowReorder(bool $allowReorder = true): static
     {
         $this->allowReorder = $allowReorder;
+
+        return $this;
+    }
+
+    public function addRowLabel(?string $addRowLabel): static
+    {
+        $this->addRowLabel = $addRowLabel;
 
         return $this;
     }
@@ -162,6 +172,7 @@ class Table extends Control
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,
+            'addRowLabel' => $this->addRowLabel,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
