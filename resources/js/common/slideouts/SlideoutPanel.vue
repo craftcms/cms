@@ -227,8 +227,8 @@
     /* Same as the legacy `.slideout-container`. */
     z-index: var(--c-layer-overlay);
     /* Leading corners only — the trailing edge meets the viewport. */
-    border-start-start-radius: var(--c-radius-lg, 0.5rem);
-    border-end-start-radius: var(--c-radius-lg, 0.5rem);
+    border-start-start-radius: var(--c-radius-xl, 0.5rem);
+    border-end-start-radius: var(--c-radius-xl, 0.5rem);
 
     /* Both sides, because `positionProp` picks one at runtime. Without this
        the outer panel would jump aside rather than visibly slide out from
