@@ -3,6 +3,7 @@ import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
+import {styleMap} from 'lit/directives/style-map.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './thumbnail.styles.js';
 
@@ -38,6 +39,15 @@ export default class CraftThumbnail extends LitElement {
     'fit';
 
   private svgAspectRatios = new Map<SVGSVGElement, string | null>();
+
+  /**
+   * URL of a small image, such as an asset's `placeholderDataUrl`, that's
+   * scaled up behind the thumbnail box until the image has loaded.
+   */
+  @property() placeholder: string | null = null;
+
+  /** Whether the image has loaded, which retires the placeholder. */
+  @state() private loaded = false;
 
   /** Candidate image sources for responsive rendering. */
   @property() srcset: string | null = null;
@@ -143,6 +153,10 @@ export default class CraftThumbnail extends LitElement {
       changedProperties.has('srcset') ||
       changedProperties.has('animated');
 
+    if (changedProperties.has('src')) {
+      this.loaded = false;
+    }
+
     if (animatedInputsChanged) {
       this.frozen = false;
       this.capturedFrame = null;
@@ -183,10 +197,18 @@ export default class CraftThumbnail extends LitElement {
       'thumbnail--rounded': this.rounded,
       'thumbnail--crop': this.mode === 'crop',
       'thumbnail--stretch': this.mode === 'stretch',
+      'thumbnail--placeholder': this.showsPlaceholder,
     };
+    const placeholderStyles = this.showsPlaceholder
+      ? {'--_placeholder': `url(${JSON.stringify(this.placeholder)})`}
+      : {};
 
     return html`
-      <div class="${classMap(classes)}" part="thumbnail">
+      <div
+        class="${classMap(classes)}"
+        style="${styleMap(placeholderStyles)}"
+        part="thumbnail"
+      >
         ${this.src
           ? html`<img
               class="${classMap({
@@ -202,7 +224,7 @@ export default class CraftThumbnail extends LitElement {
               alt="${this.alt}"
               loading="${this.loading}"
               decoding="async"
-              @load=${this.freezeFrame}
+              @load=${this.onImageLoad}
             />`
           : nothing}
         ${this.src && this.isAnimated
@@ -221,7 +243,12 @@ export default class CraftThumbnail extends LitElement {
     `;
   }
 
-  private freezeFrame(event: Event) {
+  private get showsPlaceholder(): boolean {
+    return Boolean(this.placeholder && this.src && !this.loaded);
+  }
+
+  private onImageLoad(event: Event) {
+    this.loaded = true;
     this.attemptFreeze(event.target as HTMLImageElement);
   }
 

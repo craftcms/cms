@@ -609,7 +609,7 @@ function createIndexerTestListings(): Generator
     }
 }
 
-it('stores the dominant color of an indexed image', function () {
+it('stores the colors of an indexed image', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
     $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
@@ -631,14 +631,15 @@ it('stores the dominant color of an indexed image', function () {
     try {
         $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
 
-        expect($asset->dominantColor)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->dominantColor)->toBe('#c81e28');
+        expect($asset->colors->dominant)->toBe('#c81e28')
+            ->and($asset->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
+            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($asset->colors->toArray());
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
 });
 
-it('doesn’t look again for a color it has already found or failed to find', function (string $stored, string|false $expected) {
+it('doesn’t sample colors it has already sampled, even inconclusively', function (array $stored) {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
     $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
@@ -659,16 +660,16 @@ it('doesn’t look again for a color it has already found or failed to find', fu
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['dominantColor' => $stored]);
+        Asset::whereKey($asset->id)->update(['colors' => json_encode($stored)]);
 
-        expect($index()->dominantColor)->toBe($expected)
-            ->and(Asset::findOrFail($asset->id)->dominantColor)->toBe($stored);
+        expect($index()->colors->toArray())->toBe($stored)
+            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($stored);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
 })->with([
-    'found' => ['#123456', '#123456'],
-    'inconclusive' => ['#------', false],
+    'found' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
+    'inconclusive' => [['dominant' => null, 'grid' => []]],
 ]);
 
 describe('remote images', function () {
@@ -703,37 +704,37 @@ describe('remote images', function () {
         ]), $this->session->id);
     });
 
-    it('downloads one missing its dominant color, then cleans up after itself', function () {
+    it('downloads one missing its colors, then cleans up after itself', function () {
         $tempFiles = fn () => glob(Path::temp('assets*')) ?: [];
         $before = $tempFiles();
 
         $asset = ($this->index)();
 
-        expect($asset->dominantColor)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->dominantColor)->toBe('#c81e28')
+        expect($asset->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28')
             ->and($tempFiles())->toBe($before);
     });
 
-    it('doesn’t download one whose dominant color came up inconclusive', function () {
+    it('doesn’t download one whose colors came up inconclusive', function () {
         $tempFiles = fn () => glob(Path::temp('assets*')) ?: [];
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['dominantColor' => '#------']);
+        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => null, 'grid' => []])]);
         $before = $tempFiles();
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->dominantColor)->toBeFalse()
+        expect($reindexed->colors->dominant)->toBeNull()
             ->and($reindexed->getWidth())->toBe(100)
             ->and($tempFiles())->toBe($before);
     });
 
-    it('doesn’t download one that already has a dominant color', function () {
+    it('doesn’t download one that already has colors', function () {
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['dominantColor' => '#123456']);
+        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => []])]);
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->dominantColor)->toBe('#123456')
+        expect($reindexed->colors->dominant)->toBe('#123456')
             ->and($reindexed->getWidth())->toBe(100);
     });
 });
