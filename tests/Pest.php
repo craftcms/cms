@@ -4,13 +4,42 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
 use Illuminate\Http\Request;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+
+/**
+ * Asserts the response flashed a message of the given type, and optionally
+ * text, to the next page — as a control panel message or,
+ * on site requests, the plain session key.
+ *
+ *     post('/admin/settings/sites')->assertMessage('success', 'Site saved.');
+ */
+TestResponse::macro('assertMessage', function (string $type, ?string $message = null): TestResponse {
+    /** @var TestResponse $this */
+    $messages = array_column(array_filter(
+        session()->get(Flash::SESSION_KEY, []),
+        fn (array $flashed): bool => $flashed['type'] === $type,
+    ), 'message');
+
+    if (is_string($plain = session()->get($type))) {
+        $messages[] = $plain;
+    }
+
+    Assert::assertNotEmpty($messages, "No [$type] message was flashed.");
+
+    if ($message !== null) {
+        Assert::assertContains($message, $messages, "No [$type] message with the expected text was flashed.");
+    }
+
+    return $this;
+});
 
 pest()->tia()
     ->locally()    // run TIA on every local invocation, no --tia flag needed

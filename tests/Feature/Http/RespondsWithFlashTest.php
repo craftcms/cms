@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -111,11 +112,11 @@ it('asFailure redirects with flash for HTML request', function () {
         ->assertRedirect();
 });
 
-it('asFailure leaves validation messages to the error bag', function () {
+it('asFailure puts validation messages in the error bag and keeps its summary message', function () {
     post('/test-flash/failure-with-errors')
         ->assertRedirect()
         ->assertSessionHasErrors(['name' => 'Name is required'])
-        ->assertSessionMissing('error');
+        ->assertMessage('error', 'Failure message');
 });
 
 it('asSuccess with custom redirect uses the redirect URL', function () {
@@ -155,4 +156,38 @@ it('asModelFailure returns JSON with errors for API request', function () {
             'modelName' => 'testModel',
             'errors' => ['name' => ['Name is required']],
         ]);
+});
+
+it('returns the message in the body of control panel JSON responses without flashing it', function () {
+    Route::middleware('web')->post('/test-flash/cp-success', function () {
+        request()->attributes->set('isCpRequest', true);
+
+        return (new TestFlashController)->success();
+    });
+
+    $response = postJson('/test-flash/cp-success')
+        ->assertOk()
+        ->assertJson([
+            'message' => 'Success message',
+            'messages' => [[
+                'type' => 'success',
+                'message' => 'Success message',
+            ]],
+        ]);
+
+    expect($response->json('notificationSettings.id'))->toBe($response->json('messages.0.id'))
+        ->and(session()->get(Flash::SESSION_KEY))->toBeNull();
+});
+
+it('flashes control panel messages to the message list', function () {
+    Route::middleware('web')->post('/test-flash/cp-redirect', function () {
+        request()->attributes->set('isCpRequest', true);
+
+        return (new TestFlashController)->success();
+    });
+
+    post('/test-flash/cp-redirect')
+        ->assertRedirect()
+        ->assertSessionMissing('success')
+        ->assertMessage('success', 'Success message');
 });
