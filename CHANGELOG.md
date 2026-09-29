@@ -37,12 +37,15 @@
 - The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Added `crop`, `fit`, `stretch`, and `letterbox` modes to `craft-thumbnail`, and removed size-dependent asset thumbnail cropping.
 - Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
-- Image assets now store their dominant color, which is determined when their file is uploaded, replaced, or indexed. ([#19740](https://github.com/craftcms/cms/pull/19740))
-- Asset edit sidebars now tint the space around image previews with the image’s dominant color. ([#19740](https://github.com/craftcms/cms/pull/19740))
-- Added the `dominantColor` field to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color and a grid of the average colors of its regions. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Asset edit sidebars now fill the space around image previews with a gradient between the colors of the image’s left and right edges. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added the `colors` field to assets in GraphQL queries, which returns the image’s `dominant`, `grid`, `left`, and `right` colors. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added the `placeholderDataUrl` field to assets in GraphQL queries.
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
-- Added `CraftCms\Cms\Asset\Elements\Asset::$dominantColor`. ([#19740](https://github.com/craftcms/cms/pull/19740))
-- Added `CraftCms\Cms\Image\Images::dominantColor()`. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$colors`. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getPlaceholderDataUrl()`.
+- Added `CraftCms\Cms\Image\Data\ImageColors`. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Added `CraftCms\Cms\Image\Images::colors()`. ([#19740](https://github.com/craftcms/cms/pull/19740))
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
 - Fixed a bug where asset indexing left temporary copies of remote images behind. ([#19740](https://github.com/craftcms/cms/pull/19740))

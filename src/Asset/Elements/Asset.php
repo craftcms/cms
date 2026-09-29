@@ -66,6 +66,7 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
@@ -110,6 +111,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Imagick;
+use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
@@ -173,12 +175,6 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
-    /**
-     * What's stored in place of a dominant color that couldn't be determined, so the image isn't
-     * sampled again every time it's indexed.
-     */
-    private const string INCONCLUSIVE_DOMINANT_COLOR = '#------';
-
     private static string $_displayName;
 
     /**
@@ -234,17 +230,26 @@ class Asset extends Element
     public ?int $size = null;
 
     /**
-     * @var string|false|null The image's dominant color, as a hex string (e.g. `#3a6ea5`), `false` if it couldn't
-     *                        be determined, or `null` if it hasn't been yet
+     * @var ImageColors|null Color data sampled from the image, or `null` if it hasn't been sampled yet
      *
-     * Determined from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
+     * Sampled from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
      *
-     * @see Images::dominantColor()
+     * @see Images::colors()
      */
     #[AllowedInSandbox]
-    public string|false|null $dominantColor = null {
-        // What's stored for an inconclusive color reads as `false`
-        set(string|false|null $value) => $value === self::INCONCLUSIVE_DOMINANT_COLOR ? false : $value;
+    public ?ImageColors $colors = null {
+        /** @param ImageColors|array<array-key, mixed>|string|null $value */
+        set(ImageColors|array|string|null $value) {
+            if (is_string($value)) {
+                $value = Json::decodeIfJson($value);
+            }
+
+            $this->colors = match (true) {
+                $value instanceof ImageColors, $value === null => $value,
+                is_array($value) => ImageColors::fromArray($value),
+                default => null,
+            };
+        }
     }
 
     /**
@@ -2426,6 +2431,35 @@ JS, [
     }
 
     /**
+     * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
+     * of a tiny PNG with one pixel per region of the image's color grid, or `null` if its colors aren't known.
+     *
+     * Browsers smooth images as they scale them up, so it makes a blurred placeholder for the image when used as a
+     * `background-image` with `background-size: cover`.
+     *
+     * @see ImageColors::$grid
+     */
+    #[AllowedInSandbox]
+    public function getPlaceholderDataUrl(): ?string
+    {
+        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+
+        if (! $grid) {
+            return null;
+        }
+
+        $image = Images::getManager()->createImage(count($grid[0]), count($grid));
+
+        foreach ($grid as $y => $row) {
+            foreach ($row as $x => $color) {
+                $image->drawPixel($x, $y, $color);
+            }
+        }
+
+        return $image->encode(new PngEncoder)->toDataUri()->toString();
+    }
+
+    /**
      * Returns whether this asset can be edited by the image editor.
      */
     public function getSupportsImageEditor(): bool
@@ -2533,7 +2567,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['dominantColor']);
+        unset($values['colors']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -2667,30 +2701,28 @@ JS, [
     }
 
     /**
-     * Tints the space around a letterboxed image with the image's own color.
+     * Fills the space around a letterboxed image with a gradient between the
+     * colors of the image's left and right edges, so it bleeds out to the sides.
      *
-     * The tint is a gradient from 75% to 95% opacity, layered over black
-     * rather than the dark theme's background color, so the color darkens
-     * a little, more toward the top.
-     *
-     * The dominant color is only ever written by the server, but it ends up in
-     * a `style` attribute, so anything that isn't a plain hex color is ignored.
+     * A black overlay darkens it by 25% at the top, fading to 5% at the bottom.
      *
      * @return array<string, string>
      */
     private function previewBackgroundStyle(): array
     {
-        if (
-            $this->kind !== FileKind::Image->value ||
-            ! is_string($this->dominantColor) ||
-            ! preg_match('/^#[0-9a-f]{6}$/i', $this->dominantColor)
-        ) {
+        $colors = $this->kind === FileKind::Image->value ? $this->colors : null;
+
+        // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
+        $left = $colors?->left();
+        $right = $colors?->right();
+
+        if ($left === null || $right === null) {
             return [];
         }
 
         return [
             'background-color' => '#000',
-            'background-image' => "linear-gradient({$this->dominantColor}bf, {$this->dominantColor}f2)",
+            'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
         ];
     }
 
@@ -3051,9 +3083,7 @@ JS;
                 $model->focalPoint = null;
             }
 
-            $model->dominantColor = $this->dominantColor === false
-                ? self::INCONCLUSIVE_DOMINANT_COLOR
-                : $this->dominantColor;
+            $model->colors = $this->colors?->toArray();
 
             $model->save();
 
@@ -3363,7 +3393,7 @@ JS;
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
-            $this->dominantColor = null;
+            $this->colors = null;
         }
 
         // If there was a new file involved, update file data.
@@ -3372,11 +3402,11 @@ JS;
 
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->dominantColor = Images::dominantColor($tempPath);
+                $this->colors = Images::colors($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;
-                $this->dominantColor = null;
+                $this->colors = null;
             }
 
             $this->size = filesize($tempPath);
