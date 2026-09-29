@@ -291,9 +291,8 @@ readonly class ElementAttributeRenderer
         }
 
         if ($sourceElement->getIsHomepage()) {
-            $value = Html::tag('span', '', [
-                'data-icon' => 'home',
-                'title' => t('Homepage'),
+            $value = Html::tag('span', Icons::svg('home', altText: t('Homepage')), [
+                'class' => ['cp-icon', 'small', 'inline-flex'],
             ]);
         } else {
             $find = ['/'];

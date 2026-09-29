@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Twig\Markup;
 
@@ -170,4 +172,28 @@ it('renders direct link helpers', function () {
         ->toContain('>path/to/page<')
         ->toContain('class="go"')
         ->toContain('href="https://example.test/path/to/page"');
+});
+
+it('renders the homepage uri as a labelled home icon', function () {
+    Sites::getPrimarySite()->setBaseUrl('https://localhost/');
+    Entry::factory()->create();
+    $entry = EntryElement::findOne();
+    $entry->uri = Element::HOMEPAGE_URI;
+
+    expect($this->renderer->render($entry, 'uri'))
+        ->toContain('role="img"')
+        ->toContain('aria-label="Homepage"')
+        ->toContain('class="go"')
+        ->toContain('href="https://localhost"');
+});
+
+it('renders non-homepage uris as breakable text', function () {
+    Sites::getPrimarySite()->setBaseUrl('https://localhost/');
+    Entry::factory()->create();
+    $entry = EntryElement::findOne();
+    $entry->uri = 'foo/bar';
+
+    expect($this->renderer->render($entry, 'uri'))
+        ->toContain('>foo/<wbr>bar<')
+        ->not->toContain('<svg');
 });

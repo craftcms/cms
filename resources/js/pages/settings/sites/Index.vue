@@ -151,6 +151,7 @@
         info.getValue()
           ? h('craft-icon', {
               name: 'check',
+              label: t('Yes'),
             })
           : '',
     }),
