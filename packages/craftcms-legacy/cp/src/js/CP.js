@@ -976,9 +976,9 @@ Craft.CP = Garnish.Base.extend(
      * Lays out the notifications as a stack, newest nearest the screen edge,
      * the way Sonner does.
      *
-     * Each notification gets its position in the stack (`--message-index`,
+     * Each notification gets its position in the stack (`--cp-message-index`,
      * 0 for the newest), how far it sits from the edge when the stack is
-     * spread out (`--message-offset`, the heights of the ones in front of
+     * spread out (`--cp-message-offset`, the heights of the ones in front of
      * it; the stylesheet adds the gaps), `data-stack-behind` unless it's
      * the newest, and `data-stack-hidden` beyond the newest
      * `Craft.CP.Notification.visibleCount`. CSS does the rest.
@@ -1025,8 +1025,8 @@ Craft.CP = Garnish.Base.extend(
         if (inner) {
           this._notificationResizeObserver?.observe(inner);
         }
-        notification.style.setProperty('--message-index', index);
-        notification.style.setProperty('--message-offset', `${offset}px`);
+        notification.style.setProperty('--cp-message-index', index);
+        notification.style.setProperty('--cp-message-offset', `${offset}px`);
         notification.style.zIndex = String(notifications.length - index);
         notification.toggleAttribute('data-stack-behind', index > 0);
         notification.toggleAttribute(
@@ -1043,16 +1043,16 @@ Craft.CP = Garnish.Base.extend(
       // How many notifications peek out from behind the front one, so the
       // collapsed stack's hover area covers them too.
       container.style.setProperty(
-        '--messages-behind',
+        '--cp-messages-behind',
         String(Math.max(Math.min(notifications.length, visibleCount) - 1, 0))
       );
       container.style.setProperty(
-        '--messages-front-height',
+        '--cp-messages-front-height',
         `${notifications[0] ? naturalHeight(notifications[0]) : 0}px`
       );
-      container.style.setProperty('--messages-height', `${offset}px`);
+      container.style.setProperty('--cp-messages-height', `${offset}px`);
       container.style.setProperty(
-        '--messages-count',
+        '--cp-messages-count',
         String(Math.min(notifications.length, visibleCount))
       );
 

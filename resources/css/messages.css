@@ -13,25 +13,25 @@
  * the user's `notificationPosition` preference.
  */
 .cp-messages {
-  --messages-gap: var(--c-spacing-md);
-  --messages-lift: var(--c-spacing-md);
-  --messages-direction: -1;
-  --messages-inset: var(--c-spacing-md);
-  --messages-duration: 400ms;
+  --cp-messages-gap: var(--c-spacing-md);
+  --cp-messages-lift: var(--c-spacing-md);
+  --cp-messages-direction: -1;
+  --cp-messages-inset: var(--c-spacing-md);
+  --cp-messages-duration: 400ms;
   position: fixed;
   z-index: var(--c-layer-notification);
   inset-block-end: calc(
-    var(--messages-inset) + var(--cp-debug-bar-height, 0px)
+    var(--cp-messages-inset) + var(--cp-debug-bar-height, 0px)
   );
-  inset-inline-start: var(--messages-inset);
+  inset-inline-start: var(--cp-messages-inset);
   width: calc(356rem / 16);
-  max-width: calc(100% - 2 * var(--messages-inset));
+  max-width: calc(100% - 2 * var(--cp-messages-inset));
 
   @media (width < calc(600rem / 16)) {
-    --messages-inset: calc(16rem / 16);
+    --cp-messages-inset: calc(16rem / 16);
     width: auto;
     max-width: none;
-    inset-inline: var(--messages-inset);
+    inset-inline: var(--cp-messages-inset);
   }
 
   &:not(:has(.notification)) {
@@ -40,16 +40,16 @@
 
   /* top */
   &[position^='start-'] {
-    --messages-direction: 1;
-    inset-block: var(--messages-inset) auto;
+    --cp-messages-direction: 1;
+    inset-block: var(--cp-messages-inset) auto;
   }
 
   /* right */
   &[position$='-end'] {
-    inset-inline: auto var(--messages-inset);
+    inset-inline: auto var(--cp-messages-inset);
 
     @media (width < calc(600rem / 16)) {
-      inset-inline: var(--messages-inset);
+      inset-inline: var(--cp-messages-inset);
     }
   }
 }
@@ -58,16 +58,16 @@
   position: relative;
   isolation: isolate;
   block-size: calc(
-    var(--messages-front-height, 0px) + var(--messages-behind, 0) *
-      var(--messages-lift)
+    var(--cp-messages-front-height, 0px) + var(--cp-messages-behind, 0) *
+      var(--cp-messages-lift)
   );
-  transition: block-size var(--messages-duration) ease;
+  transition: block-size var(--cp-messages-duration) ease;
 }
 
 .cp-messages[data-expanded] .messages-stack {
   block-size: calc(
-    var(--messages-height, 0px) + max(var(--messages-count, 1) - 1, 0) *
-      var(--messages-gap)
+    var(--cp-messages-height, 0px) + max(var(--cp-messages-count, 1) - 1, 0) *
+      var(--cp-messages-gap)
   );
 }
 
@@ -79,15 +79,15 @@
   transform: translateY(var(--swipe-amount, 0px))
     translateY(
       calc(
-        var(--messages-direction) * var(--message-index, 0) *
-          var(--messages-lift)
+        var(--cp-messages-direction) * var(--cp-message-index, 0) *
+          var(--cp-messages-lift)
       )
     )
-    scale(calc(1 - var(--message-index, 0) * 0.05));
+    scale(calc(1 - var(--cp-message-index, 0) * 0.05));
   transition:
-    transform var(--messages-duration) ease,
-    opacity var(--messages-duration) ease,
-    block-size var(--messages-duration) ease;
+    transform var(--cp-messages-duration) ease,
+    opacity var(--cp-messages-duration) ease,
+    block-size var(--cp-messages-duration) ease;
   border-radius: var(--c-radius-lg);
   background-color: var(--c-surface-overlay);
   box-shadow:
@@ -154,7 +154,7 @@
 }
 
 .cp-messages:not([data-expanded]) .notification[data-stack-behind] {
-  block-size: var(--messages-front-height);
+  block-size: var(--cp-messages-front-height);
   overflow: hidden;
 
   > * {
@@ -163,7 +163,7 @@
 }
 
 .cp-messages .notification > * {
-  transition: opacity var(--messages-duration) ease;
+  transition: opacity var(--cp-messages-duration) ease;
 }
 
 .cp-messages .notification[data-stack-hidden] {
@@ -175,9 +175,9 @@
   transform: translateY(var(--swipe-amount, 0px))
     translateY(
       calc(
-        var(--messages-direction) *
-          (var(--message-offset, 0px) + var(--message-index, 0) *
-            var(--messages-gap))
+        var(--cp-messages-direction) *
+          (var(--cp-message-offset, 0px) + var(--cp-message-index, 0) *
+            var(--cp-messages-gap))
       )
     );
 }
@@ -189,14 +189,14 @@
 .cp-messages .notification.notification--entering,
 .cp-messages[data-expanded] .notification.notification--entering {
   opacity: 0;
-  transform: translateY(calc(var(--messages-direction) * -100%));
+  transform: translateY(calc(var(--cp-messages-direction) * -100%));
 }
 
 .cp-messages .notification.notification--leaving,
 .cp-messages[data-expanded] .notification.notification--leaving {
   opacity: 0;
   transform: translateY(var(--swipe-amount, 0px))
-    translateY(calc(var(--messages-direction) * -100%));
+    translateY(calc(var(--cp-messages-direction) * -100%));
   transition-duration: 200ms;
 }
 

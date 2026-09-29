@@ -412,10 +412,10 @@ These CSS custom properties on `.cp-messages` control the layout:
 
 | Property | Default | Description |
 | --- | --- | --- |
-| `--messages-gap` | `10px` | Space between messages when the stack is spread out. |
-| `--messages-lift` | `10px` | How far each message behind the front one peeks out when collapsed. |
-| `--messages-inset` | `24px` (`16px` below 600px) | Distance from the screen edges. |
-| `--messages-duration` | `400ms` | Animation duration. |
+| `--cp-messages-gap` | `var(--c-spacing-md)` (8px) | Space between messages when the stack is spread out. |
+| `--cp-messages-lift` | `var(--c-spacing-md)` (8px) | How far each message behind the front one peeks out when collapsed. |
+| `--cp-messages-inset` | `var(--c-spacing-md)` (8px); `16px` below 600px | Distance from the screen edges. |
+| `--cp-messages-duration` | `400ms` | Animation duration. |
 
 And these static properties on `Craft.CP.Notification`:
 
