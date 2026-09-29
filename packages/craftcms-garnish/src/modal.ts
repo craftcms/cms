@@ -213,7 +213,7 @@ export class Modal extends Base<ModalSettings> {
 
     // Live region announcement element.
     this.$liveRegion = document.createElement('span');
-    this.$liveRegion.className = 'visually-hidden';
+    this.$liveRegion.className = 'sr-only';
     this.$liveRegion.setAttribute('role', 'status');
 
     // Create the shade.

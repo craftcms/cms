@@ -22,6 +22,8 @@
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 - Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
+- Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
+- Fixed a bug where the “Preview file” modal was unstyled.
 - Fixed a bug where element index sort direction buttons did nothing. ([#19744](https://github.com/craftcms/cms/pull/19744))
 - Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
 - Fixed an accessibility issue where the Date, Time, and Time zone inputs within `<craft-input-date-time>` didn’t have individual accessible names. ([#19741](https://github.com/craftcms/cms/pull/19741))

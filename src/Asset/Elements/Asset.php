@@ -1381,6 +1381,7 @@ class Asset extends Element
                 'behavior' => [
                     'type' => 'editImage',
                     'assetId' => $this->id,
+                    'settings' => $this->getImageEditorSettings(),
                 ],
             ];
         }
@@ -2432,6 +2433,30 @@ JS, [
         $ext = $this->getExtension();
 
         return strcasecmp($ext, 'svg') !== 0 && ImageHelper::canManipulateAsImage($ext);
+    }
+
+    /**
+     * Returns the settings the control panel's image editor dialog opens this asset with.
+     *
+     * @return array<string, mixed>
+     */
+    public function getImageEditorSettings(): array
+    {
+        return [
+            'assetId' => $this->id,
+            'filename' => $this->getFilename(),
+            'focalPoint' => $this->getHasFocalPoint() ? $this->getFocalPoint() : null,
+            // The image's own dimensions, so the crop orientation can start on
+            // whichever way round the picture already is. Named apart from
+            // `orientation` below, which is the locale's text direction.
+            'imageWidth' => $this->getWidth(),
+            'imageHeight' => $this->getHeight(),
+            'imageEditorRatios' => Cms::config()->imageEditorRatios,
+            // Only Imagick can rotate by a fraction of a degree; GD rounds.
+            'allowDegreeFractions' => Images::getIsImagick(),
+            // Picks which cropper handles get the left and right labels.
+            'orientation' => I18N::getLocale()->getOrientation(),
+        ];
     }
 
     /**

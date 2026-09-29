@@ -4,12 +4,19 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {openSlideout} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {
+  openImageEditorDialog,
+  type ImageEditorSettings,
+} from '@/modules/image-editor/open-image-editor-dialog';
+import {
   createElementActionMenu,
   useElementActionMenu,
   type ElementActionMenuItem,
 } from './useElementActionMenu';
 
 vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
+vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
+  openImageEditorDialog: vi.fn(),
+}));
 
 describe('useElementActionMenu', () => {
   let app: ReturnType<typeof createApp>;
@@ -212,5 +219,56 @@ describe('useElementActionMenu', () => {
       assetId: '7',
     });
     expect(document.querySelector('form')).toBeNull();
+  });
+
+  describe('editImage', () => {
+    const settings: ImageEditorSettings = {
+      assetId: 7,
+      filename: 'photo.jpg',
+      focalPoint: null,
+      imageWidth: 800,
+      imageHeight: 600,
+      imageEditorRatios: {Square: 1},
+      allowDegreeFractions: false,
+      orientation: 'ltr',
+    };
+
+    function openEditor(): (result: {newAssetId?: number}) => void {
+      activate(
+        mount([
+          {
+            label: 'Open in Image Editor',
+            behavior: {type: 'editImage', assetId: 7, settings},
+          },
+        ])
+      );
+
+      expect(openImageEditorDialog).toHaveBeenCalledWith(
+        settings,
+        expect.any(Function)
+      );
+
+      return vi.mocked(openImageEditorDialog).mock.lastCall![1]!;
+    }
+
+    it('reloads the page once the image is saved in place', () => {
+      const reload = vi
+        .spyOn(router, 'reload')
+        .mockImplementation(() => undefined);
+
+      openEditor()({});
+
+      expect(reload).toHaveBeenCalled();
+    });
+
+    it('leaves the page alone when the image is saved as a new asset', () => {
+      const reload = vi
+        .spyOn(router, 'reload')
+        .mockImplementation(() => undefined);
+
+      openEditor()({newAssetId: 8});
+
+      expect(reload).not.toHaveBeenCalled();
+    });
   });
 });
