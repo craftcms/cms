@@ -117,11 +117,7 @@ export default css`
   }
 
   .thumbnail--placeholder {
-    background: var(--_placeholder) center / contain no-repeat;
-  }
-
-  .thumbnail--placeholder.thumbnail--crop {
-    background-size: cover;
+    background: var(--_placeholder) center / cover no-repeat;
   }
 
   .thumbnail--placeholder.thumbnail--stretch {
