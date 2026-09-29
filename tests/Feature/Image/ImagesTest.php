@@ -250,6 +250,7 @@ describe('dominantColor', function () {
     function dominantColorFixture(string $path, array $background, ?array $rectangle = null): string
     {
         $image = imagecreatetruecolor(200, 200);
+        imagesavealpha($image, true);
         imagefill($image, 0, 0, imagecolorallocate($image, ...$background));
 
         if ($rectangle !== null) {
