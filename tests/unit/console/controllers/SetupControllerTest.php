@@ -12,14 +12,15 @@ use craft\cache\DbCache;
 use craft\console\controllers\SetupController;
 use craft\db\Connection;
 use craft\db\Table;
-use craft\test\TestCase;
+use craft\test\console\ConsoleTest;
+use PDO;
 use RuntimeException;
 use yii\console\ExitCode;
 
 /**
  * Tests setup with a database-backed schema cache.
  */
-class SetupControllerTest extends TestCase
+class SetupControllerTest extends ConsoleTest
 {
     /**
      * @dataProvider setupOrderProvider
@@ -40,6 +41,8 @@ class SetupControllerTest extends TestCase
             'tablePrefix' => 'bootstrap_' . bin2hex(random_bytes(4)) . '_',
             'enableSchemaCache' => true,
         ]);
+        // Keep setup migrations independent of Codeception's shared PDO transaction.
+        $db->pdo = new PDO($db->dsn, $db->username, $db->password, $db->attributes ?? []);
         $cache = new DbCache(['db' => $db, 'cacheTable' => Table::CACHE]);
         $db->schemaCache = $cache;
         Craft::$app->set('db', $db);
