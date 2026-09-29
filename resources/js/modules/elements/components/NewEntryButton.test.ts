@@ -215,7 +215,9 @@ it('links to the pinned type for a custom source', async () => {
     source: pinned,
     publishableSections: [blog],
   });
-  expect(container.querySelector('craft-button')!.href).toContain('type=review');
+  expect(container.querySelector('craft-button')!.href).toContain(
+    'type=review'
+  );
 });
 
 it('shows nothing when there is nothing to create', async () => {
