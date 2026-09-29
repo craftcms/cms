@@ -85,7 +85,7 @@ export default css`
 
   .header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-md);
     padding: var(--c-spacing-md);
