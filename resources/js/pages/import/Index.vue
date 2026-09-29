@@ -2,7 +2,7 @@
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {h, ref} from 'vue';
+  import {computed, h, ref, watch} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {router} from '@inertiajs/vue3';
@@ -13,6 +13,7 @@
     create,
     destroy,
     duplicate,
+    reorder,
     run,
   } from '@actions/Import/ImportPlansController';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -116,13 +117,56 @@
     }),
   ]);
 
+  const planUids = ref<string[]>([]);
+
+  watch(
+    () => props.editableImportPlans,
+    (plans) => {
+      planUids.value = plans.map((plan) => plan.uid!);
+    },
+    {immediate: true}
+  );
+
+  /** The editable import plans, in the order the user has put them in. */
+  const editableRows = computed(() =>
+    planUids.value
+      .map((uid) => props.editableImportPlans.find((plan) => plan.uid === uid))
+      .filter((plan): plan is ImportRow => plan !== undefined)
+  );
+
+  function handleReorder(startIndex: number, finishIndex: number): void {
+    const previousUids = planUids.value;
+    const nextUids = [...previousUids];
+    const [uid] = nextUids.splice(startIndex, 1);
+
+    if (uid === undefined) {
+      return;
+    }
+
+    nextUids.splice(finishIndex, 0, uid);
+    planUids.value = nextUids;
+
+    router.post(
+      reorder(),
+      {uids: nextUids},
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onError: () => {
+          planUids.value = previousUids;
+        },
+      }
+    );
+  }
+
   const editableTable = useVueTable<ImportRow>({
     get data() {
-      return props.editableImportPlans;
+      return editableRows.value;
     },
     get columns() {
       return editableColumns.value;
     },
+    getRowId: (row) => row.uid!,
     enableSorting: false,
     getCoreRowModel: getCoreRowModel<ImportRow>(),
   });
@@ -185,7 +229,11 @@
           </p>
         </div>
 
-        <AdminTable :table="editableTable" :reorderable="false">
+        <AdminTable
+          :table="editableTable"
+          :reorderable="canSave"
+          @reorder="handleReorder"
+        >
           <template #empty-row>
             <craft-empty
               :label="t('No import plans yet.')"

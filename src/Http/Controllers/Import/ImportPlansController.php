@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -415,6 +416,21 @@ class ImportPlansController
         return $this->asSuccess(t('“{name}” duplicated.', [
             'name' => $importPlan->name,
         ]));
+    }
+
+    public function reorder(): Response
+    {
+        $uids = $this->request->validate([
+            'uids' => ['required', 'array'],
+            'uids.*' => [
+                'string',
+                Rule::exists(Table::IMPORT_PLANS, 'uid')->whereNull('dateDeleted'),
+            ],
+        ])['uids'];
+
+        $this->importsService->reorderImportPlans($uids);
+
+        return $this->asSuccess(t('New order saved.'));
     }
 
     public function destroy(): Response

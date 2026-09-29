@@ -12,6 +12,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -21,8 +22,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -111,6 +114,14 @@ beforeEach(function () {
             'steps' => $steps,
         ], $overrides),
     );
+    $this->createImportPlan = fn (string $name, string $handle) => expect(
+        app(ImportPlan::class)->saveImportPlan(
+            new ImportPlanData(['editable' => true])
+                ->name($name)
+                ->handle($handle)
+                ->steps([($this->entryStep)()]),
+        ),
+    )->toBeTrue();
 });
 
 afterEach(function () {
@@ -396,4 +407,52 @@ it('saves and maps a model importer step', function () {
     expect($importer)->toBeInstanceOf(SystemMessageImporter::class)
         ->and($importer->map)->toBe(['subject' => 'incomingSubject'])
         ->and($importer->matchCriteria)->toBe(['key' => 'key']);
+});
+
+it('saves the order the editable import plans are put in', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    ($this->createImportPlan)('Bravo', 'bravo');
+    ($this->createImportPlan)('Charlie', 'charlie');
+
+    $plans = app(ImportPlan::class);
+    $uids = array_map(
+        fn (string $handle) => $plans->getImportPlanByHandle($handle)->uid,
+        ['charlie', 'alpha', 'bravo'],
+    );
+
+    postJson(action([ImportPlansController::class, 'reorder']), ['uids' => $uids])->assertOk();
+
+    expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
+        ->toBe(['charlie', 'alpha', 'bravo']);
+});
+
+it('adds new and duplicated import plans after the existing ones', function () {
+    ($this->createImportPlan)('Zulu', 'zulu');
+    ($this->createImportPlan)('Alpha', 'alpha');
+
+    $plans = app(ImportPlan::class);
+
+    postJson(action([ImportPlansController::class, 'duplicate']), [
+        'uid' => $plans->getImportPlanByHandle('zulu')->uid,
+    ])->assertOk();
+
+    expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
+        ->toBe(['zulu', 'alpha', 'zulu2']);
+});
+
+it('rejects reordering an import plan that doesn’t exist', function () {
+    postJson(action([ImportPlansController::class, 'reorder']), [
+        'uids' => [Str::uuid7()->toString()],
+    ])->assertJsonValidationErrors('uids.0');
+});
+
+it('forbids reordering import plans without permission to save them', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    $uid = app(ImportPlan::class)->getImportPlanByHandle('alpha')->uid;
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement());
+
+    postJson(action([ImportPlansController::class, 'reorder']), [
+        'uids' => [$uid],
+    ])->assertForbidden();
 });

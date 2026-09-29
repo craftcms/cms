@@ -45,8 +45,8 @@ class ImportPlan
     }
 
     /**
-     * Lazily loads/caches all import plans, merging DB-stored import plans with the file-based
-     * `craft.import` config, keyed by handle and sorted by name.
+     * Lazily loads/caches all import plans, merging DB-stored import plans, in their saved order,
+     * with the file-based `craft.import` config, sorted by name, keyed by handle.
      */
     public function getAllImportPlans(): LaravelCollection
     {
@@ -68,9 +68,10 @@ class ImportPlan
                 return $fileImportPlan;
             }, Config::get('craft.import', [])));
 
+            $fileImportPlans = new LaravelCollection($fileImportPlans)->sortBy('name')->all();
+
             $this->importPlans = new LaravelCollection($dbImportPlans + $fileImportPlans)
-                ->keyBy(fn (ImportPlanData $item, $key) => $item->handle ?? $key)
-                ->sortBy('name');
+                ->keyBy(fn (ImportPlanData $item, $key) => $item->handle ?? $key);
         }
 
         return $this->importPlans;
@@ -193,6 +194,10 @@ class ImportPlan
             $importRecord->description = $importPlan->description;
             $importRecord->steps = $importPlan->serializeSteps();
 
+            if (! $importRecord->exists) {
+                $importRecord->sortOrder = $this->nextSortOrder();
+            }
+
             $importRecord->save();
 
             DB::commit();
@@ -224,6 +229,7 @@ class ImportPlan
 
         $newImport = $importRecord->replicate();
         $newImport->uid = Str::uuid7()->toString();
+        $newImport->sortOrder = $this->nextSortOrder();
         $newImport->steps = array_map(function (array $step): array {
             $step['uid'] = Str::uuid7()->toString();
 
@@ -271,6 +277,33 @@ class ImportPlan
     }
 
     /**
+     * Saves the order of the editable import plans and invalidates the import plans cache.
+     *
+     * @param  string[]  $uids  The import plan UIDs, in their new order.
+     */
+    public function reorderImportPlans(array $uids): void
+    {
+        DB::transaction(function () use ($uids) {
+            foreach (array_values($uids) as $index => $uid) {
+                DB::table(Table::IMPORT_PLANS)
+                    ->where('uid', $uid)
+                    ->update(['sortOrder' => $index + 1]);
+            }
+        });
+
+        // invalidate caches
+        $this->importPlans = null;
+    }
+
+    /**
+     * Returns the sort order that places an import plan after all the others.
+     */
+    private function nextSortOrder(): int
+    {
+        return (int) DB::table(Table::IMPORT_PLANS)->max('sortOrder') + 1;
+    }
+
+    /**
      * Returns an import plan model for a given UID
      */
     private function _getImportPlanModel(string $uid, bool $withTrashed = false): ImportPlanModel
@@ -293,6 +326,7 @@ class ImportPlan
                 'steps',
                 'import_plans.uid',
             ])
+            ->orderBy('sortOrder')
             ->orderBy('name')
             ->orderBy('handle')
             ->whereNull('dateDeleted');
