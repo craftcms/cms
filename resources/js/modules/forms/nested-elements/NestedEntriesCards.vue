@@ -252,7 +252,7 @@
   <div>
     <div
       ref="container"
-      class="min-w-0 max-w-full overflow-x-auto"
+      class="min-w-0 max-w-full"
       :aria-busy="busy"
       @click.capture="onCardLink"
       @dblclick="openCardAtEvent"

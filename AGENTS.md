@@ -50,7 +50,9 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Regression tests
 
-- After a bug fix or behavior change, add a regression test that covers it and list it under Changed.
+- Apply the `test-audit` authoring gate after a bug fix or behavior change. Add a
+  regression test only when it closes a genuine behavior-coverage gap, and
+  demonstrate that it fails on the pre-fix code for the intended reason.
 
 ## Working through tasks
 
@@ -58,7 +60,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Reporting
 
-- End every long run (one that edits files or spans many steps) with three headings: **Blocked on me** (decisions or approvals you need, or "Nothing"), **Changed** (what you changed), **Found** (issues noticed but not acted on).
+- End every long run (one that edits files or spans many steps) with three headings: **Blocked** (decisions or approvals you need, or omit if nothing), **Changed** (what you changed), **Found** (issues noticed but not acted on).
 
 === foundation rules ===
 

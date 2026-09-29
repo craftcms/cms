@@ -241,3 +241,53 @@ it('removes orientation exif data when imagick and exif are available', function
 
     expect($exifData)->not->toHaveKey('ifd0.Orientation');
 });
+
+describe('dominantColor', function () {
+    /**
+     * @param  array{int, int, int}  $background
+     * @param  array{int, int, int, int, int, int, int}|null  $rectangle  x1, y1, x2, y2, r, g, b
+     */
+    function dominantColorFixture(string $path, array $background, ?array $rectangle = null): string
+    {
+        $image = imagecreatetruecolor(200, 200);
+        imagefill($image, 0, 0, imagecolorallocate($image, ...$background));
+
+        if ($rectangle !== null) {
+            [$x1, $y1, $x2, $y2, $r, $g, $b] = $rectangle;
+            imagefilledrectangle($image, $x1, $y1, $x2, $y2, imagecolorallocate($image, $r, $g, $b));
+        }
+
+        imagepng($image, $path);
+
+        return $path;
+    }
+
+    it('returns the color of a single-color image', function () {
+        $path = dominantColorFixture($this->sandboxPath.'/red.png', [200, 30, 40]);
+
+        expect($this->service->dominantColor($path))->toBe('#c81e28');
+    });
+
+    it('passes over a white backdrop for the color in front of it', function () {
+        $path = dominantColorFixture($this->sandboxPath.'/white.png', [255, 255, 255], [60, 60, 120, 120, 30, 80, 200]);
+
+        expect($this->service->dominantColor($path))->toBe('#1e50c8');
+    });
+
+    it('passes over a black backdrop for the color in front of it', function () {
+        $path = dominantColorFixture($this->sandboxPath.'/black.png', [0, 0, 0], [0, 0, 40, 40, 240, 140, 20]);
+
+        expect($this->service->dominantColor($path))->toBe('#f08c14');
+    });
+
+    it('falls back to white when there’s nothing else', function () {
+        $path = dominantColorFixture($this->sandboxPath.'/all-white.png', [255, 255, 255]);
+
+        expect($this->service->dominantColor($path))->toBe('#ffffff');
+    });
+
+    it('returns false for files it can’t read as images', function () {
+        expect($this->service->dominantColor($this->sandboxPath.'/empty-file.text'))->toBeFalse()
+            ->and($this->service->dominantColor($this->sandboxPath.'/missing.png'))->toBeFalse();
+    });
+});

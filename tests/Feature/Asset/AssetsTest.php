@@ -21,6 +21,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
+use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -475,4 +476,60 @@ it('honors empty thumbnail URL overrides without calling the driver', function (
     });
 
     expect($this->assets->getThumbUrl($asset, 120, mode: ImageTransformMode::Fit))->toBe('');
+});
+
+describe('dominant color', function () {
+    beforeEach(function () {
+        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $this->asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'photo.png',
+            'kind' => FileKind::Image->value,
+        ]);
+    });
+
+    function dominantColorImage(): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'craft-dominant-color-').'.png';
+        $image = imagecreatetruecolor(100, 100);
+        imagefill($image, 0, 0, imagecolorallocate($image, 200, 30, 40));
+        imagepng($image, $path);
+
+        return $path;
+    }
+
+    it('is stored when an image file comes in', function () {
+        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+
+        expect(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBe('#c81e28');
+    });
+
+    it('is cleared when the file is replaced by one that isn’t an image', function () {
+        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+
+        $replacement = tempnam(sys_get_temp_dir(), 'craft-dominant-color-');
+        file_put_contents($replacement, 'not an image');
+        $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), $replacement, 'photo.txt');
+
+        expect(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBeNull();
+    });
+
+    it('is stored as inconclusive when none can be determined', function () {
+        $images = Mockery::mock(ImagesFacade::getFacadeRoot());
+        $images->shouldReceive('dominantColor')->andReturnFalse();
+        ImagesFacade::swap($images);
+
+        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+
+        expect(AssetModel::findOrFail($this->asset->id)->dominantColor)->toBe('#------')
+            ->and(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBeFalse();
+    });
+
+    it('can’t be set from a request', function () {
+        $this->asset->setAttributesFromRequest(['dominantColor' => '#000000']);
+
+        expect($this->asset->dominantColor)->toBeNull();
+    });
 });

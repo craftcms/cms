@@ -1,4 +1,5 @@
 import {expect, test} from 'vite-plus/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {html, render} from 'lit';
 
 import './input-date-time.js';
@@ -16,11 +17,11 @@ async function mount(template: unknown) {
   return element;
 }
 
-function labels(element: HTMLElement): Record<string, string | null> {
+function labels(element: HTMLElement): Record<string, string> {
   return Object.fromEntries(
     [...element.querySelectorAll('[data-date-time-part]')].map((part) => [
       (part as HTMLElement).dataset.dateTimePart!,
-      part.getAttribute('aria-label'),
+      computeAccessibleName(part.querySelector('input')!),
     ])
   );
 }

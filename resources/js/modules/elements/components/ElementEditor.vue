@@ -57,6 +57,7 @@
     onSidebarMutation,
     props: payload,
     renderer,
+    refreshAfterNestedChange,
     refreshForm,
     save,
     sidebarErrors,
@@ -97,7 +98,7 @@
         : null;
     },
     async refresh() {
-      await refreshForm();
+      await refreshAfterNestedChange();
     },
   });
 

@@ -709,10 +709,13 @@ readonly class ElementWrites
                 // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
                 // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
                 // something changed, even if this nested element was saved independently of its owner.
+                // Unpublished drafts are canonical too, but they aren't part of their owner's content until
+                // they're published — which touches the owners then.
                 if (
                     ! $element->propagating &&
                     $element instanceof NestedElementInterface &&
                     $element->getIsCanonical() &&
+                    ! $element->getIsDraft() &&
                     isset($element->touchOwnersOnSave) &&
                     $element->touchOwnersOnSave
                 ) {
