@@ -287,7 +287,8 @@ export default defineConfig(({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts` entry that plugin bundles import through the import map.
+        // `vue.ts`/`elements.ts` entries that plugin bundles import through
+        // the import map.
         preserveEntrySignatures: 'exports-only',
       },
     },
@@ -349,6 +350,7 @@ export default defineConfig(({mode}) => {
             laravel({
               input: [
                 'resources/js/cp.ts',
+                'resources/js/elements.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',

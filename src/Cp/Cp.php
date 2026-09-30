@@ -131,6 +131,7 @@ readonly class Cp
     {
         return [
             'vue' => static::vite()->asset('resources/js/vue.ts'),
+            '@craftcms/cms/elements' => static::vite()->asset('resources/js/elements.ts'),
         ];
     }
 
