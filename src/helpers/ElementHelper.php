@@ -613,7 +613,7 @@ class ElementHelper
         }
 
         // try again with the owner's canonical element, in case it is also a derivative
-        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical(true));
     }
 
     /**
