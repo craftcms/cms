@@ -129,3 +129,31 @@ it('drops the padding before whatever comes first in a plain chip', async () => 
     )
   ).toBeGreaterThan(0);
 });
+
+it('aligns the prefix and suffix against the first line when align-items is start', async () => {
+  document.body.innerHTML = `
+    <craft-chip icon="star">
+      <div><div id="first">First</div><div>Second</div><div>Third</div></div>
+      <div slot="suffix"><div id="action" style="width: 16px; height: 16px"></div></div>
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  const centerY = (el: Element) => {
+    const rect = el.getBoundingClientRect();
+    return rect.top + rect.height / 2;
+  };
+  const body = chip.querySelector('#first')!.parentElement!;
+  const first = chip.querySelector('#first')!;
+  const action = chip.querySelector('#action')!;
+  const icon = chip.shadowRoot!.querySelector('.cp-chip__icon')!;
+
+  expect(centerY(action)).toBeCloseTo(centerY(body), 0);
+  expect(centerY(icon)).toBeCloseTo(centerY(body), 0);
+
+  chip.alignItems = 'start';
+  await chip.updateComplete;
+
+  expect(centerY(action)).toBeLessThan(centerY(body));
+  expect(centerY(icon)).toBeCloseTo(centerY(first), 0);
+});

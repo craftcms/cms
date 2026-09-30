@@ -11,6 +11,8 @@ import '../icon/icon.js';
 import '../action-menu/action-menu.js';
 import '../avatar/avatar.js';
 import '../badge/badge.js';
+import '../info-icon/info-icon.js';
+import '../reorder-button/reorder-button.js';
 import type CraftChip from './chip.js';
 
 /**
@@ -260,6 +262,33 @@ export const SizesWithContent: Story = {
 };
 
 /**
+ * `align-items` sets where the prefix and suffix sit against the label. The default
+ * `center` suits a single line; `start` and `end` keep them against the first
+ * or last line of a taller label.
+ */
+export const Alignment: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: start">
+      ${(['start', 'center', 'end'] as const).map(
+        (align) => html`
+          <craft-chip align-items="${align}" icon="newspaper">
+            <div>
+              <strong>${align}</strong>
+              <div>Second line</div>
+              <div>Third line</div>
+            </div>
+            <craft-button icon size="small" variant="plain" slot="suffix">
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
  * `variant` sets the color group and `appearance` determines how those tokens
  * are applied. See [Variants & Appearances](?path=/docs/tokens-variants-appearances--docs)
  * for the underlying token mapping.
@@ -309,6 +338,11 @@ export const Colors: Story = {
  * before it renders. The second fills `prefix` instead, which replaces that
  * whole region, so the built-in slots are ignored. Both fill the default slot
  * and `suffix`.
+ *
+ * The third stacks several lines in the default slot — a name, a handle, and
+ * a row of indicators — the way an entry type chip does on a section's
+ * settings page. It sets `align-items="start"`, so its prefix and suffix sit
+ * against the first line rather than centered against the whole body.
  */
 export const KitchenSink: Story = {
   parameters: {controls: {disable: true}},
@@ -357,6 +391,37 @@ export const KitchenSink: Story = {
           </craft-button>
           <craft-action-item>Action Item</craft-action-item>
         </craft-action-menu>
+      </craft-chip>
+
+      <craft-chip align-items="start" data-color="blue" icon="newspaper">
+        <div style="display: grid; gap: 0.25rem; justify-items: start">
+          <div style="display: flex; gap: 0.25rem">
+            <strong>Article</strong>
+            <craft-info-icon>Long-form posts for the blog.</craft-info-icon>
+          </div>
+          <code style="font-size: 0.85em">article</code>
+          <div style="display: flex; gap: 0.25rem">
+            <craft-icon name="pencil" label="Name overridden"></craft-icon>
+            <craft-icon name="language" label="Translatable"></craft-icon>
+          </div>
+        </div>
+        <div
+          slot="suffix"
+          style="display: flex; gap: 0.125rem; align-items: center"
+        >
+          <craft-action-menu>
+            <craft-button
+              slot="invoker"
+              label="Actions"
+              size="small"
+              variant="plain"
+            >
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+            <craft-action-item>Action Item</craft-action-item>
+          </craft-action-menu>
+          <craft-reorder-button variant="inherit"></craft-reorder-button>
+        </div>
       </craft-chip>
     </div>
   `,

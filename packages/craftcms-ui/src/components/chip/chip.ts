@@ -38,6 +38,11 @@ import {
  * lands on the chip, an ancestor's `data-color` no longer reaches it — colour
  * the chip directly instead.
  *
+ * Any `<craft-button>` placed in the chip is given `inherit`, so its neutral
+ * variants pick up the chip's colour. This includes buttons added after the
+ * chip mounts and ones nested in other slotted content, such as an action
+ * menu's invoker.
+ *
  * @slot - The chip's label.
  * @slot prefix - Leading content, shown before the thumbnail, icon, and
  *   status.
@@ -98,6 +103,15 @@ export default class CraftChip extends LitElement {
     Appearance.OutlineFill;
 
   /**
+   * How the prefix and suffix line up against the label on the cross axis.
+   * `center` suits a single-line label. With several lines in the label,
+   * `start` keeps the prefix and suffix against the first line and `end`
+   * against the last.
+   */
+  @property({attribute: 'align-items'}) alignItems: 'start' | 'center' | 'end' =
+    'center';
+
+  /**
    * The name of an icon to render in the prefix. This is a shorthand for
    * filling the `icon` slot, and setting it is what causes that slot to be
    * rendered.
@@ -143,8 +157,26 @@ export default class CraftChip extends LitElement {
    * of its own, and chips are commonly filled in after their first render —
    * `addActionsToChip()` injects an action menu into `[slot="suffix"]` long
    * after the chip mounts.
+   *
+   * The same changes are when a button can arrive, so each one is also the
+   * cue to have the chip's buttons inherit its palette.
    */
-  #lightDom = new LightDomController(this);
+  #lightDom = new LightDomController(this, {
+    onChange: () => this.#inheritButtons(),
+  });
+
+  /**
+   * Sets `inherit` on the chip's buttons so they take its palette rather than
+   * the neutral one, which would stand out against a coloured chip. Buttons
+   * inside a nested chip are left to that chip.
+   */
+  #inheritButtons(): void {
+    for (const button of this.querySelectorAll('craft-button:not([inherit])')) {
+      if (button.closest('craft-chip') === this) {
+        button.toggleAttribute('inherit', true);
+      }
+    }
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -264,6 +296,8 @@ export default class CraftChip extends LitElement {
           'cp-chip--small': this.size === 'small',
           'cp-chip--medium': this.size === 'medium',
           'cp-chip--large': this.size === 'large',
+          'cp-chip--align-start': this.alignItems === 'start',
+          'cp-chip--align-end': this.alignItems === 'end',
           'cp-chip--plain': this.appearance === Appearance.Plain,
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,

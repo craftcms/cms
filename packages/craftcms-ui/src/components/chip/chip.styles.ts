@@ -179,6 +179,24 @@ export default css`
     padding-block: calc(var(--_chip-spacing) / 2);
   }
 
+  .cp-chip--align-start {
+    align-items: start;
+  }
+
+  .cp-chip--align-end {
+    align-items: end;
+  }
+
+  /*
+   * Off-center, the prefix is as tall as one line of the label plus the
+   * label's block padding, so an icon or status centers against the first
+   * (or last) line instead of sitting flush with the chip's edge.
+   */
+  .cp-chip--align-start .cp-chip__prefix,
+  .cp-chip--align-end .cp-chip__prefix {
+    min-height: calc(1lh + var(--_chip-spacing));
+  }
+
   .cp-chip--plain.cp-chip--leads-with-thumbnail .cp-chip__thumbnail,
   .cp-chip--plain.cp-chip--leads-with-icon .cp-chip__icon,
   .cp-chip--plain.cp-chip--leads-with-status .cp-chip__status,
