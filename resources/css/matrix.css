@@ -1,8 +1,8 @@
 /**
  * Matrix block chrome shared by both stacks.
  *
- * The blocks themselves come from two renderers — `MatrixControl.vue` and
- * `Form\Controls\Matrix::renderHtml()` — that emit the same `craft-card`
+ * The blocks themselves come from two renderers — `NestedElementBlocksControl.vue` and
+ * `Form\Controls\NestedElementBlocks::renderHtml()` — that emit the same `craft-card`
  * frame, so their styling lives here rather than scoped to the Vue component.
  *
  * Selected by data attributes, not Craft 5's class names: the legacy stylesheet

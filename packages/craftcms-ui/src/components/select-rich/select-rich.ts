@@ -5,6 +5,7 @@ import styles from './select-rich.styles.js';
 import CraftSelectInvoker from './select-invoker.js';
 import '../option/option.js';
 import '../icon/icon.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A rich `<select>` replacement built on Lion's select-rich. Unlike a
@@ -23,7 +24,7 @@ import '../icon/icon.js';
  *
  * @since 1.0
  */
-export default class CraftSelectRich extends LionSelectRich {
+export default class CraftSelectRich extends HasLabel(LionSelectRich) {
   static override get styles() {
     return [...super.styles, styles];
   }
@@ -70,6 +71,22 @@ export default class CraftSelectRich extends LionSelectRich {
     this._overlayCtrl.content.style.display = initContentDisplay;
     this._overlayCtrl.contentWrapperNode.style.minWidth = initContentMinWidth;
     this._overlayCtrl.contentWrapperNode.style.width = initContentWidth;
+  }
+
+  /**
+   * Lion treats any printable key as type-ahead, modifiers included, so a
+   * shortcut pressed while the select has focus — ⌘S to save — would jump to
+   * the option starting with that letter.
+   */
+  override _handleTypeAhead(
+    ev: KeyboardEvent,
+    options: {setAsChecked: boolean}
+  ) {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) {
+      return;
+    }
+
+    super._handleTypeAhead(ev, options);
   }
 
   // oxlint-disable-next-line class-methods-use-this

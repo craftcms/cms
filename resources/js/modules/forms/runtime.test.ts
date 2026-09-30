@@ -43,4 +43,15 @@ describe('formChangeFromEvent', () => {
     expect(formChangeFromEvent(requestEvent)).toBeNull();
     expect(formChangeFromEvent(new Event('change'))).toBeNull();
   });
+
+  it('ignores a non-event payload that is not a FormChange', () => {
+    const conditionConfig = {
+      class: 'CraftCms\\Cms\\Asset\\Conditions\\AssetCondition',
+      conditionRules: [],
+    };
+
+    expect(
+      formChangeFromEvent(conditionConfig as unknown as FormChange)
+    ).toBeNull();
+  });
 });

@@ -139,6 +139,9 @@ export class BaseDrag<
   /** Pointer-down page X minus the target's left offset (grab offset). */
   mouseOffsetX: number | null = null;
   mouseOffsetY: number | null = null;
+  /** How far the (non-window) scroll container has scrolled since pointer-down. */
+  scrollDeltaX = 0;
+  scrollDeltaY = 0;
 
   // --- Scroll-loop state ----------------------------------------------------
 
@@ -152,6 +155,14 @@ export class BaseDrag<
   private _scrollContainer: Element | Window = win;
   /** The pointer id that started the current interaction (multi-touch safety). */
   private _pointerId: number | null = null;
+  /** The last known pointer viewport coords (derived from page coords). */
+  private _clientX = 0;
+  private _clientY = 0;
+  /** The scroll container's scroll position as of the last scroll delta update. */
+  private _lastScrollLeft = 0;
+  private _lastScrollTop = 0;
+  /** Scroll events don't bubble, so they're listened for in the capture phase. */
+  private readonly _handleScrollListener = (): void => this._handleScroll();
 
   /**
    * @param items - Elements that should be draggable right away (selector,
@@ -189,11 +200,10 @@ export class BaseDrag<
     return true;
   }
 
-  /** Begin a drag: fire the before/start hooks, resolve the scroll container. */
+  /** Begin a drag: fire the before/start hooks. */
   startDragging(): void {
     this.onBeforeDragStart();
     this.dragging = true;
-    this.setScrollContainer();
     this.onDragStart();
 
     // Mute activate events while dragging (legacy parity).
@@ -202,10 +212,18 @@ export class BaseDrag<
 
   /** Resolve {@link _scrollContainer} for the current target via the axis-aware finder. */
   setScrollContainer(): void {
+    // Account for any scrolling that happened in the previous container
+    this._updateScrollDelta();
+
     const axis = (this.settings!.axis as 'x' | 'y' | null) ?? null;
     this._scrollContainer = this.$targetItem
       ? getScrollParent(this.$targetItem, axis)
       : win;
+
+    if (!this.isScrollingWindow()) {
+      this._lastScrollLeft = (this._scrollContainer as Element).scrollLeft;
+      this._lastScrollTop = (this._scrollContainer as Element).scrollTop;
+    }
   }
 
   /** Whether the resolved scroll container is the window. */
@@ -332,6 +350,9 @@ export class BaseDrag<
 
   /** Tear the dragger down: drop all items, then run the base teardown. */
   override destroy(): void {
+    doc.removeEventListener('scroll', this._handleScrollListener, {
+      capture: true,
+    });
     this.removeAllItems();
     super.destroy();
   }
@@ -431,8 +452,16 @@ export class BaseDrag<
     this._pointerId = ev.pointerId;
 
     // Capture the current pointer position.
-    this.mousedownX = this.mouseX = ev.pageX;
-    this.mousedownY = this.mouseY = ev.pageY;
+    this.mousedownX = this.mouseX = this.realMouseX = ev.pageX;
+    this.mousedownY = this.mouseY = this.realMouseY = ev.pageY;
+    this.mouseDistX = this.mouseDistY = 0;
+    this._clientX = ev.pageX - win.scrollX;
+    this._clientY = ev.pageY - win.scrollY;
+
+    // Find the scroll container, so its scroll position can be factored into the pointer distance.
+    this.scrollDeltaX = this.scrollDeltaY = 0;
+    this._scrollContainer = win;
+    this.setScrollContainer();
 
     // Capture the difference between the pointer position and the target's offset.
     const offset = getOffset(this.$targetItem);
@@ -443,6 +472,10 @@ export class BaseDrag<
     this.addListener(doc, 'pointermove', '_handlePointerMove');
     this.addListener(doc, 'pointerup', '_handlePointerUp');
     this.addListener(doc, 'pointercancel', '_handlePointerUp');
+    doc.addEventListener('scroll', this._handleScrollListener, {
+      capture: true,
+      passive: true,
+    });
   }
 
   /** Pointer-move: update coords, gate the drag start, then drag. */
@@ -454,26 +487,17 @@ export class BaseDrag<
 
     ev.preventDefault();
 
-    this.realMouseX = ev.pageX;
-    this.realMouseY = ev.pageY;
-
-    if (this.settings!.axis !== Y_AXIS) {
-      this.mouseX = ev.pageX;
-    }
-    if (this.settings!.axis !== X_AXIS) {
-      this.mouseY = ev.pageY;
-    }
-
-    this.mouseDistX = this.mouseX! - this.mousedownX!;
-    this.mouseDistY = this.mouseY! - this.mousedownY!;
+    this._clientX = ev.pageX - win.scrollX;
+    this._clientY = ev.pageY - win.scrollY;
+    this._updateMousePosition();
 
     if (!this.dragging) {
       // Has the pointer moved far enough to initiate dragging yet?
       const dist = getDist(
         this.mousedownX!,
         this.mousedownY!,
-        this.realMouseX,
-        this.realMouseY
+        this.realMouseX! + this.scrollDeltaX,
+        this.realMouseY! + this.scrollDeltaY
       );
 
       if (dist >= (this.settings!.minMouseDist ?? BaseDrag.minMouseDist)) {
@@ -493,6 +517,9 @@ export class BaseDrag<
     }
 
     this.removeAllListeners(doc);
+    doc.removeEventListener('scroll', this._handleScrollListener, {
+      capture: true,
+    });
 
     if (this.dragging) {
       this.stopDragging();
@@ -631,20 +658,70 @@ export class BaseDrag<
       (this._scrollContainer as Element)[prop] = targetPos;
     }
 
-    // Window-only correction: keep the dragged helper tracking the cursor.
-    if (onWindow) {
-      const newScrollPos = prop === 'scrollTop' ? win.scrollY : win.scrollX;
-      if (this.scrollAxis === 'Y') {
-        if (this.mouseY != null) this.mouseY -= scrollPos - newScrollPos;
-        this.realMouseY = this.mouseY;
-      } else {
-        if (this.mouseX != null) this.mouseX -= scrollPos - newScrollPos;
-        this.realMouseX = this.mouseX;
-      }
-    }
+    this._updateMousePosition();
 
     this.scrollFrame = requestAnimationFrame(() => this._scrollWindow());
     this.drag(true);
+  }
+
+  /** Scroll: keep the pointer coords and drag in sync with any scrolling. */
+  private _handleScroll(): void {
+    // If we're auto-scrolling, _scrollWindow() will take care of this
+    if (this.scrollFrame) {
+      return;
+    }
+
+    this._updateMousePosition();
+
+    if (this.dragging) {
+      this.drag(true);
+    }
+  }
+
+  /**
+   * Update the pointer coords and distance, factoring in the current window and
+   * scroll container scroll positions.
+   */
+  private _updateMousePosition(): void {
+    this.realMouseX = this._clientX + win.scrollX;
+    this.realMouseY = this._clientY + win.scrollY;
+
+    if (this.settings!.axis !== Y_AXIS) {
+      this.mouseX = this.realMouseX;
+    }
+    if (this.settings!.axis !== X_AXIS) {
+      this.mouseY = this.realMouseY;
+    }
+
+    this._updateScrollDelta();
+
+    this.mouseDistX = this.mouseX! - this.mousedownX! + this.scrollDeltaX;
+    this.mouseDistY = this.mouseY! - this.mousedownY! + this.scrollDeltaY;
+  }
+
+  /**
+   * Update the scroll container's scroll delta since pointer-down.
+   *
+   * (Window scrolling is already accounted for by the page-relative pointer coords.)
+   */
+  private _updateScrollDelta(): void {
+    if (this.isScrollingWindow()) {
+      return;
+    }
+
+    const container = this._scrollContainer as Element;
+    const scrollLeft = container.scrollLeft;
+    const scrollTop = container.scrollTop;
+
+    if (this.settings!.axis !== Y_AXIS) {
+      this.scrollDeltaX += scrollLeft - this._lastScrollLeft;
+    }
+    if (this.settings!.axis !== X_AXIS) {
+      this.scrollDeltaY += scrollTop - this._lastScrollTop;
+    }
+
+    this._lastScrollLeft = scrollLeft;
+    this._lastScrollTop = scrollTop;
   }
 
   /** Cancel the auto-scroll loop and clear its state. */

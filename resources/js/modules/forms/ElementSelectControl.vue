@@ -17,6 +17,8 @@
   } from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -33,6 +35,8 @@
      * fills the rest in.
      */
     url?: string | null;
+    /** The element's control panel edit screen, if it has one. */
+    cpEditUrl?: string | null;
     canEdit?: boolean;
     canCopy?: boolean;
     draftId?: number | null;
@@ -606,8 +610,36 @@
    */
   function openEditor(value: number | string): void {
     const element = presentation(value);
+    const elementType = props.control.props.elementType;
 
-    Craft.createElementEditor(props.control.props.elementType, {
+    if (canUseVueSlideout()) {
+      // The element's own edit screen, the way an element index opens it.
+      // Elements picked since the last render don't know it yet; entries can
+      // still get their editor through the generic edit action.
+      const href =
+        element.cpEditUrl ??
+        (elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
+          ? EditElementController.url(undefined, {
+              query: {
+                elementType,
+                elementId: element.id,
+                siteId: element.siteId ?? null,
+              },
+            })
+          : null);
+
+      if (href) {
+        void openSlideout(href, {
+          // Registering a handler keeps a save from reloading the page behind,
+          // which would throw away the owner's unsaved edits.
+          onSaved: () => {},
+        });
+
+        return;
+      }
+    }
+
+    Craft.createElementEditor(elementType, {
       elementId: element.id,
       siteId: element.siteId ?? null,
     });
@@ -652,17 +684,14 @@
         />
       </div>
 
-      <div
-        class="border border-(--c-color-neutral-border-quiet) rounded-sm inset-shadow-sm bg-(--c-color-neutral-fill-quiet) relative"
-        v-if="ids.length > 0"
-      >
+      <div class="relative" v-if="ids.length > 0">
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
           can't be selected (a single relation) has no use for it.
         -->
         <div
+          class="element-selections-header flex justify-between items-center"
           v-if="selectable"
-          class="flex justify-between items-center border-b border-b-(--c-color-neutral-border-quiet) p-(--c-spacing-sm) shadow-sm"
         >
           <div class="flex items-center gap-2">
             <craft-checkbox
@@ -688,16 +717,32 @@
           </div>
 
           <ActionMenu
-            v-if="hasSelection && bulkActions.length"
             :actions="bulkActions"
+            :class="{
+              invisible: !hasSelection || !bulkActions.length,
+            }"
           >
             <template #invoker="{attributes}">
-              <craft-button type="button" size="small" v-bind="attributes">
+              <craft-button
+                type="button"
+                variant="plain"
+                size="small"
+                v-bind="attributes"
+              >
                 {{ t('Actions') }}
                 <craft-icon name="chevron-down" slot="suffix"></craft-icon>
               </craft-button>
             </template>
           </ActionMenu>
+
+          <craft-badge
+            size="small"
+            class="me-sm"
+            no-prefix
+            v-if="!hasSelection || !bulkActions.length"
+          >
+            {{ ids.length }}/{{ limit }}
+          </craft-badge>
         </div>
         <div class="elements-stage">
           <ElementList
@@ -740,11 +785,6 @@
             </template>
           </ElementList>
         </div>
-        <div class="absolute inset-e-1 inset-be-1" v-if="limit && limit > 1">
-          <craft-badge size="small" no-prefix
-            >{{ ids.length }}/{{ limit }}</craft-badge
-          >
-        </div>
       </div>
 
       <div slot="footer">
@@ -755,7 +795,15 @@
 </template>
 
 <style lang="scss" scoped>
-  .elements-stage {
-    padding: clamp(0.25em, 1%, 1em);
+  .element-selections-header {
+    margin-block-end: var(--c-spacing-md);
+    padding: var(--c-spacing-sm);
+    padding-inline-start: calc(
+      var(--c-spacing-md) + 1px
+    ); // so the checkboxes line up
+    background-color: var(--c-color-neutral-fill-quiet);
+    border-start-start-radius: var(--c-radius-md);
+    border-start-end-radius: var(--c-radius-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

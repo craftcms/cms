@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
@@ -77,12 +78,16 @@ readonly class AssetUploadHandler
         return [$folder, $selectionCondition];
     }
 
-    /** @param array<string, mixed> $parameters */
+    /**
+     * @param  array<string, mixed>  $parameters
+     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     */
     public function store(
         array $parameters,
         UploadedFile $file,
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
+        ?ImageColors $colors = null,
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
@@ -103,6 +108,7 @@ readonly class AssetUploadHandler
 
         $asset = new Asset;
         $asset->uploadSource = $file;
+        $asset->uploadColors = $colors;
         if ($authorizedGuest) {
             $asset->sanitizeOnUpload = true;
         }
@@ -176,13 +182,17 @@ readonly class AssetUploadHandler
         ]);
     }
 
-    public function replace(int $assetId, UploadedFile $file): UploadResult
+    /**
+     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     */
+    public function replace(int $assetId, UploadedFile $file, ?ImageColors $colors = null): UploadResult
     {
         $asset = $this->assets->getAssetById($assetId);
         abort_unless($asset !== null, 404, 'Asset not found.');
         Gate::authorize('replaceFile', $asset);
 
         $asset->uploadSource = $file;
+        $asset->uploadColors = $colors;
         $this->assets->replaceAssetFile($asset, $file->localPath(), $file->filename, $file->mimeType());
 
         if ($asset->errors()->isNotEmpty()) {

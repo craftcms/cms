@@ -6,7 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, useTemplateRef} from 'vue';
+  import {computed, nextTick, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -17,6 +17,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
+  import {useSlideout} from '@/common/slideouts/useSlideout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {FormValues} from '@/modules/forms/types';
@@ -28,6 +29,13 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import {
+    NestedOwnerEditorKey,
+    nestedOwnerContext,
+  } from '@/modules/elements/nested-owner';
+
+  const contentEl = useTemplateRef<HTMLElement>('content');
+  const slideout = useSlideout();
 
   const props = defineProps<{
     /**
@@ -49,6 +57,8 @@
     onSidebarMutation,
     props: payload,
     renderer,
+    refreshAfterNestedChange,
+    refreshForm,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -57,7 +67,40 @@
     submitAction,
     updatePayload,
     workflowReviewLocked,
-  } = useElementEditor({saveData: props.saveData});
+  } = useElementEditor({
+    saveData: props.saveData,
+    root: () => contentEl.value,
+  });
+
+  provide(NestedOwnerEditorKey, {
+    async prepare(path) {
+      if (payload.readOnly) {
+        return null;
+      }
+
+      if (payload.canAutosave) {
+        await autosave.save();
+        if (autosave.status.value !== 'saved') {
+          return null;
+        }
+        await nextTick();
+      }
+
+      const context = nestedOwnerContext(formPayload.value, path);
+      return context
+        ? {
+            ...context,
+            requiresDerivative: Boolean(payload.canAutosave),
+            canonicalId: payload.canonicalId,
+            draftId: payload.draftId,
+            isProvisionalDraft: payload.isProvisionalDraft,
+          }
+        : null;
+    },
+    async refresh() {
+      await refreshAfterNestedChange();
+    },
+  });
 
   const hasDetails = computed(
     () =>
@@ -103,8 +146,14 @@
     })
   );
 
+  // In a panel, the panel's own screen is what's out of date — not the page
+  // behind it.
   function reload(): void {
-    router.reload();
+    if (slideout) {
+      void slideout.reload();
+    } else {
+      router.reload();
+    }
   }
 
   function primaryAction(options?: FormSaveOptions): void {
@@ -116,13 +165,15 @@
     save(options);
   }
 
-  // The View buttons and the action menu stay out of slideouts, which have no
-  // room for them, and out of pages the shell marks read-only.
+  // The View buttons stay out of slideouts, which have no room for them. The
+  // action menu goes in their header, as in Craft 5. Neither shows on pages the
+  // shell marks read-only.
   const isSlideout = useIsSlideout();
   const page = usePage<{readOnly?: boolean}>();
   const showElementControls = computed(
     () => !isSlideout && !page.props.readOnly
   );
+  const showActionMenu = computed(() => isSlideout || !page.props.readOnly);
 
   useAppLayout(() => ({
     title: payload.title,
@@ -135,6 +186,7 @@
     defaultFormActions: [],
     formActions: formActionItems.value,
     formAdditionalButtons: saveButtons.value,
+    editUrl: payload.cpEditUrl,
   }));
 </script>
 
@@ -190,12 +242,14 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="showElementControls && payload.actionMenu.length"
+    v-if="showActionMenu && payload.actionMenu.length"
     name="content-toolbar-actions"
   >
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
+      :slideout="slideout"
+      :flush="!isSlideout"
     />
   </LayoutSlot>
 
@@ -309,7 +363,7 @@
     </div>
   </LayoutSlot>
 
-  <div class="py-3">
+  <div ref="content" class="py-3">
     <CpContainer>
       <FormRenderer
         v-if="formPayload"

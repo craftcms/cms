@@ -20,7 +20,7 @@ class Select extends ViewComponent
     /** @var string|int|float|bool|list<string|int|float|bool>|null */
     protected string|int|float|bool|array|null $value = null;
 
-    /** @var list<array{label: string, value: string|int|float|bool, disabled?: bool}> */
+    /** @var list<array{label: string, value: string|int|float|bool, disabled?: bool, group?: string|null}> */
     protected array $options = [];
 
     protected bool $multiple = false;
@@ -58,7 +58,12 @@ class Select extends ViewComponent
         return $this;
     }
 
-    /** @param list<array{label: string, value: string|int|float|bool, disabled?: bool}> $options */
+    /**
+     * `group` heads a run of consecutive options that share it with an
+     * `<optgroup>`.
+     *
+     * @param  list<array{label: string, value: string|int|float|bool, disabled?: bool, group?: string|null}>  $options
+     */
     public function options(array $options): static
     {
         $this->options = $options;
@@ -136,14 +141,27 @@ class Select extends ViewComponent
     protected function renderSlots(): string
     {
         $values = array_map(strval(...), is_array($this->value) ? $this->value : [$this->value]);
-        $options = implode('', array_map(
-            fn (array $option): string => Html::tag('option', Html::encode($option['label']), [
+        $options = '';
+        $group = null;
+        $groupHtml = '';
+
+        foreach ($this->options as $option) {
+            $optionGroup = $option['group'] ?? null;
+
+            if ($optionGroup !== $group) {
+                $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
+                $group = $optionGroup;
+                $groupHtml = '';
+            }
+
+            $groupHtml .= Html::tag('option', Html::encode($option['label']), [
                 'value' => (string) $option['value'],
                 'selected' => in_array((string) $option['value'], $values, true),
                 'disabled' => $option['disabled'] ?? false,
-            ]),
-            $this->options,
-        ));
+            ]);
+        }
+
+        $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
 
         return Html::tag('select', $options, Arr::merge([
             'slot' => 'input',

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Gql;
@@ -12,7 +14,9 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -160,27 +164,39 @@ it('saves an element successfully', function () {
     expect($fresh->title)->toBe('Updated Title');
 });
 
-it('applies SCENARIO_LIVE when element is enabled', function () {
-    $fixture = createElementMutationResolverEntryFixture();
+it('validates required fields only when saving an enabled element', function (bool $enabled) {
+    $field = Field::factory()->create([
+        'name' => 'Summary',
+        'handle' => 'summary',
+        'type' => PlainText::class,
+    ]);
+    $entryType = EntryType::factory()->withField($field, required: true)->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    EntryTypes::refreshEntryTypes();
+    Fields::refreshFields();
 
     $entry = EntryModel::factory()
-        ->forSection($fixture['section'])
-        ->forEntryType($fixture['entryType'])
+        ->forSection($section)
+        ->forEntryType($entryType)
         ->createElement(['title' => 'Live Test', 'slug' => 'live-test']);
 
-    $entry->enabled = true;
+    $entry->setAuthorIds([User::findOne()->id]);
+    $entry->title = 'Updated Title';
+    $entry->enabled = $enabled;
 
-    $resolver = createConcreteElementMutationResolver();
-    $resolver->publicSaveElement($entry);
+    $save = fn () => createConcreteElementMutationResolver()->publicSaveElement($entry);
 
-    // If we got here without error, the scenario was applied correctly
-    expect(true)->toBeTrue();
-});
-
-it('uses content field key for field value population', function () {
-    $resolver = createConcreteElementMutationResolver();
-    expect(ElementMutationResolver::CONTENT_FIELD_KEY)->toBe('_contentFields');
-});
+    if ($enabled) {
+        expect($save)->toThrow(UserError::class, 'The Summary field is required.');
+        expect(EntryElement::find()->id($entry->id)->status(null)->one()->title)->toBe('Live Test');
+    } else {
+        $save();
+        expect(EntryElement::find()->id($entry->id)->status(null)->one()->title)->toBe('Updated Title');
+    }
+})->with([
+    'enabled' => true,
+    'disabled' => false,
+]);
 
 it('keeps nested argument types local regardless of input order', function () {
     $input = new InputObjectType([

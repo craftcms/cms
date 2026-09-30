@@ -8,8 +8,7 @@ import {
   moveAssets,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
-import type {RowSelectionState} from '@tanstack/vue-table';
+import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */
 export interface AssetMoveConflictPrompt {
@@ -34,21 +33,26 @@ export interface FolderMoveConflictPrompt {
  * The conflict prompt is surfaced as reactive state (`conflictPrompt`) so the
  * page can render a dialog; `resolveConflictChoice` settles it.
  */
-export function useAssetMoveDrag() {
-  const {table, onActionPerformed} = useElementIndexTable();
+export function useAssetMoveDrag(index: ElementIndexOperations) {
+  function onActionPerformed(): void {
+    index.clearSelection();
+    void index.refresh();
+  }
 
   let dragDrop: DragDrop | null = null;
 
   // The row selection as it was when the current drag began, captured before the
   // grab force-selects the dragged row. Restored on drop so a row that wasn't
   // already selected doesn't stay checked (a pre-selected group survives).
-  let preDragSelection: RowSelectionState = {};
+  let restoreSelection = () => {};
 
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
   const folderConflictPrompt = ref<FolderMoveConflictPrompt | null>(null);
 
   function selectedMoveIds(): {assetIds: number[]; folderIds: number[]} {
-    const selection = table.value?.atoms.rowSelection.get() ?? {};
+    const selection = Object.fromEntries(
+      index.view.selection.selectedIds.value.map((id) => [String(id), true])
+    );
     const assetIds: number[] = [];
     const folderIds: number[] = [];
 
@@ -101,7 +105,9 @@ export function useAssetMoveDrag() {
   }
 
   function selectedElements(): HTMLElement[] {
-    const selection = table.value?.atoms.rowSelection.get() ?? {};
+    const selection = Object.fromEntries(
+      index.view.selection.selectedIds.value.map((id) => [String(id), true])
+    );
 
     return Object.entries(selection)
       .filter(([, selected]) => selected)
@@ -252,11 +258,12 @@ export function useAssetMoveDrag() {
       // Snapshot the pre-grab selection first so onDragStop can undo a force
       // select of a row that wasn't already part of a selected group.
       filter: () => {
-        preDragSelection = {...table.value?.atoms.rowSelection.get()};
+        restoreSelection = index.captureSelection();
         const grabbed = dragDrop?.$targetItem;
         if (grabbed?.dataset.rowId) {
           const rowId = grabbed.dataset.rowId;
-          table.value?.setRowSelection((prev) => ({...prev, [rowId]: true}));
+          const row = index.findRow(rowId);
+          if (row) index.view.selection.selection.select(row.id, true);
         }
         return selectedElements();
       },
@@ -280,7 +287,7 @@ export function useAssetMoveDrag() {
         const {assetIds, folderIds} = validTarget
           ? selectedMoveIds()
           : {assetIds: [], folderIds: []};
-        table.value?.setRowSelection(preDragSelection);
+        restoreSelection();
 
         if (!validTarget) {
           dragDrop?.returnHelpersToDraggees();

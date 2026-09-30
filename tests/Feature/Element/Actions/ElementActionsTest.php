@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Actions\SuspendUsers;
@@ -72,22 +73,66 @@ it('flags non-bulk actions when serializing action items', function () {
         ->and($flags[Delete::class] ?? null)->toBeNull();
 });
 
-it('serializes Copy as a client-side event action', function () {
+it('serializes client-owned element actions as events', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
-    $items = collect($this->elementActions->serializeActionItems($actions));
+    $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
 
-    $copy = $items->firstWhere('key', Copy::class);
+    expect($items[Copy::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:copy-elements',
+    ])->and($items[Edit::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:edit-element',
+    ])->and($items[View::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:view-element',
+    ]);
 
-    expect($copy)->not->toBeNull()
-        ->and($copy['action']['type'])->toBe('event')
-        ->and($copy['action']['name'])->toBe('craft:copy-elements')
-        ->and($copy['action'])->not->toHaveKey('url');
-
-    // Duplicate stays a normal perform-endpoint POST.
-    $duplicate = $items->firstWhere('key', Duplicate::class);
+    $duplicate = $items[Duplicate::class];
 
     expect($duplicate['action']['type'])->toBe('http')
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
+});
+
+it('serializes standard selection capabilities for page bulk actions', function () {
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
+
+    expect($items[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
+        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
+});
+
+it('serializes registered download actions for native form submission', function () {
+    $downloadAction = new class extends ElementAction
+    {
+        public static function isDownload(): bool
+        {
+            return true;
+        }
+
+        public function getTriggerLabel(): string
+        {
+            return 'Download entries';
+        }
+    };
+
+    Event::listen(function (ElementActionsResolving $event) use ($downloadAction) {
+        if ($event->elementType === Entry::class) {
+            $event->actions[] = clone $downloadAction;
+        }
+    });
+
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = collect($this->elementActions->serializeActionItems($actions));
+    $download = $items->firstWhere('key', $downloadAction::class);
+
+    expect($download)->not->toBeNull()
+        ->and($download['label'])->toBe('Download entries')
+        ->and($download['action']['type'])->toBe('download')
+        ->and($download['action']['method'])->toBe('POST')
+        ->and($download['action']['url'])->toContain('element-indexes/perform-action')
+        ->and($download['action']['body']['elementAction'])->toBe($downloadAction::class);
 });
 
 it('puts restore first for trashed queries', function () {

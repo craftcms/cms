@@ -13,35 +13,6 @@ beforeEach(function () {
     $this->progressService = app(JobProgress::class);
 });
 
-it('can be instantiated with element type', function () {
-    $job = new ResaveElements(
-        elementType: EntryElement::class,
-    );
-
-    expect($job)->toBeInstanceOf(ResaveElements::class);
-});
-
-it('can be instantiated with criteria', function () {
-    $job = new ResaveElements(
-        elementType: EntryElement::class,
-        criteria: ['sectionId' => 1],
-    );
-
-    expect($job)->toBeInstanceOf(ResaveElements::class);
-});
-
-it('can be dispatched to the queue', function () {
-    Queue::fake();
-
-    $job = new ResaveElements(
-        elementType: EntryElement::class,
-    );
-
-    dispatch($job);
-
-    Queue::assertPushed(ResaveElements::class);
-});
-
 it('provides a description', function () {
     $job = new ResaveElements(
         elementType: EntryElement::class,
@@ -100,8 +71,8 @@ it('respects criteria when resaving', function () {
     $updatedFirst = EntryElement::findOne($firstEntry->id);
     $otherEntry = EntryElement::findOne($entries->skip(1)->first()->id);
 
-    // First entry should have been touched
-    expect($updatedFirst->dateUpdated)->not->toBe($firstEntry->dateUpdated);
+    expect($updatedFirst->dateUpdated)->not->toEqual($firstEntry->dateUpdated)
+        ->and($otherEntry->dateUpdated)->toEqual($entries->skip(1)->first()->dateUpdated);
 });
 
 it('can set an attribute value', function () {

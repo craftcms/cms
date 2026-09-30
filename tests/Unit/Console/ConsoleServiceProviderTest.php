@@ -7,7 +7,6 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
-use Override;
 
 afterEach(function () {
     ClearCaches::flushState();

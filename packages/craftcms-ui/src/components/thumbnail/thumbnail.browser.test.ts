@@ -130,3 +130,25 @@ it('shows the image again when animated is turned off after freezing', async () 
   ).toBeNull();
   expect(image.classList.contains('cp-visually-hidden')).toBe(false);
 });
+
+it('takes its size and image radius from an ancestor', async () => {
+  document.body.innerHTML = `
+    <div style="--c-thumbnail-size: 50px; --c-thumbnail-image-radius: 4px">
+      <craft-thumbnail src="${opaqueImage}" alt="Square"></craft-thumbnail>
+      <craft-thumbnail src="${opaqueImage}" alt="Round" rounded></craft-thumbnail>
+    </div>`;
+  const [square, round] = [...document.querySelectorAll('craft-thumbnail')];
+  await square!.updateComplete;
+  await round!.updateComplete;
+
+  const part = (element: Element, selector: string) =>
+    element.shadowRoot!.querySelector(selector)!;
+
+  expect(part(square!, '.thumbnail').getBoundingClientRect().width).toBe(50);
+  expect(
+    getComputedStyle(part(square!, '.thumbnail__image')).borderRadius
+  ).toBe('4px');
+  expect(
+    getComputedStyle(part(round!, '.thumbnail__image')).borderRadius
+  ).not.toBe('4px');
+});

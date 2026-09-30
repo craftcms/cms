@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -452,3 +453,41 @@ it('leaves a source addressed by query to requests that ask for it', function (s
     'the bare index' => ['/admin/content/entries', []],
     'the query that names it' => ['/admin/content/entries?source=custom:1', ['Recent']],
 ]);
+
+it('links a source the way the nav does, on whichever page it lives', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries', 'Blog Posts']));
+    $sources->shouldReceive('getSources')->andReturnUsing(
+        fn (string $elementType, string $context = ElementSources::CONTEXT_INDEX, bool $withDisabled = false, ?string $page = null) => collect(
+            $page === 'Blog Posts'
+                ? [
+                    [
+                        'type' => ElementSources::TYPE_NATIVE,
+                        'key' => 'section:abc',
+                        'label' => 'Posts',
+                        'data' => ['handle' => 'posts'],
+                    ],
+                    ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
+                ]
+                : [['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'label' => 'All entries']],
+        ),
+    );
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        $sources,
+        cpSettings(),
+    );
+
+    expect($navigation->sourceUrl(Entry::class, 'section:abc'))->toEndWith('/content/blog-posts/posts')
+        ->and($navigation->sourceUrl(Entry::class, 'custom:1'))->toEndWith('/content/blog-posts?source=custom%3A1')
+        ->and($navigation->sourceUrl(Entry::class, 'nope'))->toBeNull();
+});

@@ -22,6 +22,7 @@ export interface SampleEntry {
   status: string;
   section: string;
   postDate: string;
+  label?: string;
 }
 
 export const sampleEntries: Array<SampleEntry> = [
@@ -109,7 +110,7 @@ export const sampleEntries: Array<SampleEntry> = [
     section: 'Blog',
     postDate: '2026-07-20',
   },
-];
+].map((entry) => ({...entry, label: entry.title}));
 
 // The CP's own tables sort and paginate on the server; the sample table has no
 // server, so it does both on the client.

@@ -79,13 +79,6 @@ it('reports capabilities from the receiver', function (Edition $edition, Edition
     'uninstalled' => false,
 ]);
 
-it('knows when oauth is supported', function () {
-    expect(Edition::Solo->supportsOAuth())->toBeFalse()
-        ->and(Edition::Team->supportsOAuth())->toBeFalse()
-        ->and(Edition::Pro->supportsOAuth())->toBeTrue()
-        ->and(Edition::Enterprise->supportsOAuth())->toBeTrue();
-});
-
 it('can get the current licensed edition', function () {
     expect(Edition::getLicensed())->toBeNull();
 

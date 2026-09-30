@@ -50,7 +50,7 @@ readonly class WorkflowRunStageData
             current: $run->isPending() && $isCurrent,
             approved: $isApproved,
             icon: match (true) {
-                $failed => 'xmark',
+                $failed => 'xmark-large',
                 $isApproved => 'check',
                 $run->isPending() && $isCurrent => 'clock',
                 default => 'minus',

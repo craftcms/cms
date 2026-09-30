@@ -22,10 +22,6 @@ beforeEach(function () {
 it('renders pages', function (string $url, string $title, array $extraContent = []) {
     $response = get("/{$this->cpTrigger}{$url}");
 
-    if ($response->status() === 404) {
-        $this->markTestIncomplete('Page not found: '.$url);
-    }
-
     $response->assertOk()
         ->assertSee($title);
     foreach ($extraContent as $content) {
@@ -34,7 +30,8 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
 })->with([
     ['url' => '/dashboard', 'title' => 'Dashboard'],
     ['url' => '/content/entries', 'title' => 'Entries'],
-    ['url' => '/users', 'title' => 'Users'],
+    // The bare `/users` index redirects to the source it shows.
+    ['url' => '/users/all', 'title' => 'Users'],
 
     [
         'url' => '/settings/users/fields',
@@ -50,10 +47,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
 
 it('renders inertia pages', function (string $url, string $component, string $title) {
     $response = get("/{$this->cpTrigger}{$url}");
-
-    if ($response->status() === 404) {
-        $this->markTestIncomplete('Page not found: '.$url);
-    }
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component($component)
@@ -98,10 +91,6 @@ it('renders inertia pages', function (string $url, string $component, string $ti
 
 it('renders utility pages', function (string $url, string $title, array $extraContent = []) {
     $response = get("/{$this->cpTrigger}{$url}");
-
-    if ($response->status() === 404) {
-        $this->markTestIncomplete('Page not found: '.$url);
-    }
 
     $response->assertInertia(function (AssertableInertia $page) use ($title, $extraContent) {
         $page->where('title', $title);

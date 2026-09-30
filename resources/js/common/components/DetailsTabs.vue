@@ -204,7 +204,7 @@
           />
           <craft-button
             type="button"
-            icon="x"
+            icon="xmark-large"
             :aria-label="t('Close {tab}', {tab: tab.label})"
             variant="plain"
             size="small"

@@ -149,10 +149,11 @@ export class BaseDrag extends Drag {
         continue;
       }
 
+      // (relative to the scroll container's pointer-down scroll position)
       const offset = getOffset(item);
       midpointData.set(item, {
-        left: offset.left + getOuterWidth(item) / 2,
-        top: offset.top + getOuterHeight(item) / 2,
+        left: offset.left + this.scrollDeltaX + getOuterWidth(item) / 2,
+        top: offset.top + this.scrollDeltaY + getOuterHeight(item) / 2,
       });
     }
   }
@@ -173,8 +174,8 @@ export class BaseDrag extends Drag {
       const mouseDiff = getDist(
         midpoint.left,
         midpoint.top,
-        this.mouseX!,
-        this.mouseY!
+        this.mouseX! + this.scrollDeltaX,
+        this.mouseY! + this.scrollDeltaY
       );
 
       if (closestItem === null || mouseDiff < closestItemMouseDiff!) {

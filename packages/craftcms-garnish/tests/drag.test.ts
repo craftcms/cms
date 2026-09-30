@@ -323,6 +323,42 @@ describe('BaseDrag drag start threshold + axis locking', () => {
     expect(d.mouseDistY).toBe(15);
   });
 
+  it('factors scroll container scrolling into mouseDistY', () => {
+    const container = document.createElement('div');
+    const a = document.createElement('div');
+    container.appendChild(a);
+    document.body.appendChild(container);
+    mockRect(a, 0, 0);
+
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      overflow: 'auto',
+      overflowX: 'visible',
+      overflowY: 'auto',
+    } as CSSStyleDeclaration);
+    Object.defineProperty(container, 'scrollHeight', {
+      value: 500,
+      configurable: true,
+    });
+    Object.defineProperty(container, 'clientHeight', {
+      value: 100,
+      configurable: true,
+    });
+    Object.defineProperty(container, 'scrollTop', {
+      value: 0,
+      writable: true,
+      configurable: true,
+    });
+
+    const d = new BaseDrag([a], {minMouseDist: 0});
+    firePointer(a, 'pointerdown', {pageX: 10, pageY: 10});
+    container.scrollTop = 40;
+    container.dispatchEvent(new Event('scroll'));
+
+    expect(d.scrollDeltaY).toBe(40);
+    expect(d.mouseY).toBe(10);
+    expect(d.mouseDistY).toBe(40);
+  });
+
   it('ignores pointermove from a different pointerId (multi-touch)', () => {
     const a = makeItem();
     mockRect(a, 0, 0);

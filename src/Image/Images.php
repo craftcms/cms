@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
@@ -15,6 +17,14 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Imagick;
+use Intervention\Image\Colors\ColorExtractor;
+use Intervention\Image\Colors\Oklch\Channels\Lightness;
+use Intervention\Image\Colors\Oklch\Colorspace as OklchColorspace;
+use Intervention\Image\Colors\Rgb\Channels\Alpha;
+use Intervention\Image\Colors\Rgb\Channels\Blue;
+use Intervention\Image\Colors\Rgb\Channels\Green;
+use Intervention\Image\Colors\Rgb\Channels\Red;
+use Intervention\Image\Colors\Rgb\Colorspace as RgbColorspace;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
@@ -22,6 +32,7 @@ use Intervention\Image\Exceptions\MissingDependencyException;
 use Intervention\Image\FileExtension;
 use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Interfaces\ColorInterface;
 use Intervention\Image\Interfaces\DriverInterface;
 use Jcupitt\Vips\Image as VipsImage;
 use Throwable;
@@ -31,6 +42,24 @@ use function CraftCms\Cms\maxPowerCaptain;
 #[Singleton]
 class Images
 {
+    /** The longest side, in pixels, images are scaled down to before their colors are sampled. */
+    private const int COLOR_SAMPLE_SIZE = 100;
+
+    /** How many regions the color grid divides an image into along its longer side. */
+    private const int COLOR_GRID_LONG_SIDE = 4;
+
+    /** How many regions the color grid divides an image into along its shorter side. */
+    private const int COLOR_GRID_SHORT_SIDE = 3;
+
+    /** How many dominant colors are considered when passing over near-black and near-white ones. */
+    private const int DOMINANT_COLOR_CANDIDATES = 5;
+
+    /** Oklch lightness below which a dominant color counts as black. */
+    private const float DOMINANT_COLOR_BLACK_LIGHTNESS = 0.2;
+
+    /** Oklch lightness above which a dominant color counts as white. */
+    private const float DOMINANT_COLOR_WHITE_LIGHTNESS = 0.95;
+
     /** @var string[] */
     private array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
@@ -263,6 +292,85 @@ class Images
         }
 
         return $image;
+    }
+
+    /**
+     * Samples an image’s colors: its dominant color, and a grid of the average
+     * colors of its regions, which is enough to paint a blurred placeholder of it.
+     *
+     * The image is scaled down first, since the colors of a thumbnail are
+     * representative and every pixel of one can be sampled quickly. Its
+     * dominant colors are then clustered by Intervention, and near-black and
+     * near-white ones are passed over in favor of the most dominant other
+     * color, if there is one — a photo on a white backdrop is about what's in
+     * front of it.
+     *
+     * The grid is 4×3 regions for landscape and square images and 3×4 for
+     * portrait ones, averaged in linear light (see {@see ColorGrid::average()}).
+     * Both are empty if the image can’t be read.
+     */
+    public function colors(string $filePath): ImageColors
+    {
+        if (File::isSvg($filePath) && ! $this->getCanRasterizeSvg()) {
+            return new ImageColors;
+        }
+
+        try {
+            $image = $this->loadImage($filePath, rasterize: true, svgSize: self::COLOR_SAMPLE_SIZE);
+            $intervention = $image instanceof Raster ? $image->getInterventionImage() : null;
+
+            if (! $intervention) {
+                return new ImageColors;
+            }
+
+            $intervention->scaleDown(self::COLOR_SAMPLE_SIZE, self::COLOR_SAMPLE_SIZE);
+            $candidates = iterator_to_array(new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES), false);
+
+            [$columns, $rows] = $intervention->width() >= $intervention->height()
+                ? [self::COLOR_GRID_LONG_SIDE, self::COLOR_GRID_SHORT_SIDE]
+                : [self::COLOR_GRID_SHORT_SIDE, self::COLOR_GRID_LONG_SIDE];
+
+            $width = $intervention->width();
+            $height = $intervention->height();
+            $pixels = [];
+
+            for ($y = 0; $y < $height; $y++) {
+                for ($x = 0; $x < $width; $x++) {
+                    $color = $intervention->colorAt($x, $y)->toColorspace(RgbColorspace::class);
+                    $pixels[] = [
+                        (int) $color->channel(Red::class)->value(),
+                        (int) $color->channel(Green::class)->value(),
+                        (int) $color->channel(Blue::class)->value(),
+                        $color->channel(Alpha::class)->value() / 255,
+                    ];
+                }
+            }
+
+            $grid = ColorGrid::average($pixels, $width, $height, $columns, $rows);
+        } catch (Throwable $e) {
+            Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
+
+            return new ImageColors;
+        }
+
+        $dominant = Arr::first($candidates, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $candidates[0] ?? null;
+
+        return new ImageColors(
+            dominant: $dominant ? $this->hex($dominant) : null,
+            grid: $grid,
+        );
+    }
+
+    private function hex(ColorInterface $color): string
+    {
+        return $color->toColorspace(RgbColorspace::class)->toHex(prefix: true);
+    }
+
+    private function isNearBlackOrWhite(ColorInterface $color): bool
+    {
+        $lightness = $color->toColorspace(OklchColorspace::class)->channel(Lightness::class)->value();
+
+        return $lightness < self::DOMINANT_COLOR_BLACK_LIGHTNESS || $lightness > self::DOMINANT_COLOR_WHITE_LIGHTNESS;
     }
 
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool

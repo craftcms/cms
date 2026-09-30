@@ -84,10 +84,12 @@ describe('ElementChips', () => {
     expect(chips(root)[0]!.textContent).toContain('Homepage');
   });
 
-  it('falls back to the id when an element has no label', async () => {
-    const {root} = mount({data: [{id: 9}]});
+  it("labels each chip's checkbox with the element's own title", async () => {
+    const {root} = mount();
 
-    expect(chips(root)[0]!.textContent).toContain('9');
+    expect(chips(root)[0]!.getAttribute('select-label')).toBe(
+      'Select Homepage'
+    );
   });
 
   it('stacks by default and wraps when inline', async () => {

@@ -59,6 +59,7 @@ it('applies properties from the Vue Markdown Control', async () => {
     invalid: false,
     required: false,
     slot: 'input',
+    label: 'Description',
     'data-form-control-path': '["body"]',
   }).mount(container);
   await nextTick();
@@ -66,6 +67,7 @@ it('applies properties from the Vue Markdown Control', async () => {
   const textarea = container.querySelector('textarea')!;
   const textExpander = container.querySelector('craft-text-expander')!;
 
+  expect(textarea.getAttribute('aria-label')).toBe('Description');
   expect(textarea.getAttribute('rows')).toBe('6');
   expect(textarea.closest('craft-markdown-field')).toMatchObject({
     slot: 'input',

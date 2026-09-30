@@ -279,6 +279,49 @@ it('re-resolves a source Form from posted settings', function () {
     expect(control($form, ['sources', 'structured', 'defaultSort', 'dir'])['mode'])->toBe('disabled');
 });
 
+it('holds structure order ascending, since the direction control is disabled for it', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class), [
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'structured',
+        ],
+    ]);
+
+    $form = postJson(action([ElementSourcesController::class, 'form']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceKey' => 'structured',
+        'type' => ElementSources::TYPE_NATIVE,
+        'settings' => [
+            'defaultSort' => ['attr' => 'structure', 'dir' => 'desc'],
+        ],
+    ])->assertOk()->json('form');
+
+    expect($form['values']['sources']['structured']['defaultSort']['dir'])->toBe('asc');
+});
+
+it('gives each sort attribute its default direction', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class), [
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'structured',
+        ],
+    ]);
+
+    $form = postJson(action([ElementSourcesController::class, 'form']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceKey' => 'structured',
+        'type' => ElementSources::TYPE_NATIVE,
+    ])->assertOk()->json('form');
+
+    $options = controlProps($form, ['sources', 'structured', 'defaultSort', 'attr'])['options'];
+
+    expect($options)->not->toBeEmpty()
+        ->and(collect($options)->every(fn (array $option) => in_array($option['defaultDir'] ?? null, ['asc', 'desc'], true)))->toBeTrue()
+        ->and(collect($options)->every(
+            fn (array $option) => ($option['group'] ?? null) === (str_starts_with((string) $option['value'], 'field:') ? 'Fields' : null),
+        ))->toBeTrue();
+});
+
 it('stores normalized source settings for multi-page sources', function () {
     $projectConfig = app(ProjectConfig::class);
 

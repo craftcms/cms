@@ -2,20 +2,44 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -45,6 +69,68 @@ beforeEach(function () {
         ],
     );
 });
+
+/**
+ * @param  array<string, mixed>  $settings
+ * @param  list<string>  $titles
+ * @param  list<string>  $otherMatrixTitles
+ * @return array{owner: Entry, field: Matrix, nestedType: EntryType, columnField: Field}
+ */
+function embeddedMatrixIndexFixture(array $settings = [], array $titles = ['First', 'Second'], array $otherMatrixTitles = []): array
+{
+    $columnField = Field::factory()->create([
+        'handle' => 'indexColumn',
+        'type' => PlainText::class,
+    ]);
+    $nestedLayout = FieldLayout::factory()->forField($columnField)->create(['type' => Entry::class]);
+    $nestedType = EntryType::factory()->withFieldLayout($nestedLayout)->create(['hasTitleField' => true]);
+    $matrixSettings = [
+        'entryTypes' => [$nestedType->id],
+        'viewMode' => Matrix::VIEW_MODE_INDEX,
+        'includeTableView' => true,
+        'defaultIndexViewMode' => 'table',
+        'defaultTableColumns' => ['dateCreated'],
+        'pageSize' => 1,
+        ...$settings,
+    ];
+    $factory = EntryModel::factory()->withField('matrixField', Matrix::class, $matrixSettings);
+
+    if ($otherMatrixTitles !== []) {
+        $factory = $factory->withField('otherMatrix', Matrix::class, $matrixSettings);
+    }
+
+    $fixture = $factory->createElementWithFields();
+    $owner = $fixture->element;
+
+    foreach (['matrixField' => $titles, 'otherMatrix' => $otherMatrixTitles] as $handle => $handleTitles) {
+        if ($handleTitles === []) {
+            continue;
+        }
+
+        $entries = [];
+        $sortOrder = [];
+
+        foreach ($handleTitles as $title) {
+            $uid = 'uid:'.Str::uuid();
+            $entries[$uid] = ['type' => $nestedType->handle, 'title' => $title];
+            $sortOrder[] = $uid;
+        }
+
+        $owner->setFieldValueFromRequest($handle, [
+            'entries' => $entries,
+            'sortOrder' => $sortOrder,
+        ]);
+    }
+
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    return [
+        'owner' => Entry::find()->id($owner->id)->one(),
+        'field' => Fields::getFieldById($fixture->field('matrixField')->id),
+        'nestedType' => $nestedType,
+        'columnField' => $columnField,
+    ];
+}
 
 it('requires authentication for get-elements', function () {
     auth()->logout();
@@ -171,12 +257,13 @@ it('returns different filtered and unfiltered counts when filters are applied', 
         ->assertJsonPath('unfilteredTotal', 2);
 });
 
-it('accepts the embedded index context for element index routes', function () {
+it('requires owner scope for embedded index routes', function () {
     EntryModel::factory()->create();
 
     ($this->postIndexAction)('get-elements', [
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
-    ])->assertOk();
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute']);
 });
 
 it('returns filter hud html with asset payloads', function () {
@@ -265,4 +352,268 @@ it('accepts the modern filter HUD source descriptor', function () {
         'id' => 'filters',
         'source' => ['type' => 'native', 'key' => '*', 'label' => 'All entries'],
     ])->assertOk()->assertJsonPath('builder.config.sourceKey', '*');
+});
+
+it('includes the first server-rendered page in editable Matrix index controls', function () {
+    $fixture = embeddedMatrixIndexFixture();
+    $props = $fixture['field']->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $fixture['owner'],
+    ))->props();
+
+    expect($props['index'])->toHaveKeys(['indexSettings', 'initial'])
+        ->not->toHaveKeys(['defaultTableColumns', 'fieldLayouts', 'pageSize'])
+        ->and($props['index']['indexSettings'])->toHaveKeys(['storageKey', 'showHeaderColumn'])
+        ->and($props['index']['initial'])->toHaveKeys(['data', 'pagination', 'headHtml', 'bodyHtml', 'reorderable'])
+        ->and($props['index']['initial']['viewState']['mode'])->toBe('table')
+        ->and($props['index']['initial']['pagination']['per_page'])->toBe(1)
+        ->and($props['index']['initial']['pagination']['total'])->toBe(2)
+        ->and($props['index']['initial']['data'])->toHaveCount(1)
+        ->and($props['index']['initial']['sort'])->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
+        ->and($props['index']['initial']['reorderable'])->toBeTrue()
+        ->and(json_decode(json_encode($props), true))->toBe($props)
+        ->and($props['manager']['pasteableEntryTypeIds'])->toBe([$fixture['nestedType']->id]);
+});
+
+it('keeps page assets outside an embedded Matrix initial payload', function () {
+    $fixture = embeddedMatrixIndexFixture();
+    HtmlStack::cssFile('/page-before-matrix.css');
+
+    $props = $fixture['field']->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $fixture['owner'],
+    ))->props();
+
+    expect($props['index']['initial']['headHtml'])->not->toContain('/page-before-matrix.css')
+        ->and(HtmlStack::headHtml())->toContain('/page-before-matrix.css');
+});
+
+it('applies server-owned Matrix index configuration', function () {
+    $fixture = embeddedMatrixIndexFixture();
+    $props = $fixture['field']->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $fixture['owner'],
+    ))->props();
+
+    $response = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$props['manager'],
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '__IMP__',
+        'fieldId' => 999999,
+        'viewMode' => 'table',
+        'allowedViewModes' => ['thumbs'],
+        'defaultTableColumns' => ['dateUpdated'],
+        'fieldLayouts' => [],
+        'per_page' => 100,
+        'showHeaderColumn' => false,
+        'sortable' => false,
+        'static' => true,
+        'prevalidate' => true,
+        'sort' => [['field' => 'sortOrder', 'direction' => 'desc']],
+    ])->assertOk();
+    $actions = collect($response->json('actions'))->keyBy('key');
+
+    expect($response->json('pagination.per_page'))->toBe(1)
+        ->and($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.title'))->toContain('First')
+        ->and($response->json('data.0.cardAttributes.class'))->toContain('removable')
+        ->and($response->json('data.0.editUrl'))->toContain("fieldId={$fixture['field']->id}", 'prevalidate=1')
+        ->and($response->json('sort'))->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
+        ->and($response->json('reorderable'))->toBeTrue()
+        ->and($response->json('viewState.static'))->toBeFalse()
+        ->and($response->json('viewState.showHeaderColumn'))->toBeTrue()
+        ->and($response->json('defaultTableColumns'))->toBe(['dateCreated'])
+        ->and(array_column($response->json('tableColumns'), 'value'))->toContain("field:{$fixture['columnField']->uid}")
+        ->and(array_column($response->json('viewModes'), 'mode'))->toEqualCanonicalizing(['cards', 'table'])
+        ->and($actions->keys()->all())->toContain(Copy::class, Duplicate::class, Delete::class)
+        ->and($actions[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
+        ->and($actions[Delete::class]['selectionAttribute'])->toBe('deletable');
+});
+
+it('disables embedded reordering when the view is filtered or re-sorted', function (Closure $query) {
+    $fixture = embeddedMatrixIndexFixture();
+    $props = $fixture['field']->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $fixture['owner'],
+    ))->props();
+
+    postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$props['manager'],
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '__IMP__',
+        ...$query(),
+    ])->assertOk()->assertJsonPath('reorderable', false);
+})->with([
+    'search' => fn () => ['search' => 'First'],
+    'status' => fn () => ['status' => 'disabled'],
+    'condition rules' => fn () => ['condition' => [
+        'class' => EntryCondition::class,
+        'conditionRules' => [[
+            'class' => AuthorConditionRule::class,
+            'elementIds' => [auth()->id()],
+        ]],
+    ]],
+    'different primary sort' => fn () => ['sort' => [['field' => 'dateCreated', 'direction' => 'asc']]],
+]);
+
+it('scopes a read-only embedded Matrix index without granting mutation access', function (bool $revision) {
+    $fixture = embeddedMatrixIndexFixture(titles: ['Included'], otherMatrixTitles: ['Wrong field']);
+    $owner = $fixture['owner'];
+    $field = $fixture['field'];
+
+    if ($revision) {
+        $owner = Elements::getElementById(app(Revisions::class)->createRevision($owner, force: true));
+    }
+    $props = $field->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $owner,
+        mode: ControlMode::ReadOnly,
+    ))->props();
+    expect(json_decode(json_encode($props), true))->toBe($props)
+        ->and($props['index']['initial']['viewState']['static'])->toBeTrue()
+        ->and($props['index']['initial']['reorderable'])->toBeFalse()
+        ->and($props['index']['initial']['data'])->toHaveCount(1)
+        ->and($props['index']['initial']['data'][0]['label'])->toBe('Included');
+
+    $request = [
+        ...$props['manager'],
+        ...Arr::except($props['index'], ['initial']),
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '*',
+        'baseCriteria' => ['ownerId' => 999999, 'fieldId' => 999999],
+        'criteria' => ['ownerId' => 999999, 'fieldId' => 999999, 'trashed' => true],
+        'allowedViewModes' => ['thumbs'],
+        'editable' => true,
+        'per_page' => 100,
+        'sortable' => true,
+        'static' => false,
+    ];
+    $cardResponse = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$request,
+        'viewMode' => 'cards',
+    ])->assertOk()
+        ->assertJsonPath('pagination.total', 1)
+        ->assertJsonPath('pagination.unfilteredTotal', 1)
+        ->assertJsonPath('pagination.per_page', 1)
+        ->assertJsonPath('reorderable', false)
+        ->assertJsonPath('viewState.static', true);
+    $tableResponse = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$request,
+        'viewMode' => 'table',
+    ])->assertOk();
+    $card = $cardResponse->json('data.0');
+    $tableRow = $tableResponse->json('data.0');
+
+    expect($cardResponse->json('data'))->toHaveCount(1)
+        ->and($card['label'])->toBe('Included')
+        ->and($card['actionMenuItems'])->toBe([])
+        ->and($tableRow)->not->toHaveKey('inlineEditable')
+        ->and($tableRow)->not->toHaveKey('inlineInputHtml')
+        ->and($card['editUrl'])->toBe($tableRow['editUrl'])
+        ->and(new Crawler($tableRow['title'])->filter('[href]')->attr('href'))->toBe($tableRow['editUrl'])
+        ->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:matrixField"))->toBeFalse()
+        ->and(SessionAuth::checkAuthorization("reorderNestedElements::{$owner->id}::field:matrixField"))->toBeFalse();
+})->with(['canonical owner' => false, 'revision owner' => true]);
+
+it('uses grid directions for embedded Matrix card actions', function () {
+    $fixture = embeddedMatrixIndexFixture(titles: ['Nested entry']);
+    $props = $fixture['field']->formControl(new FieldContext(path: 'matrixField', element: $fixture['owner']))->props();
+
+    $response = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$props['manager'],
+        ...$props['index'],
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '*',
+        'viewMode' => 'cards',
+        'showInGrid' => true,
+    ])->assertOk();
+
+    $labels = array_column($response->json('data.0.actionMenuItems'), 'label');
+
+    expect($labels)->toContain('Move forward', 'Move backward', 'Paste entry before')
+        ->not()->toContain('Move up', 'Move down', 'Paste entry above');
+});
+
+it('uses the validated owner site for embedded Matrix rows', function () {
+    $fixture = embeddedMatrixIndexFixture(['pageSize' => null], ['Primary site child']);
+    $owner = $fixture['owner'];
+    $field = $fixture['field'];
+    $nestedType = $fixture['nestedType'];
+
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $owner->sectionId,
+        'siteId' => $secondSite->id,
+    ]);
+    Sections::refreshSections();
+
+    $owner = Entry::find()->id($owner->id)->siteId($owner->siteId)->one();
+    $secondaryOwner = Elements::propagateElement($owner, $secondSite->id);
+    $secondaryPrimaryChild = Entry::find()
+        ->fieldId($field->id)
+        ->ownerId($secondaryOwner->id)
+        ->siteId($secondSite->id)
+        ->status(null)
+        ->one();
+    if ($secondaryPrimaryChild !== null) {
+        Elements::deleteElementForSite($secondaryPrimaryChild);
+    }
+    $section = Section::query()->findOrFail($owner->sectionId);
+    $section->entryTypes()->syncWithoutDetaching([$nestedType->id => ['sortOrder' => 2]]);
+
+    foreach (['First secondary site child', 'Second secondary site child'] as $sortOrder => $title) {
+        $child = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($nestedType)
+            ->title($title)
+            ->createElement([
+                'fieldId' => $field->id,
+                'primaryOwnerId' => $secondaryOwner->id,
+            ]);
+
+        DB::table(Table::ENTRIES)->where('id', $child->id)->update(['sectionId' => null]);
+        DB::table(Table::ELEMENTS_OWNERS)->insert([
+            'elementId' => $child->id,
+            'ownerId' => $secondaryOwner->id,
+            'sortOrder' => $sortOrder + 1,
+        ]);
+
+        Sections::refreshSections();
+        $child = Entry::find()->id($child->id)->siteId($owner->siteId)->status(null)->one();
+        Elements::propagateElement($child, $secondSite->id);
+        Elements::deleteElementForSite($child);
+    }
+    Sections::refreshSections();
+
+    $props = $field->formControl(new FieldContext(
+        path: 'matrixField',
+        element: $secondaryOwner,
+        mode: ControlMode::ReadOnly,
+    ))->props();
+
+    postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$props['manager'],
+        ...$props['index'],
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '*',
+        'viewMode' => 'table',
+    ])->assertOk()
+        ->assertJsonPath('pagination.total', 2)
+        ->assertJsonPath('pagination.unfilteredTotal', 2)
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data', function (array $rows) use ($secondSite): bool {
+            $titles = implode(' ', array_column($rows, 'title'));
+
+            return collect($rows)->every(fn (array $row): bool => $row['siteId'] === $secondSite->id) &&
+                str_contains($titles, 'First secondary site child') &&
+                str_contains($titles, 'Second secondary site child') &&
+                ! str_contains($titles, 'Primary site child');
+        });
 });

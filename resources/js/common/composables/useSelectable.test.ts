@@ -195,6 +195,16 @@ describe('useSelectable', () => {
       ]);
     });
 
+    it('contracts a shift-click range from its original anchor', () => {
+      const selection = useSelectable({ids: [1, 2, 3, 4, 5], click: 'replace'});
+
+      selection.handleClick(1, clickEvent());
+      selection.handleClick(5, clickEvent({shiftKey: true}));
+      selection.handleClick(3, clickEvent({shiftKey: true}));
+
+      expect(selection.selectedIds.value).toEqual([1, 2, 3]);
+    });
+
     it('ignores a click that landed on a control inside the item', () => {
       const selection = useSelectable({ids: [1, 2, 3]});
 
@@ -284,6 +294,16 @@ describe('useSelectable', () => {
         1, 2, 3,
       ]);
       expect(selection.anchorIndex.value).toBe(0);
+    });
+
+    it('contracts a checkbox range even when the target was selected', () => {
+      const selection = useSelectable({ids: [1, 2, 3, 4, 5]});
+
+      selection.setChecked(1, true);
+      selection.setChecked(5, true, {shiftKey: true});
+      selection.setChecked(3, false, {shiftKey: true});
+
+      expect(selection.selectedIds.value).toEqual([1, 2, 3]);
     });
 
     it('falls back to a plain change when shift is held with no anchor', () => {

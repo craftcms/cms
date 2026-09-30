@@ -24,6 +24,8 @@ export interface BulkActionItem {
   bulk?: boolean;
   /** Limits the action to real elements or synthetic asset-folder rows. */
   appliesTo?: 'elements' | 'folders';
+  /** Row capability that every selected element must expose as truthy. */
+  selectionAttribute?: keyof ElementCapabilities;
   /** The primitive action descriptor. Absent for disabled/placeholder items. */
   action?:
     | {
@@ -42,5 +44,54 @@ export interface BulkActionItem {
         type: 'clipboard';
         value: string;
       };
+}
+
+export type BulkActionParams = Record<string, unknown>;
+
+export interface ElementCapabilities {
+  copyable: boolean;
+  duplicatable: boolean;
+  deletable: boolean;
+}
+
+export function selectionAllows(
+  item: BulkActionItem,
+  elements: ReadonlyArray<ElementActionSelection>
+): boolean {
+  const attribute = item.selectionAttribute;
+
+  return (
+    !attribute ||
+    elements.every((element) => element.capabilities?.[attribute] === true)
+  );
+}
+
+export interface ElementActionSelection {
+  id: string | number;
+  capabilities?: Partial<ElementCapabilities>;
+  type?: string;
+  siteId?: number | null;
+  entryTypeId?: number | null;
+  ownerId?: number | null;
+  fieldId?: number | null;
+  draftId?: number | null;
+  revisionId?: number | null;
+  data?: {entryTypeId?: number | null};
+  cardAttributes?: {
+    data?: Record<string, unknown>;
+  };
+}
+
+export type RunBulkAction = (overrides?: BulkActionParams) => Promise<boolean>;
+
+export type PerformBulkAction = (
+  item: BulkActionItem,
+  run: RunBulkAction
+) => Promise<void>;
+
+export interface BulkActionEventDetail {
+  elementIds: ReadonlyArray<string | number>;
+  elementType: string;
+  trigger: HTMLElement;
 }
 import type {FormValues} from '@/modules/forms/types';

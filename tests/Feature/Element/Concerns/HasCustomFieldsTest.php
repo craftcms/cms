@@ -55,10 +55,6 @@ beforeEach(function () {
 });
 
 describe('field values', function () {
-    test('getFieldValues returns array', function () {
-        expect($this->entry->getFieldValues())->toBeArray();
-    });
-
     test('getFieldValues returns only specified field handles', function () {
         $this->entry->setFieldValue('testField', 'test value');
         $values = $this->entry->getFieldValues(['testField']);
@@ -72,10 +68,6 @@ describe('field values', function () {
         $values = $this->entry->getFieldValues(['nonExistentField']);
 
         expect($values)->not->toHaveKey('testField');
-    });
-
-    test('getSerializedFieldValues returns array', function () {
-        expect($this->entry->getSerializedFieldValues())->toBeArray();
     });
 
     test('getSerializedFieldValues serializes field values', function () {
@@ -121,10 +113,6 @@ describe('get and set field values', function () {
 });
 
 describe('dirty fields', function () {
-    test('getDirtyFields returns array', function () {
-        expect($this->entry->getDirtyFields())->toBeArray();
-    });
-
     test('setDirtyFields marks fields as dirty', function () {
         $this->entry->setDirtyFields(['testField']);
 
@@ -162,10 +150,6 @@ describe('dirty fields', function () {
 });
 
 describe('generated field values', function () {
-    test('getGeneratedFieldValues returns array by default', function () {
-        expect($this->entry->getGeneratedFieldValues())->toBeArray();
-    });
-
     test('setGeneratedFieldValues stores values', function () {
         $this->entry->setGeneratedFieldValues(['test' => 'value']);
 

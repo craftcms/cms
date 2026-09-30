@@ -177,7 +177,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
           ?disabled=${this.busy}
           @click=${this.#onCloseClick}
         >
-          <craft-icon name="xmark"></craft-icon>
+          <craft-icon name="xmark-large"></craft-icon>
         </button>
       </header>
     `;

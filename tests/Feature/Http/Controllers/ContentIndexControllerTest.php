@@ -9,9 +9,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -25,11 +27,14 @@ use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -38,6 +43,90 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::find()->one());
     $this->cpTrigger = Cms::config()->cpTrigger;
+});
+
+it('includes table-row capabilities for page bulk actions', function () {
+    $section = Section::factory()->create();
+    $entry = EntryModel::factory()->forSection($section)->title('Capability boundary')->createElement();
+    $url = route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => 'table',
+    ]);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.capabilities.deletable', true)
+        );
+
+    Gate::before(fn ($user, string $ability): ?bool => $ability === 'delete' ? false : null);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.capabilities.deletable', false)
+        );
+});
+
+it('renders page inline inputs only for explicitly editable table rows the user can save', function () {
+    $fixture = EntryModel::factory()
+        ->withField('inlineText', PlainText::class, value: 'Before save')
+        ->createElementWithFields();
+    $entry = $fixture->element;
+    $attribute = 'field:'.$fixture->field('inlineText')->uid;
+    $url = route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => 'table',
+        'columns' => [$attribute],
+    ]);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.inlineEditable', true)
+            ->missing('data.0.inlineInputHtml')
+        );
+
+    get("{$url}&editable=1")->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where("data.0.inlineInputHtml.{$attribute}", function (string $html) use ($entry): bool {
+                $payload = json_decode(
+                    new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'),
+                    true,
+                    flags: JSON_THROW_ON_ERROR,
+                );
+
+                return $payload['scope'] === ['inline', "element-{$entry->id}", 'fields']
+                    && $payload['nodes'][0]['control']['path'] === [
+                        'inline',
+                        "element-{$entry->id}",
+                        'fields',
+                        'inlineText',
+                    ];
+            })
+        );
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => 'cards',
+        'editable' => true,
+    ]))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->missing('data.0.inlineEditable')
+            ->missing('data.0.inlineInputHtml')
+        );
+
+    Gate::before(fn ($user, string $ability): ?bool => $ability === 'save' ? false : null);
+
+    get("{$url}&editable=1")->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->missing('data.0.inlineEditable')
+            ->missing('data.0.inlineInputHtml')
+        );
 });
 
 it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
@@ -59,7 +148,42 @@ it('selects fit for index tiles and crop for inline cards', function (string $vi
         );
 })->with([
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
-    'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+    'inline cards' => ['cards', 'cardThumbHtml', 'crop', 120],
+]);
+
+it('includes public URLs and only authorized edit URLs in every index view mode', function (string $viewMode, bool $canView) {
+    $section = Section::factory()->create();
+    $section->siteSettings()->update([
+        'hasUrls' => true,
+        'uriFormat' => 'news/{slug}',
+    ]);
+    SectionsFacade::refreshSections();
+    $entry = EntryModel::factory()->forSection($section)->createElement([
+        'title' => 'Public entry',
+        'slug' => 'public-entry',
+    ]);
+
+    if (! $canView) {
+        Gate::before(fn (CraftUser $user, string $ability, array $arguments): ?bool => $ability === 'view' && ($arguments[0]->id ?? null) === $entry->id ? false : null);
+    }
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => $viewMode,
+        'sort' => [['field' => 'title', 'direction' => 'asc']],
+    ]))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.cpEditUrl', $canView ? $entry->getCpEditUrl() : null)
+            ->where('data.0.viewUrl', 'https://localhost/'.$entry->uri)
+        );
+})->with([
+    'authorized table' => ['table', true],
+    'authorized cards' => ['cards', true],
+    'authorized thumbnails' => ['thumbs', true],
+    'unauthorized table' => ['table', false],
+    'unauthorized cards' => ['cards', false],
+    'unauthorized thumbnails' => ['thumbs', false],
 ]);
 
 it('returns an Inertia response with elements and pagination', function () {
@@ -73,6 +197,18 @@ it('returns an Inertia response with elements and pagination', function () {
             ->has('pagination')
             ->has('sort')
             ->has('sources')
+        );
+});
+
+it('includes the active source exporters in the page payload', function () {
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('exporters', fn ($exporters) => collect($exporters)->contains(
+                fn (array $exporter): bool => $exporter['type'] === Raw::class
+                    && $exporter['name'] === 'Raw data (fastest)'
+                    && $exporter['formattable'] === true,
+            ))
         );
 });
 
@@ -223,10 +359,29 @@ it('scopes the list to the current page or explicitly selected source', function
         );
 })->with([
     'explicit' => ['first', 'first', 1],
-    'second page default' => ['second', null, 3],
     'second page fallback' => ['second', 'missing', 3],
     'explicit outside page' => ['second', 'first', 1],
 ]);
+
+it('sends a page that names no source to the source it shows', function () {
+    $a = Section::factory()->create(['type' => SectionType::Channel]);
+    $b = Section::factory()->create(['type' => SectionType::Channel]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$a->uid", 'page' => 'First'],
+        ['type' => ElementSources::TYPE_HEADING, 'key' => 'heading:1', 'heading' => 'Channels', 'page' => 'Second'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$b->uid", 'page' => 'Second'],
+    ]);
+
+    // The nav links the section by its own path, so landing there highlights
+    // it rather than the page's item. The heading before it isn't a source.
+    get("/{$this->cpTrigger}/content/second?viewMode=cards")
+        ->assertRedirectContains("/{$this->cpTrigger}/content/second/{$b->handle}?viewMode=cards");
+
+    // “All entries” shares the page's own URL, so there's nowhere to go.
+    get("/{$this->cpTrigger}/content/first")->assertOk();
+});
 
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
@@ -316,6 +471,38 @@ it('emits a level and descendant flag per row in structure mode', function () {
             ->where('data.0.siteId', $parentElement->siteId)
             ->where('data.0.label', $parentElement->getUiLabel())
             ->where('structure.maxLevels', null)
+        );
+});
+
+it('sends a plain-text label for every row in flat table mode', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+        );
+});
+
+it('sends a plain-text label alongside the card HTML in cards view mode', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get("/{$this->cpTrigger}/content/entries?viewMode=cards")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+        );
+});
+
+it('sends the Untitled fallback text when an entry has no title', function () {
+    $type = EntryType::factory()->create(['hasTitleField' => false]);
+    $entry = EntryModel::factory()->forEntryType($type)->createElement(['title' => '']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.label', $entry->getUiLabel())
+            ->where('data.0.label', fn (string $label) => str_contains($label, 'Untitled'))
         );
 });
 
@@ -947,7 +1134,8 @@ it('offers no site switcher on an index whose elements are not localized', funct
     Site::factory()->create();
 
     // Users aren't localized, so there is no site to scope the index to.
-    get("/{$this->cpTrigger}/users")
+    // (The bare users index redirects to the source it shows.)
+    get("/{$this->cpTrigger}/users/all")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.siteCrumb', null));
 });

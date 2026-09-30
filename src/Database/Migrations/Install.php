@@ -299,6 +299,7 @@ class Install extends Migration
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
+            $table->json('colors')->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('keptFile')->nullable();
             $table->dateTime('dateModified')->nullable();

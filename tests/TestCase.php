@@ -217,6 +217,8 @@ class TestCase extends Orchestra
 
             $this->artisan('db:wipe');
 
+            app(ProjectConfig::class)->reset();
+
             $site = new Site([
                 'name' => 'Craft test site',
                 'handle' => 'defaultSite',

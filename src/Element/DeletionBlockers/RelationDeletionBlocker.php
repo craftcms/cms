@@ -119,7 +119,7 @@ JS, [
                 ]),
             ],
             [
-                'icon' => 'xmark',
+                'icon' => 'xmark-large',
                 'label' => t('Remove {numRelations, plural, =1{relation} other{relations}}', [
                     'numRelations' => $this->relationCount,
                 ]),

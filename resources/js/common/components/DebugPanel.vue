@@ -25,7 +25,10 @@
         class="max-h-[50vh] max-w-[600px] overflow-scroll absolute transform -translate-full"
       />
       <craft-button v-if="open" icon type="button" @click="open = false">
-        <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
+        <craft-icon
+          :label="t('Close Debug panel')"
+          name="xmark-large"
+        ></craft-icon>
       </craft-button>
       <craft-button v-else type="button" @click="open = true" icon>
         <craft-icon name="code" :label="t('Show debug variables')"></craft-icon>

@@ -5,18 +5,7 @@
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import ImageEditorDialog from '@/modules/image-editor/components/ImageEditorDialog.vue';
   import type {SaveResult} from '@/modules/image-editor/useImageEditor';
-  import type {RelativeFocalPoint} from '@/modules/image-editor/types';
-
-  interface ImageEditorProps {
-    assetId: number;
-    filename: string;
-    focalPoint: RelativeFocalPoint | null;
-    imageWidth: number | null;
-    imageHeight: number | null;
-    imageEditorRatios: Record<string, string | number>;
-    allowDegreeFractions: boolean;
-    orientation: 'ltr' | 'rtl';
-  }
+  import type {ImageEditorSettings} from '@/modules/image-editor/open-image-editor-dialog';
 
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // Asset-specific keys (AssetEditViewModel) remain props, alongside the
@@ -27,27 +16,12 @@
     siteId: number | null;
     previewFragment: CraftCms.Cms.View.HtmlFragment | null;
     /** Null when the asset isn't an editable image. */
-    imageEditor: ImageEditorProps | null;
+    imageEditor: ImageEditorSettings | null;
     /** Whether `?editing` asked for the image editor to open on load. */
     editingImage: boolean;
   }>();
 
   const imageEditorOpen = ref(props.editingImage);
-
-  /**
-   * The preview is server-rendered HTML, so its Edit Image button is wired by
-   * delegation once the fragment lands rather than by a template listener.
-   */
-  function onPreviewReady(element: HTMLElement): void {
-    element.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement | null;
-
-      if (target?.closest('[data-image-editor]')) {
-        event.preventDefault();
-        imageEditorOpen.value = true;
-      }
-    });
-  }
 
   /**
    * Mirrors the editor's open state in `?editing`, so it can be linked to and
@@ -101,13 +75,7 @@
     <!-- The file preview sits above the meta fields, as in the legacy
       editor's sidebar. -->
     <template v-if="previewFragment" #details-header>
-      <div class="asset-preview">
-        <HtmlFragmentRenderer
-          :fragment="previewFragment"
-          class="mb-4"
-          @ready="onPreviewReady"
-        />
-      </div>
+      <HtmlFragmentRenderer :fragment="previewFragment" class="asset-preview" />
     </template>
   </ElementEditor>
 
@@ -132,5 +100,10 @@
     height: auto;
     max-width: 100%;
     max-height: 190px;
+    box-shadow: var(--c-shadow-2xl);
+  }
+
+  .asset-preview :deep(.preview-thumb-container) {
+    overflow: hidden;
   }
 </style>

@@ -15,13 +15,14 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\Responses\ElementResponse;
@@ -39,6 +40,7 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -64,7 +66,7 @@ class EditElementController
         return $this;
     }
 
-    public function __invoke(): Response|CpScreenResponse
+    public function __invoke(): Response|CpScreenResponse|InertiaResponse
     {
         $strictSite = $this->request->acceptsJson();
         $elementId = $this->request->route('id') ?? $this->request->integer('elementId');
@@ -82,6 +84,13 @@ class EditElementController
 
         if (! $element) {
             abort(400, 'No element was identified by the request.');
+        }
+
+        // Entries get the Inertia editor everywhere but the legacy jQuery slideouts, which ask
+        // for JSON without `X-Inertia` — Vue slideouts, and full page loads of `edit/{id}` URLs,
+        // which is where nested entries' edit pages live.
+        if ($element instanceof Entry && ($this->request->inertia() || ! $this->request->wantsJson())) {
+            return app(EditEntryController::class)->render($element);
         }
 
         // If this is an outdated draft, merge in the latest canonical changes
@@ -668,14 +677,13 @@ class EditElementController
     ): void {
         $fieldLayout = $element->getFieldLayout();
         $payload = null;
-        $vueForm = $this->request->expectsJson();
 
         if ($fieldLayout !== null) {
             $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
                 $fieldLayout,
                 $element,
                 new FormContext(
-                    namespace: $vueForm ? (InputNamespace::get() ?? []) : [],
+                    namespace: InputNamespace::get() ?? [],
                     errors: $element->errors()->getMessages(),
                     mode: $canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                     refreshable: true,
@@ -683,13 +691,11 @@ class EditElementController
             ));
         }
 
-        $renderer = app(FormHtmlRenderer::class);
         $formContent = match (true) {
             $payload === null => null,
-            $vueForm => Html::tag('craft-entry-field-layout-form', '', [
+            default => Html::tag('craft-entry-field-layout-form', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
-            default => $renderer->render($payload),
         };
         $contentHtml = $contentFn($formContent);
         $sidebarHtml = $sidebarFn();
@@ -732,7 +738,7 @@ class EditElementController
             $contentHtml = implode("\n", $components);
         }
 
-        $response->tabs($payload === null || $vueForm ? [] : $renderer->tabMenu($payload));
+        $response->tabs([]);
         $response->contentHtml($contentHtml);
         $response->metaSidebarHtml($sidebarHtml);
 

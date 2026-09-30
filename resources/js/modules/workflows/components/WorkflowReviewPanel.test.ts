@@ -587,7 +587,7 @@ describe('WorkflowReviewPanel', () => {
                 name: 'Editorial',
                 current: false,
                 approved: false,
-                icon: 'xmark',
+                icon: 'xmark-large',
                 iconColor: 'danger',
                 message: 'Changes requested',
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
@@ -608,7 +608,7 @@ describe('WorkflowReviewPanel', () => {
                   }),
                   timelineItem({
                     id: 'change-request',
-                    icon: 'xmark',
+                    icon: 'xmark-large',
                     description: 'requested changes',
                     actor: activityTarget('Grace'),
                     decision: 'rejected',
@@ -625,7 +625,7 @@ describe('WorkflowReviewPanel', () => {
                   }),
                   timelineItem({
                     id: 'automated-failure',
-                    icon: 'xmark',
+                    icon: 'xmark-large',
                     description: 'failed the stage',
                     actor: activityTarget('Craft CMS'),
                     decision: 'failed',

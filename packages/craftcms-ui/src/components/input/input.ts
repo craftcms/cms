@@ -3,6 +3,7 @@ import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
 import type {PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A single-line text input, and the base every other `craft-input-*`
@@ -30,7 +31,7 @@ import {property} from 'lit/decorators.js';
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
-export default class CraftInput extends LionInput {
+export default class CraftInput extends HasLabel(LionInput) {
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }
@@ -97,13 +98,6 @@ export default class CraftInput extends LionInput {
 
     if (this._inputNode && this.maxlength && this.maxlength > 0) {
       this._inputNode.maxLength = this.maxlength;
-      // Give the input a matching intrinsic width, so the shrunk control
-      // (see `width`) fits the expected character count. `width="full"`
-      // opts out of the shrink behavior, so the intrinsic width would only
-      // blow the control out of its column.
-      if (this.width !== 'full') {
-        this._inputNode.size = this.maxlength;
-      }
     }
 
     this.syncNativeAttributes();
@@ -115,6 +109,8 @@ export default class CraftInput extends LionInput {
 
     if (
       changedProperties.has('inputSize') ||
+      changedProperties.has('maxlength') ||
+      changedProperties.has('width') ||
       changedProperties.has('min') ||
       changedProperties.has('max') ||
       changedProperties.has('step') ||
@@ -135,9 +131,21 @@ export default class CraftInput extends LionInput {
     );
   }
 
+  /**
+   * Gives the input an intrinsic width matching its `maxlength`, so the shrunk
+   * control (see `width`) fits the expected character count. `width="full"`
+   * opts out of the shrink behavior, so the intrinsic width would only blow
+   * the control out of its column.
+   */
+  private get maxlengthSize(): number | undefined {
+    return this.maxlength && this.maxlength > 0 && this.width !== 'full'
+      ? this.maxlength
+      : undefined;
+  }
+
   private syncNativeAttributes() {
     const attributes = {
-      size: this.inputSize,
+      size: this.inputSize ?? this.maxlengthSize,
       min: this.min,
       max: this.max,
       step: this.step,

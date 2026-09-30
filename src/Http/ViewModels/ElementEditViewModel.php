@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -113,6 +114,12 @@ abstract class ElementEditViewModel extends ViewModel
         return $this;
     }
 
+    /** The element's own control panel edit page, which a slideout links to as "Open in a new tab". */
+    public function cpEditUrl(): ?string
+    {
+        return $this->element->getCpEditUrl();
+    }
+
     /** Where the edit form posts when there are no provisional changes to apply. */
     public function saveUrl(): string
     {
@@ -145,6 +152,45 @@ abstract class ElementEditViewModel extends ViewModel
     public function discardDraftUrl(): string
     {
         return Url::actionUrl('elements/delete-draft');
+    }
+
+    /**
+     * Where a nested element's changes are saved when they belong in a draft of
+     * its owner rather than the canonical owner it was queried through.
+     */
+    public function saveForDerivativeUrl(): string
+    {
+        return Url::actionUrl('elements/save-nested-element-for-derivative');
+    }
+
+    /**
+     * The field and owner a nested element is being edited through.
+     *
+     * Every request the editor sends carries these, so the server resolves the
+     * element against that owner (an owner draft included) rather than its
+     * primary owner.
+     *
+     * @return array{fieldId: int|null, ownerId: int}|null
+     */
+    public function nestedContext(): ?array
+    {
+        if (! $this->element instanceof NestedElementInterface || ! $this->element->getOwnerId()) {
+            return null;
+        }
+
+        return [
+            'fieldId' => $this->element->getField()?->id,
+            'ownerId' => $this->element->getOwnerId(),
+        ];
+    }
+
+    /**
+     * Whether this is a brand-new element being filled in for the first time.
+     * Posted back with each save so it propagates to all of its sites.
+     */
+    public function fresh(): bool
+    {
+        return $this->request->boolean('fresh') && $this->element->getIsUnpublishedDraft();
     }
 
     /**

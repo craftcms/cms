@@ -7,7 +7,7 @@ import {
   type FolderConflictResolution,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
 import axios from 'axios';
 
 interface FolderActionDetail {
@@ -43,8 +43,11 @@ function folderIds(action: FolderActionDetail): number[] {
     .map(Number);
 }
 
-export function useAssetFolderActions() {
-  const {table, onActionPerformed} = useElementIndexTable();
+export function useAssetFolderActions(index: ElementIndexOperations) {
+  function onActionPerformed(): void {
+    index.clearSelection();
+    void index.refresh();
+  }
   const newFolderParentId = shallowRef<number | null>(null);
   const newFolderName = shallowRef('');
   const newFolderError = shallowRef<string | null>(null);
@@ -57,12 +60,6 @@ export function useAssetFolderActions() {
   const conflictPrompt = shallowRef<FolderConflictPrompt | null>(null);
 
   const newFolderOpen = computed(() => newFolderParentId.value !== null);
-
-  function folderName(folderId: number | undefined): string | undefined {
-    if (folderId === undefined) return undefined;
-    const name = table.value?.getRow(`folder:${folderId}`)?.original.folderName;
-    return typeof name === 'string' ? name : undefined;
-  }
 
   function onNewSubfolder(event: Event) {
     const folderId = detail(event)?.folderId;
@@ -120,7 +117,8 @@ export function useAssetFolderActions() {
     if (!folderId) return;
 
     renameFolderId.value = folderId;
-    renameName.value = action.label ?? folderName(folderId) ?? '';
+    const name = index.findRow(`folder:${folderId}`)?.folderName;
+    renameName.value = action.label ?? (typeof name === 'string' ? name : '');
     renameError.value = null;
     navigateAfterRename.value = action.navigate ?? false;
   }
@@ -171,7 +169,9 @@ export function useAssetFolderActions() {
     const ids = folderIds(action);
     const label =
       action.label ??
-      (ids.length === 1 ? folderName(ids[0]) : null) ??
+      (ids.length === 1
+        ? index.findRow(`folder:${ids[0]}`)?.folderName
+        : null) ??
       t('Untitled');
     if (
       !ids.length ||

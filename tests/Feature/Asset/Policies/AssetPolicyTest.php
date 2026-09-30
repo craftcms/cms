@@ -57,12 +57,7 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    $asset = createAssetTestAsset($this->volume);
-    $user = createAssetTestUser([]);
-
-    $result = Gate::forUser($user)->allows('view', $asset);
-
-    expect($result)->toBeBool();
+    expect(Gate::getPolicyFor(Asset::class))->toBeInstanceOf(AssetPolicy::class);
 });
 
 it('returns false for folder view', function () {

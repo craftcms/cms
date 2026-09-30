@@ -5,22 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlFragment;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * @phpstan-type NestedElementCardData array{
- *     id: int,
- *     siteId: int|null,
- *     cardAttributes: array<string, mixed>,
- *     cardLabelHtml: string,
- *     cardActionsHtml: string,
- *     cardContentHtml: string,
- *     cardThumbHtml: string,
- *     thumbAlignment: 'start'|'end',
- * }
  * @phpstan-type NestedElementCardsData array{
  *     mode: 'cards',
  *     elementType: string,
@@ -46,7 +37,7 @@ use Illuminate\Support\Facades\Gate;
  *     bulkDeleteConfirmationMessage: string,
  *     showInGrid: bool,
  *     selectable: bool,
- *     elements: array<int, NestedElementCardData>,
+ *     elements: array<int, NestedElementCard>,
  * }
  * @phpstan-type NestedElementIndexData array{
  *     mode: 'index',

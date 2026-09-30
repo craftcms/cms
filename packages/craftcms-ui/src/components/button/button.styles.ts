@@ -431,7 +431,8 @@ export default css`
     content: '';
     display: block;
     position: absolute;
-    /* Physical on purpose, like the anchor's sizer below. */
+    /* Physical on purpose: paired with the translate below to centre the
+       sizer, which the logical properties would push off-centre in RTL. */
     /* stylelint-disable liberty/use-logical-spec */
     top: 50%;
     left: 50%;
@@ -468,6 +469,13 @@ export default css`
   :host([variant~='none']:active) {
     background-color: transparent;
     color: inherit;
+  }
+
+  /* After the variants, whose colors would otherwise paint over Lion's own
+     disabled rule and leave a disabled button looking enabled. */
+  :host([disabled]) {
+    opacity: 0.5;
+    user-select: none;
   }
 
   .button-content {
@@ -549,20 +557,17 @@ export default css`
       left: 50%;
       /* stylelint-enable liberty/use-logical-spec */
       transform: translate(-50%, -50%);
-      min-height: 44px;
-      min-width: 44px;
+      min-height: var(--_link-min-height, 44px);
+      min-width: var(--_link-min-width, 44px);
       width: 100%;
       height: 100%;
     }
   }
 
   :host([href][size~='xsmall']:not([disabled])) .link {
+    --_link-min-height: var(--c-size-touch-target-sm);
+    --_link-min-width: var(--c-size-touch-target-sm);
     padding-inline: var(--c-spacing-xs);
-
-    &::before {
-      min-height: var(--c-size-touch-target-sm);
-      min-width: var(--c-size-touch-target-sm);
-    }
   }
 
   :host([href][size~='small']:not([disabled])) .link {

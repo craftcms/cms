@@ -7,6 +7,7 @@ import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
+import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
@@ -23,7 +24,8 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
-import MatrixControl from './MatrixControl.vue';
+import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
+import NestedEntriesControl from './nested-elements/NestedEntriesControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -77,6 +79,7 @@ export function registerFormComponents(
   components.register('craft:date-time', DateTimeControl);
   components.register('craft:time', TextControl);
   components.register('craft:color', ColorControl);
+  components.register('craft:color-select', ColorSelectControl);
   components.register('craft:money', MoneyControl);
   components.register('craft:permission-tree', PermissionTreeControl);
   components.register('craft:user-group-select', UserGroupSelectControl);
@@ -95,6 +98,10 @@ export function registerFormComponents(
     'craft:field-layout-designer',
     FieldLayoutDesignerControl
   );
-  components.register('craft:matrix', MatrixControl);
+  components.register(
+    'craft:nested-element-blocks',
+    NestedElementBlocksControl
+  );
+  components.register('craft:nested-entries', NestedEntriesControl);
   components.register('craft:content-block', ContentBlockControl);
 }

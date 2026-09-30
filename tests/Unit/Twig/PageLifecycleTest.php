@@ -297,12 +297,3 @@ describe('output buffering', function () {
         expect(ob_get_level())->toBeGreaterThanOrEqual(0);
     });
 });
-
-describe('scoped resolution', function () {
-    it('is resolved as a scoped instance', function () {
-        $first = app(PageLifecycle::class);
-        $second = app(PageLifecycle::class);
-
-        expect($first)->toBe($second);
-    });
-});

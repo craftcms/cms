@@ -16,6 +16,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -35,6 +36,7 @@ it('needs authentication and admin changes for the routes', function (string $me
     $this->$method(action($route))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
     actingAs(User::find()->one());
 
     $this->$method(action($route))->assertForbidden();
@@ -74,6 +76,7 @@ it('needs authentication and admin changes to delete', function () {
     $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    UserPermissions::saveUserPermissions(CraftCms\Cms\User\Models\User::first()->id, ['accessCp']);
     actingAs(User::find()->one());
 
     $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertForbidden();

@@ -22,13 +22,15 @@ import {
  *
  * The prefix and suffix regions are only rendered when there is content for
  * them, so a chip with nothing but a label renders neither. The suffix is
- * rendered when the `suffix` slot is filled. The prefix is rendered when the
+ * rendered when the `suffix` slot is filled with an element that has content
+ * of its own, so an empty placeholder waiting for actions takes up no space.
+ * The prefix is rendered when the
  * `prefix`, `icon`, `thumbnail`, or `status` slot is filled, or when the
  * `icon` attribute or `show-status` is set.
  *
- * Filling the `prefix` slot replaces the entire prefix region. Use it to
- * supply your own leading content; the built-in `thumbnail`, `icon`, and
- * `status` slots are ignored when it is present.
+ * The `prefix` slot comes first in the prefix region, before the built-in
+ * `thumbnail`, `icon`, and `status` slots, so custom leading content (a
+ * checkbox or a badge, say) doesn't displace them.
  *
  * On connect the chip stamps `data-color="white"` on itself so it reads as a
  * raised surface by default, filled with `--c-surface-raised` so it follows
@@ -36,9 +38,14 @@ import {
  * lands on the chip, an ancestor's `data-color` no longer reaches it — colour
  * the chip directly instead.
  *
+ * Any `<craft-button>` placed in the chip is given `inherit`, so its neutral
+ * variants pick up the chip's colour. This includes buttons added after the
+ * chip mounts and ones nested in other slotted content, such as an action
+ * menu's invoker.
+ *
  * @slot - The chip's label.
- * @slot prefix - Leading content. Replaces the built-in prefix region, so the
- *   `thumbnail`, `icon`, and `status` slots are ignored when this is filled.
+ * @slot prefix - Leading content, shown before the thumbnail, icon, and
+ *   status.
  * @slot thumbnail - A thumbnail image for the prefix. Requires `show-thumb`.
  *   Without it, the slot is not rendered and its content does not appear.
  * @slot icon - Icon content for the prefix, as an alternative to the `icon`
@@ -96,6 +103,15 @@ export default class CraftChip extends LitElement {
     Appearance.OutlineFill;
 
   /**
+   * How the prefix and suffix line up against the label on the cross axis.
+   * `center` suits a single-line label. With several lines in the label,
+   * `start` keeps the prefix and suffix against the first line and `end`
+   * against the last.
+   */
+  @property({attribute: 'align-items'}) alignItems: 'start' | 'center' | 'end' =
+    'center';
+
+  /**
    * The name of an icon to render in the prefix. This is a shorthand for
    * filling the `icon` slot, and setting it is what causes that slot to be
    * rendered.
@@ -141,8 +157,26 @@ export default class CraftChip extends LitElement {
    * of its own, and chips are commonly filled in after their first render —
    * `addActionsToChip()` injects an action menu into `[slot="suffix"]` long
    * after the chip mounts.
+   *
+   * The same changes are when a button can arrive, so each one is also the
+   * cue to have the chip's buttons inherit its palette.
    */
-  #lightDom = new LightDomController(this);
+  #lightDom = new LightDomController(this, {
+    onChange: () => this.#inheritButtons(),
+  });
+
+  /**
+   * Sets `inherit` on the chip's buttons so they take its palette rather than
+   * the neutral one, which would stand out against a coloured chip. Buttons
+   * inside a nested chip are left to that chip.
+   */
+  #inheritButtons(): void {
+    for (const button of this.querySelectorAll('craft-button:not([inherit])')) {
+      if (button.closest('craft-chip') === this) {
+        button.toggleAttribute('inherit', true);
+      }
+    }
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -185,23 +219,56 @@ export default class CraftChip extends LitElement {
     />`;
   }
 
+  /**
+   * Which part of the chip comes first, so a `plain` chip can drop the padding
+   * before it and sit flush with the surrounding content.
+   */
+  private get leadingPart():
+    | 'select'
+    | 'prefix'
+    | 'thumbnail'
+    | 'icon'
+    | 'status'
+    | 'body' {
+    if (this.selectable) {
+      return 'select';
+    }
+
+    if (hasSlotted(this, 'prefix')) {
+      return 'prefix';
+    }
+
+    if (this.showThumb) {
+      return 'thumbnail';
+    }
+
+    if (this.icon) {
+      return 'icon';
+    }
+
+    if (this.showStatus || hasSlotted(this, 'status')) {
+      return 'status';
+    }
+
+    return 'body';
+  }
+
   protected renderPrefix() {
     const showStatus = this.showStatus || hasSlotted(this, 'status');
 
     return html`<div class="cp-chip__prefix" part="prefix">
-      <slot name="prefix">
-        ${this.showThumb
-          ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
-          : nothing}
-        ${this.icon
-          ? html`<slot class="cp-chip__icon" name="icon"
-              ><craft-icon name="${this.icon}"></craft-icon
-            ></slot>`
-          : nothing}
-        ${showStatus
-          ? html`<slot class="cp-chip__status" name="status"></slot>`
-          : nothing}
-      </slot>
+      <slot name="prefix"></slot>
+      ${this.showThumb
+        ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
+        : nothing}
+      ${this.icon
+        ? html`<slot class="cp-chip__icon" name="icon"
+            ><craft-icon name="${this.icon}"></craft-icon
+          ></slot>`
+        : nothing}
+      ${showStatus
+        ? html`<slot class="cp-chip__status" name="status"></slot>`
+        : nothing}
     </div>`;
   }
 
@@ -215,7 +282,11 @@ export default class CraftChip extends LitElement {
       hasSlotted(this, 'prefix', 'icon', 'status', 'thumbnail') ||
       this.showStatus ||
       this.icon;
-    const renderSuffix = hasSlotted(this, 'suffix');
+    const renderSuffix = Array.from(this.children).some(
+      (child) =>
+        child.slot === 'suffix' &&
+        (child.childElementCount > 0 || child.textContent.trim() !== '')
+    );
 
     return html`
       <div
@@ -225,10 +296,13 @@ export default class CraftChip extends LitElement {
           'cp-chip--small': this.size === 'small',
           'cp-chip--medium': this.size === 'medium',
           'cp-chip--large': this.size === 'large',
+          'cp-chip--align-start': this.alignItems === 'start',
+          'cp-chip--align-end': this.alignItems === 'end',
           'cp-chip--plain': this.appearance === Appearance.Plain,
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,
           'cp-chip--show-status': this.showStatus,
+          [`cp-chip--leads-with-${this.leadingPart}`]: true,
         })}"
       >
         ${this.selectable ? this.renderSelect() : nothing}

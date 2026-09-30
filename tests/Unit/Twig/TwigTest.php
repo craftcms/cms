@@ -278,17 +278,6 @@ describe('create options', function () {
         expect($env->isDebug())->toBeFalse()
             ->and($env->isStrictVariables())->toBeFalse();
     });
-
-    it('caches options across multiple create calls', function () {
-        config()->set('app.debug', true);
-
-        $twig = new Twig;
-        $first = $twig->create();
-        $second = $twig->create();
-
-        // Both should have the same debug setting since options are cached
-        expect($first->isDebug())->toBe($second->isDebug());
-    });
 });
 
 describe('registerExtension', function () {

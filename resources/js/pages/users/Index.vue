@@ -2,11 +2,11 @@
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
+  import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
-  } from '@/modules/elements/composables/useElementIndexVisits';
+  } from '@/modules/elements/index/composables/useElementIndexVisits';
   import type {Source} from '@/modules/elements/types/sources';
   import {index} from '@routes/cp/users';
   import {create} from '@actions/Users/UsersController';
@@ -48,7 +48,7 @@
     url: (query = {}) => {
       const {source, ...rest} = query;
       const slug =
-        source != null
+        source != null && String(source) !== page.props.source?.key
           ? sourceSlugs.value.get(String(source))
           : (page.props.slug ?? undefined);
 
@@ -62,7 +62,7 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" customizable-sources>
     <template #toolbar-actions>
       <CpButtonLink
         v-if="page.props.canRegisterUsers"

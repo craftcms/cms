@@ -95,3 +95,5 @@ For the full set of templates and examples, see `references/entry-templates.md`.
 2. Determine the target file and section/insertion point.
 3. Write entries following the format and writing rules above.
 4. Insert entries into the section, positioned per the Entry Ordering rules above.
+
+Done when: each user-facing change in the diff has exactly one entry, in the right section and order, and existing entries are unchanged.

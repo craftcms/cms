@@ -45,6 +45,12 @@ describe('craft-chip slots', () => {
     expect(slot(element, 'suffix')).not.toBeNull();
   });
 
+  it('does not render the suffix for an empty suffix element', async () => {
+    const element = await createChip({}, 'Label<div slot="suffix"> </div>');
+
+    expect(slot(element, 'suffix')).toBeNull();
+  });
+
   it('ignores slotted content that belongs to a nested chip', async () => {
     const element = await createChip(
       {},
@@ -73,7 +79,20 @@ describe('craft-chip light DOM changes', () => {
 
     const menu = document.createElement('div');
     menu.slot = 'suffix';
+    menu.append(document.createElement('button'));
     element.append(menu);
+    await settle(element);
+
+    expect(slot(element, 'suffix')).not.toBeNull();
+  });
+
+  it('renders the suffix once an empty suffix element is filled', async () => {
+    const element = await createChip({}, 'Label<div slot="suffix"></div>');
+    expect(slot(element, 'suffix')).toBeNull();
+
+    element
+      .querySelector('[slot="suffix"]')!
+      .append(document.createElement('button'));
     await settle(element);
 
     expect(slot(element, 'suffix')).not.toBeNull();
@@ -207,5 +226,32 @@ describe('craft-chip selection', () => {
     await element.updateComplete;
 
     expect(chipClicks).toBe(0);
+  });
+});
+
+describe('craft-chip buttons', () => {
+  it('has its buttons inherit the chip palette', async () => {
+    const element = await createChip(
+      {},
+      'Label<div slot="suffix"><craft-button>Edit</craft-button></div>'
+    );
+    await settle(element);
+
+    expect(element.querySelector('craft-button')?.hasAttribute('inherit')).toBe(
+      true
+    );
+  });
+
+  it('has buttons added after mount inherit too', async () => {
+    const element = await createChip({}, 'Label<div slot="suffix"></div>');
+
+    element
+      .querySelector('[slot="suffix"]')!
+      .append(document.createElement('craft-button'));
+    await settle(element);
+
+    expect(element.querySelector('craft-button')?.hasAttribute('inherit')).toBe(
+      true
+    );
   });
 });

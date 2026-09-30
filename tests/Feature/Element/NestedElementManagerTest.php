@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -21,6 +25,9 @@ use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
@@ -339,7 +346,38 @@ it('saves nested provisional draft ownership for derivative and primary owners',
         ->not->toBeNull();
 });
 
-it('provides index data matching the rendered index settings', function () {
+it('preserves canonical ancestry when preparing a shared element for a deeply-derived owner', function () {
+    ['owner' => $canonicalOwner, 'field' => $field, 'entryType' => $entryType, 'ownerType' => $ownerType, 'section' => $section] = createMatrixOwnerFixture();
+    $nested = createMatrixNestedEntry($canonicalOwner, $field, $entryType, 1, 'Shared block');
+    $owners = [$canonicalOwner];
+
+    foreach (range(1, 3) as $level) {
+        $owner = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($ownerType)
+            ->createElement();
+        DB::table(Table::ELEMENTS)
+            ->where('id', $owner->id)
+            ->update(['canonicalId' => array_last($owners)->id]);
+        $owners[] = EntryElement::find()->id($owner->id)->status(null)->one();
+    }
+
+    $derivedOwner = array_last($owners);
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $nested->id,
+        'ownerId' => $derivedOwner->id,
+        'sortOrder' => 1,
+    ]);
+
+    $prepared = NestedElementManager::prepareElementForOwner($nested, $derivedOwner);
+
+    expect($prepared->id)->not->toBe($nested->id)
+        ->and($prepared->getCanonicalId())->toBe($nested->id)
+        ->and($prepared->getPrimaryOwnerId())->toBe($derivedOwner->id)
+        ->and($prepared->getOwnerId())->toBe($derivedOwner->id);
+});
+
+it('provides index data while retaining the legacy rendered index settings', function () {
     $user = UserModel::factory()->createElement();
     $manager = $user->getAddressManager();
 
@@ -350,34 +388,39 @@ it('provides index data matching the rendered index settings', function () {
         ->and($data['ownerId'])->toBe($user->id)
         ->and($data['elementType'])->toBe(AddressElement::class)
         ->and($data['attribute'])->toBe('addresses')
-        ->and($data['indexSettings']['criteria']['ownerId'])->toBe($user->id)
-        ->and($data['indexSettings']['actions'])->toHaveCount(3);
+        ->and($data['indexSettings']['static'])->toBeFalse()
+        ->and($data['indexSettings'])->not->toHaveKey('actions');
 
-    // The data payload matches what the HTML path encodes into the
-    // <craft-nested-element-manager settings> attribute. Namespace-derived
-    // keys differ (the HTML path computes inside its input namespace) and
-    // the action configs carry per-render markup, so both are normalized
-    // out of the comparison.
     $html = $manager->getIndexHtml($user, ['sortable' => true]);
     expect(preg_match('/settings="([^"]+)"/', (string) $html, $matches))->toBe(1);
     $encoded = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
-    expect($encoded['indexSettings']['actions'])->toHaveCount(3);
-
-    $normalize = function (array $settings): array {
-        // `elementType` is a data-path addition (the HTML path passes it as
-        // the `element-type` attribute instead).
-        unset(
-            $settings['baseInputName'],
-            $settings['elementType'],
-            $settings['indexSettings']['namespace'],
-            $settings['indexSettings']['actions'],
-        );
-
-        return $settings;
-    };
-
-    expect($normalize($data))->toBe($normalize($encoded));
+    expect($encoded['ownerIdParam'])->toBe('ownerId')
+        ->and($encoded['indexSettings']['criteria']['ownerId'])->toBe($user->id)
+        ->and($encoded['indexSettings']['actions'])->toHaveCount(3);
 });
+
+it('normalizes creation and paste entry type data for manager data payloads', function (string $method) {
+    $user = UserModel::factory()->createElement();
+    $manager = $user->getAddressManager();
+    $data = $manager->$method($user, [
+        'createButtonLabel' => 'New address',
+        'createAttributes' => ['typeId' => 17],
+        'pasteableData' => [
+            'attribute' => 'entryTypeId',
+            'values' => ['17', 23],
+        ],
+    ]);
+
+    expect($data['createAttributes'])->toBe([[
+        'label' => 'New address',
+        'attributes' => ['typeId' => 17],
+    ]])
+        ->and($data['pasteableEntryTypeIds'])->toBe([17, 23])
+        ->and(NestedElementManager::htmlManagerSettings($data)['createAttributes'])->toBe(['typeId' => 17]);
+})->with([
+    'cards data' => 'getCardsData',
+    'index data' => 'getIndexData',
+]);
 
 it('provides cards data matching the rendered cards settings', function () {
     $user = UserModel::factory()->createElement();
@@ -401,10 +444,11 @@ it('provides cards data matching the rendered cards settings', function () {
         ->and($data['showInGrid'])->toBeTrue()
         ->and($data['elements'])->toHaveCount(1);
 
-    $card = $data['elements'][0];
+    $card = json_decode(json_encode($data['elements'][0], JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
     expect($card['id'])->toBe($address->id)
+        ->and($card['actionMenuItems'])->toBeArray()
         ->and($card['cardAttributes'])->toBeArray()
-        ->and($card['cardLabelHtml'])->toBeString()
+        ->and($card['cardHeaderHtml'])->toBeString()
         ->and($card['cardActionsHtml'])->toBeString()
         ->and($card['cardContentHtml'])->not->toBe('')
         // The thumb is provided separately for a card component's thumbnail
@@ -412,6 +456,8 @@ it('provides cards data matching the rendered cards settings', function () {
         ->and($card['cardContentHtml'])->not->toContain('thumb')
         ->and($card['cardThumbHtml'])->toBeString()
         ->and($card['thumbAlignment'])->toBeIn(['start', 'end']);
+    $cardActionsHtml = html_entity_decode($card['cardActionsHtml']);
+    expect($cardActionsHtml)->toContain('elements/duplicate', 'nested-elements/delete');
 
     // The settings match what the HTML path encodes into the
     // <craft-nested-element-manager settings> attribute; `elements` is the
@@ -429,7 +475,62 @@ it('provides cards data matching the rendered cards settings', function () {
     expect($normalize($data))->toBe($normalize($encoded));
 });
 
-it('gives cards-data menu items self-contained duplicate/delete actions', function () {
+it('provides an editor action url for editable nested element cards', function () {
+    $fixture = createMatrixOwnerFixture();
+    $entry = createMatrixNestedEntry(
+        $fixture['owner'],
+        $fixture['field'],
+        $fixture['entryType'],
+        1,
+        'Nested entry',
+    );
+    $data = $fixture['manager']->getCardsData($fixture['owner']);
+    $editUrl = $data['elements'][0]->editUrl;
+    parse_str((string) parse_url($editUrl, PHP_URL_QUERY), $editQuery);
+
+    expect(parse_url($editUrl, PHP_URL_PATH))->toBe(sprintf(
+        '/%s/%s/elements/edit',
+        Cms::config()->cpTrigger,
+        Cms::config()->actionTrigger,
+    ))
+        ->and($editQuery)->toMatchArray([
+            'elementId' => (string) $entry->id,
+            'siteId' => (string) $entry->siteId,
+            'fieldId' => (string) $fixture['field']->id,
+            'ownerId' => (string) $fixture['owner']->id,
+        ]);
+});
+
+it('renders Matrix cards controls for server-rendered forms', function (string $viewMode, string $listClass) {
+    $fixture = createMatrixOwnerFixture(['viewMode' => $viewMode]);
+    createMatrixNestedEntry($fixture['owner'], $fixture['field'], $fixture['entryType'], 1, 'Nested entry');
+    $owner = EntryElement::find()->id($fixture['owner']->id)->one();
+
+    $payload = app(FieldLayoutCompiler::class)->compile(
+        $owner->getFieldLayout(),
+        $owner,
+        new FormContext,
+    );
+    $manager = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-nested-element-manager');
+    $settings = json_decode($manager->attr('settings'), true, flags: JSON_THROW_ON_ERROR);
+    $cards = $manager->filter(sprintf('.nested-element-cards > ul.elements.%s > li > craft-card.element', $listClass));
+
+    expect($manager->attr('element-type'))->toBe(EntryElement::class)
+        ->and($settings)->toMatchArray([
+            'mode' => 'cards',
+            'canCreate' => true,
+            'sortable' => true,
+            'baseInputName' => 'fields[matrixField]',
+        ])
+        ->and($cards->count())->toBe(1)
+        ->and($cards->filter('.card-titlebar > .card-actions-container > .card-actions > .move-btn')->count())->toBe(1)
+        ->and($cards->html())->toContain('Nested entry', 'data-delete-action');
+})->with([
+    'cards' => [Matrix::VIEW_MODE_CARDS, 'cards'],
+    'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, 'card-grid'],
+]);
+
+it('provides permitted card menu events for the hosting field', function (bool $showInGrid, bool $static, bool $authorized) {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([
         'primaryOwnerId' => $user->id,
@@ -441,31 +542,76 @@ it('gives cards-data menu items self-contained duplicate/delete actions', functi
         'sortOrder' => 1,
     ]);
 
+    if (! $authorized) {
+        actingAs(UserModel::factory()->createElement(['admin' => false]));
+    }
+
     $manager = $user->getAddressManager();
+    $data = $manager->getCardsData($user, [
+        'showInGrid' => $showInGrid,
+        'static' => $static,
+        'sortable' => true,
+        'canPaste' => true,
+        'nestedActionEvents' => true,
+    ]);
+    $actions = collect($data['elements'][0]->actionMenuItems)
+        ->filter(fn (array $item): bool => ($item['action']['name'] ?? null) === 'craft:nested-element-action')
+        ->values();
+    $elementActions = $actions
+        ->filter(fn (array $item): bool => ($item['action']['detail']['action'] ?? null) === 'element-action')
+        ->keyBy('action.detail.item.key');
+    $nestedActions = $actions
+        ->reject(fn (array $item): bool => ($item['action']['detail']['action'] ?? null) === 'element-action')
+        ->keyBy('action.detail.action');
 
-    // The data path has no hosting manager to wire the delete marker, so the
-    // item carries the full HTTP action, targeting the owner context.
-    $data = $manager->getCardsData($user, ['showInGrid' => true]);
-    $actionsHtml = $data['elements'][0]['cardActionsHtml'];
-    expect($actionsHtml)->toContain('data-delete-action')
-        ->and($actionsHtml)->toContain('nested-elements/delete')
-        ->and($actionsHtml)->toContain(sprintf('elementId&quot;:%d', $address->id))
-        ->and($actionsHtml)->toContain(sprintf('ownerId&quot;:%d', $user->id))
-        ->and($actionsHtml)->toContain('attribute&quot;:&quot;addresses&quot;');
+    if (! $authorized) {
+        expect($elementActions)->toBeEmpty()
+            ->and($nestedActions)->toBeEmpty();
 
-    // Same for the duplicate marker.
-    expect($actionsHtml)->toContain('data-duplicate-action')
-        ->and($actionsHtml)->toContain('elements/duplicate');
+        return;
+    }
 
-    // The HTML view keeps the markers behavior-less — the hosting
-    // `Craft.NestedElementManager` wires them (with draft handling the
-    // static actions can't know about).
-    $html = $manager->getCardsHtml($user, ['showInGrid' => true]);
-    expect($html)->toContain('data-delete-action')
-        ->and($html)->not->toContain('nested-elements/delete')
-        ->and($html)->toContain('data-duplicate-action')
-        ->and($html)->not->toContain('elements/duplicate');
-});
+    if ($static) {
+        expect($elementActions->keys()->all())->toBe([Copy::class])
+            ->and($nestedActions)->toBeEmpty();
+
+        return;
+    }
+
+    expect($elementActions->keys()->all())->toEqualCanonicalizing([Copy::class, Duplicate::class, Delete::class])
+        ->and($nestedActions->keys()->all())->toEqualCanonicalizing(['move-forward', 'move-backward', 'paste']);
+
+    foreach ($elementActions as $actionClass => $item) {
+        expect($item['action']['type'])->toBe('event')
+            ->and($item['action']['name'])->toBe('craft:nested-element-action')
+            ->and($item['action']['detail']['action'])->toBe('element-action')
+            ->and($item['action']['detail']['elementId'])->toBe($address->id)
+            ->and($item['action']['detail']['item']['key'])->toBe($actionClass);
+    }
+
+    expect($elementActions[Copy::class]['action']['detail']['item']['action']['detail']['elements'])->toBe([[
+        'type' => AddressElement::class,
+        'id' => $address->id,
+        'siteId' => $address->siteId,
+        'ownerId' => $user->id,
+        'fieldId' => null,
+        'draftId' => null,
+        'revisionId' => null,
+    ]]);
+
+    expect($nestedActions['move-forward']['label'])->toBe($showInGrid ? 'Move forward' : 'Move up')
+        ->and($nestedActions['move-backward']['label'])->toBe($showInGrid ? 'Move backward' : 'Move down')
+        ->and($elementActions[Delete::class]['variant'])->toBe('danger');
+
+    $html = $manager->getCardsHtml($user, ['showInGrid' => $showInGrid]);
+    expect($html)->toContain('data-delete-action', 'data-duplicate-action')
+        ->not->toContain('nested-elements/delete', 'elements/duplicate');
+})->with([
+    'cards' => [false, false, true],
+    'card grid' => [true, false, true],
+    'static' => [false, true, true],
+    'unauthorized' => [false, false, false],
+]);
 
 it('returns no index or cards data for unsaved owners', function () {
     $user = UserModel::factory()->createElement();
