@@ -47,6 +47,9 @@ function mount(
 it.each(['edit', 'view'] as const)(
   'emits %s only from the bulk bar that triggered it',
   async (type) => {
+    const globalAction = vi.fn();
+    const eventName = `craft:${type}-element`;
+    window.addEventListener(eventName, globalAction);
     const firstAction = vi.fn();
     const secondAction = vi.fn();
     const action: BulkActionItem = {
@@ -61,11 +64,13 @@ it.each(['edit', 'view'] as const)(
     await nextTick();
     first.querySelector('craft-action-item')!.click();
 
-    expect(firstAction).toHaveBeenCalledWith({
+    expect(firstAction).toHaveBeenCalledExactlyOnceWith({
       elementIds: [11],
       elementType: 'Entry',
       trigger: first.querySelector('craft-button[slot="invoker"]'),
     });
     expect(secondAction).not.toHaveBeenCalled();
+    window.removeEventListener(eventName, globalAction);
+    expect(globalAction).not.toHaveBeenCalled();
   }
 );

@@ -106,6 +106,31 @@
         };
       }
 
+      if (
+        item.action.type === 'event' &&
+        ['craft:edit-element', 'craft:view-element'].includes(item.action.name)
+      ) {
+        const type =
+          item.action.name === 'craft:edit-element' ? 'edit' : 'view';
+
+        return {
+          type: 'button',
+          label: item.label,
+          variant,
+          onClick: (event) => {
+            if (!(event.currentTarget instanceof HTMLElement)) {
+              return;
+            }
+
+            emit(type, {
+              elementIds: props.selectedIds,
+              elementType: props.elementType,
+              trigger: eventTrigger(event.currentTarget),
+            });
+          },
+        };
+      }
+
       if (item.action.type === 'event') {
         return {
           type: 'button',
@@ -191,37 +216,13 @@
     );
   }
 
-  function onElementEvent(event: Event, type: 'edit' | 'view'): void {
-    if (!owns(event)) {
-      return;
-    }
-
-    const detail = {
-      elementIds: event.detail?.elementIds ?? props.selectedIds,
-      elementType: event.detail?.elementType ?? props.elementType,
-      trigger: eventTrigger(event),
-    };
-
-    emit(type, detail);
-  }
-
-  function eventTrigger(
-    event: CustomEvent<{trigger: HTMLElement}>
-  ): HTMLElement {
-    const trigger = event.detail.trigger;
+  function eventTrigger(trigger: HTMLElement): HTMLElement {
     const menu = trigger.closest('craft-action-menu');
 
     return menu?.querySelector<HTMLElement>('[slot="invoker"]') ?? trigger;
   }
 
   useEventListener(window, 'craft:copy-elements', onCopyElements);
-  useEventListener(window, 'craft:edit-element', (event) =>
-    onElementEvent(event, 'edit')
-  );
-  useEventListener(window, 'craft:view-element', (event) =>
-    onElementEvent(event, 'view')
-  );
-
   /**
    * `craft-action-item` bubbles `craft-state-change` through its lifecycle. A
    * successful `http` action means the selection was acted on, so refresh the
