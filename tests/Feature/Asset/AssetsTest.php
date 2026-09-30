@@ -534,3 +534,21 @@ describe('colors', function () {
         expect($this->asset->colors)->toBeNull();
     });
 });
+
+it('dates a replaced file by where it was stored, so indexing doesn’t mistake it for a changed file', function () {
+    $path = tempnam(sys_get_temp_dir(), 'craft-colors-');
+    file_put_contents($path, 'not an image');
+    touch($path, time() - 3600);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $original = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'notes.txt',
+    ]);
+
+    $this->assets->replaceAssetFile($original, $path, 'notes.txt');
+    $asset = Asset::find()->id($original->id)->one();
+
+    expect($asset->dateModified->getTimestamp())
+        ->toBe(Storage::disk('test-disk')->lastModified($asset->getPath()));
+});

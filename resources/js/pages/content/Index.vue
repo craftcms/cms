@@ -2,11 +2,11 @@
   import NewEntryButton, {
     type PublishableSection,
   } from '@/modules/elements/components/NewEntryButton.vue';
-  import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
+  import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
-  } from '@/modules/elements/composables/useElementIndexVisits';
+  } from '@/modules/elements/index/composables/useElementIndexVisits';
   import {index} from '@/routes/craft/cp/content/index.js';
   import {usePage} from '@inertiajs/vue3';
 

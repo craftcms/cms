@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -1360,7 +1361,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             foreach ($ancestors->get()->filter(fn ($ancestor) => $user->can('view', $ancestor)) as $ancestor) {
                 $crumbs[] = [
                     'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
-                        'class' => 'chromeless',
+                        'appearance' => Appearance::Plain->value,
                         'hyperlink' => true,
                     ]),
                 ];
@@ -2106,13 +2107,13 @@ JS, [
                 }
 
                 return app(ElementHtml::class)->chipHtml($section, [
-                    'class' => 'chromeless',
+                    'appearance' => Appearance::Plain->value,
                     'showThumb' => false,
                 ]);
             case 'type':
                 try {
                     return app(ElementHtml::class)->chipHtml($this->getType(), [
-                        'class' => 'chromeless',
+                        'appearance' => Appearance::Plain->value,
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
                 } catch (RuntimeException) {

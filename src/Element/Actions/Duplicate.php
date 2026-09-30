@@ -17,6 +17,11 @@ use function CraftCms\Cms\t;
 
 class Duplicate extends ElementAction
 {
+    /** @var array<int, int> */
+    private array $duplicateIdsBySourceId = [];
+
+    private ?ElementInterface $nestedOwner = null;
+
     public bool $deep = false;
 
     public bool $asDrafts = false;
@@ -66,6 +71,8 @@ JS, [
     #[\Override]
     public function performAction(ElementQueryInterface $query): bool
     {
+        $this->duplicateIdsBySourceId = [];
+
         if ($this->deep) {
             $query->orderBy('structureelements.lft');
         }
@@ -119,7 +126,9 @@ JS, [
 
             // If the element was loaded for a non-primary owner, set its primary owner to it
             if ($element instanceof NestedElementInterface) {
-                $attributes['primaryOwner'] = $element->getOwner();
+                $owner = $this->nestedOwner ?? $element->getOwner();
+                $attributes['owner'] = $owner;
+                $attributes['primaryOwner'] = $owner;
                 $attributes['sortOrder'] = null; // clear our sort order too
             }
 
@@ -139,6 +148,7 @@ JS, [
 
             $successCount++;
             $duplicatedElementIds[$element->id] = true;
+            $this->duplicateIdsBySourceId[$element->id] = $duplicate->id;
 
             if ($newParent) {
                 // Append it to the duplicate of $element’s parent
@@ -159,5 +169,16 @@ JS, [
                 $this->_duplicateElements($childQuery, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
+    }
+
+    /** @return array<int, int> */
+    public function duplicateIdsBySourceId(): array
+    {
+        return $this->duplicateIdsBySourceId;
+    }
+
+    public function setNestedOwner(ElementInterface $owner): void
+    {
+        $this->nestedOwner = $owner;
     }
 }

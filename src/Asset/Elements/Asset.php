@@ -66,6 +66,8 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
+use CraftCms\Cms\Image\Blurhash;
+use CraftCms\Cms\Image\ColorGrid;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -174,6 +176,9 @@ class Asset extends Element
     public const string ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
+
+    /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
+    private const int PLACEHOLDER_SCALE = 3;
 
     private static string $_displayName;
 
@@ -1748,14 +1753,8 @@ JS, [
      */
     private function imgPlaceholderStyle(): array
     {
-        $grid = $this->colors->grid ?? [];
-
-        foreach ($grid as $row) {
-            foreach ($row as $color) {
-                if (strlen($color) > 7) {
-                    return [];
-                }
-            }
+        if ($this->hasTransparency()) {
+            return [];
         }
 
         $placeholderUrl = $this->getPlaceholderDataUrl();
@@ -1767,6 +1766,23 @@ JS, [
         return [
             'background' => "url($placeholderUrl) center / cover no-repeat",
         ];
+    }
+
+    private function hasTransparency(): ?bool
+    {
+        if (empty($this->colors->grid)) {
+            return null;
+        }
+
+        foreach ($this->colors->grid as $row) {
+            foreach ($row as $color) {
+                if (strlen($color) > 7) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -2148,7 +2164,7 @@ JS, [
             return false;
         }
 
-        return in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
+        return $this->hasTransparency() ?? in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
     }
 
     /**
@@ -2477,12 +2493,14 @@ JS, [
 
     /**
      * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
-     * of a tiny PNG with one pixel per region of the image's color grid, or `null` if its colors aren't known.
+     * of a small PNG blurred from the image's color grid, or `null` if its colors aren't known.
      *
-     * Browsers smooth images as they scale them up, so it makes a blurred placeholder for the image when used as a
+     * The grid is scaled up three times with smooth interpolation between its regions, which browsers can scale up the
+     * rest of the way without visible seams, so it makes a blurred placeholder for the image when used as a
      * `background-image` with `background-size: cover`.
      *
      * @see ImageColors::$grid
+     * @see ColorGrid::interpolate()
      */
     #[AllowedInSandbox]
     public function getPlaceholderDataUrl(): ?string
@@ -2493,15 +2511,41 @@ JS, [
             return null;
         }
 
-        $image = Images::getManager()->createImage(count($grid[0]), count($grid));
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
 
-        foreach ($grid as $y => $row) {
+        foreach ($pixels as $y => $row) {
             foreach ($row as $x => $color) {
                 $image->drawPixel($x, $y, $color);
             }
         }
 
         return $image->encode(new PngEncoder)->toDataUri()->toString();
+    }
+
+    /**
+     * Returns a [BlurHash](https://blurha.sh) string for the image, or `null` if its colors aren't known.
+     *
+     * It's encoded from the image's color grid, smoothed the same way as {@see getPlaceholderDataUrl()}, with one
+     * component per region: 4×3 for landscape and square images, and 3×4 for portrait ones. BlurHash has no alpha
+     * channel, so transparent regions are blended over white.
+     *
+     * @see ImageColors::$grid
+     */
+    #[AllowedInSandbox]
+    public function getBlurhash(): ?string
+    {
+        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+
+        if (! $grid) {
+            return null;
+        }
+
+        return Blurhash::encode(
+            ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE),
+            count($grid[0]),
+            count($grid),
+        );
     }
 
     /**
@@ -2729,10 +2773,7 @@ JS, [
                         'preview-thumb-container',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    'data' => [
-                        'theme' => 'dark',
-                    ],
-                    'style' => $this->previewBackgroundStyle(),
+                    ...$this->previewBackgroundStyles(),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
@@ -2746,28 +2787,60 @@ JS, [
     }
 
     /**
-     * Fills the space around a letterboxed image with a gradient between the
-     * colors of the image's left and right edges, so it bleeds out to the sides.
+     * Returns the attributes that fill the space around a letterboxed image.
      *
-     * A black overlay darkens it by 25% at the top, fading to 5% at the bottom.
+     * Images with transparent regions get a checkered background, so their
+     * edges show. Others get a gradient between the colors of the image's
+     * left and right edges, so it bleeds out to the sides, with a black
+     * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
      *
-     * @return array<string, string>
+     * @return array<string, array<string, string>>
      */
-    private function previewBackgroundStyle(): array
+    private function previewBackgroundStyles(): array
     {
-        $colors = $this->kind === FileKind::Image->value ? $this->colors : null;
+        if ($this->kind !== FileKind::Image->value) {
+            return [];
+        }
+
+        if ($this->hasTransparency()) {
+            return [
+                'style' => [
+                    '--_checker-size' => '16px',
+                    '--_checker-color' => 'var(--c-thumbnail-checker-color, hsl(211 13% 65% / 0.25));',
+                    '--_checker-half' => 'calc(var(--_checker-size) / 2);',
+                    'background-image' => <<<'CSS'
+linear-gradient(45deg, var(--_checker-color) 25%, transparent 25%),
+linear-gradient(135deg, var(--_checker-color) 25%, transparent 25%),
+linear-gradient(45deg, transparent 75%, var(--_checker-color) 75%),
+linear-gradient(135deg, transparent 75%, var(--_checker-color) 75%)
+CSS,
+                    'background-size' => 'var(--_checker-size) var(--_checker-size);',
+                    'background-position' => <<<'CSS'
+0 0,
+var(--_checker-half) 0,
+var(--_checker-half) calc(-1 * var(--_checker-half)),
+0 var(--_checker-half)
+CSS,
+                ],
+            ];
+        }
 
         // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
-        $left = $colors?->left();
-        $right = $colors?->right();
+        $left = $this->colors?->left();
+        $right = $this->colors?->right();
 
         if ($left === null || $right === null) {
             return [];
         }
 
         return [
-            'background-color' => '#000',
-            'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+            'data' => [
+                'theme' => 'dark',
+            ],
+            'style' => [
+                'background-color' => '#000',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+            ],
         ];
     }
 
@@ -2885,7 +2958,9 @@ JS;
             t('Uploaded by') => function () {
                 $uploader = $this->getUploader();
 
-                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader) : false;
+                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader, [
+                    'appearance' => 'plain',
+                ]) : false;
             },
             t('Dimensions') => function () {
                 $dimensions = $this->getDimensions();
@@ -3461,6 +3536,16 @@ JS;
 
             // Delete the temp file
             File::delete($tempPath);
+        }
+
+        // Take the new file's modification time from where it ended up, which is what indexing compares against, so it
+        // isn't mistaken for a changed file and sampled again.
+        if ($this->uploadSource !== null || $tempPath !== null) {
+            try {
+                $this->dateModified = Date::createFromTimestampUTC($newDisk->lastModified($newPath));
+            } catch (Throwable $e) {
+                Log::info("Couldn’t read the modification time of $newPath: {$e->getMessage()}");
+            }
         }
 
         // Clear out the temp location properties

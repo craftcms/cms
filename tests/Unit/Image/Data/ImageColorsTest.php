@@ -31,16 +31,16 @@ it('drops anything that isn’t a hex color', function () {
         ->and($colors->grid)->toBe([['#3a6ea5']]);
 });
 
-it('averages the colors of the image’s edges', function () {
+it('averages the colors of the image’s edges in linear light', function () {
     $colors = new ImageColors(grid: [
         ['#ff0000', '#ffffff', '#0000ff80'],
         ['#990000', '#ffffff', '#000099'],
     ]);
 
-    expect($colors->left())->toBe('#cc0000')
-        ->and($colors->right())->toBe('#0000cc')
-        ->and($colors->top())->toBe('#aa55aa')
-        ->and($colors->bottom())->toBe('#885588');
+    expect($colors->left())->toBe('#d40000')
+        ->and($colors->right())->toBe('#0000d4')
+        ->and($colors->top())->toBe('#d59cd5')
+        ->and($colors->bottom())->toBe('#b19cb1');
 });
 
 it('has no edge colors without a grid', function () {

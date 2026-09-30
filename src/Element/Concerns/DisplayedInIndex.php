@@ -8,6 +8,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
@@ -25,10 +26,7 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Structures;
-use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
-use Illuminate\Support\Facades\DB;
 use Stringable;
-use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -188,14 +186,24 @@ trait DisplayedInIndex
         ];
 
         if (! empty($viewState['order'])) {
-            // Special case for sorting by structure
+            $sort = [[
+                'field' => $viewState['order'],
+                'direction' => $viewState['sort'] ?? 'asc',
+            ]];
+
+            foreach ($viewState['orderHistory'] ?? [] as $order) {
+                $sort[] = [
+                    'field' => $order[0],
+                    'direction' => $order[1],
+                ];
+            }
+
+            $source = null;
+
             if ($viewState['order'] === 'structure') {
                 $source = ElementSources::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
-                    $elementQuery
-                        ->structureId($source['structureId'])
-                        ->orderBy('lft');
                     $variables['structure'] = Structures::getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
@@ -208,18 +216,16 @@ trait DisplayedInIndex
                 } else {
                     unset($viewState['order']);
                 }
-            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
-                self::applyIndexOrderBy($elementQuery, $orderBy);
+            }
 
-                if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
-                    foreach ($viewState['orderHistory'] as $order) {
-                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
-                            self::applyIndexOrderBy($elementQuery, $orderBy);
-                        } else {
-                            break;
-                        }
-                    }
-                }
+            if (! empty($viewState['order'])) {
+                app(ElementIndexes::class)->applySort(
+                    elementType: static::class,
+                    elementQuery: $elementQuery,
+                    sourceKey: $sourceKey,
+                    sort: $sort,
+                    source: $source,
+                );
             }
         }
 
@@ -262,7 +268,7 @@ trait DisplayedInIndex
         // See if there are any provisional changes we should show
         Drafts::loadProvisionalChanges($elements);
 
-        if (request()->boolean('prevalidate')) {
+        if ($viewState['prevalidate'] ?? request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
                     $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
@@ -278,28 +284,6 @@ trait DisplayedInIndex
         $variables['elements'] = $elements;
 
         return $variables;
-    }
-
-    /**
-     * Applies a normalized element index ordering to the element query.
-     */
-    /** @param array<array-key,mixed>|ExpressionInterface $orderBy */
-    private static function applyIndexOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void
-    {
-        foreach (Arr::wrap($orderBy) as $column => $direction) {
-            if ($direction instanceof ExpressionInterface) {
-                $elementQuery->getQuery()->orderByRaw(
-                    $direction->getValue(DB::getQueryGrammar()),
-                );
-
-                continue;
-            }
-
-            $elementQuery->getQuery()->orderBy($column, match ($direction) {
-                'desc', SORT_DESC => 'desc',
-                default => 'asc',
-            });
-        }
     }
 
     /**
@@ -625,155 +609,5 @@ trait DisplayedInIndex
     protected static function defineDefaultCardAttributes(): array
     {
         return [];
-    }
-
-    /**
-     * Returns the orderBy value for element indexes.
-     *
-     * @param  string  $sourceKey  The source key
-     * @param  string  $attribute  The attribute to sort by
-     * @param  string  $dir  The sort direction ('asc' or 'desc')
-     * @return ExpressionInterface|array<array-key,mixed>|false The order by clause
-     */
-    private static function _indexOrderBy(
-        string $sourceKey,
-        string $attribute,
-        string $dir,
-    ): ExpressionInterface|array|false {
-        $sortDirection = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
-        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $sortDirection);
-
-        if ($columns === false || $columns instanceof ExpressionInterface) {
-            return $columns;
-        }
-
-        $columns = is_string($columns)
-            ? preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY)
-            : $columns;
-
-        return self::normalizeOrderByColumns($columns, $sortDirection);
-    }
-
-    /**
-     * Normalizes order by columns with their sort directions.
-     *
-     * @param  array<array-key,mixed>  $columns  The columns to normalize
-     * @param  int  $defaultDirection  The default sort direction
-     * @return array<array-key,int> The normalized columns with directions
-     */
-    private static function normalizeOrderByColumns(array $columns, int $defaultDirection): array
-    {
-        $result = [];
-
-        foreach ($columns as $i => $column) {
-            if ($i === 0) {
-                // The first column's sort direction is always user-defined
-                $result[$column] = $defaultDirection;
-
-                continue;
-            }
-
-            if (preg_match('/^(.*?)\s+(asc|desc)$/i', (string) $column, $matches)) {
-                $result[$matches[1]] = strcasecmp($matches[2], 'desc') === 0 ? SORT_DESC : SORT_ASC;
-
-                continue;
-            }
-
-            $result[$column] = SORT_ASC;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Returns the columns for element index ordering.
-     *
-     * @param  string  $sourceKey  The source key
-     * @param  string  $attribute  The attribute to sort by
-     * @param  int  $dir  The sort direction (SORT_ASC or SORT_DESC)
-     * @return ExpressionInterface|bool|array<array-key,mixed>|string The columns
-     */
-    private static function _indexOrderByColumns(
-        string $sourceKey,
-        string $attribute,
-        int $dir,
-    ): ExpressionInterface|bool|array|string {
-        if (! $attribute) {
-            return false;
-        }
-
-        if ($attribute === 'score') {
-            return 'score';
-        }
-
-        // Check element's own sort options
-        if ($orderBy = self::resolveSortOption($attribute, $dir)) {
-            return $orderBy;
-        }
-
-        // Check source-specific sort options
-        return self::resolveSourceSortOption($sourceKey, $attribute, $dir);
-    }
-
-    /**
-     * Resolves the orderBy value from the element's sort options.
-     *
-     * @param  string  $attribute  The attribute to sort by
-     * @param  int  $dir  The sort direction
-     * @return ExpressionInterface|array<array-key,mixed>|string|false The orderBy value
-     */
-    private static function resolveSortOption(string $attribute, int $dir): ExpressionInterface|array|string|false
-    {
-        foreach (static::sortOptions() as $key => $sortOption) {
-            if (! is_array($sortOption) && $key === $attribute) {
-                return $key;
-            }
-
-            if (is_array($sortOption)) {
-                $optionAttribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
-                if ($optionAttribute === $attribute) {
-                    return is_callable($sortOption['orderBy'])
-                        ? $sortOption['orderBy']($dir)
-                        : $sortOption['orderBy'];
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Resolves the orderBy value from source-specific sort options.
-     *
-     * @param  string  $sourceKey  The source key
-     * @param  string  $attribute  The attribute to sort by
-     * @param  int  $dir  The sort direction
-     * @return ExpressionInterface|bool The orderBy value
-     */
-    private static function resolveSourceSortOption(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool
-    {
-        $sourceSortOptions = ElementSources::getSourceSortOptions(static::class, $sourceKey);
-
-        foreach ($sourceSortOptions as $sortOption) {
-            if ($sortOption['attribute'] !== $attribute) {
-                continue;
-            }
-
-            $orderBy = $sortOption['orderBy'];
-
-            if ($orderBy instanceof Coalesce) {
-                $sql = $orderBy->getValue(DB::getQueryGrammar());
-            } elseif (is_string($orderBy)) {
-                $sql = $orderBy;
-            } else {
-                return $orderBy;
-            }
-
-            $direction = $dir === SORT_ASC ? 'ASC' : 'DESC';
-
-            return DB::raw("$sql $direction");
-        }
-
-        return false;
     }
 }

@@ -1,6 +1,5 @@
 import {useDebounceFn} from '@vueuse/core';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 
 /**
  * Anything in a row that owns its own click. Double-clicking one of these
@@ -10,7 +9,7 @@ import {useElementIndexTable} from '@/modules/elements/composables/useElementInd
  * Craft 5 checked `a[href], button, [role=button], .move`; the rest are the CP
  * web components that appear in a Vue index row.
  */
-const INTERACTIVE_SELECTOR = [
+export const ELEMENT_QUICK_EDIT_CONTROL_SELECTOR = [
   'a[href]',
   'button',
   'input',
@@ -36,23 +35,16 @@ const INTERACTIVE_SELECTOR = [
  * without either having to know about it.
  */
 export interface ElementQuickEditDependencies {
-  openSlideout: typeof openSlideout;
+  openSlideout?: typeof openSlideout;
   refreshResults: () => void;
 }
 
-function defaultDependencies(): ElementQuickEditDependencies {
-  return {
-    openSlideout,
-    refreshResults: useElementIndexTable().refreshResults,
-  };
-}
-
 export function useElementQuickEdit(
-  dependencies: ElementQuickEditDependencies = defaultDependencies()
+  dependencies: ElementQuickEditDependencies
 ) {
   // The active index's partial reload — the same one a bulk action triggers,
   // minus clearing the selection. Editing one row shouldn't deselect anything.
-  const {openSlideout: open, refreshResults} = dependencies;
+  const {openSlideout: open = openSlideout, refreshResults} = dependencies;
 
   /**
    * Drafts autosave as the user types, and each one is a chance for the row to
@@ -131,7 +123,7 @@ export function useElementQuickEdit(
 
     // Scoped to the row so a control somewhere else on the page can't suppress
     // a legitimate double-click.
-    const control = target.closest(INTERACTIVE_SELECTOR);
+    const control = target.closest(ELEMENT_QUICK_EDIT_CONTROL_SELECTOR);
 
     if (control && row.contains(control)) {
       return;

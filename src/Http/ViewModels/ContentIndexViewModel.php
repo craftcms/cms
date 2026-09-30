@@ -10,14 +10,18 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -25,6 +29,7 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -53,8 +58,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** The thumbnail edge length (px) requested for the thumbnail grid view. */
     private const int THUMB_SIZE = 200;
 
-    /** @var array{0: ?string, 1: ?array<string, mixed>}|null */
-    private ?array $resolvedSource = null;
+    private ?ElementIndexSourceSettings $resolvedSourceSettings = null;
 
     private ?ElementQueryInterface $query = null;
 
@@ -126,7 +130,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array<string, mixed>|null */
     public function source(): ?array
     {
-        return $this->sourceState()[1];
+        return $this->sourceSettings()->source;
     }
 
     /** @return array{id: int, editable: bool, maxLevels: int|null}|null */
@@ -198,6 +202,7 @@ abstract class ContentIndexViewModel extends ViewModel
         // indexData() prepares (eager-loads) exactly what will render.
         return $this->resolvedViewState = [
             ...$this->request->viewState(),
+            ...$this->sourceViewState(),
             'mode' => $this->mode(),
             'tableColumns' => $this->resolveVisibleColumns(),
             'order' => $structureMode ? 'structure' : ($orderBy[0]['field'] ?? null),
@@ -206,8 +211,6 @@ abstract class ContentIndexViewModel extends ViewModel
                 fn (array $sortItem) => [$sortItem['field'], $sortItem['direction'] ?? 'asc'],
                 array_slice($orderBy, 1),
             ),
-            'showHeaderColumn' => true,
-            'fieldLayouts' => $this->request->fieldLayouts(),
             'returnUrl' => $this->request->returnUrl(),
         ];
     }
@@ -281,7 +284,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
     public function siteId(): int
     {
-        return $this->site()->id;
+        return $this->sourceSettings()->siteId;
     }
 
     /**
@@ -514,7 +517,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array<array-key, mixed> */
     public function viewModes(): array
     {
-        return $this->elementType::indexViewModes();
+        return $this->sourceSettings()->viewModes;
     }
 
     public function selectedSubnavItem(): ?string
@@ -533,51 +536,7 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function sortOptions(): array
     {
-        [$sourceKey, $source] = $this->sourceState();
-
-        if ($sourceKey === null) {
-            return [];
-        }
-
-        $indexState = $this->indexState();
-        $options = [];
-
-        if (isset($source['structureId'])) {
-            $options['structure'] = [
-                'label' => t('Structure'),
-                'value' => 'structure',
-                'defaultDir' => 'asc',
-            ];
-        }
-
-        foreach ($indexState->sortOptions($this->elementType) as $option) {
-            $value = self::addressableSortAttribute($option);
-
-            if ($value !== null) {
-                $options[$value] = [
-                    'label' => $option['label'] ?? $value,
-                    'value' => $value,
-                    'defaultDir' => $option['defaultDir'],
-                ];
-            }
-        }
-
-        // The element type's own options win over a source's field-layout
-        // options that happen to sort on the same attribute.
-        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey) as $key => $option) {
-            $option = $indexState->normalizeSortOption($option, $key);
-            $value = self::addressableSortAttribute($option);
-
-            if ($value !== null && ! isset($options[$value])) {
-                $options[$value] = [
-                    'label' => $option['label'] ?? $value,
-                    'value' => $value,
-                    'defaultDir' => $option['defaultDir'],
-                ];
-            }
-        }
-
-        return array_values($options);
+        return $this->sourceSettings()->publicSortOptions();
     }
 
     /**
@@ -587,40 +546,13 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function tableColumns(): array
     {
-        [$sourceKey] = $this->sourceState();
-
-        if ($sourceKey === null) {
-            return [];
-        }
-
-        return $this->indexState()
-            ->tableColumns($this->elementType, $sourceKey)
-            ->map(fn (array $attribute, string $key) => [
-                'label' => $attribute['label'],
-                'value' => $key,
-            ])
-            ->values()
-            ->all();
+        return $this->sourceSettings()->tableColumns;
     }
 
     /** @return string[] */
     public function defaultTableColumns(): array
     {
-        [$sourceKey] = $this->sourceState();
-
-        if ($sourceKey === null) {
-            return [];
-        }
-
-        return ElementSources::getTableAttributes(
-            elementType: $this->elementType,
-            sourceKey: $sourceKey,
-            fieldLayouts: $this->request->fieldLayouts(),
-        )
-            ->map(fn (array $attribute) => $attribute[0])
-            ->filter(fn (string $attribute) => $attribute !== 'title')
-            ->values()
-            ->all();
+        return $this->sourceSettings()->defaultTableColumns;
     }
 
     /** @return list<array<string, mixed>> */
@@ -652,11 +584,29 @@ abstract class ContentIndexViewModel extends ViewModel
             return null;
         }
 
+        $sourceSettings = $this->sourceSettings();
+
+        if (! $sourceSettings->actionsEnabled) {
+            return [];
+        }
+
         $availableActions = ElementActions::availableActions($this->elementType, $sourceKey, $this->resolveQuery());
 
         return empty($availableActions)
             ? null
             : ElementActions::serializeActionItems($availableActions);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function exporters(): array
+    {
+        [$sourceKey] = $this->sourceState();
+
+        $exporters = $sourceKey === null
+            ? null
+            : app(ElementIndexes::class)->availableExporters($this->elementType, $sourceKey, $this->request->isMobileBrowser());
+
+        return $exporters ? ElementExporters::serializeExporters($exporters) : [];
     }
 
     /**
@@ -672,24 +622,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return $this->resolvedSort;
         }
 
-        $requestedSort = $this->request->array('sort');
-
-        if (! empty($requestedSort)) {
-            return $this->resolvedSort = $requestedSort;
-        }
-
-        $defaultSort = $this->sourceState()[1]['defaultSort'] ?? null;
-
-        if (is_array($defaultSort) && isset($defaultSort[0])) {
-            return $this->resolvedSort = [
-                [
-                    'field' => $defaultSort[0],
-                    'direction' => ($defaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
-                ],
-            ];
-        }
-
-        return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
+        return $this->resolvedSort = $this->sourceSettings()->sort($this->request->array('sort'));
     }
 
     /**
@@ -709,7 +642,7 @@ abstract class ContentIndexViewModel extends ViewModel
         if ($this->sourceState()[0] === null) {
             return [
                 'total' => 0,
-                'per_page' => max(1, $this->request->integer('per_page', 50)),
+                'per_page' => $this->sourceSettings()->pageSize,
                 'current_page' => 1,
                 'last_page' => 1,
                 'next_page_url' => null,
@@ -839,10 +772,71 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array{0: ?string, 1: ?array<string, mixed>} */
     protected function sourceState(): array
     {
-        if ($this->resolvedSource !== null) {
-            return $this->resolvedSource;
-        }
+        $settings = $this->sourceSettings();
 
+        return [$settings->sourceKey, $settings->source];
+    }
+
+    protected function resolveSourceSettings(): ElementIndexSourceSettings
+    {
+        $siteId = $this->site()->id;
+        [$sourceKey, $source] = $this->resolvePageSourceState($siteId);
+        $fieldLayouts = $this->request->fieldLayouts();
+        $sortOptions = $sourceKey === null ? [] : $this->resolvePageSortOptions($sourceKey, $source, $fieldLayouts);
+        $tableColumns = $sourceKey === null
+            ? []
+            : $this->indexState()
+                ->tableColumns($this->elementType, $sourceKey)
+                ->map(fn (array $attribute, string $key): array => [
+                    'label' => $attribute['label'],
+                    'value' => $key,
+                ])
+                ->values()
+                ->all();
+        $defaultTableColumns = $sourceKey === null
+            ? []
+            : ElementSources::getTableAttributes(
+                elementType: $this->elementType,
+                sourceKey: $sourceKey,
+                fieldLayouts: $fieldLayouts,
+            )
+                ->map(fn (array $attribute) => $attribute[0])
+                ->filter(fn (string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        $sourceDefaultSort = $source['defaultSort'] ?? null;
+        $defaultSort = is_array($sourceDefaultSort) && is_string($sourceDefaultSort[0] ?? null)
+            ? [[
+                'field' => $sourceDefaultSort[0],
+                'direction' => ($sourceDefaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
+            ]]
+            : [['field' => 'dateCreated', 'direction' => 'desc']];
+
+        return new ElementIndexSourceSettings(
+            sourceKey: $sourceKey,
+            source: $source,
+            siteId: $siteId,
+            viewModes: $this->elementType::indexViewModes(),
+            sortOptions: $sortOptions,
+            tableColumns: $tableColumns,
+            defaultTableColumns: $defaultTableColumns,
+            defaultSort: $defaultSort,
+            defaultViewMode: is_string($source['defaultViewMode'] ?? null) ? $source['defaultViewMode'] : 'table',
+            pageSize: max(1, $this->request->integer('per_page', 50)),
+            showHeaderColumn: $this->request->boolean('showHeaderColumn', true),
+            fieldLayouts: $fieldLayouts,
+        );
+    }
+
+    /** @return array<string, mixed> */
+    protected function sourceViewState(): array
+    {
+        return $this->sourceSettings()->viewState();
+    }
+
+    /** @return array{0: ?string, 1: ?array<string, mixed>} */
+    private function resolvePageSourceState(int $siteId): array
+    {
         // An explicit ?source= wins; otherwise the element type's default
         // (e.g. a section-handle or volume-path URL) selects its source.
         $requestedSource = $this->request->input('source') ?? $this->defaultSourceKey();
@@ -857,9 +851,9 @@ abstract class ContentIndexViewModel extends ViewModel
             // through to a visible source rather than list a hidden one.
             if (
                 $resolved[0] !== null &&
-                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $this->siteId()))
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId))
             ) {
-                return $this->resolvedSource = $resolved;
+                return $resolved;
             }
         }
 
@@ -867,13 +861,70 @@ abstract class ContentIndexViewModel extends ViewModel
         // for example), so mirror the legacy index's behavior and fall back
         // to the first available source.
         // Headings are keyed too, but only head the sources beneath them.
-        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key'])
+        $sources = array_filter($this->sourceCandidates($siteId), fn (array $source): bool => isset($source['key'])
             && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
             && ! ($source['disabled'] ?? false));
         $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
             ?? array_first($sources);
 
-        return $this->resolvedSource = [$source['keyPath'] ?? $source['key'] ?? null, $source];
+        return [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function sourceCandidates(int $siteId): array
+    {
+        return ElementSources::filterSourcesBySite(collect($this->allSources()), $siteId)->all();
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $source
+     * @param  array<int, FieldLayout>|null  $fieldLayouts
+     * @return list<array{label: string, value: string, defaultDir: string, fixedDir?: string}>
+     */
+    private function resolvePageSortOptions(string $sourceKey, ?array $source, ?array $fieldLayouts): array
+    {
+        $indexState = $this->indexState();
+        $options = [];
+
+        if (isset($source['structureId'])) {
+            $options['structure'] = [
+                'label' => t('Structure'),
+                'value' => 'structure',
+                'defaultDir' => 'asc',
+            ];
+        }
+
+        foreach ($indexState->sortOptions($this->elementType) as $option) {
+            $this->addSortOption($options, $option);
+        }
+
+        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey, $fieldLayouts) as $key => $option) {
+            $this->addSortOption($options, $indexState->normalizeSortOption($option, $key));
+        }
+
+        return array_values($options);
+    }
+
+    /**
+     * @param  array<string, array{label: string, value: string, defaultDir: string, fixedDir?: string}>  $options
+     * @param  array{attribute: mixed, defaultDir: mixed, label: mixed, option: mixed, ...}  $option
+     */
+    private function addSortOption(array &$options, array $option): void
+    {
+        $value = self::addressableSortAttribute($option);
+
+        if ($value === null || isset($options[$value])) {
+            return;
+        }
+
+        $rawOption = is_array($option['option']) ? $option['option'] : [];
+        $fixedDirection = $rawOption['fixedDir'] ?? null;
+        $options[$value] = [
+            'label' => is_string($option['label']) ? $option['label'] : $value,
+            'value' => $value,
+            'defaultDir' => $option['defaultDir'] === 'desc' ? 'desc' : 'asc',
+            ...(in_array($fixedDirection, ['asc', 'desc'], true) ? ['fixedDir' => $fixedDirection] : []),
+        ];
     }
 
     /**
@@ -883,6 +934,11 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function indexState(): ElementIndexState
     {
         return app(ElementIndexState::class);
+    }
+
+    private function sourceSettings(): ElementIndexSourceSettings
+    {
+        return $this->resolvedSourceSettings ??= $this->resolveSourceSettings();
     }
 
     /**
@@ -905,9 +961,11 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @TODO this should maybe return the ElementIndexViewMode enum?
      */
-    private function mode(): string
+    protected function mode(): string
     {
-        return $this->request->input('viewMode') ?: $this->request->viewState()['mode'];
+        return $this->request->input('viewMode')
+            ?: $this->request->input('viewState.mode')
+            ?: $this->sourceSettings()->defaultViewMode;
     }
 
     /** @return string[] */
@@ -970,7 +1028,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return array<string, mixed>
      */
-    private function baseCriteria(): array
+    protected function baseCriteria(): array
     {
         return [
             'drafts' => $this->canHaveDrafts() ? null : false,
@@ -994,7 +1052,10 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $query = $this->resolveQuery();
-        $viewState = $this->viewState();
+        $viewState = [
+            ...$this->viewState(),
+            ...$this->indexViewState(),
+        ];
 
         // Bound the query to the requested page before indexData() runs its
         // element fetch, so indexElements() sees the offset/limit it needs —
@@ -1003,7 +1064,7 @@ abstract class ContentIndexViewModel extends ViewModel
 
         // Reset any ordering applied while building the query so the requested
         // sort stays authoritative, then let indexData() apply it.
-        if ($viewState['order'] !== null) {
+        if ($viewState['order'] !== null && $this->shouldResetQueryOrder($viewState['order'])) {
             $query->getQuery()->reorder();
         }
 
@@ -1020,16 +1081,18 @@ abstract class ContentIndexViewModel extends ViewModel
         );
     }
 
-    /**
-     * Resolves the current page's bounds and total, and applies the
-     * offset/limit to the shared query so the element type's own
-     * {@see indexElements()} fetch (via {@see indexData()}) returns exactly
-     * this page. The total comes from {@see indexElementCount()}, which for
-     * assets includes the folders merged into each page. Out-of-range pages
-     * clamp to the last valid page.
-     *
-     * @return array{perPage: int, page: int, total: int, pageParam: string}
-     */
+    /** @return array<string, mixed> */
+    protected function indexViewState(): array
+    {
+        return $this->sourceSettings()->indexViewState();
+    }
+
+    protected function shouldResetQueryOrder(string $order): bool
+    {
+        return $this->sourceSettings()->shouldResetQueryOrder($order);
+    }
+
+    /** @return array{perPage: int, page: int, total: int, pageParam: string} */
     private function resolvePaginationState(): array
     {
         if ($this->paginationState !== null) {
@@ -1039,7 +1102,7 @@ abstract class ContentIndexViewModel extends ViewModel
         [$sourceKey] = $this->sourceState();
         $query = $this->resolveQuery();
 
-        $perPage = max(1, $this->request->integer('per_page', 50));
+        $perPage = $this->sourceSettings()->pageSize;
         $pageParam = Cms::config()->getPageTriggerParam();
 
         $total = $this->elementType::indexElementCount($query, $sourceKey);
@@ -1056,11 +1119,6 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /**
-     * Builds the paginator from the page elements fetched through the element
-     * type's index pipeline (so assets keep their folders) and the resolved
-     * page state.
-     */
     /** @return LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>> */
     private function resolvePaginator(): LengthAwarePaginator
     {
@@ -1068,8 +1126,6 @@ abstract class ContentIndexViewModel extends ViewModel
             return $this->paginator;
         }
 
-        // Ordering, attribute prep, and page bounds are applied here; the
-        // resulting elements already reflect this page (folders + rows).
         $indexData = $this->resolveIndexData();
         $state = $this->resolvePaginationState();
 
@@ -1090,12 +1146,6 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * Serializes elements as table rows: the title renders as a CpLink-wrapped
-     * chip; every other visible column renders through the element's
-     * attribute-HTML pipeline (which element types override for attributes
-     * like `authors`). Only the visible columns render — the client refetches
-     * when its column selection changes.
-     *
      * @param  list<ElementInterface>  $elements
      * @return list<ActionItem|array<string, mixed>>
      */
@@ -1109,10 +1159,9 @@ abstract class ContentIndexViewModel extends ViewModel
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
-            'label' => $element->getUiLabel(),
-            ...$this->elementUrls($element),
-            ...$this->extraRowData($element),
+            ...$this->baseRowData($element, $elementHtml),
             ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
+            ...$this->inlineRowData($element, $attributes),
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
@@ -1123,13 +1172,7 @@ abstract class ContentIndexViewModel extends ViewModel
         ], $elements);
     }
 
-    /**
-     * Per-row structure metadata, present only in structure mode: `level`
-     * drives the row's indentation, and `hasDescendants` decides whether the
-     * row gets an expand/collapse toggle.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     private function structureRowData(ElementInterface $element, bool $hasDescendants): array
     {
         if ($this->mode() !== ElementIndexViewMode::Structure->value || ! isset($element->level)) {
@@ -1139,24 +1182,11 @@ abstract class ContentIndexViewModel extends ViewModel
         return [
             'level' => (int) $element->level,
             'hasDescendants' => $hasDescendants,
-            // Required by `structures/move-element`, which validates
-            // structureId/elementId/siteId before it will move anything.
             'siteId' => $element->siteId,
         ];
     }
 
     /**
-     * Whether each row has descendants this index would list, keyed by
-     * element ID.
-     *
-     * The nested set alone can't answer that: its bounds also span trashed
-     * and otherwise hidden elements, which would leave a toggle on a parent
-     * with nothing to show. Craft 5 queried every row; here the page answers
-     * for an expanded row whose next row follows it in tree order, so only
-     * collapsed rows and the page's last row — whose descendants aren't
-     * loaded — are queried, and only when the nested set says they could
-     * have any.
-     *
      * @param  list<ElementInterface>  $elements
      * @return array<int, bool>
      */
@@ -1192,17 +1222,6 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    /**
-     * The title cell: an element's chip, wrapped in a CpLink to its edit screen.
-     * Elements with no edit URL (e.g. asset folders, which navigate via their
-     * own row handler) render the bare chip, so no stray anchor intercepts the
-     * row's click.
-     *
-     * Nothing links in a selector modal, where a click on a row is a selection
-     * and navigating away would drop it — the same rule, keyed off the same
-     * context, that {@see ElementHtml} applies to a chip's or card's own
-     * hyperlink.
-     */
     private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
     {
         $chip = $elementHtml->elementChipHtml($element, [
@@ -1211,7 +1230,7 @@ abstract class ContentIndexViewModel extends ViewModel
         ]);
 
         $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $element->getCpEditUrl()
+            ? $this->editUrl($element)
             : null;
 
         if ($editUrl === null) {
@@ -1222,9 +1241,6 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * Serializes elements as server-rendered card parts for the cards view.
-     * Vue owns the selection process, so cards render non-selectable.
-     *
      * @param  list<ElementInterface>  $elements
      * @return list<ActionItem|array<string, mixed>>
      */
@@ -1241,31 +1257,29 @@ abstract class ContentIndexViewModel extends ViewModel
                 'context' => static::RENDER_CONTEXT,
                 // Folders (no edit URL) navigate via their own card handler, so
                 // don't wrap them in a link that would swallow the click.
-                'hyperlink' => $element->getCpEditUrl() !== null,
+                'hyperlink' => $this->editUrl($element) !== null,
                 'showEditButton' => false,
                 'autoReload' => false,
                 'selectable' => false,
                 'sortable' => false,
+                ...$this->cardConfig($element),
             ];
 
             return [
                 'id' => $this->rowId($element),
-                'label' => $element->getUiLabel(),
-                ...$this->elementUrls($element),
-                ...$this->extraRowData($element),
-                'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
-                'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
-                'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
-                'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
+                ...$this->baseRowData($element, $elementHtml),
+                ...$elementHtml->elementCardData($element, $cardConfig),
             ];
         }, $elements);
     }
 
+    /** @return array<string, mixed> */
+    protected function cardConfig(ElementInterface $element): array
+    {
+        return [];
+    }
+
     /**
-     * Serializes elements for the thumbnail grid: a large thumbnail image, the
-     * element label, and its edit URL. The client lays these out as tiles (see
-     * the `ElementThumbs` component); folders navigate via their own row data.
-     *
      * @param  ElementInterface[]  $elements
      * @return list<ActionItem|array<string, mixed>>
      */
@@ -1273,11 +1287,9 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
-            ...$this->elementUrls($element),
-            ...$this->extraRowData($element),
-            'label' => $element->getUiLabel(),
+            ...$this->baseRowData($element),
             'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-                ? $element->getCpEditUrl()
+                ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
         ], $elements);
@@ -1304,15 +1316,59 @@ abstract class ContentIndexViewModel extends ViewModel
         return $element->id;
     }
 
-    /**
-     * Extra per-row payload merged into every serialized row across all view
-     * modes. Empty by default; element-type view models add their own row
-     * metadata (e.g. asset folder navigation) here.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     protected function extraRowData(ElementInterface $element): array
     {
         return [];
+    }
+
+    /** @return array<string, mixed> */
+    private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
+    {
+        $elementHtml ??= app(ElementHtml::class);
+
+        return [
+            'label' => $element->getUiLabel(),
+            ...$this->elementUrls($element),
+            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->extraRowData($element),
+        ];
+    }
+
+    /**
+     * @param  list<string>  $attributes
+     * @return array<string, mixed>
+     */
+    private function inlineRowData(ElementInterface $element, array $attributes): array
+    {
+        if (
+            static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ||
+            ($this->viewState()['static'] ?? false) ||
+            Gate::denies('save', $element)
+        ) {
+            return [];
+        }
+
+        return [
+            'inlineEditable' => true,
+            ...($this->request->boolean('editable') ? [
+                'inlineInputHtml' => collect($attributes)
+                    ->mapWithKeys(fn (string $attribute): array => [
+                        $attribute => InputNamespace::with(
+                            'inline',
+                            fn (): string => InputNamespace::namespaceInputs(
+                                fn (): string => (string) $element->getInlineAttributeInputHtml($attribute),
+                                "element-$element->id".(str_starts_with($attribute, 'field:') || str_starts_with($attribute, 'fieldInstance:') || str_starts_with($attribute, 'contentBlock:') ? '[fields]' : ''),
+                            ),
+                        ),
+                    ])
+                    ->all(),
+            ] : []),
+        ];
+    }
+
+    protected function editUrl(ElementInterface $element): ?string
+    {
+        return $element->getCpEditUrl();
     }
 }

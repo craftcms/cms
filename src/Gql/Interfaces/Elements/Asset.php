@@ -100,6 +100,11 @@ class Asset extends Element
                 'type' => ImageColorsType::generateType(null),
                 'description' => 'Color data sampled from the image, or null if it’s not an image or it hasn’t been sampled yet.',
             ],
+            'blurhash' => [
+                'name' => 'blurhash',
+                'type' => Type::string(),
+                'description' => 'A [BlurHash](https://blurha.sh) string encoded from the image’s colors, or null if it’s not an image or its colors aren’t known.',
+            ],
             'placeholderDataUrl' => [
                 'name' => 'placeholderDataUrl',
                 'type' => Type::string(),

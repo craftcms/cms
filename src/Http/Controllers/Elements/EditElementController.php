@@ -86,8 +86,10 @@ class EditElementController
             abort(400, 'No element was identified by the request.');
         }
 
-        // Vue slideouts get the same Inertia editor as the entry edit page.
-        if ($element instanceof Entry && $this->request->inertia()) {
+        // Entries get the Inertia editor everywhere but the legacy jQuery slideouts, which ask
+        // for JSON without `X-Inertia` — Vue slideouts, and full page loads of `edit/{id}` URLs,
+        // which is where nested entries' edit pages live.
+        if ($element instanceof Entry && ($this->request->inertia() || ! $this->request->wantsJson())) {
             return app(EditEntryController::class)->render($element);
         }
 

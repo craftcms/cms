@@ -6,11 +6,15 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Added support for controller actions and named Laravel routes in section and Matrix site settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added close buttons to element detail tabs. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Element editor slideouts now have action menus and “Open in a new tab” buttons. ([#19748](https://github.com/craftcms/cms/pull/19748))
 - Removed the legacy control panel stylesheet from Inertia pages. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - `ElementEditor` now supports rendering as a full page in addition to a slideout. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Improved the overall accessibility of the control panel. ([#19699](https://github.com/craftcms/cms/pull/19699))
@@ -21,13 +25,20 @@
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Added the `--c-thumbnail-image-radius` custom property to `<craft-thumbnail>`, and its other custom properties can now be set on an ancestor. ([#19758](https://github.com/craftcms/cms/pull/19758))
+- Content in `<craft-chip>`’s `prefix` slot no longer replaces its thumbnail, icon, and status; it’s shown before them. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 - Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
 - Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
 - Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.
+- Fixed a bug where element chips didn’t show their status indicators, and their thumbnails weren’t sized, spaced, or centered for the chip. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Fixed a bug where the “Preview file” modal was unstyled.
 - Fixed a bug where element index sort direction buttons did nothing. ([#19744](https://github.com/craftcms/cms/pull/19744))
+- Fixed a bug where element index selection ranges could use a stale anchor after clearing selection or switching view modes. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element index searches could move keyboard focus after a page load. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals could display results from an outdated request. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals requested search results on every keystroke. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
 - Fixed an accessibility issue where the Date, Time, and Time zone inputs within `<craft-input-date-time>` didn’t have individual accessible names. ([#19741](https://github.com/craftcms/cms/pull/19741))
 - Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
@@ -46,17 +57,21 @@
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Control panel uploads now sample image colors in the browser and send them along, so the server doesn’t need to sample the file itself. ([#19751](https://github.com/craftcms/cms/pull/19751))
 - `<img>` tags returned by `CraftCms\Cms\Asset\Elements\Asset::getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
-- Added the `colors` field to assets in GraphQL queries, which returns the image’s `dominant`, `grid`, `left`, `right`, `top`, and `bottom` colors. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
-- Added the `placeholderDataUrl` field to assets in GraphQL queries. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates and the `blurhash` field in GraphQL queries. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
 - Added `CraftCms\Cms\Asset\Elements\Asset::$colors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getBlurhash()`. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getPlaceholderDataUrl()`. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added `CraftCms\Cms\Asset\Elements\Asset::$uploadColors`. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- Added `CraftCms\Cms\Image\Blurhash`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\ColorGrid`. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - Added `CraftCms\Cms\Image\Data\ImageColors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
 - Added `CraftCms\Cms\Image\Images::colors()`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
 - Fixed a bug where asset indexing left temporary copies of remote images behind. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Fixed a bug where uploaded and replaced assets’ modification dates came from their temporary files rather than the stored files.
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -85,6 +100,9 @@
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
 - Restored Matrix fields’ configured Cards and Cards Grid view modes in element forms.
+- Restored Matrix fields’ configured Index view mode in element forms.
+- Fixed a bug where Matrix Index views could show content from the wrong site.
+- Fixed a bug where reopening a Matrix entry from an Index view could show its canonical content instead of the owner draft’s content.
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
@@ -92,6 +110,7 @@
 
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
+- Entry types’ Color fields now show a dropdown menu. ([#19760](https://github.com/craftcms/cms/pull/19760))
 
 ### Workflows
 - Added approval workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -258,6 +277,9 @@
 - Fixed a bug where migrations that wrote to the project config had to be defensive about its `readOnly` state. ([#19726](https://github.com/craftcms/cms/pull/19726))
 - Fixed an error that could occur when saving elements, if their field layouts still referenced legacy component classes. ([#19719](https://github.com/craftcms/cms/pull/19719))
 - Fixed an error that could occur when rendering field settings.
+- Fixed a validation error that occurred when saving an entry type with a color. ([#19753](https://github.com/craftcms/cms/issues/19753))
+- Fixed a validation error that occurred when saving a Color field with no color palette, even if “Allow custom colors” was enabled.
+- Fixed an error that occurred when using an icon picker. ([#19752](https://github.com/craftcms/cms/issues/19752))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

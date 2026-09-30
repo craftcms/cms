@@ -439,3 +439,17 @@ function createEditElementMatrixFixture(): array
         'block' => $owner->getFieldValue('matrixField')->status(null)->one(),
     ];
 }
+
+it('renders a nested entry’s own edit page with the entry editor', function () {
+    ['block' => $block] = createEditElementMatrixFixture();
+
+    expect($block->getCpEditUrl())->toContain("edit/{$block->id}");
+
+    get($block->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('elementId', $block->id)
+            ->where('cpEditUrl', $block->getCpEditUrl())
+        );
+});

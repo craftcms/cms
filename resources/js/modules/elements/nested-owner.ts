@@ -30,7 +30,7 @@ export function nestedOwnerContext(
   let context: NestedOwnerContext | null = null;
   visitControls(form.nodes, (control) => {
     if (
-      control.component !== 'craft:nested-element-cards' ||
+      control.component !== 'craft:nested-entries' ||
       !pathsMatch(control.path, path)
     ) {
       return;
