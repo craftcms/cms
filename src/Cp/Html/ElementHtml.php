@@ -89,6 +89,7 @@ readonly class ElementHtml
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
         $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
+        $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
@@ -99,6 +100,7 @@ readonly class ElementHtml
                 ...Html::explodeClass($config['class']),
             ],
             'show-thumb' => $thumbHtml !== null,
+            'icon' => $icon,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
@@ -135,6 +137,10 @@ readonly class ElementHtml
 
         if ($thumbHtml !== null) {
             $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
+        }
+
+        if ($icon !== null) {
+            $html .= Icon::make()->name($icon)->slot('icon');
         }
 
         if ($config['selectable']) {
@@ -228,25 +234,33 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns a chip’s thumbnail or icon HTML, or `null` if the component doesn’t have one.
+     * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
     private function chipThumbHtml(Chippable $component, string $size): ?string
     {
-        if ($component instanceof Thumbable) {
-            $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
-
-            return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        if (! $component instanceof Thumbable) {
+            return null;
         }
 
-        if ($component instanceof Iconic) {
-            $icon = $component->getIcon();
+        $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
 
-            if ($icon || $icon === '0') {
-                return (string) Icon::make()->name($icon)->slot('icon');
-            }
+        return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+    }
+
+    /**
+     * Returns a chip’s icon name, or `null` if the component doesn’t have one.
+     *
+     * Thumbable components show their thumbnail instead.
+     */
+    private function chipIcon(Chippable $component): ?string
+    {
+        if ($component instanceof Thumbable || ! $component instanceof Iconic) {
+            return null;
         }
 
-        return null;
+        $icon = $component->getIcon();
+
+        return $icon || $icon === '0' ? $icon : null;
     }
 
     /**
