@@ -72,7 +72,7 @@ function mount(props: Record<string, unknown>) {
 
   const onSiteChange = vi.fn();
   const onSortDirectionUpdate = vi.fn();
-  const toolbarProps: Record<string, unknown> = {
+  const toolbarProps = reactive<Record<string, unknown>>({
     search: '',
     status: '',
     mode: 'table',
@@ -83,7 +83,7 @@ function mount(props: Record<string, unknown>) {
     columnOptions: [],
     sortOptions: [],
     ...props,
-  };
+  });
   const state = reactive({
     sortDirection: (toolbarProps.sortDirection ?? 'asc') as 'asc' | 'desc',
   });
@@ -103,7 +103,7 @@ function mount(props: Record<string, unknown>) {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
 
-  return {onSiteChange, onSortDirectionUpdate, state};
+  return {onSiteChange, onSortDirectionUpdate, state, toolbarProps};
 }
 
 function siteMenu(): HTMLElement | null {
@@ -200,8 +200,8 @@ it('puts the site menu and the status menu in one cell', () => {
   expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
 });
 
-it('offers score while searching and locks its direction', () => {
-  mount({
+it('keeps score available until clearing search restores the sort, and locks its direction', async () => {
+  const {toolbarProps} = mount({
     search: 'needle',
     sortField: 'score',
     sortOptions: [
@@ -217,6 +217,12 @@ it('offers score while searching and locks its direction', () => {
 
   expect(select.getAttribute('data-options')).toBe('score,title,dateCreated');
   expect(descending.disabled).toBe(true);
+  toolbarProps.search = '';
+  await nextTick();
+  expect(select.getAttribute('data-options')).toBe('score,title,dateCreated');
+  toolbarProps.sortField = 'title';
+  await nextTick();
+  expect(select.getAttribute('data-options')).toBe('title,dateCreated');
 });
 
 it('removes score without a search and locks custom ordering', () => {

@@ -60,7 +60,7 @@
       (option) => option.value !== 'score'
     );
 
-    return search.value
+    return search.value || sortField.value === 'score'
       ? [
           {label: t('Score'), value: 'score', defaultDir: 'desc' as const},
           ...options,

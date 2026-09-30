@@ -1,3 +1,4 @@
+import {useTimeoutFn} from '@vueuse/core';
 import {shallowRef, toValue, watch, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {SortItem} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
@@ -6,6 +7,8 @@ import type {
   IndexQueryValue,
   IndexVisitor,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
+
+const SEARCH_DEBOUNCE_MS = 500;
 
 export interface UseElementIndexFiltersOptions {
   search?: string | null;
@@ -104,11 +107,16 @@ export function useElementIndexFilters(
     );
   }
 
+  const applySearch = useTimeoutFn(() => apply(true), SEARCH_DEBOUNCE_MS, {
+    immediate: false,
+  });
+
   function submit(): void {
+    applySearch.stop();
     apply();
   }
 
-  watch(search, () => apply());
+  watch(search, () => applySearch.start());
   watch([status, conditions], () => apply());
   watch(
     () => toValue(options.busy) ?? false,
@@ -124,6 +132,6 @@ export function useElementIndexFilters(
     status,
     conditions,
     submit,
-    cancelPendingSearch: () => {},
+    cancelPendingSearch: applySearch.stop,
   };
 }
