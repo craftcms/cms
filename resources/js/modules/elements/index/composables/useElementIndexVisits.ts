@@ -1,17 +1,14 @@
+import {ref} from 'vue';
 import {router} from '@inertiajs/vue3';
 
-export type IndexQueryValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | IndexQueryValue[]
-  | IndexQueryParams;
-
-export interface IndexQueryParams {
-  [key: string]: IndexQueryValue;
-}
+import type {
+  QueryParams as IndexQueryParams,
+  QueryValue as IndexQueryValue,
+} from '@/common/types/query';
+export type {
+  QueryParams as IndexQueryParams,
+  QueryValue as IndexQueryValue,
+} from '@/common/types/query';
 
 /**
  * The route an element index lives at. The page owns the actual route helper
@@ -63,14 +60,14 @@ export interface IndexVisitOptions {
    */
   silent?: boolean;
   /** Called once the visit finishes, whether it succeeded or not. */
-  onFinish?: () => void;
+  onFinish?: (result: {completed: boolean}) => void;
 }
 
 /**
  * A composable's contribution to the single mount-time "restore persisted
  * state" visit: the query params to merge in and the props to pull back. The
- * page composes every non-null contribution into one visit (see
- * {@link useElementIndexPage}) so the restores can't interrupt each other.
+ * shared index composes every non-null contribution into one visit (see
+ * {@link useElementIndex}) so the restores can't interrupt each other.
  */
 export interface IndexRestore {
   /** Params to merge into the restore visit (e.g. `{viewMode}`, `{columns}`). */
@@ -79,52 +76,37 @@ export interface IndexRestore {
   only: Array<string>;
 }
 
-/**
- * Shared visit plumbing for the element index composables: merging params into
- * the current query and performing state/scroll-preserving Inertia visits
- * against the injected route.
- */
-export function createIndexVisitor(route: ElementIndexRoute) {
-  /**
-   * The current query params, minus any whose keys are being replaced. Arrays
-   * and objects serialize as `key[0]`, `key[0][field]`, …, so replacements
-   * strip every bracketed form of the key — otherwise stale values accumulate
-   * alongside the new ones.
-   */
+export interface IndexVisitor {
+  currentQuery(replacing?: Array<string>): IndexQueryParams;
+  visit(query: IndexQueryParams, options?: IndexVisitOptions): void;
+  merge(params: IndexQueryParams, options?: IndexVisitOptions): void;
+}
+
+/** Shared query replacement and page reset for every index transport. */
+export function createElementIndexVisitor(
+  readQuery: () => IndexQueryParams,
+  visit: IndexVisitor['visit']
+): IndexVisitor {
   function currentQuery(replacing: Array<string> = []): IndexQueryParams {
     return Object.fromEntries(
-      [...new URLSearchParams(window.location.search)].filter(
+      Object.entries(readQuery()).filter(
         ([key]) =>
           !replacing.some((name) => key === name || key.startsWith(`${name}[`))
       )
     );
   }
 
-  /** Visits the index with the given query, as-is. */
-  function visit(query: IndexQueryParams, options: IndexVisitOptions = {}) {
-    router.visit(route.url(query), {
-      only: options.only,
-      preserveState: true,
-      preserveScroll: true,
-      replace: options.replace ?? false,
-      showProgress: !options.silent,
-      onFinish: options.onFinish,
-    });
-  }
-
-  /**
-   * Merges the given params into the current URL's query (replacing their
-   * previous values) and visits the index. `null`/`undefined` values remove
-   * the param.
-   */
-  function merge(params: IndexQueryParams, options: IndexVisitOptions = {}) {
+  function merge(
+    params: IndexQueryParams,
+    options: IndexVisitOptions = {}
+  ): void {
     const replacing = Object.keys(params);
 
     if (options.resetPage) {
-      replacing.push(Craft.pageTrigger ?? 'page');
+      replacing.push(window.Craft?.pageTrigger ?? 'page');
     }
 
-    const query: IndexQueryParams = currentQuery(replacing);
+    const query = currentQuery(replacing);
 
     for (const [key, value] of Object.entries(params)) {
       if (value !== null && value !== undefined) {
@@ -138,4 +120,85 @@ export function createIndexVisitor(route: ElementIndexRoute) {
   return {currentQuery, visit, merge};
 }
 
-export type IndexVisitor = ReturnType<typeof createIndexVisitor>;
+/** State- and scroll-preserving Inertia visits for a page index. */
+export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
+  return createElementIndexVisitor(
+    () => Object.fromEntries(new URLSearchParams(window.location.search)),
+    (query, options = {}) => {
+      let succeeded = false;
+
+      router.visit(route.url(query), {
+        only: options.only ?? [],
+        preserveState: true,
+        preserveScroll: true,
+        replace: options.replace ?? false,
+        showProgress: !options.silent,
+        onSuccess: () => {
+          succeeded = true;
+        },
+        onFinish: () => options.onFinish?.({completed: succeeded}),
+      });
+    }
+  );
+}
+
+/**
+ * An {@link IndexVisitor} for an index that isn't a page.
+ *
+ * The page visitor keeps index state in the URL and re-requests through Inertia.
+ * A modal can do neither: it has no URL of its own, and an Inertia visit would
+ * replace the page behind it. So the query lives in a ref here, and "visiting"
+ * means asking `load` for a fresh payload. It returns true when applied and
+ * false when superseded; a failed latest visit restores the confirmed query.
+ *
+ * The contract is otherwise identical, which is what lets the `useElementIndex*`
+ * composables drive a modal index without knowing they are.
+ */
+export function createDetachedIndexVisitor(
+  load: (query: IndexQueryParams, isCurrent: () => boolean) => Promise<boolean>,
+  initialQuery: IndexQueryParams = {}
+) {
+  const query = ref<IndexQueryParams>({...initialQuery});
+  let confirmedQuery = query.value;
+  let latestRequest = 0;
+
+  async function visit(
+    next: IndexQueryParams,
+    options: IndexVisitOptions = {}
+  ): Promise<void> {
+    const requestId = ++latestRequest;
+
+    // Values are kept structured rather than stringified. The page visitor has
+    // to flatten everything into a URL; this one POSTs JSON, and `sort` is an
+    // object — `String()`-ing it sent the server a literal "[object Object]".
+    query.value = Object.fromEntries(
+      Object.entries(next).filter(
+        ([, value]) => value !== null && value !== undefined
+      )
+    ) as IndexQueryParams;
+
+    const attemptedQuery = query.value;
+
+    try {
+      const applied = await load(
+        attemptedQuery,
+        () => requestId === latestRequest
+      );
+
+      if (applied) {
+        confirmedQuery = attemptedQuery;
+      }
+
+      options.onFinish?.({completed: applied});
+    } catch (error) {
+      if (requestId === latestRequest) {
+        query.value = confirmedQuery;
+      }
+
+      options.onFinish?.({completed: false});
+      throw error;
+    }
+  }
+
+  return {...createElementIndexVisitor(() => query.value, visit), visit, query};
+}
