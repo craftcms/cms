@@ -168,7 +168,7 @@
               :thumb-alignment="element.thumbAlignment"
             >
               <div slot="label">
-                <DynamicHtmlRenderer :html="element.cardLabelHtml" />
+                <DynamicHtmlRenderer :html="element.cardHeaderHtml" />
               </div>
               <div slot="actions">
                 <DynamicHtmlRenderer :html="element.cardActionsHtml" />

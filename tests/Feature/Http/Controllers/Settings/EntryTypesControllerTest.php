@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -85,6 +86,22 @@ test('create can be loaded', function () {
 
                 return data_get($designer, 'control.props.withGeneratedFields') === true
                     && data_get($designer, 'control.props.withCardViewDesigner') === true;
+            }));
+});
+
+it('offers the palette colors for the entry type color', function () {
+    get(action([EntryTypesController::class, 'create']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', function ($nodes): bool {
+                $color = collect($nodes)->first(
+                    fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
+                );
+
+                return data_get($color, 'control.component') === 'craft:color-select'
+                    && data_get($color, 'control.props.allowTransparent') === true
+                    && data_get($color, 'control.props.blankLabel') === t('No color')
+                    && data_get($color, 'control.props.colors') === array_column(Color::cases(), 'value');
             }));
 });
 

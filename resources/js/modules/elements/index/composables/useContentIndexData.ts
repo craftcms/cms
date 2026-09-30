@@ -25,7 +25,7 @@ export interface ElementIndexRow extends InlineEditableRow {
   /** Whether the row has descendants the index would list (its toggle). */
   hasDescendants?: boolean;
   /** The element's site, as `structures/move-element` requires. */
-  siteId?: number;
+  siteId?: number | null;
   /** The element's plain-text name, for the row's checkbox and (in structure mode) its toggle label. */
   label: string;
 }
@@ -86,13 +86,18 @@ export type ContentIndexData = Omit<
  */
 export function useContentIndexData<
   Extra extends object = Record<never, never>,
->(extra?: Extra, source?: MaybeRefOrGetter<ContentIndexData>) {
+  Source extends Omit<ContentIndexData, 'data'> & {
+    data: Array<ElementIndexRow>;
+  } = ContentIndexData,
+>(extra?: Extra, source?: MaybeRefOrGetter<Source>) {
   // Indexes that aren't an Inertia page — the element selector modal, which
   // fetches the same payload over XHR — pass their own source. `usePage()` is
   // only called when none is given, since it needs an Inertia app to read.
   const inertiaPage = source === undefined ? usePage<ContentIndexData>() : null;
-  const props = (): ContentIndexData =>
-    source === undefined ? inertiaPage!.props : toValue(source);
+  const props = (): Source =>
+    source === undefined
+      ? (inertiaPage!.props as unknown as Source)
+      : toValue(source);
 
   const data = reactive({
     // Element type
@@ -135,7 +140,7 @@ export function useContentIndexData<
     sortOptions: computed(() => props().sortOptions),
 
     // Results
-    data: computed(() => props().data),
+    data: computed<Source['data']>(() => props().data),
     actions: computed(() => props().actions),
     exporters: computed(() => props().exporters),
     pagination: computed(() => props().pagination),

@@ -44,10 +44,12 @@ export function useElementIndexViewMode(
   // folds this into one mount-time restore visit alongside the sort/column
   // restores (see `useElementIndex`), so they can't interrupt each other.
   function restore(): IndexRestore | null {
-    const params = new URLSearchParams(window.location.search);
     const persisted = viewState.value.mode;
 
-    if (params.has('viewMode') || persisted === 'table') {
+    if (
+      visitor.currentQuery().viewMode !== undefined ||
+      persisted === 'table'
+    ) {
       return null;
     }
 

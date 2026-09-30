@@ -100,6 +100,8 @@ export interface ElementEditPayload {
   /** The element's status badge. `null` for element types without statuses. */
   statusLabelHtml: string | null;
   saveUrl: string;
+  /** The element's own control panel edit page, if it has one. */
+  cpEditUrl?: string | null;
   applyDraftUrl: string;
   editorActions: ElementEditorActions;
   autosaveUrl: string;

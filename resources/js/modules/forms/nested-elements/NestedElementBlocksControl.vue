@@ -45,6 +45,7 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from '../FormNodeList.vue';
   import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
+  import {isPasteable} from './nested-entries';
   import type {ActionItems} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import {
@@ -249,13 +250,12 @@
       return [];
     }
 
-    const typeIds = new Set(Object.values(create.entryTypeIds));
-    const fits = elements.every(
-      (element) =>
-        element.type === elementType &&
-        typeof element.data?.entryTypeId === 'number' &&
-        typeIds.has(element.data.entryTypeId)
-    );
+    const fits = isPasteable(elements, {
+      elementType,
+      entryTypeIds: Object.values(create.entryTypeIds),
+      room: true,
+      requireEntryTypeId: true,
+    });
 
     return fits ? elements : [];
   });
