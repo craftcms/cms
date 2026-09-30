@@ -136,7 +136,7 @@ it('applies sanitized criteria to the query', function () {
 
     expect($response->json('elements'))->toHaveCount(1)
         ->and($response->json('elements.0.id'))->toBe($matchingEntry->id)
-        ->and($response->json('elements.0.html'))->toContain('chromeless')
+        ->and($response->json('elements.0.html'))->toContain('appearance="plain"')
         ->and($response->json('elements.0.html'))->toContain('Criteria Target')
         ->and($response->json('exactMatch'))->toBeTrue();
 });

@@ -23,7 +23,8 @@ import styles from './thumbnail.styles.js';
  * @csspart cover - The frozen-frame canvas overlay, rendered in place of an
  *   animated source's motion (see `animated`).
  *
- * @cssproperty [--c-thumbnail-size=calc(34rem / 16)] - Overall size of the thumbnail box.
+ * @cssproperty [--c-thumbnail-size=calc(30rem / 16)] - Overall size of the thumbnail box.
+ * @cssproperty [--c-thumbnail-image-radius=0] - Corner radius of the image when `rounded` isn't set.
  * @cssproperty [--c-thumbnail-radius=--c-radius-full] - Corner radius applied when `rounded` is set.
  * @cssproperty [--c-thumbnail-checker-size=8px] - Size of a single checker square.
  * @cssproperty [--c-thumbnail-checker-color=hsl(211 13% 65% / 0.25)] - Color of the checker squares.

@@ -17,6 +17,7 @@
     onMounted,
     provide,
     ref,
+    useId,
     useTemplateRef,
   } from 'vue';
   import {useElementSize, useEventListener} from '@vueuse/core';
@@ -98,7 +99,10 @@
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
-  const editUrl = computed(() => chrome.value.screen?.editUrl ?? null);
+  const editUrl = computed(
+    () => props.value.editUrl || chrome.value.screen?.editUrl || null
+  );
+  const editLinkId = `slideout-edit-link-${useId()}`;
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
@@ -377,7 +381,7 @@
             </LayoutSlotOutlet>
           </div>
 
-          <div class="flex gap-sm items-center">
+          <div class="slideout-screen__actions flex gap-sm items-center">
             <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
@@ -391,25 +395,33 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
-            <a
-              v-if="editUrl"
-              :href="editUrl"
-              target="_blank"
-              rel="noopener"
-              class="slideout-screen__edit-link"
-            >
-              <craft-icon
-                name="external-link"
-                :label="t('Open in a new tab')"
-              />
-            </a>
+            <template v-if="editUrl">
+              <craft-button
+                :id="editLinkId"
+                icon
+                size="small"
+                :variant="ButtonVariant.Plain"
+                :href="editUrl"
+                target="_blank"
+                rel="noopener"
+                class="slideout-screen__edit-link"
+              >
+                <craft-icon
+                  name="arrow-up-right-from-square"
+                  :label="t('Open in a new tab')"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip :for="editLinkId">
+                {{ t('Open in a new tab') }}
+              </craft-tooltip>
+            </template>
 
             <craft-button
               icon
               type="button"
               size="small"
               :variant="ButtonVariant.Plain"
-              flush
+              flush="inline-end"
               @click="close"
               data-slideout-close
             >
@@ -530,6 +542,10 @@
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+  }
+
+  .slideout-screen__actions {
+    --_link-min-width: calc(24px + var(--c-spacing-sm));
   }
 
   .slideout-screen__toolbar {

@@ -6,10 +6,14 @@ namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Support\Typecast;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExportElementIndexController
@@ -34,11 +38,22 @@ class ExportElementIndexController
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $validated['elementType'];
         $context = $request->context();
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource(
-            $elementType,
-            $request->input('source'),
-            $context,
-        );
+        $embedded = $context === ElementSources::CONTEXT_EMBEDDED_INDEX;
+        if ($embedded) {
+            $nestedElementScope = new EmbeddedNestedElementScope($request);
+            $nestedSource = $nestedElementScope->indexSource($elementType);
+            $baseCriteria = $nestedSource->criteria;
+            $criteria = $nestedElementScope->filterCriteria($request->criteria());
+            [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
+        } else {
+            $baseCriteria = $request->baseCriteria();
+            $criteria = $request->criteria();
+            [$sourceKey, $source] = $this->elementIndexes->resolveSource(
+                $elementType,
+                $request->input('source'),
+                $context,
+            );
+        }
         abort_if(! isset($sourceKey), 400, 'Request missing required body param');
         abort_if(! $request->isAdministrative(), 400, 'Request missing index context');
 
@@ -56,8 +71,8 @@ class ExportElementIndexController
             elementType: $elementType,
             source: $source,
             condition: $request->condition(),
-            baseCriteria: $request->baseCriteria(),
-            criteria: $request->criteria(),
+            baseCriteria: $baseCriteria,
+            criteria: $criteria,
             filterConditionConfig: $request->filterConditionConfig(),
             collapsedElementIds: $request->collapsedElementIds(),
         )['query'];
@@ -76,6 +91,10 @@ class ExportElementIndexController
                 reset: true,
                 source: $source,
             );
+        }
+
+        if ($embedded) {
+            Typecast::configure($query, ElementHelper::cleanseQueryCriteria($baseCriteria));
         }
 
         return $this->elementExporters->export(

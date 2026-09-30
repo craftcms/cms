@@ -228,3 +228,30 @@ describe('craft-chip selection', () => {
     expect(chipClicks).toBe(0);
   });
 });
+
+describe('craft-chip buttons', () => {
+  it('has its buttons inherit the chip palette', async () => {
+    const element = await createChip(
+      {},
+      'Label<div slot="suffix"><craft-button>Edit</craft-button></div>'
+    );
+    await settle(element);
+
+    expect(element.querySelector('craft-button')?.hasAttribute('inherit')).toBe(
+      true
+    );
+  });
+
+  it('has buttons added after mount inherit too', async () => {
+    const element = await createChip({}, 'Label<div slot="suffix"></div>');
+
+    element
+      .querySelector('[slot="suffix"]')!
+      .append(document.createElement('craft-button'));
+    await settle(element);
+
+    expect(element.querySelector('craft-button')?.hasAttribute('inherit')).toBe(
+      true
+    );
+  });
+});

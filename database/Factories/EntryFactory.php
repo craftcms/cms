@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Search;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
@@ -55,6 +56,7 @@ class EntryFactory extends Factory
 
             if (! $entry->section->entryTypes()->where('id', $entry->entryType->id)->exists()) {
                 $entry->section->entryTypes()->attach($entry->entryType, ['sortOrder' => 1]);
+                Sections::refreshSections();
             }
         });
     }

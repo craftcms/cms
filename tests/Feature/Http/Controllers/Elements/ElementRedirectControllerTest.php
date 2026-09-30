@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
+use Inertia\Testing\AssertableInertia;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
@@ -101,7 +102,7 @@ it('aborts when the element has no control panel edit url', function () {
         ->toThrow(HttpException::class, 'The element doesn’t have an edit page.');
 });
 
-it('returns inline edit responses for standard control panel edit urls', function () {
+it('renders the entry editor for standard control panel edit urls', function () {
     $innerField = Field::factory()->create([
         'name' => 'Inner Text',
         'handle' => 'innerText',
@@ -182,6 +183,9 @@ it('returns inline edit responses for standard control panel edit urls', functio
 
     get(cp_url("edit/$entry->id-$entry->slug"))
         ->assertOk()
-        ->assertSeeText('Inline Block')
-        ->assertSee('elements/save', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('title', 'Inline Block')
+            ->where('saveUrl', fn (string $url): bool => str_contains($url, 'elements/save'))
+        );
 });

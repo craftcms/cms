@@ -25,7 +25,7 @@ import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
 import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
-import NestedElementCardsControl from './nested-elements/NestedElementCardsControl.vue';
+import NestedEntriesControl from './nested-elements/NestedEntriesControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -102,6 +102,6 @@ export function registerFormComponents(
     'craft:nested-element-blocks',
     NestedElementBlocksControl
   );
-  components.register('craft:nested-element-cards', NestedElementCardsControl);
+  components.register('craft:nested-entries', NestedEntriesControl);
   components.register('craft:content-block', ContentBlockControl);
 }

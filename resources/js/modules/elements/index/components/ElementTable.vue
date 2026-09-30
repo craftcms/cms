@@ -76,6 +76,7 @@
   const emit = defineEmits<{
     toggleStructure: [id: string | number];
     moveStructureRow: [id: string | number, move: StructureMove];
+    reorder: [startIndex: number, finishIndex: number];
   }>();
 
   const readOnly = computed(() => props.selection.readOnly.value);
@@ -242,12 +243,14 @@
     :layout="layout"
     :spacing="spacing"
     :with-bottom-border="withBottomBorder"
+    :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
     @row-click="onRowClick"
     @row-keydown="onRowKeydown"
     @row-ref="(el, row) => structureDrag.setRowRef(el, row.id)"
+    @reorder="(from, to) => emit('reorder', from, to)"
   >
     <template #leading-header>
       <th

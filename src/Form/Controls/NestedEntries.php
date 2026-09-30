@@ -15,10 +15,10 @@ use CraftCms\Cms\Support\Json;
 use function CraftCms\Cms\t;
 
 /**
- * A Matrix manager whose elements are managed outside the owner form.
- * Cards are presentation data, never a submitted field value.
+ * A nested-entry manager whose elements are managed outside the owner form.
+ * Its cards and index metadata are presentation data, never a submitted field value.
  */
-class NestedElementCards extends Control
+class NestedEntries extends Control
 {
     private string $viewMode = 'cards';
 
@@ -28,11 +28,16 @@ class NestedElementCards extends Control
     /** @var list<NestedElementCard> */
     private array $cards = [];
 
+    /** @var array<string, mixed>|null */
+    private ?array $index = null;
+
+    private ?string $indexHtml = null;
+
     private ?string $unavailableMessage = null;
 
     public function component(): string
     {
-        return 'craft:nested-element-cards';
+        return 'craft:nested-entries';
     }
 
     public function omitNullValue(): bool
@@ -41,12 +46,14 @@ class NestedElementCards extends Control
     }
 
     /**
-     * Renders the cards for `<craft-nested-element-manager>`, the same markup
-     * {@see NestedElementManager::getCardsHtml()} produces, for forms that are
-     * rendered server-side.
+     * Renders the existing nested element manager markup for server-rendered forms.
      */
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
+        if (($control->props['viewMode'] ?? null) === 'index' && isset($control->props['indexHtml'])) {
+            return $control->props['indexHtml'];
+        }
+
         $manager = $control->props['manager'] ?? null;
         $unavailableMessage = $control->props['unavailableMessage'] ?? null;
 
@@ -65,7 +72,7 @@ class NestedElementCards extends Control
             $html .= Html::ul()->items(...array_map(
                 fn (array $card) => Html::li($elementHtml->composeElementCardHtml(
                     $card['cardAttributes'],
-                    $card['cardLabelHtml'],
+                    $card['cardHeaderHtml'],
                     $card['cardActionsHtml'],
                     $card['cardContentHtml'],
                     $card['cardFooterHtml'],
@@ -121,6 +128,21 @@ class NestedElementCards extends Control
         return $this;
     }
 
+    /** @param array<string, mixed>|null $index */
+    public function index(?array $index): static
+    {
+        $this->index = $index;
+
+        return $this;
+    }
+
+    public function indexHtml(?string $html): static
+    {
+        $this->indexHtml = $html;
+
+        return $this;
+    }
+
     public function unavailableMessage(?string $message): static
     {
         $this->unavailableMessage = $message;
@@ -137,6 +159,8 @@ class NestedElementCards extends Control
                 fn (NestedElementCard $card): array => $card->toArray(),
                 $this->cards,
             ),
+            ...($this->index === null ? [] : ['index' => $this->index]),
+            ...($this->indexHtml === null ? [] : ['indexHtml' => $this->indexHtml]),
             'unavailableMessage' => $this->unavailableMessage,
         ];
     }
