@@ -1,9 +1,10 @@
 import {defineAsyncComponent} from 'vue';
 
 /**
- * The CP's element index, published to plugin bundles through the import map
- * as `@craftcms/cms/elements` (see `Cp::sharedModules()`), so a plugin's own
- * element index page can wrap the same `ElementIndexPage` the CP's pages do.
+ * The CP's element index and editor, published to plugin bundles through the
+ * import map as `@craftcms/cms/elements` (see `Cp::sharedModules()`), so a
+ * plugin's own element pages can wrap the same `ElementIndexPage` and
+ * `ElementEditor` the CP's pages do.
  *
  * The components load through dynamic imports so Vite's preload helper brings
  * their CSS along with them, the way the CP's own pages get theirs — an entry
@@ -11,6 +12,10 @@ import {defineAsyncComponent} from 'vue';
  */
 export const ElementIndexPage = defineAsyncComponent(
   () => import('./modules/elements/components/ElementIndexPage.vue')
+);
+
+export const ElementEditor = defineAsyncComponent(
+  () => import('./modules/elements/components/ElementEditor.vue')
 );
 
 export const CpButtonLink = defineAsyncComponent(
