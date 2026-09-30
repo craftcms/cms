@@ -8,10 +8,12 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Image\Data\ImageColors;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
 
 #[Singleton]
 class AssetUploads implements UploadHandler
@@ -73,15 +75,48 @@ class AssetUploads implements UploadHandler
 
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
+        $colors = $this->uploadedColors($request);
+
         $result = $parameters['operation'] === 'replace'
-            ? $this->uploads->replace((int) $parameters['assetId'], $file)
+            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors)
             : $this->uploads->store(
                 $parameters,
                 $file,
                 authorizedGuest: ! $request->user(),
                 uploaderId: $request->craftUser()?->getCraftUserId(),
+                colors: $colors,
             );
 
         return new JsonResponse($result->payload(), $result->status);
+    }
+
+    /**
+     * Returns the colors the uploader sampled from the file, if it sent any.
+     *
+     * They come from the client, so anything that isn't a grid of up to 4×4 hex colors is ignored, and the file is
+     * sampled on the server instead.
+     */
+    private function uploadedColors(Request $request): ?ImageColors
+    {
+        $hexColor = 'regex:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i';
+        $validator = Validator::make($request->only('colors'), [
+            'colors' => ['required', 'array:dominant,grid'],
+            'colors.dominant' => ['nullable', 'string', $hexColor],
+            'colors.grid' => ['required', 'array', 'list', 'min:1', 'max:4'],
+            'colors.grid.*' => ['array', 'list', 'min:1', 'max:4'],
+            'colors.grid.*.*' => ['string', $hexColor],
+        ]);
+
+        if ($validator->fails()) {
+            return null;
+        }
+
+        $colors = $validator->validated()['colors'];
+
+        if (count(array_unique(array_map(count(...), $colors['grid']))) > 1) {
+            return null;
+        }
+
+        return ImageColors::fromArray($colors);
     }
 }

@@ -248,6 +248,67 @@ it('uses the server-created S3 multipart upload without application headers on s
   }
 });
 
+it('sends completion data with the completion request', async () => {
+  uploaded = true;
+  const completionData = vi
+    .fn()
+    .mockResolvedValue({colors: {grid: [['#fff']]}});
+  const file = new File(['abcdef'], 'photo.png');
+  const upload = new FileUpload(file, {url: '/start', completionData});
+
+  await upload.upload();
+
+  expect(completionData).toHaveBeenCalledWith(file);
+  expect(
+    JSON.parse(control.mock.calls.find(([url]) => url === '/complete')![1].body)
+  ).toEqual({colors: {grid: [['#fff']]}});
+});
+
+it('completes without extra data when preparing it fails', async () => {
+  uploaded = true;
+  const upload = new FileUpload(new File(['abcdef'], 'photo.png'), {
+    url: '/start',
+    completionData: vi.fn().mockRejectedValue(new Error('Undecodable')),
+  });
+
+  await expect(upload.upload()).resolves.toEqual({assetId: 42});
+  expect(
+    control.mock.calls.find(([url]) => url === '/complete')![1].body
+  ).toBeUndefined();
+});
+
+it('prepares completion data once across retried completions', async () => {
+  uploaded = true;
+  const implementation = control.getMockImplementation()!;
+  let fail = true;
+  control.mockImplementation(async (url: string, options: RequestInit) => {
+    if (url === '/complete' && fail) {
+      return new Response(JSON.stringify({message: 'Unavailable'}), {
+        status: 503,
+      });
+    }
+    return implementation(url, options);
+  });
+  const completionData = vi
+    .fn()
+    .mockResolvedValue({colors: {grid: [['#fff']]}});
+  const upload = new FileUpload(new File(['abcdef'], 'photo.png'), {
+    url: '/start',
+    completionData,
+  });
+
+  await expect(upload.upload()).rejects.toThrow('Unavailable');
+  fail = false;
+  await expect(upload.upload()).resolves.toEqual({assetId: 42});
+
+  expect(completionData).toHaveBeenCalledOnce();
+  expect(
+    control.mock.calls
+      .filter(([url]) => url === '/complete')
+      .map(([, options]) => JSON.parse(options.body))
+  ).toEqual([{colors: {grid: [['#fff']]}}, {colors: {grid: [['#fff']]}}]);
+});
+
 it('retries finalization without sending the file again', async () => {
   const implementation = control.getMockImplementation()!;
   let fail = true;
