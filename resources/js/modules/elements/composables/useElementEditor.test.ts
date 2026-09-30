@@ -254,7 +254,9 @@ describe('useElementEditor', () => {
       const {editor} = mount(
         payload({
           workflow: {
-            current: {status} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            current: {
+              status,
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
             draftReviews: [],
           },
         })
@@ -275,7 +277,9 @@ describe('useElementEditor', () => {
       const {editor} = mount(
         payload({
           workflow: {
-            current: {status} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            current: {
+              status,
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
             draftReviews: [],
           },
         })
@@ -558,6 +562,56 @@ describe('useElementEditor', () => {
     await firstRefresh;
     await nextTick();
 
+    expect(editor.formPayload.value?.values).toEqual({title: 'Latest title'});
+  });
+
+  it('refreshes the layout for a reactive control and returns its payload', async () => {
+    const {editor} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+    postSpy.mockResolvedValue({data: {form: fieldLayout('Server title')}});
+
+    const refreshed = await editor.refreshLayout({}, []);
+
+    expect(postSpy.mock.calls[0]?.[0]).toContain(
+      '/elements/update-field-layout'
+    );
+    expect(refreshed.values).toEqual({title: 'Server title'});
+    expect(editor.formPayload.value?.values).toEqual({title: 'Server title'});
+  });
+
+  it('leaves the layout to the renderer when refreshing a nested scope', async () => {
+    const {editor} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+    const nested = {...fieldLayout('Nested title'), scope: ['fields']};
+    postSpy.mockResolvedValue({data: {form: nested}});
+
+    const refreshed = await editor.refreshLayout({}, ['fields']);
+
+    expect(postSpy.mock.calls[0]?.[2]?.headers).toMatchObject({
+      'X-Craft-Form-Scope': JSON.stringify(['fields']),
+    });
+    expect(refreshed).toEqual(nested);
+    expect(editor.formPayload.value?.values).toEqual({
+      title: 'Original title',
+    });
+  });
+
+  it('rejects a layout refresh that a newer one superseded', async () => {
+    const first = deferred<{data: {form: FormPayload}}>();
+    postSpy
+      .mockImplementationOnce(() => first.promise)
+      .mockResolvedValueOnce({data: {form: fieldLayout('Latest title')}});
+    const {editor} = mount(
+      payload({canAutosave: false, form: fieldLayout('Original title')})
+    );
+
+    const stale = editor.refreshLayout({}, []);
+    await editor.refreshLayout({}, []);
+    first.resolve({data: {form: fieldLayout('Stale title')}});
+
+    await expect(stale).rejects.toThrow();
     expect(editor.formPayload.value?.values).toEqual({title: 'Latest title'});
   });
 
@@ -1566,7 +1620,9 @@ describe('useElementEditor', () => {
         Preview: {refresh},
       });
       stubSaveRequest(() =>
-        Promise.resolve({data: {message: 'Entry saved.', element: {id: 12}}})
+        Promise.resolve({
+          data: {message: 'Entry saved.', element: {id: 12}},
+        })
       );
       const {editor} = mount(payload(), handledSlideout());
 
@@ -1574,7 +1630,10 @@ describe('useElementEditor', () => {
 
       await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
       expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
-      expect(postMessage).toHaveBeenCalledWith({event: 'saveElement', id: 12});
+      expect(postMessage).toHaveBeenCalledWith({
+        event: 'saveElement',
+        id: 12,
+      });
       expect(refresh).toHaveBeenCalled();
     });
   });

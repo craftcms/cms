@@ -506,10 +506,14 @@ export function useElementEditor({saveData, root}: Options = {}) {
       return;
     }
 
-    applyingSavedPayload = true;
-    savedForm.value = response.form;
-    await nextTick();
-    applyingSavedPayload = false;
+    // A nested scope's payload is only that form; the renderer that asked for
+    // it reconciles it into the layout.
+    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+      applyingSavedPayload = true;
+      savedForm.value = response.form;
+      await nextTick();
+      applyingSavedPayload = false;
+    }
 
     if (generation !== refreshGeneration) {
       return;
@@ -518,6 +522,23 @@ export function useElementEditor({saveData, root}: Options = {}) {
     await appendBodyHtml(response.bodyHtml);
 
     return response;
+  }
+
+  /**
+   * The field layout renderer's refresh, so its reactive controls re-render
+   * the layout from the server.
+   */
+  async function refreshLayout(
+    _values: FormValues,
+    scope?: string[]
+  ): Promise<FormPayload> {
+    const response = await refreshForm(scope);
+
+    if (!response) {
+      throw new Error('A newer refresh superseded this one.');
+    }
+
+    return response.form as FormPayload;
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -897,6 +918,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
     renderer,
     refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,

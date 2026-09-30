@@ -59,6 +59,7 @@
     renderer,
     refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -365,6 +366,7 @@
         ref="renderer"
         :payload="formPayload"
         :errors="errors"
+        :refresh="formPayload.refreshable ? refreshLayout : undefined"
         :modified="autosave.modified.value"
         :disabled="workflowReviewLocked"
         @update:mutation="onMutation"
