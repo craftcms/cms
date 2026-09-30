@@ -179,6 +179,11 @@ export default css`
     padding-block: calc(var(--_chip-spacing) / 2);
   }
 
+  .cp-chip__thumbnail::slotted(img),
+  .cp-chip__thumbnail::slotted(svg) {
+    border-radius: var(--c-thumbnail-image-radius);
+  }
+
   .cp-chip--align-start {
     align-items: start;
   }

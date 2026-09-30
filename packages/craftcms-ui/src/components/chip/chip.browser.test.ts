@@ -157,3 +157,16 @@ it('aligns the prefix and suffix against the first line when align-items is star
   expect(centerY(action)).toBeLessThan(centerY(body));
   expect(centerY(icon)).toBeCloseTo(centerY(first), 0);
 });
+
+it('rounds an image slotted straight into the thumbnail', async () => {
+  document.body.innerHTML = `
+    <style>:root { --c-radius-sm: 3px; }</style>
+    <craft-chip show-thumb>
+      <img slot="thumbnail" src="${image}" alt="" />
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  expect(getComputedStyle(chip.querySelector('img')!).borderRadius).toBe('3px');
+});
