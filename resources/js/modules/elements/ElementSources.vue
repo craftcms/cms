@@ -1,49 +1,63 @@
 <script setup lang="ts">
-  /**
-   * An element index's sources, as a plain list.
-   *
-   * Used where there's no page chrome to hang them on — the element selector
-   * modal. A full index page renders the same descriptors through
-   * `SecondaryNav`, so the list and the menu it collapses into stay in step.
-   */
+  import {computed} from 'vue';
   import ActionList from '@/common/components/ActionList.vue';
-  import {useElementSourceActions} from '@/modules/elements/composables/useElementSourceActions';
   import type {
-    ElementIndexRoute,
-    IndexVisitor,
-  } from '@/modules/elements/composables/useElementIndexVisits';
-  import type {Source} from '@/modules/elements/types/sources';
+    ActionItemButton,
+    ActionItemGroup,
+    ActionItems,
+  } from '@/common/types';
+  import type {Source, SourceItem} from './types/sources';
 
   const props = defineProps<{
-    sources: Array<Source>;
-    route: ElementIndexRoute;
-    /** Canonical page URL for source-switch GET requests. */
-    sourceHref?: string;
+    sources: Source[];
     activeSource?: string | null;
-    viewMode?: string | null;
-    /**
-     * Supplied by indexes that aren't a page — the element selector modal.
-     *
-     * Without it, picking a source runs an Inertia visit, which in a modal
-     * navigates the page *behind* it.
-     */
-    indexVisitor?: IndexVisitor;
   }>();
+  const emit = defineEmits<{select: [key: string]}>();
 
-  const {actions} = useElementSourceActions({
-    sources: () => props.sources,
-    route: () => props.route,
-    sourceHref: () => props.sourceHref,
-    activeSource: () => props.activeSource,
-    viewMode: () => props.viewMode,
-    indexVisitor: () => props.indexVisitor,
+  function toAction(source: SourceItem): ActionItemButton {
+    return {
+      type: 'button',
+      label: source.label,
+      selected: source.key === props.activeSource,
+      attrs: {button: ''},
+      onClick: () => {
+        if (source.key !== props.activeSource) {
+          emit('select', source.key);
+        }
+      },
+    };
+  }
+
+  const actions = computed<ActionItems>(() => {
+    const result: ActionItems = [];
+    let group: ActionItemGroup | null = null;
+
+    for (const source of props.sources) {
+      if (source.type === 'heading') {
+        group = source.heading
+          ? {type: 'group', heading: source.heading, items: []}
+          : null;
+
+        if (group) {
+          result.push(group);
+        }
+
+        for (const child of source.children ?? []) {
+          (group?.items ?? result).push(toAction(child));
+        }
+
+        continue;
+      }
+
+      (group?.items ?? result).push(toAction(source));
+    }
+
+    return result;
   });
 </script>
 
 <template>
   <craft-nav-list>
-    <!-- `inline`: a source list is a list, not a nav you travel through, so
-      every group stays open rather than waiting to be hovered. -->
     <ActionList :actions="actions" as="craft-nav-item" mode="inline" />
   </craft-nav-list>
 </template>

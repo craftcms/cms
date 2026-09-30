@@ -17,7 +17,9 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -25,7 +27,9 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Termwind\render;
 
@@ -658,6 +662,18 @@ abstract class ContentIndexViewModel extends ViewModel
             : ElementActions::serializeActionItems($availableActions);
     }
 
+    /** @return array<int, array<string, mixed>> */
+    public function exporters(): array
+    {
+        [$sourceKey] = $this->sourceState();
+
+        $exporters = $sourceKey === null
+            ? null
+            : app(ElementIndexes::class)->availableExporters($this->elementType, $sourceKey, $this->request->isMobileBrowser());
+
+        return $exporters ? ElementExporters::serializeExporters($exporters) : [];
+    }
+
     /**
      * The effective sort: a requested sort wins; otherwise the source's
      * configured `defaultSort` (`[attribute, direction]`), then a sensible
@@ -1108,9 +1124,9 @@ abstract class ContentIndexViewModel extends ViewModel
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
-            'label' => $element->getUiLabel(),
-            ...$this->extraRowData($element),
+            ...$this->baseRowData($element, $elementHtml),
             ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
+            ...$this->inlineRowData($element, $attributes),
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
@@ -1248,12 +1264,8 @@ abstract class ContentIndexViewModel extends ViewModel
 
             return [
                 'id' => $this->rowId($element),
-                'label' => $element->getUiLabel(),
-                ...$this->extraRowData($element),
-                'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
-                'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
-                'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
-                'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
+                ...$this->baseRowData($element, $elementHtml),
+                ...$elementHtml->elementCardData($element, $cardConfig),
             ];
         }, $elements);
     }
@@ -1270,13 +1282,23 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
-            ...$this->extraRowData($element),
-            'label' => $element->getUiLabel(),
+            ...$this->baseRowData($element),
             'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
                 ? $element->getCpEditUrl()
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
         ], $elements);
+    }
+
+    /**
+     * @return array{cpEditUrl: ?string, viewUrl: ?string}
+     */
+    private function elementUrls(ElementInterface $element): array
+    {
+        return [
+            'cpEditUrl' => currentUser()?->can('view', $element) ? $element->getCpEditUrl() : null,
+            'viewUrl' => $element->getUrl(),
+        ];
     }
 
     /**
@@ -1299,5 +1321,50 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function extraRowData(ElementInterface $element): array
     {
         return [];
+    }
+
+    /** @return array<string, mixed> */
+    private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
+    {
+        $elementHtml ??= app(ElementHtml::class);
+
+        return [
+            'label' => $element->getUiLabel(),
+            ...$this->elementUrls($element),
+            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->extraRowData($element),
+        ];
+    }
+
+    /**
+     * @param  list<string>  $attributes
+     * @return array<string, mixed>
+     */
+    private function inlineRowData(ElementInterface $element, array $attributes): array
+    {
+        if (
+            static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ||
+            ($this->viewState()['static'] ?? false) ||
+            Gate::denies('save', $element)
+        ) {
+            return [];
+        }
+
+        return [
+            'inlineEditable' => true,
+            ...($this->request->boolean('editable') ? [
+                'inlineInputHtml' => collect($attributes)
+                    ->mapWithKeys(fn (string $attribute): array => [
+                        $attribute => InputNamespace::with(
+                            'inline',
+                            fn (): string => InputNamespace::namespaceInputs(
+                                fn (): string => (string) $element->getInlineAttributeInputHtml($attribute),
+                                "element-$element->id".(str_starts_with($attribute, 'field:') || str_starts_with($attribute, 'fieldInstance:') || str_starts_with($attribute, 'contentBlock:') ? '[fields]' : ''),
+                            ),
+                        ),
+                    ])
+                    ->all(),
+            ] : []),
+        ];
     }
 }

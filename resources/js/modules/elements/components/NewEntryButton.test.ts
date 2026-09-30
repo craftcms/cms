@@ -120,23 +120,18 @@ async function mount(props: {
   return container;
 }
 
-it('creates the entry type directly when it is the only one on screen', async () => {
+it('links directly to the entry type when it is the only one on screen', async () => {
   const blog = section('blog', [entryType('article', 1)]);
   const container = await mount({
     sources: [sectionSource('blog')],
     source: sectionSource('blog'),
     publishableSections: [blog],
   });
-  const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-
   const button = container.querySelector('craft-button')!;
   // No menu to choose from — there's nothing to choose.
   expect(container.querySelector('.menu')).toBeNull();
 
-  button.dispatchEvent(new MouseEvent('click', {metaKey: true}));
-
-  expect(open).toHaveBeenCalledOnce();
-  const href = open.mock.calls[0]![0] as string;
+  const href = button.href!;
   expect(href).toContain('/entries/blog/new');
   expect(href).toContain('type=article');
 });
@@ -204,7 +199,7 @@ it('leaves out sections the current site does not have', async () => {
   expect(container.querySelector('.menu')).toBeNull();
 });
 
-it('creates the pinned type for a custom source', async () => {
+it('links to the pinned type for a custom source', async () => {
   const blog = section('blog', [
     entryType('article', 1),
     entryType('review', 2),
@@ -220,13 +215,9 @@ it('creates the pinned type for a custom source', async () => {
     source: pinned,
     publishableSections: [blog],
   });
-  const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-
-  container
-    .querySelector('craft-button')!
-    .dispatchEvent(new MouseEvent('click', {ctrlKey: true}));
-
-  expect(open.mock.calls[0]![0]).toContain('type=review');
+  expect(container.querySelector('craft-button')!.href).toContain(
+    'type=review'
+  );
 });
 
 it('shows nothing when there is nothing to create', async () => {

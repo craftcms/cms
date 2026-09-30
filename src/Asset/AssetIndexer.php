@@ -667,6 +667,11 @@ class AssetIndexer
 
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
+        // A file that's been modified since it was last indexed may not look the same anymore
+        $fileChanged = $asset->dateModified !== null
+            && $timeModified !== null
+            && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
+        $needsColors = $asset->colors === null || $fileChanged;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -678,7 +683,7 @@ class AssetIndexer
 
             if ($asset->kind === FileKind::Image->value) {
                 $dimensions = null;
-                // The file the dominant color is sampled from, when there's one on hand
+                // The file the colors are sampled from, when there's one on hand
                 $localPath = null;
 
                 if ($isLocalFs) {
@@ -700,8 +705,8 @@ class AssetIndexer
                     }
 
                     // A remote image is downloaded when its dimensions couldn't be read from a stream, or
-                    // nothing's been tried for its dominant color yet
-                    if (! is_array($dimensions) || $asset->dominantColor === null) {
+                    // its colors need sampling
+                    if (! is_array($dimensions) || $needsColors) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
@@ -715,9 +720,10 @@ class AssetIndexer
                 $asset->setWidth($w);
                 $asset->setHeight($h);
 
-                // A known color, or one that's already come up inconclusive, isn't looked for again
-                if ($localPath !== null && $asset->dominantColor === null) {
-                    $asset->dominantColor = Images::dominantColor($localPath);
+                // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
+                // file has changed
+                if ($localPath !== null && $needsColors) {
+                    $asset->colors = Images::colors($localPath);
                 }
                 $asset->dateModified = $timeModified;
 

@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @property array{dominant: string|null, grid: list<list<string>>}|null $colors
+ */
 class Asset extends BaseModel
 {
     /** @use HasFactory<AssetFactory> */
@@ -33,6 +36,7 @@ class Asset extends BaseModel
             'width' => 'int',
             'height' => 'int',
             'size' => 'int',
+            'colors' => 'array',
             'deletedWithVolume' => 'bool',
             'keptFile' => 'bool',
             'dateModified' => 'datetime',

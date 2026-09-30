@@ -17,6 +17,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -478,7 +479,7 @@ it('honors empty thumbnail URL overrides without calling the driver', function (
     expect($this->assets->getThumbUrl($asset, 120, mode: ImageTransformMode::Fit))->toBe('');
 });
 
-describe('dominant color', function () {
+describe('colors', function () {
     beforeEach(function () {
         $volume = Volume::factory()->create(['fs' => 'test-disk']);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -490,9 +491,9 @@ describe('dominant color', function () {
         ]);
     });
 
-    function dominantColorImage(): string
+    function colorsImage(): string
     {
-        $path = tempnam(sys_get_temp_dir(), 'craft-dominant-color-').'.png';
+        $path = tempnam(sys_get_temp_dir(), 'craft-colors-').'.png';
         $image = imagecreatetruecolor(100, 100);
         imagefill($image, 0, 0, imagecolorallocate($image, 200, 30, 40));
         imagepng($image, $path);
@@ -500,36 +501,54 @@ describe('dominant color', function () {
         return $path;
     }
 
-    it('is stored when an image file comes in', function () {
-        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+    it('are stored when an image file comes in', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBe('#c81e28');
+        expect(Asset::find()->id($this->asset->id)->one()->colors?->dominant)->toBe('#c81e28');
     });
 
-    it('is cleared when the file is replaced by one that isn’t an image', function () {
-        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+    it('are cleared when the file is replaced by one that isn’t an image', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        $replacement = tempnam(sys_get_temp_dir(), 'craft-dominant-color-');
+        $replacement = tempnam(sys_get_temp_dir(), 'craft-colors-');
         file_put_contents($replacement, 'not an image');
         $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), $replacement, 'photo.txt');
 
-        expect(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBeNull();
+        expect(Asset::find()->id($this->asset->id)->one()->colors)->toBeNull();
     });
 
-    it('is stored as inconclusive when none can be determined', function () {
+    it('are stored as inconclusive when none can be sampled', function () {
         $images = Mockery::mock(ImagesFacade::getFacadeRoot());
-        $images->shouldReceive('dominantColor')->andReturnFalse();
+        $images->shouldReceive('colors')->andReturn(new ImageColors);
         ImagesFacade::swap($images);
 
-        $this->assets->replaceAssetFile($this->asset, dominantColorImage(), 'photo.png');
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(AssetModel::findOrFail($this->asset->id)->dominantColor)->toBe('#------')
-            ->and(Asset::find()->id($this->asset->id)->one()->dominantColor)->toBeFalse();
+        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => []])
+            ->and(Asset::find()->id($this->asset->id)->one()->colors)->toEqual(new ImageColors);
     });
 
     it('can’t be set from a request', function () {
-        $this->asset->setAttributesFromRequest(['dominantColor' => '#000000']);
+        $this->asset->setAttributesFromRequest(['colors' => ['dominant' => '#000000']]);
 
-        expect($this->asset->dominantColor)->toBeNull();
+        expect($this->asset->colors)->toBeNull();
     });
+});
+
+it('dates a replaced file by where it was stored, so indexing doesn’t mistake it for a changed file', function () {
+    $path = tempnam(sys_get_temp_dir(), 'craft-colors-');
+    file_put_contents($path, 'not an image');
+    touch($path, time() - 3600);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $original = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'notes.txt',
+    ]);
+
+    $this->assets->replaceAssetFile($original, $path, 'notes.txt');
+    $asset = Asset::find()->id($original->id)->one();
+
+    expect($asset->dateModified->getTimestamp())
+        ->toBe(Storage::disk('test-disk')->lastModified($asset->getPath()));
 });

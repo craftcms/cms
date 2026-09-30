@@ -22,7 +22,10 @@
             maxWidth: asset.width,
             maxHeight: asset.height,
         },
-        onload: 'setTimeout(Craft.PreviewFileModal.resizePreviewImage, 100)',
+        style: asset.placeholderDataUrl ? {
+            background: "url(#{asset.placeholderDataUrl}) center / 100% 100% no-repeat",
+        } : false,
+        onload: "this.style.background = ''; setTimeout(Craft.PreviewFileModal.resizePreviewImage, 100)",
     }) }}
 </div>
 

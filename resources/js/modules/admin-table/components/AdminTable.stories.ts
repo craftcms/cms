@@ -1,9 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import AdminTable from './AdminTable.vue';
-import {
-  createSampleTable,
-  sampleActions,
-} from '@/modules/elements/fixtures/elements';
+import {createSampleTable} from '@/modules/elements/fixtures/elements';
 
 const meta = {
   title: 'Elements/AdminTable',
@@ -12,12 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A one-stop table for admin screens: `BaseElementIndex` + ' +
-          '`DataTable` pre-composed, so a page only supplies a TanStack table ' +
-          'instance and (optionally) pagination figures, bulk actions, and a ' +
-          'toolbar via the `table-header` slot. Most settings index pages use ' +
-          'this. Reach for the pieces individually only when you need a ' +
-          'different body, like the cards view.',
+          'A settings table with optional pagination, reordering, and a table-header slot.',
       },
     },
   },
@@ -57,29 +49,6 @@ export const Paginated: Story = {
         :total="12"
         enable-adjust-page-size
         :page-size-options="[5, 10, 50]"
-      />
-    `,
-  }),
-};
-
-/**
- * Selection and bulk actions flow straight through to the shell — select a
- * couple of rows and the footer becomes the bulk-actions bar.
- */
-export const SelectableWithActions: Story = {
-  render: (args) => ({
-    components: {AdminTable},
-    setup() {
-      const table = createSampleTable();
-      return {args, table, actions: sampleActions};
-    },
-    template: `
-      <AdminTable
-        v-bind="args"
-        :table="table"
-        selectable
-        :actions="actions"
-        element-type="demo\\\\Entry"
       />
     `,
   }),

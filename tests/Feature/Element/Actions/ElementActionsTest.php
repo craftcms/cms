@@ -73,22 +73,34 @@ it('flags non-bulk actions when serializing action items', function () {
         ->and($flags[Delete::class] ?? null)->toBeNull();
 });
 
-it('serializes Copy as a client-side event action', function () {
+it('serializes client-owned element actions as events', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
-    $items = collect($this->elementActions->serializeActionItems($actions));
+    $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
 
-    $copy = $items->firstWhere('key', Copy::class);
+    expect($items[Copy::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:copy-elements',
+    ])->and($items[Edit::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:edit-element',
+    ])->and($items[View::class]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:view-element',
+    ]);
 
-    expect($copy)->not->toBeNull()
-        ->and($copy['action']['type'])->toBe('event')
-        ->and($copy['action']['name'])->toBe('craft:copy-elements')
-        ->and($copy['action'])->not->toHaveKey('url');
-
-    // Duplicate stays a normal perform-endpoint POST.
-    $duplicate = $items->firstWhere('key', Duplicate::class);
+    $duplicate = $items[Duplicate::class];
 
     expect($duplicate['action']['type'])->toBe('http')
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
+});
+
+it('serializes standard selection capabilities for page bulk actions', function () {
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
+
+    expect($items[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
+        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
 });
 
 it('serializes registered download actions for native form submission', function () {

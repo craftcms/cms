@@ -171,6 +171,7 @@ JS, [
 
         $deletedElementIds = [];
         $deleteOwnership = [];
+        $failedElementIds = [];
 
         foreach ($query->cursor() as $element) {
             if (! Gate::check('view', $element)) {
@@ -187,13 +188,21 @@ JS, [
                             Gate::check('view', $descendant) &&
                             Gate::check('delete', $descendant)
                         ) {
-                            $this->deleteElement($descendant, $deleteOwnership);
-                            $deletedElementIds[$descendant->id] = true;
+                            if ($this->deleteElement($descendant, $deleteOwnership)) {
+                                $deletedElementIds[$descendant->id] = true;
+                                unset($failedElementIds[$descendant->id]);
+                            } else {
+                                $failedElementIds[$descendant->id] = true;
+                            }
                         }
                     }
                 }
-                $this->deleteElement($element, $deleteOwnership);
-                $deletedElementIds[$element->id] = true;
+                if ($this->deleteElement($element, $deleteOwnership)) {
+                    $deletedElementIds[$element->id] = true;
+                    unset($failedElementIds[$element->id]);
+                } else {
+                    $failedElementIds[$element->id] = true;
+                }
             }
         }
 
@@ -202,6 +211,16 @@ JS, [
                 ->whereIn('elementId', $elementIds)
                 ->where('ownerId', $ownerId)
                 ->delete();
+        }
+
+        if ($failedElementIds !== []) {
+            $this->setMessage(t('Could not delete {count, number} {count, plural, =1{{typeSingular}} other{{typePlural}}}.', [
+                'count' => count($failedElementIds),
+                'typeSingular' => $this->elementType::lowerDisplayName(),
+                'typePlural' => $this->elementType::pluralLowerDisplayName(),
+            ]));
+
+            return false;
         }
 
         if (isset($this->successMessage)) {
@@ -221,17 +240,17 @@ JS, [
     private function deleteElement(
         ElementInterface $element,
         array &$deleteOwnership,
-    ): void {
+    ): bool {
         // If the element primarily belongs to a different element, (and we're not hard deleting) just delete the ownership
         if (! $this->hard && $element instanceof NestedElementInterface) {
             $ownerId = $element->getOwnerId();
             if ($ownerId && $element->getPrimaryOwnerId() !== $ownerId) {
                 $deleteOwnership[$ownerId][] = $element->id;
 
-                return;
+                return true;
             }
         }
 
-        Elements::deleteElement($element, $this->hard);
+        return Elements::deleteElement($element, $this->hard);
     }
 }

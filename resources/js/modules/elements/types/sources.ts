@@ -1,7 +1,7 @@
 import type {
   IndexQueryParams,
   IndexQueryValue,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 
 export type Criteria = IndexQueryParams;
 

@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
@@ -23,6 +24,7 @@ use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
 use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -294,6 +296,50 @@ it('preserves image dimensions through chunk assembly and asset processing', fun
     $asset = Asset::findOne($completed['assetId']);
     expect($asset->getWidth())->toBe(13)->and($asset->getHeight())->toBe(17)
         ->and($asset->getMimeType())->toBe('image/png');
+});
+
+describe('uploaded colors', function () {
+    beforeEach(function () {
+        Cms::config()->uploadChunkSize = 1048576;
+
+        $this->uploadImage = function (array $parameters, array $completion = []): array {
+            $image = UploadedFile::fake()->image('photo.png', 13, 17);
+            $bytes = file_get_contents($image->getRealPath());
+            $session = postJson(action([UploadSessionController::class, 'store']), [
+                'filename' => 'photo.png', 'size' => strlen($bytes), ...$parameters,
+            ])->assertCreated()->json();
+            $this->call('PATCH', $session['transport']['options']['url'], server: ['CONTENT_TYPE' => 'application/offset+octet-stream', 'HTTP_TUS_RESUMABLE' => '1.0.0', 'HTTP_UPLOAD_OFFSET' => 0], content: $bytes)->assertNoContent();
+
+            return postJson($session['urls']['complete'], $completion)->assertOk()->json();
+        };
+    });
+
+    it('stores the colors the uploader sampled instead of sampling the image', function () {
+        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']]];
+        $images = Mockery::mock(ImagesFacade::getFacadeRoot());
+        $images->shouldNotReceive('colors');
+        ImagesFacade::swap($images);
+
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
+        $replacementColors = ['dominant' => null, 'grid' => [['#654321']]];
+        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
+
+        expect(AssetModel::findOrFail($original['assetId'])->colors)->toEqual($replacementColors);
+    });
+
+    it('samples the image itself without usable colors from the uploader', function (?array $colors) {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['colors' => $colors]);
+
+        expect(Asset::findOne($completed['assetId'])->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
+    })->with([
+        'none sent' => [null],
+        'empty grid' => [['dominant' => '#3a6ea5', 'grid' => []]],
+        'too many rows' => [['dominant' => null, 'grid' => array_fill(0, 5, ['#3a6ea5'])]],
+        'too many columns' => [['dominant' => null, 'grid' => [array_fill(0, 5, '#3a6ea5')]]],
+        'ragged rows' => [['dominant' => null, 'grid' => [['#3a6ea5', '#3a6ea5'], ['#3a6ea5']]]],
+        'not hex colors' => [['dominant' => null, 'grid' => [['red;x']]]],
+        'unexpected keys' => [['dominant' => null, 'grid' => [['#3a6ea5']], 'extra' => 'x']],
+    ]);
 });
 
 it('resolves a fields dynamic upload folder from its element context', function () {
