@@ -276,6 +276,7 @@
 - Fixed an error that could occur when rendering field settings.
 - Fixed a validation error that occurred when saving an entry type with a color. ([#19753](https://github.com/craftcms/cms/issues/19753))
 - Fixed a validation error that occurred when saving a Color field with no color palette, even if “Allow custom colors” was enabled.
+- Fixed an error that occurred when using an icon picker. ([#19752](https://github.com/craftcms/cms/issues/19752))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
