@@ -77,6 +77,12 @@ The step shows most clearly with a prefix and a suffix in place, since the thumb
 
 <Canvas of={ChipStories.SizesWithContent} sourceState="shown" />
 
+## Alignment
+
+`align-items` sets where the prefix and suffix sit against the label. The default, `center`, suits a single-line label. When the label runs to several lines, `start` keeps them against the first line and `end` against the last:
+
+<Canvas of={ChipStories.Alignment} sourceState="shown" />
+
 ## Styling
 
 The chip exposes three CSS parts — `chip`, `prefix`, and `suffix` — and a set of `--c-chip-*` custom properties for its height, radius, padding, shadow, and border.
