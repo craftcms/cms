@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import {computed, onMounted, ref, useTemplateRef, watch} from 'vue';
+  import {computed, onMounted, provide, ref, useTemplateRef, watch} from 'vue';
+  import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import {TableSpacing} from '@/common/types';
@@ -12,6 +13,14 @@
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
+  import {elementIndexContextKey} from '@/modules/elements/index/index-context';
+
+  interface ElementIndexQuickEdit {
+    longPress?: boolean;
+    onDblClick(event: MouseEvent): void;
+    onPrimaryLink?(event: MouseEvent): void;
+    suppressPrimaryLinkVisit?(event: MouseEvent): void;
+  }
 
   const props = withDefaults(
     defineProps<{
@@ -22,12 +31,15 @@
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
+      toolbarAsForm?: boolean;
+      quickEdit?: ElementIndexQuickEdit;
     }>(),
     {
       contained: false,
       footerActive: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
+      toolbarAsForm: true,
     }
   );
   const emit = defineEmits<{
@@ -49,6 +61,7 @@
     visibleViewModes,
     loading,
     processing,
+    filterContext,
     submit,
     reorder,
     structureView,
@@ -56,6 +69,7 @@
     selection,
   } = props.view;
   const structure = props.view.structure;
+  const rowReorder = props.view.rowReorder;
   const inlineEditing = props.view.inlineEditing;
   const exportElements = props.view.exportElements;
   const activeSiteHandle = computed(
@@ -63,6 +77,7 @@
       elementIndex.sites.find((site) => site.id === elementIndex.siteId)
         ?.handle ?? null
   );
+  provide(elementIndexContextKey, filterContext);
 
   const body = useTemplateRef<HTMLElement>('body');
   const editableRows = computed(() =>
@@ -102,6 +117,10 @@
     ...(isInlineEditing.value
       ? {onClick: undefined, onKeydown: undefined}
       : {}),
+    attrs: (row) => ({
+      ...props.itemBehavior?.attrs?.(row),
+      'data-index-id': row.id,
+    }),
   }));
 
   watch(inlineEditor.editingIds, (ids) => {
@@ -116,6 +135,15 @@
     }
   });
 
+  onLongPress(body, (event) => {
+    if (
+      !isInlineEditing.value &&
+      event.pointerType === 'touch' &&
+      props.quickEdit?.longPress
+    ) {
+      props.quickEdit.onDblClick(event);
+    }
+  });
   const liveMessage = ref('');
   watch(loading, (isLoading, wasLoading) => {
     if (isLoading) liveMessage.value = t('Loading…');
@@ -157,7 +185,11 @@
       return;
     }
 
-    emit('dblclick', event);
+    if (props.quickEdit) {
+      props.quickEdit.onDblClick(event);
+    } else {
+      emit('dblclick', event);
+    }
   }
 
   function onBodyKeydown(event: KeyboardEvent): void {
@@ -178,6 +210,7 @@
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"
         :processing="processing"
+        :as-form="toolbarAsForm"
         :status-options="elementIndex.statusOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
@@ -226,7 +259,24 @@
       <slot name="navbar" />
     </div>
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
-      <div ref="body" @dblclick="onBodyDblClick" @keydown="onBodyKeydown">
+      <div
+        ref="body"
+        @mousedown.capture="
+          isInlineEditing
+            ? undefined
+            : quickEdit?.suppressPrimaryLinkVisit?.($event)
+        "
+        @mouseup.capture="
+          isInlineEditing
+            ? undefined
+            : quickEdit?.suppressPrimaryLinkVisit?.($event)
+        "
+        @click.capture="
+          isInlineEditing ? undefined : quickEdit?.onPrimaryLink?.($event)
+        "
+        @dblclick="onBodyDblClick"
+        @keydown="onBodyKeydown"
+      >
         <ElementCards
           v-if="mode === 'cards'"
           :selection="selection.selection"
@@ -235,8 +285,15 @@
           :selectable="selectable"
           :loading="loading"
           :item-behavior="itemBehavior"
+          :sortable="rowReorder?.enabled.value ?? false"
           :interactions-disabled="processing"
-        />
+          :render-server-actions="!$slots['card-actions']"
+          @reorder="(from, to) => rowReorder?.move(from, to)"
+        >
+          <template v-if="$slots['card-actions']" #actions="{element}">
+            <slot name="card-actions" :element="element" />
+          </template>
+        </ElementCards>
         <ElementThumbs
           v-else-if="mode === 'thumbs'"
           :selection="selection.selection"
@@ -261,13 +318,19 @@
           "
           :is-row-collapsed="structureView.isCollapsed"
           :is-row-pending="structureView.isPending"
-          :reorderable="!isInlineEditing && (structure?.reorderable ?? false)"
+          :reorderable="
+            !isInlineEditing &&
+            (mode === 'structure'
+              ? (structure?.reorderable ?? false)
+              : (rowReorder?.enabled.value ?? false))
+          "
           :interactions-disabled="processing"
           :inline-editing="isInlineEditing"
           :render-cell="inlineEditor.renderCell"
           :can-move-row="structure?.canMoveRow"
           @toggle-structure="toggleStructure"
           @move-structure-row="moveRow"
+          @reorder="(from, to) => rowReorder?.move(from, to)"
         />
       </div>
     </div>

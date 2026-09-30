@@ -664,11 +664,15 @@ class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element source key
+     * @param  FieldLayout[]|Collection<int,FieldLayout>|null  $fieldLayouts
      * @return Collection<array-key,mixed>
      */
-    public function getSourceSortOptions(string $elementType, string $sourceKey): Collection
-    {
-        $fieldLayouts = $sourceKey === '__IMP__'
+    public function getSourceSortOptions(
+        string $elementType,
+        string $sourceKey,
+        array|Collection|null $fieldLayouts = null,
+    ): Collection {
+        $fieldLayouts ??= $sourceKey === '__IMP__'
             ? $elementType::fieldLayouts(null)
             : $this->getFieldLayoutsForSource($elementType, $sourceKey);
 

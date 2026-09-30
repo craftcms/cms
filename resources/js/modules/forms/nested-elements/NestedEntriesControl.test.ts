@@ -9,9 +9,15 @@ import {
 } from '@/modules/elements/nested-owner';
 import type {FormControlPayload} from '../types';
 import type {NestedEntriesProps, NestedEntry} from './nested-entries';
-import NestedElementCardsControl from './NestedElementCardsControl.vue';
+import NestedEntriesControl from './NestedEntriesControl.vue';
+import {
+  DELETE_ACTION,
+  nestedElementAction,
+  standardNestedActions,
+} from './nested-index.fixture';
 
 const request = vi.hoisted(() => ({post: vi.fn()}));
+const actions = vi.hoisted(() => ({run: vi.fn(async () => {})}));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 vi.mock('@/common/slideouts', () => ({
   canUseVueSlideout: () => window.Craft?.openSlideout instanceof Function,
@@ -27,6 +33,7 @@ vi.mock('@craftcms/ui', async (original) => ({
   ...(await original<Record<string, unknown>>()),
   actionClient: request,
 }));
+vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
   default: {
     props: ['data', 'selection', 'itemBehavior', 'selectable', 'readOnly'],
@@ -79,8 +86,7 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
     },
   },
 }));
-
-describe('NestedElementCardsControl', () => {
+describe('NestedEntriesControl', () => {
   let root: HTMLElement;
   let app: ReturnType<typeof createApp>;
 
@@ -88,6 +94,7 @@ describe('NestedElementCardsControl', () => {
     app?.unmount();
     root?.remove();
     request.post.mockReset();
+    actions.run.mockClear();
     slideout.mockClear();
     copiedElements.value = [];
     vi.useRealTimers();
@@ -100,20 +107,17 @@ describe('NestedElementCardsControl', () => {
     action: string,
     label: string
   ): ActionItemButton {
-    const bulkLabel = {
-      copy: 'Copy selected entries',
-      delete: 'Delete selected entries',
-      duplicate: 'Duplicate selected entries',
-    }[action];
+    const item = standardNestedActions.find((candidate) =>
+      candidate.key.endsWith(
+        action === 'copy'
+          ? '\\Copy'
+          : action === 'duplicate'
+            ? '\\Duplicate'
+            : '\\Delete'
+      )
+    )!;
 
-    return {
-      label,
-      action: {
-        type: 'event',
-        name: 'craft:nested-element-action',
-        detail: {elementId, action, bulkLabel},
-      },
-    };
+    return nestedElementAction(elementId, item, label) as ActionItemButton;
   }
 
   function nestedEntry(
@@ -123,6 +127,11 @@ describe('NestedElementCardsControl', () => {
       siteId: null,
       entryTypeId: null,
       ownerId: null,
+      capabilities: {
+        copyable: true,
+        duplicatable: true,
+        deletable: true,
+      },
       ownerIsCanonical: true,
       isUnpublishedDraft: false,
       ownerIsUnpublishedDraft: false,
@@ -132,7 +141,7 @@ describe('NestedElementCardsControl', () => {
       cpEditUrl: null,
       actionMenuItems: [],
       cardAttributes: {},
-      cardLabelHtml: '',
+      cardHeaderHtml: '',
       cardActionsHtml: '',
       cardContentHtml: '',
       cardFooterHtml: '',
@@ -182,8 +191,8 @@ describe('NestedElementCardsControl', () => {
     root = document.createElement('div');
     document.body.append(root);
     const control = reactive<FormControlPayload<NestedEntriesProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
-      component: 'craft:nested-element-cards',
+      type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
+      component: 'craft:nested-entries',
       mode: 'editable',
       deltaGroup: ['fields', 'cards'],
       path: ['fields', 'cards'],
@@ -197,20 +206,23 @@ describe('NestedElementCardsControl', () => {
           fieldId: 7,
           elementType: 'Entry',
           canCreate: false,
+          canPaste: false,
           sortable: true,
+          createAttributes: [{label: 'Entry', attributes: {}}],
+          pasteableEntryTypeIds: [],
           ...options.manager,
         },
         cards: options.cards ?? [
           nestedEntry({
             id: 14,
             siteId: 1,
-            cardLabelHtml: '<b>Card</b>',
-            cardAttributes: {data: {deletable: true}},
+            cardHeaderHtml: '<b>Card</b>',
             actionMenuItems: [menuAction(14, 'delete', 'Delete entry')],
           }),
         ],
       },
     });
+
     const prepare =
       options.prepare ??
       vi.fn(async () => ({
@@ -226,7 +238,7 @@ describe('NestedElementCardsControl', () => {
         provide(NestedOwnerEditorKey, {prepare, refresh});
 
         return () =>
-          h(NestedElementCardsControl, {
+          h(NestedEntriesControl as any, {
             editable: options.editable ?? true,
             value: null,
             control,
@@ -253,7 +265,6 @@ describe('NestedElementCardsControl', () => {
 
   it('does not mutate when owner preparation fails', async () => {
     const prepare = vi.fn().mockResolvedValue(null);
-    window.confirm = vi.fn().mockReturnValue(true);
     mount({prepare});
 
     action('Delete entry')!.click();
@@ -262,7 +273,7 @@ describe('NestedElementCardsControl', () => {
     );
 
     expect(prepare).toHaveBeenCalledOnce();
-    expect(request.post).not.toHaveBeenCalled();
+    expect(actions.run).not.toHaveBeenCalled();
   });
 
   it('does not mutate when draft preparation returns a published owner tree', async () => {
@@ -273,7 +284,6 @@ describe('NestedElementCardsControl', () => {
       ownerIsUnpublishedDraft: false,
       requiresDerivative: true,
     });
-    window.confirm = vi.fn().mockReturnValue(true);
     mount({prepare});
 
     action('Delete entry')!.click();
@@ -281,7 +291,7 @@ describe('NestedElementCardsControl', () => {
       expect(root.textContent).toContain('Could not prepare the owner draft')
     );
 
-    expect(request.post).not.toHaveBeenCalled();
+    expect(actions.run).not.toHaveBeenCalled();
   });
 
   it('uses the prepared owner and refreshes its form once after a mutation', async () => {
@@ -292,7 +302,14 @@ describe('NestedElementCardsControl', () => {
 
     window.dispatchEvent(
       new CustomEvent('craft:nested-element-action', {
-        detail: {action: 'delete', elementId: 14, trigger: document.body},
+        detail: {
+          action: 'element-action',
+          elementId: 14,
+          item: standardNestedActions.find(
+            (candidate) => candidate.key === DELETE_ACTION
+          ),
+          trigger: document.body,
+        },
       })
     );
     await nextTick();
@@ -303,9 +320,18 @@ describe('NestedElementCardsControl', () => {
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
 
     expect(prepare).toHaveBeenCalledOnce();
-    expect(request.post).toHaveBeenCalledWith(
-      expect.stringContaining('nested-elements/delete'),
-      expect.objectContaining({ownerId: 73, elementId: 14})
+    expect(actions.run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining('element-indexes/perform-action'),
+        body: expect.objectContaining({
+          elementAction: DELETE_ACTION,
+          ownerId: 73,
+          context: 'embeddedIndex',
+          source: '__IMP__',
+          elementIds: [14],
+        }),
+      }),
+      expect.anything()
     );
     expect(
       request.post.mock.calls.some(([url]) =>
@@ -321,7 +347,6 @@ describe('NestedElementCardsControl', () => {
       cards: [
         nestedEntry({
           id: 14,
-          cardAttributes: {data: {deletable: true, duplicatable: true}},
           actionMenuItems: [
             {
               type: 'button',
@@ -440,75 +465,6 @@ describe('NestedElementCardsControl', () => {
       params: {fresh: 1},
       onBeforeSubmit: expect.any(Function),
     });
-  });
-
-  it('refreshes completed changes when a later selected deletion fails', async () => {
-    window.confirm = vi.fn().mockReturnValue(true);
-    request.post
-      .mockResolvedValueOnce({data: {}})
-      .mockRejectedValueOnce(new Error('Could not delete the second entry.'));
-    const cards = [14, 29].map((id) =>
-      nestedEntry({
-        id,
-        cardAttributes: {data: {deletable: true}},
-        actionMenuItems: [menuAction(id, 'delete', 'Delete entry')],
-      })
-    );
-    const refresh = vi.fn(async () => {
-      control.props.cards = [cards[1]!];
-    });
-    const {control} = mount({cards, refresh});
-    root.querySelector<HTMLElement>('[aria-label="Select 14"]')!.click();
-    root.querySelector<HTMLElement>('[aria-label="Select 29"]')!.click();
-    await nextTick();
-
-    action('Delete selected entries')!.click();
-    await vi.waitFor(() =>
-      expect(root.textContent).toContain('Could not delete the second entry.')
-    );
-
-    expect(refresh).toHaveBeenCalledOnce();
-    expect(root.querySelector('[data-nested-id="14"]')).toBeNull();
-    expect(root.querySelector('[data-nested-id="29"]')).not.toBeNull();
-  });
-
-  it('duplicates nonadjacent cards after each source from bottom to top', async () => {
-    const cards = [18, 19, 20].map((id) =>
-      nestedEntry({
-        id,
-        siteId: 1,
-        cardAttributes: {data: {duplicatable: id !== 19}},
-        actionMenuItems:
-          id === 19 ? [] : [menuAction(id, 'duplicate', 'Duplicate')],
-      })
-    );
-    request.post.mockImplementation(
-      async (_url: string, body: {elementId?: number}) => ({
-        data: {element: {id: body.elementId === 20 ? 30 : 29}},
-      })
-    );
-    const refresh = vi.fn(async () => {});
-    mount({cards, refresh, manager: {canCreate: true}});
-    root.querySelector<HTMLElement>('[aria-label="Select 18"]')!.click();
-    root.querySelector<HTMLElement>('[aria-label="Select 20"]')!.click();
-    await nextTick();
-
-    action('Duplicate selected entries')!.click();
-    await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
-
-    expect(
-      request.post.mock.calls.map(([url, body]) => ({
-        url,
-        elementId: body.elementId,
-        elementIds: body.elementIds,
-        offset: body.offset,
-      }))
-    ).toEqual([
-      expect.objectContaining({elementId: 20}),
-      expect.objectContaining({elementIds: [30], offset: 3}),
-      expect.objectContaining({elementId: 18}),
-      expect.objectContaining({elementIds: [29], offset: 1}),
-    ]);
   });
 
   it('restores focus by position when a saved child has a new identity', async () => {
@@ -700,33 +656,57 @@ describe('NestedElementCardsControl', () => {
     expect(refresh).toHaveBeenCalledTimes(2);
   });
 
-  it('announces mutations and confirms deletion with the manager’s message', async () => {
-    request.post.mockResolvedValue({data: {}});
-    window.confirm = vi.fn().mockReturnValue(true);
-    const {refresh} = mount({
-      manager: {deleteConfirmationMessage: 'Delete this card?'},
-    });
+  it('announces deletion and passes the standard confirmation to the action runner', async () => {
+    const {refresh} = mount();
 
     action('Delete entry')!.click();
     expect(useAnnouncer().announcement.value).toBe('Loading');
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
 
-    expect(window.confirm).toHaveBeenCalledWith('Delete this card?');
+    expect(actions.run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        confirm: 'Are you sure you want to delete the selected entries?',
+      }),
+      expect.anything()
+    );
     await vi.waitFor(() =>
       expect(useAnnouncer().announcement.value).toBe('Loading complete')
     );
   });
 
-  it('names the copied entries on the paste button', async () => {
-    copiedElements.value = [{type: 'Entry', data: {entryTypeId: 1}}];
-    mount({manager: {canPaste: true, canCreate: true}});
+  it('offers paste only for copied entries with an allowed entry type', async () => {
+    copiedElements.value = [
+      {type: 'Entry', data: {entryTypeId: 17}},
+      {type: 'Entry', data: {entryTypeId: 23}},
+    ];
+    mount({
+      manager: {
+        canPaste: true,
+        canCreate: true,
+        pasteableEntryTypeIds: [17, 23],
+      },
+    });
     await nextTick();
 
     expect(
       [...root.querySelectorAll('craft-button')].some(
-        (button) => button.textContent?.trim() === 'Paste entry'
+        (button) => button.textContent?.trim() === 'Paste entries'
       )
     ).toBe(true);
+  });
+
+  it('hides paste when a copied entry type is not allowed', async () => {
+    copiedElements.value = [{type: 'Entry', data: {entryTypeId: 41}}];
+    mount({
+      manager: {
+        canPaste: true,
+        canCreate: true,
+        pasteableEntryTypeIds: [17, 23],
+      },
+    });
+    await nextTick();
+
+    expect(root.textContent).not.toContain('Paste entry');
   });
 
   it('does not expose selection or mutation actions in read-only mode', () => {
@@ -737,7 +717,7 @@ describe('NestedElementCardsControl', () => {
           id: 14,
           editUrl: '/edit/14',
           cardAttributes: {
-            data: {deletable: true, duplicatable: true, editable: true},
+            data: {editable: true},
           },
           actionMenuItems: [
             menuAction(14, 'delete', 'Delete entry'),

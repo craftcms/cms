@@ -46,6 +46,8 @@ export interface BulkActionItem {
       };
 }
 
+export type BulkActionParams = Record<string, unknown>;
+
 export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
@@ -69,7 +71,23 @@ export interface ElementActionSelection {
   capabilities?: Partial<ElementCapabilities>;
   type?: string;
   siteId?: number | null;
+  entryTypeId?: number | null;
+  ownerId?: number | null;
+  fieldId?: number | null;
+  draftId?: number | null;
+  revisionId?: number | null;
+  data?: {entryTypeId?: number | null};
+  cardAttributes?: {
+    data?: Record<string, unknown>;
+  };
 }
+
+export type RunBulkAction = (overrides?: BulkActionParams) => Promise<boolean>;
+
+export type PerformBulkAction = (
+  item: BulkActionItem,
+  run: RunBulkAction
+) => Promise<void>;
 
 export interface BulkActionEventDetail {
   elementIds: ReadonlyArray<string | number>;

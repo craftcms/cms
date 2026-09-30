@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t, appendBodyHtml, appendHeadHtml, ButtonVariant} from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
-  import {computed, onMounted, ref, shallowRef, toRef} from 'vue';
+  import {computed, inject, onMounted, ref, shallowRef, toRef} from 'vue';
   import ElementIndexController from '@actions/Elements/ElementIndex/ElementIndexController';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
@@ -11,6 +11,7 @@
     BuilderPayload,
     ConditionConfig,
   } from '@/modules/conditions/types';
+  import {elementIndexContextKey} from '@/modules/elements/index/index-context';
 
   type FilterHudResponse = {
     builder: BuilderPayload;
@@ -27,9 +28,12 @@
       label: string;
     };
     id: string;
+    fieldLayouts?: Array<Record<string, string | number | boolean | null>>;
   };
 
-  const props = defineProps<{anchor?: HTMLElement}>();
+  const props = defineProps<{
+    anchor?: HTMLElement;
+  }>();
   const {left, bottom, width} = useElementBounding(toRef(props, 'anchor'));
   const position = computed(() => ({
     top: `${bottom.value + 4}px`,
@@ -49,13 +53,17 @@
     source: SourceItem;
     id: string;
   }>();
+  const providedContext = inject(elementIndexContextKey);
+  const context = providedContext?.value;
 
   const http = useHttp<FilterHudRequest, FilterHudResponse>({
-    elementType: page.props.elementType,
-    context: page.props.context ?? 'index',
-    source: page.props.source,
+    ...context?.extraParams,
+    elementType: context?.elementType ?? page.props.elementType,
+    context: context?.context ?? page.props.context ?? 'index',
+    source: context?.source ?? page.props.source,
+    fieldLayouts: context?.fieldLayouts,
     id: `filters`,
-  });
+  } as FilterHudRequest);
 
   http.transform((data) => ({
     ...data,

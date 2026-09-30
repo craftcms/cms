@@ -86,7 +86,7 @@ class UserIndexViewModel extends ContentIndexViewModel
             return null;
         }
 
-        foreach ($this->sources() as $source) {
+        foreach ($this->allSources() as $source) {
             if (isset($source['key']) && ($source['data']['slug'] ?? null) === $this->slug) {
                 return $source['key'];
             }
