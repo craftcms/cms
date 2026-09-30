@@ -18,7 +18,7 @@
 - Removed the legacy control panel stylesheet from Inertia pages. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - `ElementEditor` now supports rendering as a full page in addition to a slideout. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Improved the overall accessibility of the control panel. ([#19699](https://github.com/craftcms/cms/pull/19699))
-- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
+- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520), [#19749](https://github.com/craftcms/cms/pull/19749))
 - Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Improved the styling for collapsible field groups.
 - Improved disabled secondary form actions with explanatory tooltips.
