@@ -7,8 +7,7 @@
     useAppLayout,
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {ActionItem, FormAltAction} from '@/common/types';
   import type {
@@ -185,7 +184,5 @@
       </component>
     </component>
   </component>
-  <LayoutSlot v-if="metadataHtml" name="content-details">
-    <DynamicHtmlRenderer :html="metadataHtml" />
-  </LayoutSlot>
+  <MetadataDetails :html="metadataHtml" />
 </template>
