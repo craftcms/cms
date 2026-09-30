@@ -28,7 +28,7 @@ dispatches `craft-select` for onlookers — the event is a notification, not the
 mechanism. Wire it the other way and one intent ends up with two paths that
 drift.
 
-Corollary: `ModalElementIndex.vue` emits `selection-change` / `choose` and never
+Corollary: `ElementPicker.vue` emits `selection-change` / `choose` and never
 imports the core. `ElementSelectorModal.vue` does the forwarding, which keeps the
 index reusable and `useModalElementIndex` core-agnostic.
 
@@ -39,9 +39,8 @@ index reusable and `useModalElementIndex` core-agnostic.
 | `ElementSelectorModal.vue` | The Vue view: renders `<craft-element-selector-modal>` with the index slotted in, plus the asset transform menu. |
 | `useElementSelectorController.ts` | Mirrors the core's `change` event into a `shallowRef`. Deliberately shallow — nothing wraps the controller's frozen snapshots in a reactive proxy, so Vue and the web component read the same object. |
 | `create-element-selector-modal.ts` | The imperative factory. Builds a controller from the registry, mounts the Vue view into a detached host, returns a handle. **Async**, and lazy-imports Vue so a page with a relation field doesn't pay for the index unless a modal opens. |
-| `ModalElementIndex.vue` | The index itself. Unchanged in shape from the legacy modal's. |
-| `useModalElementIndex.ts` | The composable behind it — the page's own `useElementIndex*` stack with a non-Inertia visitor. |
-| `modal-index-visitor.ts` | That visitor. |
+| `ElementPicker.vue` | Source navigation and selection around the shared `elements/index/components/ElementIndex.vue` renderer. |
+| `useModalElementIndex.ts` | Modal fetching and selection rules around `elements/index/composables/useDetachedElementIndex`, which uses the shared index and `createDetachedIndexVisitor`. |
 | `index.ts` | Registers the asset controller, drains legacy registrations, assigns the `Craft.*` shims. |
 | `volume-folder-selector-modal.ts` | The folder picker. Binds the same web component and controller to the **legacy jQuery index** — no Vue at all. |
 

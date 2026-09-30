@@ -11,7 +11,7 @@ import {defineAsyncComponent} from 'vue';
  * reached through the import map has no stylesheet links of its own.
  */
 export const ElementIndexPage = defineAsyncComponent(
-  () => import('./modules/elements/components/ElementIndexPage.vue')
+  () => import('./modules/elements/index/components/ElementIndexPage.vue')
 );
 
 export const ElementEditor = defineAsyncComponent(
@@ -26,4 +26,4 @@ export {
   appendIndexQuery,
   type ElementIndexRoute,
   type IndexQueryParams,
-} from './modules/elements/composables/useElementIndexVisits';
+} from './modules/elements/index/composables/useElementIndexVisits';

@@ -94,6 +94,15 @@ it('serializes client-owned element actions as events', function () {
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
 });
 
+it('serializes standard selection capabilities for page bulk actions', function () {
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
+
+    expect($items[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
+        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
+});
+
 it('serializes registered download actions for native form submission', function () {
     $downloadAction = new class extends ElementAction
     {

@@ -1,23 +1,10 @@
 import {actionClient, type ElementInfo} from '@craftcms/ui';
-import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-import type {RowSelectionState} from '@tanstack/table-core';
-import {computed, ref, shallowRef, watch} from 'vue';
-import type {ConditionConfig} from '@/modules/conditions/types';
+import {computed} from 'vue';
 import {
-  useContentIndexData,
   type ContentIndexData,
   type ElementIndexRow,
-} from '@/modules/elements/composables/useContentIndexData';
-import type {
-  IndexQueryParams,
-  IndexQueryValue,
-} from '@/modules/elements/composables/useElementIndexVisits';
-import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
-import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
-import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
-import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
-import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
-import {createModalIndexVisitor} from './modal-index-visitor';
+} from '@/modules/elements/index/composables/useContentIndexData';
+import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
 
 type Row = ElementIndexRow;
 
@@ -53,133 +40,25 @@ interface Options {
   disabledElementIds?: () => number[];
 }
 
-/**
- * An element index driven from a modal rather than an Inertia page.
- *
- * Same composable stack the index screens use, with two substitutions: the
- * payload comes from a ref this refreshes over XHR instead of `usePage()`, and
- * navigation goes through {@link createModalIndexVisitor} instead of an Inertia
- * visit. Everything downstream — view state, filters, columns, sort, pagination
- * — is the page's code unchanged.
- *
- * Deliberately not `useElementIndexPage`: that one registers itself as the
- * active index for the whole screen, which would hijack the page behind the
- * modal.
- */
+/** Adds modal fetching and selection rules to the shared detached index. */
 export function useModalElementIndex(options: Options) {
-  // `shallowRef`, not `ref`: each load replaces the payload wholesale rather
-  // than mutating into it, and `ref` would compute `UnwrapRef` over the whole
-  // generated `ContentIndexData` — deep enough to trip TypeScript's
-  // instantiation limit.
-  const payload = shallowRef<ContentIndexData>(options.initial);
-  const loading = ref(false);
-
-  async function load(query: IndexQueryParams): Promise<void> {
-    loading.value = true;
-
-    try {
+  const disabledIds = computed(
+    () => new Set(options.disabledElementIds?.() ?? [])
+  );
+  const index = useDetachedElementIndex({
+    initial: options.initial,
+    fetch: async (query) => {
       const {data} = await actionClient.post(options.action, {
         ...options.params,
         ...query,
       });
 
-      payload.value = data.props;
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  const visitor = createModalIndexVisitor(load);
-  // The composables still want a route, but nothing navigates to it — every
-  // request goes through the visitor above.
-  const route = {url: () => options.action};
-
-  const elementIndex = useContentIndexData(undefined, payload);
-  const viewState = useElementIndexViewState(elementIndex);
-  const conditions = shallowRef<ConditionConfig | null>(
-    elementIndex.currentCondition ?? null
-  );
-  // Not `useElementIndexFilters`: it submits through an Inertia form, which
-  // would navigate the page behind the modal. Same params, sent the modal's way.
-  const search = ref(elementIndex.search ?? '');
-  const status = ref(elementIndex.status ?? '');
-
-  watch([search, status, conditions], () => {
-    visitor.merge(
-      {
-        search: search.value || null,
-        status: status.value || null,
-        // `ConditionConfig` and `IndexQueryValue` are parallel descriptions of
-        // the same JSON-serializable shape; the visitor only serializes this
-        // into the query string, so the cast crosses the two without loss.
-        condition: (conditions.value ?? null) as IndexQueryValue,
-      },
-      {resetPage: true}
-    );
-  });
-  const {columns, columnOrder, columnOptions, reorder, tableColumns} =
-    useElementIndexColumns(
-      elementIndex,
-      viewState,
-      {key: 'title', label: elementIndex.elementDisplayName},
-      route,
-      visitor
-    );
-  const {sortingState, sortingConfig, sortField, sortDirection} =
-    useElementIndexSort(elementIndex, viewState, {route, visitor});
-  const {paginationState, paginationConfig} = useElementIndexPagination(
-    elementIndex,
-    route,
-    visitor
-  );
-  const {mode} = useElementIndexViewMode(route, viewState, visitor);
-
-  const rowSelection = ref<RowSelectionState>({});
-  const visibleColumns = ref({});
-
-  const disabledIds = computed(
-    () => new Set(options.disabledElementIds?.() ?? [])
-  );
-
-  const table = useVueTable<Row>({
-    get data() {
-      return elementIndex.data ?? [];
+      return data.props as ContentIndexData;
     },
-    get columns() {
-      return columns.value;
-    },
-    state: {
-      get columnOrder() {
-        return columnOrder.value;
-      },
-      get columnVisibility() {
-        return visibleColumns.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
-      get pagination() {
-        return paginationState.value;
-      },
-      get rowSelection() {
-        return rowSelection.value;
-      },
-    },
-    getRowId: (row) => String(row.id),
-    // Folders navigate rather than select, and an element the field already
-    // relates to can't be picked again.
     enableRowSelection: (row) =>
-      !row.original?.isFolder &&
-      !disabledIds.value.has(Number(row.original.id)),
-    onRowSelectionChange: (updater) => {
-      rowSelection.value =
-        typeof updater === 'function' ? updater(rowSelection.value) : updater;
-    },
-    getCoreRowModel: getCoreRowModel<Row>(),
-    ...sortingConfig,
-    ...paginationConfig,
-    enableMultiSort: false,
+      !row.isFolder && !disabledIds.value.has(Number(row.id)),
   });
+  const {table} = index.view;
 
   /**
    * The selected rows, in the shape the relation field expects.
@@ -197,7 +76,10 @@ export function useModalElementIndex(options: Options) {
         ...info,
         id: Number(original.id),
         siteId: info.siteId != null ? Number(info.siteId) : null,
-        label: String(info.label ?? original.id),
+        label:
+          typeof info.label === 'string' || typeof info.label === 'number'
+            ? String(info.label)
+            : String(original.id),
         status: (info.status as string | null) ?? null,
         url: (info.url as string | null) ?? null,
         hasThumb: Boolean(info.hasThumb),
@@ -207,31 +89,9 @@ export function useModalElementIndex(options: Options) {
 
   const hasSelection = computed(() => selectedElements.value.length > 0);
 
-  function clearSelection(): void {
-    rowSelection.value = {};
-  }
-
   return {
-    elementIndex,
-    table,
-    viewState,
-    conditions,
-    search,
-    status,
-    columnOptions,
-    tableColumns,
-    reorder,
-    sortField,
-    sortDirection,
-    mode,
-    loading,
-    rowSelection,
+    ...index,
     selectedElements,
     hasSelection,
-    clearSelection,
-    load,
-    query: visitor.query,
-    /** Handed to `ElementSources` so picking a source loads here, not the page. */
-    visitor,
   };
 }

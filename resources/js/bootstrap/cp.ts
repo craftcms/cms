@@ -151,7 +151,7 @@ const Cp = {
  */
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
-  let previousPathname: string | null = null;
+  let previousPathname = window.location.pathname;
   router.on('navigate', (event) => {
     const {props, url} = event.detail.page;
     const pathname = new URL(url, window.location.origin).pathname;

@@ -61,7 +61,8 @@ const ROOT = resolve(import.meta.dirname, '../../../..');
 const EXCEPTIONS: Record<string, string> = {
   // Below `sm`, which Tailwind's scale doesn't reach; the toolbar needs a
   // stage between stacked and its `sm` row.
-  'resources/js/modules/elements/components/ElementIndexToolbar.vue': '480px',
+  'resources/js/modules/elements/index/components/ElementIndexToolbar.vue':
+    '480px',
   // Predates the scale.
   'resources/css/global-sidebar.css': '1999px',
   'resources/css/notifications.css': 'calc(600rem / 16)',
