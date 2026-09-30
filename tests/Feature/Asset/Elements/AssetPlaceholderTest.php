@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\PreviewHandlers\Image;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -24,50 +25,70 @@ function placeholderAsset(array $grid, string $kind = FileKind::Image->value): A
     return $asset;
 }
 
-it('draws one pixel per region of the color grid', function () {
-    $url = placeholderAsset([
-        ['#ff0000', '#00ff00', '#0000ff'],
-        ['#ffffff', '#000000', '#3a6ea5'],
-    ])->getPlaceholderDataUrl();
+function placeholderImage(Asset $asset): GdImage
+{
+    return imagecreatefromstring(base64_decode(substr($asset->getPlaceholderDataUrl(), strlen('data:image/png;base64,'))));
+}
 
-    expect($url)->toStartWith('data:image/png;base64,');
+it('scales the color grid up three times', function () {
+    $image = placeholderImage(placeholderAsset(array_fill(0, 2, array_fill(0, 3, '#3a6ea5'))));
+    $colors = [];
 
-    $image = imagecreatefromstring(base64_decode(substr($url, strlen('data:image/png;base64,'))));
-    $pixel = fn (int $x, int $y): string => sprintf('#%06x', imagecolorat($image, $x, $y) & 0xFFFFFF);
+    for ($y = 0; $y < imagesy($image); $y++) {
+        for ($x = 0; $x < imagesx($image); $x++) {
+            $colors[] = sprintf('#%06x', imagecolorat($image, $x, $y) & 0xFFFFFF);
+        }
+    }
 
-    expect([imagesx($image), imagesy($image)])->toBe([3, 2])
-        ->and([
-            [$pixel(0, 0), $pixel(1, 0), $pixel(2, 0)],
-            [$pixel(0, 1), $pixel(1, 1), $pixel(2, 1)],
-        ])->toBe([
-            ['#ff0000', '#00ff00', '#0000ff'],
-            ['#ffffff', '#000000', '#3a6ea5'],
-        ]);
+    expect([imagesx($image), imagesy($image)])->toBe([9, 6])
+        ->and(array_unique($colors))->toBe(['#3a6ea5']);
+});
+
+it('blends smoothly between regions', function () {
+    $image = placeholderImage(placeholderAsset([['#000000', '#ffffff']]));
+    $row = array_map(fn (int $x): int => imagecolorat($image, $x, 1) & 0xFF, range(0, imagesx($image) - 1));
+
+    expect($row)->toHaveCount(6)
+        ->and($row)->toBe(array_values(Arr::sort($row)))
+        ->and([$row[0], array_last($row)])->toBe([0, 255])
+        ->and(array_filter($row, fn (int $value): bool => $value > 0 && $value < 255))->toHaveCount(2);
 });
 
 it('keeps transparent regions transparent', function () {
-    $url = placeholderAsset([['#3a6ea5', '#3a6ea500']])->getPlaceholderDataUrl();
-
-    $image = imagecreatefromstring(base64_decode(substr($url, strlen('data:image/png;base64,'))));
-    $alpha = fn (int $x): int => (imagecolorat($image, $x, 0) >> 24) & 0x7F;
+    $image = placeholderImage(placeholderAsset([['#3a6ea5', '#3a6ea500']]));
+    $alpha = fn (int $x): int => (imagecolorat($image, $x, 1) >> 24) & 0x7F;
 
     expect($alpha(0))->toBe(0)
-        ->and($alpha(1))->toBe(127);
+        ->and($alpha(imagesx($image) - 1))->toBe(127);
 });
+
+it('encodes a BlurHash with one component per region', function (array $grid, string $sizeFlag) {
+    $hash = placeholderAsset($grid)->getBlurhash();
+
+    expect($hash)->toHaveLength(28)
+        ->and($hash[0])->toBe($sizeFlag);
+})->with([
+    'landscape' => [array_fill(0, 3, array_fill(0, 4, '#3a6ea5')), 'L'],
+    'portrait' => [array_fill(0, 4, array_fill(0, 3, '#3a6ea5')), 'T'],
+]);
 
 it('is null without a color grid', function (?ImageColors $colors) {
     $asset = new Asset;
     $asset->kind = FileKind::Image->value;
     $asset->colors = $colors;
 
-    expect($asset->getPlaceholderDataUrl())->toBeNull();
+    expect($asset->getPlaceholderDataUrl())->toBeNull()
+        ->and($asset->getBlurhash())->toBeNull();
 })->with([
     'not sampled yet' => [null],
     'inconclusive' => [new ImageColors],
 ]);
 
 it('is null for files that aren’t images', function () {
-    expect(placeholderAsset([['#3a6ea5']], FileKind::Pdf->value)->getPlaceholderDataUrl())->toBeNull();
+    $asset = placeholderAsset([['#3a6ea5']], FileKind::Pdf->value);
+
+    expect($asset->getPlaceholderDataUrl())->toBeNull()
+        ->and($asset->getBlurhash())->toBeNull();
 });
 
 describe('as a background', function () {
