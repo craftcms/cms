@@ -48,7 +48,7 @@
     url: (query = {}) => {
       const {source, ...rest} = query;
       const slug =
-        source != null
+        source != null && String(source) !== page.props.source?.key
           ? sourceSlugs.value.get(String(source))
           : (page.props.slug ?? undefined);
 
