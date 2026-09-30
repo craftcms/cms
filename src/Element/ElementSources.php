@@ -664,7 +664,7 @@ class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element source key
-     * @param  FieldLayout[]|Collection<int,FieldLayout>|null  $fieldLayouts
+     * @param  array<int,FieldLayout>|Collection<int,FieldLayout>|null  $fieldLayouts
      * @return Collection<array-key,mixed>
      */
     public function getSourceSortOptions(
