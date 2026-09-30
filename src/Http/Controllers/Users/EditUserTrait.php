@@ -86,7 +86,6 @@ trait EditUserTrait
             ...$user->getCrumbs(),
             new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($user, [
                 'showDraftName' => false,
-                'class' => 'chromeless',
                 'hyperlink' => true,
                 'attributes' => [
                     'appearance' => Appearance::Plain->value,

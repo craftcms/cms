@@ -22,7 +22,6 @@ trait ElementCrumbs
             ...$crumbs,
             new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($element, [
                 'showDraftName' => ! $current,
-                'class' => 'chromeless',
                 'hyperlink' => true,
                 'appearance' => Appearance::Plain->value,
             ])),
