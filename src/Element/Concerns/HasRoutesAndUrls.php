@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -71,8 +72,8 @@ trait HasRoutesAndUrls
      *
      * @see getRoute()
      */
-    /** @return array<array-key,mixed>|string|null */
-    protected function route(): array|string|null
+    /** @return array<array-key,mixed>|string|ElementRoute|null */
+    protected function route(): array|string|ElementRoute|null
     {
         return null;
     }
