@@ -3047,6 +3047,7 @@ JS;
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn (FieldInterface $field) => $field->handle);
         $fieldsService = app(Fields::class);
+        $carriedOverFields = [];
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {
@@ -3062,8 +3063,16 @@ JS;
                     )
                 ) {
                     $this->setFieldValue($newField->handle, null);
+                } elseif ($newField->layoutElement->uid !== $oldField->layoutElement->uid) {
+                    $carriedOverFields[] = $newField->handle;
                 }
             }
+        }
+
+        // Content is keyed by layout element UID, so carried-over values need to be saved under their new UIDs
+        // (https://github.com/craftcms/cms/issues/19737)
+        if (! empty($carriedOverFields)) {
+            $this->setDirtyFields($carriedOverFields);
         }
     }
 

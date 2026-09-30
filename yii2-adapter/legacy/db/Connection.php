@@ -441,9 +441,9 @@ class Connection extends DatabaseConnection
      */
     public function columnExists(string $table, string $column, ?bool $refresh = null): bool
     {
-        // Default to refreshing the tables if Craft isn't installed yet
+        // Default to refreshing the table if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Cms::isInstalled())) {
-            $this->getSchema()->refresh();
+            $this->getSchema()->refreshTableSchema($table);
         }
 
         return isset($this->getTableSchema($table)->columns[$column]);
