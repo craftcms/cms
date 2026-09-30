@@ -9,9 +9,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -32,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -40,6 +43,90 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::find()->one());
     $this->cpTrigger = Cms::config()->cpTrigger;
+});
+
+it('includes table-row capabilities for page bulk actions', function () {
+    $section = Section::factory()->create();
+    $entry = EntryModel::factory()->forSection($section)->title('Capability boundary')->createElement();
+    $url = route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => 'table',
+    ]);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.capabilities.deletable', true)
+        );
+
+    Gate::before(fn ($user, string $ability): ?bool => $ability === 'delete' ? false : null);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.capabilities.deletable', false)
+        );
+});
+
+it('renders page inline inputs only for explicitly editable table rows the user can save', function () {
+    $fixture = EntryModel::factory()
+        ->withField('inlineText', PlainText::class, value: 'Before save')
+        ->createElementWithFields();
+    $entry = $fixture->element;
+    $attribute = 'field:'.$fixture->field('inlineText')->uid;
+    $url = route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => 'table',
+        'columns' => [$attribute],
+    ]);
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.inlineEditable', true)
+            ->missing('data.0.inlineInputHtml')
+        );
+
+    get("{$url}&editable=1")->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where("data.0.inlineInputHtml.{$attribute}", function (string $html) use ($entry): bool {
+                $payload = json_decode(
+                    new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'),
+                    true,
+                    flags: JSON_THROW_ON_ERROR,
+                );
+
+                return $payload['scope'] === ['inline', "element-{$entry->id}", 'fields']
+                    && $payload['nodes'][0]['control']['path'] === [
+                        'inline',
+                        "element-{$entry->id}",
+                        'fields',
+                        'inlineText',
+                    ];
+            })
+        );
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => 'cards',
+        'editable' => true,
+    ]))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->missing('data.0.inlineEditable')
+            ->missing('data.0.inlineInputHtml')
+        );
+
+    Gate::before(fn ($user, string $ability): ?bool => $ability === 'save' ? false : null);
+
+    get("{$url}&editable=1")->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->missing('data.0.inlineEditable')
+            ->missing('data.0.inlineInputHtml')
+        );
 });
 
 it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
@@ -110,6 +197,18 @@ it('returns an Inertia response with elements and pagination', function () {
             ->has('pagination')
             ->has('sort')
             ->has('sources')
+        );
+});
+
+it('includes the active source exporters in the page payload', function () {
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('exporters', fn ($exporters) => collect($exporters)->contains(
+                fn (array $exporter): bool => $exporter['type'] === Raw::class
+                    && $exporter['name'] === 'Raw data (fastest)'
+                    && $exporter['formattable'] === true,
+            ))
         );
 });
 

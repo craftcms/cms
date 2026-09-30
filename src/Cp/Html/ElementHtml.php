@@ -966,6 +966,7 @@ readonly class ElementHtml
     {
         $user = currentUser();
         $editable = $user && $user->can('view', $element);
+        $capabilities = $this->elementCapabilities($element, $config['context']);
 
         return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),
@@ -995,10 +996,10 @@ readonly class ElementHtml
                     'trashed' => $element->trashed,
                     'editable' => $editable,
                     'savable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('save', $element),
-                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicate', $element),
+                    'duplicatable' => $capabilities['duplicatable'],
                     'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicateAsDraft', $element),
-                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('copy', $element),
-                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('delete', $element),
+                    'copyable' => $capabilities['copyable'],
+                    'deletable' => $capabilities['deletable'],
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
@@ -1008,6 +1009,20 @@ readonly class ElementHtml
                 ]),
             ],
         );
+    }
+
+    /** @return array{copyable: bool, duplicatable: bool, deletable: bool} */
+    public function elementCapabilities(ElementInterface $element, string $context): array
+    {
+        $user = currentUser();
+        $editable = $user && $user->can('view', $element);
+        $administrative = $this->contextIsAdministrative($context);
+
+        return [
+            'copyable' => $editable && $administrative && Gate::check('copy', $element),
+            'duplicatable' => $editable && $administrative && Gate::check('duplicate', $element),
+            'deletable' => $editable && $administrative && Gate::check('delete', $element),
+        ];
     }
 
     public function elementOwnerIsCanonical(ElementInterface $element): bool

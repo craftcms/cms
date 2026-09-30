@@ -32,7 +32,9 @@ import {useElementIndexSelection} from '@/modules/elements/index/composables/use
 import type {
   ElementIndexModel,
   ElementIndexView,
+  ExportElementIndex,
 } from '@/modules/elements/index/types/model';
+import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexOptions {
@@ -42,6 +44,11 @@ interface UseElementIndexOptions {
   pinnedColumn?: {key: string; label: string};
   busy?: MaybeRefOrGetter<boolean>;
   filterParams?: () => IndexQueryParams;
+  inlineEditing?: {
+    load(): Promise<void>;
+    save(body: URLSearchParams): Promise<InlineEditingSaveResult | false>;
+  };
+  exportElements?: ExportElementIndex;
   enableRowSelection?: (row: ElementIndexRow) => boolean;
   structure?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
@@ -119,6 +126,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
         : (visibleViewModes.value[0]?.mode ?? 'table'),
     set: (value) => {
       savedMode.value = value;
+    },
+  });
+  const inlineEditingActive = computed({
+    get: () => viewState.value.inlineEditing,
+    set: (value: boolean) => {
+      viewState.value.inlineEditing = value;
     },
   });
   const structureView = useElementIndexStructure(
@@ -249,6 +262,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     if (row) selection.selectRow(row, {checked: true});
   }
 
+  const processing = computed(() => loading.value);
   const view: ElementIndexView = {
     elementIndex,
     table,
@@ -257,6 +271,15 @@ export function useElementIndex(options: UseElementIndexOptions) {
     search: filters.search,
     status: filters.status,
     conditions: filters.conditions,
+    ...(options.inlineEditing
+      ? {
+          inlineEditing: {
+            active: inlineEditingActive,
+            ...options.inlineEditing,
+          },
+        }
+      : {}),
+    ...(options.exportElements ? {exportElements: options.exportElements} : {}),
     submit: filters.submit,
     columnOptions,
     tableColumns,
@@ -265,6 +288,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     sortDirection,
     mode,
     loading,
+    processing,
     visibleViewModes,
     structureView,
     toggleStructure,

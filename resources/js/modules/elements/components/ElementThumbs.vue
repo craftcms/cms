@@ -36,6 +36,11 @@
       /** Offer drag-and-drop and the reorder button. */
       sortable?: boolean;
       readOnly?: boolean;
+      /**
+       * Disables selection, sorting and reordering while a request runs,
+       * keeping the controls in place so the layout doesn't shift.
+       */
+      interactionsDisabled?: boolean;
       loading?: boolean;
       itemBehavior?: ElementIndexItemBehavior<ThumbElement>;
     }>(),
@@ -65,7 +70,7 @@
       getItemIds: () => ids.value,
       onReorder: (startIndex, finishIndex) =>
         emit('reorder', startIndex, finishIndex),
-      enabled: () => props.sortable,
+      enabled: () => props.sortable && !props.interactionsDisabled,
     });
 
   function overDropState(
@@ -116,6 +121,7 @@
       event.preventDefault();
       return;
     }
+    if (props.interactionsDisabled) return;
     switch (event.key) {
       case ' ':
       case 'Enter': {
@@ -167,7 +173,7 @@
         label-sr-only
         .checked="selection.allSelected.value"
         .indeterminate="selection.someSelected.value"
-        .disabled="readOnly"
+        .disabled="readOnly || interactionsDisabled"
         @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
@@ -198,7 +204,11 @@
             label-sr-only
             class="thumb-check"
             .checked="selection.isSelected(element.id)"
-            .disabled="readOnly || !selection.canSelect(element.id)"
+            .disabled="
+              readOnly ||
+              interactionsDisabled ||
+              !selection.canSelect(element.id)
+            "
             @click="rememberShift($event)"
             @model-value-changed="
               selection.setChecked(element.id, checkboxValue($event), {
@@ -223,6 +233,7 @@
               class="thumb-handle drag-handle"
             >
               <craft-reorder-button
+                .disabled="interactionsDisabled"
                 :position="getRowPosition(thumbIdx)"
                 orientation="horizontal"
                 @craft-reorder="

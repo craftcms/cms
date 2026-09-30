@@ -57,8 +57,8 @@ it('exports only the selected ids when criteria include an id filter', function 
 });
 
 it('exports the full query with an explicit limit when no ids are selected', function () {
-    EntryModel::factory()->createElement(['title' => 'First']);
-    EntryModel::factory()->createElement(['title' => 'Second']);
+    EntryModel::factory()->createElement(['title' => 'Zulu']);
+    EntryModel::factory()->createElement(['title' => 'Alpha']);
 
     $response = ($this->export)([
         'type' => Raw::class,
@@ -67,11 +67,16 @@ it('exports the full query with an explicit limit when no ids are selected', fun
             'limit' => 1,
             'status' => null,
         ],
+        'baseCriteria' => ['orderBy' => 'id asc'],
+        'sort' => [['field' => 'id', 'direction' => 'desc']],
     ]);
 
     $response->assertOk();
 
-    expect(json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR))->toHaveCount(1);
+    $payload = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($payload)->toHaveCount(1)
+        ->and($payload[0]['title'])->toBe('Alpha');
 });
 
 it('returns download responses for each supported formattable format', function (string $format, string $contentType, string $exporterClass) {

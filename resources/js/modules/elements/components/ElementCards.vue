@@ -29,6 +29,7 @@
       selectAll?: boolean;
       singleColumn?: boolean;
       sortable?: boolean;
+      interactionsDisabled?: boolean;
       readOnly?: boolean;
       loading?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
@@ -98,7 +99,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value) {
+    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
       props.selection.handleClick(id, event);
     }
   }
@@ -142,7 +143,7 @@
         label-sr-only
         .checked="selection.allSelected.value"
         .indeterminate="selection.someSelected.value"
-        .disabled="readOnly"
+        .disabled="readOnly || interactionsDisabled"
         @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
@@ -155,6 +156,7 @@
       :selection="selection"
       :selectable="selectable"
       :sortable="sortable"
+      :interactions-disabled="interactionsDisabled"
       :read-only="readOnly"
       :single-column="singleColumn"
       :list-class="{'card-grid': true, 'card-grid--single': singleColumn}"

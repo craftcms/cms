@@ -78,7 +78,7 @@
 </script>
 
 <template>
-  <form @submit.prevent="emit('submit')" class="w-full">
+  <form class="w-full" @submit.prevent="emit('submit')">
     <div class="element-toolbar">
       <div
         v-if="showSiteMenu || statusOptions?.length"
@@ -90,6 +90,7 @@
             :options="siteOptions"
             :label="t('Site')"
             label-sr-only
+            .disabled="processing"
             @model-value-changed="
               (event: CustomEvent) => {
                 if (event.detail.isTriggeredByUser) {
@@ -109,6 +110,7 @@
           :options="statusOptions"
           :label="t('Status')"
           label-sr-only
+          .disabled="processing"
           @model-value-changed="
             (event: CustomEvent) => {
               if (event.detail.isTriggeredByUser) {
@@ -129,6 +131,7 @@
           :label="t('Search term')"
           v-model="search"
           label-sr-only
+          :disabled="processing"
         >
           <div slot="suffix" class="flex">
             <craft-button
@@ -137,6 +140,7 @@
               size="small"
               variant="plain"
               v-if="search"
+              .disabled="processing"
               @click="search = ''"
             >
               <craft-icon
@@ -149,6 +153,7 @@
               icon
               size="small"
               variant="plain"
+              .disabled="processing"
               @click="filterActive = true"
               :class="{'is-active': !!conditions}"
             >
@@ -185,6 +190,7 @@
                 :icon="viewMode.icon"
                 :aria-label="viewMode.title"
                 :value="viewMode.mode"
+                .disabled="processing"
               ></craft-button>
             </template>
           </craft-button-group>
@@ -193,6 +199,7 @@
             :options="columnOptions"
             :sort-options="visibleSortOptions"
             :sort-direction-locked="sortDirectionLocked"
+            :disabled="processing"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
@@ -214,10 +221,10 @@
 <style scoped lang="postcss">
   .element-toolbar {
     display: grid;
-    gap: var(--c-spacing-md) 0;
+    gap: var(--c-spacing-md);
     justify-content: space-between;
-    grid-template-columns: repeat(3, auto);
-    grid-template-areas: 'status state state' 'filter filter filter' 'actions actions actions';
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'status' 'filter' 'state' 'actions';
 
     @container cp-content-view (width >= 480px) {
       gap: var(--c-spacing-md);
@@ -246,6 +253,11 @@
 
   .element-toolbar__state {
     grid-area: state;
+    min-width: 0;
+
+    @container cp-content-view (width < 480px) {
+      justify-self: start;
+    }
   }
 
   .element-toolbar__actions {
