@@ -275,6 +275,7 @@
 - Fixed an error that could occur when saving elements, if their field layouts still referenced legacy component classes. ([#19719](https://github.com/craftcms/cms/pull/19719))
 - Fixed an error that could occur when rendering field settings.
 - Fixed a validation error that occurred when saving an entry type with a color. ([#19753](https://github.com/craftcms/cms/issues/19753))
+- Fixed a validation error that occurred when saving a Color field with no color palette, even if “Allow custom colors” was enabled.
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
