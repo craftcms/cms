@@ -295,9 +295,11 @@ readonly class ElementAttributeRenderer
         }
 
         if ($sourceElement->getIsHomepage()) {
-            $value = Html::tag('span', Icons::svg('home', altText: t('Homepage')), [
+            // The label is text rather than the icon's alt text, so the link keeps its name even without the icon.
+            $value = Html::tag('span', Icons::svg('home'), [
                 'class' => ['cp-icon', 'small', 'inline-flex'],
-            ]);
+            ]).
+                Html::tag('span', t('Homepage'), ['class' => 'sr-only']);
         } else {
             $find = ['/'];
             $replace = ['/<wbr>'];

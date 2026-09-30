@@ -181,8 +181,8 @@ it('renders the homepage uri as a labelled home icon', function () {
     $entry->uri = Element::HOMEPAGE_URI;
 
     expect($this->renderer->render($entry, 'uri'))
-        ->toContain('role="img"')
-        ->toContain('aria-label="Homepage"')
+        ->toContain('<span class="sr-only">Homepage</span>')
+        ->not->toContain('aria-label="Homepage"')
         ->toContain('class="go"')
         ->toContain('href="https://localhost"');
 });
