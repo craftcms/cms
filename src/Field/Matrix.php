@@ -43,7 +43,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElementCards;
+use CraftCms\Cms\Form\Controls\NestedEntries;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -554,7 +554,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function formControl(FieldContext $context): Control
     {
         if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
-            return $this->nestedElementCardsControl($context);
+            return $this->nestedEntriesControl($context);
         }
 
         $entryTypes = collect($this->getEntryTypes())
@@ -1482,14 +1482,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** The Cards and Cards Grid view modes manage their entries outside the owner form. */
-    private function nestedElementCardsControl(FieldContext $context): NestedElementCards
+    private function nestedEntriesControl(FieldContext $context): NestedEntries
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
             && $context->form->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
         $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
-        $control = NestedElementCards::make($context->path)
+        $control = NestedEntries::make($context->path)
             ->viewMode($this->viewMode)
             ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => Entry::pluralDisplayName(),

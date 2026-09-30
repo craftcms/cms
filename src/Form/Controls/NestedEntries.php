@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  * A Matrix manager whose elements are managed outside the owner form.
  * Cards are presentation data, never a submitted field value.
  */
-class NestedElementCards extends Control
+class NestedEntries extends Control
 {
     private string $viewMode = 'cards';
 
@@ -32,7 +32,7 @@ class NestedElementCards extends Control
 
     public function component(): string
     {
-        return 'craft:nested-element-cards';
+        return 'craft:nested-entries';
     }
 
     public function omitNullValue(): bool

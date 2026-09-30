@@ -9,7 +9,7 @@ import {
 } from '@/modules/elements/nested-owner';
 import type {FormControlPayload} from '../types';
 import type {NestedEntriesProps, NestedEntry} from './nested-entries';
-import NestedElementCardsControl from './NestedElementCardsControl.vue';
+import NestedEntriesControl from './NestedEntriesControl.vue';
 
 const request = vi.hoisted(() => ({post: vi.fn()}));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
@@ -80,7 +80,7 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
   },
 }));
 
-describe('NestedElementCardsControl', () => {
+describe('NestedEntriesControl', () => {
   let root: HTMLElement;
   let app: ReturnType<typeof createApp>;
 
@@ -182,8 +182,8 @@ describe('NestedElementCardsControl', () => {
     root = document.createElement('div');
     document.body.append(root);
     const control = reactive<FormControlPayload<NestedEntriesProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
-      component: 'craft:nested-element-cards',
+      type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
+      component: 'craft:nested-entries',
       mode: 'editable',
       deltaGroup: ['fields', 'cards'],
       path: ['fields', 'cards'],
@@ -226,7 +226,7 @@ describe('NestedElementCardsControl', () => {
         provide(NestedOwnerEditorKey, {prepare, refresh});
 
         return () =>
-          h(NestedElementCardsControl, {
+          h(NestedEntriesControl, {
             editable: options.editable ?? true,
             value: null,
             control,
