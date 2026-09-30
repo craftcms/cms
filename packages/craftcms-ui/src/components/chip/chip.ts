@@ -187,6 +187,40 @@ export default class CraftChip extends LitElement {
     />`;
   }
 
+  /**
+   * Which part of the chip comes first, so a `plain` chip can drop the padding
+   * before it and sit flush with the surrounding content.
+   */
+  private get leadingPart():
+    | 'select'
+    | 'prefix'
+    | 'thumbnail'
+    | 'icon'
+    | 'status'
+    | 'body' {
+    if (this.selectable) {
+      return 'select';
+    }
+
+    if (hasSlotted(this, 'prefix')) {
+      return 'prefix';
+    }
+
+    if (this.showThumb) {
+      return 'thumbnail';
+    }
+
+    if (this.icon) {
+      return 'icon';
+    }
+
+    if (this.showStatus || hasSlotted(this, 'status')) {
+      return 'status';
+    }
+
+    return 'body';
+  }
+
   protected renderPrefix() {
     const showStatus = this.showStatus || hasSlotted(this, 'status');
 
@@ -234,6 +268,7 @@ export default class CraftChip extends LitElement {
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,
           'cp-chip--show-status': this.showStatus,
+          [`cp-chip--leads-with-${this.leadingPart}`]: true,
         })}"
       >
         ${this.selectable ? this.renderSelect() : nothing}

@@ -81,3 +81,51 @@ it('centers a thumbnail that’s smaller than the chip’s thumbnail size', asyn
     inner.left - (outer.left + parseFloat(styles.paddingLeft))
   ).toBeCloseTo(outer.right - parseFloat(styles.paddingRight) - inner.right);
 });
+
+it('drops the padding before whatever comes first in a plain chip', async () => {
+  const cases = [
+    {
+      markup: `<div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>`,
+      attrs: 'show-thumb',
+      part: '.cp-chip__thumbnail',
+    },
+    {
+      markup:
+        '<span slot="status" style="display: block; width: 10px; height: 10px"></span>',
+      attrs: 'show-status',
+      part: '.cp-chip__status',
+    },
+    {markup: '', attrs: '', part: '.cp-chip__body'},
+  ];
+
+  for (const {markup, attrs, part} of cases) {
+    document.body.innerHTML = `
+      <craft-chip ${attrs} appearance="plain">${markup}Label</craft-chip>
+      <craft-chip ${attrs}>${markup}Label</craft-chip>`;
+    const [plain, outlined] = [...document.querySelectorAll('craft-chip')];
+    await plain!.updateComplete;
+    await outlined!.updateComplete;
+
+    const padding = (chip: Element, side: 'Start' | 'End') =>
+      parseFloat(
+        getComputedStyle(chip.shadowRoot!.querySelector(part)!)[
+          `paddingInline${side}`
+        ]
+      );
+
+    expect(padding(plain!, 'Start'), part).toBe(0);
+    expect(padding(outlined!, 'Start'), part).toBeGreaterThan(0);
+  }
+
+  document.body.innerHTML =
+    '<craft-chip show-status appearance="plain"><span slot="status"></span>Label</craft-chip>';
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  expect(
+    parseFloat(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip__body')!)
+        .paddingInlineStart
+    )
+  ).toBeGreaterThan(0);
+});

@@ -178,4 +178,11 @@ export default css`
     padding-inline-start: var(--_chip-spacing);
     padding-block: calc(var(--_chip-spacing) / 2);
   }
+
+  .cp-chip--plain.cp-chip--leads-with-thumbnail .cp-chip__thumbnail,
+  .cp-chip--plain.cp-chip--leads-with-icon .cp-chip__icon,
+  .cp-chip--plain.cp-chip--leads-with-status .cp-chip__status,
+  .cp-chip--plain.cp-chip--leads-with-body .cp-chip__body {
+    padding-inline-start: 0;
+  }
 `;
