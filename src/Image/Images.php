@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\Arr;
@@ -37,8 +38,14 @@ use function CraftCms\Cms\maxPowerCaptain;
 #[Singleton]
 class Images
 {
-    /** The longest side, in pixels, images are scaled down to before their dominant color is sampled. */
-    private const int DOMINANT_COLOR_SAMPLE_SIZE = 100;
+    /** The longest side, in pixels, images are scaled down to before their colors are sampled. */
+    private const int COLOR_SAMPLE_SIZE = 100;
+
+    /** How many regions the color grid divides an image into along its longer side. */
+    private const int COLOR_GRID_LONG_SIDE = 4;
+
+    /** How many regions the color grid divides an image into along its shorter side. */
+    private const int COLOR_GRID_SHORT_SIDE = 3;
 
     /** How many dominant colors are considered when passing over near-black and near-white ones. */
     private const int DOMINANT_COLOR_CANDIDATES = 5;
@@ -284,8 +291,8 @@ class Images
     }
 
     /**
-     * Returns the image's dominant color as a hex string (e.g. `#3a6ea5`), or
-     * `false` if it can't be determined.
+     * Samples an image’s colors: its dominant color, and a grid of the average
+     * colors of its regions, which is enough to paint a blurred placeholder of it.
      *
      * The image is scaled down first, since the colors of a thumbnail are
      * representative and every pixel of one can be sampled quickly. Its
@@ -293,38 +300,56 @@ class Images
      * near-white ones are passed over in favor of the most dominant other
      * color, if there is one — a photo on a white backdrop is about what's in
      * front of it.
+     *
+     * The grid is 4×3 regions for landscape and square images and 3×4 for
+     * portrait ones. Both are empty if the image can’t be read.
      */
-    public function dominantColor(string $filePath): string|false
+    public function colors(string $filePath): ImageColors
     {
         if (File::isSvg($filePath) && ! $this->getCanRasterizeSvg()) {
-            return false;
+            return new ImageColors;
         }
 
         try {
-            $image = $this->loadImage($filePath, rasterize: true, svgSize: self::DOMINANT_COLOR_SAMPLE_SIZE);
+            $image = $this->loadImage($filePath, rasterize: true, svgSize: self::COLOR_SAMPLE_SIZE);
             $intervention = $image instanceof Raster ? $image->getInterventionImage() : null;
 
             if (! $intervention) {
-                return false;
+                return new ImageColors;
             }
 
-            $palette = new ColorExtractor(
-                $intervention->scaleDown(self::DOMINANT_COLOR_SAMPLE_SIZE, self::DOMINANT_COLOR_SAMPLE_SIZE),
-            )->dominant(self::DOMINANT_COLOR_CANDIDATES);
+            $intervention->scaleDown(self::COLOR_SAMPLE_SIZE, self::COLOR_SAMPLE_SIZE);
+            $candidates = iterator_to_array(new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES), false);
+
+            [$columns, $rows] = $intervention->width() >= $intervention->height()
+                ? [self::COLOR_GRID_LONG_SIDE, self::COLOR_GRID_SHORT_SIDE]
+                : [self::COLOR_GRID_SHORT_SIDE, self::COLOR_GRID_LONG_SIDE];
+
+            // Resampling down to one pixel per region averages each region's colors.
+            $intervention->resize($columns, $rows);
+            $grid = [];
+
+            for ($y = 0; $y < $rows; $y++) {
+                for ($x = 0; $x < $columns; $x++) {
+                    $grid[$y][$x] = $this->hex($intervention->colorAt($x, $y));
+                }
+            }
         } catch (Throwable $e) {
-            Log::info("Couldn’t determine the dominant color of $filePath: {$e->getMessage()}");
+            Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
 
-            return false;
+            return new ImageColors;
         }
 
-        $colors = iterator_to_array($palette, false);
+        $dominant = Arr::first($candidates, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $candidates[0] ?? null;
 
-        if ($colors === []) {
-            return false;
-        }
+        return new ImageColors(
+            dominant: $dominant ? $this->hex($dominant) : null,
+            grid: $grid,
+        );
+    }
 
-        $color = Arr::first($colors, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $colors[0];
-
+    private function hex(ColorInterface $color): string
+    {
         return $color->toColorspace(RgbColorspace::class)->toHex(prefix: true);
     }
 

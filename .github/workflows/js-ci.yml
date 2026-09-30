@@ -143,3 +143,6 @@ jobs:
 
           - name: Run @craftcms/ui tests
             run: vp run test:ui
+
+          - name: Run element index tests
+            run: vp test run resources/js/modules/elements

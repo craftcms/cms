@@ -22,7 +22,11 @@ const DEFAULTS = {
   // SAFETY: The starting height is nullable until the preview payload supplies it.
   startingHeight: null as number | null,
   resizable: true,
+  shadeClass: 'modal-shade fixed inset-0 z-overlay bg-(--c-surface-shade)',
 };
+
+/** Centers the "No preview available" message in an otherwise empty preview. */
+const EMPTY_CLASSES = 'zilch flex items-center justify-center py-[100px]';
 
 /**
  * PreviewFileModal — a port of `Craft.PreviewFileModal` onto the modern
@@ -77,9 +81,10 @@ export class PreviewFileModal extends Modal {
     }
     PreviewFileModal.openInstance = this;
 
-    this.#$container = $('<div class="modal previewmodal loading"/>').appendTo(
-      $(bod)
-    );
+    this.#$container = $('<div/>', {
+      class:
+        'modal previewmodal loading fixed z-overlay box-border overflow-hidden rounded-(--c-radius-lg) bg-overlay shadow-lg',
+    }).appendTo($(bod));
     this.setContainer(this.#$container[0]);
 
     Craft.cp.announce(Craft.t('app', 'Loading'));
@@ -180,7 +185,7 @@ export class PreviewFileModal extends Modal {
   _addModalName(): void {
     const headingId = 'preview-heading';
     $('<h1/>', {
-      class: 'visually-hidden',
+      class: 'sr-only',
       id: headingId,
       text: Craft.t('app', 'Preview file'),
     }).prependTo(this.#$container);
@@ -250,14 +255,9 @@ export class PreviewFileModal extends Modal {
 
     this._resizeContainer(containerWidth, containerHeight);
 
-    this.$spinner = $('<div class="spinner centeralign"></div>').appendTo(
-      this.#$container
-    );
-    const top =
-      this.#$container.height() / 2 - this.$spinner.height() / 2 + 'px';
-    const left =
-      this.#$container.width() / 2 - this.$spinner.width() / 2 + 'px';
-    this.$spinner.css({left, top, position: 'absolute'});
+    this.$spinner = $('<craft-spinner/>', {
+      class: 'absolute inset-0 m-auto size-fit',
+    }).appendTo(this.#$container);
 
     this.requestId++;
     const requestId = this.requestId;
@@ -276,7 +276,7 @@ export class PreviewFileModal extends Modal {
         if (response.data.requestId !== this.requestId) return;
 
         if (!response.data.previewHtml) {
-          this.#$container.addClass('zilch');
+          this.#$container.addClass(EMPTY_CLASSES);
           this.#$container.append(
             $('<p/>', {text: Craft.t('app', 'No preview available.')})
           );
@@ -284,7 +284,7 @@ export class PreviewFileModal extends Modal {
           return;
         }
 
-        this.#$container.removeClass('zilch');
+        this.#$container.removeClass(EMPTY_CLASSES);
         this.#$container.attr('data-asset-id', this.assetId);
         this.#$container.append(response.data.previewHtml);
         this._addBumperButtons();

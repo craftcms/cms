@@ -25,9 +25,11 @@ use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
 
@@ -60,6 +62,41 @@ it('selects fit for index tiles and crop for inline cards', function (string $vi
 })->with([
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
     'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+]);
+
+it('includes public URLs and only authorized edit URLs in every index view mode', function (string $viewMode, bool $canView) {
+    $section = Section::factory()->create();
+    $section->siteSettings()->update([
+        'hasUrls' => true,
+        'uriFormat' => 'news/{slug}',
+    ]);
+    SectionsFacade::refreshSections();
+    $entry = EntryModel::factory()->forSection($section)->createElement([
+        'title' => 'Public entry',
+        'slug' => 'public-entry',
+    ]);
+
+    if (! $canView) {
+        Gate::before(fn (CraftUser $user, string $ability, array $arguments): ?bool => $ability === 'view' && ($arguments[0]->id ?? null) === $entry->id ? false : null);
+    }
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'viewMode' => $viewMode,
+        'sort' => [['field' => 'title', 'direction' => 'asc']],
+    ]))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.cpEditUrl', $canView ? $entry->getCpEditUrl() : null)
+            ->where('data.0.viewUrl', 'https://localhost/'.$entry->uri)
+        );
+})->with([
+    'authorized table' => ['table', true],
+    'authorized cards' => ['cards', true],
+    'authorized thumbnails' => ['thumbs', true],
+    'unauthorized table' => ['table', false],
+    'unauthorized cards' => ['cards', false],
+    'unauthorized thumbnails' => ['thumbs', false],
 ]);
 
 it('returns an Inertia response with elements and pagination', function () {

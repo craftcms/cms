@@ -9,6 +9,7 @@
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import type {
     BulkAction,
+    BulkActionEventDetail,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import PerformElementActionController from '@actions/Elements/PerformElementActionController';
@@ -46,7 +47,11 @@
     }
   );
 
-  const emit = defineEmits<{'action-performed': []}>();
+  const emit = defineEmits<{
+    'action-performed': [];
+    edit: [detail: BulkActionEventDetail];
+    view: [detail: BulkActionEventDetail];
+  }>();
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
@@ -203,6 +208,8 @@
         :action-context="actionContext"
         :ids-field="idsField"
         :element-type="elementType"
+        @edit="emit('edit', $event)"
+        @view="emit('view', $event)"
         @performed="onActionPerformed"
         @clear="clearSelection"
       />
@@ -242,7 +249,6 @@
                 label-sr-only
                 center
                 size="small"
-                style="width: 4ch"
               />
               {{ t('of') }}
               {{ table.getPageCount() }}

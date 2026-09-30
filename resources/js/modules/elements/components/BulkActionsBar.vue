@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import {computed, onMounted, onUnmounted, ref} from 'vue';
+  import {computed, ref, useTemplateRef} from 'vue';
+  import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
   import type {
     BulkAction,
+    BulkActionEventDetail,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import type {
@@ -41,9 +43,12 @@
     (e: 'performed'): void;
     /** Emitted to clear the current selection. */
     (e: 'clear'): void;
+    /** Client-side action for the selected element. */
+    (e: 'edit' | 'view', detail: BulkActionEventDetail): void;
   }>();
 
   const selectedCount = computed(() => props.selectedIds.length);
+  const root = useTemplateRef<HTMLElement>('root');
 
   /** Only meaningful for a real element index, where a selection can mix elements and asset-folder rows. */
   const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
@@ -185,26 +190,67 @@
    * so no refresh/`performed` is emitted.
    */
   function onCopyElements(event: Event) {
-    if (!(event instanceof CustomEvent)) {
+    if (!owns(event)) {
       return;
     }
     const detail = event.detail ?? {};
-    const ids: Array<string | number> = detail.elementIds ?? props.selectedIds;
+    const ids: ReadonlyArray<string | number> =
+      detail.elementIds ?? props.selectedIds;
 
     Craft.cp?.copyElements?.(
       ids.map((id) => ({
-        type: detail.elementType ?? props.elementType,
+        type: detail.elementType ?? props.elementType ?? '',
         id,
         siteId: Craft.siteId ?? null,
       }))
     );
   }
 
-  onMounted(() =>
-    window.addEventListener('craft:copy-elements', onCopyElements)
+  function owns(event: Event): event is CustomEvent<{
+    trigger: HTMLElement;
+    elementIds?: ReadonlyArray<string | number>;
+    elementType?: string;
+  }> {
+    if (!(event instanceof CustomEvent)) {
+      return false;
+    }
+
+    const trigger = event.detail?.trigger;
+
+    return (
+      trigger instanceof HTMLElement && Boolean(root.value?.contains(trigger))
+    );
+  }
+
+  function onElementEvent(event: Event, type: 'edit' | 'view'): void {
+    if (!owns(event)) {
+      return;
+    }
+
+    const detail = {
+      elementIds: event.detail?.elementIds ?? props.selectedIds,
+      elementType: event.detail?.elementType ?? props.elementType ?? '',
+      trigger: eventTrigger(event),
+    };
+
+    emit(type, detail);
+  }
+
+  function eventTrigger(
+    event: CustomEvent<{trigger: HTMLElement}>
+  ): HTMLElement {
+    const trigger = event.detail.trigger;
+    const menu = trigger.closest('craft-action-menu');
+
+    return menu?.querySelector<HTMLElement>('[slot="invoker"]') ?? trigger;
+  }
+
+  useEventListener(window, 'craft:copy-elements', onCopyElements);
+  useEventListener(window, 'craft:edit-element', (event) =>
+    onElementEvent(event, 'edit')
   );
-  onUnmounted(() =>
-    window.removeEventListener('craft:copy-elements', onCopyElements)
+  useEventListener(window, 'craft:view-element', (event) =>
+    onElementEvent(event, 'view')
   );
 
   /**
@@ -241,6 +287,7 @@
 
 <template>
   <div
+    ref="root"
     class="bulk-actions-bar"
     v-if="selectedCount > 0"
     @craft-state-change="onChangeState"

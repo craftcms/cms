@@ -5,18 +5,7 @@
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import ImageEditorDialog from '@/modules/image-editor/components/ImageEditorDialog.vue';
   import type {SaveResult} from '@/modules/image-editor/useImageEditor';
-  import type {RelativeFocalPoint} from '@/modules/image-editor/types';
-
-  interface ImageEditorProps {
-    assetId: number;
-    filename: string;
-    focalPoint: RelativeFocalPoint | null;
-    imageWidth: number | null;
-    imageHeight: number | null;
-    imageEditorRatios: Record<string, string | number>;
-    allowDegreeFractions: boolean;
-    orientation: 'ltr' | 'rtl';
-  }
+  import type {ImageEditorSettings} from '@/modules/image-editor/open-image-editor-dialog';
 
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // Asset-specific keys (AssetEditViewModel) remain props, alongside the
@@ -27,7 +16,7 @@
     siteId: number | null;
     previewFragment: CraftCms.Cms.View.HtmlFragment | null;
     /** Null when the asset isn't an editable image. */
-    imageEditor: ImageEditorProps | null;
+    imageEditor: ImageEditorSettings | null;
     /** Whether `?editing` asked for the image editor to open on load. */
     editingImage: boolean;
   }>();

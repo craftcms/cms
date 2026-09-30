@@ -58,5 +58,11 @@ export interface BulkActionGroup {
 }
 
 export type BulkAction = BulkActionItem | BulkActionGroup | ActionItemDisplay;
+
+export interface BulkActionEventDetail {
+  elementIds: ReadonlyArray<string | number>;
+  elementType: string;
+  trigger: HTMLElement;
+}
 import type {ActionItemDisplay} from '@/common/types';
 import type {FormValues} from '@/modules/forms/types';
