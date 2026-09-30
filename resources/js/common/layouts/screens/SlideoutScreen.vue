@@ -17,6 +17,7 @@
     onMounted,
     provide,
     ref,
+    useId,
     useTemplateRef,
   } from 'vue';
   import {useElementSize, useEventListener} from '@vueuse/core';
@@ -101,6 +102,7 @@
   const editUrl = computed(
     () => props.value.editUrl || chrome.value.screen?.editUrl || null
   );
+  const editLinkId = `slideout-edit-link-${useId()}`;
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
@@ -393,21 +395,26 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
-            <craft-button
-              v-if="editUrl"
-              icon
-              size="small"
-              :variant="ButtonVariant.Plain"
-              :href="editUrl"
-              target="_blank"
-              rel="noopener"
-              class="slideout-screen__edit-link"
-            >
-              <craft-icon
-                name="arrow-up-right-from-square"
-                :label="t('Open in a new tab')"
-              ></craft-icon>
-            </craft-button>
+            <template v-if="editUrl">
+              <craft-button
+                :id="editLinkId"
+                icon
+                size="small"
+                :variant="ButtonVariant.Plain"
+                :href="editUrl"
+                target="_blank"
+                rel="noopener"
+                class="slideout-screen__edit-link"
+              >
+                <craft-icon
+                  name="arrow-up-right-from-square"
+                  :label="t('Open in a new tab')"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip :for="editLinkId">
+                {{ t('Open in a new tab') }}
+              </craft-tooltip>
+            </template>
 
             <craft-button
               icon
