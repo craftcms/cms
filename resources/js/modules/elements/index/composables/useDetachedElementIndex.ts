@@ -1,4 +1,5 @@
-import {shallowRef} from 'vue';
+import type {ColumnDef} from '@tanstack/vue-table';
+import {shallowRef, type ComputedRef, type MaybeRefOrGetter} from 'vue';
 import {
   useContentIndexData,
   type ContentIndexData,
@@ -10,17 +11,51 @@ import {
   type IndexQueryParams,
   type IndexQueryValue,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
+import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {ElementIndexContext} from '@/modules/elements/index/index-context';
+import type {InlineEditingSaveResult} from './useInlineEditing';
+import type {ExportElementIndex} from '../types/model';
 
-interface UseDetachedElementIndexOptions {
-  initial: ContentIndexData;
-  fetch: (query: IndexQueryParams) => Promise<ContentIndexData>;
+export interface UseDetachedElementIndexOptions<
+  Source extends ContentIndexData = ContentIndexData,
+> {
+  initial: Source;
+  initialQuery?: IndexQueryParams;
+  fetch: (query: IndexQueryParams) => Promise<Source>;
+  onLoaded?: (payload: Source, query: IndexQueryParams) => void | Promise<void>;
+  onError?: (cause: unknown) => void;
+  storageKey?: string;
+  busy?: MaybeRefOrGetter<boolean>;
+  readOnly?: MaybeRefOrGetter<boolean>;
+  filterContext?: (
+    payload: Source
+  ) => Pick<ElementIndexContext, 'fieldLayouts' | 'extraParams'>;
+  inlineEditing?: {
+    load(): Promise<void>;
+    save(body: URLSearchParams): Promise<InlineEditingSaveResult | false>;
+  };
+  exportElements?: ExportElementIndex;
+  rowReorder?: {
+    enabled: MaybeRefOrGetter<boolean>;
+    move(from: number, to: number): void | Promise<void>;
+  };
+  pinnedColumn?: {key: string; label: string} | null;
   enableRowSelection?: (row: ElementIndexRow) => boolean;
+  data?: (
+    rows: ElementIndexRow[],
+    mode: ViewMode['mode'],
+    elementIndex: ReturnType<typeof useContentIndexData>
+  ) => ElementIndexRow[];
+  columns?: (
+    columns: ComputedRef<Array<ColumnDef<ElementIndexRow>>>,
+    context: {elementIndex: ReturnType<typeof useContentIndexData>}
+  ) => ComputedRef<Array<ColumnDef<ElementIndexRow>>>;
 }
 
 /** Adds local payloads and request ordering to the shared index. */
-export function useDetachedElementIndex(
-  options: UseDetachedElementIndexOptions
-) {
+export function useDetachedElementIndex<
+  Source extends ContentIndexData = ContentIndexData,
+>(options: UseDetachedElementIndexOptions<Source>) {
   const payload = shallowRef(options.initial);
   const loading = shallowRef(false);
 
@@ -36,10 +71,19 @@ export function useDetachedElementIndex(
 
       if (isCurrent()) {
         payload.value = response;
+        loading.value = false;
+        await options.onLoaded?.(response, query);
         return true;
       }
 
       return false;
+    } catch (cause) {
+      if (isCurrent() && options.onError) {
+        options.onError(cause);
+        return false;
+      }
+
+      throw cause;
     } finally {
       if (isCurrent()) {
         loading.value = false;
@@ -53,13 +97,25 @@ export function useDetachedElementIndex(
     condition: (options.initial.currentCondition ?? undefined) as
       | IndexQueryValue
       | undefined,
+    ...options.initialQuery,
   });
   const elementIndex = useContentIndexData(undefined, payload);
   const index = useElementIndex({
     elementIndex,
     visitor,
     loading,
-    busy: loading,
+    busy: options.busy ?? loading,
+    readOnly: options.readOnly,
+    storageKey: options.storageKey,
+    filterContext: options.filterContext
+      ? () => options.filterContext!(payload.value)
+      : undefined,
+    inlineEditing: options.inlineEditing,
+    exportElements: options.exportElements,
+    rowReorder: options.rowReorder,
+    pinnedColumn: options.pinnedColumn,
+    data: options.data,
+    columns: options.columns,
     refresh: async () => {
       let applied = false;
       await visitor.visit(visitor.currentQuery(), {
@@ -72,5 +128,14 @@ export function useDetachedElementIndex(
     enableRowSelection: options.enableRowSelection,
   });
 
-  return index.model;
+  return {
+    ...index.model,
+    payload,
+    visitor,
+    query: visitor.query,
+    cancelPendingSearch: index.cancelPendingSearch,
+    load: (query: IndexQueryParams = visitor.currentQuery()) =>
+      visitor.visit(query),
+    restore: index.restore,
+  };
 }

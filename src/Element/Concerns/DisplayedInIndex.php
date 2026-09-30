@@ -268,7 +268,7 @@ trait DisplayedInIndex
         // See if there are any provisional changes we should show
         Drafts::loadProvisionalChanges($elements);
 
-        if (request()->boolean('prevalidate')) {
+        if ($viewState['prevalidate'] ?? request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
                     $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
