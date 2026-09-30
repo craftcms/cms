@@ -7,6 +7,7 @@
     NestedEntriesControlKey,
     type NestedEntriesControlContext,
   } from './nested-entries-context';
+  import NestedEntriesIndex from './NestedEntriesIndex.vue';
   import type {NestedEntriesProps} from './nested-entries';
 
   const props = defineProps<{
@@ -35,6 +36,11 @@
     <p v-if="control.props.unavailableMessage">
       {{ control.props.unavailableMessage }}
     </p>
+    <NestedEntriesIndex
+      v-else-if="control.props.viewMode === 'index'"
+      :control="control.props"
+      :editable="editable"
+    />
     <NestedEntriesCardsShell
       v-else
       :control="control.props"
