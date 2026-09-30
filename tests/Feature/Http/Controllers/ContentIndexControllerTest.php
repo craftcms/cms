@@ -148,7 +148,7 @@ it('selects fit for index tiles and crop for inline cards', function (string $vi
         );
 })->with([
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
-    'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+    'inline cards' => ['cards', 'cardThumbHtml', 'crop', 120],
 ]);
 
 it('includes public URLs and only authorized edit URLs in every index view mode', function (string $viewMode, bool $canView) {

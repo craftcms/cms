@@ -475,6 +475,38 @@ readonly class ElementHtml
             Html::endTag('craft-card');
     }
 
+    /**
+     * Builds the card parts consumed by the shared card renderer.
+     *
+     * @param  array<string, mixed>  $config
+     * @return array{
+     *     cardAttributes: array<string, mixed>,
+     *     cardHeaderHtml: string,
+     *     cardActionsHtml: string,
+     *     cardContentHtml: string,
+     *     cardFooterHtml: string,
+     *     cardThumbHtml: string,
+     *     thumbAlignment: 'start'|'end',
+     * }
+     */
+    public function elementCardData(ElementInterface $element, array $config = []): array
+    {
+        $config = $this->normalizeCardConfig($element, [
+            ...$config,
+            'withThumb' => false,
+        ]);
+
+        return [
+            'cardAttributes' => $this->elementCardAttributes($element, $config),
+            'cardHeaderHtml' => $this->elementCardLabelHtml($element, $config),
+            'cardActionsHtml' => $this->elementCardActionsHtml($element, $config),
+            'cardContentHtml' => $this->elementCardContentHtml($element, $config),
+            'cardFooterHtml' => $this->elementCardFooterHtml($element, $config),
+            'cardThumbHtml' => $this->elementCardThumbHtml($element),
+            'thumbAlignment' => $this->elementCardThumbAlignment($element),
+        ];
+    }
+
     private function cardTitlebarHtml(string $labelHtml, string $actionsHtml, ?string $checkboxCardId): string
     {
         return Html::beginTag('div', ['class' => 'card-titlebar']).

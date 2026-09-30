@@ -347,6 +347,30 @@ describe('ElementSelectControl', () => {
 
     expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
   });
+
+  it('keeps server card actions alongside the field actions', async () => {
+    const root = await mount({
+      props: {
+        viewMode: 'cards',
+        elements: [
+          {
+            id: 5,
+            label: 'Some entry',
+            canEdit: true,
+            cardHeaderHtml: 'Some entry',
+            cardActionsHtml:
+              '<button type="button" data-server-action>Server action</button>',
+          },
+        ],
+      },
+    });
+
+    expect(root.querySelector('[data-server-action]')?.textContent).toBe(
+      'Server action'
+    );
+    expect(root.querySelector('craft-card craft-button')).not.toBeNull();
+  });
+
   function addButton(root: HTMLElement): HTMLElement | null {
     return root.querySelector('[data-element-select-add]');
   }

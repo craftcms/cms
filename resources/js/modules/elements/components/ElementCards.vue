@@ -15,6 +15,7 @@
     label?: string;
     cardAttributes?: ServerAttributes;
     cardHeaderHtml?: string;
+    cardActionsHtml?: string;
     cardThumbHtml?: string;
     thumbAlignment?: string;
     cardContentHtml?: string;
@@ -181,6 +182,7 @@
 
       <template #actions="{index}">
         <slot name="actions" :element="data[index]" :index="index"></slot>
+        <DynamicHtmlRenderer :html="data[index]?.cardActionsHtml ?? ''" />
       </template>
 
       <template #default="{index}">

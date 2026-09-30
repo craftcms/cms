@@ -1265,10 +1265,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return [
                 'id' => $this->rowId($element),
                 ...$this->baseRowData($element, $elementHtml),
-                'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
-                'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
-                'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
-                'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
+                ...$elementHtml->elementCardData($element, $cardConfig),
             ];
         }, $elements);
     }
