@@ -5,7 +5,7 @@
   import '@craftcms/ui/components/field/field';
   import '@craftcms/ui/components/field-group/field-group';
   import {ref, watch} from 'vue';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName} from './runtime';
 
@@ -47,7 +47,7 @@
   }>();
   const fields = ref(props.control.props.fields);
   const refreshing = ref<AddressFieldName>();
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   let latestRequest = 0;
   const value = ref(props.value);
 
@@ -143,7 +143,7 @@
         emit('update:value', normalized, 'discrete');
       }
     } catch (error) {
-      flash('error', t('A server error occurred.'));
+      messages.error(t('A server error occurred.'));
       throw error;
     } finally {
       if (request === latestRequest) {

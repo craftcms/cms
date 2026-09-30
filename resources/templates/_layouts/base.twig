@@ -8,7 +8,6 @@
   orientation,
   (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
   (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
-  "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
   requestedSite ? "site--#{requestedSite.handle}",
   'cp-legacy-reset',
   'cp-legacy'
@@ -61,7 +60,7 @@
     {{ beginBody() }}
     {% include '_layouts/components/global-live-region' %}
     {% block body %}{% endblock %}
-    {% include '_layouts/components/notifications' %}
+    {% include '_layouts/components/messages' %}
     {% block foot %}{% endblock %}
     {{ cpVite(['resources/css/cp.css', 'resources/js/legacy.ts']) }}
 

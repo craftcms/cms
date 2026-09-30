@@ -2,8 +2,7 @@
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
-  import TransitionFade from '@/common/components/TransitionFade.vue';
+  import {useMessages} from '@/modules/messages/useMessages';
   import {useForm} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -22,7 +21,7 @@
     {jobs: () => [], activeJob: null}
   );
 
-  const {flash, messages} = useFlashMessages();
+  const messages = useMessages();
   const retryAllForm = useForm({});
   const releaseAllForm = useForm({});
 
@@ -38,10 +37,10 @@
       only: ['contentHtml'],
       preserveScroll: true,
       onSuccess: () => {
-        flash('success', t('Retrying all failed jobs.'));
+        messages.success(t('Retrying all failed jobs.'));
       },
       onError: () => {
-        flash('error', t('Failed to retry all jobs.'));
+        messages.error(t('Failed to retry all jobs.'));
       },
     });
   }
@@ -57,10 +56,10 @@
       only: ['contentHtml'],
       preserveScroll: true,
       onSuccess: () => {
-        flash('success', t('All jobs released.'));
+        messages.success(t('All jobs released.'));
       },
       onError: () => {
-        flash('error', t('Failed to release all jobs.'));
+        messages.error(t('Failed to release all jobs.'));
       },
     });
   }
@@ -81,27 +80,6 @@
     />
   </template>
   <template v-else-if="jobs.length">
-    <TransitionFade>
-      <template v-if="messages.error">
-        <craft-callout
-          icon="triangle-exlamation"
-          variant="danger"
-          appearance="plain"
-          >{{ messages.error }}</craft-callout
-        >
-      </template>
-    </TransitionFade>
-    <TransitionFade>
-      <template v-if="messages.success">
-        <craft-callout
-          icon="circle-check"
-          variant="success"
-          appearance="plain"
-          >{{ messages.success }}</craft-callout
-        >
-      </template>
-    </TransitionFade>
-
     <craft-button
       type="button"
       @click="retryAll"

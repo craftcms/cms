@@ -2,7 +2,7 @@ import {t} from '@craftcms/ui';
 import {HttpResponseError} from '@inertiajs/core';
 import {useHttp} from '@inertiajs/vue3';
 import {computed, shallowRef, type Ref} from 'vue';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
 
 type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
@@ -37,7 +37,7 @@ export function useWorkflowTransition(
   ) => Promise<void>;
 } {
   const error = shallowRef<string | null>(null);
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   const request = useHttp<
     WorkflowTransitionRequest,
     WorkflowTransitionResponse
@@ -54,7 +54,7 @@ export function useWorkflowTransition(
       const data = await request.post(url);
       updated(data.workflowReview, data.editorActions);
       if (data.message) {
-        flash('success', data.message);
+        messages.success(data.message);
       }
     } catch (exception) {
       error.value =

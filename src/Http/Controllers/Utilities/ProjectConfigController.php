@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\Request;
@@ -41,7 +42,9 @@ readonly class ProjectConfigController
         $projectConfig->rebuild();
 
         if ($request->inertia()) {
-            return back()->with('success', t('Project config rebuilt successfully.'));
+            Flash::success(t('Project config rebuilt successfully.'));
+
+            return back();
         }
 
         return $this->asSuccess(t('Project config rebuilt successfully.'));

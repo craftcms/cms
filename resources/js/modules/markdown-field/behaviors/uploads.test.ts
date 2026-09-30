@@ -2,15 +2,15 @@ import {afterEach, expect, it, vi} from 'vitest';
 import {FileUpload, UploadError} from '@/upload-client';
 import {fileUploadOptions} from './uploads';
 
-const {flash} = vi.hoisted(() => ({flash: vi.fn()}));
+const {showError} = vi.hoisted(() => ({showError: vi.fn()}));
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
-vi.mock('@/common/composables/useFlashMessages', () => ({
-  useFlashMessages: () => ({flash}),
+vi.mock('@/modules/messages/useMessages', () => ({
+  useMessages: () => ({error: showError}),
 }));
 
 afterEach(() => {
   vi.restoreAllMocks();
-  flash.mockReset();
+  showError.mockReset();
 });
 
 it.each([
@@ -38,5 +38,5 @@ it('reports an upload failure without inserting a link', async () => {
   await expect(
     fileUploadOptions(12, 2)!.onInsertFile!(new File(['contents'], 'file.txt'))
   ).rejects.toBe(error);
-  expect(flash).toHaveBeenCalledWith('error', 'The file is not allowed.');
+  expect(showError).toHaveBeenCalledWith('The file is not allowed.');
 });
