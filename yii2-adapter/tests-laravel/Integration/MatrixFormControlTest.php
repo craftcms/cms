@@ -80,3 +80,43 @@ it('renders legacy Matrix cards with the nested entries control in read-only for
         ->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:cards"))->toBeFalse()
         ->and(SessionAuth::checkAuthorization("reorderNestedElements::{$owner->id}::field:cards"))->toBeFalse();
 });
+
+it('renders the legacy Matrix index in read-only forms', function() {
+    $entryType = EntryTypeModel::factory()->create([
+        'name' => 'Indexed entry',
+        'handle' => 'indexedEntry',
+    ]);
+    $fieldModel = Field::factory()->create([
+        'name' => 'Entries',
+        'handle' => 'entries',
+        'type' => LegacyMatrix::class,
+        'settings' => [
+            'entryTypes' => [$entryType->id],
+            'viewMode' => LegacyMatrix::VIEW_MODE_INDEX,
+        ],
+    ]);
+    $ownerModel = EntryModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($fieldModel))
+        ->create();
+    /** @var Entry $owner */
+    $owner = Entry::find()->id($ownerModel->id)->one();
+    $owner->setFieldValue('entries', [
+        'new1' => [
+            'type' => $entryType->handle,
+            'title' => 'Nested indexed entry',
+        ],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    /** @var Entry $owner */
+    $owner = Entry::find()->id($ownerModel->id)->one();
+    /** @var LegacyMatrix $field */
+    $field = Fields::getFieldByHandle('entries');
+
+    $html = $field->getStaticHtml($owner->getFieldValue('entries'), $owner);
+    $crawler = new Crawler($html);
+
+    expect($crawler->filter('craft-nested-element-manager .element-index'))->toHaveCount(1)
+        ->and($html)->not->toContain('Nothing yet.')
+        ->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:entries"))->toBeFalse()
+        ->and(SessionAuth::checkAuthorization("reorderNestedElements::{$owner->id}::field:entries"))->toBeFalse();
+});
