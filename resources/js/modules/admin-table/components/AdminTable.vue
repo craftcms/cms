@@ -1,17 +1,16 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
   import type {Table} from '@tanstack/vue-table';
-  import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
-  import DataTable from '@/modules/elements/components/DataTable.vue';
+  import DataTable from '@/common/components/DataTable.vue';
+  import PaginationControls from '@/common/components/PaginationControls.vue';
+  import {usePage} from '@inertiajs/vue3';
+  import {computed} from 'vue';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
-  import type {BulkActionItem} from '@/modules/elements/types/actions';
 
   const props = withDefaults(
     defineProps<{
       table: Table<any>;
       title?: string;
       reorderable?: boolean;
-      selectable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
       layout?: 'auto' | 'fixed';
@@ -20,76 +19,99 @@
       to?: number;
       total?: number;
       enableAdjustPageSize?: boolean;
-      pageSizeOptions?: Array<number>;
-      actions?: Array<BulkActionItem> | null;
-      elementType?: string;
-      source?: string | null;
-      context?: string;
+      pageSizeOptions?: number[];
     }>(),
     {
       reorderable: false,
-      selectable: false,
       loading: false,
       layout: 'auto',
+      spacing: TableSpacing.Spacious,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
-      actions: () => [],
-      source: null,
-      context: 'index',
-      spacing: TableSpacing.Spacious,
     }
   );
-
+  const page = usePage<{readOnly: boolean}>();
+  const readOnly = computed(
+    () => props.readOnly ?? page.props.readOnly ?? false
+  );
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
-    'action-performed': [];
   }>();
-
-  const baseProps = computed(() => ({
-    table: props.table,
-    selectable: props.selectable,
-    readOnly: props.readOnly,
-    loading: props.loading,
-    from: props.from,
-    to: props.to,
-    total: props.total,
-    enableAdjustPageSize: props.enableAdjustPageSize,
-    pageSizeOptions: props.pageSizeOptions,
-    actions: props.actions,
-    elementType: props.elementType,
-    source: props.source,
-    context: props.context,
-  }));
-
-  const viewProps = computed(() => ({
-    table: props.table,
-    selectable: props.selectable,
-    readOnly: props.readOnly,
-    loading: props.loading,
-    reorderable: props.reorderable,
-    layout: props.layout,
-    spacing: props.spacing,
-    title: props.title,
-  }));
+  const showFooter = computed(
+    () =>
+      props.enableAdjustPageSize ||
+      (props.total ?? 0) > 0 ||
+      props.table.getPageCount() > 1
+  );
 </script>
 
 <template>
-  <BaseElementIndex
-    v-bind="baseProps"
-    @action-performed="emit('action-performed')"
-  >
-    <template #header v-if="$slots['table-header']">
-      <slot name="table-header"></slot>
-    </template>
-    <template #body>
+  <div class="admin-table">
+    <div v-if="$slots['table-header']" class="admin-table__header">
+      <slot name="table-header" />
+    </div>
+    <div class="admin-table__body">
       <DataTable
-        v-bind="viewProps"
-        @reorder="(s: number, f: number) => emit('reorder', s, f)"
+        :table="table"
+        :title="title"
+        :reorderable="reorderable"
+        :read-only="readOnly"
+        :loading="loading"
+        :layout="layout"
+        :spacing="spacing"
+        @reorder="(start, end) => emit('reorder', start, end)"
       >
-        <template #empty-row v-if="$slots['empty-row']">
-          <slot name="empty-row" />
-        </template>
+        <template #empty-row v-if="$slots['empty-row']"
+          ><slot name="empty-row"
+        /></template>
       </DataTable>
-    </template>
-  </BaseElementIndex>
+    </div>
+    <div class="admin-table__footer" v-if="showFooter">
+      <PaginationControls
+        :page-index="table.getState().pagination.pageIndex"
+        :page-size="table.getState().pagination.pageSize"
+        :page-count="table.getPageCount()"
+        :paginated="
+          Boolean(
+            table.options.manualPagination ||
+            table.options.getPaginationRowModel
+          )
+        "
+        :from="from"
+        :to="to"
+        :total="total"
+        :enable-adjust-page-size="enableAdjustPageSize"
+        :page-size-options="pageSizeOptions"
+        @page-change="table.setPageIndex"
+        @page-size-change="table.setPageSize"
+      />
+    </div>
+  </div>
 </template>
+
+<style scoped lang="scss">
+  .admin-table {
+    min-width: 0;
+  }
+  .admin-table__header,
+  .admin-table__body,
+  .admin-table__footer {
+    padding-inline: var(--cp-container-padding);
+  }
+  .admin-table__header {
+    margin-block-end: var(--c-spacing-md);
+  }
+  .admin-table__body {
+    overflow-x: auto;
+  }
+  .admin-table__footer {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    min-height: var(--cp-footer-height);
+    background-color: var(--c-surface-default);
+  }
+</style>

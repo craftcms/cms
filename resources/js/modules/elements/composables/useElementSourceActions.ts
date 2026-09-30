@@ -5,8 +5,7 @@ import {
   appendIndexQuery,
   type ElementIndexRoute,
   type IndexQueryParams,
-  type IndexVisitor,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {
   Source,
   SourceHeading,
@@ -25,13 +24,6 @@ export interface ElementSourceActionsOptions {
   sourceHref?: MaybeRefOrGetter<string | undefined>;
   activeSource?: MaybeRefOrGetter<string | null | undefined>;
   viewMode?: MaybeRefOrGetter<string | null | undefined>;
-  /**
-   * Supplied by indexes that aren't a page — the element selector modal.
-   *
-   * Without it, picking a source runs an Inertia visit, which in a modal
-   * navigates the page *behind* it.
-   */
-  indexVisitor?: MaybeRefOrGetter<IndexVisitor | undefined>;
 }
 
 /**
@@ -88,11 +80,6 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
   }
 
   function prefetchSource(key: string): void {
-    // Prefetching is an Inertia notion; a non-page index fetches its own way.
-    if (toValue(options.indexVisitor)) {
-      return;
-    }
-
     router.prefetch(sourceUrl(key), visitOptions, {cacheFor: 0});
   }
 
@@ -102,17 +89,6 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
     }
 
     pendingSource.value = key;
-
-    const visitor = toValue(options.indexVisitor);
-
-    if (visitor) {
-      visitor.merge(
-        {source: key, viewMode: toValue(options.viewMode) || null},
-        {resetPage: true}
-      );
-
-      return;
-    }
 
     const onFinish = (visit: {
       completed: boolean;
@@ -139,8 +115,6 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
     router.get(sourceUrl(key), {}, {...visitOptions, onFinish});
   }
 
-  // A visitor-driven index has no `onFinish` to hook, so the optimistic
-  // highlight is released when the server's active source catches up.
   watch(
     () => toValue(options.activeSource),
     (next) => {
