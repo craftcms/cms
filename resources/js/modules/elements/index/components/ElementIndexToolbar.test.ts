@@ -48,7 +48,7 @@ vi.mock('@/common/form/CheckboxGroup.vue', () => ({
   default: {name: 'CheckboxGroup', render: () => h('checkbox-group-stub')},
 }));
 
-vi.mock('@/modules/elements/components/FilterHud.vue', () => ({
+vi.mock('@/modules/elements/index/components/FilterHud.vue', () => ({
   default: {name: 'FilterHud', render: () => h('div')},
 }));
 

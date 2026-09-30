@@ -2,13 +2,13 @@
   import {t} from '@craftcms/ui';
   import {watch, computed} from 'vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
-  import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
-  import DataTable from '@/modules/elements/components/DataTable.vue';
+  import BaseElementIndex from '@/modules/elements/index/components/BaseElementIndex.vue';
+  import DataTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
-  import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
+  import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
   import {TableSpacing} from '@/common/types';
-  import type {ContentIndexData} from '@/modules/elements/composables/useContentIndexData';
+  import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import {
     useModalElementIndex,

@@ -1,6 +1,6 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import DataTable from './DataTable.vue';
+import DataTable from './ElementTable.vue';
 import {createSampleTable} from '@/modules/elements/fixtures/elements';
 
 vi.mock('@inertiajs/vue3', async () => ({

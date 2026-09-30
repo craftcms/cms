@@ -7,7 +7,7 @@ import {
   type FolderConflictResolution,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 import axios from 'axios';
 
 interface FolderActionDetail {

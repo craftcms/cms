@@ -8,7 +8,7 @@ import {
   moveAssets,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 import type {RowSelectionState} from '@tanstack/vue-table';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */

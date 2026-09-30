@@ -11,7 +11,7 @@
   import type {
     ElementIndexRoute,
     IndexVisitor,
-  } from '@/modules/elements/composables/useElementIndexVisits';
+  } from '@/modules/elements/index/composables/useElementIndexVisits';
   import type {Source} from '@/modules/elements/types/sources';
 
   const props = defineProps<{

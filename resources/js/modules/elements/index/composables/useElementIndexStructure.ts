@@ -5,7 +5,7 @@ import {
   type ElementIndexRoute,
   type IndexRestore,
   type IndexVisitor,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewState} from '@/modules/elements/types/view-state';
 
 interface ElementIndexStructureContext {

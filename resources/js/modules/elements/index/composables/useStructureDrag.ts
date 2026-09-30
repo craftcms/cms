@@ -17,7 +17,7 @@ import {
   descendantIndexes,
   type StructureMove,
   type StructureRow,
-} from '@/modules/elements/composables/useElementIndexStructure';
+} from '@/modules/elements/index/composables/useElementIndexStructure';
 
 /** Matches the per-level indentation the table renders. */
 export const STRUCTURE_INDENT = 44;

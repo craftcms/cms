@@ -1,22 +1,22 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
-  import DataTable from '@/modules/elements/components/DataTable.vue';
+  import BaseElementIndex from '@/modules/elements/index/components/BaseElementIndex.vue';
+  import DataTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
-  import {useElementIndexPage} from '@/modules/elements/composables/useElementIndexPage';
+  import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
+  import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
-  } from '@/modules/elements/composables/useElementIndexVisits';
+  } from '@/modules/elements/index/composables/useElementIndexVisits';
   import {TableSpacing} from '@/common/types';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import {ref} from 'vue';
-  import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
+  import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
-  import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
+  import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
   import CpContainer from '@/common/components/CpContainer.vue';
   import useCraftData from '@/common/composables/useCraftData';

@@ -1,7 +1,7 @@
 import {createApp, h, type App} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {setUrlDefaults} from '@/wayfinder';
-import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
 
 const state = vi.hoisted(() => ({route: null as unknown as ElementIndexRoute}));
 
@@ -17,7 +17,7 @@ vi.mock('@inertiajs/vue3', () => ({
     },
   }),
 }));
-vi.mock('@/modules/elements/components/ElementIndexPage.vue', () => ({
+vi.mock('@/modules/elements/index/components/ElementIndexPage.vue', () => ({
   default: {
     props: ['route'],
     setup: (props: {route: ElementIndexRoute}) => {

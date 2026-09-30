@@ -11,14 +11,14 @@ import {computed, onMounted, onScopeDispose, ref, shallowRef, watch} from 'vue';
 import {
   type ElementIndexRow,
   useContentIndexData,
-} from '@/modules/elements/composables/useContentIndexData';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+} from '@/modules/elements/index/composables/useContentIndexData';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 import type {ConditionConfig} from '@/modules/conditions/types';
-import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
-import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
-import {useElementIndexLoading} from '@/modules/elements/composables/useElementIndexLoading';
-import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
-import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
+import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
+import {useElementIndexFilters} from '@/modules/elements/index/composables/useElementIndexFilters';
+import {useElementIndexLoading} from '@/modules/elements/index/composables/useElementIndexLoading';
+import {useElementIndexPagination} from '@/modules/elements/index/composables/useElementIndexPagination';
+import {useElementIndexSort} from '@/modules/elements/index/composables/useElementIndexSort';
 import {
   cascadeStructureSelection,
   deselectDescendants,
@@ -28,15 +28,15 @@ import {
   type StructureMove,
   type StructurePlacement,
   useElementIndexStructure,
-} from '@/modules/elements/composables/useElementIndexStructure';
-import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
-import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
+} from '@/modules/elements/index/composables/useElementIndexStructure';
+import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import {
   createIndexVisitor,
   type ElementIndexRoute,
   type IndexQueryParams,
   type IndexRestore,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexPageOptions {

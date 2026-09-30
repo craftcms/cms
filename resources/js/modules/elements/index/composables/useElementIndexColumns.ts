@@ -4,11 +4,11 @@ import {
   type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
-import type {ElementIndexRow} from '@/modules/elements/composables/useContentIndexData';
+import type {ElementIndexRow} from '@/modules/elements/index/composables/useContentIndexData';
 
 interface ElementIndexColumnsContext {
   /** Columns available for the current source: `{label, value}` per column. */

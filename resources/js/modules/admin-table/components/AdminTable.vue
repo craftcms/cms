@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import type {Table} from '@tanstack/vue-table';
-  import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
-  import DataTable from '@/modules/elements/components/DataTable.vue';
+  import BaseElementIndex from '@/modules/elements/index/components/BaseElementIndex.vue';
+  import DataTable from '@/modules/elements/index/components/ElementTable.vue';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
 

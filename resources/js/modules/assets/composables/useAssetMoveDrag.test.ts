@@ -1,6 +1,6 @@
 import {afterEach, expect, it} from 'vite-plus/test';
 import {createApp, defineComponent, h} from 'vue';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 import {useAssetMoveDrag} from './useAssetMoveDrag';
 
 let app: ReturnType<typeof createApp> | null = null;

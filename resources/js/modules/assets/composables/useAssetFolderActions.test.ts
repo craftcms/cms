@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {effectScope} from 'vue';
 import {useAssetFolderActions} from './useAssetFolderActions';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 
 const post = vi.hoisted(() => vi.fn());
 const visit = vi.hoisted(() => vi.fn());

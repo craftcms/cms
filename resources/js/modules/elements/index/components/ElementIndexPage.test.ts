@@ -11,7 +11,7 @@ const quickEdit = vi.hoisted(() => ({
   onDblClick: vi.fn(),
   openEditor: vi.fn(),
 }));
-vi.mock('@/modules/elements/composables/useElementIndexPage', () => ({
+vi.mock('@/modules/elements/index/composables/useElementIndexPage', () => ({
   useElementIndexPage: () => page.elementIndex,
 }));
 vi.mock('@/modules/elements/composables/useElementQuickEdit', () => ({
@@ -48,15 +48,15 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
 // The list itself isn't what's under test, and it pulls in a real table.
 const stub = {default: {name: 'Stub', render: () => null}};
 
-vi.mock('@/modules/elements/components/DataTable.vue', () => stub);
+vi.mock('@/modules/elements/index/components/ElementTable.vue', () => stub);
 vi.mock('@/modules/elements/components/ElementCards.vue', () => stub);
-vi.mock('@/modules/elements/components/ElementIndexToolbar.vue', () => stub);
+vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => stub);
 vi.mock('@/modules/elements/components/ElementThumbs.vue', () => stub);
 // Records whether it's open — which is all a gear in the nav can do to it.
 const modal = vi.hoisted(() => ({isActive: false}));
 
 vi.mock(
-  '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue',
+  '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue',
   () => ({
     default: {
       name: 'CustomizeSourcesModal',

@@ -18,16 +18,16 @@
   } from 'vue';
   import type {NestedReorderDirection} from '@craftcms/ui';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
-  import type {StructureMove} from '@/modules/elements/composables/useElementIndexStructure';
+  import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import {
     type StructureDropType,
     useStructureDrag,
-  } from '@/modules/elements/composables/useStructureDrag';
+  } from '@/modules/elements/index/composables/useStructureDrag';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import {usePage} from '@inertiajs/vue3';
-  import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,

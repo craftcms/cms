@@ -1,5 +1,5 @@
 import {ref} from 'vue';
-import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
+import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {SortingState, Updater} from '@tanstack/vue-table';
 import type {SortItem} from '@/common/types';
 

@@ -3,7 +3,7 @@ import {useForm} from '@inertiajs/vue3';
 import type {
   ElementIndexRoute,
   IndexQueryParams,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 import type {ConditionConfig} from '@/modules/conditions/types';

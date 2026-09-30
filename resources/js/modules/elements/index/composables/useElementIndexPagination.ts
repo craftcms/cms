@@ -3,7 +3,7 @@ import {
   createIndexVisitor,
   type IndexVisitor,
   type ElementIndexRoute,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
 import type {PaginationData} from '@/common/types';
 

@@ -5,8 +5,8 @@
   import {ButtonVariant, t} from '@craftcms/ui';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
-  import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
-  import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import BulkActionsBar from '@/modules/elements/index/components/ElementBulkActionsBar.vue';
+  import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
   import type {
     BulkActionEventDetail,
     BulkActionItem,

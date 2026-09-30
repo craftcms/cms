@@ -3,7 +3,7 @@
   import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
-  import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
+  import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
   import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';

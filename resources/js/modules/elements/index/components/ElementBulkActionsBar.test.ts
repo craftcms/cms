@@ -2,7 +2,7 @@ import {createApp, h, nextTick, type App} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 
-const BulkActionsBar = (await import('./BulkActionsBar.vue')).default;
+const BulkActionsBar = (await import('./ElementBulkActionsBar.vue')).default;
 const apps: App[] = [];
 const containers: HTMLElement[] = [];
 

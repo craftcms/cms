@@ -1,6 +1,6 @@
 import {useDebounceFn} from '@vueuse/core';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 
 /**
  * Anything in a row that owns its own click. Double-clicking one of these

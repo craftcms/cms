@@ -5,7 +5,7 @@ import {
   type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
 import type {SortOption, ViewState} from '@/modules/elements/types/view-state';

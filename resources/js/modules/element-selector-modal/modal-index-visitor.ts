@@ -3,7 +3,7 @@ import type {
   IndexQueryParams,
   IndexVisitOptions,
   IndexVisitor,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 
 /**
  * An {@link IndexVisitor} for an index that isn't a page.

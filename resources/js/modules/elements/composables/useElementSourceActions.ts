@@ -6,7 +6,7 @@ import {
   type ElementIndexRoute,
   type IndexQueryParams,
   type IndexVisitor,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {
   Source,
   SourceHeading,

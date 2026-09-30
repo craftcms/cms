@@ -4,7 +4,7 @@ import {
   type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
-} from '@/modules/elements/composables/useElementIndexVisits';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
 /**

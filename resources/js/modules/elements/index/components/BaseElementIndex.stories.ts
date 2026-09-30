@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import BaseElementIndex from './BaseElementIndex.vue';
-import DataTable from './DataTable.vue';
+import DataTable from './ElementTable.vue';
 import {
   createSampleTable,
   sampleActions,

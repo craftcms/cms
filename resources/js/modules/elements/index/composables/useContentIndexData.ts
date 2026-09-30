@@ -5,7 +5,7 @@ import type {ConditionConfig} from '@/modules/conditions/types';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 import type {IndexSite} from '@/modules/elements/types/sites';
-import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
+import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {
   SortOption,
   ViewMode,

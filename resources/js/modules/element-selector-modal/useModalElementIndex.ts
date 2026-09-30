@@ -7,16 +7,16 @@ import {
   useContentIndexData,
   type ContentIndexData,
   type ElementIndexRow,
-} from '@/modules/elements/composables/useContentIndexData';
+} from '@/modules/elements/index/composables/useContentIndexData';
 import type {
   IndexQueryParams,
   IndexQueryValue,
-} from '@/modules/elements/composables/useElementIndexVisits';
-import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
-import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
-import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
-import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
-import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
+} from '@/modules/elements/index/composables/useElementIndexVisits';
+import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
+import {useElementIndexPagination} from '@/modules/elements/index/composables/useElementIndexPagination';
+import {useElementIndexSort} from '@/modules/elements/index/composables/useElementIndexSort';
+import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import {createModalIndexVisitor} from './modal-index-visitor';
 
 type Row = ElementIndexRow;

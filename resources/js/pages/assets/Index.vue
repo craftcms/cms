@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed, type ComponentPublicInstance, useTemplateRef} from 'vue';
-  import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
+  import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import {router, usePage} from '@inertiajs/vue3';
   import {index} from '@routes/cp/assets';
   import Breadcrumbs, {
@@ -16,7 +16,7 @@
   import {
     appendIndexQuery,
     type ElementIndexRoute,
-  } from '@/modules/elements/composables/useElementIndexVisits';
+  } from '@/modules/elements/index/composables/useElementIndexVisits';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
   const dropZone = document.body;

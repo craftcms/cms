@@ -1,6 +1,6 @@
 import {computed, effectScope, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {Source} from '@/modules/elements/types/sources';
 
 const router = vi.hoisted(() => ({get: vi.fn(), prefetch: vi.fn()}));
