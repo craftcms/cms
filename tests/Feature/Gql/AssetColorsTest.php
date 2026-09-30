@@ -19,10 +19,10 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
         [
             'dominant' => '#3a6ea5',
             'grid' => [['#ff0000', '#3a6ea5', '#0000ff'], ['#990000', '#3a6ea5', '#000099']],
-            'left' => '#cc0000',
-            'right' => '#0000cc',
-            'top' => '#68258c',
-            'bottom' => '#46256a',
+            'left' => '#d40000',
+            'right' => '#0000d4',
+            'top' => '#9f40b4',
+            'bottom' => '#614084',
         ],
     ],
     'inconclusive' => [
@@ -51,8 +51,22 @@ it('has no placeholder data URL for an image whose colors aren’t known', funct
         ->assertJsonPath('data.asset.placeholderDataUrl', null);
 });
 
+it('queries an image’s BlurHash', function (?array $stored, bool $hasHash) {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { blurhash } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.blurhash', fn (?string $hash): bool => $hasHash ? strlen((string) $hash) === 28 : $hash === null);
+})->with([
+    'sampled' => [['dominant' => '#3a6ea5', 'grid' => array_fill(0, 3, array_fill(0, 4, '#3a6ea5'))], true],
+    'not sampled yet' => [null, false],
+]);
+
 it('can’t be set by mutations', function () {
     expect(AssetMutationArguments::getArguments())
         ->not->toHaveKey('colors')
-        ->not->toHaveKey('placeholderDataUrl');
+        ->not->toHaveKey('placeholderDataUrl')
+        ->not->toHaveKey('blurhash');
 });

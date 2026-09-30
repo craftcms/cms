@@ -66,6 +66,8 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
+use CraftCms\Cms\Image\Blurhash;
+use CraftCms\Cms\Image\ColorGrid;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -174,6 +176,9 @@ class Asset extends Element
     public const string ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
+
+    /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
+    private const int PLACEHOLDER_SCALE = 3;
 
     private static string $_displayName;
 
@@ -295,6 +300,12 @@ class Asset extends Element
 
     /** The staged upload, before it has been promoted into its volume. */
     public ?UploadedFile $uploadSource = null;
+
+    /**
+     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
+     * place of sampling the file again.
+     */
+    public ?ImageColors $uploadColors = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -2471,12 +2482,14 @@ JS, [
 
     /**
      * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
-     * of a tiny PNG with one pixel per region of the image's color grid, or `null` if its colors aren't known.
+     * of a small PNG blurred from the image's color grid, or `null` if its colors aren't known.
      *
-     * Browsers smooth images as they scale them up, so it makes a blurred placeholder for the image when used as a
+     * The grid is scaled up three times with smooth interpolation between its regions, which browsers can scale up the
+     * rest of the way without visible seams, so it makes a blurred placeholder for the image when used as a
      * `background-image` with `background-size: cover`.
      *
      * @see ImageColors::$grid
+     * @see ColorGrid::interpolate()
      */
     #[AllowedInSandbox]
     public function getPlaceholderDataUrl(): ?string
@@ -2487,15 +2500,41 @@ JS, [
             return null;
         }
 
-        $image = Images::getManager()->createImage(count($grid[0]), count($grid));
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
 
-        foreach ($grid as $y => $row) {
+        foreach ($pixels as $y => $row) {
             foreach ($row as $x => $color) {
                 $image->drawPixel($x, $y, $color);
             }
         }
 
         return $image->encode(new PngEncoder)->toDataUri()->toString();
+    }
+
+    /**
+     * Returns a [BlurHash](https://blurha.sh) string for the image, or `null` if its colors aren't known.
+     *
+     * It's encoded from the image's color grid, smoothed the same way as {@see getPlaceholderDataUrl()}, with one
+     * component per region: 4×3 for landscape and square images, and 3×4 for portrait ones. BlurHash has no alpha
+     * channel, so transparent regions are blended over white.
+     *
+     * @see ImageColors::$grid
+     */
+    #[AllowedInSandbox]
+    public function getBlurhash(): ?string
+    {
+        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+
+        if (! $grid) {
+            return null;
+        }
+
+        return Blurhash::encode(
+            ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE),
+            count($grid[0]),
+            count($grid),
+        );
     }
 
     /**
@@ -2942,6 +2981,7 @@ JS;
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
             $names['sanitizeOnUpload'],
+            $names['uploadColors'],
         );
 
         $names['extension'] = true;
@@ -3441,7 +3481,7 @@ JS;
 
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->colors = Images::colors($tempPath);
+                $this->colors = $this->uploadColors ?? Images::colors($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;
@@ -3456,10 +3496,21 @@ JS;
             File::delete($tempPath);
         }
 
+        // Take the new file's modification time from where it ended up, which is what indexing compares against, so it
+        // isn't mistaken for a changed file and sampled again.
+        if ($this->uploadSource !== null || $tempPath !== null) {
+            try {
+                $this->dateModified = Date::createFromTimestampUTC($newDisk->lastModified($newPath));
+            } catch (Throwable $e) {
+                Log::info("Couldn’t read the modification time of $newPath: {$e->getMessage()}");
+            }
+        }
+
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
+        $this->uploadColors = null;
     }
 
     /**

@@ -280,6 +280,16 @@ describe('colors', function () {
             ->toBe(array_fill(0, 3, ['#c81e28', '#c81e28', '#1e50c8', '#1e50c8']));
     });
 
+    it('averages each region in linear light', function () {
+        $image = imagecreatetruecolor(8, 3);
+        for ($x = 0; $x < 8; $x++) {
+            imagefilledrectangle($image, $x, 0, $x, 2, $x % 2 ? imagecolorallocate($image, 255, 255, 255) : imagecolorallocate($image, 0, 0, 0));
+        }
+        imagepng($image, $path = $this->sandboxPath.'/stripes.png');
+
+        expect($this->service->colors($path)->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#bcbcbc')));
+    });
+
     it('keeps transparent regions transparent in the grid', function () {
         $image = imagecreatetruecolor(200, 150);
         imagealphablending($image, false);
