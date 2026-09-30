@@ -271,6 +271,14 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    // An `aria-labelledby` on the host names a label the consumer renders
+    // itself — a table column heading, say — rather than one in the `label`
+    // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
+    // label on every update, so this has to be reapplied after `super`.
+    const labelledBy = this.getAttribute('aria-labelledby');
+    if (labelledBy) {
+      this._inputNode?.setAttribute('aria-labelledby', labelledBy);
+    }
     // Lion names the listbox after its own label only, which is empty when a
     // wrapping craft-field provides the label.
     this._listboxNode?.setAttribute(

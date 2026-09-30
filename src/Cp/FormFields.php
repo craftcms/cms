@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
@@ -1348,6 +1349,150 @@ readonly class FormFields
         $config['id'] ??= 'entrytypeselect'.mt_rand();
 
         return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+    }
+
+    /**
+     * Builds a `<craft-combobox>` from the legacy autosuggest variables.
+     *
+     * Craft 5 rendered these with a Vue 2 `vue-autosuggest` instance. The
+     * combobox matches that behavior where it counts: the value is free text
+     * (`requireOptionMatch` off), every suggestion is listed as soon as the
+     * field is focused (`showAllOnEmpty`), sections keep their headings, and a
+     * suggestion's hint is both shown and matched.
+     *
+     * Three legacy config keys have no equivalent and are ignored: `inputProps`
+     * /`inputAttributes`, `style`, and `class` — the combobox owns its own
+     * markup. `size`, `maxlength` and `autofocus` are likewise dropped, since
+     * Lion owns the textbox.
+     *
+     * `limit` changes meaning: Craft 5 capped each section separately
+     * (defaulting to 5), while the combobox caps the whole rendered list. A
+     * caller that passes one still gets it honored; callers that don't now see
+     * every match rather than the first five per section.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function autosuggestFromConfig(array $config): Combobox
+    {
+        $suggestions = self::normalizeSuggestions($config['suggestions'] ?? []);
+
+        if ($config['suggestTemplates'] ?? false) {
+            $suggestions = [...$suggestions, ...SelectOptions::getTemplateSuggestions()];
+        }
+
+        if ($config['suggestEnvVars'] ?? false) {
+            $suggestions = [...$suggestions, ...SelectOptions::getEnvSuggestions(
+                (bool) ($config['suggestAliases'] ?? false),
+                $config['suggestionFilter'] ?? null,
+            )];
+        }
+
+        $component = Combobox::make()
+            ->id($config['id'] ?? 'autosuggest'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->value(($config['value'] ?? '') === false ? '' : (string) ($config['value'] ?? ''))
+            ->options($suggestions)
+            ->placeholder(($config['placeholder'] ?? false) ?: null)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->labelledBy(($config['labelledBy'] ?? false) ?: null)
+            ->requireOptionMatch(false)
+            ->showAllOnEmpty();
+
+        if (($config['limit'] ?? null) !== null) {
+            $component = $component->limit((int) $config['limit']);
+        }
+
+        return $component;
+    }
+
+    /**
+     * Brings a `suggestions` array into the shape `<craft-combobox>` takes.
+     *
+     * Core passes {@see SelectOptions} output, which is already that shape. A
+     * plugin may pass Craft 5's instead — groups as `['label' => …, 'data' =>
+     * [['name' => …, 'hint' => …], …]]`, with a bare string standing in for an
+     * item — either hand-written or from the deprecated
+     * `craft.cp.getEnvSuggestions()`. Both are accepted, so a plugin's existing
+     * call keeps working untouched.
+     *
+     * @param  array<array-key, mixed>  $suggestions
+     * @return list<array<string, mixed>>
+     */
+    private static function normalizeSuggestions(array $suggestions): array
+    {
+        $normalized = [];
+
+        foreach ($suggestions as $entry) {
+            if (! is_array($entry)) {
+                $normalized[] = self::normalizeSuggestionOption($entry);
+
+                continue;
+            }
+
+            // A Craft 5 section: a label plus a *list* of items under `data`.
+            // A combobox option also has `data`, but as a keyed map, and always
+            // carries a `value` — so the two never collide.
+            $isLegacyGroup = ! isset($entry['value'])
+                && isset($entry['data'])
+                && is_array($entry['data'])
+                && array_is_list($entry['data']);
+
+            if (($entry['type'] ?? null) === 'optgroup' || $isLegacyGroup) {
+                $options = $entry['options'] ?? $entry['data'] ?? [];
+
+                $normalized[] = [
+                    'type' => 'optgroup',
+                    'label' => $entry['label'] ?? '',
+                    'options' => array_map(
+                        self::normalizeSuggestionOption(...),
+                        array_values(is_array($options) ? $options : []),
+                    ),
+                ];
+
+                continue;
+            }
+
+            $normalized[] = self::normalizeSuggestionOption($entry);
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function normalizeSuggestionOption(mixed $option): array
+    {
+        if (! is_array($option)) {
+            $value = (string) $option;
+
+            return ['label' => $value, 'value' => $value];
+        }
+
+        // Already a combobox option.
+        if (isset($option['value'])) {
+            return [
+                ...$option,
+                'label' => (string) ($option['label'] ?? $option['value']),
+                'value' => (string) $option['value'],
+            ];
+        }
+
+        $value = (string) ($option['name'] ?? $option['label'] ?? '');
+        $hint = $option['hint'] ?? null;
+
+        return [
+            'label' => $value,
+            'value' => $value,
+            'data' => [
+                'hint' => $hint,
+                // Craft 5 matched the hint as well as the name.
+                'keywords' => is_string($hint) ? $hint : null,
+            ],
+        ];
     }
 
     /** @param array<string, mixed> $config */

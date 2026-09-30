@@ -55,8 +55,6 @@
   {%- switch col.type %}
   {%- case 'time' %}
     {%- do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\TimepickerAsset') %}
-  {%- case 'template' %}
-    {%- do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\VueAsset") %}
   {%- endswitch %}
 {% endfor %}
 

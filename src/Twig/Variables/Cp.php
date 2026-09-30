@@ -332,6 +332,19 @@ class Cp extends Component
     }
 
     /**
+     * Renders an autosuggest input's HTML from the legacy autosuggest variables.
+     *
+     * Emits a `<craft-combobox>`; see
+     * {@see FormFields::autosuggestFromConfig()} for how the legacy variables
+     * map onto it and which have no equivalent.
+     */
+    /** @param array<string, mixed> $config */
+    public function autosuggest(array $config = []): string
+    {
+        return FormFields::autosuggestFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a copy-text input's HTML from the legacy copytext variables.
      */
     /** @param array<string, mixed> $config */

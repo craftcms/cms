@@ -45,6 +45,8 @@ class Combobox extends ViewComponent
 
     protected ?string $describedBy = null;
 
+    protected ?string $labelledBy = null;
+
     protected function tagName(): string
     {
         return 'craft-combobox';
@@ -154,6 +156,18 @@ class Combobox extends ViewComponent
         return $this;
     }
 
+    /**
+     * Names the element labelling this combobox, for a caller that provides the
+     * label itself rather than through the `label` slot — a table column
+     * heading, say.
+     */
+    public function labelledBy(?string $labelledBy): static
+    {
+        $this->labelledBy = $labelledBy;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -174,7 +188,10 @@ class Combobox extends ViewComponent
             'show-all-on-empty' => $this->showAllOnEmpty,
             'show-selected-hint' => $this->showSelectedHint,
             'dir' => $this->orientation,
-            'aria' => ['describedby' => $this->describedBy],
+            'aria' => [
+                'describedby' => $this->describedBy,
+                'labelledby' => $this->labelledBy,
+            ],
         ];
     }
 }
