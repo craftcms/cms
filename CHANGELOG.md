@@ -6,6 +6,8 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Control panel success, notice, and error messages now go through a single message system instead of several different ones, and are no longer shown twice or lost between pages.
 - Messages now stack, newest first, and spread out on hover or focus. A “Skip to messages” link reaches them from the keyboard. They can be swiped away, errors and messages with actions stay until dismissed, and errors are announced to screen readers immediately.
 - Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))

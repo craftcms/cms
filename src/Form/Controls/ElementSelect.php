@@ -293,17 +293,9 @@ class ElementSelect extends Control
             'autoReload' => false,
             'selectable' => false,
             'sortable' => false,
-            'withThumb' => false,
         ];
 
-        return [
-            'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
-            'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
-            'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
-            'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
-            'cardThumbHtml' => $elementHtml->elementCardThumbHtml($element),
-            'thumbAlignment' => $elementHtml->elementCardThumbAlignment($element),
-        ];
+        return $elementHtml->elementCardData($element, $cardConfig);
     }
 
     /**

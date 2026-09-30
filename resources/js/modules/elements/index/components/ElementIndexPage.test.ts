@@ -1,4 +1,4 @@
-import {createApp, h, nextTick, reactive, ref} from 'vue';
+import {createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createTable, getCoreRowModel} from '@tanstack/vue-table';
 import {useElementIndexSelection} from '../composables/useElementIndexSelection';
@@ -50,10 +50,15 @@ const stub = {default: {name: 'Stub', render: () => null}};
 
 vi.mock('@/modules/elements/index/components/ElementTable.vue', () => stub);
 vi.mock('@/modules/elements/components/ElementCards.vue', () => stub);
-vi.mock(
-  '@/modules/elements/index/components/ElementIndexToolbar.vue',
-  () => stub
-);
+vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => ({
+  default: {
+    name: 'ElementIndexToolbar',
+    setup:
+      (_: unknown, {slots}: {slots: Slots}) =>
+      () =>
+        h('div', slots.actions?.()),
+  },
+}));
 vi.mock('@/modules/elements/components/ElementThumbs.vue', () => stub);
 // Records whether it's open — which is all a gear in the nav can do to it.
 const modal = vi.hoisted(() => ({isActive: false}));
@@ -102,6 +107,7 @@ async function mountPage(
       cpEditUrl: '/admin/entries/11',
       viewUrl: 'https://example.test/alpha',
       url: '/admin/entries/11',
+      inlineEditable: true,
     },
   ],
   mode = 'table'
@@ -146,6 +152,7 @@ async function mountPage(
         viewModes: [],
         statusOptions: [],
         data,
+        exporters: [{type: 'Expanded', name: 'Expanded', formattable: true}],
         sites: [],
       }),
       table: elementTable,
@@ -161,8 +168,15 @@ async function mountPage(
       sortField: ref(null),
       sortDirection: ref(null),
       mode: ref(mode),
+      inlineEditing: {
+        active: ref(false),
+        load: vi.fn(),
+        save: vi.fn(),
+      },
+      exportElements: vi.fn(),
       structureView: {isCollapsed: () => false, isPending: () => false},
       loading: ref(false),
+      processing: ref(false),
       visibleViewModes: ref([]),
     },
   };
@@ -197,15 +211,32 @@ function clickAction(container: HTMLElement, label: string) {
   item!.click();
 }
 
-it('passes the bulk Edit invoker to the shared quick-edit slideout', async () => {
+it('passes the Actions invoker to the bulk Edit slideout', async () => {
   const container = await mountPage();
 
   clickAction(container, 'Edit');
 
   expect(quickEdit.openEditor).toHaveBeenCalledWith(
     '/admin/entries/11',
-    container.querySelector('craft-button[slot="invoker"]')
+    expect.any(HTMLElement)
   );
+  expect(quickEdit.openEditor.mock.calls[0]![1].textContent).toContain(
+    'Actions'
+  );
+});
+
+it('offers inline editing and export on page tables', async () => {
+  const container = await mountPage();
+
+  expect(container.textContent).toContain('Edit inline');
+  expect(container.textContent).toContain('Export');
+});
+
+it('hides inline editing outside table mode', async () => {
+  const container = await mountPage({}, undefined, 'cards');
+
+  expect(container.textContent).not.toContain('Edit inline');
+  expect(container.textContent).toContain('Export');
 });
 
 it('opens the public URL instead of the CP URL in a new tab', async () => {

@@ -15,11 +15,13 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
+      disabled?: boolean;
     }>(),
     {
       paginated: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
+      disabled: false,
     }
   );
   const emit = defineEmits<{
@@ -59,7 +61,7 @@
         <craft-button
           type="button"
           @click="emit('page-change', pageIndex - 1)"
-          .disabled="pageIndex <= 0"
+          .disabled="disabled || pageIndex <= 0"
           :variant="ButtonVariant.Plain"
           icon
           size="small"
@@ -74,6 +76,7 @@
           <craft-input
             type="text"
             v-model="pageIndexProxy"
+            .disabled="disabled"
             maxlength="3"
             :label="t('Current page')"
             label-sr-only
@@ -86,7 +89,7 @@
         <craft-button
           type="button"
           @click="emit('page-change', pageIndex + 1)"
-          .disabled="pageIndex >= pageCount - 1"
+          .disabled="disabled || pageIndex >= pageCount - 1"
           size="small"
           :variant="ButtonVariant.Plain"
           icon
@@ -104,6 +107,7 @@
           label-sr-only
           :options="pageSizeOptions!"
           v-model="pageSizeProxy"
+          :disabled="disabled"
           class="w-auto"
         />
       </template>
