@@ -503,19 +503,28 @@ EOD;
      */
     public function actionPhpSessionTable(): int
     {
-        if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
-            $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
+        $db = Craft::$app->getDb();
+        $enableSchemaCache = $db->enableSchemaCache;
+        // The configured cache may depend on a table that hasn't been created yet.
+        $db->enableSchemaCache = false;
+
+        try {
+            if ($db->tableExists(Table::PHPSESSIONS)) {
+                $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $migration = new CreatePhpSessionTable();
+            if ($migration->up() === false) {
+                $this->stderr("An error occurred while creating the `phpsessions` table.\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout("The `phpsessions` table was created successfully.\n", Console::FG_GREEN);
             return ExitCode::OK;
+        } finally {
+            $db->enableSchemaCache = $enableSchemaCache;
         }
-
-        $migration = new CreatePhpSessionTable();
-        if ($migration->up() === false) {
-            $this->stderr("An error occurred while creating the `phpsessions` table.\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
-        $this->stdout("The `phpsessions` table was created successfully.\n", Console::FG_GREEN);
-        return ExitCode::OK;
     }
 
     /**
@@ -557,19 +566,28 @@ EOD;
      */
     public function actionDbCacheTable(): int
     {
-        if (Craft::$app->getDb()->tableExists(Table::CACHE)) {
-            $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $db = Craft::$app->getDb();
+        $enableSchemaCache = $db->enableSchemaCache;
+        // The configured cache may depend on a table that hasn't been created yet.
+        $db->enableSchemaCache = false;
+
+        try {
+            if ($db->tableExists(Table::CACHE)) {
+                $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $migration = new CreateDbCacheTable();
+            if ($migration->up() === false) {
+                $this->stderr('An error occurred while creating the `cache` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout('The `cache` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
+        } finally {
+            $db->enableSchemaCache = $enableSchemaCache;
         }
-
-        $migration = new CreateDbCacheTable();
-        if ($migration->up() === false) {
-            $this->stderr('An error occurred while creating the `cache` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
-        $this->stdout('The `cache` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
-        return ExitCode::OK;
     }
 
     /**
