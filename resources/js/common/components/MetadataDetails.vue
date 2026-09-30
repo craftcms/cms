@@ -1,7 +1,7 @@
 <script setup lang="ts">
   /**
-   * A settings screen's details column: an Info tab showing the server's
-   * metadata HTML (ID, usages, …).
+   * A settings screen's details column: an Info tab showing any sidebar
+   * controls (the default slot) above the server's metadata HTML (ID, usages, …).
    */
   import {t} from '@craftcms/ui';
   import DetailsTabs, {
@@ -20,11 +20,13 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="html" name="content-details">
+  <LayoutSlot v-if="html || $slots.default" name="content-details">
     <DetailsTabs :tabs="tabs">
       <template #info>
         <div class="p-lg">
-          <DynamicHtmlRenderer :html="html" />
+          <slot />
+          <hr v-if="html && $slots.default" class="my-lg" />
+          <DynamicHtmlRenderer v-if="html" :html="html" />
         </div>
       </template>
     </DetailsTabs>
