@@ -144,7 +144,7 @@ it('shows the image preview’s placeholder over a gradient between the image’
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('previewFragment.html', fn (string $html): bool => str_contains(
                 $html,
-                'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #cc0000, #0000cc)',
+                'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #d40000, #0000d4)',
             ) && str_contains($html, 'placeholder="data:image/png;base64,'))
         );
 });

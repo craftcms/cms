@@ -57,6 +57,36 @@ describe('sampleImageColors', () => {
     );
   });
 
+  it('averages each region in linear light', () => {
+    const stripes = pixels(8, 3, [0, 0, 0]);
+    for (let x = 1; x < 8; x += 2) {
+      for (let y = 0; y < 3; y++) {
+        stripes.data.set([255, 255, 255, 255], (y * 8 + x) * 4);
+      }
+    }
+
+    expect(sampleImageColors(stripes).grid).toEqual(
+      Array.from({length: 3}, () => Array(4).fill('#bcbcbc'))
+    );
+  });
+
+  it('splits pixels that straddle regions by how much of them each covers', () => {
+    const image = pixels(6, 3, [0, 0, 255], {
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: 2,
+      color: [255, 0, 0],
+    });
+
+    expect(sampleImageColors(image).grid[0]).toEqual([
+      '#d5009c',
+      '#0000ff',
+      '#0000ff',
+      '#0000ff',
+    ]);
+  });
+
   it('keeps transparent regions transparent in the grid', () => {
     const halfClear = pixels(100, 75, red, {
       x1: 50,

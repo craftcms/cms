@@ -114,7 +114,9 @@ function colorGrid({data, width, height}: Pixels): string[][] {
       let green = 0;
       let blue = 0;
 
-      // Pixels that straddle a region's edge count toward it by how much of them it covers.
+      // Colors mix in linear light, so fine black and white detail averages to
+      // the gray it reads as. Pixels that straddle a region's edge count
+      // toward it by how much of them it covers.
       for (let y = Math.floor(top); y < Math.ceil(bottom); y++) {
         const coverageY = Math.min(y + 1, bottom) - Math.max(y, top);
 
@@ -126,17 +128,17 @@ function colorGrid({data, width, height}: Pixels): string[][] {
 
           weights += weight;
           alpha += opacity;
-          red += data[index]! * opacity;
-          green += data[index + 1]! * opacity;
-          blue += data[index + 2]! * opacity;
+          red += toLinear(data[index]!) * opacity;
+          green += toLinear(data[index + 1]!) * opacity;
+          blue += toLinear(data[index + 2]!) * opacity;
         }
       }
 
       cells.push(
         hex(
-          alpha ? red / alpha : 0,
-          alpha ? green / alpha : 0,
-          alpha ? blue / alpha : 0,
+          alpha ? toSrgb(red / alpha) : 0,
+          alpha ? toSrgb(green / alpha) : 0,
+          alpha ? toSrgb(blue / alpha) : 0,
           (alpha / weights) * 255
         )
       );
@@ -299,11 +301,7 @@ function seededRandom(seed: number): () => number {
 }
 
 function toOklab(red: number, green: number, blue: number): Oklab {
-  const [r, g, b] = [red, green, blue].map((channel) => {
-    const value = channel / 255;
-
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  }) as [number, number, number];
+  const [r, g, b] = [toLinear(red), toLinear(green), toLinear(blue)];
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
@@ -324,13 +322,24 @@ function fromOklab([lightness, a, b]: Oklab): [number, number, number] {
     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
-  ].map((channel) => {
-    const value = Math.min(1, Math.max(0, channel));
-    const gamma =
-      value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055;
+  ].map(toSrgb) as [number, number, number];
+}
 
-    return gamma * 255;
-  }) as [number, number, number];
+/** Converts an sRGB channel from 0 to 255 to linear light, from 0 to 1. */
+function toLinear(channel: number): number {
+  const value = channel / 255;
+
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
+/** Converts linear light from 0 to 1 to an sRGB channel from 0 to 255. */
+function toSrgb(linear: number): number {
+  const value = Math.min(1, Math.max(0, linear));
+
+  return (
+    (value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055) *
+    255
+  );
 }
 
 /** Formats a color as `#rrggbb`, or `#rrggbbaa` if it isn't fully opaque. */

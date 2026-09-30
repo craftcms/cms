@@ -45,12 +45,15 @@
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Control panel uploads now sample image colors in the browser and send them along, so the server doesn’t need to sample the file itself. ([#19751](https://github.com/craftcms/cms/pull/19751))
 - `<img>` tags returned by `CraftCms\Cms\Asset\Elements\Asset::getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
-- Added the `colors` field to assets in GraphQL queries, which returns the image’s `dominant`, `grid`, `left`, `right`, `top`, and `bottom` colors. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
-- Added the `placeholderDataUrl` field to assets in GraphQL queries. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates and the `blurhash` field in GraphQL queries. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
 - Added `CraftCms\Cms\Asset\Elements\Asset::$colors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getBlurhash()`. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getPlaceholderDataUrl()`. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added `CraftCms\Cms\Asset\Elements\Asset::$uploadColors`. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- Added `CraftCms\Cms\Image\Blurhash`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\ColorGrid`. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - Added `CraftCms\Cms\Image\Data\ImageColors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
 - Added `CraftCms\Cms\Image\Images::colors()`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.

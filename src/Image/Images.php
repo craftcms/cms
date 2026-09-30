@@ -20,6 +20,10 @@ use Imagick;
 use Intervention\Image\Colors\ColorExtractor;
 use Intervention\Image\Colors\Oklch\Channels\Lightness;
 use Intervention\Image\Colors\Oklch\Colorspace as OklchColorspace;
+use Intervention\Image\Colors\Rgb\Channels\Alpha;
+use Intervention\Image\Colors\Rgb\Channels\Blue;
+use Intervention\Image\Colors\Rgb\Channels\Green;
+use Intervention\Image\Colors\Rgb\Channels\Red;
 use Intervention\Image\Colors\Rgb\Colorspace as RgbColorspace;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
@@ -302,7 +306,8 @@ class Images
      * front of it.
      *
      * The grid is 4×3 regions for landscape and square images and 3×4 for
-     * portrait ones. Both are empty if the image can’t be read.
+     * portrait ones, averaged in linear light (see {@see ColorGrid::average()}).
+     * Both are empty if the image can’t be read.
      */
     public function colors(string $filePath): ImageColors
     {
@@ -325,15 +330,23 @@ class Images
                 ? [self::COLOR_GRID_LONG_SIDE, self::COLOR_GRID_SHORT_SIDE]
                 : [self::COLOR_GRID_SHORT_SIDE, self::COLOR_GRID_LONG_SIDE];
 
-            // Resampling down to one pixel per region averages each region's colors.
-            $intervention->resize($columns, $rows);
-            $grid = [];
+            $width = $intervention->width();
+            $height = $intervention->height();
+            $pixels = [];
 
-            for ($y = 0; $y < $rows; $y++) {
-                for ($x = 0; $x < $columns; $x++) {
-                    $grid[$y][$x] = $this->hex($intervention->colorAt($x, $y));
+            for ($y = 0; $y < $height; $y++) {
+                for ($x = 0; $x < $width; $x++) {
+                    $color = $intervention->colorAt($x, $y)->toColorspace(RgbColorspace::class);
+                    $pixels[] = [
+                        (int) $color->channel(Red::class)->value(),
+                        (int) $color->channel(Green::class)->value(),
+                        (int) $color->channel(Blue::class)->value(),
+                        $color->channel(Alpha::class)->value() / 255,
+                    ];
                 }
             }
+
+            $grid = ColorGrid::average($pixels, $width, $height, $columns, $rows);
         } catch (Throwable $e) {
             Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
 
