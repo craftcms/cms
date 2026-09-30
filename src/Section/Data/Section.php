@@ -294,6 +294,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
                 'hasUrls' => $siteSettings->hasUrls,
                 'uriFormat' => $siteSettings->uriFormat ?: null,
                 'template' => $siteSettings->template ?: null,
+                'route' => $siteSettings->route ?: null,
             ];
         }
 

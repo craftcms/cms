@@ -68,6 +68,7 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -1224,8 +1225,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
-    /** @return array{string, array{template: string, variables: array{entry: self}}}|null */
-    protected function route(): ?array
+    /** @return array{string, array{template: string, variables: array{entry: self}}}|ElementRoute|null */
+    protected function route(): array|ElementRoute|null
     {
         // Make sure that the entry is actually live
         if (! $this->previewing && $this->getStatus() !== self::STATUS_LIVE) {
@@ -1243,6 +1244,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             return null;
         }
 
+        if ($destination = $this->getRouteDestination()) {
+            return $destination;
+        }
+
         return [
             'templates/render', [
                 'template' => (string) $sectionSiteSettings->template,
@@ -1251,6 +1256,24 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ],
             ],
         ];
+    }
+
+    /** Resolves the configured destination without dispatching the SetRoute event. */
+    public function getRouteDestination(): ?ElementRoute
+    {
+        if (! $this->previewing && $this->getStatus() !== self::STATUS_LIVE) {
+            return null;
+        }
+
+        if ($field = $this->getField()) {
+            $route = $field->getRouteForElement($this);
+
+            return $route instanceof ElementRoute ? $route : null;
+        }
+
+        $settings = $this->getSection()?->getSiteSettings()[$this->siteId] ?? null;
+
+        return $settings?->hasUrls && $settings->route ? new ElementRoute($settings->route) : null;
     }
 
     /** @return list<ActionItem> */

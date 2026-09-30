@@ -215,7 +215,7 @@ export function useEditableTable<T extends object>(
           cellOptions?.onInput?.(event);
         },
         onChange: (event: Event) => {
-          if (!(event.target instanceof HTMLInputElement)) {
+          if (!(event.target instanceof HTMLTextAreaElement)) {
             return;
           }
           const value = event.target.value;

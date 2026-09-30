@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
-use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Section\Validation\SectionSiteSettingsRules;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -13,7 +13,7 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use RuntimeException;
 
 #[Ruleset(SectionSiteSettingsRules::class)]
-class SectionSiteSettings extends Component
+class SectionSiteSettings extends ElementSiteSettings
 {
     private ?Section $section = null;
 
@@ -26,10 +26,6 @@ class SectionSiteSettings extends Component
     public bool $enabledByDefault = true;
 
     public bool $hasUrls = false;
-
-    public ?string $uriFormat = null;
-
-    public ?string $template = null;
 
     /**
      * Returns the section.

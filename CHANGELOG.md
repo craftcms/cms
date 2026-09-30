@@ -9,6 +9,7 @@
 - Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Added support for controller actions and named Laravel routes in section and Matrix site settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
@@ -17,7 +18,7 @@
 - Removed the legacy control panel stylesheet from Inertia pages. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - `ElementEditor` now supports rendering as a full page in addition to a slideout. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Improved the overall accessibility of the control panel. ([#19699](https://github.com/craftcms/cms/pull/19699))
-- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
+- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520), [#19749](https://github.com/craftcms/cms/pull/19749))
 - Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Improved the styling for collapsible field groups.
 - Improved disabled secondary form actions with explanatory tooltips.
@@ -149,8 +150,10 @@
 - Removed `CraftCms\Cms\Plugin\Concerns\HasFilesystemTypes`. Plugins can no longer register custom Craft filesystem types. ([#19650](https://github.com/craftcms/cms/pull/19650))
 
 ### Plugins & Extensibility
+- Added `CraftCms\Cms\Element\Data\ElementSiteSettings`, the shared base for element URI and route settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added `CraftCms\Cms\Route\CurrentElement`, a contextual attribute for injecting the matched element into controller actions and route closures. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `CraftCms\Cms\Support\Url::stripCpTrigger()`. ([#19724](https://github.com/craftcms/cms/pull/19724))
