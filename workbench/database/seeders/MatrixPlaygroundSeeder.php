@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Seeder;
 use RuntimeException;
@@ -136,7 +137,7 @@ class MatrixPlaygroundSeeder extends Seeder
             }
 
             if (! Elements::saveElement($entry)) {
-                throw new RuntimeException("Failed to create {$title}: ".json_encode($entry->errors()->all()));
+                throw new RuntimeException("Failed to create {$title}: ".Json::encode($entry->errors()->all()));
             }
         }
     }
