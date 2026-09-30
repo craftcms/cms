@@ -296,6 +296,10 @@ describe('useNestedEntriesQuery', () => {
 
     ui.appendHeadHtml.mockClear();
     ui.appendBodyHtml.mockClear();
+    const headAssets = deferred<void>();
+    const bodyAssets = deferred<void>();
+    ui.appendHeadHtml.mockReturnValueOnce(headAssets.promise);
+    ui.appendBodyHtml.mockReturnValueOnce(bodyAssets.promise);
     ui.post.mockResolvedValueOnce({
       data: payload({
         headHtml: '<style>.loaded{}</style>',
@@ -303,7 +307,17 @@ describe('useNestedEntriesQuery', () => {
       }),
     });
 
-    await state.load();
+    const loaded = state.load();
+    await vi.waitFor(() => expect(ui.appendHeadHtml).toHaveBeenCalledOnce());
+    expect(ui.appendBodyHtml).not.toHaveBeenCalled();
+    expect(state.onLoaded).not.toHaveBeenCalled();
+
+    headAssets.resolve();
+    await vi.waitFor(() => expect(ui.appendBodyHtml).toHaveBeenCalledOnce());
+    expect(state.onLoaded).not.toHaveBeenCalled();
+
+    bodyAssets.resolve();
+    await loaded;
 
     expect(state.error.value).toBe('');
     expect(ui.appendHeadHtml).toHaveBeenCalledWith('<style>.loaded{}</style>');

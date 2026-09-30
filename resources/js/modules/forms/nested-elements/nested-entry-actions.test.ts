@@ -137,28 +137,44 @@ describe('useNestedEntryActionEvents', () => {
     expect(handlers.perform).toHaveBeenCalledWith(item, [11, 12], trigger);
   });
 
-  it('allows copy while busy or read-only and blocks mutation actions', async () => {
-    const {busy, editable, handlers} = mount({editable: false, busy: true});
-    await nextTick();
-    const trigger = root!.querySelector('button')!;
+  it.each([
+    {label: 'busy', editable: true, busy: true},
+    {label: 'read-only', editable: false, busy: false},
+  ])(
+    'allows copy while $label and blocks mutation actions',
+    async (options) => {
+      const {busy, editable, handlers} = mount(options);
+      await nextTick();
+      const trigger = root!.querySelector('button')!;
+      const copy = {
+        key: 'Copy',
+        label: 'Copy',
+        action: {type: 'event' as const, name: 'craft:copy-elements'},
+      };
+      const duplicate = {
+        key: 'Duplicate',
+        label: 'Duplicate',
+        action: {type: 'event' as const, name: 'test:duplicate'},
+      };
 
-    dispatch('element-action', trigger, {
-      key: 'Copy',
-      label: 'Copy',
-      action: {type: 'event', name: 'craft:copy-elements'},
-    });
-    dispatch('element-action', trigger, {
-      key: 'Duplicate',
-      label: 'Duplicate',
-      action: {type: 'event', name: 'test:duplicate'},
-    });
-    busy.value = false;
-    dispatch('paste', trigger);
-    editable.value = true;
-    dispatch('move-backward', trigger);
+      dispatch('element-action', trigger, copy);
+      dispatch('element-action', trigger, duplicate);
+      dispatch('paste', trigger);
+      dispatch('move-backward', trigger);
 
-    expect(handlers.perform).toHaveBeenCalledOnce();
-    expect(handlers.paste).not.toHaveBeenCalled();
-    expect(handlers.move).toHaveBeenCalledWith(0, 1);
-  });
+      expect(handlers.perform).toHaveBeenCalledExactlyOnceWith(
+        copy,
+        [11, 12],
+        trigger
+      );
+      expect(handlers.paste).not.toHaveBeenCalled();
+      expect(handlers.move).not.toHaveBeenCalled();
+
+      busy.value = false;
+      editable.value = true;
+      dispatch('move-backward', trigger);
+
+      expect(handlers.move).toHaveBeenCalledWith(0, 1);
+    }
+  );
 });

@@ -265,7 +265,6 @@ describe('NestedEntriesControl', () => {
 
   it('does not mutate when owner preparation fails', async () => {
     const prepare = vi.fn().mockResolvedValue(null);
-    window.confirm = vi.fn().mockReturnValue(true);
     mount({prepare});
 
     action('Delete entry')!.click();
@@ -274,7 +273,7 @@ describe('NestedEntriesControl', () => {
     );
 
     expect(prepare).toHaveBeenCalledOnce();
-    expect(request.post).not.toHaveBeenCalled();
+    expect(actions.run).not.toHaveBeenCalled();
   });
 
   it('does not mutate when draft preparation returns a published owner tree', async () => {
@@ -285,7 +284,6 @@ describe('NestedEntriesControl', () => {
       ownerIsUnpublishedDraft: false,
       requiresDerivative: true,
     });
-    window.confirm = vi.fn().mockReturnValue(true);
     mount({prepare});
 
     action('Delete entry')!.click();
@@ -293,7 +291,7 @@ describe('NestedEntriesControl', () => {
       expect(root.textContent).toContain('Could not prepare the owner draft')
     );
 
-    expect(request.post).not.toHaveBeenCalled();
+    expect(actions.run).not.toHaveBeenCalled();
   });
 
   it('uses the prepared owner and refreshes its form once after a mutation', async () => {
