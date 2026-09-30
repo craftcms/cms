@@ -9,11 +9,13 @@ import {
 } from 'vue';
 import FormRenderer from './FormRenderer.vue';
 import type {FormPayload} from './types';
+import {focusableWithin} from '@craftcms/ui/utilities/focus-trap';
 
 export interface InlineAttributeFormHost extends HTMLElement {
   ready: Promise<void>;
   errors: Record<string, string[]>;
   canSubmit(): boolean;
+  focusFirst(): boolean;
 }
 
 /** Mounts Form controls in the legacy table without changing its row save contract. */
@@ -84,6 +86,13 @@ export function defineInlineAttributeFormHost(
 
       canSubmit(): boolean {
         return this.#renderer.value?.canSubmit() ?? false;
+      }
+
+      focusFirst(): boolean {
+        const target = focusableWithin(this)[0];
+        target?.focus();
+
+        return Boolean(target);
       }
 
       disconnectedCallback(): void {

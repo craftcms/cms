@@ -21,7 +21,8 @@ afterEach(() => {
 
 function mount(
   action: BulkActionItem,
-  listeners: Record<string, (detail: unknown) => void> = {}
+  listeners: Record<string, (detail: unknown) => void> = {},
+  props: Record<string, unknown> = {}
 ) {
   const container = document.createElement('div');
   document.body.append(container);
@@ -34,6 +35,7 @@ function mount(
         source: '*',
         context: 'index',
         ...listeners,
+        ...props,
       }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -43,6 +45,58 @@ function mount(
 
   return container;
 }
+
+it('omits actions when any selected row lacks the required capability', async () => {
+  const container = mount(
+    {
+      key: 'Delete',
+      label: 'Delete',
+      selectionAttribute: 'deletable',
+      action: {type: 'http', url: '/delete'},
+    },
+    {},
+    {
+      selectedIds: [11, 12],
+      selectedElements: [
+        {id: 11, capabilities: {deletable: true}},
+        {id: 12, capabilities: {deletable: false}},
+      ],
+    }
+  );
+  await nextTick();
+
+  expect(container.querySelector('craft-action-item')).toBeNull();
+});
+
+it('copies the selected element with its site ID', async () => {
+  const copyElements = vi.fn();
+  vi.stubGlobal('Craft', {cp: {copyElements}, siteId: 1});
+  const container = mount(
+    {
+      key: 'Copy',
+      label: 'Copy',
+      selectionAttribute: 'copyable',
+      action: {type: 'event', name: 'craft:copy-elements'},
+    },
+    {},
+    {selectedElements: [{id: 11, siteId: 2, capabilities: {copyable: true}}]}
+  );
+  await nextTick();
+
+  window.dispatchEvent(
+    new CustomEvent('craft:copy-elements', {
+      detail: {
+        trigger: container.querySelector('craft-action-item'),
+        elementIds: [11],
+        elementType: 'Entry',
+      },
+    })
+  );
+
+  expect(copyElements).toHaveBeenCalledWith([
+    {type: 'Entry', id: 11, siteId: 2},
+  ]);
+});
 
 it.each(['edit', 'view'] as const)(
   'emits %s only from the bulk bar that triggered it',

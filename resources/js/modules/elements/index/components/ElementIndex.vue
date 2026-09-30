@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {computed, ref, watch} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {computed, onMounted, ref, useTemplateRef, watch} from 'vue';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import {TableSpacing} from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
@@ -10,6 +10,8 @@
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+  import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
+  import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
 
   const props = withDefaults(
     defineProps<{
@@ -46,6 +48,7 @@
     columnOptions,
     visibleViewModes,
     loading,
+    processing,
     submit,
     reorder,
     structureView,
@@ -53,19 +56,66 @@
     selection,
   } = props.view;
   const structure = props.view.structure;
+  const inlineEditing = props.view.inlineEditing;
+  const exportElements = props.view.exportElements;
   const activeSiteHandle = computed(
     () =>
       elementIndex.sites.find((site) => site.id === elementIndex.siteId)
         ?.handle ?? null
   );
 
+  const body = useTemplateRef<HTMLElement>('body');
+  const editableRows = computed(() =>
+    data.value.filter((row) => row.inlineEditable)
+  );
+  const inlineEditor = useInlineEditing({
+    container: body,
+    editableRows,
+    busy: processing,
+    loading,
+    load: () => inlineEditing?.load() ?? Promise.resolve(),
+    save: (request) => inlineEditing?.save(request) ?? Promise.resolve(false),
+  });
+  const isInlineEditing = computed(
+    () =>
+      Boolean(inlineEditing?.active.value) ||
+      inlineEditor.editingIds.value.length > 0
+  );
+  const canEditInline = computed(
+    () =>
+      Boolean(inlineEditing) &&
+      mode.value === 'table' &&
+      !selection.readOnly.value &&
+      editableRows.value.length > 0
+  );
+  const selectable = computed(() => !isInlineEditing.value);
   const showFooter = computed(
     () =>
       props.footerActive ||
+      isInlineEditing.value ||
       props.enableAdjustPageSize ||
       elementIndex.pagination.total > 0 ||
       table.getPageCount() > 1
   );
+  const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
+    ...props.itemBehavior,
+    ...(isInlineEditing.value
+      ? {onClick: undefined, onKeydown: undefined}
+      : {}),
+  }));
+
+  watch(inlineEditor.editingIds, (ids) => {
+    if (inlineEditing) {
+      inlineEditing.active.value = ids.length > 0;
+    }
+  });
+
+  onMounted(() => {
+    if (inlineEditing?.active.value && canEditInline.value) {
+      void startInlineEditing();
+    }
+  });
+
   const liveMessage = ref('');
   watch(loading, (isLoading, wasLoading) => {
     if (isLoading) liveMessage.value = t('Loading…');
@@ -85,12 +135,41 @@
   function moveRow(id: string | number, move: StructureMove): void {
     void structure?.moveRow(id, move);
   }
+
+  async function startInlineEditing(): Promise<void> {
+    if (!inlineEditing) {
+      return;
+    }
+
+    inlineEditing.active.value = true;
+    selection.clearSelection();
+
+    try {
+      await inlineEditor.start();
+    } catch (cause) {
+      inlineEditing.active.value = false;
+      throw cause;
+    }
+  }
+
+  function onBodyDblClick(event: MouseEvent): void {
+    if (isInlineEditing.value) {
+      return;
+    }
+
+    emit('dblclick', event);
+  }
+
+  function onBodyKeydown(event: KeyboardEvent): void {
+    inlineEditor.onKeydown(event);
+  }
 </script>
 
 <template>
   <div class="element-index" :class="{'element-index--contained': contained}">
     <div class="element-index__header">
       <ElementIndexToolbar
+        v-if="!isInlineEditing"
         v-model:search="search"
         v-model:status="status"
         v-model:conditions="conditions"
@@ -98,7 +177,7 @@
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"
-        :processing="loading"
+        :processing="processing"
         :status-options="elementIndex.statusOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
@@ -109,8 +188,34 @@
         @reorder="reorder"
         @site-change="emit('site-change', $event)"
       >
-        <template #actions v-if="$slots['toolbar-actions']">
-          <slot name="toolbar-actions" :element-index="elementIndex" />
+        <template #actions>
+          <div class="flex flex-wrap gap-md">
+            <craft-button
+              v-if="canEditInline"
+              type="button"
+              :variant="ButtonVariant.Fill"
+              .disabled="processing"
+              @click="startInlineEditing"
+              >{{ t('Edit inline') }}</craft-button
+            >
+            <slot name="toolbar-actions" :element-index="elementIndex" />
+            <ElementIndexExportMenu
+              v-if="exportElements"
+              :exporters="elementIndex.exporters ?? []"
+              :max-limit="elementIndex.pagination.total"
+              :disabled="processing"
+              @export="
+                (format, type, limit) =>
+                  exportElements?.(
+                    format,
+                    type,
+                    selection.selectedIds.value,
+                    limit
+                  )
+              "
+            />
+            <slot name="toolbar-actions-after" :element-index="elementIndex" />
+          </div>
         </template>
         <template #search-options v-if="$slots['search-options']">
           <slot name="search-options" />
@@ -121,38 +226,45 @@
       <slot name="navbar" />
     </div>
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
-      <div @dblclick="emit('dblclick', $event)">
+      <div ref="body" @dblclick="onBodyDblClick" @keydown="onBodyKeydown">
         <ElementCards
           v-if="mode === 'cards'"
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="true"
+          :selectable="selectable"
           :loading="loading"
           :item-behavior="itemBehavior"
+          :interactions-disabled="processing"
         />
         <ElementThumbs
           v-else-if="mode === 'thumbs'"
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="true"
+          :selectable="selectable"
           :loading="loading"
           :item-behavior="itemBehavior"
+          :interactions-disabled="processing"
         />
         <ElementTable
           v-else
           :table="table"
           :selection="selection"
-          :selectable="true"
+          :selectable="selectable"
           :loading="loading"
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
-          :structure="structure !== undefined && mode === 'structure'"
+          :structure="
+            !isInlineEditing && structure !== undefined && mode === 'structure'
+          "
           :is-row-collapsed="structureView.isCollapsed"
           :is-row-pending="structureView.isPending"
-          :reorderable="structure?.reorderable ?? false"
+          :reorderable="!isInlineEditing && (structure?.reorderable ?? false)"
+          :interactions-disabled="processing"
+          :inline-editing="isInlineEditing"
+          :render-cell="inlineEditor.renderCell"
           :can-move-row="structure?.canMoveRow"
           @toggle-structure="toggleStructure"
           @move-structure-row="moveRow"
@@ -160,7 +272,23 @@
       </div>
     </div>
     <div class="element-index__footer" v-if="showFooter">
-      <slot v-if="footerActive" name="footer" />
+      <div v-if="isInlineEditing" class="flex gap-md">
+        <craft-button
+          type="button"
+          :variant="ButtonVariant.Primary"
+          .disabled="processing"
+          @click="inlineEditor.save"
+          >{{ t('Save') }}</craft-button
+        >
+        <craft-button
+          type="button"
+          :variant="ButtonVariant.Plain"
+          .disabled="processing"
+          @click="inlineEditor.cancel"
+          >{{ t('Cancel') }}</craft-button
+        >
+      </div>
+      <slot v-else-if="footerActive" name="footer" />
       <PaginationControls
         v-else
         :page-index="table.getState().pagination.pageIndex"
@@ -176,6 +304,7 @@
         :to="elementIndex.pagination.to"
         :total="elementIndex.pagination.total"
         :enable-adjust-page-size="enableAdjustPageSize"
+        :disabled="processing"
         @page-change="table.setPageIndex"
         @page-size-change="table.setPageSize"
       />

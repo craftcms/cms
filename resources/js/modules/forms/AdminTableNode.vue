@@ -32,7 +32,7 @@
   import {useLocalStorage} from '@/common/composables/useStorage';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
-  import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
+  import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {SortOption} from '@/modules/elements/types/view-state';
   import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
   import CreateActionButton from '@/modules/admin-table/components/CreateActionButton.vue';

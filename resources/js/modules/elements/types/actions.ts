@@ -30,6 +30,8 @@ export interface BulkActionItem {
    * over `action` when both are given.
    */
   onClick?: (event: Event) => void;
+  /** Row capability that every selected element must expose as truthy. */
+  selectionAttribute?: keyof ElementCapabilities;
   /** The primitive action descriptor. Ignored when `onClick` is set; absent for disabled/placeholder items. */
   action?:
     | {
@@ -58,6 +60,30 @@ export interface BulkActionGroup {
 }
 
 export type BulkAction = BulkActionItem | BulkActionGroup | ActionItemDisplay;
+export interface ElementCapabilities {
+  copyable: boolean;
+  duplicatable: boolean;
+  deletable: boolean;
+}
+
+export function selectionAllows(
+  item: BulkActionItem,
+  elements: ReadonlyArray<ElementActionSelection>
+): boolean {
+  const attribute = item.selectionAttribute;
+
+  return (
+    !attribute ||
+    elements.every((element) => element.capabilities?.[attribute] === true)
+  );
+}
+
+export interface ElementActionSelection {
+  id: string | number;
+  capabilities?: Partial<ElementCapabilities>;
+  type?: string;
+  siteId?: number | null;
+}
 
 export interface BulkActionEventDetail {
   elementIds: ReadonlyArray<string | number>;

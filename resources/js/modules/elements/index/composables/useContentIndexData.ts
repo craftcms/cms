@@ -3,9 +3,10 @@ import {computed, reactive, toValue, type MaybeRefOrGetter} from 'vue';
 import type {PaginationData, SortItem} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
+import type {ElementCapabilities} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 import type {IndexSite} from '@/modules/elements/types/sites';
-import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
+import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {
   SortOption,
   ViewMode,
@@ -14,8 +15,11 @@ import type {
 
 type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
 
-export interface ElementIndexRow extends IndexQueryParams {
+export interface ElementIndexRow extends InlineEditableRow {
   id: string | number;
+  capabilities?: Partial<ElementCapabilities>;
+  cpEditUrl?: string | null;
+  viewUrl?: string | null;
   /** The row's depth in the tree (1-based). Structure mode only. */
   level?: number;
   /** Whether the row has descendants the index would list (its toggle). */
@@ -44,6 +48,7 @@ export type ContentIndexData = Omit<
   | 'sort'
   | 'data'
   | 'actions'
+  | 'exporters'
   | 'pagination'
 > & {
   source: SourceItem | null;
@@ -56,6 +61,7 @@ export type ContentIndexData = Omit<
   sort: SortItem[];
   data: ElementIndexRow[];
   actions: BulkActionItem[] | null;
+  exporters: Array<{type: string; name: string; formattable: boolean}>;
   pagination: PaginationData;
 };
 
@@ -131,6 +137,7 @@ export function useContentIndexData<
     // Results
     data: computed(() => props().data),
     actions: computed(() => props().actions),
+    exporters: computed(() => props().exporters),
     pagination: computed(() => props().pagination),
 
     // Merged into the literal rather than `Object.assign`ed onto the result:

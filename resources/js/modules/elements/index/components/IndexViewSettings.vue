@@ -13,6 +13,7 @@
     sortOptions: Array<SortOption>;
     /** Whether the active sort has an intrinsic direction. */
     sortDirectionLocked?: boolean;
+    disabled?: boolean;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -92,6 +93,7 @@
       slot="invoker"
       icon="sliders"
       :variant="ButtonVariant.Fill"
+      .disabled="disabled"
     >
       {{ t('View') }}
     </craft-button>

@@ -9,7 +9,6 @@
     type ElementIndexRoute,
   } from '@/modules/elements/index/composables/useElementIndexVisits';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
-  import type {ElementIndexModel} from '../types/model';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -18,6 +17,7 @@
   import useCraftData from '@/common/composables/useCraftData';
   import {router} from '@inertiajs/vue3';
   import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
+  import type {ElementIndexModel} from '@/modules/elements/index/types/model';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -129,10 +129,7 @@
 
     const id = String(detail.elementIds[0]);
 
-    return (elementIndex.data.find((row) => String(row.id) === id) ?? null) as {
-      cpEditUrl: string | null;
-      viewUrl: string | null;
-    } | null;
+    return elementIndex.data.find((row) => String(row.id) === id) ?? null;
   }
 
   function editElement(detail: BulkActionEventDetail): void {
@@ -180,6 +177,11 @@
       <template #footer>
         <ElementBulkActionsBar
           :selected-ids="selection.selectedIds.value"
+          :selected-elements="
+            page.view.table
+              .getSelectedRowModel()
+              .rows.map(({original}) => original)
+          "
           :actions="elementIndex.actions"
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"

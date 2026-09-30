@@ -9,6 +9,24 @@ import type {
 import type {ElementIndexSelection} from '../composables/useElementIndexSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
 import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
+import type {ElementIndexExportFormat} from './exporters';
+
+export interface ElementIndexInlineEditing {
+  active: Ref<boolean>;
+  load(this: void): Promise<void>;
+  save(
+    this: void,
+    body: URLSearchParams
+  ): Promise<InlineEditingSaveResult | false>;
+}
+
+export type ExportElementIndex = (
+  format: ElementIndexExportFormat,
+  type: string,
+  selectedIds: ReadonlyArray<string | number>,
+  limit?: number
+) => void | Promise<void>;
 
 export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
@@ -19,12 +37,15 @@ export interface ElementIndexView {
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;
   mode: Ref<ViewMode['mode']>;
+  inlineEditing?: ElementIndexInlineEditing;
   sortField: Ref<string>;
   sortDirection: Ref<'asc' | 'desc'>;
   tableColumns: Ref<string[]>;
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;
   loading: Ref<boolean>;
+  processing: ComputedRef<boolean>;
+  exportElements?: ExportElementIndex;
   submit(this: void): void;
   reorder(this: void, options: CheckboxOption[]): void;
   structureView: {
