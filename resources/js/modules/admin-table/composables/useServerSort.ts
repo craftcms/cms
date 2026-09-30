@@ -1,5 +1,5 @@
 import {ref} from 'vue';
-import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
+import type {QueryParams} from '@/common/types/query';
 import type {SortingState, Updater} from '@tanstack/vue-table';
 import type {SortItem} from '@/common/types';
 
@@ -22,7 +22,7 @@ interface UseServerSortParams {
    * read, and taking the host page's would both lose its own state (the chosen
    * source) and drag in params that aren't its.
    */
-  currentQuery?: () => IndexQueryParams;
+  currentQuery?: () => QueryParams;
 }
 
 export function useServerSort({

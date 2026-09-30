@@ -17,14 +17,14 @@
     watch,
   } from 'vue';
   import type {NestedReorderDirection} from '@craftcms/ui';
-  import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
+  import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import {
     type StructureDropType,
     useStructureDrag,
   } from '@/modules/elements/index/composables/useStructureDrag';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
-  import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
+  import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import {usePage} from '@inertiajs/vue3';
   import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
