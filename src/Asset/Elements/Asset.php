@@ -1753,14 +1753,8 @@ JS, [
      */
     private function imgPlaceholderStyle(): array
     {
-        $grid = $this->colors->grid ?? [];
-
-        foreach ($grid as $row) {
-            foreach ($row as $color) {
-                if (strlen($color) > 7) {
-                    return [];
-                }
-            }
+        if ($this->hasTransparency()) {
+            return [];
         }
 
         $placeholderUrl = $this->getPlaceholderDataUrl();
@@ -1772,6 +1766,23 @@ JS, [
         return [
             'background' => "url($placeholderUrl) center / cover no-repeat",
         ];
+    }
+
+    private function hasTransparency(): ?bool
+    {
+        if (empty($this->colors->grid)) {
+            return null;
+        }
+
+        foreach ($this->colors->grid as $row) {
+            foreach ($row as $color) {
+                if (strlen($color) > 7) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -2153,7 +2164,7 @@ JS, [
             return false;
         }
 
-        return in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
+        return $this->hasTransparency() ?? in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
     }
 
     /**
@@ -2762,10 +2773,7 @@ JS, [
                         'preview-thumb-container',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    'data' => [
-                        'theme' => 'dark',
-                    ],
-                    'style' => $this->previewBackgroundStyle(),
+                    ...$this->previewBackgroundStyles(),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
@@ -2786,21 +2794,51 @@ JS, [
      *
      * @return array<string, string>
      */
-    private function previewBackgroundStyle(): array
+    private function previewBackgroundStyles(): array
     {
-        $colors = $this->kind === FileKind::Image->value ? $this->colors : null;
+        if ($this->kind !== FileKind::Image->value) {
+            return [];
+        }
+
+        if ($this->hasTransparency()) {
+            return [
+                'style' => [
+                    '--_checker-size' => '16px',
+                    '--_checker-color' => 'var(--c-thumbnail-checker-color, hsl(211 13% 65% / 0.25));',
+                    '--_checker-half' => 'calc(var(--_checker-size) / 2);',
+                    'background-image' => <<<'CSS'
+linear-gradient(45deg, var(--_checker-color) 25%, transparent 25%),
+linear-gradient(135deg, var(--_checker-color) 25%, transparent 25%),
+linear-gradient(45deg, transparent 75%, var(--_checker-color) 75%),
+linear-gradient(135deg, transparent 75%, var(--_checker-color) 75%)
+CSS,
+                    'background-size' => 'var(--_checker-size) var(--_checker-size);',
+                    'background-position' => <<<'CSS'
+0 0,
+var(--_checker-half) 0,
+var(--_checker-half) calc(-1 * var(--_checker-half)),
+0 var(--_checker-half)
+CSS,
+                ],
+            ];
+        }
 
         // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
-        $left = $colors?->left();
-        $right = $colors?->right();
+        $left = $this->colors?->left();
+        $right = $this->colors?->right();
 
         if ($left === null || $right === null) {
             return [];
         }
 
         return [
-            'background-color' => '#000',
-            'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+            'data' => [
+                'theme' => 'dark',
+            ],
+            'style' => [
+                'background-color' => '#000',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+            ],
         ];
     }
 
