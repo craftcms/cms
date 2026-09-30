@@ -20,6 +20,8 @@ export interface UseAppLayoutOptions {
   subnavActions?: Array<ActionItem>;
   /** Caps and centres the content column. See `ScreenProps.contentMaxWidth`. */
   contentMaxWidth?: boolean | string;
+  /** The screen's own edit page. See `ScreenProps.editUrl`. */
+  editUrl?: string | null;
   onSave?: (options?: FormSaveOptions) => void;
 }
 
