@@ -31,6 +31,11 @@
       selection: Selectable<Id>;
       selectable?: boolean;
       sortable?: boolean;
+      /**
+       * Disables selection, sorting and reordering while a request runs,
+       * keeping the controls in place so the layout doesn't shift.
+       */
+      interactionsDisabled?: boolean;
       readOnly?: boolean;
       /**
        * Whether the list runs straight down. A wrapping grid reads left-to-right,
@@ -55,6 +60,7 @@
     {
       selectable: false,
       sortable: false,
+      interactionsDisabled: false,
       readOnly: false,
       singleColumn: false,
       tag: 'ul',
@@ -84,7 +90,7 @@
       getItemIds: () => props.ids,
       onReorder: (startIndex, finishIndex) =>
         emit('reorder', startIndex, finishIndex),
-      enabled: () => props.sortable,
+      enabled: () => props.sortable && !props.interactionsDisabled,
     });
 
   const reorderOrientation = computed(() =>
@@ -164,7 +170,9 @@
       case ' ':
       case 'Enter':
         event.preventDefault();
-        props.selection.toggle(id);
+        if (!props.interactionsDisabled) {
+          props.selection.toggle(id);
+        }
 
         return;
 
@@ -189,7 +197,7 @@
   ): void {
     const id = props.ids[index];
 
-    if (event.shiftKey && id !== undefined) {
+    if (event.shiftKey && id !== undefined && !props.interactionsDisabled) {
       props.selection.extendTo(id);
     }
 
@@ -247,7 +255,9 @@
               class="checkbox"
               label-sr-only
               .checked="selection.isSelected(id)"
-              .disabled="readOnly || !selection.canSelect(id)"
+              .disabled="
+                readOnly || interactionsDisabled || !selection.canSelect(id)
+              "
               @model-value-changed="onCheckboxChange(id, $event)"
             >
               <label slot="label">{{
@@ -267,7 +277,7 @@
             >
               <craft-reorder-button
                 class="move-btn"
-                :disabled="ids.length < 2"
+                :disabled="interactionsDisabled || ids.length < 2"
                 :position="getRowPosition(index)"
                 :orientation="reorderOrientation"
                 @craft-reorder="

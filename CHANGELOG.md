@@ -6,6 +6,8 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))

@@ -17,6 +17,7 @@ describe('ElementCards', () => {
       id: 5,
       label: 'Homepage',
       cardHeaderHtml: '',
+      cardActionsHtml: '<button data-server-action>Server action</button>',
       cardContentHtml: '',
       cardFooterHtml: '',
     },
@@ -68,5 +69,14 @@ describe('ElementCards', () => {
     ].map((el) => el.textContent);
 
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
+  });
+
+  it('renders server-provided card actions when the host does not replace them', async () => {
+    const {root} = mount();
+    await nextTick();
+
+    expect(root.querySelector('[data-server-action]')?.textContent).toBe(
+      'Server action'
+    );
   });
 });

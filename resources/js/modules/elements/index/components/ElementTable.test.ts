@@ -204,6 +204,29 @@ describe('DataTable', () => {
     expect(selected(root)).toEqual([]);
   });
 
+  it('keeps selection and sort controls in place but inert while interactions are disabled', async () => {
+    const {root} = mount({interactionsDisabled: true});
+    const row = rows(root)[0]!;
+    const controls = [
+      ...root.querySelectorAll<HTMLElement & {disabled: boolean}>(
+        'tbody craft-checkbox, th button'
+      ),
+    ];
+
+    row.click();
+    row.dispatchEvent(
+      new KeyboardEvent('keydown', {key: ' ', bubbles: true, cancelable: true})
+    );
+    await nextTick();
+
+    expect(root.querySelectorAll('th button').length).toBeGreaterThan(0);
+    expect(root.querySelectorAll('tbody craft-checkbox')).toHaveLength(
+      rows(root).length
+    );
+    expect(controls.every((control) => control.disabled)).toBe(true);
+    expect(selected(root)).toEqual([]);
+  });
+
   it('leaves keyboard events from a row checkbox to the checkbox', async () => {
     const onKeydown = vi.fn(() => true);
     const {root} = mount({itemBehavior: {onKeydown}});

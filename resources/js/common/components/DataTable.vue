@@ -26,6 +26,11 @@
       table: Table<any>;
       title?: string;
       reorderable?: boolean;
+      /**
+       * Disables selection, sorting and reordering while a request runs,
+       * keeping the controls in place so the layout doesn't shift.
+       */
+      interactionsDisabled?: boolean;
       readOnly?: boolean;
       leadingColumnTracks?: string[];
       rowAttributes?: (row: Row<any>) => HTMLAttributes;
@@ -37,6 +42,7 @@
 
     {
       reorderable: false,
+      interactionsDisabled: false,
       readOnly: false,
       leadingColumnTracks: () => [],
       loading: false,
@@ -60,7 +66,8 @@
       onReorder: (startIndex, finishIndex) => {
         emit('reorder', startIndex, finishIndex);
       },
-      enabled: () => !props.readOnly && props.reorderable,
+      enabled: () =>
+        !props.readOnly && props.reorderable && !props.interactionsDisabled,
     });
 
   function getClosestEdge(rowId: string) {
@@ -286,6 +293,7 @@
             >
               <ColumnHeaderTitle
                 :is-sortable="header.column.getCanSort()"
+                :disabled="interactionsDisabled"
                 :sort-instructions-id="columnSortInstructionId"
                 @sort-column="header.column.getToggleSortingHandler()?.($event)"
               >
@@ -348,6 +356,7 @@
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
                 <div>
                   <craft-reorder-button
+                    .disabled="interactionsDisabled"
                     @craft-reorder="
                       (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                         emit(

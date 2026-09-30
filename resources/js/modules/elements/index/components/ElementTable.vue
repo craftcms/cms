@@ -1,7 +1,12 @@
 <script setup lang="ts">
-  import {FlexRender, type Row, type Table} from '@tanstack/vue-table';
+  import {
+    FlexRender,
+    type CellContext,
+    type Row,
+    type Table,
+  } from '@tanstack/vue-table';
   import {t} from '@craftcms/ui';
-  import {computed, ref, type HTMLAttributes} from 'vue';
+  import {computed, ref, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
   import type {ElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
   import type {NestedReorderDirection} from '@craftcms/ui';
@@ -42,6 +47,16 @@
       canMoveRow?: (id: string | number, move: StructureMove) => boolean;
       itemBehavior?: ElementIndexItemBehavior<any>;
       withBottomBorder?: boolean;
+      /**
+       * Disables selection, sorting and reordering while a request runs,
+       * keeping the controls in place so the layout doesn't shift.
+       */
+      interactionsDisabled?: boolean;
+      inlineEditing?: boolean;
+      renderCell?: (
+        context: CellContext<any, unknown>,
+        showErrors: boolean
+      ) => unknown;
     }>(),
 
     {
@@ -54,6 +69,7 @@
       isRowPending: () => false,
       canMoveRow: () => false,
       withBottomBorder: true,
+      inlineEditing: false,
     }
   );
 
@@ -71,6 +87,12 @@
     extendSelectionTo,
   } = props.selection;
 
+  function renderInlineCell(context: CellContext<any, unknown>): VNodeChild {
+    const showErrors = context.row.getVisibleCells()[0]?.id === context.cell.id;
+
+    return props.renderCell?.(context, showErrors) as VNodeChild;
+  }
+
   // Captures modifier state from the native click, because craft-checkbox's
   // `model-value-changed` event does not carry `shiftKey`.
   const pendingShiftKey = ref(false);
@@ -83,7 +105,9 @@
       return;
     }
 
-    selectRowFromEvent(row, event);
+    if (!props.interactionsDisabled) {
+      selectRowFromEvent(row, event);
+    }
   }
 
   const structureDropMoves: Partial<
@@ -97,7 +121,11 @@
   const structureDrag = useStructureDrag({
     getRows: () =>
       props.table.getRowModel().rows.map((row: any) => row.original),
-    enabled: () => !readOnly.value && props.reorderable && props.structure,
+    enabled: () =>
+      !readOnly.value &&
+      props.reorderable &&
+      props.structure &&
+      !props.interactionsDisabled,
     onMove: (id, move) => emit('moveStructureRow', id, move),
     blockedDrops: (sourceId, targetId) =>
       (
@@ -180,6 +208,7 @@
       event.preventDefault();
       return;
     }
+    if (props.interactionsDisabled) return;
     switch (event.key) {
       case ' ':
       case 'Enter':
@@ -213,6 +242,7 @@
     :layout="layout"
     :spacing="spacing"
     :with-bottom-border="withBottomBorder"
+    :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
     @row-click="onRowClick"
@@ -243,7 +273,7 @@
           label-sr-only
           .checked="table.getIsAllRowsSelected()"
           .indeterminate="table.getIsSomeRowsSelected()"
-          .disabled="readOnly"
+          .disabled="readOnly || interactionsDisabled"
           @model-value-changed="
             onToggleAllSelected(($event.target as HTMLInputElement).checked)
           "
@@ -295,6 +325,7 @@
         <div>
           <craft-reorder-button
             nested
+            .disabled="interactionsDisabled"
             :position="structurePosition(row.original.id)"
             .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
             .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
@@ -314,7 +345,7 @@
         <craft-checkbox
           label-sr-only
           .checked="row.getIsSelected()"
-          .disabled="readOnly || !row.getCanSelect()"
+          .disabled="readOnly || interactionsDisabled || !row.getCanSelect()"
           @click="rememberShift($event)"
           @model-value-changed="
             selectRow(row, {
@@ -330,7 +361,12 @@
       </td>
     </template>
     <template #cell="{cell, row, index}">
-      <div v-if="structure && index === 0" class="cp-table-structure">
+      <FlexRender
+        v-if="inlineEditing && renderCell"
+        :render="renderInlineCell"
+        :props="cell.getContext()"
+      />
+      <div v-else-if="structure && index === 0" class="cp-table-structure">
         <span class="sr-only"
           >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
         </span>

@@ -5,7 +5,10 @@
   import type {
     BulkActionEventDetail,
     BulkActionItem,
+    ElementActionSelection,
   } from '@/modules/elements/types/actions';
+  import {selectionAllows} from '@/modules/elements/types/actions';
+  import {copyElements} from '@/modules/elements/index/copy-elements';
   import type {ActionItem} from '@/common/types';
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -16,6 +19,7 @@
     defineProps<{
       /** The ids of the elements currently selected in the index. */
       selectedIds: ReadonlyArray<string | number>;
+      selectedElements?: ReadonlyArray<ElementActionSelection>;
       /** The serialized bulk action descriptors for the active source. */
       actions?: Array<BulkActionItem> | null;
       /** The element type class string, posted to the perform endpoint. */
@@ -27,6 +31,7 @@
     }>(),
     {
       actions: () => [],
+      selectedElements: () => [],
       source: null,
       context: 'index',
     }
@@ -62,7 +67,9 @@
 
   const availableActions = computed(() =>
     (props.actions ?? []).filter(
-      (item) => !item.appliesTo || item.appliesTo === selectionType.value
+      (item) =>
+        (!item.appliesTo || item.appliesTo === selectionType.value) &&
+        selectionAllows(item, props.selectedElements)
     )
   );
 
@@ -191,12 +198,10 @@
     const ids: ReadonlyArray<string | number> =
       detail.elementIds ?? props.selectedIds;
 
-    Craft.cp?.copyElements?.(
-      ids.map((id) => ({
-        type: detail.elementType ?? props.elementType,
-        id,
-        siteId: Craft.siteId ?? null,
-      }))
+    copyElements(
+      detail.elementType ?? props.elementType,
+      ids,
+      detail.elements ?? props.selectedElements
     );
   }
 
@@ -204,6 +209,7 @@
     trigger: HTMLElement;
     elementIds?: ReadonlyArray<string | number>;
     elementType?: string;
+    elements?: ReadonlyArray<ElementActionSelection>;
   }> {
     if (!(event instanceof CustomEvent)) {
       return false;
