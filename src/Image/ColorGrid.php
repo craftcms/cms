@@ -152,8 +152,12 @@ class ColorGrid
         ];
     }
 
-    /** @return array{int, int, int, float} */
-    private static function parse(string $hex): array
+    /**
+     * Parses a `#rrggbb` or `#rrggbbaa` hex color.
+     *
+     * @return array{int, int, int, float} Red, green, and blue values from 0 to 255, and an alpha value from 0 to 1
+     */
+    public static function parse(string $hex): array
     {
         return [
             (int) hexdec(substr($hex, 1, 2)),
@@ -185,14 +189,20 @@ class ColorGrid
         return '#'.implode('', array_map(fn (int $channel): string => sprintf('%02x', $channel), $channels));
     }
 
-    private static function toLinear(int $channel): float
+    /**
+     * Converts an sRGB channel from 0 to 255 to linear light, from 0 to 1.
+     */
+    public static function toLinear(int $channel): float
     {
         $value = $channel / 255;
 
         return $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
     }
 
-    private static function toSrgb(float $linear): int
+    /**
+     * Converts linear light from 0 to 1 to an sRGB channel from 0 to 255.
+     */
+    public static function toSrgb(float $linear): int
     {
         $linear = max(0.0, min(1.0, $linear));
         $value = $linear <= 0.0031308 ? $linear * 12.92 : 1.055 * $linear ** (1 / 2.4) - 0.055;

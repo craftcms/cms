@@ -19,10 +19,10 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
         [
             'dominant' => '#3a6ea5',
             'grid' => [['#ff0000', '#3a6ea5', '#0000ff'], ['#990000', '#3a6ea5', '#000099']],
-            'left' => '#cc0000',
-            'right' => '#0000cc',
-            'top' => '#68258c',
-            'bottom' => '#46256a',
+            'left' => '#d40000',
+            'right' => '#0000d4',
+            'top' => '#9f40b4',
+            'bottom' => '#614084',
         ],
     ],
     'inconclusive' => [

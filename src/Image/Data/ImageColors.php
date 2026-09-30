@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Data;
 
+use CraftCms\Cms\Image\ColorGrid;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Contracts\Support\Arrayable;
@@ -101,7 +102,8 @@ readonly class ImageColors implements Arrayable, JsonSerializable
     }
 
     /**
-     * Averages colors’ red, green, and blue channels. Alpha channels are ignored.
+     * Averages colors’ red, green, and blue channels in linear light, the same way the grid’s regions are. Alpha
+     * channels are ignored.
      *
      * @param  list<string>  $colors
      */
@@ -111,15 +113,13 @@ readonly class ImageColors implements Arrayable, JsonSerializable
             return null;
         }
 
-        $channels = array_map(
-            fn (int $offset): int => (int) round(array_sum(array_map(
-                fn (string $color): int => (int) hexdec(substr($color, $offset, 2)),
-                $colors,
-            )) / count($colors)),
-            [1, 3, 5],
-        );
+        $pixels = array_map(function (string $color): array {
+            [$red, $green, $blue] = ColorGrid::parse($color);
 
-        return sprintf('#%02x%02x%02x', ...$channels);
+            return [$red, $green, $blue, 1.0];
+        }, $colors);
+
+        return ColorGrid::average($pixels, count($pixels), 1, 1, 1)[0][0];
     }
 
     private static function isHexColor(mixed $value): bool

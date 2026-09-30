@@ -76,7 +76,7 @@ class Blurhash
             $hash .= self::base83($quantisedMaximum, 1);
         }
 
-        $hash .= self::base83((self::toSrgb($dc[0]) << 16) + (self::toSrgb($dc[1]) << 8) + self::toSrgb($dc[2]), 4);
+        $hash .= self::base83((ColorGrid::toSrgb($dc[0]) << 16) + (ColorGrid::toSrgb($dc[1]) << 8) + ColorGrid::toSrgb($dc[2]), 4);
 
         foreach ($factors as $factor) {
             [$red, $green, $blue] = array_map(
@@ -96,29 +96,12 @@ class Blurhash
      */
     private static function linearColor(string $hex): array
     {
-        $alpha = strlen($hex) > 7 ? hexdec(substr($hex, 7, 2)) / 255 : 1.0;
+        [$red, $green, $blue, $alpha] = ColorGrid::parse($hex);
 
-        return [
-            self::toLinear((int) hexdec(substr($hex, 1, 2))) * $alpha + 1 - $alpha,
-            self::toLinear((int) hexdec(substr($hex, 3, 2))) * $alpha + 1 - $alpha,
-            self::toLinear((int) hexdec(substr($hex, 5, 2))) * $alpha + 1 - $alpha,
-        ];
-    }
-
-    private static function toLinear(int $channel): float
-    {
-        $value = $channel / 255;
-
-        return $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
-    }
-
-    private static function toSrgb(float $linear): int
-    {
-        $value = max(0.0, min(1.0, $linear));
-
-        return (int) ($value <= 0.0031308
-            ? $value * 12.92 * 255 + 0.5
-            : (1.055 * $value ** (1 / 2.4) - 0.055) * 255 + 0.5);
+        return array_map(
+            fn (int $channel): float => ColorGrid::toLinear($channel) * $alpha + 1 - $alpha,
+            [$red, $green, $blue],
+        );
     }
 
     private static function signPow(float $value, float $exponent): float
