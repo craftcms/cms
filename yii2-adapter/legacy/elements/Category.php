@@ -19,6 +19,7 @@ use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -529,7 +530,7 @@ class Category extends Element
             if ($user?->can('view', $ancestor)) {
                 $crumbs[] = [
                     'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
-                        'class' => 'chromeless',
+                        'appearance' => Appearance::Plain->value,
                         'hyperlink' => true,
                     ]),
                 ];
