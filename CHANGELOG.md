@@ -6,6 +6,9 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
@@ -19,9 +22,20 @@
 - Improved disabled secondary form actions with explanatory tooltips.
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
+- Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
+- Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
+- Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
+- Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.
+- Fixed a bug where the “Preview file” modal was unstyled.
+- Fixed a bug where element index sort direction buttons did nothing. ([#19744](https://github.com/craftcms/cms/pull/19744))
+- Fixed a bug where element index selection ranges could use a stale anchor after clearing selection or switching view modes. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element index searches could move keyboard focus after a page load. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals could display results from an outdated request. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals requested search results on every keystroke. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
+- Fixed an accessibility issue where the Date, Time, and Time zone inputs within `<craft-input-date-time>` didn’t have individual accessible names. ([#19741](https://github.com/craftcms/cms/pull/19741))
 - Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
 - Fixed a bug where Shift-selecting a shorter range didn’t deselect items outside the new range. ([#19727](https://github.com/craftcms/cms/pull/19727))
 - Fixed a bug where select inputs could lose their selected value if their options were loaded asynchronously. ([#19728](https://github.com/craftcms/cms/pull/19728))
@@ -33,9 +47,26 @@
 - The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Added `crop`, `fit`, `stretch`, and `letterbox` modes to `craft-thumbnail`, and removed size-dependent asset thumbnail cropping.
 - Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
+- Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color and a grid of the average colors of its regions. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Asset edit sidebars now fill the space around image previews with a gradient between the colors of the image’s left and right edges. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Control panel uploads now sample image colors in the browser and send them along, so the server doesn’t need to sample the file itself. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- `<img>` tags returned by `CraftCms\Cms\Asset\Elements\Asset::getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates and the `blurhash` field in GraphQL queries. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
+- Added `CraftCms\Cms\Asset\Elements\Asset::$colors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getBlurhash()`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getPlaceholderDataUrl()`. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$uploadColors`. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- Added `CraftCms\Cms\Image\Blurhash`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\ColorGrid`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\Data\ImageColors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Image\Images::colors()`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
+- Fixed a bug where asset indexing left temporary copies of remote images behind. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Fixed a bug where uploaded and replaced assets’ modification dates came from their temporary files rather than the stored files.
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -88,6 +119,7 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
+- Fixed a bug where the Delete element action reported success when some elements couldn't be deleted. ([#19743](https://github.com/craftcms/cms/pull/19743))
 - Fixed a bug where plugin-provided download element actions didn’t trigger file downloads from element indexes. ([#19730](https://github.com/craftcms/cms/pull/19730))
 - Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
 - Fixed a bug where `resave` and `update-statuses` commands reported skipped revisions as root element lookup errors.
@@ -144,6 +176,7 @@
 - Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
+- Fixed an error in the Yii adapter during installation or updates when `CRAFT_SITE` or `X-Craft-Site` referenced a missing site. ([#19745](https://github.com/craftcms/cms/pull/19745))
 - Fixed an error that could occur when rendering element table rows with strict Twig variables enabled. ([#19679](https://github.com/craftcms/cms/pull/19679))
 - Fixed a bug where no confirmation dialog was shown when deleting entry types and custom fields. ([#19582](https://github.com/craftcms/cms/pull/19582))
 - Fixed a bug where Save and continue editing left newly created control panel items on their creation page. ([#19619](https://github.com/craftcms/cms/pull/19619))

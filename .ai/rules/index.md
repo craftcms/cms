@@ -14,6 +14,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/** | .ai/rules/js.md |
 | src/Database/Migrations/** | .ai/rules/migrations.md |
 | src/** | .ai/rules/src.md |
+| tests-playwright/** | .ai/rules/tests-playwright.md |
 | yii2-adapter/tests-laravel/** | .ai/rules/tests-laravel.md |
 | tests/** | .ai/rules/tests.md |
 | yii2-adapter/** | .ai/rules/yii2-adapter.md |

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
@@ -240,4 +241,98 @@ it('removes orientation exif data when imagick and exif are available', function
     $exifData = $this->service->getExifData($path) ?? [];
 
     expect($exifData)->not->toHaveKey('ifd0.Orientation');
+});
+
+describe('colors', function () {
+    /**
+     * @param  array{int, int, int}  $background
+     * @param  array{int, int, int, int, int, int, int}|null  $rectangle  x1, y1, x2, y2, r, g, b
+     */
+    function colorsFixture(string $path, array $background, ?array $rectangle = null, int $width = 200, int $height = 200): string
+    {
+        $image = imagecreatetruecolor($width, $height);
+        imagesavealpha($image, true);
+        imagefill($image, 0, 0, imagecolorallocate($image, ...$background));
+
+        if ($rectangle !== null) {
+            [$x1, $y1, $x2, $y2, $r, $g, $b] = $rectangle;
+            imagefilledrectangle($image, $x1, $y1, $x2, $y2, imagecolorallocate($image, $r, $g, $b));
+        }
+
+        imagepng($image, $path);
+
+        return $path;
+    }
+
+    it('samples a single-color image', function () {
+        $path = colorsFixture($this->sandboxPath.'/red.png', [200, 30, 40]);
+
+        expect($this->service->colors($path)->toArray())->toBe([
+            'dominant' => '#c81e28',
+            'grid' => array_fill(0, 3, array_fill(0, 4, '#c81e28')),
+        ]);
+    });
+
+    it('averages each region of the image into the grid', function () {
+        $path = colorsFixture($this->sandboxPath.'/split.png', [200, 30, 40], [100, 0, 199, 149, 30, 80, 200], width: 200, height: 150);
+
+        expect($this->service->colors($path)->grid)
+            ->toBe(array_fill(0, 3, ['#c81e28', '#c81e28', '#1e50c8', '#1e50c8']));
+    });
+
+    it('averages each region in linear light', function () {
+        $image = imagecreatetruecolor(8, 3);
+        for ($x = 0; $x < 8; $x++) {
+            imagefilledrectangle($image, $x, 0, $x, 2, $x % 2 ? imagecolorallocate($image, 255, 255, 255) : imagecolorallocate($image, 0, 0, 0));
+        }
+        imagepng($image, $path = $this->sandboxPath.'/stripes.png');
+
+        expect($this->service->colors($path)->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#bcbcbc')));
+    });
+
+    it('keeps transparent regions transparent in the grid', function () {
+        $image = imagecreatetruecolor(200, 150);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        imagefill($image, 0, 0, imagecolorallocate($image, 200, 30, 40));
+        imagefilledrectangle($image, 100, 0, 199, 149, imagecolorallocatealpha($image, 0, 0, 0, 127));
+        imagepng($image, $path = $this->sandboxPath.'/transparent.png');
+
+        $alphas = array_map(
+            fn (array $row): array => array_map(fn (string $color): string => substr($color, 7) ?: 'ff', $row),
+            $this->service->colors($path)->grid,
+        );
+
+        expect($alphas)->toBe(array_fill(0, 3, ['ff', 'ff', '00', '00']));
+    });
+
+    it('turns the grid on its side for portrait images', function () {
+        $path = colorsFixture($this->sandboxPath.'/portrait.png', [200, 30, 40], width: 150, height: 200);
+
+        expect($this->service->colors($path)->grid)
+            ->toBe(array_fill(0, 4, array_fill(0, 3, '#c81e28')));
+    });
+
+    it('passes over a white backdrop for the dominant color in front of it', function () {
+        $path = colorsFixture($this->sandboxPath.'/white.png', [255, 255, 255], [60, 60, 120, 120, 30, 80, 200]);
+
+        expect($this->service->colors($path)->dominant)->toBe('#1e50c8');
+    });
+
+    it('passes over a black backdrop for the dominant color in front of it', function () {
+        $path = colorsFixture($this->sandboxPath.'/black.png', [0, 0, 0], [0, 0, 40, 40, 240, 140, 20]);
+
+        expect($this->service->colors($path)->dominant)->toBe('#f08c14');
+    });
+
+    it('falls back to a white dominant color when there’s nothing else', function () {
+        $path = colorsFixture($this->sandboxPath.'/all-white.png', [255, 255, 255]);
+
+        expect($this->service->colors($path)->dominant)->toBe('#ffffff');
+    });
+
+    it('returns empty colors for files it can’t read as images', function () {
+        expect($this->service->colors($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageColors)
+            ->and($this->service->colors($this->sandboxPath.'/missing.png'))->toEqual(new ImageColors);
+    });
 });

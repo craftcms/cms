@@ -17,10 +17,12 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
+use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -475,4 +477,78 @@ it('honors empty thumbnail URL overrides without calling the driver', function (
     });
 
     expect($this->assets->getThumbUrl($asset, 120, mode: ImageTransformMode::Fit))->toBe('');
+});
+
+describe('colors', function () {
+    beforeEach(function () {
+        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $this->asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'photo.png',
+            'kind' => FileKind::Image->value,
+        ]);
+    });
+
+    function colorsImage(): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'craft-colors-').'.png';
+        $image = imagecreatetruecolor(100, 100);
+        imagefill($image, 0, 0, imagecolorallocate($image, 200, 30, 40));
+        imagepng($image, $path);
+
+        return $path;
+    }
+
+    it('are stored when an image file comes in', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
+
+        expect(Asset::find()->id($this->asset->id)->one()->colors?->dominant)->toBe('#c81e28');
+    });
+
+    it('are cleared when the file is replaced by one that isn’t an image', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
+
+        $replacement = tempnam(sys_get_temp_dir(), 'craft-colors-');
+        file_put_contents($replacement, 'not an image');
+        $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), $replacement, 'photo.txt');
+
+        expect(Asset::find()->id($this->asset->id)->one()->colors)->toBeNull();
+    });
+
+    it('are stored as inconclusive when none can be sampled', function () {
+        $images = Mockery::mock(ImagesFacade::getFacadeRoot());
+        $images->shouldReceive('colors')->andReturn(new ImageColors);
+        ImagesFacade::swap($images);
+
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
+
+        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => []])
+            ->and(Asset::find()->id($this->asset->id)->one()->colors)->toEqual(new ImageColors);
+    });
+
+    it('can’t be set from a request', function () {
+        $this->asset->setAttributesFromRequest(['colors' => ['dominant' => '#000000']]);
+
+        expect($this->asset->colors)->toBeNull();
+    });
+});
+
+it('dates a replaced file by where it was stored, so indexing doesn’t mistake it for a changed file', function () {
+    $path = tempnam(sys_get_temp_dir(), 'craft-colors-');
+    file_put_contents($path, 'not an image');
+    touch($path, time() - 3600);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $original = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'notes.txt',
+    ]);
+
+    $this->assets->replaceAssetFile($original, $path, 'notes.txt');
+    $asset = Asset::find()->id($original->id)->one();
+
+    expect($asset->dateModified->getTimestamp())
+        ->toBe(Storage::disk('test-disk')->lastModified($asset->getPath()));
 });

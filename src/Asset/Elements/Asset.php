@@ -66,6 +66,9 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
+use CraftCms\Cms\Image\Blurhash;
+use CraftCms\Cms\Image\ColorGrid;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
@@ -110,6 +113,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Imagick;
+use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
@@ -173,6 +177,9 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
+    /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
+    private const int PLACEHOLDER_SCALE = 3;
+
     private static string $_displayName;
 
     /**
@@ -228,6 +235,29 @@ class Asset extends Element
     public ?int $size = null;
 
     /**
+     * @var ImageColors|null Color data sampled from the image, or `null` if it hasn't been sampled yet
+     *
+     * Sampled from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
+     *
+     * @see Images::colors()
+     */
+    #[AllowedInSandbox]
+    public ?ImageColors $colors = null {
+        /** @param ImageColors|array<array-key, mixed>|string|null $value */
+        set(ImageColors|array|string|null $value) {
+            if (is_string($value)) {
+                $value = Json::decodeIfJson($value);
+            }
+
+            $this->colors = match (true) {
+                $value instanceof ImageColors, $value === null => $value,
+                is_array($value) => ImageColors::fromArray($value),
+                default => null,
+            };
+        }
+    }
+
+    /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
     #[AllowedInSandbox]
@@ -270,6 +300,12 @@ class Asset extends Element
 
     /** The staged upload, before it has been promoted into its volume. */
     public ?UploadedFile $uploadSource = null;
+
+    /**
+     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
+     * place of sampling the file again.
+     */
+    public ?ImageColors $uploadColors = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -1361,6 +1397,7 @@ class Asset extends Element
                 'behavior' => [
                     'type' => 'editImage',
                     'assetId' => $this->id,
+                    'settings' => $this->getImageEditorSettings(),
                 ],
             ];
         }
@@ -1702,7 +1739,39 @@ JS, [
             'height' => $height,
             'srcset' => $sizes ? $this->getSrcset($sizes, $transform) : false,
             'alt' => $this->thumbAlt(),
+            'style' => $this->imgPlaceholderStyle(),
         ]));
+    }
+
+    /**
+     * Paints the image's placeholder behind an `<img>` tag, so something resembling the image shows while it loads.
+     *
+     * Nothing takes it down once the image has loaded, so it's left off images with transparent regions, where it
+     * would show through.
+     *
+     * @return array<string, string>
+     */
+    private function imgPlaceholderStyle(): array
+    {
+        $grid = $this->colors->grid ?? [];
+
+        foreach ($grid as $row) {
+            foreach ($row as $color) {
+                if (strlen($color) > 7) {
+                    return [];
+                }
+            }
+        }
+
+        $placeholderUrl = $this->getPlaceholderDataUrl();
+
+        if ($placeholderUrl === null) {
+            return [];
+        }
+
+        return [
+            'background' => "url($placeholderUrl) center / cover no-repeat",
+        ];
     }
 
     /**
@@ -2072,6 +2141,12 @@ JS, [
     }
 
     #[Override]
+    protected function thumbPlaceholderUrl(): ?string
+    {
+        return $this->getPlaceholderDataUrl();
+    }
+
+    #[Override]
     protected function hasCheckeredThumb(): bool
     {
         if ($this->isFolder) {
@@ -2107,6 +2182,8 @@ JS, [
             'height' => $height,
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
+            'placeholder' => $this->getPlaceholderDataUrl(),
+            'class' => ['flex', 'items-center', 'justify-center'],
         ]);
     }
 
@@ -2404,6 +2481,63 @@ JS, [
     }
 
     /**
+     * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
+     * of a small PNG blurred from the image's color grid, or `null` if its colors aren't known.
+     *
+     * The grid is scaled up three times with smooth interpolation between its regions, which browsers can scale up the
+     * rest of the way without visible seams, so it makes a blurred placeholder for the image when used as a
+     * `background-image` with `background-size: cover`.
+     *
+     * @see ImageColors::$grid
+     * @see ColorGrid::interpolate()
+     */
+    #[AllowedInSandbox]
+    public function getPlaceholderDataUrl(): ?string
+    {
+        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+
+        if (! $grid) {
+            return null;
+        }
+
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
+
+        foreach ($pixels as $y => $row) {
+            foreach ($row as $x => $color) {
+                $image->drawPixel($x, $y, $color);
+            }
+        }
+
+        return $image->encode(new PngEncoder)->toDataUri()->toString();
+    }
+
+    /**
+     * Returns a [BlurHash](https://blurha.sh) string for the image, or `null` if its colors aren't known.
+     *
+     * It's encoded from the image's color grid, smoothed the same way as {@see getPlaceholderDataUrl()}, with one
+     * component per region: 4×3 for landscape and square images, and 3×4 for portrait ones. BlurHash has no alpha
+     * channel, so transparent regions are blended over white.
+     *
+     * @see ImageColors::$grid
+     */
+    #[AllowedInSandbox]
+    public function getBlurhash(): ?string
+    {
+        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+
+        if (! $grid) {
+            return null;
+        }
+
+        return Blurhash::encode(
+            ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE),
+            count($grid[0]),
+            count($grid),
+        );
+    }
+
+    /**
      * Returns whether this asset can be edited by the image editor.
      */
     public function getSupportsImageEditor(): bool
@@ -2411,6 +2545,30 @@ JS, [
         $ext = $this->getExtension();
 
         return strcasecmp($ext, 'svg') !== 0 && ImageHelper::canManipulateAsImage($ext);
+    }
+
+    /**
+     * Returns the settings the control panel's image editor dialog opens this asset with.
+     *
+     * @return array<string, mixed>
+     */
+    public function getImageEditorSettings(): array
+    {
+        return [
+            'assetId' => $this->id,
+            'filename' => $this->getFilename(),
+            'focalPoint' => $this->getHasFocalPoint() ? $this->getFocalPoint() : null,
+            // The image's own dimensions, so the crop orientation can start on
+            // whichever way round the picture already is. Named apart from
+            // `orientation` below, which is the locale's text direction.
+            'imageWidth' => $this->getWidth(),
+            'imageHeight' => $this->getHeight(),
+            'imageEditorRatios' => Cms::config()->imageEditorRatios,
+            // Only Imagick can rotate by a fraction of a degree; GD rounds.
+            'allowDegreeFractions' => Images::getIsImagick(),
+            // Picks which cropper handles get the left and right labels.
+            'orientation' => I18N::getLocale()->getOrientation(),
+        ];
     }
 
     /**
@@ -2481,6 +2639,15 @@ JS, [
         }
 
         $this->_focalPoint = $value;
+    }
+
+    #[Override]
+    public function setAttributesFromRequest(array $values): void
+    {
+        // Determined from the file itself when one comes in, not by whoever's saving.
+        unset($values['colors']);
+
+        parent::setAttributesFromRequest($values);
     }
 
     // Indexes, etc.
@@ -2567,14 +2734,6 @@ JS, [
 
         // See if we can show a thumbnail
         try {
-            // Is the image editable, and is the user allowed to edit?
-            $user = currentUser();
-            $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
-            $editable = (
-                $this->getSupportsImageEditor() &&
-                $user?->can('editImage', $this)
-            );
-
             $previewInner = match ($this->kind) {
                 FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
@@ -2601,65 +2760,15 @@ JS, [
                     'id' => 'thumb-container',
                     'class' => array_filter([
                         'preview-thumb-container',
-                        'button-fade',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
+                    'data' => [
+                        'theme' => 'dark',
+                    ],
+                    'style' => $this->previewBackgroundStyle(),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
-
-            if ($previewable || $editable) {
-                $isMobile = request()->isMobileBrowser(true);
-                $imageButtonHtml = Html::beginTag('div', [
-                    'class' => array_filter([
-                        'image-actions',
-                        'buttons',
-                        ($isMobile ? 'is-mobile' : null),
-                    ]),
-                ]);
-
-                if ($previewable) {
-                    $imageButtonHtml .= Html::button(t('Preview'), [
-                        'id' => 'preview-btn',
-                        'class' => ['btn', 'preview-btn'],
-                        'aria-label' => t('Preview'),
-                    ]);
-
-                    $previewBtnId = InputNamespace::namespaceId('preview-btn');
-                    $settings = [];
-                    $width = $this->getWidth();
-                    $height = $this->getHeight();
-                    if ($width && $height) {
-                        $settings['startingWidth'] = $width;
-                        $settings['startingHeight'] = $height;
-                    }
-                    $jsSettings = Json::encode($settings);
-                    $js = <<<JS
-$('#$previewBtnId').on('activate', () => {
-    new Craft.PreviewFileModal($this->id, null, $jsSettings)
-});
-JS;
-                    HtmlStack::js($js);
-                }
-
-                // The edit screen delegates on this attribute to open its
-                // image editor dialog; no behavior is wired here.
-                if ($editable) {
-                    $imageButtonHtml .= Html::button(t('Edit Image'), [
-                        'id' => 'edit-btn',
-                        'class' => ['btn', 'edit-btn'],
-                        'data' => ['image-editor' => true],
-                    ]);
-                }
-
-                $imageButtonHtml .= Html::endTag('div'); // .image-actions
-
-                if (request()->isMobileBrowser(true)) {
-                    $previewThumbHtml .= $imageButtonHtml;
-                } else {
-                    $previewThumbHtml = Html::appendToTag($previewThumbHtml, $imageButtonHtml);
-                }
-            }
 
             $html .= $previewThumbHtml;
         } catch (RuntimeException) {
@@ -2667,6 +2776,32 @@ JS;
         }
 
         return $html;
+    }
+
+    /**
+     * Fills the space around a letterboxed image with a gradient between the
+     * colors of the image's left and right edges, so it bleeds out to the sides.
+     *
+     * A black overlay darkens it by 25% at the top, fading to 5% at the bottom.
+     *
+     * @return array<string, string>
+     */
+    private function previewBackgroundStyle(): array
+    {
+        $colors = $this->kind === FileKind::Image->value ? $this->colors : null;
+
+        // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
+        $left = $colors?->left();
+        $right = $colors?->right();
+
+        if ($left === null || $right === null) {
+            return [];
+        }
+
+        return [
+            'background-color' => '#000',
+            'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+        ];
     }
 
     private function _updatePreviewThumbJs(): string
@@ -2696,7 +2831,6 @@ JS;
     public function getSidebarHtml(bool $static): string
     {
         return implode("\n", [
-            // Omit preview button on sidebar of slideouts
             $this->getPreviewHtml(),
             parent::getSidebarHtml($static),
         ]);
@@ -2847,6 +2981,7 @@ JS;
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
             $names['sanitizeOnUpload'],
+            $names['uploadColors'],
         );
 
         $names['extension'] = true;
@@ -3026,6 +3161,8 @@ JS;
             } else {
                 $model->focalPoint = null;
             }
+
+            $model->colors = $this->colors?->toArray();
 
             $model->save();
 
@@ -3335,6 +3472,7 @@ JS;
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
+            $this->colors = null;
         }
 
         // If there was a new file involved, update file data.
@@ -3343,9 +3481,11 @@ JS;
 
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
+                $this->colors = $this->uploadColors ?? Images::colors($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;
+                $this->colors = null;
             }
 
             $this->size = filesize($tempPath);
@@ -3356,10 +3496,21 @@ JS;
             File::delete($tempPath);
         }
 
+        // Take the new file's modification time from where it ended up, which is what indexing compares against, so it
+        // isn't mistaken for a changed file and sampled again.
+        if ($this->uploadSource !== null || $tempPath !== null) {
+            try {
+                $this->dateModified = Date::createFromTimestampUTC($newDisk->lastModified($newPath));
+            } catch (Throwable $e) {
+                Log::info("Couldn’t read the modification time of $newPath: {$e->getMessage()}");
+            }
+        }
+
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
+        $this->uploadColors = null;
     }
 
     /**

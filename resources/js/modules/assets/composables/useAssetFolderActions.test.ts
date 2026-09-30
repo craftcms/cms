@@ -1,7 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {effectScope} from 'vue';
 import {useAssetFolderActions} from './useAssetFolderActions';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 
 const post = vi.hoisted(() => vi.fn());
 const visit = vi.hoisted(() => vi.fn());
@@ -29,7 +28,6 @@ vi.mock(
   () => ({VolumeFolderSelectorModal})
 );
 
-const {register} = useElementIndexTable();
 let scope: ReturnType<typeof effectScope>;
 let actions: ReturnType<typeof useAssetFolderActions>;
 
@@ -49,23 +47,25 @@ beforeEach(() => {
     },
   });
   scope = effectScope();
-  register({
-    table: {
-      getRow: (id: string) => ({
-        original: {folderName: id === 'folder:7' ? 'Product Photos' : null},
-      }),
-    } as any,
-    onActionPerformed,
-    refreshResults: vi.fn(),
-  });
   scope.run(() => {
-    actions = useAssetFolderActions();
+    actions = useAssetFolderActions({
+      findRow: (id) => ({
+        id,
+        label: '',
+        folderName: id === 'folder:7' ? 'Product Photos' : null,
+      }),
+      clearSelection: () => {},
+      refresh: async () => {
+        onActionPerformed();
+      },
+      captureSelection: () => () => {},
+      view: {} as never,
+    });
   });
 });
 
 afterEach(() => {
   scope.stop();
-  register(null);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });

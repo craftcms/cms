@@ -60,3 +60,31 @@ describe('craft-input label spacing', () => {
     }
   });
 });
+
+describe('craft-input maxlength sizing', () => {
+  async function inputIn(
+    width: number,
+    maxlength: number
+  ): Promise<HTMLInputElement> {
+    document.body.innerHTML = `
+      <div style="width: ${width}px">
+        <craft-input label="Title" maxlength="${maxlength}"></craft-input>
+      </div>`;
+    const element = document.querySelector('craft-input') as CraftInput;
+    await element.updateComplete;
+
+    return element.querySelector('input')!;
+  }
+
+  it('shrinks to fit a short maxlength', async () => {
+    const input = await inputIn(300, 3);
+
+    expect(input.getBoundingClientRect().width).toBeLessThan(100);
+  });
+
+  it('doesn’t outgrow its container for a long maxlength', async () => {
+    const input = await inputIn(300, 255);
+
+    expect(input.getBoundingClientRect().width).toBe(300);
+  });
+});

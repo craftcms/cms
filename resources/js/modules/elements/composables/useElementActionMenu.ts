@@ -7,6 +7,10 @@ import {openSlideout} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {FormProperties, FormValues} from '@/modules/forms/types';
+import {
+  openImageEditorDialog,
+  type ImageEditorSettings,
+} from '@/modules/image-editor/open-image-editor-dialog';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -48,8 +52,8 @@ export type ElementActionBehavior =
       url: string;
       entryTypeFromField?: boolean;
     }
-  // The asset behaviors below all hand off to a legacy modal or uploader, and
-  // reload the page afterwards rather than patching the file's details into it.
+  // The asset behaviors below all hand off to a modal or uploader, and reload
+  // the page afterwards rather than patching the file's details into it.
   | {
       type: 'previewFile';
       assetId: number;
@@ -57,7 +61,7 @@ export type ElementActionBehavior =
     }
   | {type: 'download'; actionUrl: string; params?: FormValues}
   | {type: 'replaceFile'; assetId: number}
-  | {type: 'editImage'; assetId: number}
+  | {type: 'editImage'; assetId: number; settings: ImageEditorSettings}
   /**
    * Fetches a single-use URL and offers it for copying. Always behind an
    * elevated session — these URLs grant access to the account.
@@ -207,17 +211,11 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         return;
 
       case 'editImage':
-        const editorSettings = {
-          allowDegreeFractions: Craft.isImagick,
-        };
-        Object.assign(editorSettings, {
-          onSave: (data: {newAssetId?: number}) => {
-            if (!data.newAssetId) {
-              router.reload();
-            }
-          },
+        void openImageEditorDialog(behavior.settings, (result) => {
+          if (!result.newAssetId) {
+            router.reload();
+          }
         });
-        new Craft.AssetImageEditor(behavior.assetId, editorSettings);
     }
   }
 

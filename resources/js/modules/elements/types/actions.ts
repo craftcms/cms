@@ -24,6 +24,8 @@ export interface BulkActionItem {
   bulk?: boolean;
   /** Limits the action to real elements or synthetic asset-folder rows. */
   appliesTo?: 'elements' | 'folders';
+  /** Row capability that every selected element must expose as truthy. */
+  selectionAttribute?: keyof ElementCapabilities;
   /** The primitive action descriptor. Absent for disabled/placeholder items. */
   action?:
     | {
@@ -42,5 +44,36 @@ export interface BulkActionItem {
         type: 'clipboard';
         value: string;
       };
+}
+
+export interface ElementCapabilities {
+  copyable: boolean;
+  duplicatable: boolean;
+  deletable: boolean;
+}
+
+export function selectionAllows(
+  item: BulkActionItem,
+  elements: ReadonlyArray<ElementActionSelection>
+): boolean {
+  const attribute = item.selectionAttribute;
+
+  return (
+    !attribute ||
+    elements.every((element) => element.capabilities?.[attribute] === true)
+  );
+}
+
+export interface ElementActionSelection {
+  id: string | number;
+  capabilities?: Partial<ElementCapabilities>;
+  type?: string;
+  siteId?: number | null;
+}
+
+export interface BulkActionEventDetail {
+  elementIds: ReadonlyArray<string | number>;
+  elementType: string;
+  trigger: HTMLElement;
 }
 import type {FormValues} from '@/modules/forms/types';
