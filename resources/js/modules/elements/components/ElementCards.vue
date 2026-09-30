@@ -33,6 +33,7 @@
       interactionsDisabled?: boolean;
       readOnly?: boolean;
       loading?: boolean;
+      renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
     }>(),
     {
@@ -42,6 +43,7 @@
       singleColumn: false,
       sortable: false,
       loading: false,
+      renderServerActions: true,
     }
   );
 
@@ -182,7 +184,10 @@
 
       <template #actions="{index}">
         <slot name="actions" :element="data[index]" :index="index"></slot>
-        <DynamicHtmlRenderer :html="data[index]?.cardActionsHtml ?? ''" />
+        <DynamicHtmlRenderer
+          v-if="renderServerActions"
+          :html="data[index]?.cardActionsHtml ?? ''"
+        />
       </template>
 
       <template #default="{index}">

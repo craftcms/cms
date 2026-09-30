@@ -1,24 +1,27 @@
 <script setup lang="ts">
-  import {computed, useTemplateRef} from 'vue';
+  import {computed, shallowRef, useTemplateRef} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
+  import {runAction} from '@craftcms/ui/actions.mjs';
+  import type {BaseAction} from '@craftcms/ui/actions.mjs';
+  import {selectionAllows} from '@/modules/elements/types/actions';
   import type {
     BulkActionEventDetail,
     BulkActionItem,
+    BulkActionParams,
     ElementActionSelection,
+    PerformBulkAction,
   } from '@/modules/elements/types/actions';
-  import {selectionAllows} from '@/modules/elements/types/actions';
-  import {copyElements} from '@/modules/elements/index/copy-elements';
   import type {ActionItem} from '@/common/types';
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {useForm} from '@inertiajs/vue3';
-  import PerformElementActionController from '@actions/Elements/PerformElementActionController';
+  import {copyElements} from '@/modules/elements/index/copy-elements';
 
   const props = withDefaults(
     defineProps<{
       /** The ids of the elements currently selected in the index. */
       selectedIds: ReadonlyArray<string | number>;
+      /** Selected row data used by capability checks and client actions. */
       selectedElements?: ReadonlyArray<ElementActionSelection>;
       /** The serialized bulk action descriptors for the active source. */
       actions?: Array<BulkActionItem> | null;
@@ -28,12 +31,17 @@
       source?: string | null;
       /** The render context (e.g. `index`), posted to the perform endpoint. */
       context?: string;
+      /** Additional request parameters for embedded or specialized indexes. */
+      params?: BulkActionParams;
+      /** Embedded indexes prepare their owner before executing an action. */
+      perform?: PerformBulkAction;
     }>(),
     {
       actions: () => [],
       selectedElements: () => [],
       source: null,
       context: 'index',
+      params: () => ({}),
     }
   );
 
@@ -52,6 +60,7 @@
 
   const selectedCount = computed(() => props.selectedIds.length);
   const root = useTemplateRef<HTMLElement>('root');
+  const performing = shallowRef(false);
 
   const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
     const folderCount = props.selectedIds.filter((id) =>
@@ -155,22 +164,21 @@
       }
 
       if (item.action.type === 'http' || item.action.type === 'download') {
+        if (!props.perform) {
+          return {
+            type: 'button',
+            label: item.label,
+            variant,
+            action: request(item),
+            feedback: {success: {message: t('Done')}},
+          } satisfies ActionItem;
+        }
+
         return {
-          type: 'button',
           label: item.label,
           variant,
-          action: {
-            ...item.action,
-            body: {
-              ...item.action.body,
-              elementType: props.elementType,
-              source: props.source,
-              context: props.context,
-              elementIds: props.selectedIds,
-            },
-          },
-          feedback: {success: {message: t('Done')}},
-        } satisfies ActionItem;
+          onClick: (event) => void performItem(item, event),
+        };
       }
 
       return {
@@ -182,6 +190,86 @@
       } satisfies ActionItem;
     })
   );
+
+  function request(
+    item: BulkActionItem,
+    overrides: BulkActionParams = {}
+  ): BaseAction {
+    const action = item.action;
+
+    if (!action || (action.type !== 'http' && action.type !== 'download')) {
+      throw new Error('Bulk action does not contain an executable request.');
+    }
+
+    return {
+      ...action,
+      body: {
+        ...action.body,
+        elementType: props.elementType,
+        source: props.source,
+        context: props.context,
+        elementIds: props.selectedIds,
+        ...props.params,
+        ...overrides,
+      },
+    };
+  }
+
+  async function execute(
+    item: BulkActionItem,
+    overrides: BulkActionParams = {},
+    sourceEvent?: Event
+  ): Promise<boolean> {
+    performing.value = true;
+
+    try {
+      const action = request(item, overrides);
+      const trigger =
+        sourceEvent?.currentTarget instanceof Element
+          ? sourceEvent.currentTarget
+          : undefined;
+
+      await runAction(action, {trigger, sourceEvent});
+      window.Craft?.cp?.displayNotice?.(t('Done'));
+
+      if (action.type === 'http') {
+        emit('performed');
+      }
+
+      return true;
+    } catch (cause) {
+      window.Craft?.cp?.displayError?.(
+        cause instanceof Error ? cause.message : t('A server error occurred.')
+      );
+
+      return false;
+    } finally {
+      performing.value = false;
+    }
+  }
+
+  async function performItem(item: BulkActionItem, sourceEvent?: Event) {
+    if (performing.value) {
+      return;
+    }
+
+    const run = (overrides?: BulkActionParams) =>
+      execute(item, overrides, sourceEvent);
+
+    if (props.perform) {
+      try {
+        await props.perform(item, run);
+      } catch (cause) {
+        window.Craft?.cp?.displayError?.(
+          cause instanceof Error ? cause.message : t('A server error occurred.')
+        );
+      }
+
+      return;
+    }
+
+    await run();
+  }
 
   /**
    * Copy mirrors Craft 5: the selection is handed to the legacy
@@ -244,27 +332,16 @@
     }
   }
 
-  const action = useForm({
-    elementIds: props.selectedIds,
-    elementAction: SET_STATUS_KEY,
-    elementType: props.elementType,
-    context: props.context,
-    status: '',
-    source: props.source,
-  });
-
   function setStatus(status: 'enabled' | 'disabled') {
-    action
-      .transform((data) => {
-        data.status = status;
-        data.elementIds = props.selectedIds;
+    const item = setStatusAction.value;
+    if (!item?.action || item.action.type !== 'http') {
+      return;
+    }
 
-        return data;
-      })
-      .post(PerformElementActionController.url(), {
-        only: ['data', 'flash', 'pagination'],
-        preserveState: false,
-      });
+    void performItem({
+      ...item,
+      action: {...item.action, body: {...item.action.body, status}},
+    });
   }
 </script>
 
@@ -295,13 +372,13 @@
     <div class="bulk-actions-bar__actions">
       <craft-action-menu
         v-if="setStatusAction"
-        :disabled="setStatusAction.disabled"
+        .disabled="setStatusAction.disabled || performing"
       >
         <craft-button
           slot="invoker"
           type="button"
           size="small"
-          :loading="action.processing"
+          .loading="performing"
         >
           {{ setStatusAction.label }}
           <craft-icon name="chevron-down" slot="suffix"></craft-icon>
@@ -327,6 +404,7 @@
           </craft-button>
         </template>
       </ActionMenu>
+      <slot />
     </div>
   </div>
 </template>
