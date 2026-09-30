@@ -162,6 +162,7 @@
 - Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
+- Fixed an error in the Yii adapter during installation or updates when `CRAFT_SITE` or `X-Craft-Site` referenced a missing site. ([#19745](https://github.com/craftcms/cms/pull/19745))
 - Fixed an error that could occur when rendering element table rows with strict Twig variables enabled. ([#19679](https://github.com/craftcms/cms/pull/19679))
 - Fixed a bug where no confirmation dialog was shown when deleting entry types and custom fields. ([#19582](https://github.com/craftcms/cms/pull/19582))
 - Fixed a bug where Save and continue editing left newly created control panel items on their creation page. ([#19619](https://github.com/craftcms/cms/pull/19619))
