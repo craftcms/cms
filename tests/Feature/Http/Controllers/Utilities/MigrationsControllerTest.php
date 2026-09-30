@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\Migrations;
@@ -28,7 +29,7 @@ test('unauthorized users cannot access migrations utility', function () {
 test('successful migration', function () {
     post(action(MigrationsController::class))
         ->assertRedirect(Url::cpUrl('utilities/migrations'))
-        ->assertSessionHas('cp-notification-success.0', 'Applied new migrations successfully.');
+        ->assertMessage('success', 'Applied new migrations successfully.');
 });
 
 test('migration handles exceptions', function () {
@@ -39,6 +40,7 @@ test('migration handles exceptions', function () {
 
     post(action(MigrationsController::class))
         ->assertRedirect(Url::cpUrl('utilities/migrations'))
-        ->assertSessionHas('cp-notification-error.0', 'Couldn’t apply new migrations.')
-        ->assertSessionMissing('cp-notification-success');
+        ->assertMessage('error', 'Couldn’t apply new migrations.');
+
+    expect(array_column(session(Flash::SESSION_KEY, []), 'type'))->not->toContain('success');
 });

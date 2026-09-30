@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
@@ -264,7 +265,9 @@ class AppServiceProvider extends ServiceProvider
         $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
             $handler->renderable(function (ThrottleRequestsException $e, $request) {
                 if ($request->inertia()) {
-                    return back()->with('error', t('Too many requests. Please wait a moment before trying again.'));
+                    Flash::error(t('Too many requests. Please wait a moment before trying again.'));
+
+                    return back();
                 }
             });
         });

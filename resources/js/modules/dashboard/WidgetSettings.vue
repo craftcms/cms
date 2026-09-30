@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import {computed, ref} from 'vue';
   import {useHttp} from '@inertiajs/vue3';
   import '@craftcms/ui/components/field-group/field-group';
@@ -13,7 +13,7 @@
   import type {FormPayload} from '@/modules/forms/types';
   import type {DashboardWidget} from './types';
 
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   const props = defineProps<{widget: DashboardWidget}>();
   const emit = defineEmits<{
@@ -73,7 +73,7 @@
         .submit(props.widget.id < 0 ? store() : update());
 
       emit('saved', data.info);
-      flash('success', t('Widget saved.'));
+      messages.success(t('Widget saved.'));
     } catch {
       if (!form.hasErrors) form.setError('widget', t('Couldn’t save widget.'));
     }

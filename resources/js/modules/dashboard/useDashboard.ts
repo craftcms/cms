@@ -1,4 +1,4 @@
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
 import {jq} from '@/common/utils/jquery';
 
@@ -26,7 +26,7 @@ export function useDashboard(props: {
   widgets: DashboardWidget[];
   widgetTypes: Record<string, WidgetType>;
 }) {
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   provideHtmlWidgets();
 
@@ -169,7 +169,7 @@ export function useDashboard(props: {
       if (data.info) widgets.value = [...widgets.value, data.info];
       refreshTypes();
     } catch {
-      flash('error', t('Couldn’t save widget.'));
+      messages.error(t('Couldn’t save widget.'));
     } finally {
       busy.value = false;
     }
@@ -187,7 +187,7 @@ export function useDashboard(props: {
       deleted.value = widget;
       refreshTypes();
     } catch {
-      flash('error', t('Couldn’t delete widget.'));
+      messages.error(t('Couldn’t delete widget.'));
     } finally {
       busy.value = false;
     }
@@ -208,7 +208,7 @@ export function useDashboard(props: {
       deleted.value = undefined;
       refreshTypes();
     } catch {
-      flash('error', t('Couldn’t save widget.'));
+      messages.error(t('Couldn’t save widget.'));
     } finally {
       busy.value = false;
     }
@@ -231,7 +231,7 @@ export function useDashboard(props: {
         ...widgets.value.filter((widget) => widget.id < 0),
       ];
     } catch {
-      flash('error', t('Couldn’t reorder widgets.'));
+      messages.error(t('Couldn’t reorder widgets.'));
     } finally {
       busy.value = false;
     }
@@ -249,7 +249,7 @@ export function useDashboard(props: {
         current.id === widget.id ? {...current, colspan} : current
       );
     } catch {
-      flash('error', t('Couldn’t save widget.'));
+      messages.error(t('Couldn’t save widget.'));
     } finally {
       busy.value = false;
     }
