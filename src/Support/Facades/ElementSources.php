@@ -22,7 +22,7 @@ use Override;
  * @method static \Illuminate\Support\Collection getAvailableTableAttributes(string $elementType)
  * @method static \Illuminate\Support\Collection getTableAttributes(string $elementType, string $sourceKey, string[]|null $customAttributes = null, \CraftCms\Cms\FieldLayout\FieldLayout[]|null $fieldLayouts = null)
  * @method static \Illuminate\Support\Collection getFieldLayoutsForSource(string $elementType, string $sourceKey)
- * @method static \Illuminate\Support\Collection getSourceSortOptions(string $elementType, string $sourceKey, \CraftCms\Cms\FieldLayout\FieldLayout[]|\Illuminate\Support\Collection|null $fieldLayouts = null)
+ * @method static \Illuminate\Support\Collection getSourceSortOptions(string $elementType, string $sourceKey, array<int, \CraftCms\Cms\FieldLayout\FieldLayout>|\Illuminate\Support\Collection<int, \CraftCms\Cms\FieldLayout\FieldLayout>|null $fieldLayouts = null)
  * @method static \Illuminate\Support\Collection getSortOptionsForFieldLayouts(\CraftCms\Cms\FieldLayout\FieldLayout[]|\Illuminate\Support\Collection $fieldLayouts)
  * @method static \Illuminate\Support\Collection getSourceTableAttributes(string $elementType, string $sourceKey)
  * @method static \Illuminate\Support\Collection getTableAttributesForFieldLayouts(\CraftCms\Cms\FieldLayout\FieldLayout[]|\Illuminate\Support\Collection $fieldLayouts)
