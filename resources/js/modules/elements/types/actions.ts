@@ -43,4 +43,10 @@ export interface BulkActionItem {
         value: string;
       };
 }
+
+export interface BulkActionEventDetail {
+  elementIds: ReadonlyArray<string | number>;
+  elementType: string;
+  trigger: HTMLElement;
+}
 import type {FormValues} from '@/modules/forms/types';

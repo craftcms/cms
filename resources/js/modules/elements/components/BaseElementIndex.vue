@@ -7,7 +7,10 @@
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
-  import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import type {
+    BulkActionEventDetail,
+    BulkActionItem,
+  } from '@/modules/elements/types/actions';
   import VarDump from '@/common/components/VarDump.vue';
 
   const props = withDefaults(
@@ -37,7 +40,11 @@
     }
   );
 
-  const emit = defineEmits<{'action-performed': []}>();
+  const emit = defineEmits<{
+    'action-performed': [];
+    edit: [detail: BulkActionEventDetail];
+    view: [detail: BulkActionEventDetail];
+  }>();
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
@@ -137,6 +144,8 @@
         :element-type="elementType ?? ''"
         :source="source"
         :context="context"
+        @edit="emit('edit', $event)"
+        @view="emit('view', $event)"
         @performed="onActionPerformed"
         @clear="clearSelection"
       />

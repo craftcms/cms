@@ -26,6 +26,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Termwind\render;
 
@@ -1109,6 +1110,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             'label' => $element->getUiLabel(),
+            ...$this->elementUrls($element),
             ...$this->extraRowData($element),
             ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
             ...collect($attributes)
@@ -1249,6 +1251,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return [
                 'id' => $this->rowId($element),
                 'label' => $element->getUiLabel(),
+                ...$this->elementUrls($element),
                 ...$this->extraRowData($element),
                 'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
                 'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
@@ -1270,6 +1273,7 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
+            ...$this->elementUrls($element),
             ...$this->extraRowData($element),
             'label' => $element->getUiLabel(),
             'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
@@ -1277,6 +1281,17 @@ abstract class ContentIndexViewModel extends ViewModel
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
         ], $elements);
+    }
+
+    /**
+     * @return array{cpEditUrl: ?string, viewUrl: ?string}
+     */
+    private function elementUrls(ElementInterface $element): array
+    {
+        return [
+            'cpEditUrl' => currentUser()?->can('view', $element) ? $element->getCpEditUrl() : null,
+            'viewUrl' => $element->getUrl(),
+        ];
     }
 
     /**

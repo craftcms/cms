@@ -22,6 +22,7 @@
 - Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
+- Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
 - Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
 - Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.
 - Fixed a bug where the “Preview file” modal was unstyled.
