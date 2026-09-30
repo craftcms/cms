@@ -379,7 +379,7 @@
             </LayoutSlotOutlet>
           </div>
 
-          <div class="flex gap-sm items-center">
+          <div class="slideout-screen__actions flex gap-sm items-center">
             <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
@@ -535,6 +535,10 @@
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+  }
+
+  .slideout-screen__actions {
+    --_link-min-width: calc(24px + var(--c-spacing-sm));
   }
 
   .slideout-screen__toolbar {
