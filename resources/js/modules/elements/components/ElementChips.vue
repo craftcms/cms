@@ -163,6 +163,7 @@
         :selected="selection.isSelected(element.id) || undefined"
         :select-label="t('Select {label}', {label: labelFor(element)})"
         :show-status="!!element.status || undefined"
+        :show-thumb="!!element.thumbHtml || undefined"
         @craft-selection-change="
           (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
             onSelectedChange(element, event.detail)
@@ -170,12 +171,15 @@
         @click="(event: MouseEvent) => onChipClick(element, event)"
         @dblclick="(event: MouseEvent) => onDoubleClick(element, event)"
       >
-        <div slot="prefix" class="flex items-center px-md gap-1">
+        <div
+          v-if="$slots.prefix"
+          slot="prefix"
+          class="flex items-center gap-sm"
+        >
           <slot name="prefix" :element="element" :index="index"></slot>
-          <DynamicHtmlRenderer
-            v-if="element.thumbHtml"
-            :html="element.thumbHtml"
-          />
+        </div>
+        <div v-if="element.thumbHtml" slot="thumbnail" class="flex">
+          <DynamicHtmlRenderer :html="element.thumbHtml" />
         </div>
 
         <!--

@@ -28,9 +28,9 @@ import {
  * `prefix`, `icon`, `thumbnail`, or `status` slot is filled, or when the
  * `icon` attribute or `show-status` is set.
  *
- * Filling the `prefix` slot replaces the entire prefix region. Use it to
- * supply your own leading content; the built-in `thumbnail`, `icon`, and
- * `status` slots are ignored when it is present.
+ * The `prefix` slot comes first in the prefix region, before the built-in
+ * `thumbnail`, `icon`, and `status` slots, so custom leading content (a
+ * checkbox or a badge, say) doesn't displace them.
  *
  * On connect the chip stamps `data-color="white"` on itself so it reads as a
  * raised surface by default, filled with `--c-surface-raised` so it follows
@@ -39,8 +39,8 @@ import {
  * the chip directly instead.
  *
  * @slot - The chip's label.
- * @slot prefix - Leading content. Replaces the built-in prefix region, so the
- *   `thumbnail`, `icon`, and `status` slots are ignored when this is filled.
+ * @slot prefix - Leading content, shown before the thumbnail, icon, and
+ *   status.
  * @slot thumbnail - A thumbnail image for the prefix. Requires `show-thumb`.
  *   Without it, the slot is not rendered and its content does not appear.
  * @slot icon - Icon content for the prefix, as an alternative to the `icon`
@@ -191,19 +191,18 @@ export default class CraftChip extends LitElement {
     const showStatus = this.showStatus || hasSlotted(this, 'status');
 
     return html`<div class="cp-chip__prefix" part="prefix">
-      <slot name="prefix">
-        ${this.showThumb
-          ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
-          : nothing}
-        ${this.icon
-          ? html`<slot class="cp-chip__icon" name="icon"
-              ><craft-icon name="${this.icon}"></craft-icon
-            ></slot>`
-          : nothing}
-        ${showStatus
-          ? html`<slot class="cp-chip__status" name="status"></slot>`
-          : nothing}
-      </slot>
+      <slot name="prefix"></slot>
+      ${this.showThumb
+        ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
+        : nothing}
+      ${this.icon
+        ? html`<slot class="cp-chip__icon" name="icon"
+            ><craft-icon name="${this.icon}"></craft-icon
+          ></slot>`
+        : nothing}
+      ${showStatus
+        ? html`<slot class="cp-chip__status" name="status"></slot>`
+        : nothing}
     </div>`;
   }
 

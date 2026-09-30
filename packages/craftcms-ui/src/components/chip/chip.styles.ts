@@ -167,10 +167,15 @@ export default css`
   }
 
   .cp-chip__thumbnail {
+    --c-thumbnail-size: var(--_thumb-size);
+    --c-thumbnail-image-radius: var(--c-radius-sm);
     display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     width: var(--_thumb-size);
     aspect-ratio: 1;
-    padding-inline-end: var(--_chip-spacing);
+    padding-inline-start: var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
   }
 `;
