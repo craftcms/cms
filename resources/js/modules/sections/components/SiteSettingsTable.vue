@@ -5,6 +5,10 @@
   import {type SectionSiteSettingsData} from '@/common/types';
   import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
+  import Select from '@/common/form/Select.vue';
+  import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
+  import '@craftcms/ui/components/field/field';
+  import '@craftcms/ui/components/field-group/field-group';
 
   type SitesData = Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
 
@@ -38,7 +42,7 @@
       singleHomepage: props.selectedType === 'single',
       singleUri: props.selectedType === 'single',
       uriFormat: props.selectedType !== 'single',
-      template: !props.isHeadless,
+      route: !props.isHeadless,
       enabledByDefault: props.selectedType !== 'single',
     };
   });
@@ -125,15 +129,63 @@
           ),
         },
       }),
-      columnHelper.autocomplete('template', {
-        header: t('Template'),
-        class: 'w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]',
-        options: templateOptions.value,
-        disabled: (row) => props.disabled || !row.original.enabled,
-        meta: {
-          headerTip: t(
-            'Which template should be loaded when an entry’s URL is requested.'
-          ),
+      columnHelper.display({
+        id: 'route',
+        header: t('Route'),
+        cell: ({row}) => {
+          const site = row.original;
+          const disabled = props.disabled || !site.enabled;
+          const update = (key: 'routeType' | 'route', value: string) => {
+            emit('update:modelValue', {
+              ...props.modelValue,
+              [site.handle]: {...props.modelValue[site.handle]!, [key]: value},
+            });
+          };
+
+          return h(
+            'craft-field',
+            {
+              fieldset: true,
+              label: t('Route'),
+              'label-sr-only': true,
+              class: 'min-w-72 p-1',
+            },
+            [
+              h(
+                'craft-field-group',
+                {
+                  slot: 'input',
+                  class: '!flex w-full flex-wrap items-end !gap-2',
+                },
+                [
+                  h(Select, {
+                    modelValue: site.routeType,
+                    options: [
+                      {label: t('Template'), value: 'template'},
+                      {label: t('Route'), value: 'route'},
+                    ],
+                    label: t('Route type'),
+                    'label-sr-only': true,
+                    class: 'w-28 shrink-0',
+                    '.disabled': disabled,
+                    'onUpdate:modelValue': (value: string | number) =>
+                      update('routeType', String(value)),
+                  }),
+                  h(CraftCombobox, {
+                    modelValue: site.route ?? '',
+                    options: templateOptions.value,
+                    label: t('Route'),
+                    'label-sr-only': true,
+                    requireOptionMatch: false,
+                    disabled,
+                    class: 'min-w-0 flex-1 font-mono text-xs',
+                    'onUpdate:modelValue': (value: unknown) =>
+                      update('route', String(value ?? '')),
+                  }),
+                ]
+              ),
+            ]
+          );
         },
       }),
       columnHelper.lightswitch('enabledByDefault', {

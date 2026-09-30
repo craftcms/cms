@@ -6,6 +6,7 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Added support for controller actions and named Laravel routes in section and Matrix site settings.
 - Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
@@ -130,8 +131,10 @@
 - Removed `CraftCms\Cms\Plugin\Concerns\HasFilesystemTypes`. Plugins can no longer register custom Craft filesystem types. ([#19650](https://github.com/craftcms/cms/pull/19650))
 
 ### Plugins & Extensibility
+- Added `CraftCms\Cms\Element\Data\ElementSiteSettings`, the shared base for element URI and route settings.
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added `CraftCms\Cms\Route\CurrentElement`, a contextual attribute for injecting the matched element into controller actions and route closures.
 - Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `CraftCms\Cms\Support\Url::stripCpTrigger()`. ([#19724](https://github.com/craftcms/cms/pull/19724))

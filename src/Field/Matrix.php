@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -60,6 +61,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -73,6 +75,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
@@ -267,7 +270,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public ?string $propagationKeyFormat = null;
 
     /**
-     * @var array<string,array{uriFormat?:string|null,template?:string|null,errors?:array<string,list<string>>}> Site settings
+     * @var array<string,array{uriFormat?:string|null,template?:string|null,route?:string|null,errors?:array<string,list<string>>}> Site settings
      */
     public array $siteSettings = [];
 
@@ -308,6 +311,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             foreach ($config['siteSettings'] as &$siteSettings) {
                 if (is_array($siteSettings)) {
                     unset($siteSettings['heading']);
+                    if (isset($siteSettings['routeType'])) {
+                        $settings = new ElementSiteSettings;
+                        $settings->applyForm($siteSettings);
+                        unset($siteSettings['routeType']);
+                        $siteSettings = [
+                            ...$siteSettings,
+                            ...Arr::only($settings->toArray(), ['template', 'route']),
+                        ];
+                    }
+                    if (! empty($siteSettings['route'])) {
+                        $siteSettings['route'] = ElementRoute::normalize($siteSettings['route']);
+                        $siteSettings['template'] = null;
+                    }
                 }
             }
             unset($siteSettings);
@@ -321,6 +337,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
             if (($siteSettings['template'] ?? null) === '') {
                 unset($siteSettings['template']);
+            }
+            if (empty($siteSettings['route'])) {
+                unset($siteSettings['route']);
             }
         }
 
@@ -368,6 +387,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'siteSettings' => ['array'],
             'siteSettings.*.uriFormat' => ['nullable', new UriFormatRule],
             'siteSettings.*.template' => ['nullable', 'string', 'max:500'],
+            'siteSettings.*.route' => ['nullable', 'string', 'max:500', new ElementRouteRule],
             'minEntries' => ['nullable', 'integer', 'min:0'],
             'maxEntries' => ['nullable', 'integer', 'min:0'],
             'viewMode' => Rule::in([
@@ -419,12 +439,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $siteSettings = [];
         foreach (Sites::getAllSites() as $site) {
+            $settings = $this->siteSettingsForSite($site->uid)->toForm();
             $siteSettings[$site->uid] = [
                 'heading' => t($site->getName(), category: 'site'),
-                'uriFormat' => $this->siteSettings[$site->uid]['uriFormat'] ?? '',
-                ...(! config('craft.general.headlessMode') ? [
-                    'template' => $this->siteSettings[$site->uid]['template'] ?? '',
-                ] : []),
+                ...(Cms::config()->headlessMode ? Arr::only($settings, ['uriFormat']) : $settings),
             ];
         }
         $siteColumns = [
@@ -438,8 +456,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'textExpanderTriggers' => $entryTemplateTriggers,
             ],
         ];
-        if (! config('craft.general.headlessMode')) {
-            $siteColumns['template'] = ['heading' => t('Template'), 'type' => 'singleline', 'code' => true];
+        if (! Cms::config()->headlessMode) {
+            $siteColumns['route'] = ElementSiteSettings::routeColumn();
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [
@@ -888,20 +906,32 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $this->_entryTypes;
     }
 
+    private function siteSettingsForSite(string $siteUid): ElementSiteSettings
+    {
+        return new ElementSiteSettings(Arr::only($this->siteSettings[$siteUid] ?? [], ['uriFormat', 'template', 'route']));
+    }
+
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         $site = $element->getSite();
 
-        return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+        return $this->siteSettingsForSite($site->uid)->uriFormat;
     }
 
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         $site = $element->getSite();
+        $settings = $this->siteSettingsForSite($site->uid);
+
+        if ($destination = $settings->route) {
+            return $element->previewing || $element->getStatus() === Entry::STATUS_LIVE
+                ? new ElementRoute($destination)
+                : null;
+        }
 
         return [
             'templates/render', [
-                'template' => $this->siteSettings[$site->uid]['template'] ?? '',
+                'template' => $settings->template ?? '',
                 'variables' => [
                     'entry' => $element,
                 ],

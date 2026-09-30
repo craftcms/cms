@@ -197,6 +197,64 @@ function validSectionData(array $overrides = []): array
     ], $overrides);
 }
 
+it('saves and reloads normalized route destinations without requiring application code to exist', function (string $input, string $expected) {
+    $site = Site::first();
+    $data = validSectionData();
+    $data['sites'][$site->handle]['routeType'] = 'route';
+    unset($data['sites'][$site->handle]['template']);
+    $data['sites'][$site->handle]['route'] = $input;
+
+    postJson(action([SectionsController::class, 'store']), $data)->assertOk();
+
+    $section = Section::where('handle', 'a_new_section')->firstOrFail();
+    assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => null, 'route' => $expected]);
+    expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$section->uid.'.siteSettings.'.$site->uid.'.route'))->toBe($expected);
+    get(action([SectionsController::class, 'edit'], [$section->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.values.sites.'.$site->handle.'.routeType', 'route')
+            ->where('form.values.sites.'.$site->handle.'.route', $expected));
+})->with([
+    'named route' => [' services.show ', 'services.show'],
+    'invokable' => ['App\\Http\\Controllers\\ServiceController', 'App\\Http\\Controllers\\ServiceController'],
+    'leading slash and class token' => [' \\App\\Http\\Controllers\\ServiceController::class ', 'App\\Http\\Controllers\\ServiceController'],
+    'at method' => ['App\\Http\\Controllers\\ServiceController@show', 'App\\Http\\Controllers\\ServiceController@show'],
+    'colon method' => ['App\\Http\\Controllers\\ServiceController::show', 'App\\Http\\Controllers\\ServiceController@show'],
+    'class token and at method' => ['App\\Http\\Controllers\\ServiceController::class@show', 'App\\Http\\Controllers\\ServiceController@show'],
+    'class token and colon method' => ['App\\Http\\Controllers\\ServiceController::class::show', 'App\\Http\\Controllers\\ServiceController@show'],
+]);
+
+it('clears a section route when switching its destination to a template', function () {
+    $site = Site::firstOrFail();
+    $data = validSectionData();
+    unset($data['sites'][$site->handle]['template']);
+    $data['sites'][$site->handle]['routeType'] = 'route';
+    $data['sites'][$site->handle]['route'] = 'entries.show';
+    postJson(action([SectionsController::class, 'store']), $data)->assertOk();
+
+    $section = Section::where('handle', 'a_new_section')->firstOrFail();
+    $data['sectionId'] = $section->id;
+    $data['sites'][$site->handle]['routeType'] = 'template';
+    $data['sites'][$site->handle]['route'] = 'entries/show';
+    postJson(action([SectionsController::class, 'store']), $data)->assertOk();
+
+    assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => 'entries/show', 'route' => null]);
+    get(action([SectionsController::class, 'edit'], [$section->id]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.values.sites.'.$site->handle.'.routeType', 'template')
+            ->where('form.values.sites.'.$site->handle.'.route', 'entries/show'));
+});
+
+it('rejects malformed route syntax when saving a section', function () {
+    $data = validSectionData();
+    $data['sites'][Site::first()->handle]['template'] = null;
+    $data['sites'][Site::first()->handle]['route'] = 'App\\Controller@show()';
+
+    postJson(action([SectionsController::class, 'store']), $data)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('sites');
+});
+
 it('can save a section', function () {
     expect(Section::count())->toBe(1);
     $workflow = Workflow::query()->create([

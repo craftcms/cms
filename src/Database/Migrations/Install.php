@@ -844,6 +844,7 @@ class Install extends Migration
             $table->boolean('hasUrls')->default(true);
             $table->text('uriFormat')->nullable();
             $table->string('template', 500)->nullable();
+            $table->string('route', 500)->nullable();
             $table->boolean('enabledByDefault')->default(true);
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
