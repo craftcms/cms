@@ -11,6 +11,7 @@ import type {StructureMove} from '../composables/useElementIndexStructure';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
 import type {ElementIndexExportFormat} from './exporters';
+import type {ElementIndexContext} from '../index-context';
 
 export interface ElementIndexInlineEditing {
   active: Ref<boolean>;
@@ -45,6 +46,7 @@ export interface ElementIndexView {
   visibleViewModes: ComputedRef<ViewMode[]>;
   loading: Ref<boolean>;
   processing: ComputedRef<boolean>;
+  filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;
   submit(this: void): void;
   reorder(this: void, options: CheckboxOption[]): void;
@@ -61,6 +63,10 @@ export interface ElementIndexView {
       id: string | number,
       move: StructureMove
     ): Promise<void>;
+  };
+  rowReorder?: {
+    enabled: ComputedRef<boolean>;
+    move(this: void, from: number, to: number): void | Promise<void>;
   };
 }
 

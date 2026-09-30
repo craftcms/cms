@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Url;
@@ -108,7 +109,7 @@ class UserEditViewModel extends ElementEditViewModel
             new ActionItem()
                 ->html(app(ElementHtml::class)->elementChipHtml($this->user, [
                     'showDraftName' => false,
-                    'class' => 'chromeless',
+                    'appearance' => Appearance::Plain->value,
                 ]))
                 ->current(true),
         ];

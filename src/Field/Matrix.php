@@ -43,7 +43,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElementCards;
+use CraftCms\Cms\Form\Controls\NestedEntries;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -60,6 +60,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -553,8 +554,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function formControl(FieldContext $context): Control
     {
-        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
-            return $this->nestedElementCardsControl($context);
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
+            return $this->nestedEntriesControl($context);
         }
 
         $entryTypes = collect($this->getEntryTypes())
@@ -1481,20 +1482,48 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /** The Cards and Cards Grid view modes manage their entries outside the owner form. */
-    private function nestedElementCardsControl(FieldContext $context): NestedElementCards
+    /** The Cards, Cards Grid, and Index view modes manage their entries outside the owner form. */
+    private function nestedEntriesControl(FieldContext $context): NestedEntries
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
             && $context->form->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
         $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
-        $control = NestedElementCards::make($context->path)
+        $control = NestedEntries::make($context->path)
             ->viewMode($this->viewMode)
             ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => Entry::pluralDisplayName(),
                 'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
             ]));
+
+        if ($this->viewMode === self::VIEW_MODE_INDEX) {
+            $config = $this->entryManager()->getIndexConfig($owner, $config);
+            $data = $this->entryManager()->getIndexData($owner, $config);
+
+            if ($data === null) {
+                return $control;
+            }
+
+            if ($config['static']) {
+                $control->indexHtml($this->entryManager()->getIndexHtml($owner, $config));
+            }
+
+            $index = [
+                'indexSettings' => $data['indexSettings'],
+            ];
+
+            $index['initial'] = EmbeddedIndexViewModel::forOwner(
+                Entry::class,
+                $owner,
+                sprintf('field:%s', $this->handle),
+                $config,
+            )->payload();
+
+            return $control
+                ->manager(Arr::except($data, ['indexSettings']))
+                ->index($index);
+        }
 
         $data = $this->entryManager()->getCardsData($owner, $config);
 
@@ -1600,6 +1629,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function embeddedIndexConfig(ElementInterface $owner, bool $static): array
+    {
+        $value = $owner->getFieldValue((string) $this->handle);
+
+        return $this->entryManager()->getIndexConfig(
+            $owner,
+            $this->nestedElementManagerConfig($value, $owner, $static),
+        );
     }
 
     private function createButtonLabel(): string

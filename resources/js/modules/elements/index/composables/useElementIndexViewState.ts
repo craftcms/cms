@@ -16,7 +16,10 @@ interface ElementIndexViewStateContext {
  * composables (source `tableAttributes` / `defaultSort` → element-type
  * defaults), so only the user's explicit overrides live in `sources`.
  */
-export function useElementIndexViewState(props: ElementIndexViewStateContext) {
+export function useElementIndexViewState(
+  props: ElementIndexViewStateContext,
+  storageKey = `elementindex.${props.elementType}.${props.context}`
+) {
   const initialViewState: ViewState = {
     inlineEditing: false,
     mode: 'table',
@@ -26,8 +29,5 @@ export function useElementIndexViewState(props: ElementIndexViewStateContext) {
     ...props.viewState,
   };
 
-  return useLocalStorage<ViewState>(
-    `elementindex.${props.elementType}.${props.context}`,
-    initialViewState
-  );
+  return useLocalStorage<ViewState>(storageKey, initialViewState);
 }

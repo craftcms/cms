@@ -15,6 +15,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -163,3 +164,14 @@ it('leaves the preview background alone without a usable dominant color', functi
     'no grid' => ['{"dominant":"#3a6ea5","grid":[]}'],
     'not a hex color' => ['{"dominant":null,"grid":[["red;x"]]}'],
 ]);
+
+it('shows the uploader as a plain chip in the metadata', function () {
+    AssetModel::whereKey($this->asset->id)->update(['uploaderId' => User::findOne()->id]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('metadataHtml', fn (string $html): bool => new Crawler($html)
+                ->filter('craft-chip')
+                ->attr('appearance') === 'plain')
+        );
+});

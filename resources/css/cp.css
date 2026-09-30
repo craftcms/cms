@@ -155,6 +155,10 @@ Sidebar metadata
   align-items: baseline;
 }
 
+.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+  align-items: center;
+}
+
 /* Roughly 250px */
 @container (width > 16.25rem) {
   .cp-metadata-list {

@@ -1,9 +1,15 @@
-import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+import {
+  getCoreRowModel,
+  useVueTable,
+  type ColumnDef,
+} from '@tanstack/vue-table';
 import type {RowSelectionState} from '@tanstack/table-core';
 import {
   computed,
   shallowRef,
+  toValue,
   watch,
+  type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from 'vue';
@@ -35,21 +41,40 @@ import type {
   ExportElementIndex,
 } from '@/modules/elements/index/types/model';
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
+import type {ElementIndexContext} from '@/modules/elements/index/index-context';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexOptions {
   elementIndex: ReturnType<typeof useContentIndexData>;
   visitor: IndexVisitor;
   loading: Ref<boolean>;
-  pinnedColumn?: {key: string; label: string};
+  pinnedColumn?: {key: string; label: string} | null;
+  storageKey?: string;
   busy?: MaybeRefOrGetter<boolean>;
   filterParams?: () => IndexQueryParams;
+  filterContext?: () => Pick<
+    ElementIndexContext,
+    'fieldLayouts' | 'extraParams'
+  >;
   inlineEditing?: {
     load(): Promise<void>;
     save(body: URLSearchParams): Promise<InlineEditingSaveResult | false>;
   };
   exportElements?: ExportElementIndex;
+  rowReorder?: {
+    enabled: MaybeRefOrGetter<boolean>;
+    move(from: number, to: number): void | Promise<void>;
+  };
   enableRowSelection?: (row: ElementIndexRow) => boolean;
+  data?: (
+    rows: ElementIndexRow[],
+    mode: ViewMode['mode'],
+    elementIndex: ReturnType<typeof useContentIndexData>
+  ) => ElementIndexRow[];
+  columns?: (
+    columns: ComputedRef<Array<ColumnDef<ElementIndexRow>>>,
+    context: {elementIndex: ReturnType<typeof useContentIndexData>}
+  ) => ComputedRef<Array<ColumnDef<ElementIndexRow>>>;
   structure?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
   refresh: () => Promise<boolean>;
@@ -58,7 +83,7 @@ interface UseElementIndexOptions {
 /** Shared state and table setup for page and detached element indexes. */
 export function useElementIndex(options: UseElementIndexOptions) {
   const {elementIndex, visitor, loading} = options;
-  const viewState = useElementIndexViewState(elementIndex);
+  const viewState = useElementIndexViewState(elementIndex, options.storageKey);
   const initialSourceKey = elementIndex.source?.key ?? '*';
   const preferredSort = elementIndex.sort.filter(
     ({field}) => field !== 'score'
@@ -86,18 +111,19 @@ export function useElementIndex(options: UseElementIndexOptions) {
       ...options.filterParams?.(),
     }),
   });
-  const pinnedColumn = options.pinnedColumn ?? {
-    key: 'title',
-    label: elementIndex.elementDisplayName,
-  };
+  const pinnedColumn =
+    options.pinnedColumn === undefined
+      ? {key: 'title', label: elementIndex.elementDisplayName}
+      : options.pinnedColumn;
   const {
-    columns,
+    columns: baseColumns,
     columnOrder,
     columnOptions,
     tableColumns,
     reorder,
     restore: restoreColumns,
   } = useElementIndexColumns(elementIndex, viewState, pinnedColumn, visitor);
+  const columns = options.columns?.(baseColumns, {elementIndex}) ?? baseColumns;
   const {
     sortingState,
     sortingConfig,
@@ -140,9 +166,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor
   );
   const data = computed(() =>
-    options.structure
-      ? structureView.visibleRows(elementIndex.data ?? [])
-      : (elementIndex.data ?? [])
+    options.data
+      ? options.data(elementIndex.data ?? [], mode.value, elementIndex)
+      : options.structure
+        ? structureView.visibleRows(elementIndex.data ?? [])
+        : (elementIndex.data ?? [])
   );
   const rowSelection = shallowRef<RowSelectionState>({});
 
@@ -262,7 +290,19 @@ export function useElementIndex(options: UseElementIndexOptions) {
     if (row) selection.selectRow(row, {checked: true});
   }
 
-  const processing = computed(() => loading.value);
+  const processing = computed(
+    () => loading.value || Boolean(toValue(options.busy))
+  );
+  const filterContext = computed<ElementIndexContext | null>(() =>
+    elementIndex.source
+      ? {
+          elementType: elementIndex.elementType,
+          context: elementIndex.context,
+          source: elementIndex.source,
+          ...options.filterContext?.(),
+        }
+      : null
+  );
   const view: ElementIndexView = {
     elementIndex,
     table,
@@ -280,6 +320,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
         }
       : {}),
     ...(options.exportElements ? {exportElements: options.exportElements} : {}),
+    ...(options.rowReorder
+      ? {
+          rowReorder: {
+            enabled: computed(() =>
+              Boolean(toValue(options.rowReorder!.enabled))
+            ),
+            move: (from, to) => options.rowReorder!.move(from, to),
+          },
+        }
+      : {}),
     submit: filters.submit,
     columnOptions,
     tableColumns,
@@ -289,6 +339,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     mode,
     loading,
     processing,
+    filterContext,
     visibleViewModes,
     structureView,
     toggleStructure,
