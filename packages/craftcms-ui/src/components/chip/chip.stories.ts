@@ -199,10 +199,14 @@ menu.actions = [
 /**
  * `show-thumb` is required. Without it, the `thumbnail` slot is not rendered,
  * and its content does not appear.
+ *
+ * The arg is the `showThumb` property rather than the `show-thumb` attribute:
+ * the helpers' args carry both, and the property's `false` default is applied
+ * after the attribute, which would switch the thumbnail back off.
  */
 export const Thumbnail: Story = {
   args: {
-    'show-thumb': true,
+    showThumb: true,
     'thumbnail-slot': '<img src="https://picsum.photos/120/120" alt="" />',
     'suffix-slot': ACTION_BUTTON,
   },

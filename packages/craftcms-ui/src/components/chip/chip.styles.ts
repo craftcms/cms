@@ -32,8 +32,8 @@ export default css`
   }
 
   .cp-chip input[type='checkbox'] {
-    margin-inline-start: var(--c-spacing-md);
-    margin-inline-end: 0;
+    margin-inline-start: var(--_chip-spacing);
+    margin-inline-end: calc(var(--_chip-spacing) / 2);
   }
 
   /*
@@ -179,8 +179,25 @@ export default css`
     padding-block: calc(var(--_chip-spacing) / 2);
   }
 
+  /*
+   * Leading the chip, the thumbnail sits half the spacing in from every outer
+   * edge, matching the suffix's inset at the other end. Behind a checkbox or
+   * custom prefix content it keeps the full spacing, as a gap from it.
+   */
+  .cp-chip--leads-with-thumbnail .cp-chip__thumbnail {
+    padding-inline-start: calc(var(--_chip-spacing) / 2);
+  }
+
+  /*
+   * An image slotted straight in has no craft-thumbnail around it to size it,
+   * so it would render at its natural size and spill out of the prefix.
+   */
   .cp-chip__thumbnail::slotted(img),
   .cp-chip__thumbnail::slotted(svg) {
+    flex: none;
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+    object-fit: cover;
     border-radius: var(--c-thumbnail-image-radius);
   }
 
