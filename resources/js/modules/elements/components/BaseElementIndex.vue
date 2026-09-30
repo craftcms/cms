@@ -176,7 +176,6 @@
                 label-sr-only
                 center
                 size="small"
-                style="width: 4ch"
               />
               {{ t('of') }}
               {{ table.getPageCount() }}

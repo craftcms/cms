@@ -98,13 +98,6 @@ export default class CraftInput extends HasLabel(LionInput) {
 
     if (this._inputNode && this.maxlength && this.maxlength > 0) {
       this._inputNode.maxLength = this.maxlength;
-      // Give the input a matching intrinsic width, so the shrunk control
-      // (see `width`) fits the expected character count. `width="full"`
-      // opts out of the shrink behavior, so the intrinsic width would only
-      // blow the control out of its column.
-      if (this.width !== 'full') {
-        this._inputNode.size = this.maxlength;
-      }
     }
 
     this.syncNativeAttributes();
@@ -116,6 +109,8 @@ export default class CraftInput extends HasLabel(LionInput) {
 
     if (
       changedProperties.has('inputSize') ||
+      changedProperties.has('maxlength') ||
+      changedProperties.has('width') ||
       changedProperties.has('min') ||
       changedProperties.has('max') ||
       changedProperties.has('step') ||
@@ -136,9 +131,21 @@ export default class CraftInput extends HasLabel(LionInput) {
     );
   }
 
+  /**
+   * Gives the input an intrinsic width matching its `maxlength`, so the shrunk
+   * control (see `width`) fits the expected character count. `width="full"`
+   * opts out of the shrink behavior, so the intrinsic width would only blow
+   * the control out of its column.
+   */
+  private get maxlengthSize(): number | undefined {
+    return this.maxlength && this.maxlength > 0 && this.width !== 'full'
+      ? this.maxlength
+      : undefined;
+  }
+
   private syncNativeAttributes() {
     const attributes = {
-      size: this.inputSize,
+      size: this.inputSize ?? this.maxlengthSize,
       min: this.min,
       max: this.max,
       step: this.step,
