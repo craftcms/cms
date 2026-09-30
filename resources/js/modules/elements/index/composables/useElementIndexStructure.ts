@@ -1,10 +1,8 @@
 import type {RowSelectionState} from '@tanstack/vue-table';
 import {computed, ref, type Ref} from 'vue';
-import {
-  createIndexVisitor,
-  type ElementIndexRoute,
-  type IndexRestore,
-  type IndexVisitor,
+import type {
+  IndexVisitor,
+  IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewState} from '@/modules/elements/types/view-state';
 
@@ -459,12 +457,8 @@ export function loadedBranchDepth(
 export function useElementIndexStructure(
   props: ElementIndexStructureContext,
   viewState: Ref<ViewState>,
-  route: ElementIndexRoute,
-  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
-  indexVisitor?: IndexVisitor
+  visitor: IndexVisitor
 ) {
-  const visitor = indexVisitor ?? createIndexVisitor(route);
-
   // The saved mode is shared by every source, so it can say `structure` on a
   // source that isn't one.
   const isStructure = computed(
@@ -536,7 +530,7 @@ export function useElementIndexStructure(
   // The server renders the initial page with nothing collapsed — it can't see
   // the persisted view state — so a restored collapsed set needs re-requesting.
   // The page folds this into one mount-time restore visit alongside the
-  // sort/column/view-mode restores (see `useElementIndexPage`).
+  // sort/column/view-mode restores (see `useElementIndex`).
   function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);
     const hasInUrl = [...params.keys()].some(

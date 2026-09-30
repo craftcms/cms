@@ -1,6 +1,5 @@
 import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
   type SelectableId,
@@ -10,7 +9,6 @@ import {
 export interface ElementIndexSelectionOptions {
   selectable: MaybeRefOrGetter<boolean>;
   readOnly: MaybeRefOrGetter<boolean>;
-  actions: MaybeRefOrGetter<Array<BulkActionItem> | null | undefined>;
 }
 
 /**
@@ -18,7 +16,7 @@ export interface ElementIndexSelectionOptions {
  *
  * The anchor/range mechanics live in {@link useSelectable}; this adds the parts
  * that are specific to the index — translating rows to ids, TanStack's
- * select-all, and the bulk-action visibility flags. Selection state stays in the
+ * select-all. Selection state stays in the
  * table rather than being mirrored here, so the checkboxes, the row model and
  * this composable can never disagree.
  */
@@ -40,6 +38,7 @@ export function useElementIndexSelection(
     // The index selects through checkboxes, so a plain click adds to the
     // selection rather than collapsing it to the clicked row.
     click: 'toggle',
+    canSelect: (id) => rowFor(id)?.getCanSelect() ?? false,
     store: {
       isSelected: (id) => rowFor(id)?.getIsSelected() ?? false,
       setSelected: (id, selected) => rowFor(id)?.toggleSelected(selected),
@@ -53,18 +52,8 @@ export function useElementIndexSelection(
 
   const {anchorIndex, hasSelection, selectedIds} = selection;
 
-  const hasBulkActions = computed(
-    () => (toValue(options.actions)?.length ?? 0) > 0
-  );
-  const showBulkActions = computed(
-    () => selectable.value && hasBulkActions.value
-  );
-  const bulkActionsActive = computed(
-    () => showBulkActions.value && hasSelection.value
-  );
-
   function clearSelection() {
-    toValue(table).resetRowSelection();
+    selection.clear();
   }
 
   // craft-checkbox (Lion) fires `model-value-changed` on programmatic `.checked`
@@ -120,9 +109,6 @@ export function useElementIndexSelection(
     selection,
     selectedIds,
     hasSelection,
-    hasBulkActions,
-    showBulkActions,
-    bulkActionsActive,
     readOnly,
     anchorIndex,
     clearSelection,
@@ -133,3 +119,5 @@ export function useElementIndexSelection(
     extendSelectionTo,
   };
 }
+
+export type ElementIndexSelection = ReturnType<typeof useElementIndexSelection>;

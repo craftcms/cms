@@ -1,6 +1,5 @@
 import {afterEach, expect, it} from 'vite-plus/test';
 import {createApp, defineComponent, h} from 'vue';
-import {useElementIndexTable} from '@/modules/elements/index/composables/useElementIndexTable';
 import {useAssetMoveDrag} from './useAssetMoveDrag';
 
 let app: ReturnType<typeof createApp> | null = null;
@@ -11,15 +10,18 @@ afterEach(() => {
   app = null;
   container?.remove();
   container = null;
-  useElementIndexTable().register(null);
 });
 
 it('keeps asset links clickable without disabling row dragging', () => {
-  useElementIndexTable().register(null);
-
   const Component = defineComponent({
     setup() {
-      useAssetMoveDrag();
+      useAssetMoveDrag({
+        findRow: () => undefined,
+        clearSelection: () => {},
+        refresh: async () => {},
+        captureSelection: () => () => {},
+        view: {selection: {selectedIds: {value: []}}} as never,
+      });
 
       return () =>
         h('div', {class: 'element-index'}, [

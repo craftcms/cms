@@ -1,24 +1,20 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import BaseElementIndex from '@/modules/elements/index/components/BaseElementIndex.vue';
-  import DataTable from '@/modules/elements/index/components/ElementTable.vue';
-  import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
+  import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
   } from '@/modules/elements/index/composables/useElementIndexVisits';
-  import {TableSpacing} from '@/common/types';
-  import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
-  import {ref} from 'vue';
+  import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
+  import type {ElementIndexModel} from '../types/model';
+  import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
-  import CpContainer from '@/common/components/CpContainer.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {router} from '@inertiajs/vue3';
   import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
@@ -26,6 +22,7 @@
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
     route: ElementIndexRoute;
+    index?: ElementIndexModel;
     /** Canonical URL used when switching sources, when it differs from route. */
     sourceHref?: string;
     /** Overrides the pinned first column (defaults to the element's title). */
@@ -42,36 +39,30 @@
     customizableSources?: boolean;
   }>();
 
-  const page = useElementIndexPage({
-    route: props.route,
-    pinnedColumn: props.pinnedColumn,
-    filterParams: () => props.filterParams ?? {},
-  });
+  const page =
+    props.index ??
+    useElementIndexPage({
+      route: props.route,
+      pinnedColumn: props.pinnedColumn,
+      filterParams: () => props.filterParams ?? {},
+    });
 
   // Double-click an element to edit it in a slideout.
-  const quickEdit = useElementQuickEdit();
+  const quickEdit = useElementQuickEdit({
+    refreshResults: () => {
+      void page.refresh();
+    },
+  });
 
-  const {
-    elementIndex,
-    elementTable,
-    viewState,
-    conditions,
-    filters,
-    columnOptions,
-    tableColumns,
-    reorder,
-    sortField,
-    sortDirection,
-    mode,
-    structureView,
-    toggleStructure,
-    canReorderStructure,
-    canMoveRow,
-    moveStructureRow,
-    loading,
-    visibleViewModes,
-    onActionPerformed,
-  } = page;
+  const {elementIndex, selection} = page.view;
+  const footerActive = computed(
+    () => Boolean(elementIndex.actions?.length) && selection.hasSelection.value
+  );
+
+  function onActionPerformed(): void {
+    page.clearSelection();
+    void page.refresh();
+  }
 
   const customizeSourcesActive = ref(false);
 
@@ -164,108 +155,52 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="$slots.actions" name="content-actions">
-    <!-- Type-specific page actions (e.g. a New Entry or Upload button). -->
-    <slot name="actions" :element-index="elementIndex" />
-  </LayoutSlot>
+  <div class="contents">
+    <LayoutSlot v-if="$slots.actions" name="content-actions">
+      <slot name="actions" :element-index="elementIndex" />
+    </LayoutSlot>
 
-  <BaseElementIndex
-    :table="elementTable"
-    :selectable="true"
-    :loading="loading"
-    :from="elementIndex.pagination.from"
-    :to="elementIndex.pagination.to"
-    :total="elementIndex.pagination.total"
-    :enable-adjust-page-size="true"
-    :actions="elementIndex.actions"
-    :element-type="elementIndex.elementType"
-    :source="elementIndex.source?.key"
-    :context="elementIndex.context"
-    @action-performed="onActionPerformed"
-    @edit="editElement"
-    @view="viewElement"
-  >
-    <template #header>
-      <ElementIndexToolbar
-        v-model:search="filters.form.search"
-        v-model:status="filters.form.status"
-        v-model:conditions="conditions"
-        :processing="filters.form.processing"
-        :status-options="elementIndex.statusOptions"
-        :view-modes="visibleViewModes"
-        :column-options="columnOptions"
-        :sort-options="elementIndex.sortOptions"
-        v-model:mode="mode"
-        v-model:sort-field="sortField"
-        v-model:sort-direction="sortDirection"
-        v-model:table-columns="tableColumns"
-        @submit="filters.submit"
-        @reorder="reorder"
-      >
-        <template #actions>
-          <!-- Type-specific actions that belong with the list itself, such
-              as the entries index's New Entry button. -->
-          <slot name="toolbar-actions" :element-index="elementIndex" />
-        </template>
-        <template #search-options>
-          <slot name="search-options"></slot>
-        </template>
-      </ElementIndexToolbar>
-    </template>
-    <template #navbar>
-      <slot name="navbar"></slot>
-    </template>
-    <template #body="{selection}">
-      <!-- Delegated so every view mode gets double-click-to-edit without
-            any of them knowing about it, matching Craft 5's element container
-            listener. -->
-      <div @dblclick="quickEdit.onDblClick">
-        <ElementCards
-          v-if="mode === 'cards'"
-          :selection="selection"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-          :item-behavior="itemBehavior"
+    <ElementIndex
+      :view="page.view"
+      :item-behavior="itemBehavior"
+      :footer-active="footerActive"
+      :enable-adjust-page-size="true"
+      :with-bottom-border="false"
+      @dblclick="quickEdit.onDblClick"
+    >
+      <template #toolbar-actions v-if="$slots['toolbar-actions']">
+        <slot name="toolbar-actions" :element-index="elementIndex" />
+      </template>
+      <template #search-options v-if="$slots['search-options']">
+        <slot name="search-options" />
+      </template>
+      <template #navbar v-if="$slots.navbar">
+        <slot name="navbar" />
+      </template>
+      <template #footer>
+        <ElementBulkActionsBar
+          :selected-ids="selection.selectedIds.value"
+          :actions="elementIndex.actions"
+          :element-type="elementIndex.elementType"
+          :source="elementIndex.source?.key"
+          :context="elementIndex.context"
+          @edit="editElement"
+          @view="viewElement"
+          @performed="onActionPerformed"
+          @clear="page.clearSelection"
         />
-        <ElementThumbs
-          v-else-if="mode === 'thumbs'"
-          :selection="selection"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-          :item-behavior="itemBehavior"
-        />
-        <DataTable
-          v-else
-          :table="elementTable"
-          :selectable="true"
-          :loading="loading"
-          :spacing="TableSpacing.Spacious"
-          :item-behavior="itemBehavior"
-          :with-bottom-border="false"
-          :structure="mode === 'structure'"
-          :is-row-collapsed="structureView.isCollapsed"
-          :is-row-pending="structureView.isPending"
-          :reorderable="canReorderStructure"
-          :can-move-row="canMoveRow"
-          @toggle-structure="toggleStructure"
-          @move-structure-row="moveStructureRow"
-        />
-      </div>
-    </template>
-  </BaseElementIndex>
+      </template>
+    </ElementIndex>
 
-  <!-- A nested source (an asset subfolder, say) opens the modal on the source
+    <!-- A nested source (an asset subfolder, say) opens the modal on the source
     it belongs to, which is what the modal lists. -->
-  <CustomizeSourcesModal
-    :is-active="customizeSourcesActive"
-    :element-type="elementIndex.elementType"
-    :page="elementIndex.page"
-    :source-key="elementIndex.source?.key?.split('/')[0]"
-    @close="customizeSourcesActive = false"
-    @saved="onSourcesSaved"
-  />
+    <CustomizeSourcesModal
+      :is-active="customizeSourcesActive"
+      :element-type="elementIndex.elementType"
+      :page="elementIndex.page"
+      :source-key="elementIndex.source?.key?.split('/')[0]"
+      @close="customizeSourcesActive = false"
+      @saved="onSourcesSaved"
+    />
+  </div>
 </template>
-
-<style scoped lang="scss"></style>

@@ -5,7 +5,6 @@ import type {ViewState} from '@/modules/elements/types/view-state';
 
 const merge = vi.fn();
 const visitor = {merge, visit: vi.fn(), currentQuery: () => ({})};
-const route = {url: () => '/cp/entries'};
 
 function viewStateRef(mode: ViewState['mode']) {
   return ref<ViewState>({
@@ -27,7 +26,7 @@ describe('useElementIndexViewMode', () => {
   // their reordering affordances until the next full page load.
   it('refreshes the structure payload when the mode changes', () => {
     const viewState = viewStateRef('table');
-    const {mode} = useElementIndexViewMode(route, viewState, visitor);
+    const {mode} = useElementIndexViewMode(viewState, visitor);
 
     mode.value = 'structure';
 
@@ -40,7 +39,6 @@ describe('useElementIndexViewMode', () => {
 
   it('asks for the structure payload when restoring a persisted mode', () => {
     const {restore} = useElementIndexViewMode(
-      route,
       viewStateRef('structure'),
       visitor
     );
@@ -52,11 +50,7 @@ describe('useElementIndexViewMode', () => {
   });
 
   it('stays put when the mode is unchanged', () => {
-    const {mode} = useElementIndexViewMode(
-      route,
-      viewStateRef('structure'),
-      visitor
-    );
+    const {mode} = useElementIndexViewMode(viewStateRef('structure'), visitor);
 
     mode.value = 'structure';
 

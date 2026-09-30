@@ -1,13 +1,14 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import DataTable from './ElementTable.vue';
+import {useElementIndexSelection} from '../composables/useElementIndexSelection';
+import ElementTable from './ElementTable.vue';
 import {
   createSampleTable,
   sampleEntries,
 } from '@/modules/elements/fixtures/elements';
 
 const meta = {
-  title: 'Elements/DataTable',
-  component: DataTable,
+  title: 'Elements/ElementTable',
+  component: ElementTable,
   args: {
     loading: false,
   },
@@ -22,30 +23,38 @@ const meta = {
         component:
           'The bare table body of an element index — headers, rows, sorting, ' +
           'row selection, drag-to-reorder, and the loading/empty states. It ' +
-          'renders no shell or footer; compose it inside `BaseElementIndex` ' +
+          'renders no shell or footer; compose it inside `ElementIndex` ' +
           '(or use `AdminTable`, which does that for you).',
       },
     },
   },
-} satisfies Meta<typeof DataTable>;
+} satisfies Meta<typeof ElementTable>;
 
 export default meta;
-interface DataTableStoryArgs {
+interface ElementTableStoryArgs {
   selectable?: boolean;
   reorderable?: boolean;
   loading?: boolean;
 }
 
-type Story = StoryObj<DataTableStoryArgs>;
+type Story = StoryObj<ElementTableStoryArgs>;
 
 function render(args: NonNullable<Story['args']>) {
   return {
-    components: {DataTable},
+    components: {ElementTable},
     setup() {
       const table = createSampleTable();
-      return {args, table};
+      return {
+        args,
+        table,
+        selection: useElementIndexSelection(table, {
+          selectable: () => args.selectable ?? false,
+          readOnly: false,
+        }),
+      };
     },
-    template: '<DataTable v-bind="args" :table="table" />',
+    template:
+      '<ElementTable v-bind="args" :table="table" :selection="selection" />',
   };
 }
 
@@ -90,11 +99,19 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   render: (args) => ({
-    components: {DataTable},
+    components: {ElementTable},
     setup() {
       const table = createSampleTable({data: sampleEntries.slice(0, 0)});
-      return {args, table};
+      return {
+        args,
+        table,
+        selection: useElementIndexSelection(table, {
+          selectable: () => args.selectable ?? false,
+          readOnly: false,
+        }),
+      };
     },
-    template: '<DataTable v-bind="args" :table="table" />',
+    template:
+      '<ElementTable v-bind="args" :table="table" :selection="selection" />',
   }),
 };

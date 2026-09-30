@@ -1,11 +1,11 @@
-import {createApp, h, nextTick, reactive} from 'vue';
+import {createApp, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createTable, getCoreRowModel} from '@tanstack/vue-table';
+import {useElementIndexSelection} from '../composables/useElementIndexSelection';
 import {useNavItemActions} from '@/common/composables/useNavItemActions';
 
 const page = vi.hoisted(() => ({
   elementIndex: null as unknown,
-  viewState: null as unknown,
 }));
 const quickEdit = vi.hoisted(() => ({
   onDblClick: vi.fn(),
@@ -50,7 +50,10 @@ const stub = {default: {name: 'Stub', render: () => null}};
 
 vi.mock('@/modules/elements/index/components/ElementTable.vue', () => stub);
 vi.mock('@/modules/elements/components/ElementCards.vue', () => stub);
-vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => stub);
+vi.mock(
+  '@/modules/elements/index/components/ElementIndexToolbar.vue',
+  () => stub
+);
 vi.mock('@/modules/elements/components/ElementThumbs.vue', () => stub);
 // Records whether it's open — which is all a gear in the nav can do to it.
 const modal = vi.hoisted(() => ({isActive: false}));
@@ -118,39 +121,50 @@ async function mountPage(
   });
 
   page.elementIndex = {
-    elementIndex: reactive({
-      sources: [
-        {type: 'native', key: '*', label: 'All entries'},
-        {type: 'native', key: 'section:blog', label: 'Blog'},
-      ],
-      source: {key: '*'},
-      pagination: {from: 1, to: data.length, total: data.length},
-      actions: ['edit', 'view'].map((type) => ({
-        key: type,
-        label: type === 'edit' ? 'Edit' : 'View',
-        bulk: false,
-        action: {type: 'event', name: `craft:${type}-element`},
-      })),
-      elementType: 'entry',
-      context: 'index',
-      viewModes: [],
-      statusOptions: [],
-      data,
-    }),
-    elementTable,
-    viewState,
-    conditions: {},
-    filters: {form: {search: '', status: '', processing: false}},
-    columnOptions: [],
-    tableColumns: [],
-    reorder: vi.fn(),
-    sortField: null,
-    sortDirection: null,
-    mode,
-    structureView: {isCollapsed: () => false, isPending: () => false},
-    loading: false,
-    visibleViewModes: [],
-    onActionPerformed: vi.fn(),
+    clearSelection: vi.fn(),
+    refresh: vi.fn(),
+    view: {
+      selection: useElementIndexSelection(elementTable, {
+        selectable: true,
+        readOnly: false,
+      }),
+      elementIndex: reactive({
+        sources: [
+          {type: 'native', key: '*', label: 'All entries'},
+          {type: 'native', key: 'section:blog', label: 'Blog'},
+        ],
+        source: {key: '*'},
+        pagination: {from: 1, to: data.length, total: data.length},
+        actions: ['edit', 'view'].map((type) => ({
+          key: type,
+          label: type === 'edit' ? 'Edit' : 'View',
+          bulk: false,
+          action: {type: 'event', name: `craft:${type}-element`},
+        })),
+        elementType: 'entry',
+        context: 'index',
+        viewModes: [],
+        statusOptions: [],
+        data,
+        sites: [],
+      }),
+      table: elementTable,
+      data: ref(data),
+      viewState,
+      conditions: ref({}),
+      search: ref(''),
+      status: ref(''),
+      submit: vi.fn(),
+      columnOptions: ref([]),
+      tableColumns: ref([]),
+      reorder: vi.fn(),
+      sortField: ref(null),
+      sortDirection: ref(null),
+      mode: ref(mode),
+      structureView: {isCollapsed: () => false, isPending: () => false},
+      loading: ref(false),
+      visibleViewModes: ref([]),
+    },
   };
 
   const container = document.createElement('div');

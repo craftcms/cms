@@ -225,32 +225,6 @@ describe('useElementSourceActions', () => {
     expect(router.prefetch).toHaveBeenCalledTimes(1);
   });
 
-  it('hands off to a visitor instead of visiting, inside a modal', () => {
-    const merge = vi.fn();
-    const {actions} = run(() =>
-      useElementSourceActions({
-        sources: SOURCES,
-        route,
-        activeSource: '*',
-        indexVisitor: {merge} as never,
-      })
-    );
-
-    const blog = (
-      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
-    ).items[0]!;
-
-    blog.onClick!(new MouseEvent('click', {cancelable: true}));
-
-    // An Inertia visit inside the selector modal would navigate the page
-    // behind it.
-    expect(router.get).not.toHaveBeenCalled();
-    expect(merge).toHaveBeenCalledWith(
-      {source: 'section:blog', viewMode: null},
-      {resetPage: true}
-    );
-  });
-
   it('carries the drag-and-drop hooks a folder source needs', () => {
     const {actions} = run(() =>
       useElementSourceActions({sources: SOURCES, route, activeSource: '*'})

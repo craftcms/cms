@@ -1,10 +1,8 @@
 import {computed, ref, type Ref, watch} from 'vue';
 import type {SortingState, Updater} from '@tanstack/vue-table';
-import {
-  createIndexVisitor,
-  type IndexVisitor,
-  type ElementIndexRoute,
-  type IndexRestore,
+import type {
+  IndexVisitor,
+  IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
@@ -16,15 +14,6 @@ interface ElementIndexSortContext {
   source?: SourceItem | null;
   /** The sortable attributes; switching to one starts at its `defaultDir`. */
   sortOptions?: Array<SortOption>;
-}
-
-interface UseElementIndexSortOptions {
-  /** The index route to visit when the sort changes. */
-  route: ElementIndexRoute;
-  /** Called with the server-confirmed sort, e.g. to keep a filter form in sync. */
-  onSortChange?: (sort: Array<SortItem>) => void;
-  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
-  visitor?: IndexVisitor;
 }
 
 /** Keep valid, unique sort items in priority order. */
@@ -69,10 +58,8 @@ function sortItemsToQuery(items: Array<SortItem>) {
 export function useElementIndexSort(
   props: ElementIndexSortContext,
   viewState: Ref<ViewState>,
-  options: UseElementIndexSortOptions
+  visitor: IndexVisitor
 ) {
-  const visitor = options.visitor ?? createIndexVisitor(options.route);
-
   // The user's sort is persisted per source, so each source falls back to its
   // own `defaultSort` (resolved server-side) until the user sorts it.
   const sourceKey = () => props.source?.key ?? '*';
@@ -99,8 +86,8 @@ export function useElementIndexSort(
     },
   });
 
-  // Whenever the server confirms a sort, mirror it into the table state, local
-  // storage, and (via callback) anything else that needs it.
+  // Whenever the server confirms a sort, mirror it into the table state and local
+  // storage.
   watch(
     () => props.sort,
     (sort) => {
@@ -113,7 +100,6 @@ export function useElementIndexSort(
       if (next[0]?.field !== 'score') {
         setPersistedSort(next);
       }
-      options.onSortChange?.(next);
     }
   );
 
@@ -162,7 +148,7 @@ export function useElementIndexSort(
 
   // On load, if the URL doesn't specify a sort but we have one persisted from a
   // previous visit, restore it. The page folds this into one mount-time restore
-  // visit alongside the view-mode/column restores (see `useElementIndexPage`),
+  // visit alongside the view-mode/column restores (see `useElementIndex`),
   // so they can't interrupt each other.
   function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);

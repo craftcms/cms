@@ -1,9 +1,5 @@
 import {watch} from 'vue';
-import {
-  createIndexVisitor,
-  type IndexVisitor,
-  type ElementIndexRoute,
-} from '@/modules/elements/index/composables/useElementIndexVisits';
+import type {IndexVisitor} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
 import type {PaginationData} from '@/common/types';
 
@@ -18,12 +14,8 @@ interface ElementIndexPaginationContext {
  */
 export function useElementIndexPagination(
   props: ElementIndexPaginationContext,
-  route: ElementIndexRoute,
-  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
-  indexVisitor?: IndexVisitor
+  visitor: IndexVisitor
 ) {
-  const visitor = indexVisitor ?? createIndexVisitor(route);
-
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
     // A non-page index keeps its query in the visitor, not in the URL.

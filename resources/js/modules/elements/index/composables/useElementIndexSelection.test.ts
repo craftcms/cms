@@ -1,7 +1,6 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {
   useElementIndexSelection,
   type ElementIndexSelectionOptions,
@@ -67,7 +66,6 @@ const opts = (
 ): ElementIndexSelectionOptions => ({
   selectable: true,
   readOnly: false,
-  actions: [],
   ...over,
 });
 
@@ -253,22 +251,5 @@ describe('useElementIndexSelection', () => {
     s.selectRowFromEvent(rowAt(rows, 2), clickEvent([], true));
 
     expect(rows.map((r) => r.getIsSelected())).toEqual([true, true, true]);
-  });
-
-  it('computes bulk-action visibility from selectable + actions + selection', () => {
-    const selection = makeSelection();
-    const rows = [makeRow(1, selection)];
-    const table = makeTable(rows);
-    const actions = ref<Array<BulkActionItem>>([
-      {key: 'delete', label: 'Delete'},
-    ]);
-    const s = useElementIndexSelection(table, opts({actions}));
-
-    expect(s.hasBulkActions.value).toBe(true);
-    expect(s.showBulkActions.value).toBe(true);
-    expect(s.bulkActionsActive.value).toBe(false);
-
-    s.selectRow(rowAt(rows, 0), {checked: true});
-    expect(s.bulkActionsActive.value).toBe(true);
   });
 });

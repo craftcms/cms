@@ -1,9 +1,7 @@
 import {computed, type Ref} from 'vue';
-import {
-  createIndexVisitor,
-  type IndexVisitor,
-  type ElementIndexRoute,
-  type IndexRestore,
+import type {
+  IndexVisitor,
+  IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
@@ -15,13 +13,9 @@ import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
  * optimistic local state in place while the server responds.
  */
 export function useElementIndexViewMode(
-  route: ElementIndexRoute,
   viewState: Ref<ViewState>,
-  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
-  indexVisitor?: IndexVisitor
+  visitor: IndexVisitor
 ) {
-  const visitor = indexVisitor ?? createIndexVisitor(route);
-
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,
     set: (value) => {
@@ -48,7 +42,7 @@ export function useElementIndexViewMode(
   // (it has no access to the persisted view state), so if local storage restored
   // a non-table mode, re-request the server-rendered elements for it. The page
   // folds this into one mount-time restore visit alongside the sort/column
-  // restores (see `useElementIndexPage`), so they can't interrupt each other.
+  // restores (see `useElementIndex`), so they can't interrupt each other.
   function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);
     const persisted = viewState.value.mode;

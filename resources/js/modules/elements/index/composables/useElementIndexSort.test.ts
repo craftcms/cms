@@ -4,8 +4,6 @@ import type {SortItem} from '@/common/types';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import {useElementIndexSort} from './useElementIndexSort';
 
-const route = {url: () => '/entries'};
-
 function viewState(sort?: Array<SortItem>) {
   return ref<ViewState>({
     inlineEditing: false,
@@ -36,8 +34,9 @@ describe('useElementIndexSort', () => {
       ],
     });
     const sort = useElementIndexSort(props, viewState(), {
-      route,
-      visitor: {currentQuery: () => ({}), visit, merge: vi.fn()},
+      currentQuery: () => ({}),
+      visit,
+      merge: vi.fn(),
     });
 
     sort.sortingConfig.onSortingChange([{id: 'author', desc: false}]);
@@ -64,7 +63,7 @@ describe('useElementIndexSort', () => {
         ],
       },
       viewState(),
-      {route, visitor: {currentQuery: () => ({}), visit, merge: vi.fn()}}
+      {currentQuery: () => ({}), visit, merge: vi.fn()}
     );
 
     sort.sortField.value = 'author';
@@ -86,7 +85,7 @@ describe('useElementIndexSort', () => {
         sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
       },
       viewState(),
-      {route, visitor: {currentQuery: () => ({}), visit, merge: vi.fn()}}
+      {currentQuery: () => ({}), visit, merge: vi.fn()}
     );
 
     sort.sortField.value = 'score';
@@ -104,7 +103,7 @@ describe('useElementIndexSort', () => {
         sortOptions: [{label: 'Custom', value: 'sortOrder', defaultDir: 'asc'}],
       },
       viewState(),
-      {route, visitor: {currentQuery: () => ({}), visit, merge: vi.fn()}}
+      {currentQuery: () => ({}), visit, merge: vi.fn()}
     );
 
     sort.onSortingChange([{id: 'sortOrder', desc: true}]);
@@ -129,8 +128,9 @@ describe('useElementIndexSort', () => {
       ],
     });
     const sort = useElementIndexSort(props, state, {
-      route,
-      visitor: {currentQuery: () => ({}), visit, merge: vi.fn()},
+      currentQuery: () => ({}),
+      visit,
+      merge: vi.fn(),
     });
 
     props.sort = [{field: 'score', direction: 'desc'}];

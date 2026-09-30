@@ -1,9 +1,7 @@
 import {computed, type Ref} from 'vue';
-import {
-  createIndexVisitor,
-  type IndexVisitor,
-  type ElementIndexRoute,
-  type IndexRestore,
+import type {
+  IndexVisitor,
+  IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
@@ -47,12 +45,8 @@ export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
   pinned: PinnedColumn,
-  route: ElementIndexRoute,
-  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
-  indexVisitor?: IndexVisitor
+  visitor: IndexVisitor
 ) {
-  const visitor = indexVisitor ?? createIndexVisitor(route);
-
   // Column state is stored per source; fall back to a shared bucket when there
   // is no resolved source (e.g. the implicit "all elements" view).
   const sourceKey = computed(() => props.source?.key ?? '*');
@@ -76,8 +70,10 @@ export function useElementIndexColumns(
 
   // Effective visible columns: the user's per-source selection if present,
   // otherwise the source/element-type default.
-  const visibleKeys = computed<Array<string>>(
-    () => sourceColumnState.value?.visible ?? defaultVisible.value
+  const visibleKeys = computed<Array<string>>(() =>
+    (sourceColumnState.value?.visible ?? defaultVisible.value).filter(
+      (key) => key !== pinned.key
+    )
   );
 
   // Available columns by key (e.g. `field:{uuid}`, matching row attribute keys).
@@ -103,7 +99,6 @@ export function useElementIndexColumns(
     ),
   ]);
 
-  // The table's column order, kept in sync with `columns` (pinned first).
   const columnOrder = computed(() => [
     pinned.key,
     ...visibleOrderedColumns.value.map((column) => column.value),
@@ -127,7 +122,9 @@ export function useElementIndexColumns(
         value: column.value,
       })),
       ...props.tableColumns
-        .filter((column) => !visible.has(column.value))
+        .filter(
+          (column) => column.value !== pinned.key && !visible.has(column.value)
+        )
         .sort((a, b) => a.label.localeCompare(b.label))
         .map((column) => ({label: column.label, value: column.value})),
     ];
@@ -163,7 +160,9 @@ export function useElementIndexColumns(
     set: (value) => {
       const next = [
         ...visibleKeys.value.filter((key) => value.includes(key)),
-        ...value.filter((key) => !visibleKeys.value.includes(key)),
+        ...value.filter(
+          (key) => key !== pinned.key && !visibleKeys.value.includes(key)
+        ),
       ];
 
       // The `craft-checkbox-group` emits its initial model value on mount, which
@@ -185,7 +184,7 @@ export function useElementIndexColumns(
   // On load, if the user has a persisted column selection that differs from
   // what the server rendered by default, restore it so the rows include those
   // columns' data. The page folds this into one mount-time restore visit
-  // alongside the view-mode/sort restores (see `useElementIndexPage`), so they
+  // alongside the view-mode/sort restores (see `useElementIndex`), so they
   // can't interrupt each other.
   function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);

@@ -204,7 +204,6 @@ describe('loadedBranchDepth', () => {
 
 describe('useElementIndexStructure', () => {
   const visitor = {merge: vi.fn(), visit: vi.fn(), currentQuery: () => ({})};
-  const route = {url: () => '/cp/entries'};
   const viewState = ref<ViewState>({
     inlineEditing: false,
     mode: 'structure',
@@ -224,7 +223,6 @@ describe('useElementIndexStructure', () => {
         },
       },
       viewState,
-      route,
       visitor
     );
 

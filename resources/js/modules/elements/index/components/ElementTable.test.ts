@@ -1,6 +1,7 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import DataTable from './ElementTable.vue';
+import {useElementIndexSelection} from '../composables/useElementIndexSelection';
 import {createSampleTable} from '@/modules/elements/fixtures/elements';
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -33,7 +34,16 @@ describe('DataTable', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
-      render: () => h(DataTable, {table, selectable: true, ...props} as any),
+      render: () =>
+        h(DataTable, {
+          table,
+          selection: useElementIndexSelection(table, {
+            selectable: true,
+            readOnly: false,
+          }),
+          selectable: true,
+          ...props,
+        } as any),
     });
     app.mount(container);
 
@@ -219,7 +229,15 @@ describe('DataTable', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
-      render: () => h(DataTable, {table, loading: loading.value}),
+      render: () =>
+        h(DataTable, {
+          table,
+          selection: useElementIndexSelection(table, {
+            selectable: false,
+            readOnly: false,
+          }),
+          loading: loading.value,
+        }),
     });
     app.mount(container);
     await nextTick();
@@ -261,7 +279,15 @@ describe('DataTable', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
-      render: () => h(DataTable, {table, loading: loading.value}),
+      render: () =>
+        h(DataTable, {
+          table,
+          selection: useElementIndexSelection(table, {
+            selectable: false,
+            readOnly: false,
+          }),
+          loading: loading.value,
+        }),
     });
     app.mount(container);
     await nextTick();
