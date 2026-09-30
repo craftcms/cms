@@ -297,7 +297,7 @@
             :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
-              class="flex gap-1 items-center"
+              class="flex gap-sm items-center"
               :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
             >
               <ColumnHeaderTitle

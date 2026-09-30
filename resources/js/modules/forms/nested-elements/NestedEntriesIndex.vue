@@ -406,7 +406,7 @@
         >
           <label
             v-if="canReorder && pagination.last_page > 1"
-            class="flex items-center gap-2"
+            class="flex items-center gap-md"
           >
             {{ t('Move to page') }}
             <select v-model.number="movePage" class="text small">

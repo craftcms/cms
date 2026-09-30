@@ -56,7 +56,7 @@
         :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
       />
     </div>
-    <div class="flex gap-1">
+    <div class="flex gap-sm">
       <template v-if="showPagination">
         <craft-button
           type="button"
@@ -71,7 +71,7 @@
             :label="t('Previous page')"
           ></craft-icon>
         </craft-button>
-        <div class="flex items-center gap-1 mx-2">
+        <div class="flex items-center gap-sm mx-md">
           {{ t('Page') }}
           <craft-input
             type="text"
@@ -98,7 +98,7 @@
         </craft-button>
       </template>
     </div>
-    <div class="flex gap-2 items-center">
+    <div class="flex gap-md items-center">
       <template v-if="enableAdjustPageSize">
         <span aria-hidden="true">{{ pageSizeLabel }}</span>
         <Select

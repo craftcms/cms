@@ -657,7 +657,7 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-2 pb-2" slot="header">
+      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
         <craft-button
           ref="addButton"
           type="button"

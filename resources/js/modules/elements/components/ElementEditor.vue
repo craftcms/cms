@@ -363,7 +363,7 @@
     </div>
   </LayoutSlot>
 
-  <div ref="content" class="py-3">
+  <div ref="content" class="py-lg">
     <CpContainer>
       <FormRenderer
         v-if="formPayload"
