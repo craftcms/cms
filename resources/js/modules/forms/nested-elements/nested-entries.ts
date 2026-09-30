@@ -162,6 +162,32 @@ export function canOpenEntry(
   return Boolean(entry?.editUrl && entry.cardAttributes?.data?.editable);
 }
 
+export function focusNestedEntry(
+  container: HTMLElement | null | undefined,
+  entries: NestedEntry[],
+  id: number | null,
+  fallbackIndex = 0
+): void {
+  if (!container) {
+    return;
+  }
+
+  const items = container.querySelectorAll<HTMLElement>('[data-nested-id]');
+  const target =
+    [...items].find((item) => Number(item.dataset.nestedId) === id) ??
+    items.item(fallbackIndex);
+  const entry = entries.find(
+    (item) => item.id === Number(target?.dataset.nestedId)
+  );
+  const link = [
+    ...(target?.querySelectorAll<HTMLAnchorElement>('a[href]') ?? []),
+  ].find((candidate) => candidate.getAttribute('href') === entry?.editUrl);
+  const button = target?.querySelector<HTMLElement>(
+    '[data-edit-entry], craft-action-menu craft-button[slot="invoker"]'
+  );
+  (link ?? button)?.focus();
+}
+
 export function nestedEntryReorderOffset(
   entries: NestedEntry[],
   selectedIds: number[],

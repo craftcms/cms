@@ -1,14 +1,117 @@
 import {useEventListener} from '@vueuse/core';
 import {toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {ActionItem} from '@/common/types';
-import type {BulkActionItem} from '@/modules/elements/types/actions';
+import type {
+  BulkActionItem,
+  ElementActionSelection,
+  RunBulkAction,
+} from '@/modules/elements/types/actions';
 import {selectionAllows} from '@/modules/elements/types/actions';
 import {
+  DELETE_ACTION,
   DUPLICATE_ACTION,
   isCopyAction,
 } from '@/modules/elements/index/element-action-identity';
 import {withoutStraySeparators} from '@/modules/matrix/selection-menu';
-import type {NestedEntry} from './nested-entries';
+import type {Selectable} from '@/common/composables/useSelectable';
+import {copyElements} from '@/modules/elements/index/copy-elements';
+import {runElementAction} from '@/modules/elements/index/element-actions';
+import {
+  nestedOwnerParams,
+  type NestedEntry,
+  type NestedEntriesManager,
+} from './nested-entries';
+import type {NestedEntryOperations} from './useNestedEntryOperations';
+
+export function useNestedEntryActions(options: {
+  entries: MaybeRefOrGetter<NestedEntry[]>;
+  manager: MaybeRefOrGetter<NestedEntriesManager | null>;
+  selection: Selectable<number>;
+  operations: NestedEntryOperations;
+  busy: MaybeRefOrGetter<boolean>;
+}) {
+  async function perform(
+    item: BulkActionItem,
+    run: RunBulkAction
+  ): Promise<void> {
+    const action = item.action;
+    const manager = toValue(options.manager);
+    if (!action || !manager || item.disabled || toValue(options.busy)) {
+      return;
+    }
+
+    if (action.type === 'download') {
+      await run();
+      return;
+    }
+    if (action.type !== 'http') {
+      return;
+    }
+
+    let performed = false;
+    await options.operations.mutate(async (ownerId) => {
+      performed = await run(nestedOwnerParams(manager, ownerId));
+      return performed ? undefined : false;
+    });
+
+    if (performed) {
+      options.selection.clear();
+      if (item.key === DELETE_ACTION) {
+        options.operations.focusCreateButton();
+      }
+    }
+  }
+
+  async function performRow(
+    item: BulkActionItem,
+    ids: number[],
+    trigger: HTMLElement
+  ): Promise<void> {
+    const manager = toValue(options.manager);
+    const entries = toValue(options.entries).filter((entry) =>
+      ids.includes(entry.id)
+    );
+    if (
+      !manager ||
+      !item.action ||
+      !ids.length ||
+      entries.length !== ids.length ||
+      !selectionAllows(item, entries) ||
+      (item.key === DUPLICATE_ACTION && !options.operations.canAdd(ids.length))
+    ) {
+      return;
+    }
+
+    if (item.action.type === 'event' && isCopyAction(item)) {
+      const serverElements = item.action.detail?.elements as
+        | ElementActionSelection[]
+        | undefined;
+      copyElements(manager.elementType, ids, [
+        ...(serverElements ?? []),
+        ...entries,
+      ]);
+      return;
+    }
+
+    await perform(item, async (overrides) => {
+      await runElementAction(
+        item,
+        {
+          ...nestedOwnerParams(manager, manager.ownerId),
+          elementType: manager.elementType,
+          source: '__IMP__',
+          context: 'embeddedIndex',
+          elementIds: ids,
+          ...overrides,
+        },
+        {trigger}
+      );
+      return true;
+    });
+  }
+
+  return {perform, performRow};
+}
 
 export interface NestedEntryActionsOptions {
   entry: NestedEntry;

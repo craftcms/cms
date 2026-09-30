@@ -2,8 +2,10 @@
   import {computed, shallowRef, useTemplateRef} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
-  import {runAction} from '@craftcms/ui/actions.mjs';
-  import type {BaseAction} from '@craftcms/ui/actions.mjs';
+  import {
+    elementActionRequest,
+    runElementAction,
+  } from '@/modules/elements/index/element-actions';
   import {selectionAllows} from '@/modules/elements/types/actions';
   import type {
     BulkActionEventDetail,
@@ -169,7 +171,7 @@
             type: 'button',
             label: item.label,
             variant,
-            action: request(item),
+            action: elementActionRequest(item, requestParams()),
             feedback: {success: {message: t('Done')}},
           } satisfies ActionItem;
         }
@@ -191,27 +193,14 @@
     })
   );
 
-  function request(
-    item: BulkActionItem,
-    overrides: BulkActionParams = {}
-  ): BaseAction {
-    const action = item.action;
-
-    if (!action || (action.type !== 'http' && action.type !== 'download')) {
-      throw new Error('Bulk action does not contain an executable request.');
-    }
-
+  function requestParams(overrides: BulkActionParams = {}): BulkActionParams {
     return {
-      ...action,
-      body: {
-        ...action.body,
-        elementType: props.elementType,
-        source: props.source,
-        context: props.context,
-        elementIds: props.selectedIds,
-        ...props.params,
-        ...overrides,
-      },
+      elementType: props.elementType,
+      source: props.source,
+      context: props.context,
+      elementIds: props.selectedIds,
+      ...props.params,
+      ...overrides,
     };
   }
 
@@ -223,25 +212,22 @@
     performing.value = true;
 
     try {
-      const action = request(item, overrides);
       const trigger =
         sourceEvent?.currentTarget instanceof Element
           ? sourceEvent.currentTarget
           : undefined;
 
-      await runAction(action, {trigger, sourceEvent});
-      window.Craft?.cp?.displayNotice?.(t('Done'));
+      await runElementAction(item, requestParams(overrides), {
+        trigger,
+        sourceEvent,
+      });
 
-      if (action.type === 'http') {
+      if (item.action?.type === 'http') {
         emit('performed');
       }
 
       return true;
-    } catch (cause) {
-      window.Craft?.cp?.displayError?.(
-        cause instanceof Error ? cause.message : t('A server error occurred.')
-      );
-
+    } catch {
       return false;
     } finally {
       performing.value = false;

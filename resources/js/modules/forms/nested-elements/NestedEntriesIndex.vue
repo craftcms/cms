@@ -17,15 +17,11 @@
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import ElementBulkActionsBar from '@/modules/elements/index/components/ElementBulkActionsBar.vue';
   import {saveInlineElements} from '@/modules/elements/index/save-inline-elements';
-  import {
-    DELETE_ACTION,
-    DUPLICATE_ACTION,
-  } from '@/modules/elements/index/element-action-identity';
+  import {DUPLICATE_ACTION} from '@/modules/elements/index/element-action-identity';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import type {
     BulkActionEventDetail,
     BulkActionItem,
-    RunBulkAction,
   } from '@/modules/elements/types/actions';
   import type {ElementIndexRow} from '@/modules/elements/index/composables/useContentIndexData';
   import NestedEntryCardActions from './NestedEntryCardActions.vue';
@@ -40,6 +36,7 @@
   } from './nested-entries';
   import {
     nestedEntryActions,
+    useNestedEntryActions,
     useNestedEntryActionEvents,
   } from './nested-entry-actions';
   import {useNestedEntriesQuery} from './useNestedEntriesQuery';
@@ -75,6 +72,7 @@
   let operations!: NestedEntryOperations;
   let serverActions!: ComputedRef<BulkActionItem[]>;
   let canInteractWithOrder!: ComputedRef<boolean>;
+  let movedEntryId: number | null = null;
 
   const entries = computed<NestedIndexEntry[]>(() =>
     queryState ? queryState.entries.value : []
@@ -85,7 +83,14 @@
     props: () => effectiveControl.value,
     busy,
     error,
-    onLoaded: async () => operations?.onLoaded(),
+    onLoaded: async () => {
+      if (movedEntryId !== null) {
+        operations.focusEntry(movedEntryId);
+        movedEntryId = null;
+      } else if (document.activeElement === container.value) {
+        operations?.onContainerFocus();
+      }
+    },
     editable: () => props.editable,
     readOnly: () => !props.editable,
     saveInline: saveInlineBody,
@@ -152,6 +157,13 @@
     busy,
     error,
     ownerId: preparedOwnerId,
+  });
+  const actions = useNestedEntryActions({
+    entries,
+    manager,
+    selection,
+    operations,
+    busy: () => busy.value || loading.value,
   });
 
   const createChoices = computed(() => nestedCreateChoices(manager.value));
@@ -224,50 +236,11 @@
     enabled: computed(() => mode.value === 'table' || mode.value === 'cards'),
     handlers: {
       perform: (item, ids, trigger) =>
-        void operations.performElementAction(item, ids, trigger),
+        void actions.performRow(item, ids, trigger),
       paste: operations.paste,
       move: (from, to) => operations.reorder(from, to, false),
     },
   });
-
-  async function performAction(
-    action: BulkActionItem,
-    run: RunBulkAction
-  ): Promise<void> {
-    const request = action.action;
-    const currentManager = manager.value;
-    if (
-      !request ||
-      !currentManager ||
-      action.disabled ||
-      busy.value ||
-      loading.value ||
-      (request.type !== 'http' && request.type !== 'download')
-    ) {
-      return;
-    }
-
-    if (request.type === 'download') {
-      await run();
-
-      return;
-    }
-
-    let performed = false;
-    await operations.mutate(async (ownerId) => {
-      performed = await run(nestedOwnerParams(currentManager, ownerId));
-
-      return performed ? undefined : false;
-    });
-
-    if (performed) {
-      clearSelection();
-
-      if (action.key === DELETE_ACTION) {
-        operations.focusCreateButton();
-      }
-    }
-  }
 
   async function saveInlineBody(body: URLSearchParams) {
     const currentManager = manager.value;
@@ -307,11 +280,10 @@
       return;
     }
 
-    const moved = await operations.moveSelectionToPage(
-      [...selectedIds.value] as number[],
-      pageOffset(targetPage)
-    );
+    const ids = [...selectedIds.value] as number[];
+    const moved = await operations.reorderIds(ids, pageOffset(targetPage));
     if (moved) {
+      movedEntryId = ids[0] ?? null;
       page.value = targetPage;
     }
   }
@@ -426,7 +398,7 @@
           :source="model.view.elementIndex.source?.key"
           :context="model.view.elementIndex.context"
           :params="manager ? nestedOwnerParams(manager, manager.ownerId) : {}"
-          :perform="performAction"
+          :perform="actions.perform"
           @edit="openSelectedEntry"
           @view="openSelectedEntry"
           @clear="clearSelection"

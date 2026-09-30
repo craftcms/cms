@@ -11,7 +11,10 @@
     type NestedEntry,
     type NestedEntriesManager,
   } from './nested-entries';
-  import {useNestedEntryActionEvents} from './nested-entry-actions';
+  import {
+    useNestedEntryActions,
+    useNestedEntryActionEvents,
+  } from './nested-entry-actions';
   import type {
     NestedEntryOperations,
     NestedEntryQuickEdit,
@@ -32,6 +35,13 @@
   const reorderable = computed(
     () => props.operations.canReorder.value && !props.operations.busy.value
   );
+  const actions = useNestedEntryActions({
+    entries: () => props.cards,
+    manager: () => props.manager,
+    selection: props.selection,
+    operations: props.operations,
+    busy: props.operations.busy,
+  });
 
   function actionIds(entry: NestedEntry): number[] {
     return props.selection.isSelected(entry.id)
@@ -46,7 +56,7 @@
     busy: props.operations.busy,
     handlers: {
       perform: (item, ids, trigger) =>
-        void props.operations.performElementAction(item, ids, trigger),
+        void actions.performRow(item, ids, trigger),
       paste: props.operations.paste,
       move: (from, to) => props.operations.reorder(from, to, false),
     },

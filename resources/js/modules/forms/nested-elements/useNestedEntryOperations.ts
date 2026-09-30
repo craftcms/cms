@@ -1,11 +1,9 @@
 import {actionClient, t} from '@craftcms/ui';
-import {runAction} from '@craftcms/ui/actions.mjs';
 import {useEventListener, useTimeoutFn} from '@vueuse/core';
 import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
 import CreateElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CreateElementController';
 import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 import NestedElementsController from '@/actions/CraftCms/Cms/Http/Controllers/NestedElementsController';
-import PerformElementActionController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/PerformElementActionController';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import type {Selectable} from '@/common/composables/useSelectable';
 import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
@@ -14,21 +12,12 @@ import type {
   NestedOwnerContext,
   NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
-import {copyElements} from '@/modules/elements/index/copy-elements';
-import {
-  DELETE_ACTION,
-  DUPLICATE_ACTION,
-  isCopyAction,
-} from '@/modules/elements/index/element-action-identity';
-import {
-  selectionAllows,
-  type BulkActionItem,
-  type ElementActionSelection,
-} from '@/modules/elements/types/actions';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
 import {craft} from '@/modules/matrix/interop';
+import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
 import {
   canOpenEntry,
+  focusNestedEntry,
   isPasteable,
   nestedEntriesErrorMessage,
   nestedEntryReorderOffset,
@@ -37,24 +26,6 @@ import {
   type NestedEntriesManager,
   type NestedEntry,
 } from './nested-entries';
-
-const QUICK_EDIT_CONTROL_SELECTOR = [
-  'a[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-  'label',
-  '[role="button"]',
-  '[role="link"]',
-  '[role="menuitem"]',
-  '[contenteditable="true"]',
-  '.move',
-  'craft-button',
-  'craft-checkbox',
-  'craft-action-menu',
-  'craft-reorder-button',
-].join(', ');
 
 export interface NestedEntryQuickEdit {
   readonly longPress: true;
@@ -109,9 +80,7 @@ export function useNestedEntryOperations(
   const {announce} = useAnnouncer();
   let focusEntryId: number | null = null;
   let focusEntryIndex = -1;
-  let restoreFocusAfterLoad = false;
   let resetAfterChildSave = false;
-  let restoreFocusAfterChildSave: (() => void) | undefined;
 
   function canAdd(count: number): boolean {
     const manager = options.manager.value;
@@ -222,8 +191,9 @@ export function useNestedEntryOperations(
     };
   }
 
-  async function withOwner(
-    operation: (preparedOwnerId: number) => Promise<void>
+  async function mutate(
+    operation: (preparedOwnerId: number) => Promise<void | false>,
+    mutationOptions: {reset?: boolean} = {}
   ): Promise<void> {
     if (busy.value) {
       return;
@@ -234,20 +204,7 @@ export function useNestedEntryOperations(
     announce(t('Loading'));
 
     try {
-      await operation(await prepare());
-    } catch (cause) {
-      setError(cause);
-    } finally {
-      busy.value = false;
-      announce(t('Loading complete'));
-    }
-  }
-
-  async function mutate(
-    operation: (preparedOwnerId: number) => Promise<void | false>,
-    mutationOptions: {reset?: boolean} = {}
-  ): Promise<void> {
-    await withOwner(async (preparedOwnerId) => {
+      const preparedOwnerId = await prepare();
       let refresh = true;
       let completed = false;
 
@@ -261,30 +218,28 @@ export function useNestedEntryOperations(
           window.Craft?.Preview?.refresh();
         }
       }
-    });
+    } catch (cause) {
+      setError(cause);
+    } finally {
+      busy.value = false;
+      announce(t('Loading complete'));
+    }
   }
 
   const draftRefresh = useTimeoutFn(
     () => {
       const reset = resetAfterChildSave;
-      const restoreFocus = restoreFocusAfterChildSave;
       resetAfterChildSave = false;
-      restoreFocusAfterChildSave = undefined;
-      void refreshAfterChildSave(true, reset, restoreFocus);
+      void refreshAfterChildSave(true, reset);
     },
     1000,
     {immediate: false}
   );
 
-  function onChildSaved(
-    draft = false,
-    reset = false,
-    restoreFocus?: () => void
-  ): void {
+  function onChildSaved(draft = false, reset = false): void {
     window.Craft?.Preview?.refresh();
     draftRefresh.stop();
     resetAfterChildSave ||= reset;
-    restoreFocusAfterChildSave = restoreFocus ?? restoreFocusAfterChildSave;
 
     if (draft) {
       draftRefresh.start();
@@ -293,16 +248,13 @@ export function useNestedEntryOperations(
     }
 
     const shouldReset = resetAfterChildSave;
-    const restore = restoreFocusAfterChildSave;
     resetAfterChildSave = false;
-    restoreFocusAfterChildSave = undefined;
-    void refreshAfterChildSave(false, shouldReset, restore);
+    void refreshAfterChildSave(false, shouldReset);
   }
 
   async function refreshAfterChildSave(
     draft = false,
-    reset = false,
-    restoreFocus?: () => void
+    reset = false
   ): Promise<void> {
     try {
       if (!draft) {
@@ -317,7 +269,7 @@ export function useNestedEntryOperations(
         document.activeElement === document.body ||
         document.activeElement === options.container.value
       ) {
-        (restoreFocus ?? restoreEntryFocus)();
+        restoreEntryFocus();
       }
     } catch (cause) {
       setError(cause);
@@ -359,7 +311,7 @@ export function useNestedEntryOperations(
     rememberEntry(entry);
     const prepareNestedOwner = prepareEdit(entry);
     const onSaved = ({draft} = {} as SlideoutSaveResult): void => {
-      onChildSaved(draft, false, restoreEntryFocus);
+      onChildSaved(draft);
     };
 
     if (canUseVueSlideout()) {
@@ -434,19 +386,15 @@ export function useNestedEntryOperations(
     }
   }
 
-  function quickEditRow(target: Element): HTMLElement | null {
-    return target.closest<HTMLElement>('[data-index-id]');
-  }
-
   function onQuickEditDblClick(event: MouseEvent): void {
     const target = event.target;
     if (!(target instanceof Element)) {
       return;
     }
 
-    const row = quickEditRow(target);
+    const row = target.closest<HTMLElement>('[data-index-id]');
     const entry = row ? entryFor(row) : null;
-    const control = target.closest(QUICK_EDIT_CONTROL_SELECTOR);
+    const control = target.closest(ELEMENT_QUICK_EDIT_CONTROL_SELECTOR);
     if (!row || !entry || (control && row.contains(control))) {
       return;
     }
@@ -519,20 +467,6 @@ export function useNestedEntryOperations(
     suppressPrimaryLinkVisit,
   };
 
-  function findEntries(ids: number[]): NestedEntry[] {
-    return options.entries.value.filter((entry) => ids.includes(entry.id));
-  }
-
-  function allCan(ids: number[], item: BulkActionItem): boolean {
-    const entries = findEntries(ids);
-
-    return (
-      ids.length > 0 &&
-      entries.length === ids.length &&
-      selectionAllows(item, entries)
-    );
-  }
-
   async function create(
     attributes: Record<string, string | number> = {},
     opener?: HTMLElement
@@ -546,6 +480,13 @@ export function useNestedEntryOperations(
         siteId: manager.ownerSiteId,
         ...attributes,
       });
+      const editParams = {
+        elementId: data.element.id,
+        siteId: data.element.siteId,
+        fieldId: manager.fieldId,
+        ownerId: preparedOwnerId,
+        draftId: data.element.draftId,
+      };
       let firstSave = true;
       const onSaved = (draft: boolean) => {
         onChildSaved(draft, firstSave);
@@ -556,11 +497,7 @@ export function useNestedEntryOperations(
         opener?.focus();
         openLegacyEditor(
           {
-            elementId: data.element.id,
-            siteId: data.element.siteId,
-            fieldId: manager.fieldId,
-            ownerId: preparedOwnerId,
-            draftId: data.element.draftId,
+            ...editParams,
             params: {fresh: 1},
           },
           undefined,
@@ -572,11 +509,7 @@ export function useNestedEntryOperations(
 
       const editUrl = EditElementController.url(undefined, {
         query: {
-          elementId: data.element.id,
-          siteId: data.element.siteId,
-          fieldId: manager.fieldId,
-          ownerId: preparedOwnerId,
-          draftId: data.element.draftId,
+          ...editParams,
           fresh: 1,
         },
       });
@@ -587,80 +520,6 @@ export function useNestedEntryOperations(
 
       return options.refreshCreatedEntryOnOpen === false ? false : undefined;
     });
-  }
-
-  async function performElementAction(
-    item: BulkActionItem,
-    ids: number[],
-    trigger?: HTMLElement
-  ): Promise<boolean> {
-    const manager = options.manager.value;
-    if (
-      !manager ||
-      !item.action ||
-      !allCan(ids, item) ||
-      (item.key === DUPLICATE_ACTION && !canAdd(ids.length))
-    ) {
-      return false;
-    }
-
-    const action = item.action;
-
-    if (action.type === 'event') {
-      if (!isCopyAction(item)) {
-        return false;
-      }
-
-      const serverElements =
-        (action.detail?.elements as ElementActionSelection[] | undefined) ?? [];
-
-      copyElements(manager.elementType, ids, [
-        ...serverElements,
-        ...findEntries(ids),
-      ]);
-
-      return true;
-    }
-
-    if (action.type !== 'http') {
-      return false;
-    }
-
-    let performed = false;
-    await mutate(async (preparedOwnerId) => {
-      try {
-        await runAction(
-          {
-            ...action,
-            url: PerformElementActionController.url(),
-            body: {
-              ...action.body,
-              ...nestedOwnerParams(manager, preparedOwnerId),
-              elementType: manager.elementType,
-              source: '__IMP__',
-              context: 'embeddedIndex',
-              elementIds: ids,
-            },
-          },
-          {trigger}
-        );
-        performed = true;
-        options.selection.clear();
-        window.Craft?.cp?.displayNotice?.(t('Done'));
-      } catch (cause) {
-        window.Craft?.cp?.displayError?.(
-          cause instanceof Error ? cause.message : t('A server error occurred.')
-        );
-
-        throw cause;
-      }
-    });
-
-    if (performed && item.key === DELETE_ACTION) {
-      focusCreateButton();
-    }
-
-    return performed;
   }
 
   async function paste(beforeId?: number): Promise<void> {
@@ -761,58 +620,25 @@ export function useNestedEntryOperations(
     return reordered;
   }
 
-  async function moveSelectionToPage(
-    ids: number[],
-    offset: number
-  ): Promise<boolean> {
-    const moved = await reorderIds(ids, offset);
-    if (moved) {
-      focusEntryId = ids[0] ?? null;
-      focusEntryIndex = 0;
-      restoreFocusAfterLoad = true;
-    }
-
-    return moved;
+  function restoreEntryFocus(): void {
+    focusNestedEntry(
+      options.container.value,
+      options.entries.value,
+      focusEntryId,
+      focusEntryIndex
+    );
   }
 
-  function restoreEntryFocus(): void {
-    const container = options.container.value;
-    if (!container) {
-      return;
-    }
-
-    const items = container.querySelectorAll<HTMLElement>('[data-nested-id]');
-    const target =
-      [...items].find(
-        (item) => Number(item.dataset.nestedId) === focusEntryId
-      ) ?? items.item(focusEntryIndex);
-    const entry = options.entries.value.find(
-      (item) => item.id === Number(target?.dataset.nestedId)
-    );
-    const link = [
-      ...(target?.querySelectorAll<HTMLAnchorElement>('a[href]') ?? []),
-    ].find((candidate) => candidate.getAttribute('href') === entry?.editUrl);
-    const button = target?.querySelector<HTMLElement>(
-      '[data-edit-entry], craft-action-menu craft-button[slot="invoker"]'
-    );
-    (link ?? button)?.focus();
+  function focusEntry(id: number, fallbackIndex = 0): void {
+    focusEntryId = id;
+    focusEntryIndex = fallbackIndex;
+    restoreEntryFocus();
   }
 
   function focusCreateButton(): void {
     options.container.value
       ?.querySelector<HTMLElement>('[data-create-entry]')
       ?.focus();
-  }
-
-  async function onLoaded(): Promise<void> {
-    if (
-      restoreFocusAfterLoad ||
-      document.activeElement === options.container.value
-    ) {
-      restoreFocusAfterLoad = false;
-      await nextTick();
-      restoreEntryFocus();
-    }
   }
 
   function onContainerFocus(): void {
@@ -851,7 +677,6 @@ export function useNestedEntryOperations(
   return {
     busy,
     error,
-    preparedOwner,
     quickEdit,
     canAdd,
     canPaste,
@@ -859,15 +684,11 @@ export function useNestedEntryOperations(
     pasteButtonLabel,
     pasteActionLabel,
     mutate,
-    prepare,
-    onChildSaved,
-    openLegacyEditor,
     create,
-    performElementAction,
     paste,
     reorder,
-    moveSelectionToPage,
-    onLoaded,
+    reorderIds,
+    focusEntry,
     focusCreateButton,
     onContainerFocus,
   };
