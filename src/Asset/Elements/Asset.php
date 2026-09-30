@@ -2787,12 +2787,14 @@ JS, [
     }
 
     /**
-     * Fills the space around a letterboxed image with a gradient between the
-     * colors of the image's left and right edges, so it bleeds out to the sides.
+     * Returns the attributes that fill the space around a letterboxed image.
      *
-     * A black overlay darkens it by 25% at the top, fading to 5% at the bottom.
+     * Images with transparent regions get a checkered background, so their
+     * edges show. Others get a gradient between the colors of the image's
+     * left and right edges, so it bleeds out to the sides, with a black
+     * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
      *
-     * @return array<string, string>
+     * @return array<string, array<string, string>>
      */
     private function previewBackgroundStyles(): array
     {
