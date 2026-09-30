@@ -71,12 +71,12 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
   };
 });
 
-vi.mock('./ModalElementIndex.vue', async () => {
+vi.mock('./ElementPicker.vue', async () => {
   const {defineComponent: define, h: create} = await import('vue');
 
   return {
     default: define({
-      name: 'ModalElementIndexStub',
+      name: 'ElementPickerStub',
       props: ['action', 'initial', 'params', 'disabledElementIds'],
       emits: ['selection-change', 'choose', 'source-change'],
       setup(props, {emit, expose}) {

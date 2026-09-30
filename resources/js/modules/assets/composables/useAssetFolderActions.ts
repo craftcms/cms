@@ -7,7 +7,7 @@ import {
   type FolderConflictResolution,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
 import axios from 'axios';
 
 interface FolderActionDetail {
@@ -43,8 +43,11 @@ function folderIds(action: FolderActionDetail): number[] {
     .map(Number);
 }
 
-export function useAssetFolderActions() {
-  const {table, onActionPerformed} = useElementIndexTable();
+export function useAssetFolderActions(index: ElementIndexOperations) {
+  function onActionPerformed(): void {
+    index.clearSelection();
+    void index.refresh();
+  }
   const newFolderParentId = shallowRef<number | null>(null);
   const newFolderName = shallowRef('');
   const newFolderError = shallowRef<string | null>(null);
@@ -114,10 +117,8 @@ export function useAssetFolderActions() {
     if (!folderId) return;
 
     renameFolderId.value = folderId;
-    renameName.value =
-      action.label ??
-      table.value?.getRow(`folder:${folderId}`)?.original?.folderName ??
-      '';
+    const name = index.findRow(`folder:${folderId}`)?.folderName;
+    renameName.value = action.label ?? (typeof name === 'string' ? name : '');
     renameError.value = null;
     navigateAfterRename.value = action.navigate ?? false;
   }
@@ -169,7 +170,7 @@ export function useAssetFolderActions() {
     const label =
       action.label ??
       (ids.length === 1
-        ? table.value?.getRow(`folder:${ids[0]}`)?.original?.folderName
+        ? index.findRow(`folder:${ids[0]}`)?.folderName
         : null) ??
       t('Untitled');
     if (
