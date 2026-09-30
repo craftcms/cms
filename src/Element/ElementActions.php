@@ -42,6 +42,8 @@ class ElementActions
      */
     private const array CLIENT_EVENT_ACTIONS = [
         Actions\Copy::class => 'craft:copy-elements',
+        Actions\Edit::class => 'craft:edit-element',
+        Actions\View::class => 'craft:view-element',
     ];
 
     /**
