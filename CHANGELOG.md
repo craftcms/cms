@@ -56,6 +56,7 @@
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
 - Fixed a bug where asset indexing left temporary copies of remote images behind. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Fixed a bug where uploaded and replaced assets’ modification dates came from their temporary files rather than the stored files.
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))

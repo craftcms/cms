@@ -625,7 +625,7 @@ it('stores the colors of an indexed image', function () {
         'basename' => 'red.png',
         'type' => 'file',
         'fileSize' => $volumeData->sourceDisk()->size('red.png'),
-        'dateModified' => time(),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
     ]);
 
     try {
@@ -655,7 +655,7 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
         'basename' => 'red.png',
         'type' => 'file',
         'fileSize' => $volumeData->sourceDisk()->size('red.png'),
-        'dateModified' => time(),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
     ]), $session->id);
 
     try {
@@ -671,6 +671,39 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
     'found' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
     'inconclusive' => [['dominant' => null, 'grid' => []]],
 ]);
+
+it('samples the colors again once the file has changed', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+
+    $image = imagecreatetruecolor(100, 100);
+    imagefill($image, 0, 0, imagecolorallocate($image, 200, 30, 40));
+    ob_start();
+    imagepng($image);
+    $volumeData->sourceDisk()->put('red.png', ob_get_clean());
+
+    $index = fn () => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id);
+
+    try {
+        $asset = $index();
+        Asset::whereKey($asset->id)->update([
+            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'dateModified' => now()->subDay(),
+        ]);
+
+        expect($index()->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28');
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
+    }
+});
 
 describe('remote images', function () {
     beforeEach(function () {
@@ -700,7 +733,7 @@ describe('remote images', function () {
             'basename' => 'red.png',
             'type' => 'file',
             'fileSize' => $this->volumeData->sourceDisk()->size('red.png'),
-            'dateModified' => time(),
+            'dateModified' => $this->volumeData->sourceDisk()->lastModified('red.png'),
         ]), $this->session->id);
     });
 
@@ -726,6 +759,16 @@ describe('remote images', function () {
         expect($reindexed->colors->dominant)->toBeNull()
             ->and($reindexed->getWidth())->toBe(100)
             ->and($tempFiles())->toBe($before);
+    });
+
+    it('downloads one whose file has changed', function () {
+        $asset = ($this->index)();
+        Asset::whereKey($asset->id)->update([
+            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'dateModified' => now()->subDay(),
+        ]);
+
+        expect(($this->index)()->colors->dominant)->toBe('#c81e28');
     });
 
     it('doesn’t download one that already has colors', function () {

@@ -667,6 +667,11 @@ class AssetIndexer
 
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
+        // A file that's been modified since it was last indexed may not look the same anymore
+        $fileChanged = $asset->dateModified !== null
+            && $timeModified !== null
+            && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
+        $needsColors = $asset->colors === null || $fileChanged;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -700,8 +705,8 @@ class AssetIndexer
                     }
 
                     // A remote image is downloaded when its dimensions couldn't be read from a stream, or
-                    // its colors haven't been sampled yet
-                    if (! is_array($dimensions) || $asset->colors === null) {
+                    // its colors need sampling
+                    if (! is_array($dimensions) || $needsColors) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
@@ -715,8 +720,9 @@ class AssetIndexer
                 $asset->setWidth($w);
                 $asset->setHeight($h);
 
-                // Colors that have been sampled already, even inconclusively, aren't sampled again
-                if ($localPath !== null && $asset->colors === null) {
+                // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
+                // file has changed
+                if ($localPath !== null && $needsColors) {
                     $asset->colors = Images::colors($localPath);
                 }
                 $asset->dateModified = $timeModified;

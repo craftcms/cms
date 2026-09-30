@@ -3463,6 +3463,16 @@ JS;
             File::delete($tempPath);
         }
 
+        // Take the new file's modification time from where it ended up, which is what indexing compares against, so it
+        // isn't mistaken for a changed file and sampled again.
+        if ($this->uploadSource !== null || $tempPath !== null) {
+            try {
+                $this->dateModified = Date::createFromTimestampUTC($newDisk->lastModified($newPath));
+            } catch (Throwable $e) {
+                Log::info("Couldn’t read the modification time of $newPath: {$e->getMessage()}");
+            }
+        }
+
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
