@@ -1,4 +1,4 @@
-import axios from 'axios';
+import {http} from '@craftcms/ui/utilities/api/http';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import type {ScreenPageProps} from '@/common/composables/screen';
@@ -33,7 +33,7 @@ export async function fetchSlideoutPage(
   containerId: string,
   signal?: AbortSignal
 ): Promise<SlideoutPage> {
-  const response = await axios.get(href, {
+  const response = await http.get(href, {
     signal,
     headers: {
       'X-Inertia': 'true',
@@ -42,7 +42,7 @@ export async function fetchSlideoutPage(
       Accept: 'application/json',
     },
     // Handle redirects and version conflicts ourselves rather than letting
-    // axios throw on them.
+    // the client throw on them.
     validateStatus: (status) => status < 400 || status === 409,
   });
 

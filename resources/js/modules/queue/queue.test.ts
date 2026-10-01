@@ -11,9 +11,8 @@ import {ConfigService} from '@craftcms/ui/services/Config';
 import type {JobInfo, JobStatusKey} from './types';
 import {JobStatus} from './types';
 
-// Mock axios
-vi.mock('axios', () => ({
-  default: {
+vi.mock('@craftcms/ui/utilities/api/http', () => ({
+  http: {
     post: vi.fn().mockResolvedValue({}),
     get: vi.fn().mockResolvedValue({data: {jobs: []}}),
   },
@@ -43,8 +42,8 @@ describe('QueueService', () => {
 
   describe('runQueue', () => {
     test('makes HTTP request and starts tracking when runAutomatically is true', async () => {
-      const axios = await import('axios');
-      const postSpy = vi.spyOn(axios.default, 'post');
+      const {http} = await import('@craftcms/ui/utilities/api/http');
+      const postSpy = vi.spyOn(http, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: true});
 
@@ -58,8 +57,8 @@ describe('QueueService', () => {
     });
 
     test('skips HTTP request but still tracks when runAutomatically is false', async () => {
-      const axios = await import('axios');
-      const postSpy = vi.spyOn(axios.default, 'post');
+      const {http} = await import('@craftcms/ui/utilities/api/http');
+      const postSpy = vi.spyOn(http, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: false});
 

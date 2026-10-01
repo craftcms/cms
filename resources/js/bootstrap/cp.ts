@@ -1,6 +1,5 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import type {DefineComponent} from 'vue';
-import axios from 'axios';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
@@ -61,10 +60,6 @@ const Cp = {
     return queue;
   },
 
-  get $axios() {
-    return axios;
-  },
-
   get $inertia() {
     return inertiaPageRegistry;
   },
@@ -113,14 +108,6 @@ const Cp = {
 
     http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
     http.defaults.headers['X-CSRF-TOKEN'] = this.$config.get('csrfTokenValue');
-
-    // Temporary bridge for code that still calls axios directly: read the
-    // token per request so one refreshed by the Csrf service is picked up.
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    axios.interceptors.request.use((request) => {
-      request.headers.set('X-CSRF-TOKEN', config.get('csrfTokenValue'));
-      return request;
-    });
 
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
