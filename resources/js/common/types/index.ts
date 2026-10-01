@@ -231,7 +231,7 @@ export type ActionItems = Array<ActionItem>;
 export interface FormSaveOptions {
   redirect?: boolean;
   data?: FormValues;
-  preserveState?: boolean;
+  preserveState?: boolean | 'errors';
 }
 
 export interface EntryType {
