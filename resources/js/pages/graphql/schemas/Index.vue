@@ -9,7 +9,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface SchemaData {
     id: number;
@@ -90,7 +89,5 @@
       t('New schema')
     }}</CpButtonLink>
   </LayoutSlot>
-  <CpContainer>
-    <AdminTable :table="table" />
-  </CpContainer>
+  <AdminTable :table="table" />
 </template>

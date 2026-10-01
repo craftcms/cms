@@ -102,6 +102,16 @@
     },
   });
 
+  /**
+   * Fields outside of a tab — in a field layout whose tab was never saved,
+   * say — need the spacing a tab would otherwise give them.
+   */
+  const hasUntabbedFields = computed(
+    () =>
+      formPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
+      false
+  );
+
   const hasDetails = computed(
     () =>
       Boolean(sidebarPayload.value) ||
@@ -365,15 +375,19 @@
 
   <div ref="content" class="py-3">
     <CpContainer>
-      <FormRenderer
+      <component
+        :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
         v-if="formPayload"
-        ref="renderer"
-        :payload="formPayload"
-        :errors="errors"
-        :modified="autosave.modified.value"
-        :disabled="workflowReviewLocked"
-        @update:mutation="onMutation"
-      />
+      >
+        <FormRenderer
+          ref="renderer"
+          :payload="formPayload"
+          :errors="errors"
+          :modified="autosave.modified.value"
+          :disabled="workflowReviewLocked"
+          @update:mutation="onMutation"
+        />
+      </component>
 
       <slot :payload="payload" />
     </CpContainer>
@@ -401,9 +415,8 @@
           The meta fields render as their own Form, bridged into the same Inertia
           form as the field layout above, so they submit as ordinary inputs.
         -->
-          <craft-field-group>
+          <craft-field-group v-if="sidebarPayload">
             <FormRenderer
-              v-if="sidebarPayload"
               ref="sidebarRenderer"
               :payload="sidebarPayload"
               :errors="sidebarErrors"
@@ -413,7 +426,7 @@
             />
           </craft-field-group>
 
-          <hr class="my-lg" />
+          <hr v-if="sidebarPayload && payload.metadataHtml" class="my-lg" />
           <DynamicHtmlRenderer
             v-if="payload.metadataHtml"
             :html="payload.metadataHtml"

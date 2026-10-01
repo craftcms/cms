@@ -227,6 +227,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
     height: calc(var(--_row-height) * 0.8);
   }
 
+  tbody th {
+    text-align: inherit;
+  }
+
   /* Add a rule to the first cells */
   tr:first-child {
     td {

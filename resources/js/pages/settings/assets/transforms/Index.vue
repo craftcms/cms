@@ -13,7 +13,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   type ExistingImageTransform = Omit<
     CraftCms.Cms.Image.Data.ImageTransform,
@@ -108,7 +107,7 @@
     }}</CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
+  <div class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <craft-empty :label="t('No image transforms exist yet.')" icon="image">
@@ -118,5 +117,5 @@
         </craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 </template>
