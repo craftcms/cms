@@ -462,9 +462,9 @@ export class HttpClient {
    * Sends a request. Request interceptors run in the order they were
    * registered, then the request is sent, then response interceptors run.
    */
-  request<T = any, D = any>(
+  request<T = any, R = HttpResponse<T>, D = any>(
     config: HttpRequestConfig<D>
-  ): Promise<HttpResponse<T, D>> {
+  ): Promise<R> {
     let chain: Promise<any> = Promise.resolve(
       mergeConfig(this.defaults, config)
     );
@@ -484,32 +484,43 @@ export class HttpClient {
     return chain;
   }
 
-  get<T = any>(url: string, config?: HttpRequestConfig) {
-    return this.request<T>({...config, url, method: 'get'});
+  get<T = any, R = HttpResponse<T>>(url: string, config?: HttpRequestConfig) {
+    return this.request<T, R>({...config, url, method: 'get'});
   }
 
-  delete<T = any>(url: string, config?: HttpRequestConfig) {
-    return this.request<T>({...config, url, method: 'delete'});
+  delete<T = any, R = HttpResponse<T>>(
+    url: string,
+    config?: HttpRequestConfig
+  ) {
+    return this.request<T, R>({...config, url, method: 'delete'});
   }
 
-  head<T = any>(url: string, config?: HttpRequestConfig) {
-    return this.request<T>({...config, url, method: 'head'});
+  head<T = any, R = HttpResponse<T>>(url: string, config?: HttpRequestConfig) {
+    return this.request<T, R>({...config, url, method: 'head'});
   }
 
-  post<T = any, D = any>(url: string, data?: D, config?: HttpRequestConfig<D>) {
-    return this.request<T, D>({...config, url, data, method: 'post'});
-  }
-
-  put<T = any, D = any>(url: string, data?: D, config?: HttpRequestConfig<D>) {
-    return this.request<T, D>({...config, url, data, method: 'put'});
-  }
-
-  patch<T = any, D = any>(
+  post<T = any, R = HttpResponse<T>, D = any>(
     url: string,
     data?: D,
     config?: HttpRequestConfig<D>
   ) {
-    return this.request<T, D>({...config, url, data, method: 'patch'});
+    return this.request<T, R, D>({...config, url, data, method: 'post'});
+  }
+
+  put<T = any, R = HttpResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: HttpRequestConfig<D>
+  ) {
+    return this.request<T, R, D>({...config, url, data, method: 'put'});
+  }
+
+  patch<T = any, R = HttpResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: HttpRequestConfig<D>
+  ) {
+    return this.request<T, R, D>({...config, url, data, method: 'patch'});
   }
 }
 
