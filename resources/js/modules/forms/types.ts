@@ -50,6 +50,7 @@ export type TextControlProps = {
   size?: number;
   dir?: string;
   monospace?: boolean;
+  suffix?: string;
   textExpanderTriggers?: TextExpanderTriggers;
 };
 
