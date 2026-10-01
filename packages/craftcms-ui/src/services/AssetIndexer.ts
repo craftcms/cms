@@ -1,5 +1,5 @@
 import {actionClient} from '../utilities/api/actionClient.js';
-import type {AxiosResponse} from 'axios';
+import type {HttpResponse} from '../utilities/api/http.js';
 import type {DateObject} from '@src/types';
 
 /**
@@ -270,7 +270,7 @@ export class AssetIndexer {
    */
   async startIndexing(
     postData: StartIndexingParams
-  ): Promise<AxiosResponse<IndexingResponse>> {
+  ): Promise<HttpResponse<IndexingResponse>> {
     const response = await actionClient.post<IndexingResponse>(
       IndexingActions.START,
       postData

@@ -24,7 +24,6 @@ class CpAsset implements LegacyAssetInterface
     public array $depends = [
         // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
-        AxiosAsset::class,
         D3Asset::class,
         GarnishAsset::class,
         JqueryAsset::class,

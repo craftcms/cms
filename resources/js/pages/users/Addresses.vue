@@ -6,7 +6,7 @@
   import {openSlideout} from '@/common/slideouts';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
-  import axios from 'axios';
+  import {isHttpError} from '@craftcms/ui/utilities/api/http';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
@@ -113,9 +113,8 @@
       // Prefer the server's message; fall back to the thrown one so a local
       // failure doesn't surface as an empty notification.
       Craft.cp?.displayError?.(
-        (axios.isAxiosError(error)
-          ? error.response?.data?.message
-          : undefined) ?? (error instanceof Error ? error.message : undefined)
+        (isHttpError(error) ? error.response?.data?.message : undefined) ??
+          (error instanceof Error ? error.message : undefined)
       );
     } finally {
       creating.value = false;
