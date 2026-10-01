@@ -189,7 +189,7 @@ Nothing to do. `useSettingsSave` detects the slideout and swaps its own submit s
 
 | | Full page | Slideout |
 | --- | --- | --- |
-| Transport | navigating `form.submit()` | direct `axios` post |
+| Transport | navigating `form.submit()` | direct `http` client post |
 | `redirect` in payload | sent | omitted — a panel closes instead |
 | On success | follows the redirect | closes the panel, reloads the page behind |
 | On failure | Inertia error bag | `form.setError()` from the 400 body |

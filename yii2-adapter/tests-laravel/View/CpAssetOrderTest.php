@@ -9,8 +9,12 @@ use craft\web\assets\xregexp\XregexpAsset;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack as HtmlStackService;
+use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
+use Illuminate\Http\Request;
 use yii\web\AssetBundle;
 use yii\web\JqueryAsset as YiiJqueryAsset;
+
+use function CraftCms\Cms\cp_url;
 
 class CpAssetDependentAssetBundle extends AssetBundle
 {
@@ -122,6 +126,29 @@ it('renders other internal assets before Craft asset bundle dependents', functio
     expect($html)->toContain('legacy/axios/dist/axios.js')
         ->and($html)->toContain('https://example.test/assets/depends-on-craft-axios.js')
         ->and(strpos($html, 'legacy/axios/dist/axios.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/depends-on-craft-axios.js'));
+});
+
+it('renders the global axios before plugin bundles that only depend on the CP asset', function() {
+    // Core's CP bundle no longer loads axios; plugins written for Craft 5 got
+    // it implicitly through CpAsset, so the adapter registers it for CP requests.
+    app(RegisterLegacyCompatAssets::class)->handle(Request::create(cp_url('dashboard')), fn() => null);
+
+    $view = Craft::$app->getView();
+    $view->registerAssetBundle(CpAssetDependentAssetBundle::class);
+
+    $html = $view->placeholderHtml()['bodyEndHtml'];
+
+    expect($html)->toContain('legacy/axios/dist/axios.js')
+        ->and(strpos($html, 'legacy/axios/dist/axios.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'));
+});
+
+it('does not register the global axios outside the control panel', function() {
+    app(RegisterLegacyCompatAssets::class)->handle(Request::create('/'), fn() => null);
+
+    $view = Craft::$app->getView();
+    $view->registerAssetBundle(CpAssetDependentAssetBundle::class);
+
+    expect($view->placeholderHtml()['bodyEndHtml'])->not->toContain('legacy/axios/dist/axios.js');
 });
 
 it('registers the XRegExp compatibility asset', function() {

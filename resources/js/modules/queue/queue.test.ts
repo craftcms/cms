@@ -3,6 +3,7 @@ import {
   beforeEach,
   describe,
   expect,
+  onTestFinished,
   test,
   vi,
 } from 'vite-plus/test';
@@ -11,9 +12,9 @@ import {ConfigService} from '@craftcms/ui/services/Config';
 import type {JobInfo, JobStatusKey} from './types';
 import {JobStatus} from './types';
 
-// Mock axios
-vi.mock('axios', () => ({
-  default: {
+vi.mock('@craftcms/ui/utilities/api/http', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  http: {
     post: vi.fn().mockResolvedValue({}),
     get: vi.fn().mockResolvedValue({data: {jobs: []}}),
   },
@@ -43,8 +44,8 @@ describe('QueueService', () => {
 
   describe('runQueue', () => {
     test('makes HTTP request and starts tracking when runAutomatically is true', async () => {
-      const axios = await import('axios');
-      const postSpy = vi.spyOn(axios.default, 'post');
+      const {http} = await import('@craftcms/ui/utilities/api/http');
+      const postSpy = vi.spyOn(http, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: true});
 
@@ -58,8 +59,8 @@ describe('QueueService', () => {
     });
 
     test('skips HTTP request but still tracks when runAutomatically is false', async () => {
-      const axios = await import('axios');
-      const postSpy = vi.spyOn(axios.default, 'post');
+      const {http} = await import('@craftcms/ui/utilities/api/http');
+      const postSpy = vi.spyOn(http, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: false});
 
@@ -68,6 +69,36 @@ describe('QueueService', () => {
 
       expect(postSpy).not.toHaveBeenCalled();
       expect(startTrackingSpy).toHaveBeenCalledWith(false, true);
+    });
+  });
+
+  describe('startTracking', () => {
+    test('does not restart after tracking is stopped mid-request', async () => {
+      const {http, HttpCancelledError} =
+        await import('@craftcms/ui/utilities/api/http');
+      vi.mocked(http.get).mockImplementationOnce(
+        (_url, config) =>
+          new Promise((_resolve, reject) => {
+            config!.signal!.addEventListener('abort', () =>
+              reject(new HttpCancelledError({headers: {}}))
+            );
+          })
+      );
+      const queue = QueueService.getInstance();
+      queue.initialize();
+      queue.setJobData([createMockJob({id: 1, status: JobStatus.Reserved})]);
+
+      vi.useFakeTimers();
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
+      queue.startTracking();
+      queue.stopTracking();
+      // Past the longest adaptive polling delay.
+      await vi.advanceTimersByTimeAsync(60_000);
+
+      expect(queue.isTracking).toBe(false);
+      expect(http.get).toHaveBeenCalledOnce();
     });
   });
 

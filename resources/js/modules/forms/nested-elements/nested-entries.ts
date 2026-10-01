@@ -1,5 +1,4 @@
-import {t} from '@craftcms/ui';
-import axios from 'axios';
+import {t, isHttpError} from '@craftcms/ui';
 import {normalizeClass} from 'vue';
 import type {PaginationData} from '@/common/types';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
@@ -149,7 +148,7 @@ export function nestedEntriesErrorMessage(
   cause: unknown,
   fallback: string
 ): string {
-  if (axios.isAxiosError<{message?: string}>(cause)) {
+  if (isHttpError<{message?: string}>(cause)) {
     return cause.response?.data?.message ?? fallback;
   }
 

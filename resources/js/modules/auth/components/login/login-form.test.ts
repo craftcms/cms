@@ -1,12 +1,11 @@
-import axios from 'axios';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {actionClient, ConfigService} from '@craftcms/ui';
+import {actionClient, ConfigService, http} from '@craftcms/ui';
 import CraftLoginForm from './login-form';
 
 afterEach(() => {
   document.body.innerHTML = '';
   ConfigService.resetInstance();
-  delete axios.defaults.headers.common['X-CSRF-TOKEN'];
+  delete http.defaults.headers['X-CSRF-TOKEN'];
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -99,8 +98,6 @@ it.each([true, false])(
     expect(ConfigService.getInstance().get('csrfTokenValue')).toBe(
       'post-login-token'
     );
-    expect(axios.defaults.headers.common['X-CSRF-TOKEN']).toBe(
-      'post-login-token'
-    );
+    expect(http.defaults.headers['X-CSRF-TOKEN']).toBe('post-login-token');
   }
 );

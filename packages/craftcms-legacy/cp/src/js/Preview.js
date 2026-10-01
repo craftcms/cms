@@ -127,9 +127,9 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      if (this.cancelToken) {
+      if (this.abortController) {
         this.ignoreFailedRequest = true;
-        this.cancelToken.cancel();
+        this.abortController.abort();
       }
 
       this.isActive = true;
@@ -301,7 +301,7 @@ Craft.Preview = Garnish.Base.extend(
     _loadElementEditor: async function () {
       await this.settings.onBeforeLoad();
 
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
       let response;
       try {
         response = await Craft.sendActionRequest('GET', 'elements/edit', {
@@ -312,7 +312,7 @@ Craft.Preview = Garnish.Base.extend(
             revisionId: this.settings.revisionId,
             siteId: this.settings.siteId,
           },
-          cancelToken: this.cancelToken.token,
+          signal: this.abortController.signal,
           headers: {
             'X-Craft-Container-Id': this.editorId,
             'X-Craft-Namespace': this.namespace,
@@ -327,7 +327,7 @@ Craft.Preview = Garnish.Base.extend(
         return;
       } finally {
         this.$content.removeClass('loading');
-        this.cancelToken = null;
+        this.abortController = null;
       }
 
       const {data} = response;

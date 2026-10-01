@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
-  import {actionClient} from '@craftcms/ui';
+  import {actionClient, isHttpError} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useEventListener} from '@vueuse/core';
-  import axios from 'axios';
   import {
     computed,
     getCurrentInstance,
@@ -265,7 +264,7 @@
       copyDetail.value = undefined;
       Craft.cp?.displayNotice?.(data.message);
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
       Craft.cp?.displayError?.(

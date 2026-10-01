@@ -99,7 +99,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     triggers: null,
     _$triggers: null,
 
-    _cancelToken: null,
+    _abortController: null,
 
     viewMenus: null,
     activeViewMenu: null,
@@ -631,14 +631,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Returns a signal that _cancelRequests() aborts.
+     * @returns {AbortSignal}
+     */
+    _createAbortSignal: function () {
+      this._abortController = new AbortController();
+      return this._abortController.signal;
+    },
+
+    /**
+     * @deprecated in 6.0.0. Use _createAbortSignal() and pass it as `signal`.
+     * Still works as a `cancelToken` request option.
+     */
     _createCancelToken: function () {
-      this._cancelToken = axios.CancelToken.source();
-      return this._cancelToken.token;
+      return this._createAbortSignal();
     },
 
     _cancelRequests: function () {
-      if (this._cancelToken) {
-        this._cancelToken.cancel();
+      if (this._abortController) {
+        this._abortController.abort();
       }
     },
 
@@ -781,7 +793,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           await this.asyncSelectDefaultSource();
         })
         .catch((e) => {
-          if (!axios.isCancel(e)) {
+          if (!Craft.isCancel(e)) {
             this.setIndexAvailable();
             Craft.cp.displayError(e?.response?.data?.message);
           }
@@ -1731,7 +1743,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
           data: this._viewParams,
-          cancelToken: this._createCancelToken(),
+          signal: this._createAbortSignal(),
         })
           .then((response) => {
             if (this.settings.context === 'index') {
@@ -1793,7 +1805,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             resolve();
           })
           .catch((e) => {
-            if (!axios.isCancel(e)) {
+            if (!Craft.isCancel(e)) {
               this.setIndexAvailable();
               Craft.cp.displayError(e?.response?.data?.message);
             }
@@ -1959,7 +1971,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.settings.submitActionsAction,
             {
               data: params,
-              cancelToken: this._createCancelToken(),
+              signal: this._createAbortSignal(),
             }
           );
 
@@ -3721,7 +3733,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
           Craft.sendActionRequest('POST', this.settings.countElementsAction, {
             data: params,
-            cancelToken: this._createCancelToken(),
+            signal: this._createAbortSignal(),
           })
             .then((response) => {
               if (response.data.resultSet == this.resultSet) {
@@ -3968,7 +3980,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           params
         )
           .catch((e) => {
-            if (!axios.isCancel(e)) {
+            if (!Craft.isCancel(e)) {
               Craft.cp.displayError(e?.response?.data?.message);
             }
           })

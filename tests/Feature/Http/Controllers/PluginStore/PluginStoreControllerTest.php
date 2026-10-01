@@ -35,6 +35,12 @@ it('renders the plugin store', function () {
         ->assertSee(PHP::version());
 });
 
+it('loads axios for the legacy plugin store app', function () {
+    get(action([PluginStoreController::class, 'index']))
+        ->assertOk()
+        ->assertSee('legacy/axios/dist/axios.js');
+});
+
 it('can return craft data', function () {
     getJson(action([PluginStoreController::class, 'craftData']))
         ->assertOk()
