@@ -3,7 +3,7 @@
   import {router} from '@inertiajs/vue3';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {PaginationData, SortItem} from '@/common/types';
@@ -101,14 +101,9 @@
 
 <template>
   <LayoutSlot v-if="!readOnly" name="content-actions">
-    <CpLink
-      :href="create().url"
-      variant="accent"
-      appearance="button"
-      icon="plus"
-    >
+    <CpButtonLink :href="create().url" variant="primary" icon="plus">
       {{ t('New workflow') }}
-    </CpLink>
+    </CpButtonLink>
   </LayoutSlot>
 
   <AdminTable
