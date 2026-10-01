@@ -146,12 +146,13 @@
       <div ref="filterAnchor" class="element-toolbar__filter">
         <CraftInput
           name="search"
-          :label="t('Search term')"
+          :label="t('Search')"
           v-model="search"
           label-sr-only
           :disabled="processing"
           @keydown.enter="onSearchEnter"
         >
+          <craft-icon name="search" slot="prefix"></craft-icon>
           <div slot="suffix" class="flex">
             <craft-button
               type="button"
