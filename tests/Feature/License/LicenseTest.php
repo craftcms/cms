@@ -157,6 +157,29 @@ it('can get mismatched license issues for craft', function () {
     ]);
 });
 
+it('encodes the licensed domain in mismatched license issues', function () {
+    actingAs(User::find()->one());
+
+    Cache::put(Updates::class, []);
+    Cache::put(License::CACHE_KEY_LICENSE_INFO_HOST, 'localhost');
+    Cache::put('licensedDomain', 'poison.test"><img src=x onerror=alert(document.domain)>');
+    Cache::put(License::CACHE_KEY_LICENSE_INFO, [
+        'craft' => [
+            'id' => 'craft',
+            'edition' => 'pro',
+            'status' => LicenseKeyStatus::Mismatched->value,
+        ],
+    ]);
+
+    $property = new ReflectionClass(Application::class)->getProperty('isRunningInConsole');
+    $property->setValue(app(), false);
+
+    $message = $this->license->issues()[0][1];
+
+    expect($message)->not->toContain('<img')
+        ->and($message)->toContain('&lt;img src=x onerror=alert(document.domain)&gt;');
+});
+
 it('can get astray license issues for craft', function () {
     actingAs(User::find()->one());
 

@@ -6,6 +6,7 @@ use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\BaseAuthMethod;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Models\User;
@@ -15,6 +16,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
+
+use function Pest\Laravel\actingAs;
 
 class TransactionAwareAuthMethod extends BaseAuthMethod
 {
@@ -55,6 +58,50 @@ class TransactionAwareAuthMethod extends BaseAuthMethod
         self::$transactionLevel = DB::transactionLevel();
 
         return false;
+    }
+
+    public function remove(): void {}
+}
+
+class SetupAuthMethod extends BaseAuthMethod
+{
+    public static bool $active = false;
+
+    public static function handle(): string
+    {
+        return 'setup';
+    }
+
+    public static function displayName(): string
+    {
+        return 'Setup';
+    }
+
+    public static function description(): string
+    {
+        return 'Becomes active once verified.';
+    }
+
+    public function isActive(): bool
+    {
+        return self::$active;
+    }
+
+    public function getSetupHtml(string $containerId): string
+    {
+        return '';
+    }
+
+    public function getAuthFormHtml(?string $returnUrl = null): string
+    {
+        return '';
+    }
+
+    public function verify(mixed ...$args): bool
+    {
+        self::$active = true;
+
+        return true;
     }
 
     public function remove(): void {}
@@ -176,6 +223,30 @@ test('verifyMethod runs verification in a dedicated database transaction', funct
     expect($auth->verifyMethod(TransactionAwareAuthMethod::class))->toBeFalse()
         ->and(TransactionAwareAuthMethod::$transactionLevel)->toBeGreaterThan($transactionLevel);
 });
+
+test('setting up a method destroys the user’s other sessions', function (bool $wasActive, int $expectedSessions) {
+    $user = User::factory()->createElement();
+    actingAs($user);
+    request()->setLaravelSession(app(Illuminate\Contracts\Session\Session::class));
+    $auth = app(AuthMethods::class);
+    $auth->register(SetupAuthMethod::class);
+    SetupAuthMethod::$active = $wasActive;
+
+    foreach ([request()->session()->getId(), 'session-stale'] as $id) {
+        DB::table(Table::SESSIONS)->insert([
+            'id' => $id,
+            'user_id' => $user->id,
+            'payload' => '',
+            'last_activity' => time(),
+        ]);
+    }
+
+    expect($auth->verifyMethod(SetupAuthMethod::class))->toBeTrue()
+        ->and(DB::table(Table::SESSIONS)->where('user_id', $user->id)->count())->toBe($expectedSessions);
+})->with([
+    'newly active' => [false, 1],
+    'already active' => [true, 2],
+]);
 
 test('is2faRequired returns false for Solo', function () {
     ProjectConfig::set('users.require2fa', 'all');

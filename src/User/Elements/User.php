@@ -1305,8 +1305,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 <svg version="1.1" baseProfile="full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop offset="0%" style="stop-color:var(--$color1-500)" />
-        <stop offset="100%" style="stop-color:var(--$color2-500)" />
+        <stop offset="0%" style="stop-color:var(--color-$color1-500)" />
+        <stop offset="100%" style="stop-color:var(--color-$color2-500)" />
       </linearGradient>
     </defs>
     <circle cx="50" cy="50" r="50" fill="url(#$gradientId)" opacity="0.25"/>
