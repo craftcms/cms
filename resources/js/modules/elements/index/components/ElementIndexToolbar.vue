@@ -258,7 +258,7 @@
     }
   }
 
-  .element-toolbar :first-child {
+  .element-toolbar > :first-child {
     grid-column-start: status-start;
   }
 
