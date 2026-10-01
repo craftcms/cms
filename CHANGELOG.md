@@ -30,6 +30,7 @@
 - Added reusable server-built form modals and the `formModal` element action behavior. ([#19768](https://github.com/craftcms/cms/pull/19768))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Form\Controls\Combobox\CreateOption` for creating and selecting resources in comboboxes, including user photo volumes. ([#19777](https://github.com/craftcms/cms/pull/19777))
 - Added the `--c-thumbnail-image-radius` custom property to `<craft-thumbnail>`, and its other custom properties can now be set on an ancestor. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Content in `<craft-chip>`’s `prefix` slot no longer replaces its thumbnail, icon, and status; it’s shown before them. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
