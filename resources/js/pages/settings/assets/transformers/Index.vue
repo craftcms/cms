@@ -112,5 +112,5 @@
     }}</CpButtonLink>
   </LayoutSlot>
 
-  <AdminTable :table="table" :reorderable="false" />
+  <AdminTable class="admin-table--padded" :table="table" :reorderable="false" />
 </template>

@@ -288,7 +288,7 @@
             :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
-              class="flex gap-1 items-center"
+              class="flex gap-1 items-center [.text-center>&]:justify-center"
               :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
             >
               <ColumnHeaderTitle
@@ -301,7 +301,8 @@
                   v-if="!header.isPlaceholder"
                   :render="header.column.columnDef.header"
                   :props="header.getContext()"
-                />&nbsp;<craft-icon
+                /><template v-if="header.column.getCanSort()">&nbsp;</template
+                ><craft-icon
                   v-if="
                     header.column.getCanSort() && !header.column.getIsSorted()
                   "

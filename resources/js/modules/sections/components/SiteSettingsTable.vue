@@ -77,7 +77,6 @@
         disabled: () => props.disabled,
         meta: {
           trackSize: '80px',
-          cellClass: 'bg-[var(--c-color-neutral-fill-quiet)]',
         },
         label: t('Enabled'),
       }),
@@ -86,7 +85,7 @@
         meta: {
           trackSize: '44px',
           cellClass: 'text-center',
-          headerClass: 'justify-center',
+          headerClass: 'text-center',
         },
         onChange: (value, {row}) => {
           if (value) {
@@ -148,7 +147,7 @@
               fieldset: true,
               label: t('Route'),
               'label-sr-only': true,
-              class: 'min-w-72 p-1',
+              class: 'min-w-72',
             },
             [
               h(

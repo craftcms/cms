@@ -186,7 +186,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
-  --_cell-spacing-block: 0;
+  --_cell-spacing-block: var(--c-spacing-sm);
   --_row-height: calc(34rem / 16);
   text-align: start;
   width: 100%;
@@ -202,6 +202,19 @@ Modify with `cp-table--auto` to apply table-layout: auto
     background-color: var(--c-surface-default);
   }
 
+  thead,
+  tbody,
+  tfoot {
+    &:not(:last-child) tr,
+    &:last-child tr:not(:last-child) {
+      th,
+      td {
+        border-block-end: 1px solid
+          color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+      }
+    }
+  }
+
   th,
   td {
     padding-block: var(--_cell-spacing-block);
@@ -211,10 +224,12 @@ Modify with `cp-table--auto` to apply table-layout: auto
     overflow: hidden;
     text-overflow: ellipsis;
     width: 0;
-    border-block-end: 1px solid
-      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
 
-    &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
+    &:has(
+      .cp-table-input:not([type='checkbox']):not([type='radio']):not(
+        craft-switch
+      )
+    ) {
       padding: 0;
     }
   }
@@ -260,6 +275,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
+  margin-block-end: var(--c-spacing-md);
 
   thead,
   th {
@@ -268,7 +284,9 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   th {
     font-size: var(--c-text-sm);
-    padding: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
+    text-align: inherit;
   }
 
   td {

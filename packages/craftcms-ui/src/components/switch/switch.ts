@@ -535,6 +535,15 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     }
   }
 
+  override render() {
+    return html`
+      <div class="form-field__group-one">${this._groupOneTemplate()}</div>
+      <div class="form-field__group-two form-field__group-two--switch">
+        ${this._groupTwoTemplate()}
+      </div>
+    `;
+  }
+
   protected override _groupOneTemplate() {
     return html`${super._groupOneTemplate()} ${this._stateDescriptionTemplate()}`;
   }

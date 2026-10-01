@@ -264,6 +264,7 @@
     </template>
 
     <AdminTable
+      class="admin-table--padded"
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"

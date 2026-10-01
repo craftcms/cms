@@ -24,6 +24,7 @@
 - Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Improved the styling for collapsible field groups.
 - Improved the layout and dark mode styling of user edit screens. ([#19765](https://github.com/craftcms/cms/pull/19765))
+- Improved the styling of control panel tables and lightswitches.
 - Improved disabled secondary form actions with explanatory tooltips.
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
