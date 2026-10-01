@@ -157,7 +157,7 @@
 - Added `CraftCms\Cms\Element\Data\ElementSiteSettings`, the shared base for element URI and route settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
-- Added `CraftCms\Cms\Form\Nodes\Group::expanded()`, allowing collapsible section groups to start expanded in Vue and HTML forms. ([#19665](https://github.com/craftcms/cms/pull/19665))
+- Added `CraftCms\Cms\Form\Nodes\Group::expanded()`, allowing collapsible section groups to start expanded in Vue and HTML forms. ([#19772](https://github.com/craftcms/cms/pull/19772))
 - Added `CraftCms\Cms\Route\CurrentElement`, a contextual attribute for injecting the matched element into controller actions and route closures. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
