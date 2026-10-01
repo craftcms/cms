@@ -24,15 +24,17 @@
   decimals: decimals,
   }|merge(jsSettings ?? {}) %}
 
-{{ hiddenInput("#{name}[locale]", formattingLocale) }}
-
+{# Keep one root so ViewComponent::slotted() assigns the input slot to the visible container. #}
 <div class="money-container">
+    {{ hiddenInput("#{name}[locale]", formattingLocale) }}
     {% if currencyLabel and showCurrency ?? true %}
         <div class="money-currency-label">
             <span>{{ currencyLabel }}</span>
         </div>
     {% endif %}
+    {# textFromConfig() uses the top-level name rather than inputAttributes.name. #}
     {% include '_includes/forms/text' with {
+        name: inputAttributes.name,
         inputAttributes: inputAttributes,
     } %}
     {% if showClear %}
