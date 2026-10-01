@@ -28,6 +28,7 @@
 - Improved disabled secondary form actions with explanatory tooltips.
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added reusable server-built form modals and the `formModal` element action behavior. ([#19768](https://github.com/craftcms/cms/pull/19768))
+- Added optional `sidebarForm` and `metadataHtml` props to `Form.vue` pages, allowing sidebar controls to be saved alongside the main form. ([#19778](https://github.com/craftcms/cms/pull/19778))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added `CraftCms\Cms\Form\Controls\Combobox\CreateOption` for creating and selecting resources in comboboxes, including user photo volumes. ([#19777](https://github.com/craftcms/cms/pull/19777))

@@ -63,11 +63,11 @@ describe('craft-combobox', () => {
 
   it('caps rendered options at the limit even with hundreds of options', async () => {
     const combobox = await createFixture((c) => {
-      c.limit = 150;
+      c.limit = 10;
       c.options = makeOptions(400);
     });
     // The whole point: DOM node count stays bounded.
-    expect(optionEls(combobox).length).toBeLessThanOrEqual(150);
+    expect(optionEls(combobox)).toHaveLength(10);
   });
 
   it('filters by label as the user types', async () => {
@@ -87,6 +87,7 @@ describe('craft-combobox', () => {
     // Regression: Lion's match-highlighting used to mutate option DOM and
     // collide with our lit-html render, producing e.g. "Option 000Option 300".
     const combobox = await createFixture((c) => {
+      c.limit = 10;
       c.options = makeOptions(301);
     });
     for (const q of ['O', 'Op', 'Option 3', 'Option 30', 'Option 300']) {
