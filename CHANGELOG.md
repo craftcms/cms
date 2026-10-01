@@ -32,8 +32,8 @@
 - Added the `--c-thumbnail-image-radius` custom property to `<craft-thumbnail>`, and its other custom properties can now be set on an ancestor. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Content in `<craft-chip>`’s `prefix` slot no longer replaces its thumbnail, icon, and status; it’s shown before them. ([#19758](https://github.com/craftcms/cms/pull/19758))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
-- Added `CraftCms\Cms\Form\Nodes\Callout::padding()`, supported by PHP and Vue form rendering. ([#19665](https://github.com/craftcms/cms/pull/19665))
-- Fixed a bug where `<craft-callout>` boxes didn’t span all columns in grid layouts. ([#19665](https://github.com/craftcms/cms/pull/19665))
+- Added `CraftCms\Cms\Form\Nodes\Callout::padding()`, supported by PHP and Vue form rendering. ([#19773](https://github.com/craftcms/cms/pull/19773))
+- Fixed a bug where `<craft-callout>` boxes didn’t span all columns in grid layouts. ([#19773](https://github.com/craftcms/cms/pull/19773))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 - Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
 - Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
