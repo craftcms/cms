@@ -79,7 +79,10 @@ class Combobox extends Control
         return $this;
     }
 
-    /** @param array<string, mixed>|ComboboxCreateOption $option */
+    /**
+     * @param  array<string, mixed>|ComboboxCreateOption  $option
+     * @return array<string, mixed>
+     */
     private static function stringifyOptionValue(array|ComboboxCreateOption $option): array
     {
         if ($option instanceof ComboboxCreateOption) {

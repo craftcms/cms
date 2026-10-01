@@ -2,14 +2,14 @@ import {t} from '@craftcms/ui';
 import type {Options} from 'overtype';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 import {FileUpload} from '@/upload-client';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import {escapeMarkdownLabel} from './utilities';
 
 type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
 
 const ASSET_REF_HANDLE = 'asset';
 
-const {flash} = useFlashMessages();
+const messages = useMessages();
 
 export function fileUploadOptions(
   uploadFolderId: number | null,
@@ -49,8 +49,7 @@ async function uploadFile(
 
     return uploadedAssetMarkdown(file, data, uploadSiteId);
   } catch (error) {
-    flash(
-      'error',
+    messages.error(
       error instanceof Error ? error.message : t('Couldn’t upload file.')
     );
 

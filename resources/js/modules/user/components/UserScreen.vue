@@ -17,6 +17,11 @@
    */
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import DetailsTabs, {
+    type DetailsTab,
+  } from '@/common/components/DetailsTabs.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
@@ -30,13 +35,30 @@
   const hasDetails = computed(() =>
     Boolean(detailsFragment.value || details.value)
   );
+
+  const tabs: DetailsTab[] = [
+    {id: 'info', label: t('Info'), icon: 'circle-info', slot: 'info'},
+  ];
 </script>
 
 <template>
-  <slot></slot>
+  <div class="py-3">
+    <CpContainer>
+      <slot></slot>
+    </CpContainer>
+  </div>
 
   <LayoutSlot v-if="hasDetails" name="content-details">
-    <HtmlFragmentRenderer v-if="detailsFragment" :fragment="detailsFragment" />
-    <div v-else v-html="details"></div>
+    <DetailsTabs :tabs="tabs">
+      <template #info>
+        <div class="p-lg">
+          <HtmlFragmentRenderer
+            v-if="detailsFragment"
+            :fragment="detailsFragment"
+          />
+          <div v-else v-html="details"></div>
+        </div>
+      </template>
+    </DetailsTabs>
   </LayoutSlot>
 </template>

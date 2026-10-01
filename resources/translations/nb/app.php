@@ -1079,6 +1079,7 @@ return [
     'Message saved.' => 'Meldingen er lagret.',
     'Message sent successfully.' => 'Meldingen er sendt.',
     'Message' => 'Melding',
+    'Messages' => 'Messages',
     'Metadata' => 'Metadata',
     'Migrations' => 'Overføringer',
     'Min Authors' => 'Min. forfattere',
@@ -1672,6 +1673,7 @@ return [
     'Skip to footer' => 'Hopp til bunntekst',
     'Skip to left sidebar' => 'Hopp til venstre sidefelt',
     'Skip to main section' => 'Hopp til hovedfelt',
+    'Skip to messages' => 'Skip to messages',
     'Skip to right sidebar' => 'Hopp til høyre sidefelt',
     'Skip to top of preview' => 'Hopp til toppen av forhåndsvisningen',
     'Skip to {name}' => 'Hopp til {name}',
@@ -2322,9 +2324,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

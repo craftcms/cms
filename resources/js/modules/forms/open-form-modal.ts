@@ -5,16 +5,15 @@ export interface FormModalOptions {
   modalUrl: string;
   actionUrl: string;
   params?: FormValues;
+  title?: string;
+  submitLabel?: string;
+  width?: string;
   onSubmitted?: (data: Record<string, unknown>) => void;
 }
 
 /**
- * Opens a {@link FormModal} away from any component that could render one —
- * for action menu items, which only have a behavior to dispatch.
- *
- * It's mounted into a detached host with the CP's component registry
- * installed, so the Form's controls — plugins' included — resolve there the
- * same as on the page. The modal and its renderer are imported on demand.
+ * Opens a server-built form in a detached Vue app with registered CP controls.
+ * The app, host, and registry installation are removed on close or submission.
  */
 export async function openFormModal({
   onSubmitted,

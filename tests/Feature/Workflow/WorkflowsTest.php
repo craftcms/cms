@@ -684,7 +684,7 @@ it('blocks workflow deletion while a section references it', function () {
     $workflow = workflowFor($this->entry, [automatedStage('Review', 'pending')]);
 
     delete(action([WorkflowsController::class, 'destroy'], $workflow))
-        ->assertSessionHas('error', 'This workflow cannot be deleted while it is assigned to a section.');
+        ->assertMessage('error', 'This workflow cannot be deleted while it is assigned to a section.');
 
     expect($workflow->fresh())->not->toBeNull();
 });

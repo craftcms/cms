@@ -90,6 +90,11 @@ export default css`
     color: var(--c-chip-text, var(--c-text-default));
   }
 
+  :host([data-color='white'][appearance~='outline']) .cp-chip,
+  :host([data-color='white'][appearance~='plain']) .cp-chip {
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
   /* Layout side of plain: no chrome, so no padding or shadow either. */
   .cp-chip--plain {
     padding-block: 0;

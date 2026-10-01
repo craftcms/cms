@@ -1,4 +1,5 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {LionSelectRich} from '@lion/ui/select-rich.js';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import './select-rich.js';
 import type CraftSelectRich from './select-rich.js';
@@ -34,6 +35,36 @@ describe('craft-select-rich', () => {
 
     expect(element.shadowRoot).toBeTruthy();
     expect(element.querySelector('label[slot="label"]')).toBeTruthy();
+  });
+
+  it('leaves keyboard shortcuts out of type-ahead', async () => {
+    const element = await createSelectRich();
+    const typeAhead = vi
+      // @ts-expect-error Lion marks the method protected.
+      .spyOn(LionSelectRich.prototype, '_handleTypeAhead')
+      .mockImplementation(() => {});
+
+    // ⌘S while the select has focus must not jump to an "S" option.
+    element._handleTypeAhead(
+      new KeyboardEvent('keydown', {key: 's', metaKey: true}),
+      {
+        setAsChecked: true,
+      }
+    );
+    element._handleTypeAhead(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true}),
+      {
+        setAsChecked: true,
+      }
+    );
+    expect(typeAhead).not.toHaveBeenCalled();
+
+    element._handleTypeAhead(new KeyboardEvent('keydown', {key: 's'}), {
+      setAsChecked: true,
+    });
+    expect(typeAhead).toHaveBeenCalledOnce();
+
+    typeAhead.mockRestore();
   });
 
   it('takes a name for posting', async () => {

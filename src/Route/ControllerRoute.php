@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Contracts\ControllerDispatcher;
 use Illuminate\Routing\Router;
 use InvalidArgumentException;
+use ReflectionMethod;
+use ReflectionParameter;
 use Symfony\Component\HttpFoundation\Response;
 
 class ControllerRoute
@@ -46,7 +48,14 @@ class ControllerRoute
             default => throw new InvalidArgumentException('Controller site routes must use an invokable controller or [controller, method].'),
         };
 
-        $route->setParameter('element', $element);
+        MatchedElement::set($element, $this);
+
+        $parameters = method_exists($controller, $method)
+            ? new ReflectionMethod($controller, $method)->getParameters()
+            : [];
+        if (! array_any($parameters, fn (ReflectionParameter $parameter): bool => $parameter->getAttributes(CurrentElement::class) !== [])) {
+            $route->setParameter('element', $element);
+        }
 
         foreach ($this->params as $name => $value) {
             $route->setParameter($name, $value);

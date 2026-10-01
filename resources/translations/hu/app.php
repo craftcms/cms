@@ -1079,6 +1079,7 @@ return [
     'Message saved.' => 'Üzenet elmentve.',
     'Message sent successfully.' => 'Üzenetküldés sikeres.',
     'Message' => 'Üzenet',
+    'Messages' => 'Messages',
     'Metadata' => 'Metaadatok',
     'Migrations' => 'Áttelepítések',
     'Min Authors' => 'Min szerzők',
@@ -1672,6 +1673,7 @@ return [
     'Skip to footer' => 'Ugrás a láblécre',
     'Skip to left sidebar' => 'Ugrás a bal oldalsávra',
     'Skip to main section' => 'Ugrás a fő szakaszra',
+    'Skip to messages' => 'Skip to messages',
     'Skip to right sidebar' => 'Ugrás a jobb oldalsávra',
     'Skip to top of preview' => 'Ugrás az előnézet tetejére',
     'Skip to {name}' => 'Ugrás ide: {name}',
@@ -2236,11 +2238,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => 'Hello {{user.friendlyName|e}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>',
+<{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',

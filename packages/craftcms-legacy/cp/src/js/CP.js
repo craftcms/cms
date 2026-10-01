@@ -973,6 +973,270 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
+     * Lays out the notifications as a stack, newest nearest the screen edge,
+     * the way Sonner does.
+     *
+     * Each notification gets its position in the stack (`--cp-message-index`,
+     * 0 for the newest), how far it sits from the edge when the stack is
+     * spread out (`--cp-message-offset`, the heights of the ones in front of
+     * it; the stylesheet adds the gaps), `data-stack-behind` unless it's
+     * the newest, and `data-stack-hidden` beyond the newest
+     * `Craft.CP.Notification.visibleCount`. CSS does the rest.
+     */
+    updateNotificationStack() {
+      const container = this.$notificationContainer[0];
+
+      if (!container) {
+        return;
+      }
+
+      this._initNotificationStack(container);
+
+      const visibleCount = Craft.CP.Notification.visibleCount;
+      const notifications = this._stackedNotifications(container);
+
+      if (!this._notificationResizeObserver && window.ResizeObserver) {
+        this._notificationResizeObserver = new ResizeObserver(() => {
+          this.updateNotificationStack();
+        });
+      }
+
+      // A notification's own height, whether or not the collapsed stack is
+      // currently forcing it to the front one's. Measuring the box itself
+      // would feed the collapsed/spread state back into the layout.
+      const naturalHeight = (notification) => {
+        const inner = notification.querySelector('.notification-inner');
+        if (!inner) {
+          return notification.offsetHeight;
+        }
+        const style = getComputedStyle(notification);
+        return (
+          inner.offsetHeight +
+          parseFloat(style.paddingBlockStart) +
+          parseFloat(style.paddingBlockEnd)
+        );
+      };
+
+      let offset = 0;
+
+      notifications.forEach((notification, index) => {
+        // The content, not the box, which the collapsed stack resizes.
+        const inner = notification.querySelector('.notification-inner');
+        if (inner) {
+          this._notificationResizeObserver?.observe(inner);
+        }
+        notification.style.setProperty('--cp-message-index', index);
+        notification.style.setProperty('--cp-message-offset', `${offset}px`);
+        notification.style.zIndex = String(notifications.length - index);
+        notification.toggleAttribute('data-stack-behind', index > 0);
+        notification.toggleAttribute(
+          'data-stack-hidden',
+          index >= visibleCount
+        );
+        // Hidden ones can't be tabbed to or read until newer ones close.
+        notification.inert = index >= visibleCount;
+        if (index < visibleCount) {
+          offset += naturalHeight(notification);
+        }
+      });
+
+      // How many notifications peek out from behind the front one, so the
+      // collapsed stack's hover area covers them too.
+      container.style.setProperty(
+        '--cp-messages-behind',
+        String(Math.max(Math.min(notifications.length, visibleCount) - 1, 0))
+      );
+      container.style.setProperty(
+        '--cp-messages-front-height',
+        `${notifications[0] ? naturalHeight(notifications[0]) : 0}px`
+      );
+      container.style.setProperty('--cp-messages-height', `${offset}px`);
+      container.style.setProperty(
+        '--cp-messages-count',
+        String(Math.min(notifications.length, visibleCount))
+      );
+
+      this._updateNotificationStackExpanded();
+    },
+
+    /**
+     * The notifications on screen, newest first, leaving out any on their way
+     * out.
+     */
+    _stackedNotifications(container) {
+      return [
+        ...container.querySelectorAll(
+          '.notification:not(.notification--leaving)'
+        ),
+      ].sort((a, b) => b.dataset.shownAt - a.dataset.shownAt);
+    },
+
+    /**
+     * Wires up what expands the stack, as Sonner does: the pointer over it or
+     * pressing on it, plus keyboard focus in it (the "Skip to messages" link
+     * moves focus there). <kbd>Esc</kbd> hands focus back.
+     */
+    _initNotificationStack(container) {
+      if (this._notificationStackReady) {
+        return;
+      }
+
+      this._notificationStackReady = true;
+
+      container.setAttribute('role', 'region');
+      container.setAttribute('aria-label', Craft.t('app', 'Messages'));
+      container.setAttribute('tabindex', '-1');
+
+      container.addEventListener('mouseenter', () => {
+        this._notificationStackHovered = true;
+        this._updateNotificationStackExpanded();
+      });
+      container.addEventListener('mousemove', () => {
+        if (!this._notificationStackHovered) {
+          this._notificationStackHovered = true;
+          this._updateNotificationStackExpanded();
+        }
+      });
+      container.addEventListener('mouseleave', () => {
+        // A press that drags off the stack (a swipe) keeps it open until
+        // it's released.
+        if (!this._notificationStackInteracting) {
+          this._notificationStackHovered = false;
+          this._updateNotificationStackExpanded();
+        }
+      });
+      container.addEventListener('pointerdown', () => {
+        this._notificationStackInteracting = true;
+        this._updateNotificationStackExpanded();
+      });
+      document.addEventListener('pointerup', () => {
+        if (this._notificationStackInteracting) {
+          this._notificationStackInteracting = false;
+          this._notificationStackHovered = container.matches(':hover');
+          this._updateNotificationStackExpanded();
+        }
+      });
+      container.addEventListener('focusin', (ev) => {
+        if (!container.contains(ev.relatedTarget)) {
+          this._focusBeforeNotifications = ev.relatedTarget;
+        }
+        this._updateNotificationStackExpanded();
+      });
+      container.addEventListener('focusout', () => {
+        // Wait for focus to land, so moving between notifications doesn't
+        // briefly collapse the stack.
+        setTimeout(() => this._updateNotificationStackExpanded());
+      });
+      container.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') {
+          this._restoreFocusFromNotifications();
+          this._updateNotificationStackExpanded();
+        }
+      });
+      document.addEventListener('visibilitychange', () => {
+        this._syncNotificationTimers();
+      });
+    },
+
+    /**
+     * Expands or collapses the stack and pauses or resumes the notifications'
+     * timers to match.
+     */
+    _updateNotificationStackExpanded() {
+      const container = this.$notificationContainer[0];
+
+      if (!container) {
+        return;
+      }
+
+      const expanded =
+        this._stackedNotifications(container).length > 0 &&
+        (this._notificationStackHovered ||
+          this._notificationStackInteracting ||
+          container.contains(document.activeElement));
+
+      if (container.hasAttribute('data-expanded') !== expanded) {
+        container.toggleAttribute('data-expanded', expanded);
+      }
+
+      this._syncNotificationTimers();
+    },
+
+    /**
+     * Whether notifications should hold off on closing themselves: while the
+     * stack is expanded or being pressed, or the page is hidden.
+     */
+    notificationTimersPaused() {
+      const container = this.$notificationContainer[0];
+      return (
+        !Craft.isVisible() ||
+        !!container?.hasAttribute('data-expanded') ||
+        !!this._notificationStackInteracting
+      );
+    },
+
+    _syncNotificationTimers() {
+      const container = this.$notificationContainer[0];
+
+      if (!container) {
+        return;
+      }
+
+      const paused = this.notificationTimersPaused();
+
+      for (const element of this._stackedNotifications(container)) {
+        const notification = $(element).data('notification');
+        if (paused) {
+          notification?.pauseTimer();
+        } else {
+          notification?.resumeTimer();
+        }
+      }
+    },
+
+    /**
+     * Dismisses every notification that can be dismissed, the same as
+     * pressing each one's close button. Ones that hide their close button (an
+     * upload in progress, say) stay.
+     */
+    clearNotifications() {
+      const container = this.$notificationContainer[0];
+
+      if (!container) {
+        return;
+      }
+
+      this._restoreFocusFromNotifications();
+
+      for (const notification of this._stackedNotifications(container)) {
+        $(notification)
+          .find('.notification-close-btn')
+          .filter(':visible')
+          .first()
+          .trigger('click');
+      }
+    },
+
+    /**
+     * Moves focus out of the stack, back to where it was before it went in.
+     */
+    _restoreFocusFromNotifications() {
+      const container = this.$notificationContainer[0];
+
+      if (!container?.contains(document.activeElement)) {
+        return;
+      }
+
+      const target = this._focusBeforeNotifications;
+
+      if (target?.isConnected && !container.contains(target)) {
+        target.focus();
+      } else {
+        document.activeElement.blur();
+      }
+    },
+
+    /**
      * Updates display property of "Notifications" heading based on whether there are active notifications
      **/
     updateNotificationHeadingDisplay() {
@@ -1918,20 +2182,19 @@ Craft.CP.Notification = Garnish.Base.extend(
         this.$innerContainer
       );
 
-      const $icon = $('<div/>', {
-        class: 'cp-icon notification-icon',
-      })
-        .append(await Craft.ui.icon(this.settings.icon))
-        .appendTo($body);
-
+      // `Craft.ui.icon()` resolves legacy icon names and custom icons;
+      // `<craft-icon>` sizes the SVG and makes it an image or decorative
+      // depending on whether it has a label.
+      const icon = document.createElement('craft-icon');
+      icon.className = 'notification-icon';
       if (this.settings.iconLabel) {
-        $icon.attr({
-          'aria-label': this.settings.iconLabel,
-          role: 'img',
-        });
-      } else {
-        $icon.attr('aria-hidden', 'true');
+        icon.setAttribute('label', this.settings.iconLabel);
       }
+      const svg = await Craft.ui.icon(this.settings.icon);
+      if (svg) {
+        icon.append(svg);
+      }
+      $body.append(icon);
 
       this.$main = $('<div class="notification-main"/>').appendTo($body);
 
@@ -1965,41 +2228,41 @@ Craft.CP.Notification = Garnish.Base.extend(
         this.handleCloseButtonClick();
       });
 
-      this.$container.appendTo(Craft.cp.$notificationContainer);
+      this.$container
+        .data('notification', this)
+        .attr('data-shown-at', Date.now())
+        .toggleClass('notification--entering', this._animate())
+        .appendTo(this._region());
+      Craft.cp.updateNotificationStack();
 
-      if (this.settings.animate) {
-        const prop = Craft.notificationPosition.startsWith('start-')
-          ? 'top'
-          : 'bottom';
-        this.$container.css({
-          opacity: 0,
-          [`margin-${prop}`]: this._negMargin(),
-        });
-
-        await Craft.animate(this.$container, {
-          opacity: 1,
-          [`margin-${prop}`]: 0,
-        });
+      if (this._animate()) {
+        // Let the entering state render before transitioning out of it.
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        this.$container.removeClass('notification--entering');
+        await this._waitForTransition();
       }
 
       if (this.$detailsContainer) {
         Craft.cp.elementThumbLoader.load(this.$detailsContainer);
       }
 
-      if (Craft.notificationDuration && !this.settings.persist) {
-        this._initDelayedClose();
+      if (
+        Craft.CP.Notification.autoClose &&
+        Craft.notificationDuration &&
+        !this.settings.persist &&
+        !this._staysUntilDismissed()
+      ) {
+        this._remaining = Craft.notificationDuration;
+        this.resumeTimer();
       }
+
+      this._initSwipe();
 
       this.trigger('show');
     },
 
     createCloseButton() {
-      return $('<button/>', {
-        type: 'button',
-        class: 'notification-close-btn',
-        'aria-label': Craft.t('app', 'Close'),
-        'data-icon': 'remove',
-      });
+      return Craft.CP.Notification.createIconButton(Craft.t('app', 'Close'));
     },
 
     updateMessage(message) {
@@ -2011,35 +2274,159 @@ Craft.CP.Notification = Garnish.Base.extend(
       return this.settings.details;
     },
 
-    _initDelayedClose: function () {
-      if (this._preventDelayedClose) {
-        return;
-      }
-
-      if (!Craft.isVisible()) {
-        Garnish.$doc.one('visibilitychange', () => {
-          this._initDelayedClose();
-        });
-        return;
-      }
-
-      this.delayedClose();
-
-      this.$container.on(
-        'keypress keyup change focus click mousedown mouseup',
-        (ev) => {
-          if (ev.target != this.$closeBtn[0]) {
-            this.$container.off(
-              'keypress keyup change focus click mousedown mouseup'
-            );
-            this.preventDelayedClose();
-          }
-        }
+    /**
+     * Errors, and notifications with something to act on in their details,
+     * stay until they're dismissed.
+     */
+    _staysUntilDismissed: function () {
+      return (
+        this.type === 'error' ||
+        !!this.$detailsContainer?.find(
+          'a[href], button, input, select, textarea, craft-button'
+        ).length
       );
     },
 
-    _negMargin: function () {
-      return `-${this.$container.outerHeight() + 12}px`;
+    /**
+     * Starts (or restarts) the countdown to closing itself, with whatever time
+     * it had left, unless the stack is holding timers.
+     */
+    resumeTimer: function () {
+      if (
+        this._remaining == null ||
+        this._preventDelayedClose ||
+        this.closing ||
+        this.closeTimeout ||
+        Craft.cp.notificationTimersPaused()
+      ) {
+        return;
+      }
+
+      this._timerStartedAt = Date.now();
+      this.closeTimeout = setTimeout(() => this.close(), this._remaining);
+    },
+
+    pauseTimer: function () {
+      if (!this.closeTimeout) {
+        return;
+      }
+
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+      this._remaining = Math.max(
+        this._remaining - (Date.now() - this._timerStartedAt),
+        0
+      );
+    },
+
+    /**
+     * Swipe toward the screen edge to dismiss, as in Sonner: past 45px, or
+     * fast enough, and it goes; otherwise it springs back. Movement in any
+     * other direction is damped.
+     */
+    _initSwipe: function () {
+      const element = this.$container[0];
+      const towardEdge = () =>
+        Craft.notificationPosition.startsWith('start-') ? -1 : 1;
+      let start = null;
+
+      const reset = () => {
+        start = null;
+        element.removeAttribute('data-swiping');
+        element.style.removeProperty('--swipe-amount');
+      };
+
+      element.addEventListener('pointerdown', (ev) => {
+        if (
+          ev.button !== 0 ||
+          this.closing ||
+          ev.target.closest('button, a, input, textarea, select, craft-button')
+        ) {
+          return;
+        }
+        start = {y: ev.clientY, time: Date.now()};
+        element.setPointerCapture?.(ev.pointerId);
+      });
+
+      element.addEventListener('pointermove', (ev) => {
+        if (!start) {
+          return;
+        }
+        const delta = ev.clientY - start.y;
+        // Full movement toward the edge, heavily damped away from it.
+        const amount =
+          Math.sign(delta) === towardEdge()
+            ? delta
+            : delta / (1.5 + Math.abs(delta) / 20);
+        if (Math.abs(delta) > 2) {
+          element.setAttribute('data-swiping', '');
+        }
+        element.style.setProperty('--swipe-amount', `${amount}px`);
+      });
+
+      const end = (ev) => {
+        if (!start) {
+          return;
+        }
+        const delta = (ev.clientY - start.y) * towardEdge();
+        const velocity = Math.abs(delta) / (Date.now() - start.time || 1);
+        if (delta >= 45 || (delta > 0 && velocity > 0.11)) {
+          element.setAttribute('data-swipe-out', '');
+          start = null;
+          element.removeAttribute('data-swiping');
+          this.close();
+          return;
+        }
+        reset();
+      };
+
+      element.addEventListener('pointerup', end);
+      element.addEventListener('pointercancel', reset);
+    },
+
+    /**
+     * The live region to add the notification to: errors are announced
+     * assertively, everything else politely. Falls back to the container
+     * itself for layouts that don't provide the regions.
+     */
+    _region: function () {
+      const $container = Craft.cp.$notificationContainer;
+      const $region = $container.find(
+        `.message-region[role="${this.type === 'error' ? 'alert' : 'status'}"]`
+      );
+
+      return $region.length ? $region : $container;
+    },
+
+    _animate: function () {
+      return (
+        this.settings.animate &&
+        !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      );
+    },
+
+    /**
+     * Resolves once the notification's enter/leave transition has finished,
+     * or straight away when it isn't animated.
+     */
+    _waitForTransition: function () {
+      if (!this._animate()) {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const element = this.$container[0];
+        const done = (ev) => {
+          if (ev && ev.target !== element) {
+            return;
+          }
+          element.removeEventListener('transitionend', done);
+          clearTimeout(timeout);
+          resolve();
+        };
+        const timeout = setTimeout(done, 500);
+        element.addEventListener('transitionend', done);
+      });
     },
 
     handleCloseButtonClick: function () {
@@ -2067,54 +2454,56 @@ Craft.CP.Notification = Garnish.Base.extend(
         $(this.originalActiveElement).focus();
       }
 
-      const prop = Craft.notificationPosition.startsWith('start-')
-        ? 'top'
-        : 'bottom';
-      await Craft.animate(this.$container, {
-        opacity: 0,
-        [`margin-${prop}`]: this._negMargin(),
-      });
+      this.$container.addClass('notification--leaving');
+      Craft.cp.updateNotificationStack();
+      await this._waitForTransition();
 
       this.destroy();
+      Craft.cp.updateNotificationStack();
       Craft.cp.trigger('notificationClose');
     },
 
+    /**
+     * @deprecated Notifications time themselves; see `resumeTimer()`.
+     */
     delayedClose: function () {
-      this.closeTimeout = setTimeout(() => {
-        this.close();
-      }, Craft.notificationDuration);
-
-      // Hold off on closing automatically on hover
-      this.$container.one('mouseover', () => {
-        clearTimeout(this.closeTimeout);
-        this.closeTimeout = null;
-
-        this.$container.on('mouseout', (ev) => {
-          if (ev.currentTarget == this.$container[0]) {
-            this.$container.off('mouseout');
-            this.delayedClose();
-          }
-        });
-      });
+      this._remaining ??= Craft.notificationDuration;
+      this.resumeTimer();
     },
 
+    /**
+     * Stops the notification from closing itself.
+     */
     preventDelayedClose: function () {
       this._preventDelayedClose = true;
-
-      if (this.closeTimeout) {
-        clearTimeout(this.closeTimeout);
-        this.closeTimeout = null;
-      }
-
-      this.$container.off('mouseover mouseout');
+      this.pauseTimer();
     },
 
     destroy: function () {
+      if (this.$innerContainer) {
+        Craft.cp._notificationResizeObserver?.unobserve(
+          this.$innerContainer[0]
+        );
+      }
       this.$container.remove();
       this.base();
     },
   },
   {
+    /**
+     * Whether notifications close on their own after
+     * `Craft.notificationDuration` (paused while the stack is expanded,
+     * pressed, or the page is hidden). Errors and notifications with actions
+     * always stay until dismissed.
+     */
+    autoClose: true,
+
+    /**
+     * How many of the newest notifications are shown. Older ones are hidden
+     * until newer ones close.
+     */
+    visibleCount: 5,
+
     defaults: {
       icon: 'info',
       iconLabel: null,
@@ -2122,6 +2511,24 @@ Craft.CP.Notification = Garnish.Base.extend(
       persist: false,
       class: null,
       animate: true,
+    },
+
+    /**
+     * An icon-only `<craft-button>` with an `xmark`, labelled `label`.
+     */
+    createIconButton: function (label) {
+      const button = document.createElement('craft-button');
+      button.className = 'notification-close-btn';
+      button.setAttribute('type', 'button');
+      button.setAttribute('variant', 'plain');
+      button.setAttribute('size', 'small');
+      button.setAttribute('icon', '');
+      const icon = document.createElement('craft-icon');
+      icon.setAttribute('name', 'xmark-large');
+      icon.setAttribute('label', label);
+      button.append(icon);
+
+      return $(button);
     },
   }
 );
@@ -2157,11 +2564,7 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
   },
 
   createCloseButton() {
-    return Craft.ui.createButton({
-      icon: 'xmark-large',
-      label: Craft.t('app', 'Cancel'),
-      class: 'chromeless notification-close-btn',
-    });
+    return Craft.CP.Notification.createIconButton(Craft.t('app', 'Cancel'));
   },
 
   getMessage() {

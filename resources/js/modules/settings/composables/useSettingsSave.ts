@@ -8,6 +8,7 @@ import {useSlideout} from '@/common/slideouts/useSlideout';
 import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
 import {topStackedPanel} from '@/common/slideouts/panel-stack';
+import {showMessagesFromResponse} from '@/modules/messages';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
@@ -111,9 +112,8 @@ export function useSettingsSave<T extends object>(
     redirect = true,
     data: extraData = {},
     // Reset page state when this screen sends the user elsewhere, while saves
-    // that remain on the current screen keep their local state by default. A
-    // failed save lands back on this screen, so it keeps state either way —
-    // otherwise the remount drops the validation errors it came back with.
+    // that remain on the current screen keep their local state by default.
+    // Validation failures preserve input and errors instead of remounting.
     preserveState = redirect && redirectUrl.value ? 'errors' : true,
     action: actionOverride,
   }: FormSaveOptions = {}) {
@@ -159,6 +159,7 @@ export function useSettingsSave<T extends object>(
         });
 
         form.processing = false;
+        showMessagesFromResponse(response.data);
         options.onSuccess?.(response.data);
 
         // An opener that registered `onSaved` refreshes itself, and knows
@@ -178,10 +179,8 @@ export function useSettingsSave<T extends object>(
           return;
         }
 
-        // Otherwise: the controller flashes the success message to the session
-        // even on its JSON branch, so refreshing the page behind both surfaces
-        // that message and picks up whatever was just saved. `reload()`
-        // preserves scroll and state inherently.
+        // Otherwise refresh the page behind to pick up whatever was just
+        // saved. `reload()` preserves scroll and state inherently.
         reload();
       } catch (error) {
         form.processing = false;

@@ -61,16 +61,21 @@ export function handleCreateOption(
   previousValue: string | string[],
   saved: (options: ComboboxItem[], value: string | string[]) => void
 ): boolean {
+  if (event.detail?.initialize || event.detail?.changeSource === 'input') {
+    return false;
+  }
+
   const value = combobox.modelValue;
   const triggerValue = Array.isArray(value)
     ? value.find((item) => createOption(options, item))
     : value;
   const trigger = createOption(options, triggerValue ?? '');
-  if (!trigger || event.detail?.changeSource === 'input') {
+  if (!trigger) {
     return false;
   }
 
   event.stopImmediatePropagation();
+  // Lion finishes committing the option after dispatching this event.
   queueMicrotask(() => {
     combobox.modelValue = previousValue;
     combobox.value = '';
@@ -81,13 +86,20 @@ export function handleCreateOption(
         .flatMap((item) => (item.type === 'optgroup' ? item.options : [item]))
         .find((item) => item.value === previousValue);
       input.value = selected?.label ?? previousValue;
+      if (combobox.showSelectedHint && selected?.data?.hint) {
+        input.value = `${selected.label} – ${selected.data.hint}`;
+      }
     }
   });
 
   const {url, resultKey, labelField, valueField} = trigger.data.create;
   void openSlideout(url, {
-    opener: combobox,
-    onSaved: ({data}) => {
+    opener: combobox.querySelector('input') ?? combobox,
+    onSaved: ({data, draft}) => {
+      if (draft) {
+        return;
+      }
+
       const record = (data as Record<string, unknown> | undefined)?.[
         resultKey
       ] as Record<string, unknown> | undefined;
@@ -110,12 +122,14 @@ export function handleCreateOption(
         label: String(label),
         value: String(value),
       };
-      saved(
-        insertBefore(options, trigger, option),
-        Array.isArray(previousValue)
-          ? [...previousValue, option.value]
-          : option.value
-      );
+      const createdOptions = insertBefore(options, trigger, option);
+      const selectedValue = Array.isArray(previousValue)
+        ? [...new Set([...previousValue, option.value])]
+        : option.value;
+
+      combobox.options = createdOptions;
+      combobox.modelValue = selectedValue;
+      saved(createdOptions, selectedValue);
     },
   });
 

@@ -2,14 +2,14 @@
   import {t} from '@craftcms/ui';
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import {useForm} from '@inertiajs/vue3';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import {retry} from '@actions/QueueController';
 
   const props = defineProps<{
     job: JobInfo;
   }>();
 
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   const form = useForm({});
 
   function retryJob() {
@@ -31,13 +31,13 @@
       preserveScroll: true,
       onSuccess: () => {
         if (props.job.status.value === JobStatus.Reserved) {
-          flash('success', t('Job restarted.'));
+          messages.success(t('Job restarted.'));
         } else {
-          flash('success', t('Job retried.'));
+          messages.success(t('Job retried.'));
         }
       },
       onError: () => {
-        flash('error', t('Failed to retry job.'));
+        messages.error(t('Failed to retry job.'));
       },
     });
   }

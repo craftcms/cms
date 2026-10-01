@@ -527,8 +527,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
   }
 
   /**
-   * The field layout renderer's refresh, so its reactive controls re-render
-   * the layout from the server.
+   * Refreshes the field layout for the renderer's reactive controls.
    */
   async function refreshLayout(
     _values: FormValues,

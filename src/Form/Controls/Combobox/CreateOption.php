@@ -18,7 +18,7 @@ readonly class CreateOption implements JsonSerializable
         public string $valueField = 'id',
     ) {}
 
-    /** @return array<string, mixed> */
+    /** @return array{label: string, value: string, data: array{create: array{url: string, resultKey: string, labelField: string, valueField: string}}} */
     public function jsonSerialize(): array
     {
         return [

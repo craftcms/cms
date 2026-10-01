@@ -1,11 +1,20 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {http} from '@inertiajs/vue3';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import WorkflowDefaultActions from './WorkflowDefaultActions.vue';
 import WorkflowReviewPanel from './WorkflowReviewPanel.vue';
 import WorkflowUserReviewActions from '../user-review/WorkflowUserReviewActions.vue';
 import WorkflowUserReviewSummary from '../user-review/WorkflowUserReviewSummary.vue';
+
+const messages = vi.hoisted(() => ({
+  showMessage: vi.fn(),
+  notice: vi.fn(),
+  success: vi.fn(),
+  error: vi.fn(),
+}));
+vi.mock('@/modules/messages/useMessages', () => ({
+  useMessages: () => messages,
+}));
 
 const requestSpy = vi.spyOn(http.getClient(), 'request');
 
@@ -140,7 +149,7 @@ describe('WorkflowReviewPanel', () => {
 
   beforeEach(() => {
     requestSpy.mockReset();
-    useFlashMessages().clearAll();
+    Object.values(messages).forEach((fn) => fn.mockReset());
     vi.stubGlobal(
       'confirm',
       vi.fn(() => true)
@@ -292,25 +301,21 @@ describe('WorkflowReviewPanel', () => {
         })
       );
     await vi.waitFor(() =>
-      expect(useFlashMessages().messages.value.success).toBe('Comment added.')
+      expect(messages.success).toHaveBeenLastCalledWith('Comment added.')
     );
 
     await chooseReviewDecision('approve');
     expect(submit.disabled).toBe(false);
     submit.click();
     await vi.waitFor(() =>
-      expect(useFlashMessages().messages.value.success).toBe(
-        'Approval recorded.'
-      )
+      expect(messages.success).toHaveBeenLastCalledWith('Approval recorded.')
     );
 
     await chooseReviewDecision('requestChanges');
     await enterReviewMessage('The legal claim needs support.');
     submit.click();
     await vi.waitFor(() =>
-      expect(useFlashMessages().messages.value.success).toBe(
-        'Changes requested.'
-      )
+      expect(messages.success).toHaveBeenLastCalledWith('Changes requested.')
     );
 
     expect(requests()).toEqual([

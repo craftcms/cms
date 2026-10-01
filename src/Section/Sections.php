@@ -18,6 +18,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -487,6 +488,7 @@ class Sections
                 'sections_sites.hasUrls',
                 'sections_sites.uriFormat',
                 'sections_sites.template',
+                'sections_sites.route',
             ])
             ->join(new Alias(Table::SITES, 'sites'), function (JoinClause $join) {
                 $join->whereColumn('sections_sites.siteId', 'sites.id')
@@ -739,10 +741,12 @@ class Sections
 
                 if ($siteSettingsModel->hasUrls = $siteSettings['hasUrls']) {
                     $siteSettingsModel->uriFormat = $siteSettings['uriFormat'];
-                    $siteSettingsModel->template = $siteSettings['template'];
+                    $siteSettingsModel->route = empty($siteSettings['route']) ? null : new ElementRoute($siteSettings['route'])->destination;
+                    $siteSettingsModel->template = $siteSettingsModel->route ? null : ($siteSettings['template'] ?? null);
                 } else {
                     $siteSettingsModel->uriFormat = $siteSettings['uriFormat'] = null;
                     $siteSettingsModel->template = $siteSettings['template'] = null;
+                    $siteSettingsModel->route = null;
                 }
 
                 $resaveEntries = (

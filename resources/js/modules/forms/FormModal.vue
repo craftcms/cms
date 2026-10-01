@@ -1,12 +1,6 @@
 <script setup lang="ts">
-  /**
-   * A modal holding a server-built Form. The Form is loaded from `modalUrl`,
-   * and its values are posted to `actionUrl`, each with `params` alongside —
-   * the record the modal is about, say. Validation errors land on the controls
-   * they name.
-   */
   import {actionClient, t} from '@craftcms/ui';
-  import {onMounted, ref, useTemplateRef} from 'vue';
+  import {onMounted, shallowRef, useTemplateRef} from 'vue';
   import ModalForm from '@/common/components/ModalForm.vue';
   import FormRenderer from './FormRenderer.vue';
   import type {FormPayload, FormValues} from './types';
@@ -41,9 +35,9 @@
     (event: 'submitted', data: Record<string, unknown>): void;
   }>();
 
-  const modal = ref<FormModalResponse | null>(null);
-  const errors = ref<FormPayload['errors']>([]);
-  const loading = ref(false);
+  const modal = shallowRef<FormModalResponse | null>(null);
+  const errors = shallowRef<FormPayload['errors']>([]);
+  const loading = shallowRef(false);
   const renderer =
     useTemplateRef<InstanceType<typeof FormRenderer>>('renderer');
 
@@ -52,15 +46,18 @@
       const {data} = await actionClient.get<FormModalResponse>(props.modalUrl, {
         params: props.params,
       });
+      errors.value = data.form.errors ?? [];
       modal.value = data;
     } catch (error: any) {
-      Craft.cp?.displayError?.(error?.response?.data?.message);
+      Craft.cp?.displayError?.(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
       emit('close');
     }
   });
 
   async function submit(): Promise<void> {
-    if (!renderer.value || loading.value) {
+    if (!renderer.value || loading.value || !renderer.value.canSubmit()) {
       return;
     }
 
@@ -79,13 +76,15 @@
 
       emit('submitted', data ?? {});
     } catch (error: any) {
-      const responseErrors: Record<string, string[]> =
+      const responseErrors: Record<string, string | string[]> =
         error?.response?.data?.errors ?? {};
       errors.value = Object.entries(responseErrors).map(([path, messages]) => ({
         path: path.split('.'),
-        messages,
+        messages: Array.isArray(messages) ? messages : [messages],
       }));
-      Craft.cp?.displayError?.(error?.response?.data?.message);
+      Craft.cp?.displayError?.(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
     } finally {
       loading.value = false;
     }
