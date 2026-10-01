@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
@@ -345,7 +346,8 @@ JS, [
      * an inline handler. The Inertia editor renders these; the legacy editor and
      * slideouts keep using the HTML pairing.
      *
-     * Element types extend this the way they extend the HTML items.
+     * Element types extend this via {@see extraActionMenuDescriptors()}; plugins
+     * listen for {@see ElementActionMenuDescriptorsResolving}.
      *
      * @return list<array<string, mixed>>
      */
@@ -499,6 +501,9 @@ JS, [
                 ],
             ];
         }
+
+        event($event = new ElementActionMenuDescriptorsResolving($this, $context, $items));
+        $items = array_values($event->items);
 
         if ($context->isEditor()) {
             return $items;
