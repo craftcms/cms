@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Brought back users’ gradient-based default avatars.
+- Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
+
 ## 6.0.0-alpha.19 - 2026-10-01
 
 > [!IMPORTANT]
