@@ -4,6 +4,13 @@ export default css`
     display: grid;
   }
 
+  .form-field__group-two--switch {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
   .input-group {
     display: inline-flex;
     align-items: center;

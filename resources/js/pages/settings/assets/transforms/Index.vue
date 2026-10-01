@@ -108,7 +108,7 @@
   </LayoutSlot>
 
   <div class="@container">
-    <AdminTable :table="table">
+    <AdminTable class="admin-table--padded" :table="table">
       <template #empty-row>
         <craft-empty :label="t('No image transforms exist yet.')" icon="image">
           <CpButtonLink :href="create().url" icon="plus">{{
