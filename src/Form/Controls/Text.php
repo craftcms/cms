@@ -42,6 +42,8 @@ class Text extends Control
 
     private bool $monospace = false;
 
+    private ?string $suffix = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $input = Input::make()
@@ -62,6 +64,7 @@ class Text extends Control
             ->inputSize($control->props['size'] ?? null)
             ->orientation($control->props['dir'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
+            ->suffix($control->props['suffix'] ?? null)
             ->disabled($attributes['disabled'] || ($attributes['readonly'] && ($control->props['inputType'] ?? 'text') === 'range'))
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -178,6 +181,13 @@ class Text extends Control
         return $this;
     }
 
+    public function suffix(?string $suffix): static
+    {
+        $this->suffix = $suffix;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -196,6 +206,7 @@ class Text extends Control
             'size' => $this->size,
             'dir' => $this->dir,
             'monospace' => $this->monospace ?: null,
+            'suffix' => $this->suffix,
             ...$this->textExpanderProps(),
         ]);
     }
