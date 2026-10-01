@@ -8,8 +8,8 @@
  *   names lowercased.
  * - Non-2xx responses reject with an {@link HttpError} carrying `response`.
  * - JSON response bodies are parsed even without a JSON content type.
- * - Plain-object request bodies are sent as JSON; `URLSearchParams` as a
- *   urlencoded form; `FormData`, `Blob`, and strings are sent as-is.
+ * - Plain-object request bodies are sent as JSON; strings and
+ *   `URLSearchParams` as a urlencoded form; `FormData` and `Blob` as-is.
  * - `params` are serialized with bracket notation (`a[]=1`, `a[b]=2`), which
  *   PHP parses back into arrays.
  * - Interceptors run as a promise chain around the request.
@@ -267,8 +267,15 @@ function buildBody(data: unknown, headers: Headers): BodyInit | undefined {
     return undefined;
   }
 
+  if (typeof data === 'string') {
+    // Like axios: serialized forms are the common case for string bodies.
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/x-www-form-urlencoded');
+    }
+    return data;
+  }
+
   if (
-    typeof data === 'string' ||
     data instanceof FormData ||
     data instanceof Blob ||
     data instanceof ArrayBuffer ||

@@ -67,7 +67,12 @@ describe('request bodies', () => {
       'application/x-www-form-urlencoded;charset=utf-8',
       'a=1&b=x+y',
     ],
-    ['strings untouched', 'a=1&action=foo', null, 'a=1&action=foo'],
+    [
+      'strings as a urlencoded form',
+      'a=1&action=foo',
+      'application/x-www-form-urlencoded',
+      'a=1&action=foo',
+    ],
   ])('sends %s', async (_label, data, contentType, body) => {
     respond('{}');
     await createHttpClient().post('/save', data);
