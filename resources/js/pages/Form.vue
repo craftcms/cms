@@ -2,11 +2,12 @@
   import {actionClient} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {shallowRef, toRaw, watch} from 'vue';
+  import {shallowRef, toRaw} from 'vue';
   import {
     useAppLayout,
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
     FormChange,
@@ -25,52 +26,37 @@
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
-    /**
-     * State the page owns outside the rendered form — a repeatable list edited in a
-     * slideout, say — posted alongside the form's own values and counted towards the
-     * unsaved-changes prompt. `transform` replaces the posted data wholesale, so the
-     * serialization below that backs the dirty check never reaches the server.
-     */
-    additionalData?: Record<string, unknown>;
+    /** Server-rendered markup for the details column. */
+    metadataHtml?: string;
+    /** Controls for the details column, submitted alongside `form`. */
+    sidebarForm?: FormPayload;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const inertiaForm = useForm({});
-  const elevatedBaseline = shallowRef(
-    structuredClone(toRaw(props.form.values))
-  );
-  const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
-  if (props.additionalData !== undefined) {
-    watch(
-      () => props.additionalData,
-      (additionalData) => {
-        Object.assign(inertiaForm, {
-          __additionalData: JSON.stringify(additionalData),
-        });
-      },
-      {deep: true, immediate: true}
-    );
-    inertiaForm.defaults();
-  }
+  const {
+    advanceBaseline: advanceSidebarBaseline,
+    errors: sidebarErrors,
+    onMutation: onSidebarMutation,
+    renderer: sidebarRenderer,
+  } = useInertiaFormRenderer(inertiaForm, () => props.sidebarForm ?? null);
+  const elevatedBaseline = shallowRef(structuredClone(currentValues()));
+  const elevatedFields = props.elevatedFields;
 
   const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    transform: () => ({
-      ...(renderer.value?.currentValues() ?? props.form.values),
-      ...props.additionalData,
-    }),
+    transform: currentValues,
     onSuccess: () => {
-      elevatedBaseline.value = structuredClone(
-        toRaw(renderer.value?.currentValues() ?? props.form.values)
-      );
+      elevatedBaseline.value = structuredClone(currentValues());
       advanceBaseline();
+      advanceSidebarBaseline();
     },
     passwordConfirmation: elevatedFields
       ? {
           required: () => {
-            const values = renderer.value?.currentValues() ?? props.form.values;
+            const values = currentValues();
             const fields =
               elevatedFields === '*'
                 ? [
@@ -125,6 +111,15 @@
     return data.form;
   }
 
+  function currentValues(): FormPayload['values'] {
+    return {
+      ...toRaw(renderer.value?.currentValues() ?? props.form.values),
+      ...toRaw(
+        sidebarRenderer.value?.currentValues() ?? props.sidebarForm?.values
+      ),
+    };
+  }
+
   function normalize(value: FormValue): string {
     return (
       JSON.stringify(Array.isArray(value) ? [...value].sort() : value) ?? ''
@@ -154,5 +149,17 @@
         </FormRenderer>
       </craft-field-group>
     </CpContainer>
+    <MetadataDetails :html="metadataHtml">
+      <template v-if="sidebarForm" #default>
+        <craft-field-group>
+          <FormRenderer
+            ref="sidebarRenderer"
+            :payload="sidebarForm"
+            :errors="sidebarErrors"
+            @update:mutation="onSidebarMutation"
+          />
+        </craft-field-group>
+      </template>
+    </MetadataDetails>
   </form>
 </template>
