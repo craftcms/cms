@@ -7,7 +7,7 @@ import type {
   QueueServiceOptions,
 } from './types';
 import {JobStatus} from './types';
-import {http} from '@craftcms/ui/utilities/api/http';
+import {http, isCancel} from '@craftcms/ui/utilities/api/http';
 // Imports stay relative or bare-package here: this module is also bundled by
 // the legacy webpack build (via CP.js), which doesn't know the `@/` alias.
 import {ConfigService} from '@craftcms/ui/services/Config';
@@ -243,7 +243,7 @@ export class QueueService extends EventTarget {
       }
     } catch (error) {
       // Ignore aborted requests
-      if (error instanceof Error && error.name === 'CanceledError') {
+      if (isCancel(error)) {
         return;
       }
 
