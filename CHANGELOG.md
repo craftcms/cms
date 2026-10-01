@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.4 - 2026-10-01
 
 - Added `craft\services\Users::destroyOtherSessions()`.
 - Setting up a two-step verification method now destroys the user’s other sessions.
