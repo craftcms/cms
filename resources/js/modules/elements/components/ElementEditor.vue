@@ -9,6 +9,7 @@
   import {computed, nextTick, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
@@ -412,28 +413,20 @@
         asset's file preview. -->
         <slot name="details-header" :payload="payload" />
 
-        <div class="p-lg">
-          <!--
-          The meta fields render as their own Form, bridged into the same Inertia
-          form as the field layout above, so they submit as ordinary inputs.
-        -->
-          <craft-field-group v-if="sidebarPayload">
-            <FormRenderer
-              ref="sidebarRenderer"
-              :payload="sidebarPayload"
-              :errors="sidebarErrors"
-              :modified="autosave.modified.value"
-              :disabled="workflowReviewLocked"
-              @update:mutation="onSidebarMutation"
-            />
-          </craft-field-group>
-
-          <hr v-if="sidebarPayload && payload.metadataHtml" class="my-lg" />
-          <DynamicHtmlRenderer
-            v-if="payload.metadataHtml"
-            :html="payload.metadataHtml"
-          />
-        </div>
+        <MetadataDetailsContent :html="payload.metadataHtml">
+          <template v-if="sidebarPayload" #default>
+            <craft-field-group>
+              <FormRenderer
+                ref="sidebarRenderer"
+                :payload="sidebarPayload"
+                :errors="sidebarErrors"
+                :modified="autosave.modified.value"
+                :disabled="workflowReviewLocked"
+                @update:mutation="onSidebarMutation"
+              />
+            </craft-field-group>
+          </template>
+        </MetadataDetailsContent>
       </template>
     </ElementDetailsTabs>
   </LayoutSlot>
