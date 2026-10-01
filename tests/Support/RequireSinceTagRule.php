@@ -15,7 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class RequireSinceTagRule implements Rule
 {
-    public function __construct(private string $sourceDirectory) {}
+    public function __construct(private readonly string $sourceDirectory) {}
 
     public function getNodeType(): string
     {
