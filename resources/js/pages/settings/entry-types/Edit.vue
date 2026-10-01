@@ -1,12 +1,11 @@
 <script setup lang="ts">
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
-  import type {ActionItem, FormSaveOptions} from '@/common/types';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import type {FormAction, FormSaveOptions} from '@/common/types';
   import type {FormPayload} from '@/modules/forms/types';
   import FormPage from '@/pages/Form.vue';
   import {t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
-  import {ref} from 'vue';
+  import {computed, ref} from 'vue';
 
   const props = defineProps<{
     form: FormPayload;
@@ -15,13 +14,13 @@
     brandNew: boolean;
     lowerTypeName: string;
     metadataHtml: string | null;
-    formActions?: ActionItem[];
+    formActions?: FormAction[];
   }>();
 
   const formPage = ref<{
     save(options?: FormSaveOptions): void;
   }>();
-  const formActions: ActionItem[] = [
+  const formActions = computed<FormAction[]>(() => [
     ...(!props.brandNew
       ? [
           {
@@ -35,9 +34,7 @@
         ]
       : []),
     ...(props.formActions ?? []),
-  ];
-
-  useAppLayout({formActions});
+  ]);
 </script>
 
 <template>
@@ -47,6 +44,7 @@
     ref="formPage"
     :form="form"
     :submit="submit"
+    :form-actions="formActions"
     :refresh-url="refreshUrl ?? undefined"
   />
 </template>

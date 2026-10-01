@@ -7,7 +7,7 @@
   import DetailsTabs, {
     type DetailsTab,
   } from '@/common/components/DetailsTabs.vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   defineProps<{
@@ -23,11 +23,11 @@
   <LayoutSlot v-if="html || $slots.default" name="content-details">
     <DetailsTabs :tabs="tabs">
       <template #info>
-        <div class="p-lg">
-          <slot />
-          <hr v-if="html && $slots.default" class="my-lg" />
-          <DynamicHtmlRenderer v-if="html" :html="html" />
-        </div>
+        <MetadataDetailsContent :html="html">
+          <template v-if="$slots.default" #default>
+            <slot />
+          </template>
+        </MetadataDetailsContent>
       </template>
     </DetailsTabs>
   </LayoutSlot>

@@ -294,7 +294,7 @@ describe('useSettingsSave on a full page', () => {
     expect(axiosRequest).not.toHaveBeenCalled();
   });
 
-  it('resets page state on a redirecting save unless it comes back with errors', () => {
+  it('preserves validation errors when redirecting and page state when continuing', () => {
     redirectUrl.value = '/admin/entry-types';
     const redirectingForm = makeForm();
     const continuingForm = makeForm();

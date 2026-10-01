@@ -4,7 +4,7 @@ import {ConfigService} from '@src/services/Config';
 
 /**
  * Builds an action URL using the runtime-configured action base
- * (`Url::actionUrl()`), so the CP trigger isn't hard-coded to `/admin`.
+ * (`Url::actionUrl()`), preserving root-relative and absolute URLs.
  */
 export function getActionUrl(action: string = '') {
   return ConfigService.getInstance().getActionUrl(action);
@@ -60,14 +60,12 @@ actionClient.interceptors.request.use(async (config) => {
   //   scheme + host (+ port) without the `protocol` trailing-colon /
   //   port-doubling pitfalls.
   // - An absolute URL is left untouched, per axios semantics.
-  if (
-    config.url &&
-    !config.url.startsWith('/') &&
-    !/^[a-z][a-z\d+.-]*:/i.test(config.url)
-  ) {
+  if (config.url) {
     config.url = getActionUrl(config.url);
-  } else if (config.url?.startsWith('/')) {
-    config.baseURL = new URL(getActionUrl()).origin;
+
+    if (config.url.startsWith('/')) {
+      config.baseURL = new URL(getActionUrl()).origin;
+    }
   }
 
   // Set X-Requested-With header
