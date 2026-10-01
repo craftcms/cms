@@ -1,7 +1,10 @@
 <script setup lang="ts">
+  import type ComboboxElement from '@craftcms/ui/components/combobox/combobox';
   import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
+  import {computed, shallowRef, watch} from 'vue';
   import type {FormChangeKind, FormControlPayload} from './types';
+  import {handleCreateOption} from './combobox-create-option';
   import {inputName, serverErrorValidators} from './runtime';
 
   type ComboboxControlProps = {
@@ -16,7 +19,7 @@
     dir?: string;
   };
 
-  defineProps<{
+  const props = defineProps<{
     control: FormControlPayload<ComboboxControlProps>;
     value: unknown;
     label?: string;
@@ -24,6 +27,21 @@
     invalid: boolean;
     required: boolean;
   }>();
+
+  const options = shallowRef(props.control.props.options);
+  const modelValue = computed(() =>
+    props.control.props.multiple
+      ? Array.isArray(props.value)
+        ? props.value.map(String)
+        : []
+      : String(props.value ?? '')
+  );
+
+  watch(
+    () => props.control.props.options,
+    (value) => (options.value = value)
+  );
+
   const emit = defineEmits<{
     (
       event: 'update:value',
@@ -32,13 +50,32 @@
     ): void;
   }>();
 
-  function onModelValueChanged(event: CustomEvent): void {
+  function onModelValueChanged(
+    event: CustomEvent,
+    cancelModelUpdate: () => void
+  ): void {
     if (event.detail?.initialize) {
       return;
     }
 
-    const value = (event.target as HTMLElement & {modelValue?: unknown})
-      .modelValue;
+    const combobox = event.target as ComboboxElement;
+    if (
+      handleCreateOption(
+        event,
+        combobox,
+        options.value,
+        modelValue.value,
+        (createdOptions, value) => {
+          options.value = createdOptions;
+          emit('update:value', value, 'discrete');
+        }
+      )
+    ) {
+      cancelModelUpdate();
+      return;
+    }
+
+    const value = combobox.modelValue;
     emit(
       'update:value',
       Array.isArray(value) ? value.map(String) : String(value ?? ''),
@@ -50,7 +87,7 @@
 <template>
   <CraftCombobox
     :name="editable ? inputName(control.path) : ''"
-    :options="control.props.options"
+    :options="options"
     :placeholder="control.props.placeholder"
     :limit="control.props.limit"
     :clearable="control.props.clearable"
@@ -63,13 +100,7 @@
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
     :multiple-choice="control.props.multiple ?? false"
-    :model-value="
-      control.props.multiple
-        ? Array.isArray(value)
-          ? value.map(String)
-          : []
-        : String(value ?? '')
-    "
+    :model-value="modelValue"
     @model-value-changed="onModelValueChanged"
   />
 </template>
