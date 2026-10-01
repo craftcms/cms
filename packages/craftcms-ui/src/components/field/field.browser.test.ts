@@ -5,6 +5,7 @@ import './field.js';
 import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
+import '../../styles/cp.css';
 
 beforeEach(() => {
   document.body.innerHTML = '';
