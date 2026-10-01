@@ -14,7 +14,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
@@ -138,24 +137,23 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer>
-    <AdminTable
-      :table="table"
-      :reorderable="false"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-      :enable-adjust-page-size="true"
-    >
-      <template #empty-row>
-        <craft-empty
-          icon="light/files"
-          :label="t('No entry types exist yet.')"
-        ></craft-empty>
-      </template>
-      <template #table-header>
-        <SearchForm :action="index()" v-model="searchTerm" />
-      </template>
-    </AdminTable>
-  </CpContainer>
+  <AdminTable
+    class="admin-table--padded"
+    :table="table"
+    :reorderable="false"
+    :from="pagination.from"
+    :to="pagination.to"
+    :total="pagination.total"
+    :enable-adjust-page-size="true"
+  >
+    <template #empty-row>
+      <craft-empty
+        icon="light/files"
+        :label="t('No entry types exist yet.')"
+      ></craft-empty>
+    </template>
+    <template #table-header>
+      <SearchForm :action="index()" v-model="searchTerm" />
+    </template>
+  </AdminTable>
 </template>

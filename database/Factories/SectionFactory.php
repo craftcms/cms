@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
@@ -42,6 +43,9 @@ class SectionFactory extends Factory
                 'dateCreated' => $section->dateCreated,
                 'dateUpdated' => $section->dateUpdated,
             ]);
+
+            // Sections are memoized, so they won't include this one unless refreshed
+            app(Sections::class)->refreshSections();
         });
     }
 
@@ -51,6 +55,8 @@ class SectionFactory extends Factory
             foreach ($types as $index => $type) {
                 $section->entryTypes()->attach($type, ['sortOrder' => $index + 1]);
             }
+
+            app(Sections::class)->refreshSections();
         });
     }
 
@@ -69,6 +75,7 @@ class SectionFactory extends Factory
                 ]);
             }
 
+            app(Sections::class)->refreshSections();
             app(Fields::class)->invalidateCaches();
             app(Fields::class)->refreshFields();
         });

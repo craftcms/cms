@@ -112,4 +112,11 @@ class ModalIndexViewModel extends ContentIndexViewModel
             restrictTo: $this->restrictToSources,
         )->all();
     }
+
+    /** @return list<array<string, mixed>> */
+    #[\Override]
+    protected function sourceCandidates(int $siteId): array
+    {
+        return $this->sources();
+    }
 }

@@ -59,6 +59,7 @@
     renderer,
     refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -101,6 +102,16 @@
       await refreshAfterNestedChange();
     },
   });
+
+  /**
+   * Fields outside of a tab — in a field layout whose tab was never saved,
+   * say — need the spacing a tab would otherwise give them.
+   */
+  const hasUntabbedFields = computed(
+    () =>
+      formPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
+      false
+  );
 
   const hasDetails = computed(
     () =>
@@ -165,13 +176,15 @@
     save(options);
   }
 
-  // The View buttons and the action menu stay out of slideouts, which have no
-  // room for them, and out of pages the shell marks read-only.
+  // The View buttons stay out of slideouts, which have no room for them. The
+  // action menu goes in their header, as in Craft 5. Neither shows on pages the
+  // shell marks read-only.
   const isSlideout = useIsSlideout();
   const page = usePage<{readOnly?: boolean}>();
   const showElementControls = computed(
     () => !isSlideout && !page.props.readOnly
   );
+  const showActionMenu = computed(() => isSlideout || !page.props.readOnly);
 
   useAppLayout(() => ({
     title: payload.title,
@@ -184,6 +197,7 @@
     defaultFormActions: [],
     formActions: formActionItems.value,
     formAdditionalButtons: saveButtons.value,
+    editUrl: payload.cpEditUrl,
   }));
 </script>
 
@@ -239,12 +253,14 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="showElementControls && payload.actionMenu.length"
+    v-if="showActionMenu && payload.actionMenu.length"
     name="content-toolbar-actions"
   >
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
+      :slideout="slideout"
+      :flush="!isSlideout"
     />
   </LayoutSlot>
 
@@ -360,15 +376,20 @@
 
   <div ref="content" class="py-3">
     <CpContainer>
-      <FormRenderer
+      <component
+        :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
         v-if="formPayload"
-        ref="renderer"
-        :payload="formPayload"
-        :errors="errors"
-        :modified="autosave.modified.value"
-        :disabled="workflowReviewLocked"
-        @update:mutation="onMutation"
-      />
+      >
+        <FormRenderer
+          ref="renderer"
+          :payload="formPayload"
+          :errors="errors"
+          :refresh="formPayload.refreshable ? refreshLayout : undefined"
+          :modified="autosave.modified.value"
+          :disabled="workflowReviewLocked"
+          @update:mutation="onMutation"
+        />
+      </component>
 
       <slot :payload="payload" />
     </CpContainer>
@@ -396,9 +417,8 @@
           The meta fields render as their own Form, bridged into the same Inertia
           form as the field layout above, so they submit as ordinary inputs.
         -->
-          <craft-field-group>
+          <craft-field-group v-if="sidebarPayload">
             <FormRenderer
-              v-if="sidebarPayload"
               ref="sidebarRenderer"
               :payload="sidebarPayload"
               :errors="sidebarErrors"
@@ -408,7 +428,7 @@
             />
           </craft-field-group>
 
-          <hr class="my-lg" />
+          <hr v-if="sidebarPayload && payload.metadataHtml" class="my-lg" />
           <DynamicHtmlRenderer
             v-if="payload.metadataHtml"
             :html="payload.metadataHtml"

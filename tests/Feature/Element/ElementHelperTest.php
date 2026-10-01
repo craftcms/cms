@@ -185,3 +185,23 @@ test('detects multisite elements', function () {
     expect(ElementHelper::isMultiSite($multiSiteEntry))->toBeTrue()
         ->and(ElementHelper::isMultiSite($singleSiteEntry))->toBeFalse();
 });
+
+it('checks a nested element against its owner’s canonical element in another site', function () {
+    $canonical = Entry::factory()->createElement();
+    $otherSite = Site::factory()->create();
+
+    $derivative = new EntryElement([
+        'id' => $canonical->id + 1000,
+        'siteId' => $otherSite->id,
+        'sectionId' => $canonical->sectionId,
+        'typeId' => $canonical->typeId,
+    ]);
+    $derivative->setCanonicalId($canonical->id);
+
+    $nested = new EntryElement;
+    $nested->setPrimaryOwnerId($derivative->id);
+    expect(ElementHelper::belongsToCanonicalOwner($nested, $derivative))->toBeFalse();
+
+    $nested->setPrimaryOwnerId($canonical->id);
+    expect(ElementHelper::belongsToCanonicalOwner($nested, $derivative))->toBeTrue();
+});

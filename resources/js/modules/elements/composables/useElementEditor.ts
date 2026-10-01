@@ -100,6 +100,8 @@ export interface ElementEditPayload {
   /** The element's status badge. `null` for element types without statuses. */
   statusLabelHtml: string | null;
   saveUrl: string;
+  /** The element's own control panel edit page, if it has one. */
+  cpEditUrl?: string | null;
   applyDraftUrl: string;
   editorActions: ElementEditorActions;
   autosaveUrl: string;
@@ -506,10 +508,14 @@ export function useElementEditor({saveData, root}: Options = {}) {
       return;
     }
 
-    applyingSavedPayload = true;
-    savedForm.value = response.form;
-    await nextTick();
-    applyingSavedPayload = false;
+    // A nested scope's payload is only that form; the renderer that asked for
+    // it reconciles it into the layout.
+    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+      applyingSavedPayload = true;
+      savedForm.value = response.form;
+      await nextTick();
+      applyingSavedPayload = false;
+    }
 
     if (generation !== refreshGeneration) {
       return;
@@ -518,6 +524,22 @@ export function useElementEditor({saveData, root}: Options = {}) {
     await appendBodyHtml(response.bodyHtml);
 
     return response;
+  }
+
+  /**
+   * Refreshes the field layout for the renderer's reactive controls.
+   */
+  async function refreshLayout(
+    _values: FormValues,
+    scope?: string[]
+  ): Promise<FormPayload> {
+    const response = await refreshForm(scope);
+
+    if (!response) {
+      throw new Error('A newer refresh superseded this one.');
+    }
+
+    return response.form as FormPayload;
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -897,6 +919,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
     renderer,
     refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,

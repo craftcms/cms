@@ -18,7 +18,6 @@
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   type FieldRow = {
     id: number;
@@ -209,24 +208,23 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer>
-    <AdminTable
-      :table="table"
-      :reorderable="false"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-      :enable-adjust-page-size="true"
-    >
-      <template #empty-row>
-        <craft-empty
-          icon="light/pen-to-square"
-          :label="t('No fields exist yet.')"
-        ></craft-empty>
-      </template>
-      <template #table-header>
-        <SearchForm v-model="searchTerm" />
-      </template>
-    </AdminTable>
-  </CpContainer>
+  <AdminTable
+    class="admin-table--padded"
+    :table="table"
+    :reorderable="false"
+    :from="pagination.from"
+    :to="pagination.to"
+    :total="pagination.total"
+    :enable-adjust-page-size="true"
+  >
+    <template #empty-row>
+      <craft-empty
+        icon="light/pen-to-square"
+        :label="t('No fields exist yet.')"
+      ></craft-empty>
+    </template>
+    <template #table-header>
+      <SearchForm v-model="searchTerm" />
+    </template>
+  </AdminTable>
 </template>

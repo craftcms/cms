@@ -17,6 +17,7 @@
     onMounted,
     provide,
     ref,
+    useId,
     useTemplateRef,
   } from 'vue';
   import {useElementSize, useEventListener} from '@vueuse/core';
@@ -41,6 +42,7 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
   import {firstMessages} from '@/common/slideouts/errors';
+  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -98,7 +100,10 @@
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
-  const editUrl = computed(() => chrome.value.screen?.editUrl ?? null);
+  const editUrl = computed(
+    () => props.value.editUrl || chrome.value.screen?.editUrl || null
+  );
+  const editLinkId = `slideout-edit-link-${useId()}`;
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
@@ -310,14 +315,14 @@
       return;
     }
 
+    showMessagesFromResponse(result.data);
+
     const handled = slideout?.saved({data: result.data});
 
     slideout?.close({force: true});
 
     if (!handled) {
-      // The controller flashes its success message to the session even on the
-      // JSON branch, so refreshing the page behind surfaces it and picks up
-      // whatever changed.
+      // Refresh the page behind to pick up whatever changed.
       router.reload();
     }
   }
@@ -377,7 +382,7 @@
             </LayoutSlotOutlet>
           </div>
 
-          <div class="flex gap-sm items-center">
+          <div class="slideout-screen__actions flex gap-sm items-center">
             <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
@@ -391,25 +396,33 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
-            <a
-              v-if="editUrl"
-              :href="editUrl"
-              target="_blank"
-              rel="noopener"
-              class="slideout-screen__edit-link"
-            >
-              <craft-icon
-                name="external-link"
-                :label="t('Open in a new tab')"
-              />
-            </a>
+            <template v-if="editUrl">
+              <craft-button
+                :id="editLinkId"
+                icon
+                size="small"
+                :variant="ButtonVariant.Plain"
+                :href="editUrl"
+                target="_blank"
+                rel="noopener"
+                class="slideout-screen__edit-link"
+              >
+                <craft-icon
+                  name="arrow-up-right-from-square"
+                  :label="t('Open in a new tab')"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip :for="editLinkId">
+                {{ t('Open in a new tab') }}
+              </craft-tooltip>
+            </template>
 
             <craft-button
               icon
               type="button"
               size="small"
               :variant="ButtonVariant.Plain"
-              flush
+              flush="inline-end"
               @click="close"
               data-slideout-close
             >
@@ -530,6 +543,10 @@
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+  }
+
+  .slideout-screen__actions {
+    --_link-min-width: calc(24px + var(--c-spacing-sm));
   }
 
   .slideout-screen__toolbar {

@@ -21,6 +21,7 @@
       string | number | boolean | null | undefined
     >;
     cardHeaderHtml?: string;
+    cardActionsHtml?: string;
     cardThumbHtml?: string;
     thumbAlignment?: string;
     cardContentHtml?: string;

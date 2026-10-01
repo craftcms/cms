@@ -49,6 +49,11 @@ export interface ScreenProps {
    * Full pages only; a slideout is bounded already.
    */
   fillViewport?: boolean;
+  /**
+   * The screen's own full edit page, which a slideout links to as "Open in a
+   * new tab". Falls back to the screen payload's `editUrl`. Slideouts only.
+   */
+  editUrl?: string | null;
 }
 
 export interface ScreenEmits {

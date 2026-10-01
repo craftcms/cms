@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Route\ControllerRoute;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
@@ -49,7 +50,7 @@ readonly class SiteRouteController
 
         MatchedElement::set($element, $route);
 
-        if ($route instanceof ControllerRoute) {
+        if ($route instanceof ControllerRoute || $route instanceof ElementRoute) {
             return $route->handle($request, $element);
         }
 

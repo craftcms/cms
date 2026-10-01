@@ -18,7 +18,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -151,6 +150,7 @@
         info.getValue()
           ? h('craft-icon', {
               name: 'check',
+              label: t('Yes'),
             })
           : '',
     }),
@@ -258,12 +258,13 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
+  <div class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
 
     <AdminTable
+      class="admin-table--padded"
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
@@ -285,7 +286,7 @@
         </craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 
   <ModalForm
     :is-active="modalActive"

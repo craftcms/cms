@@ -5,6 +5,7 @@
   import FormPage from '@/pages/Form.vue';
   import type {FormPayload} from '@/modules/forms/types';
   import InlineFlash from '@/common/components/InlineFlash.vue';
+  import {messageTargetHeaders} from '@/modules/messages';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {test} from '@routes/cp/settings/email';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -23,6 +24,7 @@
 
   function sendTest(): void {
     testForm.clearErrors().submit(test(), {
+      headers: messageTargetHeaders('email-test'),
       onSuccess: () => testForm.reset(),
     });
   }
@@ -53,9 +55,7 @@
             >
               {{ t('Test') }}
             </craft-button>
-            <InlineFlash
-              :is-active="testForm.recentlySuccessful || testForm.hasErrors"
-            />
+            <InlineFlash target="email-test" :busy="testForm.processing" />
           </div>
         </div>
       </craft-pane>

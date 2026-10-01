@@ -299,7 +299,7 @@ class Install extends Migration
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
-            $table->string('dominantColor', 7)->nullable();
+            $table->json('colors')->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('keptFile')->nullable();
             $table->dateTime('dateModified')->nullable();
@@ -857,6 +857,7 @@ class Install extends Migration
             $table->boolean('hasUrls')->default(true);
             $table->text('uriFormat')->nullable();
             $table->string('template', 500)->nullable();
+            $table->string('route', 500)->nullable();
             $table->boolean('enabledByDefault')->default(true);
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');

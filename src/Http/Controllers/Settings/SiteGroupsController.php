@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
+use CraftCms\Cms\Support\Flash;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,9 +38,11 @@ readonly class SiteGroupsController
             throw ValidationException::withMessages($group->errors()->getMessages());
         }
 
+        Flash::success(t('Group saved.'));
+
         return to_route('craft.cp.settings.sites.index', [
             'groupId' => $group->id,
-        ])->with('success', t('Group saved.'));
+        ]);
     }
 
     public function destroy(int $groupId): Response
@@ -53,10 +56,13 @@ readonly class SiteGroupsController
          * much about these methods at the moment.
          */
         if (! $this->siteGroups->deleteGroupById($groupId)) {
-            return back()->with('error', t('Could not delete the group.'));
+            Flash::error(t('Could not delete the group.'));
+
+            return back();
         }
 
-        return to_route('craft.cp.settings.sites.index')
-            ->with('success', t('Group deleted.'));
+        Flash::success(t('Group deleted.'));
+
+        return to_route('craft.cp.settings.sites.index');
     }
 }

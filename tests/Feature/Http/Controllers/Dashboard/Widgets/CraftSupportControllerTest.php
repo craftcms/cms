@@ -75,7 +75,7 @@ it('sends the completed message and cleans up its archive', function (?string $f
     if ($apiFails) {
         $response->assertUnprocessable()->assertJsonValidationErrors('support');
     } else {
-        $response->assertRedirect(route('craft.cp.dashboard'))->assertSessionHas('success');
+        $response->assertRedirect(route('craft.cp.dashboard'))->assertMessage('success');
     }
 
     $messages = $parts->where('name', 'message');
@@ -113,7 +113,7 @@ it('validates data after widget id', function (array $data, array $errors) {
     $response = postJson(action(CraftSupportController::class), array_merge(['widgetId' => $widget->id], $data));
 
     if (count($errors) === 0) {
-        $response->assertRedirect(route('craft.cp.dashboard'))->assertSessionHas('success');
+        $response->assertRedirect(route('craft.cp.dashboard'))->assertMessage('success');
 
         return;
     }

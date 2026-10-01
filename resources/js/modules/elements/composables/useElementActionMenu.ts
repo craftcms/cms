@@ -3,10 +3,15 @@ import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
-import {openSlideout} from '@/common/slideouts';
+import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {FormProperties, FormValues} from '@/modules/forms/types';
+import {openFormModal} from '@/modules/forms/open-form-modal';
+import {
+  openImageEditorDialog,
+  type ImageEditorSettings,
+} from '@/modules/image-editor/open-image-editor-dialog';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -48,8 +53,15 @@ export type ElementActionBehavior =
       url: string;
       entryTypeFromField?: boolean;
     }
-  // The asset behaviors below all hand off to a legacy modal or uploader, and
-  // reload the page afterwards rather than patching the file's details into it.
+  /** Loads and submits a server-built form, then reloads the page. */
+  | {
+      type: 'formModal';
+      modalUrl: string;
+      actionUrl: string;
+      params?: FormValues;
+    }
+  // The asset behaviors below all hand off to a modal or uploader, and reload
+  // the page afterwards rather than patching the file's details into it.
   | {
       type: 'previewFile';
       assetId: number;
@@ -57,7 +69,7 @@ export type ElementActionBehavior =
     }
   | {type: 'download'; actionUrl: string; params?: FormValues}
   | {type: 'replaceFile'; assetId: number}
-  | {type: 'editImage'; assetId: number}
+  | {type: 'editImage'; assetId: number; settings: ImageEditorSettings}
   /**
    * Fetches a single-use URL and offers it for copying. Always behind an
    * elevated session — these URLs grant access to the account.
@@ -93,6 +105,12 @@ interface Options {
    * which the sidebar can change without saving.
    */
   currentEntryTypeId?: () => string | number | null;
+  /**
+   * The slideout the element is being edited in, if any. Actions that would
+   * otherwise navigate or reload the page act on the panel instead: the page
+   * behind it may have unsaved changes of its own.
+   */
+  slideout?: SlideoutController | null;
 }
 
 /**
@@ -107,8 +125,14 @@ interface Options {
  * relation field drawing one per chip — can map them all through a single
  * dispatcher instead of standing up a computed per element.
  */
-export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
-  function dispatch(behavior: ElementActionBehavior): void {
+export function createElementActionMenu({
+  currentEntryTypeId,
+  slideout = null,
+}: Options = {}) {
+  function dispatch(
+    behavior: ElementActionBehavior,
+    destructive = false
+  ): void {
     switch (behavior.type) {
       case 'link':
         window.open(
@@ -125,9 +149,17 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         }
 
         const params = {...behavior.params};
-        if (behavior.redirect) params.redirect = behavior.redirect;
+        if (behavior.redirect && !slideout) params.redirect = behavior.redirect;
 
-        const post = () => router.post(behavior.actionUrl, params);
+        const post = slideout
+          ? () =>
+              void submitInSlideout(
+                slideout,
+                behavior.actionUrl,
+                params,
+                destructive
+              )
+          : () => router.post(behavior.actionUrl, params);
 
         if (behavior.requireElevatedSession) {
           void Craft.elevatedSessionManager.requireElevatedSession(post);
@@ -152,7 +184,14 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         new ElementDeletionManager(behavior.elementType, [behavior.elementId], {
           siteId: behavior.siteId,
           confirmationMessage: behavior.confirm,
-          onSuccess: () => router.visit(behavior.redirect),
+          onSuccess: () => {
+            if (slideout) {
+              slideout.saved();
+              slideout.close({force: true});
+            } else {
+              router.visit(behavior.redirect);
+            }
+          },
         });
 
         return;
@@ -168,6 +207,16 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
 
         return;
       }
+
+      case 'formModal':
+        void openFormModal({
+          modalUrl: behavior.modalUrl,
+          actionUrl: behavior.actionUrl,
+          params: behavior.params,
+          onSubmitted: () => router.reload(),
+        });
+
+        return;
 
       case 'previewFile':
         new Craft.PreviewFileModal(behavior.assetId, behavior.settings ?? {});
@@ -207,17 +256,57 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         return;
 
       case 'editImage':
-        const editorSettings = {
-          allowDegreeFractions: Craft.isImagick,
-        };
-        Object.assign(editorSettings, {
-          onSave: (data: {newAssetId?: number}) => {
-            if (!data.newAssetId) {
-              router.reload();
-            }
-          },
+        void openImageEditorDialog(behavior.settings, (result) => {
+          if (!result.newAssetId) {
+            reload();
+          }
         });
-        new Craft.AssetImageEditor(behavior.assetId, editorSettings);
+    }
+  }
+
+  /** Refreshes what's showing the element: its slideout, or the page. */
+  function reload(): void {
+    if (slideout) {
+      void slideout.reload();
+    } else {
+      router.reload();
+    }
+  }
+
+  /**
+   * Submits an action from inside a slideout, where an Inertia visit would
+   * replace the page behind the panel.
+   *
+   * A destructive action leaves nothing to show, so the panel closes, and the
+   * opener hears of it as a real change. Anything else — validating, say —
+   * may not have changed the element at all, so the opener only refreshes, as
+   * it would for a draft, rather than marking itself as modified; the panel
+   * reloads.
+   */
+  async function submitInSlideout(
+    panel: SlideoutController,
+    actionUrl: string,
+    params: FormValues,
+    destructive: boolean
+  ): Promise<void> {
+    try {
+      const {data} = await actionClient.post(actionUrl, params);
+
+      if (data?.message) {
+        Craft.cp?.displayNotice?.(data.message);
+      }
+
+      panel.saved(destructive ? {data} : {draft: true, data});
+
+      if (destructive) {
+        panel.close({force: true});
+      } else {
+        await panel.reload();
+      }
+    } catch (error: any) {
+      Craft.cp?.displayError?.(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
     }
   }
 
@@ -278,7 +367,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
 
           Craft.cp?.displayNotice?.(t('New file uploaded.'));
           Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
-          router.reload();
+          reload();
         },
         fail: ({error, canceled}) => {
           if (!canceled) {
@@ -306,7 +395,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
               icon: item.icon,
               iconColor: item.color,
               variant: item.destructive ? 'danger' : undefined,
-              onClick: () => dispatch(item.behavior),
+              onClick: () => dispatch(item.behavior, item.destructive),
             }
     );
 }

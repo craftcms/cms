@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Url;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class ElementRedirectController
@@ -18,7 +19,7 @@ readonly class ElementRedirectController
         protected ElementRequest $request
     ) {}
 
-    public function __invoke(): Response|CpScreenResponse
+    public function __invoke(): Response|CpScreenResponse|InertiaResponse
     {
         $id = $this->request->route('id');
         $uid = $this->request->route('uid');

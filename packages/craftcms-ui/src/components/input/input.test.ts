@@ -65,12 +65,22 @@ describe('craft-input', () => {
     await element.updateComplete;
 
     expect(native(element).maxLength).toBe(12);
+    expect(native(element).size).toBe(12);
+  });
+
+  it('keeps an explicit input size over the maxlength', async () => {
+    const element = await createInput({maxlength: '3'});
+    element.inputSize = 8;
+    await element.updateComplete;
+
+    expect(native(element).size).toBe(8);
   });
 
   it('reflects the width override so the stylesheet can act on it', async () => {
     const element = await createInput({maxlength: '4', width: 'full'});
 
     expect(element.getAttribute('width')).toBe('full');
+    expect(native(element).hasAttribute('size')).toBe(false);
   });
 
   /** These are presentation flags the stylesheet keys off, so they reflect. */

@@ -1,17 +1,13 @@
 import {css} from 'lit';
 
 export default css`
+  /* Defaults are fallbacks rather than :host declarations, so ancestors' values inherit. */
   :host {
-    /* Overall size of the thumbnail box. */
-    --c-thumbnail-size: calc(30rem / 16);
-    /* Corner radius applied when [rounded] is set. Defaults to a full circle. */
-    --c-thumbnail-radius: var(--c-radius-full);
-    /* Size of a single checker square. */
-    --c-thumbnail-checker-size: 8px;
-    /* Color of the checker squares. Matches the Craft 5 \`.thumb.checkered\` pattern. */
-    --c-thumbnail-checker-color: hsl(211 13% 65% / 0.25);
-
-    --_checker-half: calc(var(--c-thumbnail-checker-size) / 2);
+    --_size: var(--c-thumbnail-size, calc(30rem / 16));
+    --_checker-size: var(--c-thumbnail-checker-size, 8px);
+    --_checker-color: var(--c-thumbnail-checker-color, hsl(211 13% 65% / 0.25));
+    --_checker-half: calc(var(--_checker-size) / 2);
+    --_image-radius: var(--c-thumbnail-image-radius, 0);
 
     display: contents;
   }
@@ -21,8 +17,8 @@ export default css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--c-thumbnail-size);
-    height: var(--c-thumbnail-size);
+    width: var(--_size);
+    height: var(--_size);
     overflow: clip;
     max-width: 100%;
     max-height: 100%;
@@ -87,28 +83,11 @@ export default css`
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
   .thumbnail--checkered {
     background-image:
-      linear-gradient(
-        45deg,
-        var(--c-thumbnail-checker-color) 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        135deg,
-        var(--c-thumbnail-checker-color) 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        45deg,
-        transparent 75%,
-        var(--c-thumbnail-checker-color) 75%
-      ),
-      linear-gradient(
-        135deg,
-        transparent 75%,
-        var(--c-thumbnail-checker-color) 75%
-      );
-    background-size: var(--c-thumbnail-checker-size)
-      var(--c-thumbnail-checker-size);
+      linear-gradient(45deg, var(--_checker-color) 25%, transparent 25%),
+      linear-gradient(135deg, var(--_checker-color) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--_checker-color) 75%),
+      linear-gradient(135deg, transparent 75%, var(--_checker-color) 75%);
+    background-size: var(--_checker-size) var(--_checker-size);
     background-position:
       0 0,
       var(--_checker-half) 0,
@@ -116,10 +95,27 @@ export default css`
       0 var(--_checker-half);
   }
 
+  .thumbnail--placeholder {
+    background: var(--_placeholder) center / cover no-repeat;
+  }
+
+  .thumbnail--placeholder.thumbnail--stretch {
+    background-size: 100% 100%;
+  }
+
+  .thumbnail__image,
+  .thumbnail__cover,
+  ::slotted(img),
+  ::slotted(svg),
+  .thumbnail--placeholder {
+    border-radius: var(--_image-radius);
+  }
+
   .thumbnail--rounded .thumbnail__image,
   .thumbnail--rounded .thumbnail__cover,
   .thumbnail--rounded ::slotted(img),
-  .thumbnail--rounded ::slotted(svg) {
-    border-radius: var(--c-thumbnail-radius);
+  .thumbnail--rounded ::slotted(svg),
+  .thumbnail--rounded.thumbnail--placeholder {
+    border-radius: var(--c-thumbnail-radius, var(--c-radius-full));
   }
 `;

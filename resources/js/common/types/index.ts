@@ -54,7 +54,8 @@ export interface SectionSiteSettingsData {
   singleHomepage: boolean;
   singleUri: string | null;
   uriFormat: string | null;
-  template: string | null;
+  routeType: 'template' | 'route';
+  route: string | null;
 }
 
 export interface ChipIndicator {
@@ -230,7 +231,7 @@ export type ActionItems = Array<ActionItem>;
 export interface FormSaveOptions {
   redirect?: boolean;
   data?: FormValues;
-  preserveState?: boolean;
+  preserveState?: boolean | 'errors';
 }
 
 export interface EntryType {

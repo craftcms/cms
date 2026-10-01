@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -46,7 +47,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElementCards;
+use CraftCms\Cms\Form\Controls\NestedEntries;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -63,7 +64,9 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -79,6 +82,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
@@ -278,7 +282,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public ?string $propagationKeyFormat = null;
 
     /**
-     * @var array<string,array{uriFormat?:string|null,template?:string|null,errors?:array<string,list<string>>}> Site settings
+     * @var array<string,array{uriFormat?:string|null,template?:string|null,route?:string|null,errors?:array<string,list<string>>}> Site settings
      */
     public array $siteSettings = [];
 
@@ -319,6 +323,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             foreach ($config['siteSettings'] as &$siteSettings) {
                 if (is_array($siteSettings)) {
                     unset($siteSettings['heading']);
+                    if (isset($siteSettings['routeType'])) {
+                        $settings = new ElementSiteSettings;
+                        $settings->applyForm($siteSettings);
+                        unset($siteSettings['routeType']);
+                        $siteSettings = [
+                            ...$siteSettings,
+                            ...Arr::only($settings->toArray(), ['template', 'route']),
+                        ];
+                    }
+                    if (! empty($siteSettings['route'])) {
+                        $siteSettings['route'] = ElementRoute::normalize($siteSettings['route']);
+                        $siteSettings['template'] = null;
+                    }
                 }
             }
             unset($siteSettings);
@@ -332,6 +349,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
             if (($siteSettings['template'] ?? null) === '') {
                 unset($siteSettings['template']);
+            }
+            if (empty($siteSettings['route'])) {
+                unset($siteSettings['route']);
             }
         }
 
@@ -379,6 +399,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'siteSettings' => ['array'],
             'siteSettings.*.uriFormat' => ['nullable', new UriFormatRule],
             'siteSettings.*.template' => ['nullable', 'string', 'max:500'],
+            'siteSettings.*.route' => ['nullable', 'string', 'max:500', new ElementRouteRule],
             'minEntries' => ['nullable', 'integer', 'min:0'],
             'maxEntries' => ['nullable', 'integer', 'min:0'],
             'viewMode' => Rule::in([
@@ -430,12 +451,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $siteSettings = [];
         foreach (Sites::getAllSites() as $site) {
+            $settings = $this->siteSettingsForSite($site->uid)->toForm();
             $siteSettings[$site->uid] = [
                 'heading' => t($site->getName(), category: 'site'),
-                'uriFormat' => $this->siteSettings[$site->uid]['uriFormat'] ?? '',
-                ...(! config('craft.general.headlessMode') ? [
-                    'template' => $this->siteSettings[$site->uid]['template'] ?? '',
-                ] : []),
+                ...(Cms::config()->headlessMode ? Arr::only($settings, ['uriFormat']) : $settings),
             ];
         }
         $siteColumns = [
@@ -449,8 +468,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'textExpanderTriggers' => $entryTemplateTriggers,
             ],
         ];
-        if (! config('craft.general.headlessMode')) {
-            $siteColumns['template'] = ['heading' => t('Template'), 'type' => 'singleline', 'code' => true];
+        if (! Cms::config()->headlessMode) {
+            $siteColumns['route'] = ElementSiteSettings::routeColumn();
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [
@@ -564,8 +583,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function formControl(FieldContext $context): Control
     {
-        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
-            return $this->nestedElementCardsControl($context);
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
+            return $this->nestedEntriesControl($context);
         }
 
         $entryTypes = collect($this->getEntryTypes())
@@ -899,20 +918,32 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $this->_entryTypes;
     }
 
+    private function siteSettingsForSite(string $siteUid): ElementSiteSettings
+    {
+        return new ElementSiteSettings(Arr::only($this->siteSettings[$siteUid] ?? [], ['uriFormat', 'template', 'route']));
+    }
+
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         $site = $element->getSite();
 
-        return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+        return $this->siteSettingsForSite($site->uid)->uriFormat;
     }
 
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         $site = $element->getSite();
+        $settings = $this->siteSettingsForSite($site->uid);
+
+        if ($destination = $settings->route) {
+            return $element->previewing || $element->getStatus() === Entry::STATUS_LIVE
+                ? new ElementRoute($destination)
+                : null;
+        }
 
         return [
             'templates/render', [
-                'template' => $this->siteSettings[$site->uid]['template'] ?? '',
+                'template' => $settings->template ?? '',
                 'variables' => [
                     'entry' => $element,
                 ],
@@ -1492,20 +1523,48 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /** The Cards and Cards Grid view modes manage their entries outside the owner form. */
-    private function nestedElementCardsControl(FieldContext $context): NestedElementCards
+    /** The Cards, Cards Grid, and Index view modes manage their entries outside the owner form. */
+    private function nestedEntriesControl(FieldContext $context): NestedEntries
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
             && $context->form->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
         $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
-        $control = NestedElementCards::make($context->path)
+        $control = NestedEntries::make($context->path)
             ->viewMode($this->viewMode)
             ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => Entry::pluralDisplayName(),
                 'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
             ]));
+
+        if ($this->viewMode === self::VIEW_MODE_INDEX) {
+            $config = $this->entryManager()->getIndexConfig($owner, $config);
+            $data = $this->entryManager()->getIndexData($owner, $config);
+
+            if ($data === null) {
+                return $control;
+            }
+
+            if ($config['static']) {
+                $control->indexHtml($this->entryManager()->getIndexHtml($owner, $config));
+            }
+
+            $index = [
+                'indexSettings' => $data['indexSettings'],
+            ];
+
+            $index['initial'] = EmbeddedIndexViewModel::forOwner(
+                Entry::class,
+                $owner,
+                sprintf('field:%s', $this->handle),
+                $config,
+            )->payload();
+
+            return $control
+                ->manager(Arr::except($data, ['indexSettings']))
+                ->index($index);
+        }
 
         $data = $this->entryManager()->getCardsData($owner, $config);
 
@@ -1611,6 +1670,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function embeddedIndexConfig(ElementInterface $owner, bool $static): array
+    {
+        $value = $owner->getFieldValue((string) $this->handle);
+
+        return $this->entryManager()->getIndexConfig(
+            $owner,
+            $this->nestedElementManagerConfig($value, $owner, $static),
+        );
     }
 
     private function createButtonLabel(): string

@@ -128,6 +128,9 @@ class Field implements Node
         return $this;
     }
 
+    /**
+     * Parses markdown and preserves inline HTML, like {@see tip()} and {@see warning()}.
+     */
     public function instructions(?string $instructions): static
     {
         $this->instructions = $instructions;
@@ -240,6 +243,7 @@ class Field implements Node
             ...Arr::whereNotNull([
                 'labelSrOnly' => $this->labelSrOnly ?: null,
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
+                'instructionsHtml' => $this->noticeHtml($this->instructions),
                 'tip' => $this->tip,
                 'tipHtml' => $this->noticeHtml($this->tip),
                 'warning' => $this->warning,

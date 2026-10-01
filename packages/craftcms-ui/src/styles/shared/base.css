@@ -186,7 +186,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
-  --_cell-spacing-block: 0;
+  --_cell-spacing-block: var(--c-spacing-sm);
   --_row-height: calc(34rem / 16);
   text-align: start;
   width: 100%;
@@ -202,6 +202,19 @@ Modify with `cp-table--auto` to apply table-layout: auto
     background-color: var(--c-surface-default);
   }
 
+  thead,
+  tbody,
+  tfoot {
+    &:not(:last-child) tr,
+    &:last-child tr:not(:last-child) {
+      th,
+      td {
+        border-block-end: 1px solid
+          color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+      }
+    }
+  }
+
   th,
   td {
     padding-block: var(--_cell-spacing-block);
@@ -211,10 +224,12 @@ Modify with `cp-table--auto` to apply table-layout: auto
     overflow: hidden;
     text-overflow: ellipsis;
     width: 0;
-    border-block-end: 1px solid
-      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
 
-    &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
+    &:has(
+      .cp-table-input:not([type='checkbox']):not([type='radio']):not(
+        craft-switch
+      )
+    ) {
       padding: 0;
     }
   }
@@ -225,6 +240,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   th {
     height: calc(var(--_row-height) * 0.8);
+  }
+
+  tbody th {
+    text-align: inherit;
   }
 
   /* Add a rule to the first cells */
@@ -253,9 +272,11 @@ Modify with `cp-table--auto` to apply table-layout: auto
 }
 
 .cp-table--editable {
+  --_input-padding-inline: 10px;
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
+  margin-block-end: var(--c-spacing-md);
 
   thead,
   th {
@@ -264,7 +285,9 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   th {
     font-size: var(--c-text-sm);
-    padding: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_input-padding-inline);
+    text-align: inherit;
   }
 
   td {
@@ -275,6 +298,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
     padding: var(--c-spacing-sm);
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  td.select-cell {
+    padding-inline: var(--_input-padding-inline);
   }
 
   /* Compat */
@@ -301,7 +328,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
     box-shadow: none;
     border-radius: 0;
     padding-block: 7px;
-    padding-inline: 10px;
+    padding-inline: var(--_input-padding-inline);
     line-height: 20px;
     background-color: transparent;
     overflow: hidden;
