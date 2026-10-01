@@ -78,6 +78,8 @@ readonly class PasskeysController
 
     public function delete(Request $request): Response
     {
+        $this->requireConfirmedPassword();
+
         $uid = $request->validate([
             'uid' => ['required', 'string'],
         ])['uid'];
