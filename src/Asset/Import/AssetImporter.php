@@ -289,13 +289,12 @@ class AssetImporter extends ElementImporter
                 // if it's an absolute URL, we need to download the file to a temp location
                 $tempPath = AssetsHelper::tempFilePath($extension);
                 try {
-                    AssetsHelper::downloadUrl($attributes['tempFilePath'], $tempPath);
+                    AssetsHelper::downloadUrl(self::urlValidator(), $attributes['tempFilePath'], $tempPath);
                     $attributes['tempFilePath'] = $tempPath;
                 } catch (Exception $e) {
                     // log error
                     ImportLog::warning("Couldn't download a file while importing an asset: ".$e->getMessage());
                 }
-                // todo (iwona): what about base64 - feed me supports it, but do we want it for the native import?
             }
         }
 

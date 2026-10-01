@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -23,12 +24,9 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
-use GuzzleHttp\RequestOptions;
-use GuzzleHttp\TransferStats;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\File;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
@@ -425,7 +423,7 @@ abstract class BaseImporter
         $tempPath = $directory.DIRECTORY_SEPARATOR.Str::uuid()->toString();
 
         try {
-            $response = self::fetchUrl($url, $tempPath);
+            $response = AssetsHelper::downloadUrl(self::urlValidator(), $url, $tempPath);
         } catch (Throwable $e) {
             @unlink($tempPath);
 
@@ -476,43 +474,6 @@ abstract class BaseImporter
         } finally {
             @unlink($filePath);
         }
-    }
-
-    /**
-     * Downloads a URL to the given path, pinning the connection to the IPs the URL was validated against.
-     *
-     * @throws InvalidArgumentException
-     */
-    private static function fetchUrl(string $url, string $destination): Response
-    {
-        $urlValidator = static::urlValidator();
-
-        // validate the URL and resolve it to a known-good set of IPs before opening any connection (guards against SSRF and DNS rebinding)
-        try {
-            $ips = $urlValidator->validate($url);
-        } catch (UrlValidationException $e) {
-            throw new InvalidArgumentException("$url is invalid.", previous: $e);
-        }
-
-        $host = parse_url($url, PHP_URL_HOST);
-        $port = parse_url($url, PHP_URL_PORT)
-            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
-
-        return Http::create()->withOptions([
-            RequestOptions::ALLOW_REDIRECTS => false,
-            RequestOptions::SINK => $destination,
-            // pin the connection to the validated IPs, so cURL doesn't re-resolve the hostname to a different address
-            'curl' => [
-                CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
-            ],
-            RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
-                // validate the IP, in case the cURL handler isn't in use (so CURLOPT_RESOLVE was ignored)
-                $ip = $stats->getHandlerStat('primary_ip');
-                if ($ip && ! $urlValidator->validateIp($ip)) {
-                    throw new InvalidArgumentException("$url is invalid.");
-                }
-            },
-        ])->get($url)->throw();
     }
 
     /**

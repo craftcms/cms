@@ -8,12 +8,14 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
+use CraftCms\UrlValidator\UrlValidator;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     Cms::setIsInstalled(false);
+    $this->urlValidator = new UrlValidator;
 });
 
 describe('prepareAssetName', function () {
@@ -515,7 +517,7 @@ describe('downloadUrl', function () {
     test('throws for a URL with a disallowed hostname, without making a request', function () {
         Http::fake();
 
-        expect(fn () => AssetsHelper::downloadUrl('http://127.0.0.1/file.txt', AssetsHelper::tempFilePath()))
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://127.0.0.1/file.txt', AssetsHelper::tempFilePath()))
             ->toThrow(InvalidArgumentException::class);
 
         Http::assertNothingSent();
@@ -524,7 +526,7 @@ describe('downloadUrl', function () {
     test('throws for a URL with an invalid scheme, without making a request', function () {
         Http::fake();
 
-        expect(fn () => AssetsHelper::downloadUrl('file:///etc/passwd', AssetsHelper::tempFilePath()))
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'file:///etc/passwd', AssetsHelper::tempFilePath()))
             ->toThrow(InvalidArgumentException::class);
 
         Http::assertNothingSent();
@@ -537,7 +539,7 @@ describe('downloadUrl', function () {
 
         $tempPath = AssetsHelper::tempFilePath();
 
-        AssetsHelper::downloadUrl('http://example.com/file.txt', $tempPath);
+        AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/file.txt', $tempPath);
 
         expect(file_get_contents($tempPath))->toBe('hello from the internet');
     });
@@ -547,7 +549,7 @@ describe('downloadUrl', function () {
             'example.com/*' => Http::response('not found', 404),
         ]);
 
-        expect(fn () => AssetsHelper::downloadUrl('http://example.com/missing.txt', AssetsHelper::tempFilePath()))
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/missing.txt', AssetsHelper::tempFilePath()))
             ->toThrow(RequestException::class);
     });
 });

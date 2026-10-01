@@ -30,6 +30,7 @@ use GuzzleHttp\RequestOptions;
 use GuzzleHttp\TransferStats;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
@@ -584,10 +585,8 @@ class AssetsHelper
      *
      * @throws InvalidArgumentException if the connection still resolves to a disallowed IP
      */
-    public static function downloadUrl(string $url, string $tempPath): void
+    public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath): Response
     {
-        $urlValidator = new UrlValidator;
-
         // Validate the URL and resolve it to a known-good set of IPs *before*
         // opening any connection (guards against SSRF + DNS rebinding).
         try {
@@ -600,7 +599,7 @@ class AssetsHelper
         $port = parse_url($url, PHP_URL_PORT)
             ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
 
-        Http::create()->withOptions([
+        return Http::create()->withOptions([
             RequestOptions::ALLOW_REDIRECTS => false,
             RequestOptions::SINK => $tempPath,
             // Pin the connection to the IPs we already validated, so cURL doesn’t
