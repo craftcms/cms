@@ -4,6 +4,8 @@
 
 - Brought back users’ gradient-based default avatars.
 - Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
+- Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
+- Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 
@@ -154,8 +156,6 @@
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Removed `CraftCms\Cms\Support\Url::baseUrl()`, `cpHost()`, `encodeParams()`, `host()`, `isFullUrl()`, `removeParams()`, and `rootRelativeUrl()`. (They remain available on `craft\helpers\UrlHelper` through the Yii adapter.) ([#19724](https://github.com/craftcms/cms/pull/19724))
 - Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
-- Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips.
-- Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update.
 - Added `CraftCms\Cms\Support\Flash::all()`, `make()`, and `push()`, and a `$target` argument to `Flash::success()`, `error()`, and `notice()` for showing a message in an inline outlet rather than the default message display.
 - Added the `messages` Inertia shared prop, which carries every flashed control panel message with its type, settings, and id.
 - Added `useMessages()` and `useMessageOutlet()` for showing control panel messages from Vue, and the `craft-message` window event for showing them from anywhere else.
