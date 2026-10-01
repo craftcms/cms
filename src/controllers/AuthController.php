@@ -247,6 +247,7 @@ class AuthController extends Controller
         $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
+        $this->requireElevatedSession();
 
         $uid = $this->request->getRequiredBodyParam('uid');
         Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);

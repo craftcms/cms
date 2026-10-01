@@ -156,6 +156,19 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
+        if (!is_array($headers)) {
+            throw new BadRequestHttpException('Invalid headers.');
+        }
+
+        // Only admins can relay headers that write license keys or affect trial licensing
+        if (!Craft::$app->getUser()->getIsAdmin()) {
+            $headers = array_filter($headers, fn($name) => !in_array(strtolower((string)$name), [
+                'x-craft-allow-trials',
+                'x-craft-license',
+                'x-craft-plugin-licenses',
+            ], true), ARRAY_FILTER_USE_KEY);
+        }
+
         Api::processResponseHeaders($headers);
 
         // return the updated headers

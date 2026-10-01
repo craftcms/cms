@@ -29,6 +29,7 @@ use DirectoryIterator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use SimpleXMLElement;
+use stdClass;
 use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -1276,7 +1277,7 @@ class ExtensionTest extends TestCase
             $this->expectExceptionMessage(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
-        $result = $this->view->renderString('{{ create(class) ? "created" : "not created" }}', compact('class'));
+        $result = trim($this->view->renderTemplate('create.twig', compact('class'), View::TEMPLATE_MODE_SITE));
 
         if ($allowed) {
             self::assertSame('created', $result);
@@ -1316,7 +1317,78 @@ class ExtensionTest extends TestCase
             // which extends FilesystemIterator, which extends DirectoryIterator, so is_a()'s
             // ancestry walk already denies them via the DirectoryIterator entry above.
             'PharData (via DirectoryIterator ancestry)' => [false, \PharData::class],
+            // File-writing classes
+            'XMLWriter' => [false, \XMLWriter::class],
+            'ZipArchive' => [false, \ZipArchive::class],
+            'SQLite3' => [false, \SQLite3::class],
+            // *Iterator classes
+            'ArrayIterator' => [false, \ArrayIterator::class],
         ];
+    }
+
+    /**
+     * @dataProvider createFunctionInStringTemplateDataProvider
+     */
+    public function testCreateFunctionInStringTemplate(callable $render): void
+    {
+        $this->expectException(RuntimeError::class);
+        $this->expectExceptionMessage('create() cannot be used in string or object templates.');
+        $render($this->view);
+    }
+
+    /**
+     * @return array
+     */
+    public function createFunctionInStringTemplateDataProvider(): array
+    {
+        $create = '{{ create("stdClass") ? "created" : "not created" }}';
+
+        return [
+            'renderString()' => [
+                fn(View $view) => $view->renderString($create),
+            ],
+            'renderSandboxedString() with the sandbox disabled' => [
+                function(View $view) use ($create) {
+                    $generalConfig = Craft::$app->getConfig()->getGeneral();
+                    $generalConfig->enableTwigSandbox = false;
+                    try {
+                        $view->renderSandboxedString($create);
+                    } finally {
+                        $generalConfig->enableTwigSandbox = true;
+                    }
+                },
+            ],
+            'renderObjectTemplate()' => [
+                fn(View $view) => $view->renderObjectTemplate($create, new stdClass()),
+            ],
+            'renderObjectTemplate() with XMLWriter' => [
+                fn(View $view) => $view->renderObjectTemplate('{% set w = create("XMLWriter") %}', new stdClass()),
+            ],
+            'renderObjectTemplate() with a config array' => [
+                fn(View $view) => $view->renderObjectTemplate('{{ create({class: "stdClass"}) ? "created" }}', new stdClass()),
+            ],
+            'file template included from a string template' => [
+                fn(View $view) => $view->renderString('{% include "create.twig" %}', ['class' => stdClass::class], View::TEMPLATE_MODE_SITE),
+            ],
+            'object template nested in a string template' => [
+                fn(View $view) => $view->renderString('{{ view.renderObjectTemplate(t, o) }}', [
+                    'view' => $view,
+                    't' => $create,
+                    'o' => new stdClass(),
+                ]),
+            ],
+        ];
+    }
+
+    public function testCreateFunctionAfterStringTemplate(): void
+    {
+        try {
+            $this->view->renderObjectTemplate('{{ create("stdClass") }}', new stdClass());
+        } catch (RuntimeError) {
+        }
+
+        self::assertFalse($this->view->getIsRenderingStringTemplate());
+        self::assertSame('created', trim($this->view->renderTemplate('create.twig', ['class' => stdClass::class], View::TEMPLATE_MODE_SITE)));
     }
 
     /**

@@ -1459,7 +1459,7 @@ class App
                 $editions = $plugin::editions();
                 $currentEdition = $pluginInfo['edition'];
                 $currentEditionName = ucfirst($currentEdition);
-                $licenseEditionName = ucfirst($licenseInfo['edition'] ?? 'standard');
+                $licenseEditionName = Html::encode(ucfirst($licenseInfo['edition'] ?? 'standard'));
                 $version = $pluginInfo['version'];
             }
 
@@ -1499,7 +1499,7 @@ class App
                     $request = Craft::$app->getRequest();
                     if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
                         $licensedDomain = $cache->get('licensedDomain');
-                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                        $domainLink = Html::a(Html::encode($licensedDomain), "http://$licensedDomain", [
                             'rel' => 'noopener',
                             'target' => '_blank',
                         ]);
@@ -1534,7 +1534,7 @@ class App
                         $name,
                         Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
                             'name' => $name,
-                            'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                            'detachUrl' => "$consoleUrl/licenses/plugins/" . (int)$licenseInfo['id'],
                             'buyUrl' => Craft::$app->getUser()->getIsAdmin() && $generalConfig->allowAdminChanges
                                 ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
                                 : "https://plugins.craftcms.com/$handle",

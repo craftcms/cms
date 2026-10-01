@@ -303,7 +303,7 @@ class ImageTransforms
         if (is_array($transform)) {
             $transform = Component::cleanseConfig($transform);
 
-            if (isset($transform['class'])) {
+            if (array_key_exists('class', $transform) || array_key_exists('__class', $transform)) {
                 throw new InvalidArgumentException('Invalid transform config.');
             }
 
@@ -333,8 +333,8 @@ class ImageTransforms
             }
 
             return Craft::createObject([
-                'class' => ImageTransform::class,
                 ...$transform,
+                'class' => ImageTransform::class,
             ]);
         }
 

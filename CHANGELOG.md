@@ -1,7 +1,10 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.4 - 2026-10-01
 
+- Added `craft\services\Users::destroyOtherSessions()`.
+- Setting up a two-step verification method now destroys the user’s other sessions.
+- Deleting a passkey now requires an elevated session.
 - Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
 - Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
 - Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
@@ -14,6 +17,10 @@
 - Fixed an error that could occur when running the `setup/php-session-table` and `setup/db-cache-table` commands. ([#19742](https://github.com/craftcms/cms/pull/19742))
 - Fixed an infinite loop that could occur when editing nested Matrix entries in Blocks view. ([#19756](https://github.com/craftcms/cms/issues/19756))
 - Fixed a bug where filtering elements by textual params or conditions could only work if the param/condition value was all-lowercase. ([#19781](https://github.com/craftcms/cms/issues/19781))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-hq78-cm2m-h24h)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-6m9q-c5q4-3732)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-j2r3-x468-c6j5)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-q2rx-mr36-8rh5)
 
 ## 5.11.3 - 2026-09-18
 

@@ -2687,11 +2687,7 @@ JS, [
 
         if (!$isNew && $changePassword) {
             // Destroy all other sessions for this user
-            $condition = ['userId' => $this->id];
-            if ($this->getIsCurrent() && $token = Craft::$app->getUser()->getToken()) {
-                $condition = ['and', $condition, ['not', ['token' => $token]]];
-            }
-            Db::delete(Table::SESSIONS, $condition);
+            Craft::$app->getUsers()->destroyOtherSessions($this);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
