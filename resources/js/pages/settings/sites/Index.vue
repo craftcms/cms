@@ -18,7 +18,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -259,7 +258,7 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
+  <div class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -286,7 +285,7 @@
         </craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 
   <ModalForm
     :is-active="modalActive"
