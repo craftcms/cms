@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
@@ -212,6 +213,17 @@ class PerformElementActionController
                 : null;
         }
 
-        return $this->asSuccess($result['message'], $responseData);
+        return $this->asSuccess($result['message'], $responseData, $this->actionRedirect($action));
+    }
+
+    /**
+     * Where an action that sends the user elsewhere set its response to
+     * redirect to.
+     */
+    private function actionRedirect(ElementActionInterface $action): ?string
+    {
+        $response = $action->getResponse();
+
+        return $response?->isRedirect() ? $response->headers->get('Location') : null;
     }
 }

@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function Pest\Laravel\actingAs;
@@ -151,6 +152,34 @@ it('returns native Laravel download responses for download actions', function ()
 
     expect($response->headers->get('content-disposition'))->toContain('entries.txt')
         ->and($response->getContent())->toBe('downloaded');
+});
+
+it('passes a redirecting action response on as the JSON redirect', function () {
+    $entry = EntryModel::factory()->createElement();
+
+    $action = new class extends ElementAction
+    {
+        public function performAction(ElementQueryInterface $query): bool
+        {
+            $this->setResponse(new RedirectResponse('https://example.test/somewhere'));
+
+            return true;
+        }
+    };
+
+    Event::listen(function (ElementActionsResolving $event) use ($action) {
+        if ($event->elementType === Entry::class) {
+            $event->actions[] = clone $action;
+        }
+    });
+
+    ($this->performElementAction)([
+        'elementType' => Entry::class,
+        'elementAction' => $action::class,
+        'elementIds' => [$entry->id],
+    ])
+        ->assertOk()
+        ->assertJsonPath('redirect', 'https://example.test/somewhere');
 });
 
 it('includes exporter metadata in the refreshed element response', function () {
