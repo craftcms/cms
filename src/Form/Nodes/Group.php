@@ -49,6 +49,8 @@ class Group extends Container
 
     private bool $collapsible = false;
 
+    private bool $expanded = false;
+
     private bool $asField = false;
 
     private bool $required = false;
@@ -87,6 +89,7 @@ class Group extends Container
         if ($node->props['collapsible'] ?? false) {
             return Html::tag('craft-disclosure', $children->toHtml(), [
                 'label' => $label,
+                'opened' => $node->props['expanded'] ?? false,
                 ...$attributes,
             ]);
         }
@@ -111,6 +114,14 @@ class Group extends Container
     public function collapsible(bool $collapsible = true): static
     {
         $this->collapsible = $collapsible;
+
+        return $this;
+    }
+
+    /** Section appearance only; ignored unless the group is {@see self::collapsible()}. */
+    public function expanded(bool $expanded = true): static
+    {
+        $this->expanded = $expanded;
 
         return $this;
     }
@@ -194,6 +205,7 @@ class Group extends Container
         return [
             'label' => $this->label,
             ...($this->collapsible && ! $this->asField ? ['collapsible' => true] : []),
+            ...($this->collapsible && ! $this->asField && $this->expanded ? ['expanded' => true] : []),
             ...($this->asField ? ['asField' => true] : []),
             ...($this->asField && $this->required ? ['required' => true] : []),
             ...Arr::whereNotNull([
