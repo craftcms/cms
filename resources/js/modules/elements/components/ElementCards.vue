@@ -227,6 +227,7 @@
     gap: var(--c-spacing-md);
     align-items: stretch;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    margin-block: var(--c-spacing-md);
   }
 
   // One card per row, however wide the container gets.
