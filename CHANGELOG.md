@@ -54,6 +54,7 @@
 - Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
 - Fixed a bug where Shift-selecting a shorter range didn’t deselect items outside the new range. ([#19727](https://github.com/craftcms/cms/pull/19727))
 - Fixed a bug where select inputs could lose their selected value if their options were loaded asynchronously. ([#19728](https://github.com/craftcms/cms/pull/19728))
+- Fixed a bug where card designer previews could fail to render because the preview request omitted the element type. ([#19776](https://github.com/craftcms/cms/pull/19776))
 - Fixed a bug where reactive controls in element editors didn’t refresh their field layouts, including nested form scopes. ([#19769](https://github.com/craftcms/cms/pull/19769))
 
 ### Assets
