@@ -11,7 +11,7 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
-@import './notifications.css';
+@import './messages.css';
 @import './slideout.css';
 
 :root {
@@ -48,15 +48,26 @@ CP Styles
     var(--workspace-bg-image);
 }
 
-/* Laravel Debugbar pins its header row to the bottom of the viewport, and a
-   closed bar leaves its restore button there. Its open height is set inline
-   and isn't matched here. */
+/* Laravel Debugbar pins its header row to the bottom of the viewport. This is
+   its collapsed height, until PageScreen measures the bar itself. */
 :root:has(.phpdebugbar) {
   --cp-debug-bar-height: calc(33rem / 16);
 }
 
 .skip-link--global {
   z-index: calc(var(--cp-sidebar-z-index) + 1);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 html,
@@ -142,6 +153,10 @@ Sidebar metadata
   display: grid;
   gap: var(--c-spacing-xs);
   align-items: baseline;
+}
+
+.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+  align-items: center;
 }
 
 /* Roughly 250px */

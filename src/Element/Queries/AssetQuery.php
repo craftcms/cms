@@ -26,6 +26,8 @@ use function CraftCms\Cms\currentUser;
 
 /**
  * @extends ElementQuery<Asset>
+ *
+ * @since 6.0.0
  */
 class AssetQuery extends ElementQuery
 {
@@ -77,6 +79,7 @@ class AssetQuery extends ElementQuery
             'assets.height as height',
             'assets.size as size',
             'assets.focalPoint as focalPoint',
+            'assets.colors as colors',
             'assets.keptFile as keptFile',
             'assets.dateModified as dateModified',
             'assets.mimeType as mimeType',

@@ -9,6 +9,9 @@ use CraftCms\Cms\Shared\BasePivot;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class ElementSiteSettings extends BasePivot
 {
     #[\Override]

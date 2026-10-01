@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Database;
 
 /**
  * This class provides constants for defining Craft’s database table names.
+ *
+ * @since 6.0.0
  */
 readonly class Table
 {

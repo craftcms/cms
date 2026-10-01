@@ -31,6 +31,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
+ *
+ * @since 6.0.0
  */
 class Range extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

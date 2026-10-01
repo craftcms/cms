@@ -45,8 +45,9 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from '../FormNodeList.vue';
   import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
+  import {isPasteable} from './nested-entries';
   import type {ActionItems} from '@/common/types';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import {
     NESTED_ELEMENT_UID_PREFIX,
     type FormChange,
@@ -191,7 +192,7 @@
   function block(uid: string): BlockPresentation | undefined {
     return props.control.props.blocks?.[uid] ?? createdBlocks.value.get(uid);
   }
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   const adding = ref<string | null>(null);
   const pasting = ref(false);
   /** Whether the server is mid-flight on a block, so nothing else starts one. */
@@ -249,13 +250,12 @@
       return [];
     }
 
-    const typeIds = new Set(Object.values(create.entryTypeIds));
-    const fits = elements.every(
-      (element) =>
-        element.type === elementType &&
-        typeof element.data?.entryTypeId === 'number' &&
-        typeIds.has(element.data.entryTypeId)
-    );
+    const fits = isPasteable(elements, {
+      elementType,
+      entryTypeIds: Object.values(create.entryTypeIds),
+      room: true,
+      requireEntryTypeId: true,
+    });
 
     return fits ? elements : [];
   });
@@ -602,8 +602,7 @@
 
       await insertBlocks([data], index);
     } catch (error) {
-      flash(
-        'error',
+      messages.error(
         duplicate === undefined
           ? t('Couldn’t create {type}.', {type: t('entry')})
           : t('Couldn’t duplicate {type}.', {type: t('entry')})
@@ -711,7 +710,7 @@
 
       await insertBlocks(data.blocks, index);
     } catch (error) {
-      flash('error', t('Couldn’t paste {type}.', {type: t('entries')}));
+      messages.error(t('Couldn’t paste {type}.', {type: t('entries')}));
       throw error;
     } finally {
       pasting.value = false;

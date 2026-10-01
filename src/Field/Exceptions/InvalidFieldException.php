@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Field\Exceptions;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidFieldException extends RuntimeException
 {
     public function __construct(

@@ -8,6 +8,8 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
 /**
  * @event WidgetSaved The event that is triggered after a widget is saved.
+ *
+ * @since 6.0.0
  */
 readonly class WidgetSaved
 {

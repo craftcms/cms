@@ -9,6 +9,9 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class IdentityResolver implements ResolvesOAuthIdentity
 {
     public function handle(ProviderDefinition $provider, SocialiteUser $socialiteUser): string

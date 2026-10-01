@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  * @event EntryMetaFieldsResolving The event that is triggered when defining the meta fields.
  *
  * @see Entry::metaFieldsHtml()
+ * @since 6.0.0
  */
 class EntryMetaFieldsResolving
 {

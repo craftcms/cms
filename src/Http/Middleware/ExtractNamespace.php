@@ -8,6 +8,9 @@ use Closure;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ExtractNamespace
 {
     public function handle(Request $request, Closure $next): mixed

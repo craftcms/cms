@@ -10,6 +10,8 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
  * @event PreviewHandlerResolving The event that is triggered when determining the preview handler for an asset.
+ *
+ * @since 6.0.0
  */
 class PreviewHandlerResolving
 {

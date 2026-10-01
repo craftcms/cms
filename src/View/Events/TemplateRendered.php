@@ -8,6 +8,8 @@ use CraftCms\Cms\View\TemplateMode;
 
 /**
  * @event TemplateRendered The event that is triggered after a template is rendered
+ *
+ * @since 6.0.0
  */
 class TemplateRendered
 {

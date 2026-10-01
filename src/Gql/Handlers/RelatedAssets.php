@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Gql\Handlers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RelatedAssets extends RelationArgumentHandler
 {
     #[Override]

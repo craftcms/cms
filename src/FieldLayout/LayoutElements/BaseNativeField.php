@@ -13,6 +13,8 @@ use Override;
  * BaseNativeField is the base class for native fields that can be included in field layouts.
  *
  * Native fields can be registered using {@see NativeFields}.
+ *
+ * @since 6.0.0
  */
 abstract class BaseNativeField extends BaseField
 {

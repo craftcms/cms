@@ -21,12 +21,17 @@ use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\NestedElementCard;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -42,6 +47,9 @@ use RuntimeException;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementHtml
 {
@@ -89,6 +97,7 @@ readonly class ElementHtml
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
         $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
+        $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
@@ -99,6 +108,7 @@ readonly class ElementHtml
                 ...Html::explodeClass($config['class']),
             ],
             'show-thumb' => $thumbHtml !== null,
+            'icon' => $icon,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
@@ -135,6 +145,10 @@ readonly class ElementHtml
 
         if ($thumbHtml !== null) {
             $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
+        }
+
+        if ($icon !== null) {
+            $html .= Icon::make()->name($icon)->slot('icon');
         }
 
         if ($config['selectable']) {
@@ -228,25 +242,33 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns a chip’s thumbnail or icon HTML, or `null` if the component doesn’t have one.
+     * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
     private function chipThumbHtml(Chippable $component, string $size): ?string
     {
-        if ($component instanceof Thumbable) {
-            $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
-
-            return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        if (! $component instanceof Thumbable) {
+            return null;
         }
 
-        if ($component instanceof Iconic) {
-            $icon = $component->getIcon();
+        $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
 
-            if ($icon || $icon === '0') {
-                return (string) Icon::make()->name($icon)->slot('icon');
-            }
+        return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+    }
+
+    /**
+     * Returns a chip’s icon name, or `null` if the component doesn’t have one.
+     *
+     * Thumbable components show their thumbnail instead.
+     */
+    private function chipIcon(Chippable $component): ?string
+    {
+        if ($component instanceof Thumbable || ! $component instanceof Iconic) {
+            return null;
         }
 
-        return null;
+        $icon = $component->getIcon();
+
+        return $icon || $icon === '0' ? $icon : null;
     }
 
     /**
@@ -413,7 +435,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedCardAction($element, 'copy');
+                $item['action'] = $this->nestedElementAction($element, Copy::class);
             }
         }
         unset($item);
@@ -473,6 +495,38 @@ readonly class ElementHtml
             $contentHtml.
             $footerHtml.
             Html::endTag('craft-card');
+    }
+
+    /**
+     * Builds the card parts consumed by the shared card renderer.
+     *
+     * @param  array<string, mixed>  $config
+     * @return array{
+     *     cardAttributes: array<string, mixed>,
+     *     cardHeaderHtml: string,
+     *     cardActionsHtml: string,
+     *     cardContentHtml: string,
+     *     cardFooterHtml: string,
+     *     cardThumbHtml: string,
+     *     thumbAlignment: 'start'|'end',
+     * }
+     */
+    public function elementCardData(ElementInterface $element, array $config = []): array
+    {
+        $config = $this->normalizeCardConfig($element, [
+            ...$config,
+            'withThumb' => false,
+        ]);
+
+        return [
+            'cardAttributes' => $this->elementCardAttributes($element, $config),
+            'cardHeaderHtml' => $this->elementCardLabelHtml($element, $config),
+            'cardActionsHtml' => $this->elementCardActionsHtml($element, $config),
+            'cardContentHtml' => $this->elementCardContentHtml($element, $config),
+            'cardFooterHtml' => $this->elementCardFooterHtml($element, $config),
+            'cardThumbHtml' => $this->elementCardThumbHtml($element),
+            'thumbAlignment' => $this->elementCardThumbAlignment($element),
+        ];
     }
 
     private function cardTitlebarHtml(string $labelHtml, string $actionsHtml, ?string $checkboxCardId): string
@@ -786,7 +840,7 @@ readonly class ElementHtml
             $item = [
                 'icon' => 'clone',
                 'label' => t('Duplicate'),
-                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'duplicate') : null,
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedElementAction($element, Duplicate::class) : null,
                 'attributes' => [
                     'data' => ['duplicate-action' => true],
                 ],
@@ -812,7 +866,7 @@ readonly class ElementHtml
                     'type' => $element::lowerDisplayName(),
                 ])),
                 'destructive' => true,
-                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'delete') : null,
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedElementAction($element, Delete::class) : null,
                 'attributes' => [
                     'data' => ['delete-action' => true],
                 ],
@@ -865,9 +919,43 @@ readonly class ElementHtml
     }
 
     /**
-     * Builds the HTML attributes for the outer `.card` element.
+     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
+    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    {
+        $elementActions = app(ElementActions::class);
+        $item = $elementActions->serializeActionItems([
+            $elementActions->createAction($actionClass, $element::class),
+        ])[0];
+
+        if ($actionClass === Copy::class) {
+            $item['action']['detail']['elements'] = [[
+                'type' => $element::class,
+                'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
+                'siteId' => $element->siteId,
+                'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+                'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
+                'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
+                'revisionId' => $element->revisionId,
+                ...($element instanceof Entry ? ['data' => ['entryTypeId' => $element->typeId]] : []),
+            ]];
+        }
+
+        return [
+            'type' => 'event',
+            'name' => 'craft:nested-element-action',
+            'detail' => [
+                'action' => 'element-action',
+                'elementId' => $element->id,
+                'item' => $item,
+            ],
+        ];
+    }
+
     /**
+     * Builds the HTML attributes for the outer `.card` element.
+     *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
@@ -966,6 +1054,7 @@ readonly class ElementHtml
     {
         $user = currentUser();
         $editable = $user && $user->can('view', $element);
+        $capabilities = $this->elementCapabilities($element, $config['context']);
 
         return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),
@@ -995,10 +1084,10 @@ readonly class ElementHtml
                     'trashed' => $element->trashed,
                     'editable' => $editable,
                     'savable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('save', $element),
-                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicate', $element),
+                    'duplicatable' => $capabilities['duplicatable'],
                     'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicateAsDraft', $element),
-                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('copy', $element),
-                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('delete', $element),
+                    'copyable' => $capabilities['copyable'],
+                    'deletable' => $capabilities['deletable'],
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
@@ -1008,6 +1097,20 @@ readonly class ElementHtml
                 ]),
             ],
         );
+    }
+
+    /** @return array{copyable: bool, duplicatable: bool, deletable: bool} */
+    public function elementCapabilities(ElementInterface $element, string $context): array
+    {
+        $user = currentUser();
+        $editable = $user && $user->can('view', $element);
+        $administrative = $this->contextIsAdministrative($context);
+
+        return [
+            'copyable' => $editable && $administrative && Gate::check('copy', $element),
+            'duplicatable' => $editable && $administrative && Gate::check('duplicate', $element),
+            'deletable' => $editable && $administrative && Gate::check('delete', $element),
+        ];
     }
 
     public function elementOwnerIsCanonical(ElementInterface $element): bool

@@ -32,6 +32,8 @@ use function CraftCms\Cms\template;
 
 /**
  * PlainText represents a Plain Text field.
+ *
+ * @since 6.0.0
  */
 class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

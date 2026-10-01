@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Illuminate\Container\Attributes\Scoped;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class CurrentElementIndex
 {

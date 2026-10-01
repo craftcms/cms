@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ApiController
 {
     public function __construct(

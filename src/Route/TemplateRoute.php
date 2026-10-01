@@ -11,6 +11,9 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class TemplateRoute
 {
     /**

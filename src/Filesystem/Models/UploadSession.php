@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed> $state
  * @property array<string, mixed>|null $result
  * @property Carbon $expiresAt
+ *
+ * @since 6.0.0
  */
 class UploadSession extends BaseModel
 {

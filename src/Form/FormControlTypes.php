@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\ColorSelect;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\ContentBlock;
@@ -29,7 +30,7 @@ use CraftCms\Cms\Form\Controls\Markdown;
 use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElementCards;
+use CraftCms\Cms\Form\Controls\NestedEntries;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
@@ -45,6 +46,8 @@ use Illuminate\Container\Attributes\Singleton;
  * Registers Control type classes available to Control Panel Forms.
  *
  * @extends TypeRegistry<Control>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class FormControlTypes extends TypeRegistry
@@ -58,6 +61,7 @@ class FormControlTypes extends TypeRegistry
         Choice::class,
         ConditionBuilder::class,
         Color::class,
+        ColorSelect::class,
         Combobox::class,
         ContentBlock::class,
         Date::class,
@@ -75,7 +79,7 @@ class FormControlTypes extends TypeRegistry
         Missing::class,
         Money::class,
         NestedElementBlocks::class,
-        NestedElementCards::class,
+        NestedEntries::class,
         Number::class,
         PermissionTree::class,
         Range::class,

@@ -9,6 +9,9 @@ use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * @since 6.0.0
+ */
 class UserPasswordViewModel extends ViewModel
 {
     public function __construct(

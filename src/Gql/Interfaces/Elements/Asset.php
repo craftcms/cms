@@ -13,13 +13,18 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
+use CraftCms\Cms\Gql\Types\Generators\ImageColorsType;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class Asset extends Element
 {
     #[Override]
@@ -93,6 +98,21 @@ class Asset extends Element
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
                 'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
+            ],
+            'colors' => [
+                'name' => 'colors',
+                'type' => ImageColorsType::generateType(null),
+                'description' => 'Color data sampled from the image, or null if it’s not an image or it hasn’t been sampled yet.',
+            ],
+            'blurhash' => [
+                'name' => 'blurhash',
+                'type' => Type::string(),
+                'description' => 'A [BlurHash](https://blurha.sh) string encoded from the image’s colors, or null if it’s not an image or its colors aren’t known.',
+            ],
+            'placeholderDataUrl' => [
+                'name' => 'placeholderDataUrl',
+                'type' => Type::string(),
+                'description' => 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.',
             ],
             'kind' => [
                 'name' => 'kind',

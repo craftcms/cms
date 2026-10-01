@@ -15,6 +15,9 @@ use Symfony\Component\Filesystem\Filesystem;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * @since 6.0.0
+ */
 class BackupCommand extends Command
 {
     use CraftCommand;

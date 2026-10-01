@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Data\UserSettings;
 use CraftCms\Cms\User\Elements\User;
@@ -29,6 +31,9 @@ use CraftCms\Cms\User\UserGroups;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserSettingsViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */
@@ -158,22 +163,28 @@ class UserSettingsViewModel extends ViewModel
         ];
     }
 
-    /** @return list<array{label: string, value: string, data?: array{addOption: bool}}> */
+    /** @return list<array{label: string, value: string}|ComboboxCreateOption> */
     private function photoVolumeOptions(): array
     {
-        return $this->volumes->getAllVolumes()
+        $options = $this->volumes->getAllVolumes()
             ->map(fn (Volume $volume): array => [
                 'label' => $volume->name,
                 'value' => (string) $volume->uid,
             ])
             ->sortBy('label')
             ->values()
-            ->push([
-                'label' => t('Create a new volume…'),
-                'value' => '__createVolume__',
-                'data' => ['addOption' => true],
-            ])
             ->all();
+
+        return [
+            ...$options,
+            new ComboboxCreateOption(
+                t('Create a new volume…'),
+                action([VolumesController::class, 'create']),
+                'volume',
+                value: '__createVolume__',
+                valueField: 'uid',
+            ),
+        ];
     }
 
     /** @return list<array{label: string, value: string}> */

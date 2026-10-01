@@ -30,7 +30,7 @@ export async function openCustomizeSourcesModal(
     {cpComponentRegistry},
   ] = await Promise.all([
     import('vue'),
-    import('@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue'),
+    import('@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue'),
     import('@/bootstrap/components'),
   ]);
 

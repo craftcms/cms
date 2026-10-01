@@ -351,8 +351,8 @@ describe('useElementEditor', () => {
           component: 'craft:field',
           props: {label: 'Cards', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
-            component: 'craft:nested-element-cards',
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
+            component: 'craft:nested-entries',
             props: {
               viewMode: 'cards',
               manager: null,
@@ -482,6 +482,48 @@ describe('useElementEditor', () => {
     });
     expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('canonicalId');
     expect(titleInput().value).toBe('Edited title');
+  });
+
+  it('doesn’t report its own nested changes as someone else’s edit', async () => {
+    let serverStamp = 1;
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('update-field-layout')
+        ? {
+            data: {
+              form: fieldLayout('Original title'),
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              activity: [],
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const {editor} = mount(
+      payload({
+        activityUrl: '/actions/elements/recent-activity',
+        updatedTimestamps: {element: 1, canonical: 1},
+        form: fieldLayout('Original title'),
+      })
+    );
+    await editor.activity.poll();
+
+    // Saving a nested element into the element bumps its `dateUpdated`.
+    serverStamp = 2;
+    await editor.refreshAfterNestedChange();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+
+    // Something that changes it afterwards is still someone else's edit.
+    serverStamp = 3;
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(true);
   });
 
   it('omits presentation-only null controls when refreshing an untouched form', async () => {

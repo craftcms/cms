@@ -21,6 +21,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<CacheCollectorInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class TemplateCacheCollectors extends TypeRegistry

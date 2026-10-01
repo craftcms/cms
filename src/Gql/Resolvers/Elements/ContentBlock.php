@@ -9,6 +9,9 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Resolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends Resolver
 {
     /** @param array<string, mixed> $arguments */

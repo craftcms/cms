@@ -18,7 +18,11 @@ use CraftCms\Cms\Site\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementUris
 {

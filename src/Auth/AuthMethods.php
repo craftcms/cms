@@ -46,6 +46,8 @@ use function CraftCms\Cms\t;
  *     $authMethods->register(MyAuthMethod::class);
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class AuthMethods

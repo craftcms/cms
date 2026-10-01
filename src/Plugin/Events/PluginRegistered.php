@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Plugin\Events;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 
+/**
+ * @since 6.0.0
+ */
 class PluginRegistered
 {
     public function __construct(

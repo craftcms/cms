@@ -17,6 +17,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementIndexRequest extends FormRequest
 {
     /**

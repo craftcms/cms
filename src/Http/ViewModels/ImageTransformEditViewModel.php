@@ -34,6 +34,9 @@ use CraftCms\Cms\Image\Images;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransformEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */

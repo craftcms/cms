@@ -26,6 +26,8 @@ use Stringable;
  * The label fills the default slot (plain strings are HTML-encoded; pass an
  * `Htmlable` for markup labels). With `href` set, the component renders as a
  * link styled as a button.
+ *
+ * @since 6.0.0
  */
 class Button extends ViewComponent
 {

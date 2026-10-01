@@ -4,30 +4,44 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
 class PerformElementActionController
 {
     use RespondsWithFlash;
 
     public function __construct(
         private readonly ElementActions $elementActions,
+        private readonly Elements $elements,
         private readonly ElementIndexes $elementIndexes,
         private readonly ElementSources $elementSources,
         private readonly TranslationI18N $i18N,
     ) {}
 
-    public function __invoke(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): SymfonyResponse
-    {
+    public function __invoke(
+        ElementIndexRequest $request,
+        CurrentElementIndex $currentElementIndex,
+    ): SymfonyResponse {
         $validated = $request->validate([
             'elementAction' => ['required', 'string'],
             'elementIds' => ['required', 'array'],
@@ -38,18 +52,35 @@ class PerformElementActionController
         $actionClass = $validated['elementAction'];
         $elementIds = $validated['elementIds'];
         $context = $request->context();
+        $embedded = $context === ElementSources::CONTEXT_EMBEDDED_INDEX;
 
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $context);
-        $queryState = $this->elementIndexes->buildQueryState(
-            elementType: $elementType,
-            source: $source,
-            condition: $request->condition(),
-            baseCriteria: $request->baseCriteria(),
-            criteria: $request->criteria(),
-            filterConditionConfig: $request->filterConditionConfig(),
-            collapsedElementIds: $request->collapsedElementIds(),
-        );
-        $elementQuery = $queryState['query'];
+        if ($embedded) {
+            $nestedElementScope = new EmbeddedNestedElementScope($request);
+            $nestedSource = $nestedElementScope->indexSource($elementType);
+            [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
+            $owner = $nestedElementScope->owner();
+            $elementQuery = $this->elementIndexes->buildQueryState(
+                elementType: $elementType,
+                source: $source,
+                baseCriteria: $nestedSource->criteria,
+            )['query'];
+        } else {
+            [$sourceKey, $source] = $this->elementIndexes->resolveSource(
+                $elementType,
+                $request->input('source'),
+                $context,
+            );
+            $queryState = $this->elementIndexes->buildQueryState(
+                elementType: $elementType,
+                source: $source,
+                condition: $request->condition(),
+                baseCriteria: $request->baseCriteria(),
+                criteria: $request->criteria(),
+                filterConditionConfig: $request->filterConditionConfig(),
+                collapsedElementIds: $request->collapsedElementIds(),
+            );
+            $elementQuery = $queryState['query'];
+        }
 
         $currentElementIndex->activate($elementQuery);
 
@@ -70,17 +101,91 @@ class PerformElementActionController
             }
         }
 
-        $result = $this->elementActions->invoke(
-            action: $action,
-            query: (clone $elementQuery)
-                ->offset(0)
-                ->limit(null)
-                ->reorder()
-                ->positionedAfter(null)
-                ->positionedBefore(null)
-                ->id($elementIds)
-                ->status(null)
-        );
+        if ($embedded) {
+            $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload());
+
+            if (
+                $action instanceof Duplicate &&
+                $nestedSource->maxElements !== null &&
+                $elementType::indexElementCount(clone $elementQuery, $sourceKey) + $selectedElements->count() > $nestedSource->maxElements
+            ) {
+                return $this->asFailure(t('Could not duplicate the selected elements because the field allows a maximum of {max} elements.', [
+                    'max' => $nestedSource->maxElements,
+                ]));
+            }
+        }
+
+        $actionQuery = (clone $elementQuery)
+            ->offset(0)
+            ->limit(null)
+            ->reorder()
+            ->positionedAfter(null)
+            ->positionedBefore(null)
+            ->id($elementIds)
+            ->status(null);
+
+        if ($embedded && ! $action->isDownload()) {
+            DB::beginTransaction();
+
+            try {
+                $positionsByElementId = [];
+
+                if ($action instanceof Duplicate) {
+                    $action->setNestedOwner($owner);
+                    $preparedElements = $selectedElements;
+                    $orderedElementIds = (clone $elementQuery)
+                        ->offset(0)
+                        ->limit(null)
+                        ->orderBy('sortOrder')
+                        ->status(null)
+                        ->ids();
+                    $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
+                } else {
+                    $preparedElements = $selectedElements
+                        ->map(fn (NestedElementInterface $element): NestedElementInterface => NestedElementManager::prepareElementForOwner($element, $owner));
+                }
+                $elementIds = $preparedElements->pluck('id')->all();
+
+                $result = $this->elementActions->invoke(
+                    action: $action,
+                    query: $actionQuery->id($elementIds),
+                );
+
+                if ($result['success'] && $action instanceof Duplicate) {
+                    $duplicateIds = $action->duplicateIdsBySourceId();
+
+                    $preparedElements
+                        ->sortByDesc(fn (NestedElementInterface $element): int => $positionsByElementId[$element->id] ?? -1)
+                        ->each(function (NestedElementInterface $element) use ($duplicateIds, $owner, $elementQuery, $positionsByElementId): void {
+                            $duplicateId = $duplicateIds[$element->id] ?? null;
+                            $position = $positionsByElementId[$element->id] ?? null;
+
+                            if ($duplicateId === null || $position === null) {
+                                return;
+                            }
+
+                            $this->elements->reorderNestedElements(
+                                $owner,
+                                $elementQuery,
+                                [$duplicateId],
+                                $position + 1,
+                            );
+                        });
+                }
+
+                if (! $result['valid'] || ! $result['success']) {
+                    DB::rollBack();
+                } else {
+                    DB::commit();
+                }
+            } catch (\Throwable $exception) {
+                DB::rollBack();
+
+                throw $exception;
+            }
+        } else {
+            $result = $this->elementActions->invoke($action, $actionQuery);
+        }
 
         abort_if(! $result['valid'], 400, 'Element action params did not validate');
 
@@ -90,6 +195,10 @@ class PerformElementActionController
 
         if (! $result['success']) {
             return $this->asFailure($result['message']);
+        }
+
+        if ($embedded) {
+            return $this->asSuccess($result['message']);
         }
 
         $responseData = new ElementIndexResource()->toArray($request);

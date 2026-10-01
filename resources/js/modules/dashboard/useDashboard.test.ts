@@ -1,7 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, defineComponent, h, type App} from 'vue';
 import {useDashboard} from './useDashboard';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import type {DashboardWidget} from './types';
 
 const state = vi.hoisted(() => ({
@@ -11,6 +10,15 @@ const state = vi.hoisted(() => ({
 vi.mock('@craftcms/ui', () => ({
   actionClient: {post: state.post},
   t: (message: string) => message,
+}));
+const messages = vi.hoisted(() => ({
+  showMessage: vi.fn(),
+  notice: vi.fn(),
+  success: vi.fn(),
+  error: vi.fn(),
+}));
+vi.mock('@/modules/messages/useMessages', () => ({
+  useMessages: () => messages,
 }));
 vi.mock('@inertiajs/vue3', () => ({router: {reload: state.reload}}));
 vi.mock('@/common/utils/jquery', () => ({
@@ -66,7 +74,7 @@ function mount(widgets: DashboardWidget[]) {
 beforeEach(() => {
   state.post.mockReset();
   state.reload.mockClear();
-  useFlashMessages().clearAll();
+  Object.values(messages).forEach((fn) => fn.mockReset());
 });
 
 afterEach(() => {
@@ -79,7 +87,7 @@ it('keeps the saved layout when resizing or reordering fails', async () => {
   state.post.mockRejectedValue(new Error('offline'));
 
   await dashboard.resize(dashboard.widgets.value[0]!, 3);
-  expect(useFlashMessages().messages.value.error).toBe('Couldn’t save widget.');
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t save widget.');
 
   await dashboard.reorder(0, 1);
 
@@ -89,9 +97,7 @@ it('keeps the saved layout when resizing or reordering fails', async () => {
     [1, 1],
     [2, 1],
   ]);
-  expect(useFlashMessages().messages.value.error).toBe(
-    'Couldn’t reorder widgets.'
-  );
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
 });
 
 it('undo restores a deleted widget at the end', async () => {

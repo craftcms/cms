@@ -8,6 +8,9 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 
+/**
+ * @since 6.0.0
+ */
 readonly class EmailSettings
 {
     /**

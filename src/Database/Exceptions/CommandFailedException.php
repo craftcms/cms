@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Database\Exceptions;
 
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class CommandFailedException extends RuntimeException
 {
     public function __construct(

@@ -34,6 +34,12 @@ export interface UploadOptions {
   parameters?: Record<string, unknown>;
   csrfToken?: string;
   headers?: Record<string, string>;
+  /**
+   * Resolves to extra data to send with the completion request, such as
+   * details read from the file. It runs alongside the transfer, and a failure
+   * sends nothing rather than failing the upload.
+   */
+  completionData?: (file: File) => Promise<Record<string, unknown> | null>;
   onProgress?: (loaded: number, total: number) => void;
   onStateChange?: (state: UploadState) => void;
 }
@@ -46,6 +52,7 @@ export class FileUpload<Result = Record<string, unknown>> {
   private uppy: Uppy | null = null;
   private transferred = false;
   private result: {value: Result} | null = null;
+  private completionData: Promise<Record<string, unknown> | null> | null = null;
   private running: Promise<Result> | null = null;
   private fileId: string | null = null;
   private cleanup: (() => void) | void = undefined;
@@ -132,6 +139,9 @@ export class FileUpload<Result = Record<string, unknown>> {
     }
 
     this.setState('uploading');
+    this.completionData ??= this.options.completionData
+      ? this.options.completionData(this.file).catch(() => null)
+      : Promise.resolve(null);
 
     try {
       if (!this.session) {
@@ -163,9 +173,14 @@ export class FileUpload<Result = Record<string, unknown>> {
         this.releaseFile();
       }
 
+      const completionData = await this.completionData;
       this.setState('completing');
       this.result = {
-        value: await this.request<Result>(session.urls.complete, 'POST'),
+        value: await this.request<Result>(
+          session.urls.complete,
+          'POST',
+          completionData ?? undefined
+        ),
       };
       this.setState('completed');
 

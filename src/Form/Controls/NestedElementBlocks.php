@@ -41,6 +41,8 @@ use function CraftCms\Cms\t;
  *     entries: array<string, array<string, mixed>>,
  *     sortOrder: list<string>,
  * }
+ *
+ * @since 6.0.0
  */
 class NestedElementBlocks extends Control
 {

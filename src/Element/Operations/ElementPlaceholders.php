@@ -8,7 +8,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Container\Attributes\Scoped;
 use InvalidArgumentException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Scoped]
 class ElementPlaceholders
 {

@@ -11,6 +11,9 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @since 6.0.0
+ */
 class Field extends BaseModel
 {
     /** @use HasFactory<FieldFactory> */

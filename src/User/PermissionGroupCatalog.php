@@ -11,7 +11,11 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 class PermissionGroupCatalog
 {

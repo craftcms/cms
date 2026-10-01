@@ -24,6 +24,9 @@ use Throwable;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class OAuthController extends AuthenticationController
 {
     private const string CP_CONTEXT_VALUE = 'cp';
@@ -226,7 +229,7 @@ readonly class OAuthController extends AuthenticationController
     {
         Flash::success($message);
 
-        return to_action([SignInProvidersController::class, 'index'])->with('success', $message);
+        return to_action([SignInProvidersController::class, 'index']);
     }
 
     private function connectFailedResponse(
@@ -239,7 +242,7 @@ readonly class OAuthController extends AuthenticationController
 
         Flash::error($message);
 
-        return to_action([SignInProvidersController::class, 'index'])->with('error', $message);
+        return to_action([SignInProvidersController::class, 'index']);
     }
 
     private function failedResponse(
@@ -252,10 +255,10 @@ readonly class OAuthController extends AuthenticationController
             Log::warning($message, [__METHOD__, 'exception' => $previous]);
         }
 
-        Flash::error($message);
+        // The login form shows its own error beside the fields.
+        Flash::error($message, target: 'login');
 
         return redirect($this->loginUrl($isCpRequest))->with(array_filter([
-            'error' => $message,
             'errorCode' => $authError?->value,
         ]));
     }

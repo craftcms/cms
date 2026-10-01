@@ -21,6 +21,9 @@ use Yiisoft\Translator\Translator;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class I18N
 {

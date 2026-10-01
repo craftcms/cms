@@ -15,6 +15,8 @@ namespace CraftCms\Cms\Cp\Components;
  *
  * Renders directly (no Blade view). Children may be components, `Htmlable`s,
  * or plain strings (HTML-encoded).
+ *
+ * @since 6.0.0
  */
 class FieldGroup extends ViewComponent
 {

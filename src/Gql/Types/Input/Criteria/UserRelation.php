@@ -9,6 +9,9 @@ use CraftCms\Cms\Gql\Arguments\RelationCriteria;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 
+/**
+ * @since 6.0.0
+ */
 class UserRelation extends InputObjectType
 {
     public static function getType(): InputObjectType

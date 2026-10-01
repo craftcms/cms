@@ -8,6 +8,8 @@ use CraftCms\Cms\Gql\Arguments\Arguments;
 
 /**
  * @event GqlArgumentsResolving The event that is triggered when defining GraphQL arguments.
+ *
+ * @since 6.0.0
  */
 class GqlArgumentsResolving
 {

@@ -15,6 +15,9 @@ use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Gql;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

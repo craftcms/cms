@@ -13,6 +13,9 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
 {
     public function __construct(

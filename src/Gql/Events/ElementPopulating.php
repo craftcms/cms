@@ -9,6 +9,8 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 
 /**
  * @event ElementPopulating The event that is triggered before GraphQL mutation arguments are applied to an element.
+ *
+ * @since 6.0.0
  */
 class ElementPopulating
 {

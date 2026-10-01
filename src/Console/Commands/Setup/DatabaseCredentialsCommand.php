@@ -28,6 +28,9 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 #[Aliases(['setup/db-creds', 'setup:db', 'setup/db'])]
 #[Description('Stores new DB connection settings to the `.env` file.')]
 #[Signature('craft:setup:db-creds

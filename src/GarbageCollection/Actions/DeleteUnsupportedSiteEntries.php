@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
  * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
  * settings, then deploy those changes to another environment, apply project config changes, and re-run the
  * entrify command. (https://github.com/craftcms/cms/issues/13383)
+ *
+ * @since 6.0.0
  */
 class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
 {

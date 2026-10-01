@@ -20,6 +20,9 @@ use Override;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class RecentEntries extends Widget
 {
     #[Override]

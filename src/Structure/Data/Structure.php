@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Structure\Data;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Component\Component;
 
+/**
+ * @since 6.0.0
+ */
 class Structure extends Component
 {
     public ?int $id = null;

@@ -15,6 +15,8 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * and set `$handled` to `true`.
  *
  * {@see HasRoutesAndUrls::getUrl()}
+ *
+ * @since 6.0.0
  */
 class ElementUrlResolved
 {

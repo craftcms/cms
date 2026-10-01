@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Activity\Data;
 use Illuminate\Contracts\Support\Arrayable;
 use InvalidArgumentException;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 readonly class ActivityChange implements Arrayable
 {
     /**

@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Activity\Data;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivitySource
 {
     public function __construct(

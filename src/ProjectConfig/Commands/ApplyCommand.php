@@ -18,6 +18,9 @@ use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 
+/**
+ * @since 6.0.0
+ */
 class ApplyCommand extends Command
 {
     use CraftCommand;

@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class Missing extends FieldLayoutElement implements MissingComponentInterface
 {
     use MissingComponentTrait;

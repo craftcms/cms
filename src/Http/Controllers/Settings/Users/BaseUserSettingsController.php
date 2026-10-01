@@ -10,6 +10,9 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseUserSettingsController
 {
     /**

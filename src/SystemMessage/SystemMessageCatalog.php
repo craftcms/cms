@@ -19,6 +19,8 @@ use function CraftCms\Cms\t;
  * Internal message catalog backing {@see SystemMessages} registration.
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class SystemMessageCatalog

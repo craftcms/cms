@@ -8,6 +8,9 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteOrphanedStructureElements extends GarbageCollectionAction
 {
     public function __invoke(): void

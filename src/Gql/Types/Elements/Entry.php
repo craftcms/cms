@@ -10,6 +10,9 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Entry extends Element
 {
     public function __construct(array $config)

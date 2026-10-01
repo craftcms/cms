@@ -25,6 +25,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Icon represents an icon picker field.
+ *
+ * @since 6.0.0
  */
 class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
 {

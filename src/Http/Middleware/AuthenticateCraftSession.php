@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class AuthenticateCraftSession extends AuthenticateSession
 {
     #[Override]

@@ -12,6 +12,9 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
+/**
+ * @since 6.0.0
+ */
 class EntryPolicy extends ElementPolicy
 {
     public function view(CraftUser $user, Entry $entry): bool

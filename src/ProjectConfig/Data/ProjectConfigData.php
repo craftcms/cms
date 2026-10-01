@@ -14,6 +14,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 
+/**
+ * @since 6.0.0
+ */
 class ProjectConfigData extends ReadOnlyProjectConfigData
 {
     /**

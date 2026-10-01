@@ -13,6 +13,8 @@ use function CraftCms\Cms\t;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
+ *
+ * @since 6.0.0
  */
 class DeprecationErrors extends Utility
 {

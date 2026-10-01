@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PasskeyController extends AuthenticationController
 {
     public function requestOptions(Passkeys $passkeys): JsonResponse

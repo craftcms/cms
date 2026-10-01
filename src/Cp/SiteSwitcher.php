@@ -24,6 +24,8 @@ use function CraftCms\Cms\t;
  * Craft 5 draws its `site-crumb` on element index, element edit and globals
  * screens alone — the CP chrome itself has no site selector, so Settings and
  * Utilities get none.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class SiteSwitcher

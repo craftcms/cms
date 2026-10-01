@@ -26,6 +26,8 @@ use CraftCms\Cms\Form\Enums\AllOptionMode;
  * options render disabled while “All” is checked, so only its own value posts.
  * Disabled is what suppresses them — they stay checked, so the group still
  * reads as fully selected.
+ *
+ * @since 6.0.0
  */
 class CheckboxIndeterminate extends Checkbox
 {

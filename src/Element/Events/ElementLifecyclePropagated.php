@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Element;
  * @event ElementLifecyclePropagated The event that is triggered after the element is fully saved and propagated to other sites.
  *
  * {@see Element::afterPropagate()}
+ *
+ * @since 6.0.0
  */
 class ElementLifecyclePropagated
 {

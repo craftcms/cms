@@ -10,6 +10,9 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface;
 use CraftCms\Cms\Workflow\Stages\MissingWorkflowStage;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WorkflowStageData
 {
     /** @param array<string, mixed> $settings */

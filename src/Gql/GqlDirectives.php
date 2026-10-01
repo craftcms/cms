@@ -29,6 +29,8 @@ use Illuminate\Support\Collection;
  * ```
  *
  * @extends TypeRegistry<Directive>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class GqlDirectives extends TypeRegistry

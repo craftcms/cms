@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\maxPowerCaptain;
 
+/**
+ * @since 6.0.0
+ */
 readonly class QueueController
 {
     use RespondsWithFlash;

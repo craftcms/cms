@@ -25,6 +25,8 @@ use CraftCms\Cms\User\Contracts\CraftUser;
  *     }
  * );
  * ```
+ *
+ * @since 6.0.0
  */
 class LoginUserRetrieving
 {

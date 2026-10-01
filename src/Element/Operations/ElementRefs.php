@@ -14,7 +14,11 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementRefs
 {

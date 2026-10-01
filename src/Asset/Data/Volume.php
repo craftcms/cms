@@ -30,6 +30,8 @@ use function CraftCms\Cms\t;
  * @property string $fsHandle
  * @property string|null $assetTransformer
  * @property string $subpath
+ *
+ * @since 6.0.0
  */
 #[Ruleset(VolumeRules::class)]
 class Volume extends Component implements CpEditable, CustomFieldLayoutProviderInterface

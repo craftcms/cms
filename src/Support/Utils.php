@@ -10,6 +10,9 @@ use PropertyHookType;
 use ReflectionClass;
 use ReflectionProperty;
 
+/**
+ * @since 6.0.0
+ */
 class Utils
 {
     /** @return Collection<int, ReflectionProperty> */

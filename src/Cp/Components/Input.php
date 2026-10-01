@@ -33,6 +33,8 @@ use function CraftCms\Cms\t;
  * input's character-width `size` attribute is {@see self::inputSize()}.
  *
  * @phpstan-import-type TextExpanderTriggers from HasTextExpander
+ *
+ * @since 6.0.0
  */
 class Input extends ViewComponent
 {

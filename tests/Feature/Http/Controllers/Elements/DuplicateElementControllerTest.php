@@ -232,6 +232,8 @@ describe('bulkDuplicate', function () {
             ->assertJson(fn (AssertableJson $json) => $json
                 ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
                 ->where('newElements', [])
+                ->where('messages.0.type', 'success')
+                ->etc()
             );
     });
 
@@ -402,6 +404,8 @@ describe('bulkDuplicate', function () {
                 ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
                 ->has('newElements', 1)
                 ->where('newElements.0.title', 'Original Title')
+                ->where('messages.0.type', 'success')
+                ->etc()
             );
 
         /** @var Entry $duplicate */

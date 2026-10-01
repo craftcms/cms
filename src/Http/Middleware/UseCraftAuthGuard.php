@@ -9,6 +9,9 @@ use CraftCms\Cms\Cms;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 class UseCraftAuthGuard
 {
     public function __construct(private readonly AuthManager $auth) {}

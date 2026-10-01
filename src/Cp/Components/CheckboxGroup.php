@@ -24,6 +24,8 @@ use function CraftCms\Cms\t;
  *             Checkbox::make()->label(t('Red'))->name('colors[]')->value('red'),
  *             Checkbox::make()->label(t('Blue'))->name('colors[]')->value('blue'),
  *         ]);
+ *
+ * @since 6.0.0
  */
 class CheckboxGroup extends ChoiceGroup
 {

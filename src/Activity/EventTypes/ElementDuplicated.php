@@ -12,6 +12,9 @@ use CraftCms\Cms\Site\Data\Site;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementDuplicated extends ActivityEventType
 {
     protected const string LABEL = 'Duplicated';

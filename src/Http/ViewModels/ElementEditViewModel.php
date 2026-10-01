@@ -55,6 +55,8 @@ use function CraftCms\Cms\t;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (the compiled form) are memoized privately since payload methods may be
  * invoked in any order.
+ *
+ * @since 6.0.0
  */
 abstract class ElementEditViewModel extends ViewModel
 {
@@ -112,6 +114,12 @@ abstract class ElementEditViewModel extends ViewModel
         $this->formResolved = true;
 
         return $this;
+    }
+
+    /** The element's own control panel edit page, which a slideout links to as "Open in a new tab". */
+    public function cpEditUrl(): ?string
+    {
+        return $this->element->getCpEditUrl();
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */

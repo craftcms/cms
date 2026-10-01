@@ -14,6 +14,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Notifications\Channels\MailChannel;
 
+/**
+ * @since 6.0.0
+ */
 class UserReviewNotification extends CpNotification implements ShouldQueueAfterCommit
 {
     use Queueable;

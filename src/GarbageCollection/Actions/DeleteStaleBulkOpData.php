@@ -7,6 +7,9 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteStaleBulkOpData extends GarbageCollectionAction
 {
     public function __invoke(): void

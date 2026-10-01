@@ -37,23 +37,22 @@ trait RespondsWithFlash
         // on an empty one.
         $errors = array_filter($data['errors'] ?? []);
 
+        $response = back()->with($data);
+
         if ($errors !== []) {
-            return back()->with($data)->withErrors($errors);
+            $response->withErrors($errors);
         }
 
-        $message = Flash::error($message);
+        // After `$data`, so an `error` key in it can't replace the message.
+        Flash::error($message);
 
-        return back()
-            ->with($data)
-            ->with('error', $message);
+        return $response;
     }
 
     /** @param array<string, mixed> $data */
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
     {
-        return new JsonResponse($data + array_filter([
-            'message' => $message,
-        ]), 400);
+        return new JsonResponse($data + self::messageData('error', $message), 400);
     }
 
     /**
@@ -64,20 +63,16 @@ trait RespondsWithFlash
     {
         $redirect ??= $this->getPostedRedirectUrl();
 
-        $message = Flash::success($message, $notificationSettings);
-
-        // Set the Inertia shared flash (HandleInertiaRequests reads it from the
-        // session `success` key) on every branch. The JSON branch needs it too:
-        // a client-driven navigation (e.g. runAction performing an Inertia visit
-        // after a DELETE) renders the flash on the *next* request, so the message
-        // must be in the session regardless of the response type.
-        if ($message !== null) {
-            session()->flash('success', $message);
-        }
-
+        // A JSON response carries its message in the body for the client to
+        // show, rather than in the session, where the next unrelated page
+        // load would show it a second time.
         if (request()->expectsJson()) {
-            return $this->asJsonSuccess($message, $data, $redirect);
+            $message = request()->getSigned('successMessage', $message);
+
+            return $this->asJsonSuccess($message, $data, $redirect, $notificationSettings);
         }
+
+        Flash::success($message, $notificationSettings);
 
         if ($redirect) {
             return redirect($redirect)->with($data);
@@ -86,13 +81,46 @@ trait RespondsWithFlash
         return back()->with($data);
     }
 
-    /** @param array<string, mixed> $data */
-    public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null): JsonResponse
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $notificationSettings
+     */
+    public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): JsonResponse
     {
-        return new JsonResponse($data + array_filter([
-            'message' => $message,
+        return new JsonResponse($data + self::messageData('success', $message, $notificationSettings) + array_filter([
             'redirect' => $redirect,
         ]), 200);
+    }
+
+    /**
+     * The `message` key JSON clients have always read, plus on control panel
+     * requests `messages` (the full message, in a list like the Inertia prop)
+     * and the `notificationSettings` that
+     * `Craft.cp.displaySuccess(data.message, data.notificationSettings)`
+     * passes along. The message's `id` rides in the settings, so a client
+     * showing it either way shows it once.
+     *
+     * @param  'success'|'error'  $type
+     * @param  array<string, mixed>  $settings
+     * @return array<string, mixed>
+     */
+    private static function messageData(string $type, ?string $message, array $settings = []): array
+    {
+        if ($message === null) {
+            return [];
+        }
+
+        if (! request()->isCpRequest()) {
+            return ['message' => $message];
+        }
+
+        $flashed = Flash::make($type, $message, $settings);
+
+        return [
+            'message' => $message,
+            'messages' => [$flashed],
+            'notificationSettings' => $flashed['settings'] + ['id' => $flashed['id']],
+        ];
     }
 
     /** @param array<string, mixed> $data */

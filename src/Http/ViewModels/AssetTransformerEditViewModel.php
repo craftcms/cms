@@ -25,6 +25,9 @@ use CraftCms\Cms\Support\Json;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class AssetTransformerEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */

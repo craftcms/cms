@@ -16,6 +16,9 @@ use NumberFormatter;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class MoneyRule implements ValidationRule
 {
     public function __construct(

@@ -28,6 +28,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -41,6 +42,9 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SitesController
 {
     use RespondsWithFlash;
@@ -194,7 +198,9 @@ readonly class SitesController
         }
 
         if ($isNew) {
-            return to_route('craft.cp.settings.sites.index')->with('success', t('Site created'));
+            Flash::success(t('Site created'));
+
+            return to_route('craft.cp.settings.sites.index');
         }
 
         return $this->asSuccess(t('Site saved.'));
@@ -210,7 +216,9 @@ readonly class SitesController
 
         $this->sites->reorderSites($ids);
 
-        return back()->with('success', t('New order saved.'));
+        Flash::success(t('New order saved.'));
+
+        return back();
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -228,8 +236,9 @@ readonly class SitesController
             transferContentTo: $data['contentDestination'] === 'transfer' ? (int) $data['transferContentTo'] : null,
         );
 
-        return to_route('craft.cp.settings.sites.index')
-            ->with('success', t('Site deleted.'));
+        Flash::success(t('Site deleted.'));
+
+        return to_route('craft.cp.settings.sites.index');
     }
 
     /** @return array<string, mixed> */

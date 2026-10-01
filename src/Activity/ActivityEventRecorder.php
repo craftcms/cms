@@ -13,6 +13,9 @@ use Illuminate\Container\Attributes\Scoped;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class ActivityEventRecorder
 {

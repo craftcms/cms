@@ -49,7 +49,11 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-/** @phpstan-import-type AddressFormField from Addresses */
+/**
+ * @phpstan-import-type AddressFormField from Addresses
+ *
+ * @since 6.0.0
+ */
 readonly class FormFields
 {
     /**

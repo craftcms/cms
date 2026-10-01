@@ -10,6 +10,9 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Arr;
 
+/**
+ * @since 6.0.0
+ */
 class Money extends Control
 {
     private string $currency = 'USD';

@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -67,6 +68,7 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -120,6 +122,8 @@ use function CraftCms\Cms\t;
  * @property User[] $authors the entry authors
  * @property int|null $authorId The primary entry author’s ID
  * @property int[] $authorIds the entry authors’ IDs
+ *
+ * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
@@ -1223,8 +1227,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
-    /** @return array{string, array{template: string, variables: array{entry: self}}}|null */
-    protected function route(): ?array
+    /** @return array{string, array{template: string, variables: array{entry: self}}}|ElementRoute|null */
+    protected function route(): array|ElementRoute|null
     {
         // Make sure that the entry is actually live
         if (! $this->previewing && $this->getStatus() !== self::STATUS_LIVE) {
@@ -1242,6 +1246,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             return null;
         }
 
+        if ($destination = $this->getRouteDestination()) {
+            return $destination;
+        }
+
         return [
             'templates/render', [
                 'template' => (string) $sectionSiteSettings->template,
@@ -1250,6 +1258,24 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ],
             ],
         ];
+    }
+
+    /** Resolves the configured destination without dispatching the SetRoute event. */
+    public function getRouteDestination(): ?ElementRoute
+    {
+        if (! $this->previewing && $this->getStatus() !== self::STATUS_LIVE) {
+            return null;
+        }
+
+        if ($field = $this->getField()) {
+            $route = $field->getRouteForElement($this);
+
+            return $route instanceof ElementRoute ? $route : null;
+        }
+
+        $settings = $this->getSection()?->getSiteSettings()[$this->siteId] ?? null;
+
+        return $settings?->hasUrls && $settings->route ? new ElementRoute($settings->route) : null;
     }
 
     /** @return list<ActionItem> */
@@ -1337,7 +1363,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             foreach ($ancestors->get()->filter(fn ($ancestor) => $user->can('view', $ancestor)) as $ancestor) {
                 $crumbs[] = [
                     'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
-                        'class' => 'chromeless',
+                        'appearance' => Appearance::Plain->value,
                         'hyperlink' => true,
                     ]),
                 ];
@@ -2083,13 +2109,13 @@ JS, [
                 }
 
                 return app(ElementHtml::class)->chipHtml($section, [
-                    'class' => 'chromeless',
+                    'appearance' => Appearance::Plain->value,
                     'showThumb' => false,
                 ]);
             case 'type':
                 try {
                     return app(ElementHtml::class)->chipHtml($this->getType(), [
-                        'class' => 'chromeless',
+                        'appearance' => Appearance::Plain->value,
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
                 } catch (RuntimeException) {
@@ -3023,6 +3049,7 @@ JS;
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn (FieldInterface $field) => $field->handle);
         $fieldsService = app(Fields::class);
+        $carriedOverFields = [];
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {
@@ -3038,8 +3065,16 @@ JS;
                     )
                 ) {
                     $this->setFieldValue($newField->handle, null);
+                } elseif ($newField->layoutElement->uid !== $oldField->layoutElement->uid) {
+                    $carriedOverFields[] = $newField->handle;
                 }
             }
+        }
+
+        // Content is keyed by layout element UID, so carried-over values need to be saved under their new UIDs
+        // (https://github.com/craftcms/cms/issues/19737)
+        if (! empty($carriedOverFields)) {
+            $this->setDirtyFields($carriedOverFields);
         }
     }
 

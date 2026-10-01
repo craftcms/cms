@@ -13,6 +13,9 @@ use Override;
 use ReflectionProperty;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class Env extends \Illuminate\Support\Env
 {
     /**

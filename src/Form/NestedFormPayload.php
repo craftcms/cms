@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Form;
 
 use JsonSerializable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class NestedFormPayload implements JsonSerializable
 {
     /**

@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Gql\Directives;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Directive extends GqlDirective
 {
     /**

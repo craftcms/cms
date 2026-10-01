@@ -27,6 +27,9 @@ use Twig\Extension\SandboxExtension;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Runtime\EscaperRuntime;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Twig
 {

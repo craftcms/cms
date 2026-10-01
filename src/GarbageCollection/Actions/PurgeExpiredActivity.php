@@ -9,6 +9,9 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @since 6.0.0
+ */
 class PurgeExpiredActivity extends GarbageCollectionAction
 {
     public function __invoke(): void

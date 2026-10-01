@@ -11,6 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
  * @internal
  *
  * @implements Arrayable<string, UpdateStatus|UpdateRelease[]|bool|float|string|null>
+ *
+ * @since 6.0.0
  */
 readonly class Update implements Arrayable
 {

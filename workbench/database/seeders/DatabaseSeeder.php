@@ -238,6 +238,7 @@ class DatabaseSeeder extends Seeder
 
         $this->createSampleEntries($site);
         $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
+        $this->call(MatrixPlaygroundSeeder::class);
     }
 
     private function createSampleEntries(Site $site): void

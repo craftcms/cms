@@ -15,6 +15,9 @@ use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ConfigServiceProvider extends ServiceProvider
 {
     /** @var list<string> */

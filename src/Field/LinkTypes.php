@@ -26,6 +26,8 @@ use Illuminate\Support\Collection;
  * ```
  *
  * @extends TypeRegistry<BaseLinkType>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class LinkTypes extends TypeRegistry

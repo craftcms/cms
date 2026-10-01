@@ -9,7 +9,11 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 abstract class InterfaceType
 {
     abstract public static function getName(): string;

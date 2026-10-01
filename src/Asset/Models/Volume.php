@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @since 6.0.0
+ */
 class Volume extends BaseModel
 {
     /** @use HasFactory<VolumeFactory> */

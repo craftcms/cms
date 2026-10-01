@@ -12,21 +12,20 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef, watch} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
+  import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
+  import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import CpTopBar from '@/common/components/CpTopBar.vue';
-  import FlashMessages from '@/common/components/FlashMessages.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
-  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
-  import {useFlash} from '@/common/composables/useFlash';
   import {useFieldHighlight} from '@/common/composables/useFieldHighlight';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
@@ -169,6 +168,19 @@
       subnav.value.length > 0
   );
 
+  // The top bar scrolls away with the page, so the sidebar and the details
+  // pane are only as tall as the viewport below whatever's still showing of it.
+  const topBar = useTemplateRef<{$el: HTMLElement}>('topBar');
+  const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
+  // The details pane and the sidebar both stop short of Laravel Debugbar.
+  const debugBarHeight = useDebugBarHeight();
+  const pageScreenStyle = computed(() => ({
+    '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    ...(debugBarHeight.value === null
+      ? {}
+      : {'--cp-debug-bar-height': `${debugBarHeight.value}px`}),
+  }));
+
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
   const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
@@ -193,12 +205,6 @@
     emit('save', options);
   }
 
-  // Announce flash messages to screen readers.
-  const {announce} = useAnnouncer();
-  const {errorFlash, successFlash} = useFlash();
-  watch(successFlash, (newMessage) => announce(newMessage));
-  watch(errorFlash, (newMessage) => announce(newMessage));
-
   useAppendHtml();
 
   // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
@@ -213,8 +219,13 @@
   />
   <div
     :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+    :style="pageScreenStyle"
   >
-    <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
+    <CpTopBar
+      ref="topBar"
+      :crumbs="crumbs"
+      :has-context-menu="hasContextMenu"
+    />
     <div class="cp">
       <div class="cp__sidebar">
         <!-- No props: the sidebar reads the shared store directly, and renders
@@ -279,7 +290,6 @@
                         </slot>
                       </LayoutSlotOutlet>
                       <CalloutReadOnly v-if="readOnly" />
-                      <FlashMessages />
                       <div
                         :class="{
                           'cp-content-view': true,
@@ -377,7 +387,7 @@
                       </div>
                     </div>
                     <aside v-show="hasDetails" class="cp-content__details">
-                      <div class="sticky top-0 h-screen">
+                      <div class="cp-content__details-pane">
                         <ContentDetails
                           ref="detailsColumn"
                           :resizer="detailsResizer"
@@ -568,6 +578,15 @@ Content
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
+  }
+
+  .cp-content__details-pane {
+    position: sticky;
+    inset-block-start: 0;
+    height: calc(
+      100dvh - var(--cp-top-bar-visible-height, 0px) -
+        var(--cp-debug-bar-height, 0px)
+    );
   }
 
   .cp-content__footer {

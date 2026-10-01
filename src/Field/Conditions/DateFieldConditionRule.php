@@ -13,6 +13,9 @@ use CraftCms\Cms\Form\Contracts\Node;
 use DateTimeInterface;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class DateFieldConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

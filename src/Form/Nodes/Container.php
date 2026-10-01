@@ -9,6 +9,9 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Container implements Node
 {
     use Conditionable;

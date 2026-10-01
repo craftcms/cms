@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -1181,9 +1182,8 @@ JS,
             return [
                 ...$owner->getCrumbs(),
                 new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($owner, [
-                    'appearance' => 'plain',
+                    'appearance' => Appearance::Plain->value,
                     'showDraftName' => false,
-                    'class' => 'chromeless',
                     'hyperlink' => true,
                 ])),
             ];

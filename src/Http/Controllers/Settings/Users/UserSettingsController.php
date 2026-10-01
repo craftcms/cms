@@ -21,6 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserSettingsController extends BaseUserSettingsController
 {
     use RespondsWithFlash;

@@ -10,6 +10,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
  * @event FieldLayoutSaved The event that is triggered after a field layout is saved.
  *
  * @phpstan-import-type GeneratedField from FieldLayout
+ *
+ * @since 6.0.0
  */
 class FieldLayoutSaved extends FieldLayoutEvent
 {

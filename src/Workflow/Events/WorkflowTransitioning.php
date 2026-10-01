@@ -10,6 +10,9 @@ use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use Illuminate\Foundation\Events\Dispatchable;
 
+/**
+ * @since 6.0.0
+ */
 class WorkflowTransitioning
 {
     use Dispatchable;

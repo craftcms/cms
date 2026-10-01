@@ -43,6 +43,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @since 6.0.0
+ */
 class GarbageCollection
 {
     /**

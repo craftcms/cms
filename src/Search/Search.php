@@ -31,6 +31,9 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Search
 {

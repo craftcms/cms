@@ -13,6 +13,9 @@ use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class HandleTemplateRequest
 {
     public function __construct(

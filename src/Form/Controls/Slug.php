@@ -13,6 +13,9 @@ use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Slug extends Text
 {
     /** @var list<string>|null */

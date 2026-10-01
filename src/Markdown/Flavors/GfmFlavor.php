@@ -15,6 +15,9 @@ use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\Extension\TaskList\TaskListExtension;
 use League\CommonMark\MarkdownConverter;
 
+/**
+ * @since 6.0.0
+ */
 class GfmFlavor extends Flavor
 {
     public function __construct(private readonly string $softBreak = "\n") {}

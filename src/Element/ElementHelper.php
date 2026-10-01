@@ -28,6 +28,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
+/**
+ * @since 6.0.0
+ */
 class ElementHelper
 {
     private const int URI_MAX_LENGTH = 255;
@@ -461,7 +464,7 @@ class ElementHelper
         }
 
         // try again with the owner's canonical element, in case it is also a derivative
-        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical(true));
     }
 
     /**

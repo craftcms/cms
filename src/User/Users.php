@@ -77,6 +77,9 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Users
 {

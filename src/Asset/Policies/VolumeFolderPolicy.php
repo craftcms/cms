@@ -8,6 +8,9 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
+/**
+ * @since 6.0.0
+ */
 class VolumeFolderPolicy
 {
     public function createFolder(CraftUser $user, VolumeFolder $parentFolder): bool

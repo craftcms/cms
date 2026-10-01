@@ -24,6 +24,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<Query>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class GqlQueries extends TypeRegistry

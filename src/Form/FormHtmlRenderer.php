@@ -12,6 +12,9 @@ use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class FormHtmlRenderer
 {
     private ?FormPayload $payload = null;

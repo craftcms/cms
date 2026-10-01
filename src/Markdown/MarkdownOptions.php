@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Markdown;
 
+/**
+ * @since 6.0.0
+ */
 readonly class MarkdownOptions
 {
     public function __construct(

@@ -22,6 +22,7 @@ import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
+import {installMessages} from './modules/messages';
 import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
@@ -77,6 +78,9 @@ window.Cp = Cp;
 // only: `start()` mounts the Inertia app, which legacy pages must not do.
 Cp.config(window.Craft ?? {});
 Cp.init();
+
+// The Twig layout renders `<cp-messages>` and queues the flashed messages.
+installMessages();
 
 defineDashboardWidgetSettingsFormHost(Cp.$components);
 defineEntryFieldLayoutFormHost(Cp.$components);

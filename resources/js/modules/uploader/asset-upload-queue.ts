@@ -4,6 +4,7 @@ import {store} from '@/routes/craft/actions/craft/cp/uploads';
 import ResolveUploadConflictController from '@actions/Assets/ResolveUploadConflictController';
 import {deleteAsset} from '@actions/Assets/ActionController';
 import {UploadQueue, type UploadJob, uploadErrorMessage} from './upload-queue';
+import {imageColorsCompletionData} from './image-colors';
 import {
   type AssetUploadDestination,
   type UploadConflictChoice,
@@ -74,6 +75,7 @@ export class AssetUploadQueue extends UploadQueue<
       {
         url: store.url(),
         parameters: {folderId: destination.folderId},
+        completionData: imageColorsCompletionData,
         csrfToken: Craft.csrfTokenValue,
       },
       {destination: {...destination}, batch, resolving: false}

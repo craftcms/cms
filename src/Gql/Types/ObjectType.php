@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ObjectType extends GqlObjectType
 {
     public function __construct(array $config)

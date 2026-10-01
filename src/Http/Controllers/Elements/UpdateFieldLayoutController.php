@@ -15,6 +15,9 @@ use CraftCms\Cms\View\DeltaRegistry;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UpdateFieldLayoutController
 {
     use CreatesElement;
@@ -65,6 +68,10 @@ readonly class UpdateFieldLayoutController
         $data += [
             'initialDeltaValues' => $this->deltaRegistry->getInitialValues(),
             'uiLabel' => $element->getUiLabel(),
+            // Lets the editor re-baseline its activity poll after changes it made itself,
+            // such as nested elements saved into the element, which bump its `dateUpdated`
+            'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated?->getTimestamp(),
         ];
 
         return new ElementResponse()->success($element, 'Field layout updated.', $data, true);

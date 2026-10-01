@@ -14,6 +14,9 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class PruneOrphanedEntriesCommand extends Command
 {
     use CraftCommand;

@@ -33,6 +33,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SectionsController
 {
     use RespondsWithFlash;
@@ -192,11 +195,15 @@ readonly class SectionsController
                 $siteSettingsData['enabledByDefault'] = (bool) ($postedSettings['enabledByDefault'] ?? false);
             }
 
-            if ($siteSettingsData['hasUrls'] = (bool) $siteSettingsData['uriFormat']) {
-                $siteSettingsData['template'] = $postedSettings['template'] ?? null;
-            }
-
+            $siteSettingsData['hasUrls'] = (bool) $siteSettingsData['uriFormat'];
             $siteSettings = new SectionSiteSettings($siteSettingsData);
+
+            if ($siteSettings->hasUrls) {
+                $siteSettings->applyForm([
+                    ...$postedSettings,
+                    'uriFormat' => $siteSettings->uriFormat,
+                ]);
+            }
 
             $allSiteSettings[$site->id] = $siteSettings;
         }

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class FindAndReplaceController
 {
     public function __construct(Utilities $utilitiesService)
@@ -32,6 +36,8 @@ readonly class FindAndReplaceController
             replace: $params['replace']
         ));
 
-        return back()->with('success', t('Replace job dispatched.'));
+        Flash::success(t('Replace job dispatched.'));
+
+        return back();
     }
 }

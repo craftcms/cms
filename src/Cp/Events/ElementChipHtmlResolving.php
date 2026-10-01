@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Cp\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
+/**
+ * @since 6.0.0
+ */
 class ElementChipHtmlResolving
 {
     public function __construct(

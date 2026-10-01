@@ -15,6 +15,9 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Money extends ScalarType implements SingularTypeInterface
 {
     #[Override]

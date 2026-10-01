@@ -18,6 +18,9 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PreviewController
 {
     use RespondsWithFlash;

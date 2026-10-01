@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Dashboard\Data;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class CustomWidgetDefinition
 {
     public string $id;

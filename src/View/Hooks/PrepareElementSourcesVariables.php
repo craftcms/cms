@@ -7,6 +7,9 @@ namespace CraftCms\Cms\View\Hooks;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PrepareElementSourcesVariables
 {
     public function __construct(

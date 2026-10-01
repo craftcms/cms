@@ -20,6 +20,8 @@ use CraftCms\Cms\Cp\Concerns\HasId;
  *             Button::make()->label(t('Left'))->value('left'),
  *             Button::make()->label(t('Right'))->value('right'),
  *         ]);
+ *
+ * @since 6.0.0
  */
 class ButtonGroup extends ViewComponent
 {

@@ -8,7 +8,11 @@ use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
-/** @implements Arrayable<string, string|null> */
+/**
+ * @implements Arrayable<string, string|null>
+ *
+ * @since 6.0.0
+ */
 readonly class NotificationButtonData implements Arrayable, JsonSerializable
 {
     public function __construct(

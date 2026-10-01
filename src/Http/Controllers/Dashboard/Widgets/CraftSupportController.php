@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
@@ -29,6 +30,9 @@ use ZipArchive;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class CraftSupportController
 {
     public function __construct(
@@ -106,7 +110,9 @@ readonly class CraftSupportController
                 RequestOptions::MULTIPART => $parts,
             ]);
 
-            return to_route('craft.cp.dashboard')->with('success', t('Message sent successfully.'));
+            Flash::success(t('Message sent successfully.'));
+
+            return to_route('craft.cp.dashboard');
         } catch (Throwable $requestException) {
             Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
             report($requestException);

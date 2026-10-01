@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Element;
  * @event ElementLifecycleSaved The event that is triggered after the element is saved.
  *
  * {@see Element::afterSave()}
+ *
+ * @since 6.0.0
  */
 class ElementLifecycleSaved
 {

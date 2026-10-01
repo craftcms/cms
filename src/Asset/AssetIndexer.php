@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -47,6 +48,9 @@ use Tpetry\QueryExpressions\Function\String\Concat;
 use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Value\Value;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class AssetIndexer
 {
@@ -666,8 +670,14 @@ class AssetIndexer
 
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
+        // A file that's been modified since it was last indexed may not look the same anymore
+        $fileChanged = $asset->dateModified !== null
+            && $timeModified !== null
+            && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
+        $needsColors = $asset->colors === null || $fileChanged;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
+        $tempPath = null;
 
         try {
             if ($isLocalFs) {
@@ -676,11 +686,13 @@ class AssetIndexer
 
             if ($asset->kind === FileKind::Image->value) {
                 $dimensions = null;
-                $tempPath = null;
+                // The file the colors are sampled from, when there's one on hand
+                $localPath = null;
 
                 if ($isLocalFs) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = ImageHelper::imageSize($transformSourcePath);
+                    $localPath = $transformSourcePath;
                 } else {
                     if (! $cacheImages) {
                         try {
@@ -695,10 +707,13 @@ class AssetIndexer
                         }
                     }
 
-                    if (! is_array($dimensions)) {
+                    // A remote image is downloaded when its dimensions couldn't be read from a stream, or
+                    // its colors need sampling
+                    if (! is_array($dimensions) || $needsColors) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
+                        $localPath = $tempPath;
 
                         $asset->setMimeType(File::getMimeType($tempPath));
                     }
@@ -707,6 +722,12 @@ class AssetIndexer
                 [$w, $h] = $dimensions;
                 $asset->setWidth($w);
                 $asset->setHeight($h);
+
+                // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
+                // file has changed
+                if ($localPath !== null && $needsColors) {
+                    $asset->colors = Images::colors($localPath);
+                }
                 $asset->dateModified = $timeModified;
 
                 $this->elements->saveElement($asset);
@@ -724,6 +745,11 @@ class AssetIndexer
             }
         } catch (Throwable $exception) {
             Log::info($exception->getMessage());
+        } finally {
+            // Unless it was moved into place as the cached transform source
+            if ($tempPath !== null && file_exists($tempPath)) {
+                File::delete($tempPath);
+            }
         }
 
         return $asset;

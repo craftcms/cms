@@ -16,6 +16,9 @@ use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public static function isSelectableForCondition(ConditionInterface $condition): bool

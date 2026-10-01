@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Translation;
 use Illuminate\Contracts\Events\Dispatcher as LaravelDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @since 6.0.0
+ */
 readonly class LaravelEventDispatcher implements EventDispatcherInterface
 {
     public function __construct(

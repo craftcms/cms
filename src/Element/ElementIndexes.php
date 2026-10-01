@@ -10,12 +10,15 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
@@ -26,6 +29,8 @@ use function CraftCms\Cms\t;
  * XHR endpoints, and {@see ElementIndexResource}.
  * Page-payload assembly lives in the view model; legacy HTML formatting in the
  * resource.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class ElementIndexes
@@ -217,6 +222,209 @@ class ElementIndexes
             'query' => $query,
             'unfilteredQuery' => $unfilteredQuery,
         ];
+    }
+
+    /**
+     * Applies client-addressable element index sorting to a query.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  iterable<array{field:string,direction:string}>  $sort
+     * @param  array<string,mixed>|null  $source
+     */
+    public function applySort(
+        string $elementType,
+        ElementQueryInterface $elementQuery,
+        string $sourceKey,
+        iterable $sort,
+        bool $reset = false,
+        ?array $source = null,
+    ): void {
+        $primary = true;
+
+        foreach ($sort as $item) {
+            if ($primary && $item['field'] === 'structure') {
+                if (! isset($source['structureId'])) {
+                    return;
+                }
+
+                if ($reset) {
+                    $elementQuery->getQuery()->reorder();
+                }
+
+                $elementQuery
+                    ->structureId($source['structureId'])
+                    ->orderBy('lft');
+
+                return;
+            }
+
+            $orderBy = $this->indexOrderBy($elementType, $sourceKey, $item['field'], $item['direction']);
+
+            if (! $orderBy) {
+                return;
+            }
+
+            if ($primary && $reset) {
+                $elementQuery->getQuery()->reorder();
+            }
+
+            $this->applyOrderBy($elementQuery, $orderBy);
+
+            if ($primary && is_array($orderBy) && isset($orderBy['score'])) {
+                return;
+            }
+
+            $primary = false;
+        }
+    }
+
+    /** @param array<array-key,mixed>|ExpressionInterface $orderBy */
+    private function applyOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void
+    {
+        foreach (Arr::wrap($orderBy) as $column => $direction) {
+            if ($direction instanceof ExpressionInterface) {
+                $elementQuery->getQuery()->orderByRaw(
+                    $direction->getValue(DB::getQueryGrammar()),
+                );
+
+                continue;
+            }
+
+            $elementQuery->getQuery()->orderBy($column, match ($direction) {
+                'desc', SORT_DESC => 'desc',
+                default => 'asc',
+            });
+        }
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return ExpressionInterface|array<array-key,mixed>|false
+     */
+    private function indexOrderBy(
+        string $elementType,
+        string $sourceKey,
+        string $attribute,
+        string $direction,
+    ): ExpressionInterface|array|false {
+        $sortDirection = strcasecmp($direction, 'desc') === 0 ? SORT_DESC : SORT_ASC;
+        $columns = $this->indexOrderByColumns($elementType, $sourceKey, $attribute, $sortDirection);
+
+        if ($columns === false || $columns instanceof ExpressionInterface) {
+            return $columns;
+        }
+
+        $columns = is_string($columns)
+            ? preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY)
+            : $columns;
+
+        return $this->normalizeOrderByColumns($columns, $sortDirection);
+    }
+
+    /**
+     * @param  array<array-key,mixed>  $columns
+     * @return array<array-key,int>
+     */
+    private function normalizeOrderByColumns(array $columns, int $defaultDirection): array
+    {
+        $result = [];
+
+        foreach ($columns as $i => $column) {
+            if ($i === 0) {
+                $result[$column] = $defaultDirection;
+
+                continue;
+            }
+
+            if (preg_match('/^(.*?)\s+(asc|desc)$/i', (string) $column, $matches)) {
+                $result[$matches[1]] = strcasecmp($matches[2], 'desc') === 0 ? SORT_DESC : SORT_ASC;
+
+                continue;
+            }
+
+            $result[$column] = SORT_ASC;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return ExpressionInterface|bool|array<array-key,mixed>|string
+     */
+    private function indexOrderByColumns(
+        string $elementType,
+        string $sourceKey,
+        string $attribute,
+        int $direction,
+    ): ExpressionInterface|bool|array|string {
+        if (! $attribute) {
+            return false;
+        }
+
+        if ($attribute === 'score') {
+            return 'score';
+        }
+
+        $orderBy = $this->resolveSortOption($elementType, $attribute, $direction);
+
+        return $orderBy ?: $this->resolveSourceSortOption($elementType, $sourceKey, $attribute, $direction);
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return ExpressionInterface|array<array-key,mixed>|string|false
+     */
+    private function resolveSortOption(string $elementType, string $attribute, int $direction): ExpressionInterface|array|string|false
+    {
+        foreach ($elementType::sortOptions() as $key => $sortOption) {
+            if (! is_array($sortOption) && $key === $attribute) {
+                return $key;
+            }
+
+            if (is_array($sortOption)) {
+                $optionAttribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                if ($optionAttribute === $attribute) {
+                    return is_callable($sortOption['orderBy'])
+                        ? $sortOption['orderBy']($direction)
+                        : $sortOption['orderBy'];
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** @param class-string<ElementInterface> $elementType */
+    private function resolveSourceSortOption(
+        string $elementType,
+        string $sourceKey,
+        string $attribute,
+        int $direction,
+    ): ExpressionInterface|bool {
+        $sourceSortOptions = $this->elementSources->getSourceSortOptions($elementType, $sourceKey);
+
+        foreach ($sourceSortOptions as $sortOption) {
+            if ($sortOption['attribute'] !== $attribute) {
+                continue;
+            }
+
+            $orderBy = $sortOption['orderBy'];
+
+            if ($orderBy instanceof Coalesce) {
+                $sql = $orderBy->getValue(DB::getQueryGrammar());
+            } elseif (is_string($orderBy)) {
+                $sql = $orderBy;
+            } else {
+                return $orderBy;
+            }
+
+            $sqlDirection = $direction === SORT_ASC ? 'ASC' : 'DESC';
+
+            return DB::raw("$sql $sqlDirection");
+        }
+
+        return false;
     }
 
     /**

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Asset\Conditions;
 
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 
+/**
+ * @since 6.0.0
+ */
 class AssetCondition extends ElementCondition
 {
     #[\Override]

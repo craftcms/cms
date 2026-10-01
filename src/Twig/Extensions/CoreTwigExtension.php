@@ -105,6 +105,9 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(

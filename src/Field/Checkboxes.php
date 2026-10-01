@@ -15,6 +15,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Checkboxes represents a Checkboxes field.
+ *
+ * @since 6.0.0
  */
 class Checkboxes extends BaseOptionsField
 {

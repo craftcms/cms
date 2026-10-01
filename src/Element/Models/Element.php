@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @since 6.0.0
+ */
 class Element extends BaseModel
 {
     /** @use HasFactory<Factory<Element>> */

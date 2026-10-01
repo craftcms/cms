@@ -16,6 +16,9 @@ use CraftCms\Cms\User\Commands\SetPasswordCommand;
 use CraftCms\Cms\User\Commands\UnlockCommand;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class UserServiceProvider extends ServiceProvider
 {
     public function boot(): void

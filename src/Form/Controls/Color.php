@@ -8,6 +8,9 @@ use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 
+/**
+ * @since 6.0.0
+ */
 class Color extends Control
 {
     /** @var list<string> */

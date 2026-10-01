@@ -2,14 +2,14 @@
   import {t} from '@craftcms/ui';
   import {type JobInfo} from '@/modules/queue/types';
   import {useForm} from '@inertiajs/vue3';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import {cancel} from '@actions/QueueController';
 
   const props = defineProps<{
     job: JobInfo;
   }>();
 
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
   const form = useForm({});
 
   function releaseJob() {
@@ -27,10 +27,10 @@
       only: ['contentHtml'],
       preserveScroll: true,
       onSuccess: () => {
-        flash('success', t('Job released.'));
+        messages.success(t('Job released.'));
       },
       onError: () => {
-        flash('error', t('Failed to release job.'));
+        messages.error(t('Failed to release job.'));
       },
     });
   }

@@ -10,6 +10,9 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
+/**
+ * @since 6.0.0
+ */
 class UserPopulator implements PopulatesOAuthUser
 {
     public function __construct(

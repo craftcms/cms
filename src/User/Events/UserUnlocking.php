@@ -11,6 +11,8 @@ use CraftCms\Cms\User\Elements\User;
  * @event UserUnlocking The event that is triggered before a user is unlocked.
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting unlocked.
+ *
+ * @since 6.0.0
  */
 class UserUnlocking extends UserEvent
 {

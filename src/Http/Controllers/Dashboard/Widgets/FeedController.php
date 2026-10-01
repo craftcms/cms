@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 readonly class FeedController
 {
     public function cacheData(Request $request, Repository $cache, GeneralConfig $generalConfig): JsonResponse

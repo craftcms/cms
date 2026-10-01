@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\ElementResolver;
 use CraftCms\Cms\Support\Facades\Volumes;
 
+/**
+ * @since 6.0.0
+ */
 class Asset extends ElementResolver
 {
     /** @param array<string, mixed> $arguments */

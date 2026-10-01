@@ -16,6 +16,9 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class LinkFieldConditionRule extends TextFieldConditionRule
 {
     private const string OPERATOR_TYPE = 'type';

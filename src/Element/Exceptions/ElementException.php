@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Exception;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class ElementException extends Exception
 {
     public function __construct(

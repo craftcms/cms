@@ -13,6 +13,8 @@ use Illuminate\Container\Attributes\Singleton;
  * The workflow stage type registry.
  *
  * @extends TypeRegistry<WorkflowStageInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class WorkflowStageTypes extends TypeRegistry

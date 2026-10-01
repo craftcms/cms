@@ -11,7 +11,11 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use LogicException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 readonly class PluginSettingsForm
 {
     public function __construct(private FormResolver $formResolver) {}

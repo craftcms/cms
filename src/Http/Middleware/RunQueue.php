@@ -16,6 +16,8 @@ use function CraftCms\Cms\action_url;
 
 /**
  * Injects JavaScript into HTML responses to trigger the queue runner.
+ *
+ * @since 6.0.0
  */
 readonly class RunQueue
 {

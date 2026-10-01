@@ -135,6 +135,10 @@ export class CardViewDesigner extends Base {
           data: {
             fieldLayoutConfig: {
               ...this.designer.config,
+              // Not part of `this.designer.config` (that lives at
+              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+              // needs a `type` on the layout config to instantiate a sample element.
+              type: this.designer.settings!.elementType,
               generatedFields:
                 document
                   .querySelector('craft-generated-fields-table')

@@ -25,7 +25,11 @@ use Illuminate\Support\Facades\DB;
 use LogicException;
 use WeakMap;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class DraftActivity
 {

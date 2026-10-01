@@ -8,6 +8,9 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Models\AssetIndexData;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class MissingVolumeFolderException extends AssetException
 {
     public function __construct(

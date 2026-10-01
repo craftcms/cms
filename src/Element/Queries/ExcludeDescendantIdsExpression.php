@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Element\Queries;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ExcludeDescendantIdsExpression implements Expression
 {
     /**

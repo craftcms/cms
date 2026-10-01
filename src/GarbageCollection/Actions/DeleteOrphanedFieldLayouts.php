@@ -13,6 +13,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes field layouts that are no longer used.
+ *
+ * @since 6.0.0
  */
 class DeleteOrphanedFieldLayouts extends GarbageCollectionAction
 {

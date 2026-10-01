@@ -22,6 +22,8 @@ use function CraftCms\Cms\t;
  * Both the legacy `CpScreenResponse` screens and the Inertia profile screen
  * need the same list, so it lives here rather than in the controller trait that
  * used to own it.
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class EditUserScreens

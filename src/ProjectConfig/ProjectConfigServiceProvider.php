@@ -37,6 +37,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ProjectConfigServiceProvider extends ServiceProvider
 {
     #[Override]

@@ -23,6 +23,9 @@ use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Factory;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ViewServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';

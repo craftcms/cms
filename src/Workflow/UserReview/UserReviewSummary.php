@@ -8,6 +8,9 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UserReviewSummary
 {
     /**

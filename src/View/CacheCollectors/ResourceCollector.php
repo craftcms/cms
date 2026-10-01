@@ -10,6 +10,9 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ResourceCollector implements CacheCollectorInterface
 {
     private const array BUFFER_KEYS = [

@@ -73,6 +73,22 @@ export default class CraftSelectRich extends HasLabel(LionSelectRich) {
     this._overlayCtrl.contentWrapperNode.style.width = initContentWidth;
   }
 
+  /**
+   * Lion treats any printable key as type-ahead, modifiers included, so a
+   * shortcut pressed while the select has focus — ⌘S to save — would jump to
+   * the option starting with that letter.
+   */
+  override _handleTypeAhead(
+    ev: KeyboardEvent,
+    options: {setAsChecked: boolean}
+  ) {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) {
+      return;
+    }
+
+    super._handleTypeAhead(ev, options);
+  }
+
   // oxlint-disable-next-line class-methods-use-this
   override _inputGroupInputTemplate() {
     return html`

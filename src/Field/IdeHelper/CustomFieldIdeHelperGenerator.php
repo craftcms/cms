@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\Filesystem\Path;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class CustomFieldIdeHelperGenerator
 {

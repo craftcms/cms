@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * ElementExportersResolving event is triggered when registering the available exporters for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementExportersResolving
 {

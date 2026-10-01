@@ -43,41 +43,39 @@
 
 <template>
   <UserScreen>
-    <craft-pane appearance="raised" :padding="0">
-      <div class="grid gap-6 p-4 min-w-0">
-        <section class="grid gap-3 min-w-0">
-          <h2 class="text-base">{{ t('Change your Password') }}</h2>
+    <div class="grid gap-6 min-w-0">
+      <section class="grid gap-3 min-w-0">
+        <h2 class="text-base">{{ t('Change your Password') }}</h2>
 
-          <craft-field-group>
-            <CraftInputPassword
-              v-model="form.newPassword"
-              :label="t('New Password')"
-              id="newPassword"
-              name="newPassword"
-              autocomplete="new-password"
-              :password-rules="page.props.passwordRules"
-              :error="form.errors.newPassword"
-            />
-          </craft-field-group>
-        </section>
+        <craft-field-group>
+          <CraftInputPassword
+            v-model="form.newPassword"
+            :label="t('New Password')"
+            id="newPassword"
+            name="newPassword"
+            autocomplete="new-password"
+            :password-rules="page.props.passwordRules"
+            :error="form.errors.newPassword"
+          />
+        </craft-field-group>
+      </section>
 
-        <hr />
+      <hr />
 
-        <section class="grid gap-3 min-w-0">
-          <div>
-            <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
-            <p>
-              {{
-                t(
-                  'Improve your account’s security by adding a second verification step when signing in.'
-                )
-              }}
-            </p>
-          </div>
+      <section class="grid gap-3 min-w-0">
+        <div>
+          <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
+          <p>
+            {{
+              t(
+                'Improve your account’s security by adding a second verification step when signing in.'
+              )
+            }}
+          </p>
+        </div>
 
-          <TwoStepVerification :methods="page.props.authMethods" />
-        </section>
-      </div>
-    </craft-pane>
+        <TwoStepVerification :methods="page.props.authMethods" />
+      </section>
+    </div>
   </UserScreen>
 </template>

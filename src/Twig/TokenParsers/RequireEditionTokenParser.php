@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\Nodes\RequireEditionNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+/**
+ * @since 6.0.0
+ */
 class RequireEditionTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RequireEditionNode

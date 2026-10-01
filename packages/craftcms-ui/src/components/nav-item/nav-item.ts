@@ -217,7 +217,7 @@ export default class CraftNavItem extends LitElement {
    */
   private get ariaCurrentState(): 'page' | 'true' | 'false' {
     if (this.current) {
-      return 'page';
+      return this.href ? 'page' : 'true';
     }
 
     return this.active ? 'true' : 'false';
@@ -230,6 +230,11 @@ export default class CraftNavItem extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
+
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'listitem');
+    }
+
     // Default to open when the item is active, or when explicitly requested.
     this.subnavState =
       this.active || this.initialState === 'open' ? 'open' : 'closed';
@@ -463,7 +468,7 @@ export default class CraftNavItem extends LitElement {
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? this.ariaCurrentState : nothing}"
+        aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         aria-label="${
@@ -691,7 +696,7 @@ export default class CraftNavItem extends LitElement {
         class="nav-item__action-item"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? this.ariaCurrentState : nothing}"
+        aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
@@ -736,7 +741,7 @@ export default class CraftNavItem extends LitElement {
     // take its tooltip out of reach along with it.
     if (this.group && this.iconOnly) {
       return html`
-        <li>
+        <li role="presentation">
           <hr
             class="rail-separator"
             aria-label="${this.labelText || nothing}"
@@ -751,7 +756,7 @@ export default class CraftNavItem extends LitElement {
     }
 
     return html`
-      <li>
+      <li role="presentation">
         ${this.iconOnly
           ? this.renderIconItem(hasSubnav, useFlyout)
           : this.renderItem(showToggle, hasPrefix, useFlyout)}

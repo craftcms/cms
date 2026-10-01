@@ -100,6 +100,8 @@ export interface ElementEditPayload {
   /** The element's status badge. `null` for element types without statuses. */
   statusLabelHtml: string | null;
   saveUrl: string;
+  /** The element's own control panel edit page, if it has one. */
+  cpEditUrl?: string | null;
   applyDraftUrl: string;
   editorActions: ElementEditorActions;
   autosaveUrl: string;
@@ -460,7 +462,15 @@ export function useElementEditor({saveData, root}: Options = {}) {
     }
   }
 
-  async function refreshForm(scope: string[] = formPayload.value?.scope ?? []) {
+  /**
+   * Re-renders the field layout from the server, keeping unsaved values.
+   *
+   * Resolves with the server's response once it's been applied, or nothing
+   * when a newer refresh superseded it.
+   */
+  async function refreshForm(
+    scope: string[] = formPayload.value?.scope ?? []
+  ): Promise<FormValues | undefined> {
     const generation = ++refreshGeneration;
     const rootScope = formPayload.value?.scope ?? [];
     const currentValues = renderer.value?.currentValues() ?? values.value;
@@ -498,16 +508,38 @@ export function useElementEditor({saveData, root}: Options = {}) {
       return;
     }
 
-    applyingSavedPayload = true;
-    savedForm.value = response.form;
-    await nextTick();
-    applyingSavedPayload = false;
+    // A nested scope's payload is only that form; the renderer that asked for
+    // it reconciles it into the layout.
+    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+      applyingSavedPayload = true;
+      savedForm.value = response.form;
+      await nextTick();
+      applyingSavedPayload = false;
+    }
 
     if (generation !== refreshGeneration) {
       return;
     }
 
     await appendBodyHtml(response.bodyHtml);
+
+    return response;
+  }
+
+  /**
+   * Refreshes the field layout for the renderer's reactive controls.
+   */
+  async function refreshLayout(
+    _values: FormValues,
+    scope?: string[]
+  ): Promise<FormPayload> {
+    const response = await refreshForm(scope);
+
+    if (!response) {
+      throw new Error('A newer refresh superseded this one.');
+    }
+
+    return response.form as FormPayload;
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -706,6 +738,27 @@ export function useElementEditor({saveData, root}: Options = {}) {
   }
 
   /**
+   * Catches the screen up with a change it made to one of its nested elements
+   * — one created, saved, moved or deleted from inside it.
+   *
+   * Saving a nested element into this one bumps this one's `dateUpdated`.
+   * That's this screen's own doing, not someone else's edit, so the activity
+   * poll is re-baselined on what the server now reports rather than left to
+   * flag it.
+   */
+  async function refreshAfterNestedChange(): Promise<void> {
+    const response = await refreshForm();
+
+    if (response && 'updatedTimestamp' in response) {
+      activity.rebase({
+        element: (response.updatedTimestamp as number | null) ?? null,
+        canonical:
+          (response.canonicalUpdatedTimestamp as number | null) ?? null,
+      });
+    }
+  }
+
+  /**
    * What a save from inside a panel tells the rest of the CP, since the page
    * behind it isn't reloaded: the confirmation, other tabs and element indexes
    * (via the broadcaster), and Live Preview.
@@ -864,7 +917,9 @@ export function useElementEditor({saveData, root}: Options = {}) {
     onSidebarMutation,
     props,
     renderer,
+    refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,

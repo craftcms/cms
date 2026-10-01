@@ -32,6 +32,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\craftAuth;
 
+/**
+ * @since 6.0.0
+ */
 abstract readonly class AuthenticationController
 {
     use RespondsWithFlash;

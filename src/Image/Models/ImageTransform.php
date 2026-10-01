@@ -9,6 +9,9 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransform extends BaseModel
 {
     use HasUid;

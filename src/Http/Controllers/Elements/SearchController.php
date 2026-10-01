@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
@@ -13,6 +14,9 @@ use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @since 6.0.0
+ */
 class SearchController
 {
     private ElementIndexRequest $request;
@@ -75,7 +79,7 @@ class SearchController
                 'title' => $element->title,
                 'html' => app(ElementHtml::class)->chipHtml($element, [
                     'hyperlink' => false,
-                    'class' => 'chromeless',
+                    'appearance' => Appearance::Plain->value,
                 ]),
                 'exclude' => $exclude,
             ];

@@ -23,7 +23,11 @@ use ReflectionMethod;
  * its payload. Array conversion evaluates methods immediately. Passing the view
  * model as an Inertia property provider lets Inertia evaluate only requested props.
  */
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 abstract class ViewModel implements Arrayable, ProvidesInertiaProperties
 {
     public function toArray(): array
