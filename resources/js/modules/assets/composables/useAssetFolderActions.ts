@@ -1,4 +1,4 @@
-import {actionClient, getActionUrl, t} from '@craftcms/ui';
+import {actionClient, getActionUrl, t, isHttpError} from '@craftcms/ui';
 import {useEventListener} from '@vueuse/core';
 import {computed, shallowRef} from 'vue';
 import {router} from '@inertiajs/vue3';
@@ -8,7 +8,6 @@ import {
   moveFolders,
 } from '@/modules/assets/assetMover';
 import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
-import axios from 'axios';
 
 interface FolderActionDetail {
   elementIds?: Array<string | number>;
@@ -99,7 +98,7 @@ export function useAssetFolderActions(index: ElementIndexOperations) {
       closeNewFolder();
       onActionPerformed();
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('Couldn’t create the folder.'))
         : t('Couldn’t create the folder.');
       newFolderError.value = message;
@@ -152,7 +151,7 @@ export function useAssetFolderActions(index: ElementIndexOperations) {
         onActionPerformed();
       }
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('Couldn’t rename the folder.'))
         : t('Couldn’t rename the folder.');
       renameError.value = message;
