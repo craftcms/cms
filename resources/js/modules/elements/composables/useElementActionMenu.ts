@@ -7,6 +7,7 @@ import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {FormProperties, FormValues} from '@/modules/forms/types';
+import {openFormModal} from '@/modules/forms/open-form-modal';
 import {
   openImageEditorDialog,
   type ImageEditorSettings,
@@ -51,6 +52,13 @@ export type ElementActionBehavior =
       type: 'slideout';
       url: string;
       entryTypeFromField?: boolean;
+    }
+  /** Loads and submits a server-built form, then reloads the page. */
+  | {
+      type: 'formModal';
+      modalUrl: string;
+      actionUrl: string;
+      params?: FormValues;
     }
   // The asset behaviors below all hand off to a modal or uploader, and reload
   // the page afterwards rather than patching the file's details into it.
@@ -199,6 +207,16 @@ export function createElementActionMenu({
 
         return;
       }
+
+      case 'formModal':
+        void openFormModal({
+          modalUrl: behavior.modalUrl,
+          actionUrl: behavior.actionUrl,
+          params: behavior.params,
+          onSubmitted: () => router.reload(),
+        });
+
+        return;
 
       case 'previewFile':
         new Craft.PreviewFileModal(behavior.assetId, behavior.settings ?? {});
