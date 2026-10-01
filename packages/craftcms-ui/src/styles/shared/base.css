@@ -272,6 +272,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 }
 
 .cp-table--editable {
+  --_input-padding-inline: 10px;
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
@@ -285,7 +286,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   th {
     font-size: var(--c-text-sm);
     padding-block: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-md);
+    padding-inline: var(--_input-padding-inline);
     text-align: inherit;
   }
 
@@ -297,6 +298,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
     padding: var(--c-spacing-sm);
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  td.select-cell {
+    padding-inline: var(--_input-padding-inline);
   }
 
   /* Compat */
@@ -323,7 +328,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
     box-shadow: none;
     border-radius: 0;
     padding-block: 7px;
-    padding-inline: 10px;
+    padding-inline: var(--_input-padding-inline);
     line-height: 20px;
     background-color: transparent;
     overflow: hidden;
