@@ -154,6 +154,7 @@
 - Removed `CraftCms\Cms\Plugin\Concerns\HasFilesystemTypes`. Plugins can no longer register custom Craft filesystem types. ([#19650](https://github.com/craftcms/cms/pull/19650))
 
 ### Plugins & Extensibility
+- Added `CraftCms\Cms\Form\Controls\Text::suffix()` for display-only suffix text in PHP and Vue form controls. ([#19665](https://github.com/craftcms/cms/pull/19665))
 - Added `CraftCms\Cms\Element\Data\ElementSiteSettings`, the shared base for element URI and route settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
