@@ -8,6 +8,8 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserPhotoSaving The event that is triggered before a user photo is saved.
+ *
+ * @since 6.0.0
  */
 class UserPhotoSaving
 {

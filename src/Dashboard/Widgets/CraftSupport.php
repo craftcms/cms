@@ -18,6 +18,9 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class CraftSupport extends Widget
 {
     /** @param array<string, mixed> $config */

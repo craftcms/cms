@@ -12,6 +12,7 @@ use Override;
  * @method static void trackActivity(\CraftCms\Cms\Element\Contracts\ElementInterface $element, \CraftCms\Cms\Element\Enums\ElementActivityType $type, \CraftCms\Cms\User\Elements\User|null $user = null)
  *
  * @see \CraftCms\Cms\Element\ElementActivity
+ * @since 6.0.0
  */
 class ElementActivity extends Facade
 {

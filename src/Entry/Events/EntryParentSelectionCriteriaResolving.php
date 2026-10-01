@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  * @event EntryParentSelectionCriteriaResolving The event that is triggered when defining the parent selection criteria.
  *
  * @see Entry::_parentOptionCriteria()
+ * @since 6.0.0
  */
 class EntryParentSelectionCriteriaResolving
 {

@@ -9,6 +9,9 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class IconController
 {
     use RespondsWithFlash;

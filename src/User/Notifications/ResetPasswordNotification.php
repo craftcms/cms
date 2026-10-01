@@ -15,6 +15,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
 
+/**
+ * @since 6.0.0
+ */
 class ResetPasswordNotification extends Notification implements ShouldQueue
 {
     use Queueable;

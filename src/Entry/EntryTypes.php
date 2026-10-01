@@ -52,6 +52,9 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class EntryTypes
 {

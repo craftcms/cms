@@ -24,6 +24,8 @@ use function CraftCms\Cms\t;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 readonly class UpdatesController
 {

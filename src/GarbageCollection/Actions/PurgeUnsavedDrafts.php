@@ -8,6 +8,9 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 
+/**
+ * @since 6.0.0
+ */
 class PurgeUnsavedDrafts extends GarbageCollectionAction
 {
     public function __construct(

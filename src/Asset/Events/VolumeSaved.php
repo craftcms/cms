@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * @event VolumeSaved The event that is triggered after a volume is saved.
+ *
+ * @since 6.0.0
  */
 class VolumeSaved
 {

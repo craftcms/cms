@@ -39,6 +39,8 @@ use function CraftCms\Cms\t;
 
 /**
  * @property AddressRules $ruleset
+ *
+ * @since 6.0.0
  */
 #[Ruleset(AddressRules::class)]
 class Address extends Element implements AddressInterface, NestedElementInterface

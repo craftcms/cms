@@ -22,6 +22,7 @@ use Override;
  * @method static void loadProvisionalChanges(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
  *
  * @see \CraftCms\Cms\Element\Drafts
+ * @since 6.0.0
  */
 class Drafts extends Facade
 {

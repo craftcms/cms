@@ -27,6 +27,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 #[Hidden([
     'password',
     'rememberToken',

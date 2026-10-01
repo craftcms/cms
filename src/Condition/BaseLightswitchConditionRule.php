@@ -11,6 +11,8 @@ use Override;
 
 /**
  * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.
+ *
+ * @since 6.0.0
  */
 abstract class BaseLightswitchConditionRule extends BaseConditionRule
 {

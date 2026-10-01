@@ -15,6 +15,9 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementSelectorModalController
 {
     public function __invoke(ElementIndexRequest $request, ElementIndexHtml $elementIndexHtml, CurrentElementIndex $currentElementIndex): JsonResponse

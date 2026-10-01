@@ -44,7 +44,11 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 readonly class ElementDeletions
 {
     public function __construct(

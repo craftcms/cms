@@ -11,6 +11,9 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class Combobox extends Control
 {
     /** @var list<array<string, mixed>> */

@@ -17,6 +17,8 @@ use ReflectionUnionType;
 /**
  * Injects the element matched for the current site request.
  * Nullable parameters with a default receive null when no compatible element matches.
+ *
+ * @since 6.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class CurrentElement implements ContextualAttribute

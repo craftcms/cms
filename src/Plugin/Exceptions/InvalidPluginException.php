@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Plugin\Exceptions;
 
 use Exception;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidPluginException extends Exception
 {
     public function __construct(

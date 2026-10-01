@@ -25,6 +25,9 @@ use Throwable;
 
 use function CraftCms\Cms\craftAuth;
 
+/**
+ * @since 6.0.0
+ */
 class Entry extends ElementMutationResolver
 {
     use PerformsStructureMutations;

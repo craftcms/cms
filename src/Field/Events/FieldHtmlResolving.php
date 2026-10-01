@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Events\DefineHtmlEvent;
 
+/**
+ * @since 6.0.0
+ */
 class FieldHtmlResolving extends DefineHtmlEvent
 {
     public function __construct(

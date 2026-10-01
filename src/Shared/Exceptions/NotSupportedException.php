@@ -6,4 +6,7 @@ namespace CraftCms\Cms\Shared\Exceptions;
 
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class NotSupportedException extends RuntimeException {}

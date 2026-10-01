@@ -8,6 +8,9 @@ use Symfony\Component\Process\Process;
 
 use function CraftCms\Cms\normalizeVersion;
 
+/**
+ * @since 6.0.0
+ */
 class MysqlBackupCommand extends BackupCommand
 {
     public function backup(): string

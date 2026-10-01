@@ -30,6 +30,9 @@ use Stringable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Ruleset(SectionRules::class)]
 class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
 {

@@ -37,6 +37,9 @@ use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 class Elements
 {
     public const string REF_TAG_PATTERN = '/

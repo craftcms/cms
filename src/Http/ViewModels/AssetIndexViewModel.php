@@ -31,6 +31,8 @@ use function CraftCms\Cms\t;
  * Those breadcrumbs are the trail *within* a volume, drawn in the index pane.
  * The header crumbs are the trail *to* it — `Assets › Uploads` — which is the
  * same trail every other index shows and the one the main nav agrees with.
+ *
+ * @since 6.0.0
  */
 class AssetIndexViewModel extends ContentIndexViewModel
 {

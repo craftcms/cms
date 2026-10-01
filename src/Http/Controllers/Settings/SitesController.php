@@ -42,6 +42,9 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SitesController
 {
     use RespondsWithFlash;

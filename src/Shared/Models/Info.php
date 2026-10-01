@@ -10,6 +10,9 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Support\Facades\Context;
 use PDOException;
 
+/**
+ * @since 6.0.0
+ */
 class Info extends BaseModel
 {
     use HasUid;

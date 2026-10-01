@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
  * Requires database access to an existing Craft installation, even when `--require-yaml=0` is passed.
  * Does not apply project config or migrations.
  *
- * @since 5.12.0
+ * @since 6.0.0
  */
 class CheckCommand extends Command
 {

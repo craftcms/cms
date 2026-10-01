@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @since 6.0.0
+ */
 class VolumeFolder extends BaseModel
 {
     /** @use HasFactory<VolumeFolderFactory> */

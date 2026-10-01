@@ -11,6 +11,9 @@ use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class ElementTypeRule implements ValidationRule
 {
     public static function isValid(mixed $value): bool

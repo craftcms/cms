@@ -32,6 +32,8 @@ use InvalidArgumentException;
  * @property list<ActivityChange> $changes
  * @property array<string, mixed> $data
  * @property CarbonImmutable $occurredAt
+ *
+ * @since 6.0.0
  */
 class ActivityEvent extends BaseModel
 {

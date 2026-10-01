@@ -11,6 +11,9 @@ use Twig\Compiler;
 use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
+/**
+ * @since 6.0.0
+ */
 #[YieldReady]
 class NamespaceNode extends Node
 {

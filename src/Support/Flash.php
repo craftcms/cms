@@ -26,6 +26,8 @@ use function CraftCms\Cms\t;
  *     settings: array<string, mixed>,
  *     target: string|null,
  * }
+ *
+ * @since 6.0.0
  */
 class Flash
 {

@@ -9,6 +9,9 @@ use CraftCms\Cms\Email\Data\MailSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 
+/**
+ * @since 6.0.0
+ */
 class CraftMailable extends Mailable
 {
     use Queueable;

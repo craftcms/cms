@@ -8,6 +8,9 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RequireAdminChanges
 {
     public function __construct(

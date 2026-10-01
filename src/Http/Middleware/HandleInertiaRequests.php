@@ -38,6 +38,9 @@ use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUserElement;
 
+/**
+ * @since 6.0.0
+ */
 class HandleInertiaRequests extends Middleware
 {
     /**

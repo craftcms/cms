@@ -8,6 +8,8 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 
 /**
  * @event GqlQueryExecuting The event that is triggered before a GraphQL query is executed.
+ *
+ * @since 6.0.0
  */
 class GqlQueryExecuting
 {

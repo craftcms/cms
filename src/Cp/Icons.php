@@ -13,6 +13,9 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Icons
 {
     private const array LEGACY_ICON_MAP = [

@@ -16,6 +16,9 @@ use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser;
 use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups;
 use Laravel\Socialite\Two\AbstractProvider;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ProviderDefinition
 {
     public function __construct(

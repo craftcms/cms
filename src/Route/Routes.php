@@ -19,6 +19,9 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Routes
 {

@@ -15,7 +15,11 @@ use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type ArgumentConfig from Argument */
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ *
+ * @since 6.0.0
+ */
 abstract class ElementArguments extends Arguments
 {
     /** @return array<string, ArgumentConfig> */

@@ -10,6 +10,9 @@ use CraftCms\Cms\Site\Sites;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PrepareElementIndexVariables
 {
     public function __construct(

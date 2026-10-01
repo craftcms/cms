@@ -17,6 +17,9 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class ReplaceRelations extends BatchedElementJob
 {
     public function __construct(

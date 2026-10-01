@@ -12,6 +12,9 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class SetPasswordCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

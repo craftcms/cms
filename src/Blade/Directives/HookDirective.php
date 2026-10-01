@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Blade\Directives;
 use CraftCms\Cms\View\TemplateHooks;
 use Illuminate\View\Compilers\BladeCompiler;
 
+/**
+ * @since 6.0.0
+ */
 class HookDirective
 {
     public static function register(BladeCompiler $blade): void

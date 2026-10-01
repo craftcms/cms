@@ -12,6 +12,9 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Migration extends LaravelMigration
 {
     use InteractsWithIO;

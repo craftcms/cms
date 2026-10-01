@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
 
 /**
  * @method ContentBlockField getField()
+ *
+ * @since 6.0.0
  */
 #[Ruleset(ContentBlockRules::class)]
 class ContentBlock extends Element implements NestedElementInterface

@@ -13,6 +13,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class FieldsServiceProvider extends ServiceProvider
 {
     public function boot(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void

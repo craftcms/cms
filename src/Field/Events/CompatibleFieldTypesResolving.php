@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
  * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
  *
  * @see Fields::getCompatibleFieldTypes()
+ * @since 6.0.0
  */
 class CompatibleFieldTypesResolving
 {

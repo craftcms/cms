@@ -14,6 +14,9 @@ use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 class Transform extends Directive
 {
     public static function create(): GqlDirective

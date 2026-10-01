@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseAssetSettingsController
 {
     /** @return list<NavItem> */

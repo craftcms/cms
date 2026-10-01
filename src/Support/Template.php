@@ -29,6 +29,9 @@ use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 
+/**
+ * @since 6.0.0
+ */
 class Template
 {
     /** @var array<string, mixed> */

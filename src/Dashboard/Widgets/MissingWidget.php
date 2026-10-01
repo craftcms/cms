@@ -8,6 +8,9 @@ use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class MissingWidget extends Widget implements MissingComponentInterface
 {
     use MissingComponentTrait;

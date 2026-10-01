@@ -22,6 +22,9 @@ use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     /**

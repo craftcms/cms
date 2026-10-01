@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
 
+/**
+ * @since 6.0.0
+ */
 class AssetTransformerIndexData extends Component
 {
     public string $uid;

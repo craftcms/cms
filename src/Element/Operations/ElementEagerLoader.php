@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type NormalizedEagerLoadingMap array{elementType:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  * @phpstan-type EagerLoadingMap NormalizedEagerLoadingMap|array{map:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 readonly class ElementEagerLoader

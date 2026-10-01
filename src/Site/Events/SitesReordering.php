@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Site\Events;
 
 /**
  * @event SitesReordering The event that is triggered before the sites are reordered.
+ *
+ * @since 6.0.0
  */
 class SitesReordering
 {

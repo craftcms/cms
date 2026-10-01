@@ -22,6 +22,9 @@ use Twig\TwigFunction;
 
 use function CraftCms\Cms\renderObjectTemplate;
 
+/**
+ * @since 6.0.0
+ */
 class ArrayTwigExtension extends AbstractExtension
 {
     #[Override]

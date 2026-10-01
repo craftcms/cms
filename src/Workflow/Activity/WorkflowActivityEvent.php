@@ -18,6 +18,9 @@ use Illuminate\Contracts\Support\Htmlable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class WorkflowActivityEvent extends ActivityEventType implements ShouldBeRetained
 {
     protected const string LABEL = 'Workflow review';

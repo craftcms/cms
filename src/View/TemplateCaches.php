@@ -19,6 +19,9 @@ use InvalidArgumentException;
 
 use function request;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class TemplateCaches
 {

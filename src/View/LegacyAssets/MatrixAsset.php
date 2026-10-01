@@ -10,6 +10,8 @@ use CraftCms\Cms\View\HtmlStack;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 class MatrixAsset implements LegacyAssetInterface
 {

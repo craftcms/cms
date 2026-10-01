@@ -8,6 +8,9 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class InputTime extends Input
 {
     #[Override]

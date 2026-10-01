@@ -6,5 +6,7 @@ namespace CraftCms\Cms\Plugin\Events;
 
 /**
  * @event PluginsRegistered The event that is triggered after all plugins have been registered
+ *
+ * @since 6.0.0
  */
 class PluginsRegistered {}

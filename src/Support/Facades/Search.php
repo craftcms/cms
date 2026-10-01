@@ -19,6 +19,7 @@ use Override;
  * @method static void deleteOrphanedIndexJobs()
  *
  * @see \CraftCms\Cms\Search\Search
+ * @since 6.0.0
  */
 class Search extends Facade
 {

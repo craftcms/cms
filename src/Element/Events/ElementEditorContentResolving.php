@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event ElementEditorContentResolving The event that is triggered when rendering an element editor’s content.
+ *
+ * @since 6.0.0
  */
 class ElementEditorContentResolving
 {

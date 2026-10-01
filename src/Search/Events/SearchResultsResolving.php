@@ -11,6 +11,8 @@ use CraftCms\Cms\Search\SearchQuery;
  * @event The event that is triggered after search results are retrieved and before they are scored.
  *
  * Any modifications to [[$results]] will be respected when results are scored.
+ *
+ * @since 6.0.0
  */
 class SearchResultsResolving
 {

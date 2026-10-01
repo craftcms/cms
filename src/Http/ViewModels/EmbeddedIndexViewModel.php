@@ -19,6 +19,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Routing\Redirector;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class EmbeddedIndexViewModel extends ContentIndexViewModel
 {
     protected const string RENDER_CONTEXT = ElementSources::CONTEXT_EMBEDDED_INDEX;

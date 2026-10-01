@@ -9,6 +9,9 @@ use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Http\Routing\ActionRouteResolver;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class HandleActionRequest
 {
     public function __construct(

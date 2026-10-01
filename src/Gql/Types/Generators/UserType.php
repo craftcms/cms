@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\User\Elements\User as UserElement;
 
+/**
+ * @since 6.0.0
+ */
 class UserType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

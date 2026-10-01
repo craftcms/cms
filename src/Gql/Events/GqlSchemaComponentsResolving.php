@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Gql\Events;
 
 /**
  * @event GqlSchemaComponentsResolving The event that is triggered when registering GraphQL schema components.
+ *
+ * @since 6.0.0
  */
 class GqlSchemaComponentsResolving
 {

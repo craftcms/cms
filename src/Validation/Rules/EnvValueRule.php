@@ -36,6 +36,8 @@ use Stringable;
  *     ];
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 class EnvValueRule implements DataAwareRule, ValidationRule
 {

@@ -11,5 +11,7 @@ use CraftCms\Cms\View\HtmlStack;
  *
  * Listeners should use this event to flush any pending asset
  * registrations into the registry before rendering occurs.
+ *
+ * @since 6.0.0
  */
 class ViewAssetsRendering {}

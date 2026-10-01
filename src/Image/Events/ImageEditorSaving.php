@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Image\Events;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
+/**
+ * @since 6.0.0
+ */
 class ImageEditorSaving
 {
     use HandleableEvent;

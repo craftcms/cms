@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Pagination\LengthAwarePaginator;
 
+/**
+ * @since 6.0.0
+ */
 class Paginate extends Component
 {
     public string $basePath {

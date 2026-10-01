@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementMetadataResolving The event that is triggered when defining the element's metadata info.
  *
  * {@see HasControlPanelUI::getMetadata()}
+ *
+ * @since 6.0.0
  */
 class ElementMetadataResolving
 {

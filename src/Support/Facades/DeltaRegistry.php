@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getInitialValues()
  *
  * @see \CraftCms\Cms\View\DeltaRegistry
+ * @since 6.0.0
  */
 class DeltaRegistry extends Facade
 {

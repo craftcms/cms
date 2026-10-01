@@ -10,7 +10,11 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Override;
 
-/** @phpstan-import-type TableColumn from TableField */
+/**
+ * @phpstan-import-type TableColumn from TableField
+ *
+ * @since 6.0.0
+ */
 class TableRow extends ObjectType
 {
     #[Override]

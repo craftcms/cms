@@ -14,7 +14,11 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<EntryType> */
+/**
+ * @extends Ruleset<EntryType>
+ *
+ * @since 6.0.0
+ */
 class EntryTypeRules extends Ruleset
 {
     /** @return array<string, array<int, string|\Closure|object>> */

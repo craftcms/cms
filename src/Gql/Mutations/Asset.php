@@ -17,6 +17,8 @@ use GraphQL\Type\Definition\Type;
 /**
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
  */
 class Asset extends Mutation
 {

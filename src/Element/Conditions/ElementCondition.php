@@ -24,6 +24,9 @@ use Illuminate\Database\Query\Builder;
 use Override;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
     public static function createGroup(): ConditionGroupInterface

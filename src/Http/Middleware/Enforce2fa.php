@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Enforce2fa
 {
     public function __construct(

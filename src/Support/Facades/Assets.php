@@ -24,6 +24,7 @@ use Override;
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Asset\Assets
+ * @since 6.0.0
  */
 class Assets extends Facade
 {

@@ -108,6 +108,8 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-type SerializedEntryData array{type?:string,title?:string|null,slug?:string|null,uid?:string|null,enabled?:bool|int|string,enabledForSite?:bool|int|string,collapsed?:bool|int|string,fresh?:bool|int|string,fields?:array<string,mixed>}
  * @phpstan-type SerializedEntries array<int|string,SerializedEntryData>
+ *
+ * @since 6.0.0
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {

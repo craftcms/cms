@@ -19,6 +19,8 @@ use function CraftCms\Cms\currentUserElement;
  * Assets have no drafts, revisions, or statuses, so most of the shared
  * editor's machinery stays dormant here; what's left is the field layout, the
  * filename meta field, and the file preview.
+ *
+ * @since 6.0.0
  */
 class AssetEditViewModel extends ElementEditViewModel
 {

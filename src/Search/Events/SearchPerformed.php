@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Search\Events;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Search\SearchQuery;
 
-/** @event The event that is triggered after a search is performed. */
+/**
+ * @event The event that is triggered after a search is performed.
+ *
+ * @since 6.0.0
+ */
 readonly class SearchPerformed
 {
     public function __construct(

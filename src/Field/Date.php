@@ -42,6 +42,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
+ *
+ * @since 6.0.0
  */
 class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

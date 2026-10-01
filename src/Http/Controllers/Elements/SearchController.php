@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @since 6.0.0
+ */
 class SearchController
 {
     private ElementIndexRequest $request;

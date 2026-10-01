@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Auth\Events;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use SensitiveParameter;
 
+/**
+ * @since 6.0.0
+ */
 class UserAuthenticating
 {
     /** @param array{password?: string|null} $credentials */

@@ -9,6 +9,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * ElementCardAttributesResolving event is triggered when registering the card attributes for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementCardAttributesResolving
 {

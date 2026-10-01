@@ -25,6 +25,8 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseDateRangeConditionRule provides a base implementation for condition rules that are composed of date range inputs.
+ *
+ * @since 6.0.0
  */
 abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {

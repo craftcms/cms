@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
  * QueryForTableAttributePreparing event is triggered when preparing an element query for a table attribute.
  *
  * If `handled` is set to `true`, the default query preparation will be skipped.
+ *
+ * @since 6.0.0
  */
 class QueryForTableAttributePreparing
 {

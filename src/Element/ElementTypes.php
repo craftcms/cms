@@ -23,6 +23,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<ElementInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class ElementTypes extends TypeRegistry

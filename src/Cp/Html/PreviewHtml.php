@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Container\Attributes\Singleton;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class PreviewHtml
 {

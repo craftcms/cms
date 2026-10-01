@@ -12,6 +12,9 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SettingsIndexController
 {
     public function __invoke(GeneralConfig $generalConfig, Settings $cpSettings): Response

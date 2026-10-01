@@ -33,6 +33,7 @@ use Override;
  * @method static bool exists(string $uid)
  *
  * @see \CraftCms\Cms\Queue\JobProgress
+ * @since 6.0.0
  */
 class JobProgress extends Facade
 {

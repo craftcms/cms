@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Gql\Handlers;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RelatedEntries extends RelationArgumentHandler
 {
     #[Override]

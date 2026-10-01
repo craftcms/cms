@@ -15,7 +15,11 @@ use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class ContentBlock extends Element
 {
     #[Override]

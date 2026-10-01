@@ -10,6 +10,9 @@ use Fruitcake\LaravelDebugbar\CollectorProviders\AbstractCollectorProvider;
 use Fruitcake\LaravelDebugbar\LaravelDebugbar;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class DebugServiceProvider extends ServiceProvider
 {
     public function boot(): void

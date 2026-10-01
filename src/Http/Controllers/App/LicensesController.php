@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class LicensesController
 {
     use RespondsWithFlash;

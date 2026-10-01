@@ -13,6 +13,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Find all temp upload folders with no assets in them and remove them.
+ *
+ * @since 6.0.0
  */
 class RemoveEmptyTempFolders extends GarbageCollectionAction
 {

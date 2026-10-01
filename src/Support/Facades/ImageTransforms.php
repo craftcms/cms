@@ -20,6 +20,7 @@ use Override;
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Image\ImageTransforms
+ * @since 6.0.0
  */
 class ImageTransforms extends Facade
 {

@@ -9,6 +9,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ColorRule implements ValidationRule
 {
     private string $pattern = '/^(?:#[0-9a-f]{6}|transparent)$/';

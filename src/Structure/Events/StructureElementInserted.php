@@ -11,6 +11,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * You may set [[$isValid]] to `false` to prevent the
  * element from getting inserted.
+ *
+ * @since 6.0.0
  */
 class StructureElementInserted extends UpdateElementEvent
 {

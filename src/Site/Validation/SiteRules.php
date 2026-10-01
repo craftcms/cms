@@ -14,7 +14,11 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
-/** @extends Ruleset<Site> */
+/**
+ * @extends Ruleset<Site>
+ *
+ * @since 6.0.0
+ */
 class SiteRules extends Ruleset
 {
     /** @return array<string, mixed> */

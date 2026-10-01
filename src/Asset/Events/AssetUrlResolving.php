@@ -12,6 +12,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
  * @event AssetUrlResolving The event that is triggered before defining the asset’s URL.
  *
  * @see getUrl()
+ * @since 6.0.0
  */
 class AssetUrlResolving extends ElementUrlResolving
 {

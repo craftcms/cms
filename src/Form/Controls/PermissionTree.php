@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class PermissionTree extends Control
 {
     private ?string $ariaLabel = null;

@@ -11,7 +11,11 @@ use Illuminate\Contracts\Support\Arrayable;
 
 use function CraftCms\Cms\t;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 class UserSignInProvidersViewModel implements Arrayable
 {
     public bool $readOnly = false;

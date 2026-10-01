@@ -8,6 +8,9 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\TextSanitizer\UrlSanitizer;
 use Symfony\Component\HtmlSanitizer\Visitor\AttributeSanitizer\AttributeSanitizerInterface;
 
+/**
+ * @since 6.0.0
+ */
 class VideoEmbedUrlSanitizer implements AttributeSanitizerInterface
 {
     public function __construct(

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Email\Data;
 
 use CraftCms\Cms\Support\Env;
 
+/**
+ * @since 6.0.0
+ */
 readonly class MailSettings
 {
     public function __construct(

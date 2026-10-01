@@ -15,6 +15,7 @@ use Override;
  * @method static \Symfony\Component\HttpFoundation\Response export(\CraftCms\Cms\Element\Contracts\ElementExporterInterface $exporter, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query, string $format = 'csv')
  *
  * @see \CraftCms\Cms\Element\ElementExporters
+ * @since 6.0.0
  */
 class ElementExporters extends Facade
 {

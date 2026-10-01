@@ -8,6 +8,9 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Container\Attributes\Scoped;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class RequestedSite
 {

@@ -8,6 +8,9 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 class OptionField extends Resolver
 {
     /** @param array<string, mixed> $arguments */

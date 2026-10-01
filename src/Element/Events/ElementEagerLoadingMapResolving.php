@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * ElementEagerLoadingMapResolving event is triggered when defining an eager-loading map.
  *
  * Set `elementType` and `map` to define a custom eager-loading map for the handle.
+ *
+ * @since 6.0.0
  */
 class ElementEagerLoadingMapResolving
 {

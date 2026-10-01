@@ -32,6 +32,7 @@ use Override;
  * @method static void setRememberedUsername(\CraftCms\Cms\User\Contracts\CraftUser $user)
  *
  * @see \CraftCms\Cms\Auth\AuthMethods
+ * @since 6.0.0
  */
 class AuthMethods extends Facade
 {

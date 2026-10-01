@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
+/**
+ * @since 6.0.0
+ */
 class ActivityCommentRequest extends ActivityRequest
 {
     public const int MaxLength = 10_000;

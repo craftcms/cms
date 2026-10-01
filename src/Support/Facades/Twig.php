@@ -14,6 +14,7 @@ use Override;
  * @method static void registerExtension(\Twig\Extension\ExtensionInterface $extension, \CraftCms\Cms\View\TemplateMode|null $mode = null)
  *
  * @see \CraftCms\Cms\Twig\Twig
+ * @since 6.0.0
  */
 class Twig extends Facade
 {

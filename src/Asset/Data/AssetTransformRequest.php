@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 
+/**
+ * @since 6.0.0
+ */
 readonly class AssetTransformRequest
 {
     /**

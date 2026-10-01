@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Element\Commands\Resave;
 use CraftCms\Cms\Support\Str;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ResaveAllCommand extends ResaveCommand
 {
     #[Override]

@@ -6,4 +6,7 @@ namespace CraftCms\Cms\Component\Exceptions;
 
 use Exception;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidCallException extends Exception {}

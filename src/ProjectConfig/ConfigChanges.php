@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class ConfigChanges
 {
     /** @return array<string, mixed> */

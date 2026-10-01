@@ -13,5 +13,7 @@ use RuntimeException;
  * a normal 200 response.
  *
  * Caught by {@see PageLifecycle} to capture buffered output.
+ *
+ * @since 6.0.0
  */
 class TemplateExitException extends RuntimeException {}

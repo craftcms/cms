@@ -12,6 +12,9 @@ use LogicException;
 use Override;
 use ReflectionClass;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Plugin extends ServiceProvider implements PluginInterface
 {
     use Concerns\HasCommands;

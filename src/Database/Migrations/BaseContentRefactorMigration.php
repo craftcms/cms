@@ -33,7 +33,7 @@ use function Laravel\Prompts\progress;
 /**
  * Base content refactor migration class
  *
- * @since 5.0.0
+ * @since 6.0.0
  */
 class BaseContentRefactorMigration extends Migration
 {

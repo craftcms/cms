@@ -14,6 +14,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * Set `$isValid` to `false` to prevent the element from getting restored.
  *
  * {@see Element::beforeRestore()}
+ *
+ * @since 6.0.0
  */
 class ElementLifecycleRestoring
 {

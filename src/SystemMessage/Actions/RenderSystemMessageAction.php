@@ -14,6 +14,9 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\renderSandboxedString;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RenderSystemMessageAction
 {
     public function __construct(

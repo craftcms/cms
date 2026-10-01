@@ -34,6 +34,9 @@ use CraftCms\Cms\Workflow\WorkflowServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class CraftServiceProvider extends AggregateServiceProvider
 {
     #[Override]

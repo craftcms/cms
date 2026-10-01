@@ -8,6 +8,9 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use Illuminate\Container\Attributes\Scoped;
 use WeakMap;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class AssetTransformContext
 {

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool remove(int $structureId, \CraftCms\Cms\Element\Contracts\ElementInterface $element)
  *
  * @see \CraftCms\Cms\Structure\Structures
+ * @since 6.0.0
  */
 class Structures extends Facade
 {

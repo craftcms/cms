@@ -9,6 +9,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RequireAdmin
 {
     public function handle(Request $request, Closure $next): mixed

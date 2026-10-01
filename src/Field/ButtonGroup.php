@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
 
 /**
  * RadioButtons represents a Radio Buttons field.
+ *
+ * @since 6.0.0
  */
 class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {

@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

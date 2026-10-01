@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
 
 /**
  * SystemMessages represents a System Messages utility.
+ *
+ * @since 6.0.0
  */
 class SystemMessages extends Utility
 {

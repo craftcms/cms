@@ -18,6 +18,9 @@ use Override;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public static function isSelectableForCondition(ConditionInterface $condition): bool

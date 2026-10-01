@@ -16,6 +16,9 @@ use CraftCms\Cms\Form\Contracts\Node;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

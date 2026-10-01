@@ -19,6 +19,8 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * Note that ElementUrlResolved will still be called regardless of what happens with this event.
  *
  * {@see HasRoutesAndUrls::getUrl()}
+ *
+ * @since 6.0.0
  */
 class ElementUrlResolving
 {

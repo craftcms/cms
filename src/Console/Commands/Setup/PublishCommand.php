@@ -11,6 +11,9 @@ use Illuminate\Console\Command;
 use Override;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class PublishCommand extends Command
 {
     use CraftCommand;

@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementIndexSourceSettings
 {
     public const string NESTED_KEY = '__IMP__';

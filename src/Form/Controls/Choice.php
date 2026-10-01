@@ -22,6 +22,9 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class Choice extends Control
 {
     /** The token {@see self::allOption()} posts by default. */

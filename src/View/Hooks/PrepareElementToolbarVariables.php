@@ -7,6 +7,9 @@ namespace CraftCms\Cms\View\Hooks;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Site\Sites;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PrepareElementToolbarVariables
 {
     public function __construct(

@@ -14,6 +14,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Migrations represents a Migrations utility.
+ *
+ * @since 6.0.0
  */
 class Migrations extends Utility
 {

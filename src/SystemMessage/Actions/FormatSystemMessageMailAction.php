@@ -12,6 +12,9 @@ use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 
+/**
+ * @since 6.0.0
+ */
 readonly class FormatSystemMessageMailAction
 {
     public function __construct(

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void defer(string $event, callable $handler, mixed $data = null, string|null $watchKey = null)
  *
  * @see \CraftCms\Cms\Element\BulkOp\BulkOps
+ * @since 6.0.0
  */
 class BulkOps extends Facade
 {

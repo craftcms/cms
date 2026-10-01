@@ -13,6 +13,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes elements that are missing data in the given element extension table.
+ *
+ * @since 6.0.0
  */
 class DeletePartialElements extends GarbageCollectionAction
 {

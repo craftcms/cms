@@ -11,6 +11,9 @@ use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
+/**
+ * @since 6.0.0
+ */
 class UserResolver implements ResolvesOAuthUser
 {
     public function __construct(

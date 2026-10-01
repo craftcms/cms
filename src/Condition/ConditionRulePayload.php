@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Form\FormPayload;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ConditionRulePayload
 {
     /** @param array<string, mixed> $config */

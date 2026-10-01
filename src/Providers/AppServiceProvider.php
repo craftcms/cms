@@ -53,6 +53,9 @@ use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class AppServiceProvider extends ServiceProvider
 {
     public static int $minPasswordLength = UserPasswordRule::MIN_PASSWORD_LENGTH;

@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementSidebarHtmlResolving The event that is triggered when defining the HTML for the editor sidebar.
  *
  * {@see HasControlPanelUI::getSidebarHtml()}
+ *
+ * @since 6.0.0
  */
 class ElementSidebarHtmlResolving
 {

@@ -9,6 +9,9 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Request;
 use SensitiveParameter;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Security
 {

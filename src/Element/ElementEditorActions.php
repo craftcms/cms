@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementEditorActions
 {
     public function __construct(

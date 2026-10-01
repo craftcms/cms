@@ -13,6 +13,9 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class CheckRequirements
 {
     public function __construct(

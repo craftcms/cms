@@ -8,6 +8,9 @@ use Carbon\CarbonInterval;
 use CraftCms\Cms\Support\Facades\Sites;
 use DateInterval;
 
+/**
+ * @since 6.0.0
+ */
 class Config
 {
     /**

@@ -13,6 +13,8 @@ use function CraftCms\Cms\template;
 /**
  * An ordered table Control. Its canonical value is a list or keyed map of row
  * maps; cell values must be JSON-safe scalars or null.
+ *
+ * @since 6.0.0
  */
 class Table extends Control
 {

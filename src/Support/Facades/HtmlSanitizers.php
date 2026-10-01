@@ -25,6 +25,7 @@ use Override;
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager forgetDrivers()
  *
  * @see HtmlSanitizerManager
+ * @since 6.0.0
  */
 class HtmlSanitizers extends Facade
 {

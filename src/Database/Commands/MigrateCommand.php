@@ -39,6 +39,8 @@ use function Laravel\Prompts\confirm;
  *         ->setPaths([__DIR__.'/migrations']));
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 class MigrateCommand extends Command implements Isolatable
 {

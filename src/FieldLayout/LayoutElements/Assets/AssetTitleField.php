@@ -11,6 +11,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class AssetTitleField extends TitleField
 {
     #[Override]

@@ -12,7 +12,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class StructuralElementActivity
 {
     public static function recordDuplicated(ElementInterface $source, ElementInterface $duplicate): void

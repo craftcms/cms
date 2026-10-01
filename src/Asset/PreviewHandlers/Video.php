@@ -8,6 +8,9 @@ use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class Video extends AssetPreviewHandler
 {
     public function getPreviewHtml(array $variables = []): string

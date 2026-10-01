@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
  * to objects which aren't `serialize()`-friendly should be excluded via `__sleep()`,
  * and any private/protected properties will need to be reset to their default values
  * via `__wakeup()` to avoid uninitialized property errors.
+ *
+ * @since 6.0.0
  */
 abstract class BatchedJob extends Job
 {

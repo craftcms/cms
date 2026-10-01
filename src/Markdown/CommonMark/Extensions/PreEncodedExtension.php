@@ -13,6 +13,9 @@ use League\CommonMark\Extension\CommonMark\Node\Block\IndentedCode;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Code;
 use League\CommonMark\Extension\ExtensionInterface;
 
+/**
+ * @since 6.0.0
+ */
 class PreEncodedExtension implements ExtensionInterface
 {
     public function register(EnvironmentBuilderInterface $environment): void

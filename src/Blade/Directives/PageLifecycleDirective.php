@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Blade\Directives;
 use CraftCms\Cms\View\PageLifecycle;
 use Illuminate\View\Compilers\BladeCompiler;
 
+/**
+ * @since 6.0.0
+ */
 class PageLifecycleDirective
 {
     public static function register(BladeCompiler $blade): void

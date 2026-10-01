@@ -16,6 +16,8 @@ use Throwable;
  *
  * Keeps TemplateManager focused on template rendering without coupling
  * it to asset output or page structure concerns.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 readonly class PageLifecycle

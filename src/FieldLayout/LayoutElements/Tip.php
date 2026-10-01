@@ -16,6 +16,9 @@ use Override;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class Tip extends BaseUiElement
 {
     public const string STYLE_TIP = 'tip';

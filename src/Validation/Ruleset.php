@@ -16,6 +16,8 @@ use Override;
  * @extends \CraftCms\RulesetValidation\Ruleset<T>
  *
  * @property T $subject
+ *
+ * @since 6.0.0
  */
 abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
 {

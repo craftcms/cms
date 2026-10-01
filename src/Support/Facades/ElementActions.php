@@ -16,6 +16,7 @@ use Override;
  * @method static array invoke(\CraftCms\Cms\Element\Contracts\ElementActionInterface $action, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query)
  *
  * @see \CraftCms\Cms\Element\ElementActions
+ * @since 6.0.0
  */
 class ElementActions extends Facade
 {

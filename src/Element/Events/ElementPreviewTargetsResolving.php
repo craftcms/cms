@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementPreviewTargetsResolving The event that is triggered when registering the element's preview targets.
  *
  * {@see HasPreviewTargets::getPreviewTargets()}
+ *
+ * @since 6.0.0
  */
 class ElementPreviewTargetsResolving
 {

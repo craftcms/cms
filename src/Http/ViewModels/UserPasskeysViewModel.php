@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\User\Elements\User;
 
+/**
+ * @since 6.0.0
+ */
 class UserPasskeysViewModel extends ViewModel
 {
     /**

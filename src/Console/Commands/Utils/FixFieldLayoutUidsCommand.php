@@ -14,6 +14,8 @@ use Override;
 /**
  * @phpstan-type ConfigArray array<array-key, mixed>
  * @phpstan-type Uids array<string, true>
+ *
+ * @since 6.0.0
  */
 class FixFieldLayoutUidsCommand extends Command
 {

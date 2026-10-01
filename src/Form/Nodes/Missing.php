@@ -16,6 +16,9 @@ use Illuminate\Support\Traits\Conditionable;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class Missing implements Node
 {
     use Conditionable;

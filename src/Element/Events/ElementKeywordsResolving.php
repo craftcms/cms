@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * ElementKeywordsResolving event is triggered when defining the search keywords for an element attribute.
  *
  * If `handled` is set to `true`, the custom `keywords` value will be used instead of the default.
+ *
+ * @since 6.0.0
  */
 class ElementKeywordsResolving
 {

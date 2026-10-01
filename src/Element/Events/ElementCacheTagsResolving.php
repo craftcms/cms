@@ -12,6 +12,8 @@ use CraftCms\Cms\Element\Element;
  * an element is saved.
  *
  * {@see Element::getCacheTags()}
+ *
+ * @since 6.0.0
  */
 class ElementCacheTagsResolving
 {

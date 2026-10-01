@@ -12,6 +12,7 @@ use InvalidArgumentException;
  * ([woltapp/blurhash](https://github.com/woltapp/blurhash)).
  *
  * @see Asset::getBlurhash()
+ * @since 6.0.0
  */
 class Blurhash
 {

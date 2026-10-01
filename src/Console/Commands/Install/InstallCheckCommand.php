@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use Illuminate\Console\Command;
 
+/**
+ * @since 6.0.0
+ */
 class InstallCheckCommand extends Command
 {
     #[\Override]
