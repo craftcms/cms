@@ -1,8 +1,8 @@
 <script setup lang="ts">
   /**
-   * Opens the element on the front end. The URLs arrive ready to follow: a live
-   * element points at its own URL, anything else at a token-minting redirect
-   * that lands on the tokenized preview.
+   * Links to the element on the front end, in a new window. The URLs arrive
+   * ready to follow: a live element points at its own URL, anything else at a
+   * token-minting redirect that lands on the tokenized preview.
    */
   import {t} from '@craftcms/ui';
   import type {ElementPreviewTarget} from '@/modules/elements/composables/useElementEditor';
@@ -14,23 +14,20 @@
   function labelFor(target: ElementPreviewTarget): string {
     return props.targets.length === 1 ? t('View') : target.label;
   }
-
-  function open(target: ElementPreviewTarget): void {
-    window.open(target.url, '_blank', 'noopener');
-  }
 </script>
 
 <template>
   <craft-button
     v-for="target in targets"
     :key="target.url"
-    type="button"
+    :href="target.url"
+    target="_blank"
     variant="link"
     size="small"
     icon="arrow-up-right-from-square"
     icon-position="suffix"
-    @click="open(target)"
   >
     {{ labelFor(target) }}
+    <span class="sr-only">{{ t('Opens in a new window') }}</span>
   </craft-button>
 </template>
