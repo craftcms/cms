@@ -62,7 +62,6 @@ Craft.CP = Garnish.Base.extend(
     displayedJobInfoUnchanged: 1,
     trackJobProgressTimeout: null,
     trackingJobProgress: false,
-    jobProgressCancelToken: null,
     jobProgressIcon: null,
 
     checkingForUpdates: false,
