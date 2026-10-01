@@ -8,7 +8,8 @@
       "props": {
         "label": "UI Mode",
         "instructions": "How the field should be presented in the control panel.",
-        "required": false
+        "required": false,
+        "instructionsHtml": "How the field should be presented in the control panel."
       },
       "control": {
         "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
@@ -32,7 +33,8 @@
       "props": {
         "label": "Placeholder Text",
         "instructions": "The text that will be shown if the field doesn’t have a value.",
-        "required": false
+        "required": false,
+        "instructionsHtml": "The text that will be shown if the field doesn’t have a value."
       },
       "control": {
         "type": "CraftCms\\Cms\\Form\\Controls\\Text",

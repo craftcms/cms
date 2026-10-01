@@ -61,6 +61,7 @@
     /** Visually hides the label, keeping it available to screen readers. */
     labelSrOnly?: boolean;
     instructions?: string | null;
+    instructionsHtml?: string;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
     tip?: string;
@@ -282,7 +283,11 @@
     :id="fieldId(control.path)"
     :label="resolvedNode.props.label ?? undefined"
     :label-sr-only="resolvedNode.props.labelSrOnly || undefined"
-    :help-text="resolvedNode.props.instructions ?? undefined"
+    :help-text="
+      resolvedNode.props.instructionsHtml
+        ? undefined
+        : (resolvedNode.props.instructions ?? undefined)
+    "
     :instructions-position="resolvedNode.props.instructionsPosition"
     :required="Boolean(resolvedNode.props.required)"
     :readonly="control.mode === 'readOnly'"
@@ -312,6 +317,11 @@
         @change="onChange"
       />
     </div>
+    <span
+      v-if="resolvedNode.props.instructionsHtml"
+      slot="help-text"
+      v-html="resolvedNode.props.instructionsHtml"
+    />
     <span
       v-if="resolvedNode.props.tipHtml"
       slot="tip"
