@@ -50,7 +50,7 @@
         ? BLANK_VALUE
         : String(value ?? '')
     "
-    :allow-transparent="control.props.allowTransparent ?? false"
+    :allow-transparent="control.props.allowTransparent || undefined"
     :blank-label="control.props.blankLabel"
     :colors="control.props.colors ?? undefined"
     :required="editable && required"
