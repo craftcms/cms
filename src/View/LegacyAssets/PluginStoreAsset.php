@@ -18,6 +18,9 @@ use function CraftCms\Cms\craftAsset;
 class PluginStoreAsset implements LegacyAssetInterface
 {
     public array $depends = [
+        // @TODO Remove once the Plugin Store no longer uses axios. Until then,
+        // this is the only core screen that loads it without yii2-adapter.
+        AxiosAsset::class,
         CpAsset::class,
         VueAsset::class,
     ];
