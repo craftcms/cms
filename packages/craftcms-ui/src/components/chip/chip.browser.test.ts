@@ -172,3 +172,29 @@ it('sizes and rounds an image slotted straight into the thumbnail', async () => 
   // The source image is 10px; it takes the chip's thumbnail size instead.
   expect(box(chip.querySelector('img')!)).toEqual({width: 30, height: 30});
 });
+
+it('takes the theme’s text color when it has no fill of its own', async () => {
+  await import('../../styles/shared/color-palette.css');
+  await import('../../styles/shared/colorable.css');
+  await import('../../styles/shared/variables.css');
+  await import('../../styles/shared/tokens.css');
+
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <span class="text-default" style="color: var(--c-text-default)"></span>
+      <craft-chip appearance="plain">Label</craft-chip>
+      <craft-chip appearance="outline">Label</craft-chip>
+    </div>`;
+  const expected = getComputedStyle(
+    document.querySelector('.text-default')!
+  ).color;
+
+  for (const chip of document.querySelectorAll('craft-chip')) {
+    await chip.updateComplete;
+
+    expect(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!).color,
+      chip.getAttribute('appearance')!
+    ).toBe(expected);
+  }
+});

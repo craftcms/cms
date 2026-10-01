@@ -9,7 +9,6 @@
   import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface TokenData {
     id: number;
@@ -95,15 +94,13 @@
       t('New token')
     }}</CpButtonLink>
   </LayoutSlot>
-  <CpContainer>
-    <AdminTable :table="table">
-      <template #empty-row>
-        <craft-empty :label="t('No GraphQL tokens exist yet.')">
-          <CpButtonLink :href="create().url" icon="plus">{{
-            t('New token')
-          }}</CpButtonLink>
-        </craft-empty>
-      </template>
-    </AdminTable>
-  </CpContainer>
+  <AdminTable class="admin-table--padded" :table="table">
+    <template #empty-row>
+      <craft-empty :label="t('No GraphQL tokens exist yet.')">
+        <CpButtonLink :href="create().url" icon="plus">{{
+          t('New token')
+        }}</CpButtonLink>
+      </craft-empty>
+    </template>
+  </AdminTable>
 </template>

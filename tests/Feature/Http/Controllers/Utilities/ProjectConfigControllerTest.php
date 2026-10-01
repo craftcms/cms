@@ -42,7 +42,7 @@ it('can get a diff', function () {
 it('can rebuild the project config', function () {
     post(action([ProjectConfigController::class, 'rebuild']))
         ->assertRedirectBack()
-        ->assertSessionHas('success', t('Project config rebuilt successfully.'));
+        ->assertMessage('success', t('Project config rebuilt successfully.'));
 });
 
 it('cannot rebuild the project config if it is readonly', function () {
@@ -55,7 +55,7 @@ it('cannot rebuild the project config if it is readonly', function () {
 it('can discard the project config changes', function () {
     post(action([ProjectConfigController::class, 'discard']))
         ->assertRedirectBack()
-        ->assertSessionHas('success', t('External project config changes discarded.'));
+        ->assertMessage('success', t('External project config changes discarded.'));
 });
 
 it('cannot discard the project config changes if it is readonly', function () {

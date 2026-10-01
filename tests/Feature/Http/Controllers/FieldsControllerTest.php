@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Matrix;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -405,6 +407,42 @@ it('can save a new field with settings posted as a url-encoded string', function
         expect($field->settings['placeholder'])->toBe('Type something…');
         expect($field->settings['multiline'])->toBeTrue();
     });
+});
+
+it('saves only the selected Matrix site destination while keeping the URI format', function () {
+    $site = Site::firstOrFail();
+    $entryType = EntryType::factory()->withFieldLayout()->create();
+    $data = [
+        'type' => Matrix::class,
+        'name' => 'Routed entries',
+        'handle' => 'routedEntries',
+        'settings' => [
+            'entryTypes' => [$entryType->id],
+            'siteSettings' => [$site->uid => [
+                'uriFormat' => 'nested/{slug}',
+                'routeType' => 'route',
+                'route' => ' entries.nested ',
+            ]],
+        ],
+    ];
+
+    $this->postJson(action([FieldsController::class, 'store']), $data)->assertSuccessful();
+
+    $field = FieldModel::where('handle', 'routedEntries')->firstOrFail();
+    expect($field->settings['siteSettings'][$site->uid])->toBe([
+        'uriFormat' => 'nested/{slug}',
+        'route' => 'entries.nested',
+    ]);
+
+    $data['fieldId'] = $field->id;
+    $data['settings']['siteSettings'][$site->uid]['routeType'] = 'template';
+    $data['settings']['siteSettings'][$site->uid]['route'] = 'entries/nested';
+    $this->postJson(action([FieldsController::class, 'store']), $data)->assertSuccessful();
+
+    expect($field->fresh()->settings['siteSettings'][$site->uid])->toBe([
+        'uriFormat' => 'nested/{slug}',
+        'template' => 'entries/nested',
+    ]);
 });
 
 it('saves changed Form groups without resetting untouched settings', function () {

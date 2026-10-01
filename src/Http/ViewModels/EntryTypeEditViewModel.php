@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\ColorSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
@@ -29,6 +29,7 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Sites;
 
 use function CraftCms\Cms\t;
@@ -67,7 +68,11 @@ class EntryTypeEditViewModel extends ViewModel
                 ->required(),
             Field::make(t('Description'), Textarea::make('description')),
             Field::make(t('Icon'), IconPicker::make('icon')),
-            Field::make(t('Color'), Color::make('color')),
+            Field::make(t('Color'), ColorSelect::make('color')
+                ->allowTransparent()
+                ->blankLabel(t('No color'))
+                // The component's own palette is wider than the Color enum.
+                ->colors(array_column(Color::cases(), 'value'))),
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))

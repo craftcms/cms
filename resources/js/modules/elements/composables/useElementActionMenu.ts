@@ -53,11 +53,7 @@ export type ElementActionBehavior =
       url: string;
       entryTypeFromField?: boolean;
     }
-  /**
-   * Opens a server-built Form in a modal: loaded from `modalUrl`, submitted to
-   * `actionUrl`, with `params` sent to both. The page reloads once it's
-   * submitted.
-   */
+  /** Loads and submits a server-built form, then reloads the page. */
   | {
       type: 'formModal';
       modalUrl: string;

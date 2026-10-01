@@ -2,7 +2,7 @@
   import {t, type ActionMenuItem} from '@craftcms/ui';
   import {computed, watch} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {useMessages} from '@/modules/messages/useMessages';
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
@@ -47,11 +47,11 @@
     identity,
     updateReview
   );
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   watch(error, (message) => {
     if (message) {
-      flash('error', message);
+      messages.error(message);
     }
   });
 

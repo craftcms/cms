@@ -65,7 +65,7 @@ const EXCEPTIONS: Record<string, string> = {
     '480px',
   // Predates the scale.
   'resources/css/global-sidebar.css': '1999px',
-  'resources/css/notifications.css': 'calc(600rem / 16)',
+  'resources/css/messages.css': 'calc(600rem / 16)',
 };
 
 function stylesheets(dir: string, found: string[] = []): string[] {

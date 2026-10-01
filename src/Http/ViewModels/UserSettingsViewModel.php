@@ -163,21 +163,25 @@ class UserSettingsViewModel extends ViewModel
     /** @return list<array{label: string, value: string}|ComboboxCreateOption> */
     private function photoVolumeOptions(): array
     {
-        return $this->volumes->getAllVolumes()
+        $options = $this->volumes->getAllVolumes()
             ->map(fn (Volume $volume): array => [
                 'label' => $volume->name,
                 'value' => (string) $volume->uid,
             ])
             ->sortBy('label')
             ->values()
-            ->push(new ComboboxCreateOption(
+            ->all();
+
+        return [
+            ...$options,
+            new ComboboxCreateOption(
                 t('Create a new volume…'),
                 action([VolumesController::class, 'create']),
                 'volume',
                 value: '__createVolume__',
                 valueField: 'uid',
-            ))
-            ->all();
+            ),
+        ];
     }
 
     /** @return list<array{label: string, value: string}> */

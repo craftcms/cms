@@ -171,10 +171,24 @@
         [
           row.dataset.id!,
           Object.fromEntries(
-            columns.map((column, index) => [
-              column,
-              cellValue(row, row.cells[index]!, column, data),
-            ])
+            columns.flatMap((column, index) => {
+              const values: Array<[string, EditableTableValue]> = [
+                [column, cellValue(row, row.cells[index]!, column, data)],
+              ];
+              const select = props.control.props.columns[column]?.prefixSelect;
+              if (select) {
+                const name = `${inputName(props.control.path)}[${row.dataset.id}][${select.key}]`;
+                values.push([
+                  select.key,
+                  String(
+                    data.get(name) ??
+                      rowValue(rows, row.dataset.id!)?.[select.key] ??
+                      ''
+                  ),
+                ]);
+              }
+              return values;
+            })
           ),
         ] as const
     );

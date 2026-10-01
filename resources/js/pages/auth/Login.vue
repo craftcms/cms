@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import AuthBase from '@/common/layouts/AuthBase.vue';
   import '@/modules/auth/components/login/login-form.js';
+  import {useMessageOutlet} from '@/modules/messages/useMessages';
+  import type {CpMessage} from '@/modules/messages';
 
   const props = defineProps<{
     errors?: Record<string, string[]>;
@@ -18,12 +20,21 @@
 
   const page = usePage<{
     username?: string;
-    flash?: {
-      success: string | null;
-      error: string | null;
-    };
+    messages?: CpMessage[];
   }>();
   const {general} = useCraftData();
+
+  // Sign-in errors the server targets at the form render beside its fields
+  // rather than in the default message display.
+  const loginError = ref(
+    page.props.messages?.find(
+      (message) => message.target === 'login' && message.type === 'error'
+    )?.message ?? ''
+  );
+
+  useMessageOutlet('login', (message) => {
+    loginError.value = message.message;
+  });
 </script>
 
 <template>
@@ -33,7 +44,7 @@
       show-reset-password
       show-remember-me
       :username="page.props.username"
-      :initial-error="page.props.flash?.error ?? ''"
+      :initial-error="loginError"
       :use-email-as-username="general.useEmailAsUsername ? '' : null"
     >
       <div

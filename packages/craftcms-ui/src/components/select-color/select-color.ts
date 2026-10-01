@@ -73,15 +73,27 @@ export default class CraftSelectColor extends LitElement {
   @property({type: Array})
   colors: string[] = [...paletteColors];
 
+  /**
+   * Disables the control, forwarded to the underlying rich select.
+   */
   @property({type: Boolean, reflect: true})
   disabled = false;
 
+  /**
+   * Shows the selected color without letting it be changed.
+   */
   @property({type: Boolean, reflect: true, attribute: 'readonly'})
   readOnly = false;
 
+  /**
+   * Marks the control as required, forwarded to the underlying rich select.
+   */
   @property({type: Boolean, reflect: true})
   required = false;
 
+  /**
+   * Lion validators, forwarded to the underlying rich select.
+   */
   @property({attribute: false})
   validators: Validator[] = [];
 
