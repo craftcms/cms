@@ -48,7 +48,21 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
 // The list itself isn't what's under test, and it pulls in a real table.
 const stub = {default: {name: 'Stub', render: () => null}};
 
-vi.mock('@/modules/elements/index/components/ElementTable.vue', () => stub);
+vi.mock('@/modules/elements/index/components/ElementTable.vue', () => ({
+  default: {
+    name: 'ElementTable',
+    props: {table: Object},
+    render(this: {table: ReturnType<typeof createTable>}) {
+      const row = this.table.getRowModel().rows[0]?.original as
+        | {cpEditUrl?: string | null; label?: string}
+        | undefined;
+
+      return row?.cpEditUrl
+        ? h('a', {href: row.cpEditUrl}, row.label ?? 'Element')
+        : null;
+    },
+  },
+}));
 vi.mock('@/modules/elements/components/ElementCards.vue', () => stub);
 vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => ({
   default: {
@@ -93,6 +107,7 @@ afterEach(() => {
   teardown?.();
   teardown = undefined;
   modal.isActive = false;
+  quickEdit.onDblClick.mockReset();
   quickEdit.openEditor.mockReset();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -177,6 +192,7 @@ async function mountPage(
       structureView: {isCollapsed: () => false, isPending: () => false},
       loading: ref(false),
       processing: ref(false),
+      filterContext: ref(null),
       visibleViewModes: ref([]),
     },
   };
@@ -223,6 +239,20 @@ it('passes the Actions invoker to the bulk Edit slideout', async () => {
   expect(quickEdit.openEditor.mock.calls[0]![1].textContent).toContain(
     'Actions'
   );
+});
+
+it('leaves the primary title link to page navigation', async () => {
+  const container = await mountPage();
+  const link = container.querySelector<HTMLAnchorElement>(
+    'a[href="/admin/entries/11"]'
+  )!;
+
+  const followsLink = link.dispatchEvent(
+    new MouseEvent('click', {bubbles: true, cancelable: true})
+  );
+
+  expect(followsLink).toBe(true);
+  expect(quickEdit.openEditor).not.toHaveBeenCalled();
 });
 
 it('offers inline editing and export on page tables', async () => {

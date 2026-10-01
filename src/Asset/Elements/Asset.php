@@ -2918,7 +2918,9 @@ JS;
             t('Uploaded by') => function () {
                 $uploader = $this->getUploader();
 
-                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader) : false;
+                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader, [
+                    'appearance' => 'plain',
+                ]) : false;
             },
             t('Dimensions') => function () {
                 $dimensions = $this->getDimensions();

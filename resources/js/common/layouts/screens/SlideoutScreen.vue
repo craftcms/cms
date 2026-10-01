@@ -98,7 +98,9 @@
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
-  const editUrl = computed(() => chrome.value.screen?.editUrl ?? null);
+  const editUrl = computed(
+    () => props.value.editUrl || chrome.value.screen?.editUrl || null
+  );
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
@@ -391,25 +393,28 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
-            <a
+            <craft-button
               v-if="editUrl"
+              icon
+              size="small"
+              :variant="ButtonVariant.Plain"
               :href="editUrl"
               target="_blank"
               rel="noopener"
               class="slideout-screen__edit-link"
             >
               <craft-icon
-                name="external-link"
+                name="arrow-up-right-from-square"
                 :label="t('Open in a new tab')"
-              />
-            </a>
+              ></craft-icon>
+            </craft-button>
 
             <craft-button
               icon
               type="button"
               size="small"
               :variant="ButtonVariant.Plain"
-              flush
+              flush="inline-end"
               @click="close"
               data-slideout-close
             >

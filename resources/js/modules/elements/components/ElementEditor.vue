@@ -166,13 +166,15 @@
     save(options);
   }
 
-  // The View buttons and the action menu stay out of slideouts, which have no
-  // room for them, and out of pages the shell marks read-only.
+  // The View buttons stay out of slideouts, which have no room for them. The
+  // action menu goes in their header, as in Craft 5. Neither shows on pages the
+  // shell marks read-only.
   const isSlideout = useIsSlideout();
   const page = usePage<{readOnly?: boolean}>();
   const showElementControls = computed(
     () => !isSlideout && !page.props.readOnly
   );
+  const showActionMenu = computed(() => isSlideout || !page.props.readOnly);
 
   useAppLayout(() => ({
     title: payload.title,
@@ -185,6 +187,7 @@
     defaultFormActions: [],
     formActions: formActionItems.value,
     formAdditionalButtons: saveButtons.value,
+    editUrl: payload.cpEditUrl,
   }));
 </script>
 
@@ -240,12 +243,14 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="showElementControls && payload.actionMenu.length"
+    v-if="showActionMenu && payload.actionMenu.length"
     name="content-toolbar-actions"
   >
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
+      :slideout="slideout"
+      :flush="!isSlideout"
     />
   </LayoutSlot>
 

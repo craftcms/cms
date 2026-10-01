@@ -793,6 +793,22 @@ describe('SlideoutPanel', () => {
     );
   });
 
+  it('takes the edit URL a screen sets through useAppLayout', async () => {
+    const Screen = defineComponent({
+      setup() {
+        useAppLayout(() => ({editUrl: '/admin/edit/25'}));
+
+        return () => h('div');
+      },
+    });
+    const {root} = await mountPanel(Screen, {});
+    await nextTick();
+
+    expect(
+      root.querySelector<HTMLAnchorElement>('.slideout-screen__edit-link')?.href
+    ).toContain('/admin/edit/25');
+  });
+
   it('reads the edit URL from the slideout props', async () => {
     const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
       screen: {editUrl: '/admin/entries/5'},

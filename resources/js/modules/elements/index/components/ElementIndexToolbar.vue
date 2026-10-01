@@ -11,23 +11,27 @@
   import type {IndexSite} from '@/modules/elements/types/sites';
   import {computed, ref} from 'vue';
 
-  const props = defineProps<{
-    statusOptions?: Array<{label: string; value: string}>;
-    viewModes?: Array<ViewMode>;
-    columnOptions: Array<CheckboxOption>;
-    sortOptions: Array<SortOption>;
-    processing?: boolean;
-    /**
-     * The sites this index can be switched between.
-     *
-     * Only an index with nowhere else to put the menu passes these — the
-     * element selector modal. A full index page has a header, and puts its site
-     * menu in the crumbs there, the same way the legacy index does.
-     */
-    sites?: Array<IndexSite>;
-    /** The active site's handle, when `sites` are being offered. */
-    siteHandle?: string | null;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      statusOptions?: Array<{label: string; value: string}>;
+      viewModes?: Array<ViewMode>;
+      columnOptions: Array<CheckboxOption>;
+      sortOptions: Array<SortOption>;
+      processing?: boolean;
+      /**
+       * The sites this index can be switched between.
+       *
+       * Only an index with nowhere else to put the menu passes these — the
+       * element selector modal. A full index page has a header, and puts its site
+       * menu in the crumbs there, the same way the legacy index does.
+       */
+      sites?: Array<IndexSite>;
+      /** The active site's handle, when `sites` are being offered. */
+      siteHandle?: string | null;
+      asForm?: boolean;
+    }>(),
+    {asForm: true}
+  );
 
   const search = defineModel<string>('search', {required: true});
   const status = defineModel<string>('status', {required: true});
@@ -75,10 +79,24 @@
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
+
+  function onSearchEnter(event: KeyboardEvent): void {
+    if (props.asForm !== false) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    emit('submit');
+  }
 </script>
 
 <template>
-  <form class="w-full" @submit.prevent="emit('submit')">
+  <component
+    :is="asForm === false ? 'div' : 'form'"
+    class="w-full"
+    @submit.prevent="emit('submit')"
+  >
     <div class="element-toolbar">
       <div
         v-if="showSiteMenu || statusOptions?.length"
@@ -132,6 +150,7 @@
           v-model="search"
           label-sr-only
           :disabled="processing"
+          @keydown.enter="onSearchEnter"
         >
           <div slot="suffix" class="flex">
             <craft-button
@@ -215,7 +234,7 @@
         <slot name="actions"></slot>
       </div>
     </div>
-  </form>
+  </component>
 </template>
 
 <style scoped lang="postcss">

@@ -151,16 +151,10 @@ export function useElementIndexSort(
   // visit alongside the view-mode/column restores (see `useElementIndex`),
   // so they can't interrupt each other.
   function restore(): IndexRestore | null {
-    const params = new URLSearchParams(window.location.search);
     const persisted = normalizeSort(persistedSort());
+    const hasSortInQuery = visitor.currentQuery().sort !== undefined;
 
-    // The sort is serialized as `sort[0][field]`, `sort[0][direction]`, … so we
-    // can't look for a literal `sort` key — check for any bracketed sort param.
-    const hasSortInUrl = [...params.keys()].some(
-      (key) => key === 'sort' || key.startsWith('sort[')
-    );
-
-    if (hasSortInUrl || !persisted.length) {
+    if (hasSortInQuery || !persisted.length) {
       return null;
     }
 

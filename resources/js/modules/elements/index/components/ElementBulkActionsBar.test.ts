@@ -2,11 +2,17 @@ import {createApp, h, nextTick, type App} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 
+const actions = vi.hoisted(() => ({
+  run: vi.fn(async (..._args: unknown[]) => {}),
+}));
+vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+
 const BulkActionsBar = (await import('./ElementBulkActionsBar.vue')).default;
 const apps: App[] = [];
 const containers: HTMLElement[] = [];
 
 beforeEach(() => {
+  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, siteId: 1});
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response('<svg></svg>'))
@@ -16,12 +22,13 @@ beforeEach(() => {
 afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount());
   containers.splice(0).forEach((container) => container.remove());
+  actions.run.mockClear();
   vi.unstubAllGlobals();
 });
 
 function mount(
   action: BulkActionItem,
-  listeners: Record<string, (detail: unknown) => void> = {},
+  listeners: Record<string, (...args: any[]) => void> = {},
   props: Record<string, unknown> = {}
 ) {
   const container = document.createElement('div');
@@ -45,6 +52,94 @@ function mount(
 
   return container;
 }
+
+it('lets an embedded wrapper add owner parameters at execution time', async () => {
+  const perform = vi.fn(async (_item, run) => run({ownerId: 73}));
+  const container = mount(
+    {
+      key: 'plugin\\Download',
+      label: 'Download',
+      action: {
+        type: 'download',
+        method: 'POST',
+        url: '/download',
+        body: {format: 'zip'},
+      },
+    },
+    {},
+    {params: {ownerId: 31, ownerSiteId: 1}, perform}
+  );
+  await nextTick();
+
+  container.querySelector<HTMLElement>('craft-action-item')!.click();
+  await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
+
+  expect(actions.run.mock.calls[0]![0]).toEqual({
+    type: 'download',
+    method: 'POST',
+    url: '/download',
+    body: {
+      format: 'zip',
+      elementType: 'Entry',
+      source: '*',
+      context: 'index',
+      elementIds: [11],
+      ownerId: 73,
+      ownerSiteId: 1,
+    },
+  });
+});
+
+it('copies the selected nested-element metadata', async () => {
+  const container = mount(
+    {
+      key: 'Copy',
+      label: 'Copy',
+      selectionAttribute: 'copyable',
+      action: {type: 'event', name: 'craft:copy-elements'},
+    },
+    {},
+    {
+      selectedElements: [
+        {
+          id: 11,
+          siteId: 2,
+          entryTypeId: 9,
+          ownerId: 73,
+          capabilities: {copyable: true},
+          cardAttributes: {
+            data: {
+              'field-id': 7,
+              'draft-id': 5,
+              'revision-id': 3,
+            },
+          },
+        },
+      ],
+    }
+  );
+  await nextTick();
+  const trigger = container.querySelector<HTMLElement>('craft-action-item')!;
+
+  window.dispatchEvent(
+    new CustomEvent('craft:copy-elements', {
+      detail: {trigger, elementIds: [11], elementType: 'Entry'},
+    })
+  );
+
+  expect(window.Craft?.cp?.copyElements).toHaveBeenCalledWith([
+    {
+      type: 'Entry',
+      id: 11,
+      siteId: 2,
+      ownerId: 73,
+      fieldId: 7,
+      draftId: 5,
+      revisionId: 3,
+      data: {entryTypeId: 9},
+    },
+  ]);
+});
 
 it('omits actions when any selected row lacks the required capability', async () => {
   const container = mount(

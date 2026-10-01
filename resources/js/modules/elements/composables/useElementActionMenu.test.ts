@@ -20,6 +20,27 @@ vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
 }));
 vi.mock('@/modules/forms/open-form-modal', () => ({openFormModal: vi.fn()}));
 
+const {actionPost, deletionManagers} = vi.hoisted(() => ({
+  actionPost: vi.fn(),
+  deletionManagers: [] as Array<{settings: {onSuccess: () => void}}>,
+}));
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  actionClient: {post: actionPost},
+}));
+
+vi.mock('@/modules/element-deletion-manager', () => ({
+  ElementDeletionManager: vi.fn(function (
+    this: unknown,
+    _type: string,
+    _ids: number[],
+    settings: {onSuccess: () => void}
+  ) {
+    deletionManagers.push({settings});
+  }),
+}));
+
 describe('useElementActionMenu', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
@@ -302,6 +323,157 @@ describe('useElementActionMenu', () => {
 
       openEditor()({newAssetId: 8});
 
+      expect(reload).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('inside a slideout', () => {
+    function slideoutController() {
+      return {
+        instance: {id: 'slideout-1', containerId: 'container-1'},
+        close: vi.fn(),
+        reload: vi.fn().mockResolvedValue(undefined),
+        saved: vi.fn().mockReturnValue(true),
+      };
+    }
+
+    function activateIn(
+      slideout: ReturnType<typeof slideoutController>,
+      item: ElementActionMenuItem
+    ): void {
+      const [action] = createElementActionMenu({slideout: slideout as never})([
+        item,
+      ]);
+      if (!action || !('onClick' in action)) {
+        throw new Error('Expected a button action.');
+      }
+      action.onClick?.(new MouseEvent('click'));
+    }
+
+    beforeEach(() => {
+      actionPost.mockReset();
+      deletionManagers.length = 0;
+      window.Craft!.cp = {
+        displayError: vi.fn(),
+        displayNotice: vi.fn(),
+      } as never;
+    });
+
+    it('submits without visiting, then reloads the panel', async () => {
+      const visit = vi
+        .spyOn(router, 'post')
+        .mockImplementation(() => undefined);
+      actionPost.mockResolvedValue({data: {message: 'Entry is valid.'}});
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Validate entry',
+        behavior: {
+          type: 'submit',
+          actionUrl: '/actions/elements/validate',
+          params: {elementId: 5},
+          redirect: 'encrypted',
+        },
+      });
+
+      await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalledOnce());
+      expect(visit).not.toHaveBeenCalled();
+      expect(actionPost).toHaveBeenCalledWith('/actions/elements/validate', {
+        elementId: 5,
+      });
+      expect(window.Craft!.cp!.displayNotice).toHaveBeenCalledWith(
+        'Entry is valid.'
+      );
+      expect(slideout.saved).toHaveBeenCalledWith({
+        draft: true,
+        data: {message: 'Entry is valid.'},
+      });
+      expect(slideout.close).not.toHaveBeenCalled();
+    });
+
+    it('closes the panel after a destructive submission', async () => {
+      actionPost.mockResolvedValue({data: {}});
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Delete draft',
+        destructive: true,
+        behavior: {
+          type: 'submit',
+          actionUrl: '/actions/elements/delete-draft',
+          params: {draftId: 3},
+        },
+      });
+
+      await vi.waitFor(() =>
+        expect(slideout.close).toHaveBeenCalledWith({force: true})
+      );
+      expect(slideout.saved).toHaveBeenCalledWith({data: {}});
+      expect(slideout.reload).not.toHaveBeenCalled();
+    });
+
+    it('reports a failed submission without touching the panel', async () => {
+      actionPost.mockRejectedValue({
+        response: {data: {message: 'Couldn’t validate entry.'}},
+      });
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Validate entry',
+        behavior: {type: 'submit', actionUrl: '/actions/elements/validate'},
+      });
+
+      await vi.waitFor(() =>
+        expect(window.Craft!.cp!.displayError).toHaveBeenCalledWith(
+          'Couldn’t validate entry.'
+        )
+      );
+      expect(slideout.saved).not.toHaveBeenCalled();
+      expect(slideout.reload).not.toHaveBeenCalled();
+    });
+
+    it('closes the panel rather than navigating after a deletion', () => {
+      const visit = vi
+        .spyOn(router, 'visit')
+        .mockImplementation(() => undefined);
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Delete entry',
+        destructive: true,
+        behavior: {
+          type: 'delete',
+          elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          elementId: 5,
+          siteId: 1,
+          confirm: 'Are you sure?',
+          redirect: '/admin/entries',
+        },
+      });
+      deletionManagers[0]!.settings.onSuccess();
+
+      expect(slideout.saved).toHaveBeenCalledOnce();
+      expect(slideout.close).toHaveBeenCalledWith({force: true});
+      expect(visit).not.toHaveBeenCalled();
+    });
+
+    it('reloads the panel once an image is saved in place', () => {
+      const reload = vi
+        .spyOn(router, 'reload')
+        .mockImplementation(() => undefined);
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Open in Image Editor',
+        behavior: {
+          type: 'editImage',
+          assetId: 7,
+          settings: {} as ImageEditorSettings,
+        },
+      });
+      vi.mocked(openImageEditorDialog).mock.lastCall![1]!({});
+
+      expect(slideout.reload).toHaveBeenCalledOnce();
       expect(reload).not.toHaveBeenCalled();
     });
   });

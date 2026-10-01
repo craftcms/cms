@@ -20,12 +20,17 @@ use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\NestedElementCard;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -88,7 +93,7 @@ readonly class ElementHtml
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
         $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
-        $icon = $config['showThumb'] && $thumbHtml === null ? $this->chipIcon($component) : null;
+        $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
@@ -99,10 +104,10 @@ readonly class ElementHtml
                 ...Html::explodeClass($config['class']),
             ],
             'show-thumb' => $thumbHtml !== null,
+            'icon' => $icon,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
             'appearance' => $config['appearance'] ?? null,
-            'icon' => $icon,
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -137,6 +142,10 @@ readonly class ElementHtml
 
         if ($thumbHtml !== null) {
             $html .= Html::tag('div', $thumbHtml, ['slot' => 'thumbnail']);
+        }
+
+        if ($icon !== null) {
+            $html .= Icon::make()->name($icon)->slot('icon');
         }
 
         if ($config['selectable']) {
@@ -246,14 +255,13 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns the name of a chip’s icon, or `null` if the component doesn’t have one.
+     * Returns a chip’s icon name, or `null` if the component doesn’t have one.
      *
-     * The icon is passed to the chip’s `icon` attribute rather than its thumbnail slot,
-     * so it’s laid out as an icon instead of filling a thumbnail-sized box.
+     * Thumbable components show their thumbnail instead.
      */
     private function chipIcon(Chippable $component): ?string
     {
-        if (! $component instanceof Iconic) {
+        if ($component instanceof Thumbable || ! $component instanceof Iconic) {
             return null;
         }
 
@@ -426,7 +434,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedCardAction($element, 'copy');
+                $item['action'] = $this->nestedElementAction($element, Copy::class);
             }
         }
         unset($item);
@@ -831,7 +839,7 @@ readonly class ElementHtml
             $item = [
                 'icon' => 'clone',
                 'label' => t('Duplicate'),
-                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'duplicate') : null,
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedElementAction($element, Duplicate::class) : null,
                 'attributes' => [
                     'data' => ['duplicate-action' => true],
                 ],
@@ -857,7 +865,7 @@ readonly class ElementHtml
                     'type' => $element::lowerDisplayName(),
                 ])),
                 'destructive' => true,
-                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedCardAction($element, 'delete') : null,
+                'action' => $withActions && $config['nestedActionEvents'] ? $this->nestedElementAction($element, Delete::class) : null,
                 'attributes' => [
                     'data' => ['delete-action' => true],
                 ],
@@ -910,9 +918,43 @@ readonly class ElementHtml
     }
 
     /**
-     * Builds the HTML attributes for the outer `.card` element.
+     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
+    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    {
+        $elementActions = app(ElementActions::class);
+        $item = $elementActions->serializeActionItems([
+            $elementActions->createAction($actionClass, $element::class),
+        ])[0];
+
+        if ($actionClass === Copy::class) {
+            $item['action']['detail']['elements'] = [[
+                'type' => $element::class,
+                'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
+                'siteId' => $element->siteId,
+                'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+                'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
+                'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
+                'revisionId' => $element->revisionId,
+                ...($element instanceof Entry ? ['data' => ['entryTypeId' => $element->typeId]] : []),
+            ]];
+        }
+
+        return [
+            'type' => 'event',
+            'name' => 'craft:nested-element-action',
+            'detail' => [
+                'action' => 'element-action',
+                'elementId' => $element->id,
+                'item' => $item,
+            ],
+        ];
+    }
+
     /**
+     * Builds the HTML attributes for the outer `.card` element.
+     *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */

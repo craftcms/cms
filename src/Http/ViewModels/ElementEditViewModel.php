@@ -114,6 +114,12 @@ abstract class ElementEditViewModel extends ViewModel
         return $this;
     }
 
+    /** The element's own control panel edit page, which a slideout links to as "Open in a new tab". */
+    public function cpEditUrl(): ?string
+    {
+        return $this->element->getCpEditUrl();
+    }
+
     /** Where the edit form posts when there are no provisional changes to apply. */
     public function saveUrl(): string
     {

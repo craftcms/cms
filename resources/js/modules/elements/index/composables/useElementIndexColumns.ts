@@ -44,7 +44,7 @@ interface PinnedColumn {
 export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
-  pinned: PinnedColumn,
+  pinned: PinnedColumn | null,
   visitor: IndexVisitor
 ) {
   // Column state is stored per source; fall back to a shared bucket when there
@@ -72,7 +72,7 @@ export function useElementIndexColumns(
   // otherwise the source/element-type default.
   const visibleKeys = computed<Array<string>>(() =>
     (sourceColumnState.value?.visible ?? defaultVisible.value).filter(
-      (key) => key !== pinned.key
+      (key) => key !== pinned?.key
     )
   );
 
@@ -93,14 +93,14 @@ export function useElementIndexColumns(
   const columnHelper = createCraftColumnHelper<ElementIndexRow>();
 
   const columns = computed(() => [
-    columnHelper.html(pinned.key, {header: pinned.label}),
+    ...(pinned ? [columnHelper.html(pinned.key, {header: pinned.label})] : []),
     ...visibleOrderedColumns.value.map((column) =>
       columnHelper.html(column.value, {header: column.label})
     ),
   ]);
 
   const columnOrder = computed(() => [
-    pinned.key,
+    ...(pinned ? [pinned.key] : []),
     ...visibleOrderedColumns.value.map((column) => column.value),
   ]);
 
@@ -111,19 +111,23 @@ export function useElementIndexColumns(
     const visible = new Set(visibleKeys.value);
 
     return [
-      {
-        label: pinned.label,
-        value: pinned.key,
-        disabled: true,
-        checked: true,
-      },
+      ...(pinned
+        ? [
+            {
+              label: pinned.label,
+              value: pinned.key,
+              disabled: true,
+              checked: true,
+            },
+          ]
+        : []),
       ...visibleOrderedColumns.value.map((column) => ({
         label: column.label,
         value: column.value,
       })),
       ...props.tableColumns
         .filter(
-          (column) => column.value !== pinned.key && !visible.has(column.value)
+          (column) => column.value !== pinned?.key && !visible.has(column.value)
         )
         .sort((a, b) => a.label.localeCompare(b.label))
         .map((column) => ({label: column.label, value: column.value})),
@@ -161,7 +165,7 @@ export function useElementIndexColumns(
       const next = [
         ...visibleKeys.value.filter((key) => value.includes(key)),
         ...value.filter(
-          (key) => key !== pinned.key && !visibleKeys.value.includes(key)
+          (key) => key !== pinned?.key && !visibleKeys.value.includes(key)
         ),
       ];
 
@@ -187,13 +191,10 @@ export function useElementIndexColumns(
   // alongside the view-mode/sort restores (see `useElementIndex`), so they
   // can't interrupt each other.
   function restore(): IndexRestore | null {
-    const params = new URLSearchParams(window.location.search);
-    const hasColumnsInUrl = [...params.keys()].some(
-      (key) => key === 'columns' || key.startsWith('columns[')
-    );
+    const hasColumnsInQuery = visitor.currentQuery().columns !== undefined;
     const persisted = sourceColumnState.value?.visible;
 
-    if (hasColumnsInUrl || !persisted?.length) {
+    if (hasColumnsInQuery || !persisted?.length) {
       return null;
     }
 
@@ -214,7 +215,7 @@ export function useElementIndexColumns(
     patchSourceColumnState({
       visible: options
         .map((option) => option.value)
-        .filter((value) => value !== pinned.key && visible.has(value)),
+        .filter((value) => value !== pinned?.key && visible.has(value)),
     });
   }
 

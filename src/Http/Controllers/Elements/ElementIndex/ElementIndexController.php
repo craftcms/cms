@@ -12,8 +12,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Http\JsonResponse;
 
@@ -27,8 +29,12 @@ class ElementIndexController
         private readonly ElementIndexes $elementIndexes,
     ) {}
 
-    public function getElements(): ElementIndexResource
+    public function getElements(ElementIndexRequest $request): ElementIndexResource|JsonResponse
     {
+        if ($request->context() === ElementSources::CONTEXT_EMBEDDED_INDEX) {
+            return new JsonResponse(new EmbeddedIndexViewModel($request->elementType(), $request)->payload());
+        }
+
         return new ElementIndexResource;
     }
 
@@ -43,7 +49,12 @@ class ElementIndexController
     public function countElements(ElementIndexRequest $request): JsonResponse
     {
         $elementType = $request->elementType();
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $request->context());
+        $context = $request->context();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource(
+            $elementType,
+            $request->input('source'),
+            $context,
+        );
         $elementQueryState = $this->elementIndexes->buildQueryState(
             elementType: $elementType,
             source: $source,
@@ -70,8 +81,20 @@ class ElementIndexController
     {
         $elementType = $request->elementType();
         $context = $request->context();
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key', $request->input('source')), $context);
-        $fieldLayouts = $request->fieldLayouts();
+        $nestedSource = null;
+
+        if ($context === ElementSources::CONTEXT_EMBEDDED_INDEX) {
+            $nestedSource = new EmbeddedNestedElementScope($request)->indexSource($elementType);
+        }
+
+        [$sourceKey, $source] = $nestedSource
+            ? [$nestedSource::NESTED_KEY, $nestedSource->source]
+            : $this->elementIndexes->resolveSource(
+                $elementType,
+                $request->input('source.key', $request->input('source')),
+                $context,
+            );
+        $fieldLayouts = $nestedSource !== null ? $nestedSource->fieldLayouts : $request->fieldLayouts();
         $request->condition();
         $id = $request->input('id');
 

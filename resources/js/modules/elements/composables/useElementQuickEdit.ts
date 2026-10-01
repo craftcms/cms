@@ -9,7 +9,7 @@ import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
  * Craft 5 checked `a[href], button, [role=button], .move`; the rest are the CP
  * web components that appear in a Vue index row.
  */
-const INTERACTIVE_SELECTOR = [
+export const ELEMENT_QUICK_EDIT_CONTROL_SELECTOR = [
   'a[href]',
   'button',
   'input',
@@ -123,7 +123,7 @@ export function useElementQuickEdit(
 
     // Scoped to the row so a control somewhere else on the page can't suppress
     // a legitimate double-click.
-    const control = target.closest(INTERACTIVE_SELECTOR);
+    const control = target.closest(ELEMENT_QUICK_EDIT_CONTROL_SELECTOR);
 
     if (control && row.contains(control)) {
       return;
