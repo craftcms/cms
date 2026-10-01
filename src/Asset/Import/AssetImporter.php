@@ -262,6 +262,8 @@ class AssetImporter extends ElementImporter
             }
         }
 
+        $tempPath = AssetsHelper::tempFilePath($extension);
+
         // process the file path (tempFilePath); if it's in a temp location - use it;
         // if it's an absolute URL - download to a temp location and use it
         if (! empty($attributes['tempFilePath'])) {
@@ -284,10 +286,17 @@ class AssetImporter extends ElementImporter
                         'filePath' => $attributes['tempFilePath'],
                     ]));
                 }
-                $attributes['tempFilePath'] = $value;
+
+                // now let's copy it to a temp file path so that Asset::_relocateFile() doesn't delete it from the original location
+                try {
+                    copy($value, $tempPath);
+                    $attributes['tempFilePath'] = $tempPath;
+                } catch (Exception $e) {
+                    // log error
+                    ImportLog::warning("Couldn't copy a file while importing an asset: ".$e->getMessage());
+                }
             } else {
                 // if it's an absolute URL, we need to download the file to a temp location
-                $tempPath = AssetsHelper::tempFilePath($extension);
                 try {
                     AssetsHelper::downloadUrl(self::urlValidator(), $attributes['tempFilePath'], $tempPath);
                     $attributes['tempFilePath'] = $tempPath;
