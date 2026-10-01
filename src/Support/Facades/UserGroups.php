@@ -24,7 +24,6 @@ use Override;
  * @method static bool deleteGroup(\CraftCms\Cms\User\Data\UserGroup $group)
  *
  * @see \CraftCms\Cms\User\UserGroups
- * @since 6.0.0
  */
 class UserGroups extends Facade
 {

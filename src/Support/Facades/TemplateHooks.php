@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static string invoke(string $hook, array $context)
  *
  * @see \CraftCms\Cms\View\TemplateHooks
- * @since 6.0.0
  */
 class TemplateHooks extends Facade
 {

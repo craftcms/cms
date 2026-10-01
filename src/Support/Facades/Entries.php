@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static int reassignEntries(int|int[] $oldUserId, int $newUserId)
  *
  * @see \CraftCms\Cms\Entry\Entries
- * @since 6.0.0
  */
 class Entries extends Facade
 {

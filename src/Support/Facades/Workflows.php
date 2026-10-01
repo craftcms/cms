@@ -32,7 +32,6 @@ use Override;
  * @method static mixed withApplicationLock(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, int|null $expectedRunId, int|null $expectedStage, \Closure $callback)
  *
  * @see \CraftCms\Cms\Workflow\Workflows
- * @since 6.0.0
  */
 class Workflows extends Facade
 {

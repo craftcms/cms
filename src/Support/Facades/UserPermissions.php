@@ -24,7 +24,6 @@ use Override;
  * @method static void reset()
  *
  * @see \CraftCms\Cms\User\UserPermissions
- * @since 6.0.0
  */
 class UserPermissions extends Facade
 {

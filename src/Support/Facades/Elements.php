@@ -49,7 +49,6 @@ use Override;
  * @method static void eagerLoadElements(string $elementType, \CraftCms\Cms\Element\Contracts\ElementInterface[]|\Illuminate\Support\Collection $elements, array|string $with)
  *
  * @see \CraftCms\Cms\Element\Elements
- * @since 6.0.0
  */
 class Elements extends Facade
 {

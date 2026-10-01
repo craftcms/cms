@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isRestrictedDir(string $path)
  *
  * @see \CraftCms\Cms\Support\Security
- * @since 6.0.0
  */
 class Security extends Facade
 {

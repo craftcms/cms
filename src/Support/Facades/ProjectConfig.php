@@ -42,7 +42,6 @@ use Override;
  * @method static bool getAreConfigSchemaVersionsCompatible(array $issues = [])
  *
  * @see \CraftCms\Cms\ProjectConfig\ProjectConfig
- * @since 6.0.0
  */
 class ProjectConfig extends Facade
 {

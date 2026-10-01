@@ -52,7 +52,6 @@ use Override;
  * @method static bool canCreateUsers()
  *
  * @see \CraftCms\Cms\User\Users
- * @since 6.0.0
  */
 class Users extends Facade
 {

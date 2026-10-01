@@ -19,7 +19,6 @@ use Override;
  * @method static array invalidateForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  *
  * @see \CraftCms\Cms\Element\ElementCaches
- * @since 6.0.0
  */
 class ElementCaches extends Facade
 {

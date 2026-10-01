@@ -59,7 +59,6 @@ use Override;
  * @method static void applyFieldSave(string $fieldUid, mixed $data, string $context)
  *
  * @see \CraftCms\Cms\Field\Fields
- * @since 6.0.0
  */
 class Fields extends Facade
 {

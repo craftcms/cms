@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static string|null icon(\CraftCms\Cms\Activity\Models\ActivityEvent $event)
  *
  * @see \CraftCms\Cms\Activity\Activities
- * @since 6.0.0
  */
 class Activities extends Facade
 {

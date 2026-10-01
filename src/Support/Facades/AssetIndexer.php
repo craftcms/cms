@@ -28,7 +28,6 @@ use Override;
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder indexFolderByEntry(\CraftCms\Cms\Asset\Models\AssetIndexData $indexEntry, bool $createIfMissing = true)
  *
  * @see \CraftCms\Cms\Asset\AssetIndexer
- * @since 6.0.0
  */
 class AssetIndexer extends Facade
 {

@@ -30,7 +30,6 @@ use Override;
  * @method static void savePageSettings(string $elementType, array $pageSettings)
  *
  * @see \CraftCms\Cms\Element\ElementSources
- * @since 6.0.0
  */
 class ElementSources extends Facade
 {

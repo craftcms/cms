@@ -46,7 +46,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void clear()
  *
  * @see \CraftCms\Cms\View\HtmlStack
- * @since 6.0.0
  */
 class HtmlStack extends Facade
 {

@@ -31,7 +31,6 @@ use Override;
  * @method static \CraftCms\Cms\View\TemplateManager forgetDrivers()
  *
  * @see TemplateManager
- * @since 6.0.0
  */
 class Template extends Facade
 {

@@ -45,7 +45,6 @@ use Override;
  * @method static string getAssetsHtml()
  *
  * @see \CraftCms\Cms\Plugin\Plugins
- * @since 6.0.0
  */
 class Plugins extends Facade
 {

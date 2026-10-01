@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getTableData(int $page, int $limit, string|null $searchTerm = null, string $orderBy = 'name', int $sortDir = 4)
  *
  * @see \CraftCms\Cms\Entry\EntryTypes
- * @since 6.0.0
  */
 class EntryTypes extends Facade
 {

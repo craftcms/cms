@@ -33,7 +33,6 @@ use Override;
  * @method static bool stripOrientationFromExifData(string $filePath)
  *
  * @see \CraftCms\Cms\Image\Images
- * @since 6.0.0
  */
 class Images extends Facade
 {

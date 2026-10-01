@@ -28,7 +28,6 @@ use Override;
  * @method static void handleChangedAddressFieldLayout(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  *
  * @see \CraftCms\Cms\Address\Addresses
- * @since 6.0.0
  */
 class Addresses extends Facade
 {

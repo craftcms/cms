@@ -47,7 +47,6 @@ use Override;
  * @method static array prepareFieldDefinitions(array $fields, string $typeName)
  *
  * @see \CraftCms\Cms\Gql\Gql
- * @since 6.0.0
  */
 class Gql extends Facade
 {

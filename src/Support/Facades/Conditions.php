@@ -13,7 +13,6 @@ use Override;
  * @method static \CraftCms\Cms\Condition\Contracts\ConditionRuleInterface createConditionRule(array|string $config)
  *
  * @see \CraftCms\Cms\Condition\Conditions
- * @since 6.0.0
  */
 class Conditions extends Facade
 {
