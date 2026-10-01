@@ -37,6 +37,7 @@
 - Fixed a bug where `<craft-callout>` boxes didn’t span all columns in grid layouts. ([#19773](https://github.com/craftcms/cms/pull/19773))
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 - Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
+- Fixed a bug where failed settings saves could lose input and validation errors when a successful save would redirect to another page. ([#19775](https://github.com/craftcms/cms/pull/19775))
 - Fixed a bug where money inputs could be hidden within fields or submit their values under the wrong name. ([#19767](https://github.com/craftcms/cms/pull/19767))
 - Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
 - Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.

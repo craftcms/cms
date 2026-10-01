@@ -113,7 +113,8 @@ export function useSettingsSave<T extends object>(
     data: extraData = {},
     // Reset page state when this screen sends the user elsewhere, while saves
     // that remain on the current screen keep their local state by default.
-    preserveState = !(redirect && redirectUrl.value),
+    // Validation failures preserve input and errors instead of remounting.
+    preserveState = redirect && redirectUrl.value ? 'errors' : true,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();
 
