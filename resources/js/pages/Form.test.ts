@@ -55,6 +55,7 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
 
 vi.mock('@inertiajs/vue3', () => ({
   usePage: () => ({props: {}}),
+  setLayoutProps: state.layout,
   useForm: () => {
     let transform = (data: FormPayload['values']) => data;
     const form = {
@@ -79,10 +80,6 @@ vi.mock('@inertiajs/vue3', () => ({
 
     return form;
   },
-}));
-
-vi.mock('@/common/composables/useAppLayout', () => ({
-  useAppLayout: state.layout,
 }));
 
 vi.mock('@/modules/auth/elevated-session', () => ({

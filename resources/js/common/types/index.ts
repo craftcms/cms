@@ -231,21 +231,31 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
-/** A server-described action that resubmits the current form values. */
-export interface FormAltAction {
-  label: string;
-  destructive?: boolean;
+/** An alternate submission, executed by the Form page's save pipeline. */
+export interface FormSubmissionAction extends Omit<
+  ActionItemButton,
+  'action' | 'shortcut'
+> {
   action?: string;
-  params?: FormValues;
+  redirect?: string;
   confirm?: string;
+  params?: FormValues;
+  destructive?: boolean;
+  shortcut?: boolean;
+  shift?: boolean;
+  retainScroll?: boolean;
 }
 
+export type FormAction = ActionItem | FormSubmissionAction;
+
 export interface FormSaveOptions {
+  action?: UrlMethodPair;
+  preserveScroll?: boolean;
+  /** Keep a slideout open after saving, without navigating to a redirect. */
+  keepOpen?: boolean;
   redirect?: boolean;
   data?: FormValues;
   preserveState?: boolean | 'errors';
-  /** Overrides the screen's default submit destination. */
-  action?: UrlMethodPair;
 }
 
 export interface EntryType {

@@ -4,19 +4,17 @@ import type {FormChange, FormPayload} from '@/modules/forms/types';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
-  layout: ReturnType<typeof vi.fn>;
+  formProps: ReturnType<
+    typeof vi.fn<(props: {formActions: Array<{onClick: () => void}>}) => void>
+  >;
   save: ReturnType<typeof vi.fn>;
   setValue: ReturnType<typeof vi.fn>;
   change?: (change: FormChange, values: FormPayload['values']) => void;
 }>(() => ({
-  layout: vi.fn(),
+  formProps: vi.fn(),
   save: vi.fn(),
   setValue: vi.fn(),
   change: undefined,
-}));
-
-vi.mock('@/common/composables/useAppLayout', () => ({
-  useAppLayout: state.layout,
 }));
 
 vi.mock('@/common/components/DynamicHtmlRenderer.vue', () => ({
@@ -38,8 +36,12 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
 vi.mock('@/pages/Form.vue', () => ({
   default: defineComponent({
     emits: ['change'],
-    setup: (_, {emit, expose}) => {
+    props: ['formActions'],
+    setup: (props, {emit, expose}) => {
       state.change = (change, values) => emit('change', change, values);
+      state.formProps({
+        formActions: props.formActions,
+      });
       expose({save: state.save, setValue: state.setValue});
 
       return () => h('div');
@@ -60,7 +62,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.layout.mockClear();
+  state.formProps.mockClear();
   state.save.mockReset();
   state.setValue.mockReset();
   state.change = undefined;
@@ -107,7 +109,7 @@ it('saves and starts another field from the form action', async () => {
   mount();
   await nextTick();
 
-  state.layout.mock.calls[0]![0].formActions[0].onClick();
+  state.formProps.mock.calls[0]![0].formActions[0]!.onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {addAnother: 1},

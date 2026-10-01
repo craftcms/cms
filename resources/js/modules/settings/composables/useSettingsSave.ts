@@ -17,6 +17,8 @@ interface PasswordConfirmationOptions<T> {
 
 export interface UseSettingsSaveOptions<T extends object> {
   transform?: (data: T) => object;
+  /** Uses the existing topmost-panel save listener for alternate submissions. */
+  onSaveShortcut?: (event: KeyboardEvent) => void;
   /** Receives the response data when saving from a slideout. */
   onSuccess?: (data?: any) => void;
   /** Called with a failed slideout save's response data, before the errors are applied. */
@@ -90,7 +92,11 @@ export function useSettingsSave<T extends object>(
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.key.toLowerCase() === 's' &&
+      !event.altKey
+    ) {
       // Only the topmost panel (or the page, when none is open) saves.
       const top = topStackedPanel();
       const isTopmost = top
@@ -104,28 +110,37 @@ export function useSettingsSave<T extends object>(
 
       event.preventDefault();
       event.stopImmediatePropagation();
-      save({redirect: false});
+      if (options.onSaveShortcut) {
+        options.onSaveShortcut(event);
+      } else if (!event.shiftKey) {
+        save({redirect: false});
+      }
     }
   });
 
   function save({
     redirect = true,
+    action: actionOverride,
+    preserveScroll = true,
+    keepOpen = !redirect,
     data: extraData = {},
     // Reset page state when this screen sends the user elsewhere, while saves
     // that remain on the current screen keep their local state by default.
     // Validation failures preserve input and errors instead of remounting.
-    preserveState = redirect && redirectUrl.value ? 'errors' : true,
-    action: actionOverride,
+    preserveState = redirect && (extraData.redirect || redirectUrl.value)
+      ? 'errors'
+      : true,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();
 
     const submitOptions = redirect
       ? {
-          preserveScroll: true,
+          preserveScroll,
           preserveState,
         }
       : {
           replace: true,
+          preserveScroll,
         };
 
     /**
@@ -145,14 +160,17 @@ export function useSettingsSave<T extends object>(
       form.processing = true;
 
       try {
+        const payload: Record<string, any> = {
+          ...(options.transform?.(form.data()) ?? form.data()),
+          ...extraData,
+        };
+        // Slideout submissions never navigate, including alternate redirects.
+        delete payload.redirect;
+
         const response = await request({
           url: routeIsString ? String(route) : route.url,
           method: routeIsString ? 'post' : (route.method ?? 'post'),
-          // No `redirect`: a slideout closes rather than navigating anywhere.
-          data: {
-            ...(options.transform?.(form.data()) ?? form.data()),
-            ...extraData,
-          },
+          data: payload,
           headers: {
             'X-Craft-Container-Id': slideout!.instance.containerId,
           },
@@ -167,11 +185,10 @@ export function useSettingsSave<T extends object>(
         // closing drops the panel from the store, taking its handler with it.
         const handled = slideout!.saved({data: response.data});
 
-        // `redirect: false` is "save and continue editing" (the cmd+S path),
-        // which keeps the panel open. `force` because the form can still read
-        // dirty right after a save — Inertia only clears that when its
+        // Continue-editing submissions keep the panel open. `force` because
+        // the form can still read dirty right after a save; Inertia clears it when its
         // defaults are updated, which the page behind does on reload.
-        if (redirect !== false || options.forceClose?.()) {
+        if (!keepOpen || options.forceClose?.()) {
           slideout!.close({force: true});
         }
 
@@ -246,13 +263,9 @@ export function useSettingsSave<T extends object>(
             ...extraData,
           };
 
-          // Only layer the screen's own redirect on when this save asked for
-          // one. Setting the key unconditionally would overwrite a redirect the
-          // caller's `transform` contributed — which is precisely what
-          // `save({redirect: false})` means for an action that carries its own
-          // target (e.g. the element editor's "Create a draft", which redirects
-          // to the draft it just created).
-          if (redirect && redirectUrl.value) {
+          // An explicit redirect from extra data or the transform takes
+          // precedence over the screen's default target.
+          if (redirect && redirectUrl.value && !('redirect' in payload)) {
             payload.redirect = redirectUrl.value;
           }
 
