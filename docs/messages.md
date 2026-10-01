@@ -187,9 +187,10 @@ If you post to an endpoint that uses `asSuccess()` and handle the response yours
 back before you navigate or reload:
 
 ```ts
+import {actionClient} from '@craftcms/ui';
 import {showMessagesFromResponse} from '@/modules/messages';
 
-const response = await axios.post(url, data);
+const response = await actionClient.post(url, data);
 showMessagesFromResponse(response.data);
 router.reload();
 ```
