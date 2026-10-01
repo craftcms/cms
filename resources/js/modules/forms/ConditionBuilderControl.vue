@@ -17,6 +17,8 @@
 
   const emit = defineEmits<{
     (event: 'update:value', value: ConditionConfig, kind: 'discrete'): void;
+    /** Prevents the inner change event reaching FieldNode's FormChange listener. */
+    (event: 'change'): void;
   }>();
 
   const errors = computed(() =>
