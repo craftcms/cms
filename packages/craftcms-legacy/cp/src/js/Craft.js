@@ -1,8 +1,5 @@
 import {formatMessage, t} from '@craftcms/ui/utilities/translate';
-import {
-  createHttpClient,
-  isCancel,
-} from '@craftcms/ui/utilities/api/http';
+import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
 import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import * as d3 from 'd3';
 
