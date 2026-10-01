@@ -87,6 +87,7 @@ readonly class SectionsController
             ->addCrumb(t('Settings'), 'settings')
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
+            ->addCrumb(t('Create a new section'))
             ->inertiaPage('settings/sections/Edit', $this->viewModel($section, $sites, brandNew: true));
     }
 
@@ -100,6 +101,7 @@ readonly class SectionsController
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
+            ->addCrumb($sectionData->name)
             ->inertiaPage('settings/sections/Edit', $this->viewModel($sectionData, $sites, brandNew: false));
     }
 

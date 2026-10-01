@@ -173,6 +173,45 @@ describe('withSubnavCrumbs', () => {
     ]);
   });
 
+  it('doesn’t link the crumb for the page you’re on', () => {
+    const merged = withSubnavCrumbs(
+      [],
+      [
+        navCrumbItem({
+          label: 'Account Security',
+          href: null,
+          group: true,
+          selected: true,
+          subnav: [navCrumbItem({label: 'Password', selected: true})],
+        }),
+        navCrumbItem({
+          label: 'Sites',
+          selected: false,
+        }),
+      ]
+    );
+
+    expect(merged.map((crumb) => crumb.href)).toEqual([null, null]);
+
+    const nested = withSubnavCrumbs(
+      [],
+      [
+        navCrumbItem({
+          label: 'Volumes',
+          selected: true,
+          subnav: [
+            navCrumbItem({label: 'Uploads', selected: true}),
+            navCrumbItem({label: 'Images'}),
+          ],
+        }),
+        navCrumbItem({label: 'Image Transforms'}),
+      ]
+    );
+
+    expect(nested.map((crumb) => crumb.href)).toEqual(['/admin/volumes', null]);
+    expect(nested.at(-1)!.items).toHaveLength(2);
+  });
+
   it('leaves the page crumbs alone when there is no nav', () => {
     const crumbs = [{label: 'Settings', href: '/admin/settings'}];
 
