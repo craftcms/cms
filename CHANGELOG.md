@@ -27,6 +27,7 @@
 - Improved the styling of control panel tables and lightswitches. ([#19766](https://github.com/craftcms/cms/pull/19766))
 - Improved disabled secondary form actions with explanatory tooltips.
 - The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
+- Added reusable server-built form modals and the `formModal` element action behavior.
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added the `--c-thumbnail-image-radius` custom property to `<craft-thumbnail>`, and its other custom properties can now be set on an ancestor. ([#19758](https://github.com/craftcms/cms/pull/19758))
