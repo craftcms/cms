@@ -8,6 +8,9 @@ use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 
+/**
+ * @since 6.0.0
+ */
 class Asset extends InputObjectType
 {
     public static function getType(): mixed

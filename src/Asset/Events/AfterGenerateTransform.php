@@ -9,6 +9,8 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
  * @event AfterGenerateTransform The event that is triggered after a transform is generated for an asset.
+ *
+ * @since 6.0.0
  */
 readonly class AfterGenerateTransform
 {

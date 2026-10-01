@@ -27,6 +27,9 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class FieldLayoutServiceProvider extends ServiceProvider
 {
     public function boot(NativeFields $nativeFields): void

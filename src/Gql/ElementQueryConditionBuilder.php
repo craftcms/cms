@@ -35,6 +35,9 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Utils\AST;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class ElementQueryConditionBuilder extends Component
 {
     public const string LOCALIZED_NODENAME = 'localized';

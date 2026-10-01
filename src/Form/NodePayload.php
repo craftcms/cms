@@ -9,6 +9,9 @@ use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
 
+/**
+ * @since 6.0.0
+ */
 readonly class NodePayload implements JsonSerializable
 {
     /**

@@ -21,6 +21,9 @@ use stdClass;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 class PruneRevisionsCommand extends Command
 {
     use CraftCommand;

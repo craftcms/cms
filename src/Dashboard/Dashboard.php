@@ -33,6 +33,9 @@ use Tpetry\QueryExpressions\Value\Value;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class Dashboard
 {

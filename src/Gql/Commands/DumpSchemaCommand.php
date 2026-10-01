@@ -12,6 +12,9 @@ use GraphQL\Utils\SchemaPrinter;
 use Illuminate\Console\Command;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class DumpSchemaCommand extends Command
 {
     use CraftCommand;

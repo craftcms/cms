@@ -18,6 +18,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Dropdown represents a Dropdown field.
+ *
+ * @since 6.0.0
  */
 class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {

@@ -23,6 +23,9 @@ use IntlException;
 use PDOException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Cms
 {
     public const string NAME = 'Craft CMS';

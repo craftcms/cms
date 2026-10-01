@@ -8,6 +8,9 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class File extends InputObjectType
 {
     public static function getType(): mixed

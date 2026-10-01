@@ -12,6 +12,9 @@ use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class RelationDeletionBlocker extends BaseDeletionBlocker
 {
     /** @var array<string, mixed> */

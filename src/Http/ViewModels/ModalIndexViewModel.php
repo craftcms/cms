@@ -16,6 +16,8 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
  * The same shape the index screens render from, resolved in the `modal` context
  * and narrowed to the source keys the opener allows — a relation field may only
  * offer some of an element type's sources.
+ *
+ * @since 6.0.0
  */
 class ModalIndexViewModel extends ContentIndexViewModel
 {

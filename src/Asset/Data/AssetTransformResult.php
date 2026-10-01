@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
+/**
+ * @since 6.0.0
+ */
 #[AllowedInSandbox]
 readonly class AssetTransformResult
 {

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class Svg extends Image
 {
     public const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';

@@ -11,6 +11,8 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
  * @extends ElementQuery<ContentBlock>
+ *
+ * @since 6.0.0
  */
 class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface
 {

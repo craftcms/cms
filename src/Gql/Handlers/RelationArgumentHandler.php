@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
     /** @var array<string, list<list<int>>> */

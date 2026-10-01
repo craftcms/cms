@@ -11,6 +11,9 @@ use Twig\Source;
 
 use function CraftCms\Cms\debugbar;
 
+/**
+ * @since 6.0.0
+ */
 class Environment extends TwigEnvironment
 {
     /** @param array<string, mixed> $options */

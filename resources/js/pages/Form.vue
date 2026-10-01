@@ -1,12 +1,18 @@
 <script setup lang="ts">
-  import {actionClient} from '@craftcms/ui';
+  import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {shallowRef, toRaw} from 'vue';
+  import {computed, shallowRef, toRaw} from 'vue';
+  import type {
+    ActionItem,
+    FormAction,
+    FormSubmissionAction,
+  } from '@/common/types';
   import {
     useAppLayout,
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
     FormChange,
@@ -24,30 +30,54 @@
     submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
+    formActions?: FormAction[];
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+    /** Server-rendered markup for the details column. */
+    metadataHtml?: string;
+    /** Controls for the details column, submitted alongside `form`. */
+    sidebarForm?: FormPayload;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const inertiaForm = useForm({});
-  const elevatedBaseline = shallowRef(
-    structuredClone(toRaw(props.form.values))
-  );
-  const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
+  const {
+    advanceBaseline: advanceSidebarBaseline,
+    errors: sidebarErrors,
+    onMutation: onSidebarMutation,
+    renderer: sidebarRenderer,
+  } = useInertiaFormRenderer(inertiaForm, () => props.sidebarForm ?? null);
+  const elevatedBaseline = shallowRef(structuredClone(currentValues()));
+  const elevatedFields = props.elevatedFields;
+
   const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    transform: () => renderer.value?.currentValues() ?? props.form.values,
-    onSuccess: () => {
-      elevatedBaseline.value = structuredClone(
-        toRaw(renderer.value?.currentValues() ?? props.form.values)
+    onSaveShortcut: (event) => {
+      const action = submissionActions.value.find(
+        (item) =>
+          item.shortcut &&
+          !!item.shift === event.shiftKey &&
+          !item.hidden &&
+          !item.disabled
       );
+
+      if (action) {
+        submitAction(action);
+      } else if (!event.shiftKey) {
+        save({redirect: false});
+      }
+    },
+    transform: currentValues,
+    onSuccess: () => {
+      elevatedBaseline.value = structuredClone(currentValues());
       advanceBaseline();
+      advanceSidebarBaseline();
     },
     passwordConfirmation: elevatedFields
       ? {
           required: () => {
-            const values = renderer.value?.currentValues() ?? props.form.values;
+            const values = currentValues();
             const fields =
               elevatedFields === '*'
                 ? [
@@ -68,12 +98,87 @@
       : undefined,
   });
 
-  useAppLayout({
+  function isSubmissionAction(
+    action: FormAction
+  ): action is FormSubmissionAction {
+    return (
+      (!action.type || action.type === 'button') &&
+      !('href' in action) &&
+      (!('shortcut' in action) ||
+        typeof action.shortcut === 'boolean' ||
+        action.shortcut == null) &&
+      !('onClick' in action && action.onClick) &&
+      (!('action' in action) ||
+        !action.action ||
+        typeof action.action === 'string')
+    );
+  }
+
+  const submissionActions = computed(() =>
+    (props.formActions ?? []).filter(isSubmissionAction)
+  );
+  const translatedFormActions = computed<ActionItem[]>(() =>
+    (props.formActions ?? []).map((action) => {
+      if (!isSubmissionAction(action)) {
+        return action;
+      }
+
+      return {
+        ...action,
+        action: undefined,
+        variant: action.variant ?? (action.destructive ? 'danger' : undefined),
+        shortcut: action.shortcut
+          ? {key: 'S', shift: !!action.shift}
+          : undefined,
+        onClick: () => submitAction(action),
+      };
+    })
+  );
+
+  function submitAction(action: FormSubmissionAction): void {
+    if (
+      inertiaForm.processing ||
+      action.hidden ||
+      action.disabled ||
+      (action.confirm && !window.confirm(action.confirm))
+    ) {
+      return;
+    }
+
+    const url = action.action;
+    save({
+      action: url
+        ? {
+            url: getActionUrl(url),
+            method: 'post',
+          }
+        : undefined,
+      data: {
+        ...action.params,
+        ...(action.redirect ? {redirect: action.redirect} : {}),
+      },
+      preserveScroll: action.retainScroll ?? false,
+      keepOpen:
+        !action.shift &&
+        !action.action &&
+        (!!action.shortcut || action.label === t('Save and continue editing')),
+    });
+  }
+
+  useAppLayout(() => ({
     form: inertiaForm,
-    defaultFormActions: props.defaultFormActions,
+    defaultFormActions: submissionActions.value.some(
+      (action) =>
+        !action.hidden &&
+        ((action.shortcut && !action.shift) ||
+          action.label === t('Save and continue editing'))
+    )
+      ? []
+      : props.defaultFormActions,
+    formActions: translatedFormActions.value,
     contentMaxWidth: true,
     onSave: save,
-  });
+  }));
 
   function setValue(
     path: string[],
@@ -100,6 +205,15 @@
     }
 
     return data.form;
+  }
+
+  function currentValues(): FormPayload['values'] {
+    return {
+      ...toRaw(renderer.value?.currentValues() ?? props.form.values),
+      ...toRaw(
+        sidebarRenderer.value?.currentValues() ?? props.sidebarForm?.values
+      ),
+    };
   }
 
   function normalize(value: FormValue): string {
@@ -131,5 +245,17 @@
         </FormRenderer>
       </craft-field-group>
     </CpContainer>
+    <MetadataDetails :html="metadataHtml">
+      <template v-if="sidebarForm" #default>
+        <craft-field-group>
+          <FormRenderer
+            ref="sidebarRenderer"
+            :payload="sidebarForm"
+            :errors="sidebarErrors"
+            @update:mutation="onSidebarMutation"
+          />
+        </craft-field-group>
+      </template>
+    </MetadataDetails>
   </form>
 </template>

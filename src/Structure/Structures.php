@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Structures
 {

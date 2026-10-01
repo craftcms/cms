@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Console;
 use Laravel\Prompts\Support\Logger;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @since 6.0.0
+ */
 class FallbackPromptLogger extends Logger
 {
     public function __construct(private readonly OutputInterface $output)

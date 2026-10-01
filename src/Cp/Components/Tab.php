@@ -24,6 +24,8 @@ use Stringable;
  *
  * Selection is not settable here: `<craft-tabs>` owns the `selected` attribute
  * and overwrites whatever the server sent. Use {@see Tabs::selectedIndex()}.
+ *
+ * @since 6.0.0
  */
 class Tab extends ViewComponent
 {

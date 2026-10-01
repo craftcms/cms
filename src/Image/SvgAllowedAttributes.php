@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Image;
 use enshrined\svgSanitize\data\AllowedAttributes;
 use enshrined\svgSanitize\data\AttributeInterface;
 
+/**
+ * @since 6.0.0
+ */
 class SvgAllowedAttributes implements AttributeInterface
 {
     /** @return list<string> */

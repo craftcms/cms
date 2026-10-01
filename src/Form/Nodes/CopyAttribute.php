@@ -18,6 +18,8 @@ use Illuminate\Support\Traits\Conditionable;
  * Rendered into a {@see Field::actions()} slot for admins with the “Show field
  * handles in edit forms” preference enabled. The 6.x replacement for Craft 5's
  * `_includes/forms/copytextbtn` in `Cp::fieldHtml()`.
+ *
+ * @since 6.0.0
  */
 class CopyAttribute implements Node
 {

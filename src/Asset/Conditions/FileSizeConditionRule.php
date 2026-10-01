@@ -22,6 +22,9 @@ use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public static function isSelectableForCondition(ConditionInterface $condition): bool

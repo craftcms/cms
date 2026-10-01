@@ -19,6 +19,9 @@ use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ElementActions
 {

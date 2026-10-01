@@ -95,6 +95,8 @@ use function CraftCms\Cms\t;
  *     type:array{isMissing:bool, label:string|null, icon:array{name:string, family:string}|null},
  *     usages:string|null
  * }
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class Fields

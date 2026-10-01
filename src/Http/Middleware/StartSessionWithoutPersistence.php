@@ -8,6 +8,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
 
+/**
+ * @since 6.0.0
+ */
 readonly class StartSessionWithoutPersistence
 {
     public function __construct(

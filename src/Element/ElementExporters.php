@@ -24,6 +24,9 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Yaml\Yaml;
 use UnexpectedValueException;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ElementExporters
 {

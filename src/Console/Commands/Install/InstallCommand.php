@@ -35,6 +35,9 @@ use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
+/**
+ * @since 6.0.0
+ */
 class InstallCommand extends Command
 {
     use ConfirmableTrait;

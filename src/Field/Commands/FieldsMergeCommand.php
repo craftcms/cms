@@ -18,6 +18,9 @@ use Illuminate\Support\Collection;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 class FieldsMergeCommand extends Command
 {
     use CraftCommand;

@@ -18,6 +18,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class ElementRequest extends FormRequest
 {

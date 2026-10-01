@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Data\UserGroup;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 class UserGroupSelect extends Combobox
 {
     #[\Override]

@@ -8,6 +8,9 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ResaveUsersCommand extends ResaveCommand
 {
     #[Override]

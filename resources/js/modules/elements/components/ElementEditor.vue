@@ -9,6 +9,7 @@
   import {computed, nextTick, provide, useTemplateRef} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
@@ -59,6 +60,7 @@
     renderer,
     refreshAfterNestedChange,
     refreshForm,
+    refreshLayout,
     save,
     sidebarErrors,
     sidebarPayload,
@@ -101,6 +103,16 @@
       await refreshAfterNestedChange();
     },
   });
+
+  /**
+   * Fields outside of a tab — in a field layout whose tab was never saved,
+   * say — need the spacing a tab would otherwise give them.
+   */
+  const hasUntabbedFields = computed(
+    () =>
+      formPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
+      false
+  );
 
   const hasDetails = computed(
     () =>
@@ -365,15 +377,20 @@
 
   <div ref="content" class="py-lg">
     <CpContainer>
-      <FormRenderer
+      <component
+        :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
         v-if="formPayload"
-        ref="renderer"
-        :payload="formPayload"
-        :errors="errors"
-        :modified="autosave.modified.value"
-        :disabled="workflowReviewLocked"
-        @update:mutation="onMutation"
-      />
+      >
+        <FormRenderer
+          ref="renderer"
+          :payload="formPayload"
+          :errors="errors"
+          :refresh="formPayload.refreshable ? refreshLayout : undefined"
+          :modified="autosave.modified.value"
+          :disabled="workflowReviewLocked"
+          @update:mutation="onMutation"
+        />
+      </component>
 
       <slot :payload="payload" />
     </CpContainer>
@@ -396,29 +413,20 @@
         asset's file preview. -->
         <slot name="details-header" :payload="payload" />
 
-        <div class="p-lg">
-          <!--
-          The meta fields render as their own Form, bridged into the same Inertia
-          form as the field layout above, so they submit as ordinary inputs.
-        -->
-          <craft-field-group>
-            <FormRenderer
-              v-if="sidebarPayload"
-              ref="sidebarRenderer"
-              :payload="sidebarPayload"
-              :errors="sidebarErrors"
-              :modified="autosave.modified.value"
-              :disabled="workflowReviewLocked"
-              @update:mutation="onSidebarMutation"
-            />
-          </craft-field-group>
-
-          <hr class="my-lg" />
-          <DynamicHtmlRenderer
-            v-if="payload.metadataHtml"
-            :html="payload.metadataHtml"
-          />
-        </div>
+        <MetadataDetailsContent :html="payload.metadataHtml">
+          <template v-if="sidebarPayload" #default>
+            <craft-field-group>
+              <FormRenderer
+                ref="sidebarRenderer"
+                :payload="sidebarPayload"
+                :errors="sidebarErrors"
+                :modified="autosave.modified.value"
+                :disabled="workflowReviewLocked"
+                @update:mutation="onSidebarMutation"
+              />
+            </craft-field-group>
+          </template>
+        </MetadataDetailsContent>
       </template>
     </ElementDetailsTabs>
   </LayoutSlot>

@@ -19,6 +19,8 @@ use CraftCms\Cms\Support\Html;
  *             Radio::make()->label(t('Auto'))->name('mode')->value('auto'),
  *             Radio::make()->label(t('Manual'))->name('mode')->value('manual'),
  *         ]);
+ *
+ * @since 6.0.0
  */
 class RadioGroup extends ChoiceGroup
 {

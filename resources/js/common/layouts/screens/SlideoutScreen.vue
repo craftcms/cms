@@ -42,10 +42,12 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
   import {firstMessages} from '@/common/slideouts/errors';
+  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import FormActions from '@/common/components/FormActions.vue';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -314,14 +316,14 @@
       return;
     }
 
+    showMessagesFromResponse(result.data);
+
     const handled = slideout?.saved({data: result.data});
 
     slideout?.close({force: true});
 
     if (!handled) {
-      // The controller flashes its success message to the session even on the
-      // JSON branch, so refreshing the page behind surfaces it and picks up
-      // whatever changed.
+      // Refresh the page behind to pick up whatever changed.
       router.reload();
     }
   }
@@ -490,8 +492,16 @@
 
         <LayoutSlotOutlet name="submit-button">
           <slot name="submit-button">
+            <FormActions
+              v-if="form && props.formActions?.length"
+              :form="form"
+              :action-items="props.formActions"
+              :submit-label="submitLabel"
+              :read-only="readOnly"
+              :save-disabled="props.saveDisabled"
+            />
             <craft-button
-              v-if="canSave && !readOnly && !props.saveDisabled"
+              v-else-if="canSave && !readOnly && !props.saveDisabled"
               type="submit"
               :variant="ButtonVariant.Primary"
               :loading="

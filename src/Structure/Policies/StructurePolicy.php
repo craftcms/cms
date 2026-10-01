@@ -9,6 +9,9 @@ use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
+/**
+ * @since 6.0.0
+ */
 class StructurePolicy
 {
     public function edit(CraftUser $user, Structure $structure): bool

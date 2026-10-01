@@ -13,6 +13,8 @@ use Yiisoft\Arrays\ArrayableInterface;
 
 /**
  * @mixin Twig
+ *
+ * @since 6.0.0
  */
 class TwigRenderer implements TwigRendererInterface
 {

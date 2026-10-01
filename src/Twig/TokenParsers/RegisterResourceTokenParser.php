@@ -10,6 +10,9 @@ use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
 
+/**
+ * @since 6.0.0
+ */
 class RegisterResourceTokenParser extends AbstractTokenParser
 {
     /**

@@ -21,6 +21,8 @@ use Stringable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
+ *
+ * @since 6.0.0
  */
 class ColorData implements Serializable, Stringable
 {

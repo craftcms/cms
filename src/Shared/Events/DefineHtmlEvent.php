@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Shared\Events;
 
+/**
+ * @since 6.0.0
+ */
 abstract class DefineHtmlEvent
 {
     public function __construct(

@@ -14,6 +14,8 @@ use Override;
 
 /**
  * The Inertia payload for the entry index screen (`content/Index`).
+ *
+ * @since 6.0.0
  */
 class EntryIndexViewModel extends ContentIndexViewModel
 {

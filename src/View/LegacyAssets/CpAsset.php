@@ -16,6 +16,8 @@ use function CraftCms\Cms\craftAuth;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 class CpAsset implements LegacyAssetInterface
 {

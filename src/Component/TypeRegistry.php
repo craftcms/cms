@@ -22,6 +22,8 @@ use InvalidArgumentException;
  * @template T of object
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 abstract class TypeRegistry
 {

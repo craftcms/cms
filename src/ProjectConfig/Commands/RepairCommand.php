@@ -9,6 +9,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Console\Command;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RepairCommand extends Command
 {
     use CraftCommand;

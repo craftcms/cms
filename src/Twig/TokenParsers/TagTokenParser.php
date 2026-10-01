@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\Nodes\TagNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+/**
+ * @since 6.0.0
+ */
 class TagTokenParser extends AbstractTokenParser
 {
     public function getTag(): string

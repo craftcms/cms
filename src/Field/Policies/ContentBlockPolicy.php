@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlockPolicy extends ElementPolicy
 {
     public function view(CraftUser $user, ContentBlock $contentBlock): bool

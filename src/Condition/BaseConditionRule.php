@@ -25,6 +25,8 @@ use function CraftCms\Cms\t;
  *
  * @property bool $isNew Whether the rule is new
  * @property-read string $uiLabel The rule’s option label
+ *
+ * @since 6.0.0
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {

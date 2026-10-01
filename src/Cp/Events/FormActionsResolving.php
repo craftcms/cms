@@ -21,6 +21,8 @@ namespace CraftCms\Cms\Cp\Events;
  *     }
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 class FormActionsResolving
 {

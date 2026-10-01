@@ -8,6 +8,8 @@ use CraftCms\Cms\Site\Data\Site;
 
 /**
  * @event SiteDeleted The event that is triggered after a site is deleted.
+ *
+ * @since 6.0.0
  */
 class SiteDeleted
 {

@@ -53,6 +53,8 @@ use function CraftCms\Cms\template;
  * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>}
  * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|null
  * @phpstan-type TableRowData array<string, TableCellValue>
+ *
+ * @since 6.0.0
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {

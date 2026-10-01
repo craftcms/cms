@@ -9,6 +9,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UploadSessionController
 {
     public function __construct(private Uploads $uploads) {}

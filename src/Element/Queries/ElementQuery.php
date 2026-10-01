@@ -63,6 +63,8 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static whereNotNull($columns, $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
  * @method static whereNull($columns, $boolean = 'and', $not = false)
+ *
+ * @since 6.0.0
  */
 class ElementQuery extends Component implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {

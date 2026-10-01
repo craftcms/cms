@@ -9,6 +9,8 @@ use CraftCms\Cms\View\TemplateMode;
 
 /**
  * @event PageTemplateRendering The event that is triggered before a page template gets rendered
+ *
+ * @since 6.0.0
  */
 class PageTemplateRendering
 {

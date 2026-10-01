@@ -15,6 +15,8 @@ use Illuminate\Contracts\Database\Query\Builder;
  *
  * Provides automatic bulk operation management around element processing
  * to optimize performance when modifying many elements.
+ *
+ * @since 6.0.0
  */
 abstract class BatchedElementJob extends BatchedJob
 {

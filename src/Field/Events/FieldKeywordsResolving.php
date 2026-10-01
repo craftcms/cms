@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
+/**
+ * @since 6.0.0
+ */
 class FieldKeywordsResolving extends FieldEvent
 {
     use HandleableEvent;

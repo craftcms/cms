@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Address\Conditions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class AddressCondition extends ElementCondition
 {
     #[Override]

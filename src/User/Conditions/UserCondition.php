@@ -8,6 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Support\Facades\Sites;
 
+/**
+ * @since 6.0.0
+ */
 class UserCondition extends ElementCondition
 {
     #[\Override]

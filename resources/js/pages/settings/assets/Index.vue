@@ -16,7 +16,6 @@
   import type {SortItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface VolumeData {
     id: number;
@@ -134,8 +133,9 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
+  <div class="@container">
     <AdminTable
+      class="admin-table--padded"
       :table="table"
       :reorderable="true"
       :read-only="readOnly"
@@ -148,5 +148,5 @@
         ></craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 </template>

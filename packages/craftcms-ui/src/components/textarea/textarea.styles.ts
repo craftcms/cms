@@ -2,10 +2,6 @@ import {css} from 'lit';
 import {baseFormControlStyles} from '@src/styles/form.styles';
 
 export default css`
-  :host(:not([label-sr-only])) .form-field__group-one {
-    margin-block-end: var(--c-spacing-sm);
-  }
-
   :host([monospace]) ::slotted([slot='input']) {
     font-family: var(--c-font-mono, monospace) !important;
     font-size: var(--c-text-sm);

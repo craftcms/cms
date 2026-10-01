@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\Nodes\RequireLoginNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+/**
+ * @since 6.0.0
+ */
 class RequireLoginTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RequireLoginNode

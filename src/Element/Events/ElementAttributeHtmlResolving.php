@@ -15,6 +15,8 @@ use Stringable;
  * If `html` is set, it will be used instead of the default attribute HTML.
  *
  * {@see HasControlPanelUI::getAttributeHtml()}
+ *
+ * @since 6.0.0
  */
 class ElementAttributeHtmlResolving
 {

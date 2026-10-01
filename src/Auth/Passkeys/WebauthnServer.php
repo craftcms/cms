@@ -23,6 +23,8 @@ use Webauthn\PublicKeyCredentialParameters;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 class WebauthnServer
 {

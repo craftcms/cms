@@ -13,7 +13,11 @@ use CraftCms\Cms\Support\Str;
 
 use function CraftCms\Cms\renderObjectTemplate;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class ResaveMutation
 {
     /** @param FieldInterface[] $withFields */

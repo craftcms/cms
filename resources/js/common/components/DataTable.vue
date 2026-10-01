@@ -297,7 +297,7 @@
             :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
-              class="flex gap-sm items-center"
+              class="flex gap-sm items-center [.text-center>&]:justify-center"
               :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
             >
               <ColumnHeaderTitle
@@ -309,7 +309,8 @@
                 <FlexRender
                   v-if="!header.isPlaceholder"
                   :header="header"
-                />&nbsp;<craft-icon
+                /><template v-if="header.column.getCanSort()">&nbsp;</template
+                ><craft-icon
                   v-if="
                     header.column.getCanSort() && !header.column.getIsSorted()
                   "

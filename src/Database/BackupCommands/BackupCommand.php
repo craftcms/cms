@@ -8,6 +8,9 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Connection;
 use Symfony\Component\Process\ExecutableFinder;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BackupCommand
 {
     public function __construct(

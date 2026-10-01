@@ -27,6 +27,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SetPasswordController extends AuthenticationController
 {
     public function show(Request $request, AuthMethods $auth): Response|View|InertiaResponse

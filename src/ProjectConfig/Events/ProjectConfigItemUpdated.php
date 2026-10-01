@@ -17,5 +17,7 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  *     // Ensure the item is also updated in the database...
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 class ProjectConfigItemUpdated extends ConfigEvent {}

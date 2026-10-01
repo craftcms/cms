@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Edition\Events;
 
 use CraftCms\Cms\Edition;
 
+/**
+ * @since 6.0.0
+ */
 readonly class EditionChanged
 {
     public function __construct(

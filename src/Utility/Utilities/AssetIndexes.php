@@ -18,6 +18,8 @@ use function CraftCms\Cms\t;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
+ *
+ * @since 6.0.0
  */
 class AssetIndexes extends Utility
 {

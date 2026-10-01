@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\OAuth\Data;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ButtonData
 {
     public function __construct(

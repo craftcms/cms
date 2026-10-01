@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\Nodes\Tab;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class Form
 {
     use Conditionable;

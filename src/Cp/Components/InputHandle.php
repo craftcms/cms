@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Cp\Components;
 
 /**
  * PHP counterpart to the `<craft-input-handle>` web component.
+ *
+ * @since 6.0.0
  */
 class InputHandle extends Input
 {

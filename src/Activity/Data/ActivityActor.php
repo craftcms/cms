@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Activity\Data;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivityActor
 {
     public const string TYPE_USER = 'user';

@@ -13,7 +13,11 @@ use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 use Override;
 
-/** @phpstan-import-type ArgumentConfig from Argument */
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ *
+ * @since 6.0.0
+ */
 class Asset extends ElementArguments
 {
     #[Override]

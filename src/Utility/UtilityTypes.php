@@ -34,6 +34,8 @@ use Illuminate\Support\Collection;
  * ```
  *
  * @extends TypeRegistry<Utility>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class UtilityTypes extends TypeRegistry

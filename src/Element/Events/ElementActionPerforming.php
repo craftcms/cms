@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
+/**
+ * @since 6.0.0
+ */
 class ElementActionPerforming
 {
     use ValidatableEvent;

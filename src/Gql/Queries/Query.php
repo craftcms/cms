@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Gql\Queries;
 use CraftCms\Cms\Gql\Concerns\HasGqlType;
 use GraphQL\Type\Definition\FieldDefinition;
 
-/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 abstract class Query
 {
     use HasGqlType;

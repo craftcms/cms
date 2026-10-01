@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WorkflowStageContext
 {
     /** @var Collection<int, WorkflowStageHistory> */

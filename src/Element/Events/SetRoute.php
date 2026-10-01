@@ -16,6 +16,8 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * (even if you're setting it to `null`).
  *
  * {@see HasRoutesAndUrls::getRoute()}
+ *
+ * @since 6.0.0
  */
 class SetRoute
 {

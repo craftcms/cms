@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 use JsonException;
 
+/**
+ * @since 6.0.0
+ */
 class FormResolver
 {
     /** @var array<string, true> */

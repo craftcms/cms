@@ -1,7 +1,7 @@
 import {computed} from 'vue';
 import {actionClient, t} from '@craftcms/ui';
 import {getElementLevelDelta, moveElement} from '@actions/StructuresController';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import type {ElementIndexModel} from '../types/model';
 import {
   loadedBranchDepth,
@@ -13,7 +13,7 @@ import {
 export function useElementStructureMoves(index: ElementIndexModel) {
   const {elementIndex, structureView, toggleStructure} = index.view;
   const tableData = index.view.data;
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   function hasActiveFilter(): boolean {
     const rules = elementIndex.currentCondition?.conditionRules;
@@ -114,8 +114,7 @@ export function useElementStructureMoves(index: ElementIndexModel) {
       }
 
       if (exceeds) {
-        flash(
-          'error',
+        messages.error(
           t('This structure only allows {max} levels.', {
             max: structure.maxLevels,
           })
@@ -129,14 +128,13 @@ export function useElementStructureMoves(index: ElementIndexModel) {
         parentId: placement.parentId,
       });
     } catch (error: any) {
-      flash(
-        'error',
+      messages.error(
         error?.response?.data?.message ?? t('Couldn’t save the new position.')
       );
       return;
     }
 
-    flash('success', t('New position saved.'));
+    messages.success(t('New position saved.'));
 
     if (
       placement.newParentId !== undefined &&

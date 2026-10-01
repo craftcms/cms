@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 
+/**
+ * @since 6.0.0
+ */
 readonly class FieldContext
 {
     /**

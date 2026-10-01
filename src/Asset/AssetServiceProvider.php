@@ -14,6 +14,9 @@ use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class AssetServiceProvider extends ServiceProvider
 {
     public function boot(ImageTransformer $imageTransformer): void

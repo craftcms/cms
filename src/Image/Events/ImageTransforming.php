@@ -9,6 +9,9 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Image;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransforming
 {
     public function __construct(

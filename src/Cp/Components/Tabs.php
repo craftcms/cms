@@ -35,6 +35,8 @@ use Stringable;
  * (plain strings are encoded).
  *
  * Renders directly (no Blade view) — the chrome lives in the web component.
+ *
+ * @since 6.0.0
  */
 class Tabs extends ViewComponent
 {

@@ -31,6 +31,9 @@ use GraphQL\Utils\AST;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class GqlHelper
 {
     /**

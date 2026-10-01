@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class DisallowMb4 implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void

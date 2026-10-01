@@ -15,6 +15,9 @@ use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SlugConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string

@@ -122,6 +122,8 @@ use function CraftCms\Cms\t;
  * @property User[] $authors the entry authors
  * @property int|null $authorId The primary entry author’s ID
  * @property int[] $authorIds the entry authors’ IDs
+ *
+ * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
@@ -3047,6 +3049,7 @@ JS;
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn (FieldInterface $field) => $field->handle);
         $fieldsService = app(Fields::class);
+        $carriedOverFields = [];
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {
@@ -3062,8 +3065,16 @@ JS;
                     )
                 ) {
                     $this->setFieldValue($newField->handle, null);
+                } elseif ($newField->layoutElement->uid !== $oldField->layoutElement->uid) {
+                    $carriedOverFields[] = $newField->handle;
                 }
             }
+        }
+
+        // Content is keyed by layout element UID, so carried-over values need to be saved under their new UIDs
+        // (https://github.com/craftcms/cms/issues/19737)
+        if (! empty($carriedOverFields)) {
+            $this->setDirtyFields($carriedOverFields);
         }
     }
 

@@ -8,6 +8,8 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserFriendlyNameResolving The event that is triggered when defining the user’s friendly name, as returned by {@see User::getFriendlyName()}.
+ *
+ * @since 6.0.0
  */
 class UserFriendlyNameResolving
 {

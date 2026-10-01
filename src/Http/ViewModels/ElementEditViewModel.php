@@ -55,6 +55,8 @@ use function CraftCms\Cms\t;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (the compiled form) are memoized privately since payload methods may be
  * invoked in any order.
+ *
+ * @since 6.0.0
  */
 abstract class ElementEditViewModel extends ViewModel
 {

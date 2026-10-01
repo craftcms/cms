@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Html;
 
+/**
+ * @since 6.0.0
+ */
 class ConditionRuleRenderer
 {
     public function __construct(

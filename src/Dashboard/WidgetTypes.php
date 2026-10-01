@@ -26,6 +26,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<WidgetInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class WidgetTypes extends TypeRegistry

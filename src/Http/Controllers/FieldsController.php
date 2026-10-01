@@ -50,6 +50,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FieldsController
 {
     use RespondsWithFlash;
@@ -386,7 +389,11 @@ class FieldsController
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::error(t('Couldn’t save field.'));
+            // A JSON client gets the field errors in the 422 body; a flashed
+            // message would only surface on some later page.
+            if (! $request->expectsJson()) {
+                Flash::error(t('Couldn’t save field.'));
+            }
 
             $errors = $field->errors()->getMessages();
 

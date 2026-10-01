@@ -194,38 +194,36 @@
 
 <template>
   <UserScreen>
-    <craft-pane>
-      <div class="grid gap-4">
-        <div>
-          <h2>{{ t('Passkeys') }}</h2>
-          <p>
-            {{
-              t(
-                'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
-              )
-            }}
-          </p>
-        </div>
-
-        <craft-callout v-if="!supported" variant="warning">
-          {{ t('This browser doesn’t support passkeys.') }}
-        </craft-callout>
-
-        <craft-pane :padding="0" appearance="raised">
-          <AdminTable :table="table" />
-        </craft-pane>
-
-        <div v-if="supported">
-          <craft-button
-            type="button"
-            icon="plus"
-            :loading="adding"
-            @click="addPasskey"
-          >
-            {{ t('Add a passkey') }}
-          </craft-button>
-        </div>
+    <div class="grid gap-4">
+      <div>
+        <h2>{{ t('Passkeys') }}</h2>
+        <p>
+          {{
+            t(
+              'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
+            )
+          }}
+        </p>
       </div>
-    </craft-pane>
+
+      <craft-callout v-if="!supported" variant="warning">
+        {{ t('This browser doesn’t support passkeys.') }}
+      </craft-callout>
+
+      <craft-pane :padding="0" appearance="raised">
+        <AdminTable :table="table" />
+      </craft-pane>
+
+      <div v-if="supported">
+        <craft-button
+          type="button"
+          icon="plus"
+          :loading="adding"
+          @click="addPasskey"
+        >
+          {{ t('Add a passkey') }}
+        </craft-button>
+      </div>
+    </div>
   </UserScreen>
 </template>

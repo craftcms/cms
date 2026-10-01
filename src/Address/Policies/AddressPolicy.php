@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
+/**
+ * @since 6.0.0
+ */
 class AddressPolicy extends ElementPolicy
 {
     public function view(CraftUser $user, Address $address): bool

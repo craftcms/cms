@@ -14,6 +14,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * Set `$isValid` to `false` to prevent the element from getting moved.
  *
  * {@see Structurable::beforeMoveInStructure()}
+ *
+ * @since 6.0.0
  */
 class ElementMovingInStructure
 {

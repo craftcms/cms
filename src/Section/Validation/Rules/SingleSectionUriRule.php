@@ -19,6 +19,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SingleSectionUriRule implements DataAwareRule, ValidationRule
 {
     /**

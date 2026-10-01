@@ -788,7 +788,7 @@
       </div>
 
       <div slot="footer">
-        <div class="flex justify-between mt-1"></div>
+        <div class="element-selection-footer"></div>
       </div>
     </component>
   </div>
@@ -805,5 +805,14 @@
     border-start-start-radius: var(--c-radius-md);
     border-start-end-radius: var(--c-radius-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .element-selection-footer {
+    display: flex;
+    justify-content: space-between;
+
+    &:not(:empty) {
+      margin-block-start: var(--c-spacing-sm);
+    }
   }
 </style>

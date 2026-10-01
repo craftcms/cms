@@ -10,6 +10,9 @@ use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\InlinesOnly\InlinesOnlyExtension;
 use League\CommonMark\MarkdownConverter;
 
+/**
+ * @since 6.0.0
+ */
 class CommonMarkFlavor extends Flavor
 {
     public function __construct(

@@ -3,7 +3,7 @@ import {useEventListener, useResizeObserver} from '@vueuse/core';
 import {t} from '@craftcms/ui';
 import {useHelpers} from '@/common/composables/useCraftData';
 import {useActionClient} from '@/common/composables/useFetch';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
+import {useMessages} from '@/modules/messages/useMessages';
 import {animate, loadSvg, type FabricAnimatable} from './fabric';
 import {useCropper} from './useCropper';
 import {
@@ -188,7 +188,7 @@ export function useImageEditor(options: ImageEditorOptions) {
   );
 
   const helpers = useHelpers();
-  const {flash} = useFlashMessages();
+  const messages = useMessages();
 
   const isReady = ref(false);
   const savingAs = ref<SaveMode | null>(null);
@@ -950,7 +950,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     } catch (error) {
       // Logged as well as flashed, so the cause isn't lost.
       console.error('Image editor failed to load the image:', error);
-      flash('error', t('Could not load the image for editing.'));
+      messages.error(t('Could not load the image for editing.'));
       return;
     }
 
@@ -977,7 +977,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     state: saveState,
     execute: postSave,
   } = useActionClient<SaveResult>('assets/save-image', {
-    onError: () => flash('error', t('Could not save the image.')),
+    onError: () => messages.error(t('Could not save the image.')),
   });
 
   /**
@@ -1034,8 +1034,7 @@ export function useImageEditor(options: ImageEditorOptions) {
 
       cacheBust.value = Date.now();
 
-      flash(
-        'success',
+      messages.success(
         mode === 'replace'
           ? t('Image saved.')
           : t('Image saved as a new asset.')

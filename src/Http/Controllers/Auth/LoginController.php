@@ -37,6 +37,9 @@ use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class LoginController extends AuthenticationController
 {
     public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods, OAuth $oauth): Response|View|\Inertia\Response

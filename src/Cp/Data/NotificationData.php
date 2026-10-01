@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Cp\Data;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 readonly class NotificationData implements Arrayable, JsonSerializable
 {
     /** @param list<NotificationButtonData> $buttons */

@@ -19,6 +19,9 @@ use CraftCms\Cms\View\TemplateHooks;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserPreferencesViewModel extends ViewModel
 {
     public function __construct(

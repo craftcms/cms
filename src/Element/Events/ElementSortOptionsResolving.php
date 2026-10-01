@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event ElementSortOptionsResolving event is triggered when registering the sort options for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementSortOptionsResolving
 {

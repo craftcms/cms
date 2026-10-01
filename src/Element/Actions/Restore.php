@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class Restore extends ElementAction
 {
     public ?string $successMessage = null;

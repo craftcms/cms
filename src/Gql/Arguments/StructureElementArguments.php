@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Gql\Arguments;
 
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 abstract class StructureElementArguments extends ElementArguments
 {
     #[\Override]

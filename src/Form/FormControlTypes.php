@@ -46,6 +46,8 @@ use Illuminate\Container\Attributes\Singleton;
  * Registers Control type classes available to Control Panel Forms.
  *
  * @extends TypeRegistry<Control>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class FormControlTypes extends TypeRegistry

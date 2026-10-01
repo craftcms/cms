@@ -12,6 +12,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteEmptyVolumeFoldersCommand extends Command
 {
     use CraftCommand;

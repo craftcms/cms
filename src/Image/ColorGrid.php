@@ -12,6 +12,7 @@ namespace CraftCms\Cms\Image;
  *
  * @see Images::colors()
  * @see Data\ImageColors::$grid
+ * @since 6.0.0
  */
 class ColorGrid
 {

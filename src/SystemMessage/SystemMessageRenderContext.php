@@ -9,6 +9,9 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SystemMessageRenderContext
 {
     public function __construct(

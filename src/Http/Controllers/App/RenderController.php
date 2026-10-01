@@ -28,6 +28,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rule;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RenderController
 {
     public function __construct(

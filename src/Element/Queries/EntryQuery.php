@@ -33,6 +33,8 @@ use function CraftCms\Cms\currentUser;
  * @template T of Entry
  *
  * @extends ElementQuery<T>
+ *
+ * @since 6.0.0
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {

@@ -9,7 +9,11 @@ use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 
-/** PHP counterpart to the `<craft-select>` web component. */
+/**
+ * PHP counterpart to the `<craft-select>` web component.
+ *
+ * @since 6.0.0
+ */
 class Select extends ViewComponent
 {
     use HasDisabled;

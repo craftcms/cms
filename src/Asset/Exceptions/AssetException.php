@@ -6,4 +6,7 @@ namespace CraftCms\Cms\Asset\Exceptions;
 
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class AssetException extends RuntimeException {}

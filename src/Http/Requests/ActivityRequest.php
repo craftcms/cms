@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Http\Requests;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ActivityRequest extends ElementRequest
 {
     private ?ElementInterface $subject = null;

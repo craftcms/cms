@@ -6,6 +6,8 @@ namespace CraftCms\Cms\User\Events;
 
 /**
  * @event UserAssignedToGroups The event that is triggered after a user is assigned to some user groups.
+ *
+ * @since 6.0.0
  */
 class UserAssignedToGroups
 {

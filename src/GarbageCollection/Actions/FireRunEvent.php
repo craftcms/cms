@@ -6,6 +6,9 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
 
+/**
+ * @since 6.0.0
+ */
 class FireRunEvent extends GarbageCollectionAction
 {
     public function __invoke(): void

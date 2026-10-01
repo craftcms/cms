@@ -10,6 +10,9 @@ use CraftCms\Cms\View\HtmlStack;
 use Illuminate\View\Compilers\BladeCompiler;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class ResourceDirective
 {
     public static function register(BladeCompiler $blade): void

@@ -23,7 +23,11 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class ConfigStorage
 {
     public function dependency(): CallbackDependency

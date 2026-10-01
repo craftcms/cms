@@ -16,6 +16,9 @@ use Twig\Sandbox\SecurityNotAllowedTagError;
 use Twig\Sandbox\SecurityPolicyInterface;
 use Twig\Template;
 
+/**
+ * @since 6.0.0
+ */
 class SecurityPolicy implements SecurityPolicyInterface
 {
     /** @var string[] */

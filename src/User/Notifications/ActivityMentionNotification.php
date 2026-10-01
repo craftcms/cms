@@ -21,6 +21,9 @@ use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Notifications\Channels\MailChannel;
 use LogicException;
 
+/**
+ * @since 6.0.0
+ */
 class ActivityMentionNotification extends CpNotification implements ShouldQueueAfterCommit
 {
     use Queueable;

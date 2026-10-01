@@ -10,6 +10,9 @@ use Illuminate\Console\Command;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class GenerateCustomFieldsCommand extends Command
 {
     #[\Override]

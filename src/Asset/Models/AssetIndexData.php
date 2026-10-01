@@ -17,6 +17,8 @@ use Stringable;
 /**
  * @property AssetIndexStatus $status
  * @property DateTimeInterface|null $timestamp
+ *
+ * @since 6.0.0
  */
 class AssetIndexData extends BaseModel implements Stringable
 {

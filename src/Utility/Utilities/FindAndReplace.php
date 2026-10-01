@@ -12,6 +12,8 @@ use function CraftCms\Cms\t;
 
 /**
  * FindAndReplace represents a FindAndReplace dashboard widget.
+ *
+ * @since 6.0.0
  */
 class FindAndReplace extends Utility
 {

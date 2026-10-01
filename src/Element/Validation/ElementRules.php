@@ -29,6 +29,8 @@ use function CraftCms\Cms\t;
  * @property Element $subject
  *
  * @extends Ruleset<T>
+ *
+ * @since 6.0.0
  */
 class ElementRules extends Ruleset
 {

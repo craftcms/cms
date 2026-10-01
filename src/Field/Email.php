@@ -26,6 +26,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Email represents an Email field.
+ *
+ * @since 6.0.0
  */
 class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {

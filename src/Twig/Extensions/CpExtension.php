@@ -19,6 +19,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
@@ -28,6 +29,9 @@ use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
+/**
+ * @since 6.0.0
+ */
 class CpExtension extends AbstractExtension implements GlobalsInterface
 {
     public function getGlobals(): array
@@ -67,6 +71,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('cpEnvOptions', $this->envOptions(...)),
             new TwigFunction('cpEnvSuggestions', $this->envSuggestions(...)),
             new TwigFunction('cpTemplateSuggestions', $this->templateSuggestions(...)),
+            new TwigFunction('cpMessages', Flash::all(...)),
 
             // Legacy Assets - remove once all dependencies on these are removed
             new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),

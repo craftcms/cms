@@ -34,6 +34,8 @@ use function CraftCms\Cms\normalizeValue;
  *
  * Provides shared options and resave logic. Extend this class
  * for element-specific resave commands or custom plugin resave commands.
+ *
+ * @since 6.0.0
  */
 abstract class ResaveCommand extends Command
 {

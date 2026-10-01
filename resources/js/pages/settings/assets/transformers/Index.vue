@@ -13,7 +13,6 @@
     destroy,
     edit,
   } from '@actions/Settings/AssetTransformersController';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   type AssetTransformerIndexData =
     CraftCms.Cms.Asset.Data.AssetTransformerIndexData;
@@ -117,7 +116,5 @@
     }}</CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer>
-    <AdminTable :table="table" :reorderable="false" />
-  </CpContainer>
+  <AdminTable class="admin-table--padded" :table="table" :reorderable="false" />
 </template>

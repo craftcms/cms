@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class ShowBrokenImage
 {
     public function handle(Request $request, Closure $next): mixed

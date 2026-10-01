@@ -9,6 +9,9 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WorkflowRunData
 {
     /** @param list<WorkflowRunStageData> $stages */

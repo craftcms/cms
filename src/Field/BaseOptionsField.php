@@ -51,6 +51,8 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-type Option array{label:string, value:string, default?:bool|string, icon?:string|null, color?:string|null}
  * @phpstan-type Optgroup array{optgroup:string}
+ *
+ * @since 6.0.0
  */
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {

@@ -14,6 +14,8 @@ use ReflectionProperty;
 /**
  * @implements Arrayable<string, mixed>
  * @implements ArrayAccess<string, mixed>
+ *
+ * @since 6.0.0
  */
 abstract class BaseConfig implements Arrayable, ArrayAccess
 {

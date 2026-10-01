@@ -34,10 +34,6 @@ export default class CraftCheckboxGroup extends HasLabel(
           gap: var(--c-spacing-sm);
         }
 
-        .form-field__group-two {
-          margin-block-start: var(--c-spacing-sm);
-        }
-
         ::slotted(label) {
           font-weight: bold;
         }

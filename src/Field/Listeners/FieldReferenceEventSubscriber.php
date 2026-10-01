@@ -17,6 +17,8 @@ use CraftCms\Cms\Field\FieldReferences;
  * Updates reference rows when fields are saved, clears rows
  * when sources or field/layout instances are removed, and
  * drops stale rows when a field stops reference tracking.
+ *
+ * @since 6.0.0
  */
 readonly class FieldReferenceEventSubscriber
 {

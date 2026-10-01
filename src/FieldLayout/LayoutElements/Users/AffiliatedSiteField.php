@@ -20,6 +20,9 @@ use Override;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class AffiliatedSiteField extends BaseNativeField
 {
     #[Override]

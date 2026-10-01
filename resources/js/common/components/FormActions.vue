@@ -3,7 +3,6 @@
   import type {InertiaForm} from '@inertiajs/vue3';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import FormActionButtons from '@/common/components/FormActionButtons.vue';
-  import InlineFlash from '@/common/components/InlineFlash.vue';
   import {
     PRIMARY_SUBMITTER,
     useFormSubmitter,
@@ -73,9 +72,5 @@
     />
 
     <ActionMenu v-if="additionalActions?.length" :actions="additionalActions" />
-  </div>
-
-  <div class="flex flex-col justify-center">
-    <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
   </div>
 </template>

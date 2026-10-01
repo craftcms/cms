@@ -13,6 +13,9 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\ConnectionInterface;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class BulkOps
 {

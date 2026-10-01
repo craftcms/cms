@@ -9,6 +9,8 @@ use Illuminate\Support\Collection;
 
 /**
  * @event ElementSourceTableAttributesResolving The event that is triggered when defining the available table attributes for a source.
+ *
+ * @since 6.0.0
  */
 class ElementSourceTableAttributesResolving
 {

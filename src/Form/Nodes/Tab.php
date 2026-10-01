@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
 
+/**
+ * @since 6.0.0
+ */
 class Tab extends Container
 {
     /** @param list<Node> $children */

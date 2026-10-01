@@ -22,6 +22,9 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\NotIsNull;
 use Tpetry\QueryExpressions\Value\Value;
 
+/**
+ * @since 6.0.0
+ */
 abstract class RepairCommand extends Command
 {
     /** @param Collection<int, ElementInterface>|ElementQueryInterface $query */

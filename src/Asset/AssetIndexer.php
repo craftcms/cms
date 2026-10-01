@@ -48,6 +48,9 @@ use Tpetry\QueryExpressions\Function\String\Concat;
 use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Value\Value;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class AssetIndexer
 {

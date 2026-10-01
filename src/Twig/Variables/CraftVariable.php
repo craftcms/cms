@@ -14,6 +14,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
 
+/**
+ * @since 6.0.0
+ */
 class CraftVariable
 {
     use Macroable {

@@ -9,6 +9,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ResaveEntriesCommand extends ResaveCommand
 {
     #[Override]

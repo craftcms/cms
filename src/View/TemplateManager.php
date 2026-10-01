@@ -24,6 +24,9 @@ use UnexpectedValueException;
 use function CraftCms\Cms\t;
 use function Illuminate\Support\enum_value;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class TemplateManager extends Manager
 {

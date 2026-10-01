@@ -22,6 +22,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 class EmbeddedNestedElementScope
 {
     private const array ELEMENT_INDEX_SCOPE_CRITERIA = [

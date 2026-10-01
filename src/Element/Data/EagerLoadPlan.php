@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Element\Data;
 
 use Closure;
 
+/**
+ * @since 6.0.0
+ */
 class EagerLoadPlan
 {
     /** @param array<string, mixed> $criteria */

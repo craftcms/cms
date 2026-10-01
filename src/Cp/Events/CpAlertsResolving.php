@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Events;
 
+/**
+ * @since 6.0.0
+ */
 class CpAlertsResolving
 {
     public function __construct(

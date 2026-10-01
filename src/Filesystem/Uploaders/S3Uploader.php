@@ -20,6 +20,9 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 
+/**
+ * @since 6.0.0
+ */
 class S3Uploader implements Uploader
 {
     public function start(UploadSession $session): UploadSetup

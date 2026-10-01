@@ -134,6 +134,7 @@
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
   <AdminTable
+    class="admin-table--padded"
     :title="title"
     :table="sectionTable"
     :reorderable="false"

@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class GenerateImageTransform extends Job implements ShouldBeUnique
 {
     public int $uniqueFor = 300;

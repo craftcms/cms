@@ -59,6 +59,8 @@ use function CraftCms\Cms\t;
  *     locality: list<string|null>,
  *     dependentLocality: list<string|null>,
  * }
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 readonly class Addresses implements FieldLayoutProviderInterface

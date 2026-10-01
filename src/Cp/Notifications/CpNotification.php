@@ -13,6 +13,9 @@ use Illuminate\Support\Arr;
 use Laravel\SerializableClosure\SerializableClosure;
 use UnexpectedValueException;
 
+/**
+ * @since 6.0.0
+ */
 class CpNotification extends Notification
 {
     public const string TYPE = 'craft-cp';

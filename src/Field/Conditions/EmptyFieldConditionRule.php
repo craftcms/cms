@@ -14,6 +14,9 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Override;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class EmptyFieldConditionRule extends BaseConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

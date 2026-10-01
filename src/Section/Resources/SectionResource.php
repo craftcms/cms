@@ -13,7 +13,11 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 use function CraftCms\Cms\currentUser;
 
-/** @mixin Section */
+/**
+ * @mixin Section
+ *
+ * @since 6.0.0
+ */
 class SectionResource extends JsonResource
 {
     /** @return array<string, array<int, int|array<string, string>>|bool|int|string|null|AnonymousResourceCollection> */

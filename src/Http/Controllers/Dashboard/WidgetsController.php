@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WidgetsController
 {
     use InteractsWithWidgets;

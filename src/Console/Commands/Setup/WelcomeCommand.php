@@ -13,6 +13,9 @@ use Override;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 
+/**
+ * @since 6.0.0
+ */
 class WelcomeCommand extends Command
 {
     use CraftCommand;

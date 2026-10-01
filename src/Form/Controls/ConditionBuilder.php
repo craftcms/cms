@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class ConditionBuilder extends Control
 {
     /** @var class-string<ConditionInterface>|null */

@@ -15,7 +15,11 @@ use CraftCms\Cms\Support\Facades\Activities;
 use Illuminate\Container\Attributes\Singleton;
 use WeakMap;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementWriteActivity
 {

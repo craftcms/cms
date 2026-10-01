@@ -13,6 +13,8 @@ use CraftCms\Cms\Form\Enums\ControlMode;
  * Triggered while resolving a field layout component's action menu items.
  *
  * {@see BaseField::resolveActionMenuItems()}
+ *
+ * @since 6.0.0
  */
 class FieldLayoutComponentActionMenuItemsResolving
 {

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Hash;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UserPasswordRule implements ValidationRule
 {
     public const int MIN_PASSWORD_LENGTH = 8;

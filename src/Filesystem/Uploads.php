@@ -22,6 +22,9 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Uploads
 {

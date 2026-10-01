@@ -167,6 +167,7 @@ interface CraftStatic {
     totalJobs?: number;
     trigger?: (event: string, data?: LegacySettingValue) => void;
     $notificationContainer?: {length: number};
+    $notificationHeading?: {length: number};
     copyElements?: (
       elementInfo: Array<{
         type: string;

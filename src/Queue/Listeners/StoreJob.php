@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Queue\Listeners;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\Events\JobRetryRequested;
 
+/**
+ * @since 6.0.0
+ */
 readonly class StoreJob extends ProgressListener
 {
     public function handle(JobQueued|JobRetryRequested $event): void

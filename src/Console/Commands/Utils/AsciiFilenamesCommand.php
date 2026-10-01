@@ -18,6 +18,9 @@ use Throwable;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * @since 6.0.0
+ */
 class AsciiFilenamesCommand extends Command
 {
     use CraftCommand;

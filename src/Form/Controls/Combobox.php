@@ -6,10 +6,14 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class Combobox extends Control
 {
     /** @var list<array<string, mixed>> */
@@ -66,12 +70,35 @@ class Combobox extends Control
         return 'craft:combobox';
     }
 
-    /** @param list<array<string, mixed>> $options */
+    /**
+     * Cast option values to strings so numeric IDs match the selected values.
+     *
+     * @param  list<array<string, mixed>|ComboboxCreateOption>  $options
+     */
     public function options(array $options): static
     {
-        $this->options = $options;
+        $this->options = array_map(self::stringifyOptionValue(...), $options);
 
         return $this;
+    }
+
+    /**
+     * @param  array<string, mixed>|ComboboxCreateOption  $option
+     * @return array<string, mixed>
+     */
+    private static function stringifyOptionValue(array|ComboboxCreateOption $option): array
+    {
+        if ($option instanceof ComboboxCreateOption) {
+            $option = $option->jsonSerialize();
+        }
+
+        if (($option['type'] ?? null) === 'optgroup') {
+            return [...$option, 'options' => array_map(self::stringifyOptionValue(...), $option['options'] ?? [])];
+        }
+
+        return array_key_exists('value', $option)
+            ? [...$option, 'value' => (string) $option['value']]
+            : $option;
     }
 
     public function placeholder(?string $placeholder): static

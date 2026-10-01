@@ -6,6 +6,7 @@ import type {
 } from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 import type {Component} from 'vue';
+import type {UrlMethodPair} from '@inertiajs/core';
 import type {FormValues} from '@/modules/forms/types';
 
 export type OptionData = ComboboxOptionData;
@@ -228,10 +229,31 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
+/** An alternate submission, executed by the Form page's save pipeline. */
+export interface FormSubmissionAction extends Omit<
+  ActionItemButton,
+  'action' | 'shortcut'
+> {
+  action?: string;
+  redirect?: string;
+  confirm?: string;
+  params?: FormValues;
+  destructive?: boolean;
+  shortcut?: boolean;
+  shift?: boolean;
+  retainScroll?: boolean;
+}
+
+export type FormAction = ActionItem | FormSubmissionAction;
+
 export interface FormSaveOptions {
+  action?: UrlMethodPair;
+  preserveScroll?: boolean;
+  /** Keep a slideout open after saving, without navigating to a redirect. */
+  keepOpen?: boolean;
   redirect?: boolean;
   data?: FormValues;
-  preserveState?: boolean;
+  preserveState?: boolean | 'errors';
 }
 
 export interface EntryType {

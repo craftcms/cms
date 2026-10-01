@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Field\Exceptions;
 use Exception;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class FieldNotFoundException extends Exception
 {
     public function __construct(
