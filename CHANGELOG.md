@@ -35,6 +35,7 @@
 - Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 - Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
 - Fixed a bug where Form API field instructions displayed Markdown and inline HTML as plain text in Vue forms. ([#19771](https://github.com/craftcms/cms/pull/19771))
+- Fixed a bug where money inputs could be hidden within fields or submit their values under the wrong name. ([#19767](https://github.com/craftcms/cms/pull/19767))
 - Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
 - Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.
 - Fixed a bug where element chips didn’t show their status indicators, and their thumbnails weren’t sized, spaced, or centered for the chip. ([#19758](https://github.com/craftcms/cms/pull/19758))
