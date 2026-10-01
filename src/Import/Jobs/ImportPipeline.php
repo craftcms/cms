@@ -80,6 +80,8 @@ class ImportPipeline extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t("Importing “{$this->importPlan->name}” data");
+        return t('Importing “{name}” data', [
+            'name' => $this->importPlan->name,
+        ]);
     }
 }

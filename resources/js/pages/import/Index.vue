@@ -225,7 +225,7 @@
         <div>
           <h3>{{ t('Editable Import Plans') }}</h3>
           <p>
-            {{ t('Those import plans can be edited in the Control Panel') }}
+            {{ t('Those import plans can be edited in the control panel.') }}
           </p>
         </div>
 
