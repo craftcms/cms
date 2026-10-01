@@ -12,6 +12,8 @@ use Tpetry\QueryExpressions\Concerns\StringizeExpression;
 /**
  * Extension of {@see \Tpetry\QueryExpressions\Language\Cast}
  * without exception on custom cast.
+ *
+ * @since 6.0.0
  */
 readonly class Cast implements Expression
 {

@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Update\Data;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 readonly class Updates
 {

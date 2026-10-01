@@ -6,5 +6,7 @@ namespace CraftCms\Cms\Plugin\Events;
 
 /**
  * @event PluginInstalled The event that is triggered after a plugin is installed
+ *
+ * @since 6.0.0
  */
 class PluginInstalled extends PluginEvent {}

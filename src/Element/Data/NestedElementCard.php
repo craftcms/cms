@@ -8,7 +8,11 @@ use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 readonly class NestedElementCard implements Arrayable, JsonSerializable
 {
     /**

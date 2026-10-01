@@ -33,6 +33,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Lightswitch represents a Lightswitch field.
+ *
+ * @since 6.0.0
  */
 class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

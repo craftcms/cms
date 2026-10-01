@@ -8,6 +8,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransformIndex extends BaseModel
 {
     #[Override]

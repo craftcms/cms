@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Date;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 readonly class UpdateRelease
 {

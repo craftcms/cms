@@ -16,6 +16,8 @@ use JsonSerializable;
  * @see Images::colors()
  *
  * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
  */
 #[AllowedInSandbox]
 readonly class ImageColors implements Arrayable, JsonSerializable

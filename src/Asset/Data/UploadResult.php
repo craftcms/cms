@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Asset\Data;
 use Illuminate\Contracts\Support\Arrayable;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 #[Optional]
 class UploadResult implements Arrayable
 {

@@ -11,6 +11,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * @event The event that is triggered before keywords are indexed for an element attribute or field.
  *
  * You may set [[ValidatableEvent::$isValid]] to `false` to prevent the attribute/field's keywords from being indexed.
+ *
+ * @since 6.0.0
  */
 class KeywordsIndexing
 {

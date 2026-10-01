@@ -8,6 +8,9 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Json;
 
+/**
+ * @since 6.0.0
+ */
 class SelectColor extends ViewComponent
 {
     use HasDisabled;

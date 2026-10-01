@@ -11,6 +11,8 @@ use CraftCms\Cms\Search\SearchQuery;
  * @event The event that is triggered after search result scores are calculated.
  *
  * Any modifications to [[$scores]] will be respected.
+ *
+ * @since 6.0.0
  */
 class SearchScoresResolving
 {

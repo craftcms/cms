@@ -12,6 +12,9 @@ use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class SectionSiteSettings extends BaseModel
 {
     /** @use HasFactory<SectionSiteSettingsFactory> */

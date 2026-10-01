@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Gql\Handlers;
 
 use CraftCms\Cms\Gql\GqlHelper;
 
+/**
+ * @since 6.0.0
+ */
 class Site extends ArgumentHandler
 {
     #[\Override]

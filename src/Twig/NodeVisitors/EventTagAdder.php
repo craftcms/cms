@@ -19,6 +19,8 @@ use Twig\TwigFunction;
 /**
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()`
  * event tags to templates as they’re being compiled.
+ *
+ * @since 6.0.0
  */
 class EventTagAdder extends BaseEventTagVisitor
 {

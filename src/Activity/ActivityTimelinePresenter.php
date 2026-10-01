@@ -17,6 +17,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 class ActivityTimelinePresenter
 {
     public function __construct(

@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
  *
  * Set $disk to a Laravel filesystem disk name, and $uploader to a registered
  * uploader name. Leave either null to use the configured default or automatic selection.
+ *
+ * @since 6.0.0
  */
 class UploadSessionStarting
 {

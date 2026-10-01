@@ -16,6 +16,9 @@ use Illuminate\Support\Collection;
 use Override;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class ReplaceReferences extends BatchedElementJob
 {
     public function __construct(

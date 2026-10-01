@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Shared;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\Macroable;
 
+/**
+ * @since 6.0.0
+ */
 class BaseModel extends Model
 {
     use Macroable {

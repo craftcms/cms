@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Markdown\Flavors;
 use CraftCms\Cms\Markdown\MarkdownOptions;
 use League\CommonMark\Environment\Environment;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Flavor
 {
     protected function environment(MarkdownOptions $options, string $softBreak = "\n"): Environment

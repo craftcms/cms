@@ -14,6 +14,9 @@ use Money\Parser\DecimalMoneyParser;
 use Money\Parser\IntlMoneyParser;
 use NumberFormatter;
 
+/**
+ * @since 6.0.0
+ */
 class Money
 {
     private static ISOCurrencies $isoCurrencies;

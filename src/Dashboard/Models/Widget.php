@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Dashboard\Models;
 
 use CraftCms\Cms\Shared\BaseModel;
 
+/**
+ * @since 6.0.0
+ */
 class Widget extends BaseModel
 {
     #[\Override]

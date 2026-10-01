@@ -11,6 +11,8 @@ use CraftCms\Cms\Support\Html;
  * Base class for choice-group containers (checkbox groups, checkbox selects,
  * radio groups): a host element rendering option components, each in its own
  * wrapper element, with hooks for leading/trailing content.
+ *
+ * @since 6.0.0
  */
 abstract class ChoiceGroup extends ViewComponent
 {

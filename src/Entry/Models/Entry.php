@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @since 6.0.0
+ */
 class Entry extends BaseModel
 {
     /** @use HasFactory<EntryFactory> */

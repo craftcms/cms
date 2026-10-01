@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Gql\Handlers;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ArgumentHandler implements ArgumentHandlerInterface
 {
     protected ArgumentManager $argumentManager;

@@ -13,6 +13,8 @@ use function CraftCms\Cms\template;
 
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
+ *
+ * @since 6.0.0
  */
 class PhpInfo extends Utility
 {

@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string prep(string $message, array $params = [], ?string $category = null, ?string $locale = null)
  *
  * @see \CraftCms\Cms\Translation\I18N
+ * @since 6.0.0
  */
 class I18N extends Facade
 {

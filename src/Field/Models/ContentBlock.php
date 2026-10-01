@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends BaseModel
 {
     #[\Override]

@@ -23,6 +23,8 @@ use Stringable;
  * Assets are registered via dedicated methods (e.g. [[js()]], [[css()]], [[jsFile()]]) and rendered
  * into the page via [[headHtml()]] and [[bodyHtml()]]. A per-key buffering system allows capturing
  * assets registered during a block of code without them appearing in the final output.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class HtmlStack

@@ -13,6 +13,9 @@ use function CraftCms\Cms\t;
 /*
  * InvalidElementException represents an exception caused by setting an invalid element.
  */
+/**
+ * @since 6.0.0
+ */
 class InvalidElementException extends ElementException
 {
     public function __construct(

@@ -51,6 +51,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RouteServiceProvider extends ServiceProvider
 {
     #[Override]

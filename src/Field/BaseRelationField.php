@@ -82,6 +82,8 @@ use function CraftCms\Cms\template;
  * BaseRelationField is the base class for classes representing a relational field.
  *
  * @phpstan-import-type InputObjectFieldConfig from InputObjectField
+ *
+ * @since 6.0.0
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {

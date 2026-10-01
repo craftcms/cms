@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use Twig\Compiler;
 use Twig\Node\Expression\Binary\AbstractBinary;
 
+/**
+ * @since 6.0.0
+ */
 class HasEveryBinary extends AbstractBinary
 {
     #[\Override]

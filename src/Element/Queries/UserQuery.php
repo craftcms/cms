@@ -22,6 +22,8 @@ use Override;
 
 /**
  * @extends ElementQuery<User>
+ *
+ * @since 6.0.0
  */
 class UserQuery extends ElementQuery
 {

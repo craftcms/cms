@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * @property array{dominant: string|null, grid: list<list<string>>}|null $colors
+ *
+ * @since 6.0.0
  */
 class Asset extends BaseModel
 {

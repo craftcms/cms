@@ -15,6 +15,8 @@ use RuntimeException;
 
 /**
  * BaseConditionGroup provides a base implementation for condition groups.
+ *
+ * @since 6.0.0
  */
 abstract class BaseConditionGroup implements ConditionGroupInterface
 {

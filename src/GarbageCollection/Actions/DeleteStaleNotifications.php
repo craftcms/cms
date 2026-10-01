@@ -7,6 +7,9 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Cp\Notifications\CpNotification;
 use Illuminate\Notifications\DatabaseNotification;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteStaleNotifications extends GarbageCollectionAction
 {
     public function __invoke(): void

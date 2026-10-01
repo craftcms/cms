@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Http;
 
 use Illuminate\Container\Attributes\Scoped;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class ResponseHeaders
 {

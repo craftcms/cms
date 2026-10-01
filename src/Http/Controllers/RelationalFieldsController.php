@@ -14,6 +14,9 @@ use Illuminate\Http\Request;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RelationalFieldsController
 {
     public function structuredInputHtml(

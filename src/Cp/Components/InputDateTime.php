@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class InputDateTime extends ViewComponent
 {
     use HasDisabled;

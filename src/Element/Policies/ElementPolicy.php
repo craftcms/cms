@@ -16,6 +16,9 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use ReflectionMethod;
 
+/**
+ * @since 6.0.0
+ */
 class ElementPolicy
 {
     private const array ABILITIES = [

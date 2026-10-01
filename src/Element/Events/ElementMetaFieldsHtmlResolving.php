@@ -12,6 +12,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * within the editor sidebar.
  *
  * {@see HasControlPanelUI::metaFieldsHtml()}
+ *
+ * @since 6.0.0
  */
 class ElementMetaFieldsHtmlResolving
 {

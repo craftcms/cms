@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Workflow\UserReview;
 
 use Illuminate\Support\Collection;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UserReviewDecisions
 {
     /** @param list<UserReviewDecisionData> $all */

@@ -28,6 +28,7 @@ use Override;
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Asset\Volumes
+ * @since 6.0.0
  */
 class Volumes extends Facade
 {

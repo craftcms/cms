@@ -12,6 +12,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class WebAuthn extends BaseModel
 {
     /** @use HasFactory<WebAuthnFactory> */

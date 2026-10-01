@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Event;
 use Override;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 final class UpdateStatusesCommand extends Command implements Isolatable
 {
     use CraftCommand;

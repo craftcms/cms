@@ -12,6 +12,8 @@ use Illuminate\Container\Attributes\Scoped;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class InternalAssetRegistry

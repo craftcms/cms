@@ -8,6 +8,8 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 
 /**
  * @event SiteGroupSaving The event that is triggered before a site group is saved.
+ *
+ * @since 6.0.0
  */
 class SiteGroupSaving
 {

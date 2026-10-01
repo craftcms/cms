@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool updateCraftVersionInfo()
  *
  * @see \CraftCms\Cms\Update\Updates
+ * @since 6.0.0
  */
 class Updates extends Facade
 {

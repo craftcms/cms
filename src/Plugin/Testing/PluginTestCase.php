@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 abstract class PluginTestCase extends BaseTestCase
 {
     use InstallsPlugin;

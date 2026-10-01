@@ -29,7 +29,11 @@ use UnitEnum;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 readonly class ElementDuplicates
 {
     public function __construct(

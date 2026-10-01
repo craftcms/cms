@@ -108,6 +108,8 @@ use function CraftCms\Cms\t;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
+ *
+ * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract

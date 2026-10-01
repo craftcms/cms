@@ -11,6 +11,8 @@ use CraftCms\Cms\Field\Fields;
  * @event FieldSaveApplying The event that is triggered before a field save is applied to the database.
  *
  * @phpstan-import-type FieldConfig from Fields
+ *
+ * @since 6.0.0
  */
 class FieldSaveApplying
 {

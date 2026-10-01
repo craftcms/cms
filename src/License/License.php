@@ -32,6 +32,8 @@ use function CraftCms\Cms\t;
  * @phpstan-type Resolution array{type: string, plugin?: string, licenseId: string|int|null, edition?: string}
  * @phpstan-type Issue array{string, string, Resolution|null}
  * @phpstan-type LicenseInfo array{id: string|int|null, edition: string|null, status: string|LicenseKeyStatus, timestamp?: int|null}
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 readonly class License

@@ -12,6 +12,8 @@ use Override;
 
 /**
  * BaseSelectConditionRule provides a base implementation for condition rules that are composed of a select input.
+ *
+ * @since 6.0.0
  */
 abstract class BaseSelectConditionRule extends BaseConditionRule
 {

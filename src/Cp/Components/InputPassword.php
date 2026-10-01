@@ -18,6 +18,8 @@ namespace CraftCms\Cms\Cp\Components;
  *     InputPassword::make()
  *         ->name('newPassword')
  *         ->autocomplete('new-password');
+ *
+ * @since 6.0.0
  */
 class InputPassword extends Input
 {

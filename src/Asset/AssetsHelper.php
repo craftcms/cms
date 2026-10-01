@@ -33,6 +33,9 @@ use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
 
+/**
+ * @since 6.0.0
+ */
 class AssetsHelper
 {
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';

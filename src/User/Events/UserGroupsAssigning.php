@@ -10,6 +10,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * @event UserGroupsAssigning The event that is triggered before a user is assigned to some user groups.
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting assigned to the groups.
+ *
+ * @since 6.0.0
  */
 class UserGroupsAssigning
 {

@@ -9,6 +9,8 @@ use CraftCms\Cms\Search\SearchQuery;
 
 /**
  * @event The event that is triggered before a search is performed.
+ *
+ * @since 6.0.0
  */
 class SearchStarting
 {

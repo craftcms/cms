@@ -12,6 +12,9 @@ use Twig\Compiler;
 use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;
 
+/**
+ * @since 6.0.0
+ */
 #[YieldReady]
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {

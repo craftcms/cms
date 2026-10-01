@@ -13,6 +13,9 @@ use Illuminate\Validation\Rule;
 use Override;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class GqlToken extends Component implements Stringable
 {
     public const string PUBLIC_TOKEN = '__PUBLIC__';

@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Gate;
 use Override;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
+/**
+ * @since 6.0.0
+ */
 class PreventRequestsDuringMaintenance extends LaravelMiddleware
 {
     private const string ALLOW_DURING_MAINTENANCE_METADATA = 'craft.allowDuringMaintenance';

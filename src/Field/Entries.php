@@ -36,6 +36,8 @@ use function CraftCms\Cms\t;
  * Entries represents an Entries field.
  *
  * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @since 6.0.0
  */
 class Entries extends BaseRelationField
 {

@@ -8,6 +8,9 @@ use Override;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class Email extends BaseTextLinkType
 {
     public static function id(): string

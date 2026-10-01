@@ -21,7 +21,11 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<Volume> */
+/**
+ * @extends Ruleset<Volume>
+ *
+ * @since 6.0.0
+ */
 class VolumeRules extends Ruleset
 {
     /** @return array<string, list<Closure|object|string>> */

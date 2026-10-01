@@ -122,6 +122,8 @@ use function CraftCms\Cms\t;
  * @property User[] $authors the entry authors
  * @property int|null $authorId The primary entry author’s ID
  * @property int[] $authorIds the entry authors’ IDs
+ *
+ * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface

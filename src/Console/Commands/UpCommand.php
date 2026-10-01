@@ -19,6 +19,9 @@ use Throwable;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * @since 6.0.0
+ */
 class UpCommand extends Command implements Isolatable
 {
     use CraftCommand;

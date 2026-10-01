@@ -26,6 +26,9 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialUserEntity;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Passkeys
 {

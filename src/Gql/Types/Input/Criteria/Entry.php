@@ -8,6 +8,9 @@ use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 
+/**
+ * @since 6.0.0
+ */
 class Entry extends InputObjectType
 {
     public static function getType(): mixed

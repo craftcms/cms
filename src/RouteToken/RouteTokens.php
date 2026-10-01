@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class RouteTokens
 {

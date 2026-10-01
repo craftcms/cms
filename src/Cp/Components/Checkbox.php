@@ -29,6 +29,8 @@ use function CraftCms\Cms\t;
  * Posting matches the legacy checkbox template: a scalar-named checkbox gets
  * an always-post hidden input (empty value) ahead of it, so unchecking posts
  * an empty string; `name[]`-style checkboxes post nothing when unchecked.
+ *
+ * @since 6.0.0
  */
 class Checkbox extends ViewComponent
 {

@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool ensurePathIsContained(string $path)
  *
  * @see \CraftCms\Cms\Support\Path
+ * @since 6.0.0
  */
 class Path extends Facade
 {

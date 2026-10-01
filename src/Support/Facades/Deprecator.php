@@ -18,6 +18,7 @@ use Override;
  * @method static bool deleteAllLogs()
  *
  * @see \CraftCms\Cms\Deprecator\Deprecator
+ * @since 6.0.0
  */
 class Deprecator extends Facade
 {

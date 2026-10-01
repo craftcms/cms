@@ -36,6 +36,8 @@ use function CraftCms\Cms\t;
  * Color represents a Color field.
  *
  * @property string|null $defaultColor
+ *
+ * @since 6.0.0
  */
 class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {

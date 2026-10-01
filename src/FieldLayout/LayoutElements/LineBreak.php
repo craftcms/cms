@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
 
 /**
  * LineBreak represents a line break UI element can be included in field layouts.
+ *
+ * @since 6.0.0
  */
 class LineBreak extends FieldLayoutElement
 {

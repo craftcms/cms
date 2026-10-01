@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class StructureElement extends BaseModel
 {
     /** @use HasFactory<Factory<StructureElement>> */

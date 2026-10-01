@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\Types\Elements\Element;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
 
+/**
+ * @since 6.0.0
+ */
 class ElementType implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

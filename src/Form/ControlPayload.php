@@ -9,6 +9,9 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ControlPayload implements JsonSerializable
 {
     /**

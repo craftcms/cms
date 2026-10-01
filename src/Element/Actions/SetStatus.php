@@ -17,6 +17,9 @@ use Illuminate\Validation\Rule;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class SetStatus extends ElementAction
 {
     public const string ENABLED = 'enabled';

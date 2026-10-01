@@ -31,6 +31,7 @@ use Override;
  * @method static void linkIdentity(\CraftCms\Cms\User\Elements\User $user, \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider, string $identity)
  *
  * @see \CraftCms\Cms\Auth\OAuth\OAuth
+ * @since 6.0.0
  */
 class OAuth extends Facade
 {

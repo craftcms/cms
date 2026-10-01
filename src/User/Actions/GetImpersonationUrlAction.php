@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 readonly class GetImpersonationUrlAction
 {
     public function __construct(

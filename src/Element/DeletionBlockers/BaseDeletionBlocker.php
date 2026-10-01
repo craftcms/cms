@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\ElementCollection;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseDeletionBlocker extends Component implements DeletionBlockerInterface
 {
     /**

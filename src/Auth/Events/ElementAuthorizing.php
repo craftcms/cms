@@ -13,6 +13,8 @@ use Illuminate\Foundation\Events\Dispatchable;
  *
  * Listeners can call authorize() or deny() to short-circuit the authorization check.
  * If neither is called, authorization continues through the normal policy chain.
+ *
+ * @since 6.0.0
  */
 class ElementAuthorizing
 {

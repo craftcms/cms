@@ -12,6 +12,9 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\currentUserElement;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivityTimelineController
 {
     private const int EmbeddedLimit = 25;

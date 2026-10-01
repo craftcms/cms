@@ -15,6 +15,9 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ConditionsController
 {
     public function __construct(private ConditionBuilder $builder) {}

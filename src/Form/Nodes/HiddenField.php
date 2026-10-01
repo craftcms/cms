@@ -13,6 +13,9 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class HiddenField implements Node
 {
     use Conditionable;

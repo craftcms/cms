@@ -38,6 +38,8 @@ use CraftCms\Cms\Cp\Data\NavItem;
  *
  * If a subnav is defined, subpages can specify which subnav item should be selected by defining a `selectedSubnavItem` variable that is set to
  * the selected item’s ID (its key in the `subnav` array).
+ *
+ * @since 6.0.0
  */
 class CpNavItemsResolving
 {

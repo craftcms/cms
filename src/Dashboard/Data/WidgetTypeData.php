@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Dashboard\Data;
 
 use CraftCms\Cms\Form\FormPayload;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WidgetTypeData
 {
     public function __construct(

@@ -12,6 +12,8 @@ use CraftCms\Cms\Queue\Job;
  *
  * If the job's progress entry is missing or cancelled, the job
  * will be deleted from the queue without executing.
+ *
+ * @since 6.0.0
  */
 class ShouldRun
 {

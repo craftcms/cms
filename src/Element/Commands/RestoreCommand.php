@@ -11,6 +11,9 @@ use Illuminate\Console\Command;
 use Illuminate\Console\View\TaskResult;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 final class RestoreCommand extends Command
 {
     use CraftCommand;

@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Section extends BaseModel
 {
     /** @use HasFactory<SectionFactory> */

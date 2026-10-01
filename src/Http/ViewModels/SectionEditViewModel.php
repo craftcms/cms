@@ -38,6 +38,9 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SectionEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */

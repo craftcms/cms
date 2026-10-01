@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Mail;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SendTestMailAction
 {
     public function __construct(

@@ -8,6 +8,9 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
+/**
+ * @since 6.0.0
+ */
 class LoginRateLimiter
 {
     public const string NAME = 'login';

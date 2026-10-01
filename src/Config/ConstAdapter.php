@@ -9,6 +9,9 @@ use Override;
 use PhpOption\Option;
 use PhpOption\Some;
 
+/**
+ * @since 6.0.0
+ */
 class ConstAdapter implements AdapterInterface
 {
     /**

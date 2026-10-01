@@ -10,6 +10,9 @@ use CraftCms\Cms\Http\Requests\AssetUploadRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UploadSessionController
 {
     public function __construct(private Uploads $uploads) {}

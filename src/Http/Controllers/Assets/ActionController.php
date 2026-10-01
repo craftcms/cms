@@ -28,6 +28,9 @@ use ZipArchive;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActionController
 {
     use EnforcesPermissions;

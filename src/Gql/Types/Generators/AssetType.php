@@ -15,6 +15,9 @@ use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Volumes;
 
+/**
+ * @since 6.0.0
+ */
 class AssetType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

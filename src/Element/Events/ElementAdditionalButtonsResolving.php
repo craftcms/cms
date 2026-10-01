@@ -12,6 +12,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * that should be shown at the top of the element's edit page.
  *
  * {@see HasControlPanelUI::getAdditionalButtons()}
+ *
+ * @since 6.0.0
  */
 class ElementAdditionalButtonsResolving
 {

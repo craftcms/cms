@@ -16,7 +16,11 @@ use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class Element extends InterfaceType implements SingularTypeInterface
 {
     public static function getTypeGenerator(): string

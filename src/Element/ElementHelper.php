@@ -28,6 +28,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
+/**
+ * @since 6.0.0
+ */
 class ElementHelper
 {
     private const int URI_MAX_LENGTH = 255;

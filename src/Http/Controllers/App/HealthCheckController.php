@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class HealthCheckController
 {
     public function __invoke(): Response

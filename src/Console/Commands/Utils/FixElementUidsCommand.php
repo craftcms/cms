@@ -12,6 +12,9 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class FixElementUidsCommand extends Command
 {
     use CraftCommand;

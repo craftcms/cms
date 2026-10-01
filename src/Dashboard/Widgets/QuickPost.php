@@ -23,6 +23,9 @@ use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class QuickPost extends Widget
 {
     #[Override]

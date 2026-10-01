@@ -14,6 +14,8 @@ use function CraftCms\Cms\t;
  * component adopts — with radio posting semantics: no always-post hidden
  * input (the group posts a single value), and custom-option mode labeled
  * "Other:" with the text input in its own wrapper.
+ *
+ * @since 6.0.0
  */
 class Radio extends Checkbox
 {

@@ -16,6 +16,8 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
  * SinglePreloader preloads Single section entries for a template.
+ *
+ * @since 6.0.0
  */
 class SinglePreloader implements NodeVisitorInterface
 {

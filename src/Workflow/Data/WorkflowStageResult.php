@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Workflow\Data;
 
 use CraftCms\Cms\Workflow\Enums\WorkflowStageStatus;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WorkflowStageResult
 {
     /** @param array<string, mixed> $payload */

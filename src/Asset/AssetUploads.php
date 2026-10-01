@@ -15,6 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class AssetUploads implements UploadHandler
 {

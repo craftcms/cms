@@ -12,6 +12,7 @@ use Override;
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface revertToRevision(\CraftCms\Cms\Element\Contracts\ElementInterface $revision, int $creatorId)
  *
  * @see \CraftCms\Cms\Element\Revisions
+ * @since 6.0.0
  */
 class Revisions extends Facade
 {

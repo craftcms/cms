@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 final readonly class Backups
 {

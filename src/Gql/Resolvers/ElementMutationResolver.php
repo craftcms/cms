@@ -19,6 +19,9 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ElementMutationResolver extends MutationResolver
 {
     /**

@@ -11,6 +11,9 @@ use Throwable;
 use Twig\Error\RuntimeError;
 use Twig\Template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class TwigExceptionMapper
 {
     /**

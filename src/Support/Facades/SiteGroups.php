@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void refreshGroups()
  *
  * @see \CraftCms\Cms\Site\SiteGroups
+ * @since 6.0.0
  */
 class SiteGroups extends Facade
 {

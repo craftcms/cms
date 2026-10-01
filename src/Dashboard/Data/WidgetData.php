@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Dashboard\Data;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\View\HtmlFragment;
 
+/**
+ * @since 6.0.0
+ */
 readonly class WidgetData
 {
     /**

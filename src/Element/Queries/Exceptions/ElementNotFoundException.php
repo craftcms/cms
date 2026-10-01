@@ -9,6 +9,8 @@ use Illuminate\Database\RecordsNotFoundException;
 
 /**
  * @template TElement of \CraftCms\Cms\Element\Contracts\ElementInterface
+ *
+ * @since 6.0.0
  */
 class ElementNotFoundException extends RecordsNotFoundException
 {

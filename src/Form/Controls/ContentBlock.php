@@ -13,6 +13,9 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends Control
 {
     private ?Form $form = null;

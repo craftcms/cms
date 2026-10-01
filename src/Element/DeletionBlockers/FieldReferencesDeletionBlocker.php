@@ -12,6 +12,9 @@ use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
 {
     private readonly int $referenceCount;

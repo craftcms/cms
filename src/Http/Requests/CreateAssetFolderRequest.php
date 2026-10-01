@@ -9,6 +9,9 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Support\Facades\Folders;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @since 6.0.0
+ */
 class CreateAssetFolderRequest extends FormRequest
 {
     private ?VolumeFolder $parentFolder = null;

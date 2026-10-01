@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ConditionBuilder
 {
     public function __construct(private Conditions $conditions, private FormResolver $forms) {}

@@ -13,6 +13,9 @@ use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
 
+/**
+ * @since 6.0.0
+ */
 class Url extends \Illuminate\Support\Facades\URL
 {
     /**

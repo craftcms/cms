@@ -13,6 +13,7 @@ use Override;
  * @method static void add(string $header, string $value, bool $replace = true)
  *
  * @see \CraftCms\Cms\Http\ResponseHeaders
+ * @since 6.0.0
  */
 class ResponseHeaders extends Facade
 {

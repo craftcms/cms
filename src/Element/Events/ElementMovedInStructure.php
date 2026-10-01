@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementMovedInStructure The event that is triggered after the element is moved in a structure.
  *
  * {@see Structurable::afterMoveInStructure()}
+ *
+ * @since 6.0.0
  */
 class ElementMovedInStructure
 {

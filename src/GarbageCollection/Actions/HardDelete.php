@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Hard-deletes any rows in the given table(s) that are due for it.
+ *
+ * @since 6.0.0
  */
 class HardDelete extends GarbageCollectionAction
 {

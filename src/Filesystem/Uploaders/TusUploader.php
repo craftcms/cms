@@ -16,6 +16,9 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * @since 6.0.0
+ */
 class TusUploader implements Uploader
 {
     public function start(UploadSession $session): UploadSetup

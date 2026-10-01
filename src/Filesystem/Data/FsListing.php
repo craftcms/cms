@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Filesystem\Data;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Support\Str;
 
+/**
+ * @since 6.0.0
+ */
 class FsListing extends Component
 {
     public string $dirname {

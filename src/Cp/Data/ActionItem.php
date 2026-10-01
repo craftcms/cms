@@ -25,6 +25,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  * understand and ignore the rest.
  *
  * @see \CraftCms\Cms\Cp\Data\NavItem, the name the navigation and plugins use.
+ * @since 6.0.0
  */
 class ActionItem extends Component
 {

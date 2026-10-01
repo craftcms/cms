@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * ElementDefaultCardAttributesResolving event is triggered when registering the default card attributes for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementDefaultCardAttributesResolving
 {

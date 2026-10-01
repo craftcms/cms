@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @since 6.0.0
+ */
 class EntryType extends BaseModel
 {
     /** @use HasFactory<EntryTypeFactory> */

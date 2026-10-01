@@ -15,6 +15,9 @@ use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 
 use function Laravel\Prompts\table;
 
+/**
+ * @since 6.0.0
+ */
 class InfoCommand extends Command
 {
     use ChecksLicense;

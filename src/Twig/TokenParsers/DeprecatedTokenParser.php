@@ -18,6 +18,8 @@ use Twig\TokenParser\AbstractTokenParser;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
+ *
+ * @since 6.0.0
  */
 class DeprecatedTokenParser extends AbstractTokenParser
 {

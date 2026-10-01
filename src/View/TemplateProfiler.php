@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\debugbar;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class TemplateProfiler
 {

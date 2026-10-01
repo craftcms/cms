@@ -8,7 +8,11 @@ use CraftCms\Cms\Gql\Concerns\HasGqlType;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use GraphQL\Type\Definition\FieldDefinition;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class Query
 {
     use HasGqlType;

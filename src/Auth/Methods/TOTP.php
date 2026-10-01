@@ -25,6 +25,9 @@ use function CraftCms\Cms\template;
 /*
  * Time-based one-time password authentication method.
  */
+/**
+ * @since 6.0.0
+ */
 class TOTP extends BaseAuthMethod
 {
     use ConfirmsPasswords;

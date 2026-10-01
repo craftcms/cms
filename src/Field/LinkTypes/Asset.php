@@ -19,6 +19,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Asset link type.
+ *
+ * @since 6.0.0
  */
 class Asset extends BaseElementLinkType
 {

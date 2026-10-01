@@ -9,6 +9,8 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
  * @event TransformGenerating The event that is triggered before a transform is generated for an asset.
+ *
+ * @since 6.0.0
  */
 class TransformGenerating
 {

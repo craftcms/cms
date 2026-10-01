@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Conditions\HasDescendantsRule;
 use CraftCms\Cms\Element\Conditions\LevelConditionRule;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class EntryCondition extends ElementCondition
 {
     #[Override]

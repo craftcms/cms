@@ -27,6 +27,9 @@ use Illuminate\Support\Collection;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

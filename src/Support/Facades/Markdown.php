@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string convert(string $markdown, \CraftCms\Cms\Markdown\MarkdownOptions $options)
  *
  * @see \CraftCms\Cms\Markdown\Markdown
+ * @since 6.0.0
  */
 class Markdown extends Facade
 {

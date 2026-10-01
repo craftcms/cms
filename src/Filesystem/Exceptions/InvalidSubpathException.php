@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Filesystem\Exceptions;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidSubpathException extends RuntimeException
 {
     public function __construct(

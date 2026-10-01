@@ -10,6 +10,9 @@ use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UserReviewState
 {
     /**

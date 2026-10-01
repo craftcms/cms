@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string namespaceId(string $inputId, string|null $namespace = null)
  *
  * @see \CraftCms\Cms\View\InputNamespace
+ * @since 6.0.0
  */
 class InputNamespace extends Facade
 {

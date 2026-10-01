@@ -11,6 +11,9 @@ use DebugBar\DataCollector\DataCollector;
 use DebugBar\DataCollector\Renderable;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class DeprecationCollector extends DataCollector implements AssetProvider, Renderable
 {
     public const string NAME = 'deprecations';

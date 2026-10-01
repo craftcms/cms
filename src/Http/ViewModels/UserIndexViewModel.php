@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
  *
  * A `slug` path segment (`users/admins`, `users/{groupHandle}`) selects the
  * matching source — every user source publishes its slug in `data.slug`.
+ *
+ * @since 6.0.0
  */
 class UserIndexViewModel extends ContentIndexViewModel
 {

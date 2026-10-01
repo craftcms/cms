@@ -11,6 +11,9 @@ use Illuminate\View\Factory;
 use Illuminate\View\View;
 use Illuminate\View\ViewName;
 
+/**
+ * @since 6.0.0
+ */
 class BladeRenderer implements TemplateRendererInterface
 {
     public function __construct(private readonly Factory $factory) {}

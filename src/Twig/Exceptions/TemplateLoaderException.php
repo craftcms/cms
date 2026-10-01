@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Error\LoaderError;
 
+/**
+ * @since 6.0.0
+ */
 class TemplateLoaderException extends LoaderError
 {
     public function __construct(

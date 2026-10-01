@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void refreshSites()
  *
  * @see \CraftCms\Cms\Site\Sites
+ * @since 6.0.0
  */
 class Sites extends Facade
 {

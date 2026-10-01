@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\Search;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class UpdateSearchIndex extends Job
 {
     /**

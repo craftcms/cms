@@ -16,6 +16,9 @@ use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransform extends Component
 {
     public const array CORE_PARAMETERS = [

@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\Nodes\HeaderNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+/**
+ * @since 6.0.0
+ */
 class HeaderTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): HeaderNode

@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 class AssetPolicy extends ElementPolicy
 {
     public function view(CraftUser $user, Asset $asset): bool

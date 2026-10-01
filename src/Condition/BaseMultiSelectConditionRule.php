@@ -15,6 +15,8 @@ use RuntimeException;
 
 /**
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
+ *
+ * @since 6.0.0
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {

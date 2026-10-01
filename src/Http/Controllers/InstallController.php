@@ -41,6 +41,8 @@ use Throwable;
  *
  * Note that all actions in the controller are open and do not require an
  * authenticated Craft session to execute.
+ *
+ * @since 6.0.0
  */
 readonly class InstallController
 {

@@ -20,6 +20,8 @@ use Illuminate\Support\Traits\Conditionable;
  *         ->actions(Action::make(
  *             Checkbox::make('labelHidden')->label(t('Hide')),
  *         ));
+ *
+ * @since 6.0.0
  */
 class Action implements Node
 {

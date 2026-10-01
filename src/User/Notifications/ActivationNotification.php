@@ -17,6 +17,9 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Password;
 use SensitiveParameter;
 
+/**
+ * @since 6.0.0
+ */
 class ActivationNotification extends Notification implements ShouldQueue
 {
     use Queueable;

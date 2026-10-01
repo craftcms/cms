@@ -27,6 +27,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Selects an ordered list of element IDs through Craft's element selector.
+ *
+ * @since 6.0.0
  */
 class ElementSelect extends Control
 {

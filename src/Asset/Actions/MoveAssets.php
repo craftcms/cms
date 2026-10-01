@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class MoveAssets extends ElementAction
 {
     #[\Override]

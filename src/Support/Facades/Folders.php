@@ -25,6 +25,7 @@ use Override;
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Asset\Folders
+ * @since 6.0.0
  */
 class Folders extends Facade
 {

@@ -38,6 +38,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserGroupsController extends BaseUserSettingsController
 {
     use ConfirmsPasswords;

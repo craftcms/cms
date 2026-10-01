@@ -8,6 +8,9 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class AssetTransformer extends Component
 {
     public ?string $uid = null;

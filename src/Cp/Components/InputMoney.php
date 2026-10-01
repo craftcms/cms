@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Support\Html;
 
+/**
+ * @since 6.0.0
+ */
 class InputMoney extends Input
 {
     protected ?string $moneyName = null;

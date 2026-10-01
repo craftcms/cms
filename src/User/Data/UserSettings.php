@@ -8,6 +8,9 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Support\Arr;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
+/**
+ * @since 6.0.0
+ */
 class UserSettings extends Component
 {
     public ?string $photoVolumeUid = null;

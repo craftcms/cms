@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 class ElementRelationParamFilter
 {
     public const int DIR_FORWARD = 0;

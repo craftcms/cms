@@ -24,6 +24,7 @@ use CraftCms\Cms\Form\FormContext;
  * ```
  *
  * @see FieldLayoutCompiler::compile()
+ * @since 6.0.0
  */
 class FieldLayoutFormResolving
 {

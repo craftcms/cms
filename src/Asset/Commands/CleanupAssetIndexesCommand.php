@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 
+/**
+ * @since 6.0.0
+ */
 class CleanupAssetIndexesCommand extends Command
 {
     use CraftCommand;

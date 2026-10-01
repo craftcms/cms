@@ -17,6 +17,9 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\multiselect;
 
+/**
+ * @since 6.0.0
+ */
 #[Aliases(['users/remove-2fa'])]
 #[Description('Removes user\'s two-step verification method(s)')]
 #[Signature('craft:users:remove-2fa {user} {--method= : The two-step verification method to remove.}')]

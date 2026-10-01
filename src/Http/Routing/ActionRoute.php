@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Http\Routing;
 use CraftCms\Cms\Cms;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActionRoute
 {
     /** @param list<string> $segments */

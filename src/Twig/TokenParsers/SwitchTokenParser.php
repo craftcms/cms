@@ -13,6 +13,8 @@ use Twig\TokenParser\AbstractTokenParser;
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
  * Based on the rejected Twig pull request: https://github.com/TwigPHP/Twig/pull/185
+ *
+ * @since 6.0.0
  */
 class SwitchTokenParser extends AbstractTokenParser
 {

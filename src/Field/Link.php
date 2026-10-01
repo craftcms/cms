@@ -47,6 +47,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Link represents a Link field.
+ *
+ * @since 6.0.0
  */
 class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {

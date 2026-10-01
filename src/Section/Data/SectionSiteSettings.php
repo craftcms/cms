@@ -12,6 +12,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 #[Ruleset(SectionSiteSettingsRules::class)]
 class SectionSiteSettings extends ElementSiteSettings
 {

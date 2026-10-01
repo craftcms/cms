@@ -8,7 +8,11 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
 use GraphQL\Type\Definition\FieldDefinition;
 
-/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class TypeManager extends Component
 {
     /**

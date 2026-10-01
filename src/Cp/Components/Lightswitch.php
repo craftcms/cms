@@ -27,6 +27,8 @@ use Stringable;
  * the posted value matches the legacy behavior exactly: `value` when on,
  * `indeterminateValue` when indeterminate, an empty string when off, nothing
  * when unnamed.
+ *
+ * @since 6.0.0
  */
 class Lightswitch extends ViewComponent
 {

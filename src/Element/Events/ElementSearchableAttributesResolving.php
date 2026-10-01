@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event ElementSearchableAttributesResolving event is triggered when registering the searchable attributes for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementSearchableAttributesResolving
 {

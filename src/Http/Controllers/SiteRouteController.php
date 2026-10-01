@@ -16,6 +16,9 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SiteRouteController
 {
     public function __construct(

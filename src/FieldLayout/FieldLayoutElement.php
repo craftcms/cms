@@ -12,6 +12,8 @@ use Override;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
+ *
+ * @since 6.0.0
  */
 abstract class FieldLayoutElement extends FieldLayoutComponent
 {
