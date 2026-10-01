@@ -111,6 +111,7 @@ class UserEditViewModel extends ElementEditViewModel
             new ActionItem()
                 ->html(app(ElementHtml::class)->elementChipHtml($this->user, [
                     'showDraftName' => false,
+                    'hyperlink' => true,
                     'appearance' => Appearance::Plain->value,
                 ]))
                 ->current(true),
