@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Asset\Import\AssetImporter;
+use CraftCms\Cms\Asset\Import\AssetsFieldImportHandler;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
+use CraftCms\Cms\Field\Assets as AssetsField;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
@@ -17,7 +20,9 @@ use CraftCms\Cms\Import\Events\ImportDispatching;
 use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Import\Events\RegisterDataTypes;
+use CraftCms\Cms\Import\Events\RegisterFieldImportHandlers;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
@@ -116,6 +121,47 @@ class Import
         }
 
         return $importers;
+    }
+
+    /**
+     * Returns the available field import handler classes, indexed by the field class they handle.
+     * The list includes the built-in handlers, extended via `RegisterFieldImportHandlers` event.
+     *
+     * @return array<class-string<FieldInterface>, class-string<FieldImportHandlerInterface>> $handlers
+     */
+    public function getAllFieldImportHandlers(): array
+    {
+        $handlers = [
+            AssetsField::class => AssetsFieldImportHandler::class,
+        ];
+
+        if (Event::hasListeners(RegisterFieldImportHandlers::class)) {
+            Event::dispatch($event = new RegisterFieldImportHandlers($handlers));
+
+            $handlers = $event->handlers;
+        }
+
+        return $handlers;
+    }
+
+    /**
+     * Returns the import handler registered for the given field’s class, or for its nearest parent class
+     * that has one, or null if there isn’t any.
+     *
+     * @param  FieldInterface  $field  The field.
+     * @return FieldImportHandlerInterface|null $handler
+     */
+    public function getFieldImportHandlerFor(FieldInterface $field): ?FieldImportHandlerInterface
+    {
+        $handlers = $this->getAllFieldImportHandlers();
+
+        for ($class = $field::class; $class !== false; $class = get_parent_class($class)) {
+            if (isset($handlers[$class])) {
+                return app($handlers[$class]);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -248,7 +294,15 @@ class Import
 
         $this->applyClearableItems($data, $importer->clearableItems ?? []);
 
-        $importedItem = $importer->importItem($data);
+        try {
+            $importedItem = $importer->importItem($data);
+        } catch (Throwable $e) {
+            $importer->discardAfterItemImportedCallbacks();
+
+            throw $e;
+        }
+
+        $importer->runAfterItemImportedCallbacks($importedItem);
 
         event(new ItemImported($importer, $data, $runId, $importedItem));
     }

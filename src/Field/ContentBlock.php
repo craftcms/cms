@@ -851,7 +851,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
      * @return array<string, mixed>
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): array
     {
         if (! is_array($value)) {
             return [];
@@ -863,6 +863,6 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         // elements.
         $contentBlock = $rootOwner?->id ? $this->createContentBlockQuery($rootOwner)->one() : null;
 
-        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $contentBlock);
+        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $contentBlock, $importSettings['fields'] ?? []);
     }
 }

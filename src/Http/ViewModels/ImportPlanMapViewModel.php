@@ -63,6 +63,9 @@ class ImportPlanMapViewModel extends ViewModel
             'keepMissingNestedElements' => $this->importer instanceof ElementImporter
                 ? $this->importer->keepMissingNestedElements ?? []
                 : [],
+            'fieldSettings' => $this->importer instanceof ElementImporter
+                ? $this->importer->fieldSettings ?? []
+                : [],
         ];
     }
 

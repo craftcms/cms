@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
@@ -38,6 +39,7 @@ use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -582,11 +584,40 @@ class AssetsHelper
     }
 
     /**
+     * Resolves a local file path given in import data, making sure it points to a file
+     * within a known temp path, the project root, or the storage folder.
+     *
+     * @return string $resolvedPath
+     *
+     * @throws FileException if the file doesn’t exist or is in a disallowed location
+     */
+    public static function resolveImportFilePath(string $path): string
+    {
+        $resolvedPath = realpath($path);
+
+        if ($resolvedPath === false || ! is_file($resolvedPath)) {
+            throw new FileException(t('Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        $resolvedPath = File::normalizePath($resolvedPath);
+
+        if (! Path::isPathWithinRoots($resolvedPath, Asset::getAllowedTempFileRoots())) {
+            throw new FileException(t('File “{filePath}” is in a disallowed location. Only temp path, project root and storage folders are allowed.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        return $resolvedPath;
+    }
+
+    /**
      * Downloads a remote file to a temp path, pinning the connection to a set of
      * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
      * different (potentially internal) address between validation and download.
      *
-     * @throws InvalidArgumentException if the connection still resolves to a disallowed IP
+     * @throws InvalidArgumentException if the connection still resolves to a disallowed IP, or the response isn’t successful
      */
     public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath): Response
     {
@@ -602,7 +633,7 @@ class AssetsHelper
         $port = parse_url($url, PHP_URL_PORT)
             ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
 
-        return Http::create()->withOptions([
+        $response = Http::create()->withOptions([
             RequestOptions::ALLOW_REDIRECTS => false,
             RequestOptions::SINK => $tempPath,
             // Pin the connection to the IPs we already validated, so cURL doesn’t
@@ -618,5 +649,12 @@ class AssetsHelper
                 }
             },
         ])->get($url)->throw();
+
+        // redirects aren’t followed, so a redirect’s body would otherwise be taken for the file
+        if (! $response->successful()) {
+            throw new InvalidArgumentException("$url returned a {$response->status()} response.");
+        }
+
+        return $response;
     }
 }

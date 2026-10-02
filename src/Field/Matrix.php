@@ -2350,7 +2350,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * @return array{sortOrder?: list<int|string>, entries?: array<int|string, array<string, mixed>>}
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): array
     {
         if (! is_array($value)) {
             return [];
@@ -2428,7 +2428,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
             $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement);
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement, $importSettings[$entryType->handle]['fields'] ?? []);
         }
 
         // if we have a predefined sort order and entries were not a list - use that predefined sortOrder

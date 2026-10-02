@@ -1187,7 +1187,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     }
 
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): mixed
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
     {
         // by default, just return the value we were given
         return $value;

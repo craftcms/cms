@@ -33,6 +33,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -1041,6 +1042,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             'canBeMatchCriteria' => $this->canBeMatchCriteria(),
             'canBeCleared' => $this->canBeCleared(),
             'canKeepMissingNestedElements' => $this->canKeepMissingNestedElements(),
+            'importSettings' => $this->getImportMappingExtraSettings($field),
         ];
 
         if ($content['isContainer']) {
@@ -1113,5 +1115,20 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         return $field instanceof ImportableElementContainerFieldInterface && $field->canKeepMissingNestedElements();
+    }
+
+    #[Override]
+    public function getImportMappingExtraSettings(?FieldInterface $field = null): array
+    {
+        if ($field === null) {
+            try {
+                $field = $this->getField();
+            } catch (FieldNotFoundException) {
+                // skip silently
+                return [];
+            }
+        }
+
+        return Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? [];
     }
 }

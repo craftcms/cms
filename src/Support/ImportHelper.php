@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
@@ -12,6 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Import;
 
 /**
  * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed}
@@ -140,6 +142,25 @@ class ImportHelper
         }
 
         return $importableContainerProperties;
+    }
+
+    /**
+     * Normalizes an incoming value for a field: first by the field itself, then by its registered import handler, if any.
+     *
+     * @param  array<string, mixed>  $importSettings  the field's settings from the importer's `fieldSettings` tree
+     * @return mixed $value
+     */
+    public static function normalizeFieldValueForImport(
+        FieldInterface $field,
+        mixed $value,
+        BaseImporter $importer,
+        ?ElementInterface $rootOwner = null,
+        array $importSettings = [],
+    ): mixed {
+        $value = $field->normalizeValueForImport($value, $importer, $rootOwner, $importSettings);
+        $handler = Import::getFieldImportHandlerFor($field);
+
+        return $handler ? $handler->normalizeValue($field, $value, $importer, $rootOwner, $importSettings) : $value;
     }
 
     /**

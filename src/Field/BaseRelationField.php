@@ -1164,7 +1164,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): mixed
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
     {
         // A cleared relation field arrives as null, which normalizeValue() reads as “never set” and
         // resolves back to the stored relations; an empty list is what actually clears them - the

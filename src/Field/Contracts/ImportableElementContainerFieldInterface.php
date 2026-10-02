@@ -21,9 +21,10 @@ interface ImportableElementContainerFieldInterface extends ElementContainerField
      *
      * @param  array<string, mixed>  $dataItem  The data item to be normalized.
      * @param  FieldLayout  $fieldLayout  The field layout to apply to the data item.
+     * @param  array<string, mixed>  $importSettings  The nested fields' import settings, keyed by field handle.
      * @return array<string, mixed>
      */
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array;
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null, array $importSettings = []): array;
 
     /**
      * Returns a namespace prefix that is used on the mapping screen.

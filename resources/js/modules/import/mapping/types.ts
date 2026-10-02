@@ -36,6 +36,18 @@ export interface MappingCol {
   fieldUid?: string | null;
   prefixedHandleForKeep?: string;
   prefixedHandleForKeepFlag?: string;
+  /** Extra per-field choices, stored under the column's path in `fieldSettings`. */
+  importSettings?: ImportSettingDef[];
+}
+
+/** One per-field import setting a field type offers, e.g. what to do with a conflicting file. */
+export interface ImportSettingDef {
+  name: string;
+  label: string;
+  options: {value: string; label: string}[];
+  default: string;
+  /** Shown in an info tooltip beside the setting's label. */
+  instructions?: string;
 }
 
 /** A labelled run of columns rendered under one heading, e.g. lat/long. */
@@ -72,12 +84,13 @@ export interface StepPayload {
   settings: Record<string, unknown>;
 }
 
-/** The four parallel trees the mapping screen edits, all keyed alike. */
+/** The parallel trees the mapping screen edits, all keyed alike. */
 export interface MappingValues {
   map: Record<string, unknown>;
   matchCriteria: Record<string, unknown>;
   clearableItems: Record<string, unknown>;
   keepMissingNestedElements: Record<string, unknown>;
+  fieldSettings: Record<string, unknown>;
 }
 
 export type MappingValueTree = keyof MappingValues;

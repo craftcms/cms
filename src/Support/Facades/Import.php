@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Facades\Facade;
 
@@ -13,6 +15,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static ?string getDataTypeFromExtension(string $filePath)
  * @method static array getAllImporterTypes()
  * @method static ?string getElementImporterTypeFor(string $elementClass)
+ * @method static array getAllFieldImportHandlers()
+ * @method static ?FieldImportHandlerInterface getFieldImportHandlerFor(FieldInterface $field)
  * @method static bool dispatchImport(ImportPlanData $importPlan)
  * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
  * @method static string getRawData(string $filePath)

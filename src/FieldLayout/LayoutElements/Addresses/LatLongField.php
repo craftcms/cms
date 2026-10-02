@@ -8,6 +8,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -30,6 +31,8 @@ use function CraftCms\Cms\t;
  */
 class LatLongField extends BaseNativeField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'latLong';
 
@@ -216,19 +219,5 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
         $cols['subfields'] = $subfields;
 
         return $cols;
-    }
-
-    #[Override]
-    public function canBeMatchCriteria(): bool
-    {
-        // this is taken care of by the getFieldsForMapping() method
-        return false;
-    }
-
-    #[Override]
-    public function canBeCleared(): bool
-    {
-        // this is taken care of by the getFieldsForMapping() method
-        return false;
     }
 }

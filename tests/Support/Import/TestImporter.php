@@ -68,7 +68,7 @@ class TestImporter extends BaseImporter
     }
 
     #[Override]
-    protected static function urlValidator(?callable $resolver = null): UrlValidator
+    public static function urlValidator(?callable $resolver = null): UrlValidator
     {
         return parent::urlValidator(function (string $host): array {
             self::$lookups++;

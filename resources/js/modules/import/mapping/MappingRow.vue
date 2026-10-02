@@ -11,12 +11,17 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/info-icon/info-icon';
+  import '@craftcms/ui/components/select/select';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
   import {computed, inject, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
   import {checkedValue, getAt, isChecked, setAt} from './paths';
-  import {type MappingCol, MappingContextKey} from './types';
+  import {
+    type ImportSettingDef,
+    type MappingCol,
+    MappingContextKey,
+  } from './types';
 
   const props = defineProps<{
     col: MappingCol;
@@ -87,6 +92,40 @@
     setAt(context!.values.clearableItems, path.value, checkedValue(event));
   });
 
+  /** The field type's own per-field choices, shown once the column is mapped. */
+  const importSettings = computed<ImportSettingDef[]>(() =>
+    !props.col.isContainer && mapValue.value !== ''
+      ? (props.col.importSettings ?? [])
+      : []
+  );
+
+  function importSettingValue(setting: ImportSettingDef): string {
+    const value = getAt(context!.values.fieldSettings, [
+      ...path.value,
+      setting.name,
+    ]);
+
+    return value === null || value === undefined || value === ''
+      ? setting.default
+      : String(value);
+  }
+
+  function onImportSettingChanged(
+    setting: ImportSettingDef,
+    event: Event
+  ): void {
+    ignoreModelValueInitialization(() => {
+      const value = (event.target as HTMLElement & {modelValue?: unknown})
+        .modelValue;
+
+      setAt(
+        context!.values.fieldSettings,
+        [...path.value, setting.name],
+        value == null ? setting.default : String(value)
+      );
+    })(event);
+  }
+
   function openNested(): void {
     context!.openNested(props.col, nestedTrigger.value);
   }
@@ -140,6 +179,32 @@
         show-all-on-empty
         @model-value-changed="onMapChanged"
       />
+      <div v-if="importSettings.length" class="import-settings">
+        <craft-select
+          v-for="setting in importSettings"
+          :key="setting.name"
+          .modelValue="importSettingValue(setting)"
+          .disabled="!context.editable"
+          @model-value-changed="onImportSettingChanged(setting, $event)"
+        >
+          <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
+          <span slot="label">
+            {{ setting.label }}
+            <craft-info-icon v-if="setting.instructions">{{
+              setting.instructions
+            }}</craft-info-icon>
+          </span>
+          <select slot="input">
+            <option
+              v-for="option in setting.options"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </craft-select>
+      </div>
     </td>
 
     <!-- The column header names these; the row is named by its `th`. An empty
@@ -182,5 +247,15 @@
 <style scoped lang="scss">
   .best-guess {
     background: var(--color-blue-100);
+  }
+
+  .import-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-md);
+    margin-inline-start: var(--c-spacing-lg);
+    padding: var(--c-spacing-md);
+    padding-inline-end: 0;
   }
 </style>

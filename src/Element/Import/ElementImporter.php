@@ -60,6 +60,15 @@ abstract class ElementImporter extends BaseImporter
     public protected(set) ?array $keepMissingNestedElements = null;
 
     /**
+     * @var array<string, mixed>|null
+     *
+     * Per-field import settings (e.g. what to do when an incoming file matches an existing asset),
+     * as a tree mirroring $map's shape, with each field's settings keyed by setting name at its leaf,
+     * e.g. `['myAssets' => ['fileConflict' => 'replace'], 'myMatrix' => ['someEntryType' => ['fields' => ['innerAssets' => [...]]]]]`.
+     */
+    public protected(set) ?array $fieldSettings = null;
+
+    /**
      * Keys that are reserved for internal use by the importer.
      * No fields or attributes should attempt to be match with those values.
      *
@@ -114,6 +123,7 @@ abstract class ElementImporter extends BaseImporter
     public function getSettings(): array
     {
         $settings['keepMissingNestedElements'] = $this->keepMissingNestedElements;
+        $settings['fieldSettings'] = $this->fieldSettings;
         $settings['site'] = $this->site->uid;
         $settings['fieldLayout'] = $this->fieldLayout;
 
@@ -204,6 +214,19 @@ abstract class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Sets the per-field import settings, and returns the current instance.
+     *
+     * @param  array<string, mixed>|null  $fieldSettings
+     * @return self $this
+     */
+    public function fieldSettings(?array $fieldSettings = null): self
+    {
+        $this->fieldSettings = $fieldSettings;
+
+        return $this;
+    }
+
     #[Override]
     public static function getSettingsRules(): array
     {
@@ -216,6 +239,7 @@ abstract class ElementImporter extends BaseImporter
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSite($value, $attribute, $fail, $validator),
             ],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
+            'settings.fieldSettings' => ['nullable', 'array'],
         ]);
     }
 
@@ -226,6 +250,7 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['site'] = $this->site?->handle;
         $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
+        $data['settings']['fieldSettings'] = $this->fieldSettings;
 
         return $data;
     }
@@ -777,7 +802,7 @@ abstract class ElementImporter extends BaseImporter
                 continue;
             }
 
-            $data[$handle] = $field->normalizeValueForImport($value, $this, $rootElement);
+            $data[$handle] = ImportHelper::normalizeFieldValueForImport($field, $value, $this, $rootElement, $this->fieldSettings[$handle] ?? []);
         }
 
         return $data;

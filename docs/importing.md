@@ -17,7 +17,7 @@ An **import plan** is a named, handled, ordered list of **steps**
 (`src/Import/Data/ImportPlan.php`, service `src/Import/ImportPlan.php`). Each step is one
 importer instance with its own `uid`, `type` (the importer FQCN), `source`, `transformer`,
 `batchSize` and `settings` (importer-specific settings plus `map`, `matchCriteria`,
-`clearableItems` and, for elements, `keepMissingNestedElements`). Two flavours:
+`clearableItems` and, for elements, `keepMissingNestedElements` and `fieldSettings`). Two flavours:
 
 - **Editable** — created in the CP, stored in `import_plans`.
 - **Non-editable** — defined in `config/craft/import.php`, read via
@@ -294,9 +294,67 @@ Implementors: `TitleField`, `CustomField`, `FullNameField`, `UsernameField`,
 `setKeepMissingNestedElements()`. Used by `Matrix`, `Addresses`, `ContentBlock`.
 Matrix and Addresses can keep missing nested elements; ContentBlock can't (single block).
 
-`FieldInterface::normalizeValueForImport($value, $importer, $rootOwner)` — base returns
+`FieldInterface::normalizeValueForImport($value, $importer, $rootOwner, $importSettings)` — base returns
 the value unchanged. Overridden by `BaseRelationField` (returns `[]` rather than null so
-relations actually clear), `Matrix`, `Addresses`, `ContentBlock`.
+relations actually clear), `Matrix`, `Addresses`, `ContentBlock`. Core always calls it through
+`ImportHelper::normalizeFieldValueForImport()`, which then runs the field's registered import
+handler, if it has one (see below). Inside nested
+elements (via `normalizeNestedEntryForImport()`), container fields are only normalized for array
+values and other fields only for non-null ones, so nothing nested gets cleared by a missing value.
+
+`$importSettings` is the field's branch of the importer's `fieldSettings` tree, which mirrors
+`map`'s shape (`['myMatrix' => ['someEntryType' => ['fields' => ['photos' => [...]]]]]`). A field
+type offers settings in the mapping UI through its import handler's `mappingSettings()` (see
+below), which returns `[{name, label, options, default}]`; `CustomField::getFieldsForMapping()`
+passes them on as the column's `importSettings`.
+
+### Field import handlers
+
+Import-specific work for a field type can live outside the field, in a class implementing
+`Import\FieldHandlers\FieldImportHandlerInterface`. The field needs no import code at all.
+- `normalizeValue()` runs after the field's own `normalizeValueForImport()`.
+- `mappingSettings()` returns extra per-field settings for the mapping UI, as
+  `[{name, label, options, default, instructions?}]`; `instructions` show in an info tooltip beside the label.
+
+A handler does its work immediately, as the value is normalized: `normalizeValue()` gets the
+importer, the owner (the existing element or nested entry, or `null`/a new element) and the field's
+`fieldSettings` branch, and returns what the field should be given. Side effects that should only
+happen if the row goes through (replacing a file, calling an external service) can be queued with
+`$importer->afterItemImported(fn ($item) => ...)`. `Import::importItem()` runs the queued callbacks
+with the imported element or model once the item has been imported (saved, or skipped as unchanged),
+before `ItemImported` is dispatched, and discards them if importing the item throws.
+
+Core registers `AssetsFieldImportHandler` for `Assets`. Plugins add their own like data types and importers:
+```php
+Event::listen(RegisterFieldImportHandlers::class, function (RegisterFieldImportHandlers $event) {
+    $event->handlers[MyField::class] = MyFieldImportHandler::class;
+});
+```
+
+Handlers are keyed by field class, so a class has at most one. A field uses the handler for its
+own class or, failing that, its nearest parent class with one (a subclass of `Assets` gets
+`AssetsFieldImportHandler`). Registering for a class that already has a handler replaces it.
+
+### Creating assets from incoming files
+
+Handled by `Asset\Import\AssetsFieldImportHandler`. An Assets field value can mix asset IDs with
+file references — absolute URLs or local paths (local paths must be within the temp path, project
+root or storage folder). Files are turned into assets as the value is normalized, in the same upload
+location as a file dropped onto the field (the default upload location, or the restricted one), and
+the field gets plain asset IDs, so change detection works as usual. Incoming order is kept.
+
+When an incoming file's name matches an existing asset in that folder, the `fileConflict`
+setting (`ImportFileConflict`) decides what happens: `useExisting` (default; the file isn't
+downloaded), `replace` (the existing asset is related straight away, but its file is only replaced
+via an `afterItemImported()` callback, so not at all if the row fails, and still when the row is
+otherwise unchanged), or `createNew` (a new asset with a suffixed filename). A URL without a file
+extension is downloaded first and gets its extension from the response's content type; URL
+filenames are URL-decoded. If the upload location can't be resolved yet (e.g. a `{id}` subpath on a
+new entry), files go to the temp folder as new assets and the field moves them into place after the
+save, as with drag and drop. The upload location is resolved from the owner's state before the import,
+so a dynamic subpath that depends on a value the import changes (e.g. `{slug}`) uses the old value.
+A file that can't be fetched or isn't allowed is logged to the import log and skipped; the rest of
+the row still imports. New assets for a row that then fails to save are left in place.
 
 ---
 

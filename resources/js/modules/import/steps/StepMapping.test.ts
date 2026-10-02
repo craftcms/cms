@@ -91,6 +91,7 @@ function emptyValues(): MappingValues {
     matchCriteria: {},
     clearableItems: {},
     keepMissingNestedElements: {},
+    fieldSettings: {},
   };
 }
 
@@ -243,6 +244,88 @@ it('leaves the option cells empty when neither applies', () => {
   expect(clear!.textContent!.trim()).toBe('');
 });
 
+it('offers a mapped column’s import settings and keeps them on their own tree', async () => {
+  const assets = col({
+    prefixedHandle: 'photos',
+    importSettings: [
+      {
+        name: 'fileConflict',
+        label:
+          'What should happen when an incoming file matches an existing one?',
+        options: [
+          {value: 'useExisting', label: 'Use the existing asset'},
+          {
+            value: 'replace',
+            label: 'Replace the existing file with the incoming one',
+          },
+        ],
+        default: 'useExisting',
+      },
+    ],
+  });
+
+  mount([assets]);
+  await settle();
+
+  expect(cells()[0]!.querySelector('craft-select')).toBeNull();
+
+  chooseSource('name');
+  await nextTick();
+
+  const select = cells()[0]!.querySelector<HTMLElement & {modelValue?: string}>(
+    'craft-select'
+  )!;
+
+  expect(select.modelValue).toBe('useExisting');
+
+  select.modelValue = 'replace';
+  select.dispatchEvent(
+    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
+  );
+
+  expect(apply().fieldSettings).toEqual({photos: {fileConflict: 'replace'}});
+});
+
+it('shows an import setting’s instructions in an info icon beside its label', async () => {
+  const assets = col({
+    prefixedHandle: 'photos',
+    importSettings: [
+      {
+        name: 'fileConflict',
+        label:
+          'What should happen when an incoming file matches an existing one?',
+        instructions: 'Incoming files are matched by filename.',
+        options: [{value: 'useExisting', label: 'Use the existing asset'}],
+        default: 'useExisting',
+      },
+      {
+        name: 'other',
+        label: 'Another setting',
+        options: [{value: 'a', label: 'A'}],
+        default: 'a',
+      },
+    ],
+  });
+
+  mount([assets]);
+  await settle();
+  chooseSource('name');
+  await nextTick();
+
+  const [withInstructions, withoutInstructions] = Array.from(
+    cells()[0]!.querySelectorAll('craft-select')
+  ).map((select) => select.querySelector('[slot="label"]')!);
+
+  expect(withInstructions!.textContent).toContain(
+    'What should happen when an incoming file matches an existing one?'
+  );
+  expect(
+    withInstructions!.querySelector('craft-info-icon')!.textContent!.trim()
+  ).toBe('Incoming files are matched by filename.');
+  expect(withoutInstructions!.textContent!.trim()).toBe('Another setting');
+  expect(withoutInstructions!.querySelector('craft-info-icon')).toBeNull();
+});
+
 it('hands the step’s mapping trees back on apply', () => {
   mount([title], {...emptyValues(), map: {title: 'name'}});
 
@@ -251,6 +334,7 @@ it('hands the step’s mapping trees back on apply', () => {
     matchCriteria: {},
     clearableItems: {},
     keepMissingNestedElements: {},
+    fieldSettings: {},
   });
 });
 

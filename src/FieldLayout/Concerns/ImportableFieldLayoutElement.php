@@ -49,4 +49,12 @@ trait ImportableFieldLayoutElement
     {
         return false;
     }
+
+    /**
+     * @see ImportableFieldLayoutElementInterface::getImportMappingExtraSettings()
+     */
+    public function getImportMappingExtraSettings(): array
+    {
+        return [];
+    }
 }

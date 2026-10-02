@@ -10,7 +10,6 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
-use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -271,23 +270,8 @@ class AssetImporter extends ElementImporter
         if (! empty($attributes['tempFilePath'])) {
             // if it's not an absolute URL
             if (! Url::isAbsoluteUrl($attributes['tempFilePath'])) {
-                // check if the file is already located in the temp location - if so, we should be able to just use it
-                $value = realpath($attributes['tempFilePath']);
-
-                if ($value === false || ! is_file($value)) {
-                    // if we don't have the file path, we shouldn't proceed
-                    throw new FileException(t('Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.', [
-                        'filePath' => $attributes['tempFilePath'],
-                    ]));
-                }
-                $value = File::normalizePath($value);
-                // Make sure it's within a known temp path, the project root, or storage/ folder
-                $allowedRoots = Asset::getAllowedTempFileRoots();
-                if (! Path::isPathWithinRoots($value, $allowedRoots)) {
-                    throw new FileException(t('File “{filePath}” is in a disallowed location. Only temp path, project root and storage folders are allowed.', [
-                        'filePath' => $attributes['tempFilePath'],
-                    ]));
-                }
+                // make sure the file exists and is within a known temp path, the project root, or storage/ folder
+                $value = AssetsHelper::resolveImportFilePath($attributes['tempFilePath']);
 
                 // now let's copy it to a temp file path so that Asset::_relocateFile() doesn't delete it from the original location
                 try {
@@ -300,7 +284,7 @@ class AssetImporter extends ElementImporter
             } else {
                 // if it's an absolute URL, we need to download the file to a temp location
                 try {
-                    AssetsHelper::downloadUrl(self::urlValidator(), $attributes['tempFilePath'], $tempPath);
+                    AssetsHelper::downloadUrl(static::urlValidator(), $attributes['tempFilePath'], $tempPath);
                     $attributes['tempFilePath'] = $tempPath;
                 } catch (Exception $e) {
                     // log error

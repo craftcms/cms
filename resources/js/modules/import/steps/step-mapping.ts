@@ -110,6 +110,7 @@ export async function openStepMapping(
       matchCriteria: {},
       clearableItems: {},
       keepMissingNestedElements: {},
+      fieldSettings: {},
     }
   );
   const suggestedMap: SuggestedMap = {};

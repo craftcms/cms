@@ -144,6 +144,7 @@
       >,
       keepMissingNestedElements: (settings.keepMissingNestedElements ??
         {}) as Record<string, unknown>,
+      fieldSettings: (settings.fieldSettings ?? {}) as Record<string, unknown>,
     };
   }
 

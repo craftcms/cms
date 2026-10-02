@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Validation\Validator;
 
 /**
@@ -23,7 +24,7 @@ trait ImportableElementContainerField
      * @param  array<string, mixed>  $dataItem
      * @return array<string, mixed>
      */
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null, array $importSettings = []): array
     {
         // custom field values may be given loosely rather than wrapped in a `fields` key, so move
         // the ones that match a custom field in the layout there; anything else (native attributes
@@ -50,18 +51,20 @@ trait ImportableElementContainerField
         $fields = $dataItem['fields'] ?? [];
 
         foreach ($fields as $handle => $value) {
-            if (! is_array($value)) {
-                continue;
-            }
             $field = $fieldLayout->getFieldByHandle($handle);
 
-            // if we don't have a field, or it's not an importable nested elements type field,
-            // we don't have to worry about extra normalization, so carry on
-            if (! $field instanceof ImportableElementContainerFieldInterface) {
+            // if we don't have a field, we don't have to worry about extra normalization, so carry on
+            if (! $field) {
                 continue;
             }
 
-            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $importer, $owner);
+            // nested elements type fields only need normalizing for nested data, and other fields
+            // only for an actual value, so that nothing gets cleared that wasn't before
+            if ($field instanceof ImportableElementContainerFieldInterface ? ! is_array($value) : $value === null) {
+                continue;
+            }
+
+            $dataItem['fields'][$handle] = ImportHelper::normalizeFieldValueForImport($field, $value, $importer, $owner, $importSettings[$handle] ?? []);
         }
 
         return $dataItem;

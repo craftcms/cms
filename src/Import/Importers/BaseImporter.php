@@ -83,6 +83,11 @@ abstract class BaseImporter
     public ?string $uid = null;
 
     /**
+     * @var list<Closure> Callbacks to run once the item being imported has been imported.
+     */
+    private array $afterItemImportedCallbacks = [];
+
+    /**
      * Sets `$this->uid` from a config array if provided.
      *
      * @param  array<string, mixed>|null  $config  Optional config array, potentially containing a `uid` key.
@@ -426,7 +431,7 @@ abstract class BaseImporter
         $tempPath = $directory.DIRECTORY_SEPARATOR.Str::uuid()->toString();
 
         try {
-            $response = AssetsHelper::downloadUrl(self::urlValidator(), $url, $tempPath);
+            $response = AssetsHelper::downloadUrl(static::urlValidator(), $url, $tempPath);
         } catch (Throwable $e) {
             @unlink($tempPath);
 
@@ -546,7 +551,7 @@ abstract class BaseImporter
     /**
      * Returns the validator used to check import URLs.
      */
-    protected static function urlValidator(?callable $resolver = null): UrlValidator
+    public static function urlValidator(?callable $resolver = null): UrlValidator
     {
         return new UrlValidator($resolver, [
             'ipv4FilterFlags' => FILTER_FLAG_NO_RES_RANGE,
@@ -643,6 +648,46 @@ abstract class BaseImporter
     {
         // by default, this doesn't do anything
         return null;
+    }
+
+    /**
+     * Queues a callback to run once the item being imported has been imported (saved, or skipped as unchanged).
+     *
+     * Use it for side effects that should only happen if the item goes through, e.g. from a field import handler.
+     * The callback receives the imported element or model; it’s discarded if importing the item fails.
+     *
+     * @param  Closure(ElementInterface|Model|null): void  $callback  The callback.
+     */
+    public function afterItemImported(Closure $callback): void
+    {
+        $this->afterItemImportedCallbacks[] = $callback;
+    }
+
+    /**
+     * Runs and clears the callbacks queued for the item that has just been imported.
+     *
+     * @internal
+     *
+     * @param  ElementInterface|Model|null  $item  The imported element or model.
+     */
+    public function runAfterItemImportedCallbacks(ElementInterface|Model|null $item): void
+    {
+        $callbacks = $this->afterItemImportedCallbacks;
+        $this->afterItemImportedCallbacks = [];
+
+        foreach ($callbacks as $callback) {
+            $callback($item);
+        }
+    }
+
+    /**
+     * Clears the callbacks queued for an item that failed to import.
+     *
+     * @internal
+     */
+    public function discardAfterItemImportedCallbacks(): void
+    {
+        $this->afterItemImportedCallbacks = [];
     }
 
     /**
