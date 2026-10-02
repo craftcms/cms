@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
@@ -136,12 +135,6 @@ class EmbeddedNestedElementScope
         $owner = $this->resolveOwner();
         $field = $this->field($owner);
         $static = $owner->getIsRevision() || ! $this->isAuthorized('manageNestedElements', $owner);
-
-        $provider = $field ?? $owner;
-
-        if ($provider instanceof NestedIndexConfigProviderInterface) {
-            return $this->indexConfig = $provider->nestedIndexConfig($owner, $this->attribute(), $static);
-        }
 
         $config = $this->request->validate([
             'allowedViewModes' => ['sometimes', 'array'],

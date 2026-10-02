@@ -146,9 +146,12 @@ public function formControl(FieldContext $context): Control
 }
 ```
 
-The view mode is `cards`, `cards-grid`, or `index`. An index's later requests (paging, inline saves, element actions)
-rebuild its config without the original call, so a field or owner element whose index needs more than
-`NestedElementManager::defaultIndexConfig()` implements `NestedIndexConfigProviderInterface` to supply it.
+The view mode is `cards`, `cards-grid`, or `index`. The frontend retains the initial index's display settings and
+sends them with later requests, including paging and inline saves. Fields and owner elements do not need a
+configuration provider. The frontend uses `maxElements` to disable operations when the whole selection will not
+fit. The backend resolves the owner and nested element scope on each request and checks the element type's or
+field's policies. Authoritative limits belong in those policies and field validation. A posted display setting
+cannot bypass them. As in 5.x, duplication can partially succeed if the selection no longer fits when it runs.
 
 Screens that manage an owner's nested elements outside an element editor render `NestedElements.vue` directly with the
 Control's props, passing `savedNestedOwner()` as its `owner` so changes apply to the saved owner and the screen

@@ -85,12 +85,12 @@ it('manages addresses in an embedded index with the field’s own index config',
         ->and($props['index'])->toHaveKeys(['indexSettings', 'initial'])
         ->and($props['manager'])->not->toHaveKey('indexSettings');
 
-    // Later index requests resolve the same config through the field.
     $response = postJson(action([ElementIndexController::class, 'getElements']), [
         ...$props['manager'],
         'elementType' => Address::class,
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
         'source' => '__IMP__',
+        'allowedViewModes' => array_column($props['index']['initial']['viewModes'], 'mode'),
     ])->assertOk();
 
     expect(array_column($response->json('viewModes'), 'mode'))->toBe(['cards']);

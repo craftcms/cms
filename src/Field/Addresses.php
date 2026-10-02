@@ -9,7 +9,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -71,7 +70,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface, NestedIndexConfigProviderInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -363,12 +362,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $this->viewMode === self::VIEW_MODE_INDEX ? self::VIEW_MODE_INDEX : 'cards-grid',
             $this->nestedElementManagerConfig($static),
         );
-    }
-
-    #[Override]
-    public function nestedIndexConfig(ElementInterface $owner, string $attribute, bool $static): array
-    {
-        return $this->addressManager()->getIndexConfig($owner, $this->nestedElementManagerConfig($static));
     }
 
     #[Override]

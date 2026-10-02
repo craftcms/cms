@@ -13,7 +13,6 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface;
 use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
@@ -111,7 +110,7 @@ use function CraftCms\Cms\template;
  *
  * @since 6.0.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface, NestedIndexConfigProviderInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -1627,17 +1626,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-    }
-
-    #[Override]
-    public function nestedIndexConfig(ElementInterface $owner, string $attribute, bool $static): array
-    {
-        $value = $owner->getFieldValue((string) $this->handle);
-
-        return $this->entryManager()->getIndexConfig(
-            $owner,
-            $this->nestedElementManagerConfig($value, $owner, $static),
-        );
     }
 
     private function createButtonLabel(): string
