@@ -56,12 +56,17 @@ export function subnavCrumbs(items: Array<NavItem>): Array<BreadcrumbItem> {
  * bringing the switcher with it. Screens whose trail ends somewhere else (a
  * user's account screens end in a chip for the user) get the nav crumb added
  * after it, which is the level they were missing.
+ *
+ * The deepest selected item is the page you're on, so its crumb doesn't link
+ * to it, the way a server crumb for the current page is left without one.
  */
 export function withSubnavCrumbs(
   crumbs: Array<BreadcrumbItem>,
   subnav: Array<NavItem>
 ): Array<BreadcrumbItem> {
-  const derived = subnavCrumbs(subnav);
+  const derived = subnavCrumbs(subnav).map((crumb, index, all) =>
+    index === all.length - 1 ? {...crumb, href: null} : crumb
+  );
 
   if (derived.length === 0) {
     return crumbs;

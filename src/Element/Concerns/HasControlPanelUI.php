@@ -1188,7 +1188,7 @@ JS,
                 ...$owner->getCrumbs(),
                 new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($owner, [
                     'appearance' => Appearance::Plain->value,
-                    'showDraftName' => false,
+                    'showDraftName' => true,
                     'hyperlink' => true,
                 ])),
             ];
