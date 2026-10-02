@@ -15,6 +15,9 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Support\Htmlable;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ActivityEventType implements ActivityEventTypeInterface
 {
     protected const string LABEL = '';

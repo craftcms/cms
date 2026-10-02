@@ -11,6 +11,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use Illuminate\Support\Facades\Context;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PreviewRequestPreparer
 {
     public function __construct(

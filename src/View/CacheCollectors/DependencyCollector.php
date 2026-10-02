@@ -14,6 +14,9 @@ use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class DependencyCollector implements CacheCollectorInterface
 {

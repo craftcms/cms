@@ -351,6 +351,7 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'resources/js/elements.ts',
+                'yii2-adapter/resources/js/element-editor.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',

@@ -9,6 +9,8 @@ use Override;
 
 /**
  * @extends ElementRules<ContentBlock>
+ *
+ * @since 6.0.0
  */
 class ContentBlockRules extends ElementRules
 {

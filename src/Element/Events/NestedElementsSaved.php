@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\NestedElementManager;
 
+/**
+ * @since 6.0.0
+ */
 class NestedElementsSaved
 {
     public function __construct(

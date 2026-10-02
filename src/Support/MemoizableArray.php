@@ -31,6 +31,8 @@ use function CraftCms\Cms\enum_value;
  * @template T
  *
  * @implements IteratorAggregate<array-key, T>
+ *
+ * @since 6.0.0
  */
 class MemoizableArray implements Countable, IteratorAggregate
 {

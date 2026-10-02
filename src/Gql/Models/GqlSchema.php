@@ -9,6 +9,9 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @since 6.0.0
+ */
 class GqlSchema extends BaseModel
 {
     use HasUid;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
@@ -20,6 +21,9 @@ use Inertia\Response;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class DashboardController
 {
     use InteractsWithWidgets;
@@ -87,6 +91,9 @@ readonly class DashboardController
 
         return Inertia::render('Dashboard', [
             'title' => t('Dashboard'),
+            'crumbs' => fn () => [
+                new ActionItem()->label(t('Dashboard')),
+            ],
             'widgets' => fn () => $widgets->map(fn (WidgetInterface $widget) => $this->getWidgetData($widget))->filter()->values(),
             'widgetTypes' => $widgetTypeInfo->map(fn (array $info) => new WidgetTypeData(...$info)),
         ]);

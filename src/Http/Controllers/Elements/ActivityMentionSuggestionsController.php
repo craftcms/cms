@@ -14,6 +14,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use LogicException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivityMentionSuggestionsController
 {
     private const int MaxCandidates = 250;

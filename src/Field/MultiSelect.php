@@ -15,6 +15,8 @@ use function CraftCms\Cms\t;
 
 /**
  * MultiSelect represents a Multi-select field.
+ *
+ * @since 6.0.0
  */
 class MultiSelect extends BaseOptionsField
 {

@@ -17,7 +17,9 @@ use Override;
 use function CraftCms\Cms\currentUser;
 
 /**
- * The Inertia payload for the entry edit screen (`content/Edit`).
+ * The Inertia payload for the entry edit screen (`elements/Edit`).
+ *
+ * @since 6.0.0
  */
 class EntryEditViewModel extends ElementEditViewModel
 {

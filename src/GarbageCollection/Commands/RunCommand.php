@@ -10,6 +10,9 @@ use Illuminate\Console\Command;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * @since 6.0.0
+ */
 class RunCommand extends Command
 {
     use CraftCommand;

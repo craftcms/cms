@@ -19,6 +19,8 @@ use function CraftCms\Cms\t;
 
 /**
  * AddressField represents an Address field that can be included within an Address field layout designer.
+ *
+ * @since 6.0.0
  */
 class AddressField extends BaseField
 {

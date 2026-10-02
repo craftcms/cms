@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Element\Exceptions;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidTypeException extends RuntimeException
 {
     public function __construct(

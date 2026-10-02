@@ -12,6 +12,9 @@ use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 
+/**
+ * @since 6.0.0
+ */
 class ImpersonateCommand extends Command implements PromptsForMissingInput
 {
     use Colors;

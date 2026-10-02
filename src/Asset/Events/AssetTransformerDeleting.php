@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 
+/**
+ * @since 6.0.0
+ */
 readonly class AssetTransformerDeleting
 {
     public function __construct(public AssetTransformer $transformer) {}

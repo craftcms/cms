@@ -8,6 +8,9 @@ use CraftCms\Cms\Twig\NodeVisitors\SinglePreloader;
 use Override;
 use Twig\Extension\AbstractExtension;
 
+/**
+ * @since 6.0.0
+ */
 class SinglePreloaderExtension extends AbstractExtension
 {
     #[Override]

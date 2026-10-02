@@ -8,6 +8,9 @@ use Closure;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 class RequireConfirmedPassword
 {
     use ConfirmsPasswords;

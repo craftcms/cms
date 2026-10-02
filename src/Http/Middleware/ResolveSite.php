@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ResolveSite
 {
     public const string HAD_SITE_TOKEN_KEY = 'craft.siteToken.hadToken';

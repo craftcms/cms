@@ -14,7 +14,11 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Throwable;
 
-/** @extends Ruleset<SectionSiteSettings> */
+/**
+ * @extends Ruleset<SectionSiteSettings>
+ *
+ * @since 6.0.0
+ */
 class SectionSiteSettingsRules extends Ruleset
 {
     /** @return array<string, array<int, string|ValidationRule>> */

@@ -34,6 +34,8 @@ use Illuminate\Http\Request;
  *     $event->addRule('slug', 'max:40');
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 class ValidationRulesResolving
 {

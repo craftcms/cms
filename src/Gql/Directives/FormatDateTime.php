@@ -15,6 +15,9 @@ use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class FormatDateTime extends Directive
 {
     public const string DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';

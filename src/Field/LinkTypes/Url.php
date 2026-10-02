@@ -13,6 +13,8 @@ use function CraftCms\Cms\t;
 
 /**
  * URL link type.
+ *
+ * @since 6.0.0
  */
 class Url extends BaseTextLinkType
 {

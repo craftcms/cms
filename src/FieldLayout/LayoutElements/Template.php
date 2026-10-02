@@ -28,6 +28,8 @@ use function CraftCms\Cms\template;
  * Renders a Twig template as sanitized, non-interactive field layout content.
  *
  * Form controls, scripts, registered assets, and other interactive behavior are not supported.
+ *
+ * @since 6.0.0
  */
 class Template extends BaseUiElement
 {

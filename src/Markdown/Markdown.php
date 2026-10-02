@@ -15,6 +15,9 @@ use League\CommonMark\Node\Block\Document;
 use League\CommonMark\Parser\MarkdownParser;
 use League\CommonMark\Renderer\HtmlRenderer;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Markdown
 {

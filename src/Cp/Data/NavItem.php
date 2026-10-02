@@ -16,5 +16,6 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
  * what stops them drifting apart.
  *
  * @see PluginInterface::getCpNavItem()
+ * @since 6.0.0
  */
 class NavItem extends ActionItem {}

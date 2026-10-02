@@ -15,10 +15,16 @@ use CraftCms\Cms\Support\Json;
 use function CraftCms\Cms\t;
 
 /**
- * A nested-entry manager whose elements are managed outside the owner form.
+ * A nested element manager whose elements are managed outside the owner form,
+ * as cards or an embedded element index. Its payload comes from
+ * {@see NestedElementManager::getCardsData()} or {@see NestedElementManager::getIndexData()},
+ * so it works for any nested element type: entries, addresses, or a plugin's own.
+ *
  * Its cards and index metadata are presentation data, never a submitted field value.
+ *
+ * @since 6.0.0
  */
-class NestedEntries extends Control
+class NestedElements extends Control
 {
     private string $viewMode = 'cards';
 
@@ -37,7 +43,7 @@ class NestedEntries extends Control
 
     public function component(): string
     {
-        return 'craft:nested-entries';
+        return 'craft:nested-elements';
     }
 
     public function omitNullValue(): bool

@@ -21,6 +21,9 @@ use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class Field implements Node
 {
     use Conditionable;

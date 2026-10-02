@@ -24,6 +24,8 @@ use Throwable;
 /**
  * Applies a new propagation method to elements, duplicating them for sites
  * where they would have been deleted in the process.
+ *
+ * @since 6.0.0
  */
 class ApplyNewPropagationMethod extends BatchedJob
 {

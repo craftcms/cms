@@ -19,6 +19,9 @@ use Throwable;
 use Twig\Extension\AbstractExtension;
 use Twig\Template as TwigTemplate;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Deprecator
 {

@@ -17,6 +17,9 @@ use CraftCms\Cms\Site\Sites;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ResolveElementRoute
 {
     public function __construct(

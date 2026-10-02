@@ -9,6 +9,8 @@ use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 /**
  * Queue properties are read during JSON encoding, after page props can enqueue jobs.
  * Inertia would resolve Arrayable or JsonSerializable implementations too early.
+ *
+ * @since 6.0.0
  */
 class QueueState
 {

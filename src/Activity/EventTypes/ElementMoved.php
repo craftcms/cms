@@ -12,6 +12,9 @@ use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementMoved extends ActivityEventType
 {
     protected const string LABEL = 'Moved';

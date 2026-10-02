@@ -18,6 +18,8 @@ use function CraftCms\Cms\t;
  * Rejects 2FA challenge requests if the pending session is older than {@see TTL} seconds.
  *
  * Applied to the two-factor challenge form and both verification action routes.
+ *
+ * @since 6.0.0
  */
 readonly class EnsureTwoFactorChallengeIsRecent
 {

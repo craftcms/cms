@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class Markdown extends Directive
 {
     public const null DEFAULT_FLAVOR = null;

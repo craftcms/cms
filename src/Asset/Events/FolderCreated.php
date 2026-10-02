@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 
 /**
  * @event FolderCreated The event that is triggered after a folder is created.
+ *
+ * @since 6.0.0
  */
 class FolderCreated
 {

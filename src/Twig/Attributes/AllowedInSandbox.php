@@ -9,7 +9,7 @@ use Attribute;
 /**
  * Marks classes/properties/methods as allowed in Twig sandbox.
  *
- * @since 5.9.0
+ * @since 6.0.0
  */
 #[Attribute]
 class AllowedInSandbox {}

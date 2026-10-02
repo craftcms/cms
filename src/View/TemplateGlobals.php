@@ -17,6 +17,9 @@ use Illuminate\Foundation\Application;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class TemplateGlobals
 {

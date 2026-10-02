@@ -24,6 +24,9 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
+/**
+ * @since 6.0.0
+ */
 class HtmlTwigExtension extends AbstractExtension
 {
     #[Override]

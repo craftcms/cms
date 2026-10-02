@@ -12,6 +12,9 @@ use Illuminate\Foundation\Application;
 
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 class EnvSetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

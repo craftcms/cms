@@ -435,6 +435,13 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 ### Control Panel
 
+- The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
+- `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
+- `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
+- Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
+- Added `Craft.isCancel()`.
+- Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
+- Removed `Cp.$axios`.
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
 - Plugin bundles can now import the control panel’s element index and element editor components (`ElementIndexPage`, `ElementEditor`, `CpButtonLink`, `ActionMenu`) from the `@craftcms/cms/elements` import-map module, so a plugin’s own element types can have Inertia index and edit pages.

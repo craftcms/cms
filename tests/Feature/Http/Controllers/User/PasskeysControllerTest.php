@@ -98,6 +98,17 @@ describe('delete', function () {
             ->assertUnauthorized();
     });
 
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+        $passkey = WebAuthn::factory()->create(['userId' => User::findOne()->id]);
+
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => $passkey->uid,
+        ])->assertStatus(423);
+
+        expect(WebAuthn::whereKey($passkey->id)->exists())->toBeTrue();
+    });
+
     it('validates uid parameter is required', function () {
         postJson(action([PasskeysController::class, 'delete']), [])
             ->assertJsonValidationErrorFor('uid');

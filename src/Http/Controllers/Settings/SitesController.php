@@ -42,6 +42,9 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SitesController
 {
     use RespondsWithFlash;
@@ -70,7 +73,7 @@ readonly class SitesController
 
         $crumbs = array_filter([
             ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-            ['label' => t('Sites'), 'href' => isset($group) ? Url::cpUrl('settings/sites') : null],
+            ['label' => t('Sites'), 'href' => Url::cpUrl('settings/sites')],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
@@ -120,7 +123,7 @@ readonly class SitesController
             ->crumbs([
                 new ActionItem()->label(t('Settings'))->href(Url::url('settings')),
                 new ActionItem()->label(t('Sites'))->href(Url::url('settings/sites')),
-                new ActionItem()->label(t('Create site'))->href(Url::url('settings/sites/new')),
+                new ActionItem()->label(t('Create a new site')),
             ])
             ->inertiaPage('settings/sites/Edit', [
                 ...$this->formProps($site),

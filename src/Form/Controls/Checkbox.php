@@ -12,6 +12,8 @@ use Illuminate\Support\Arr;
 /**
  * A boolean checkbox that carries its own visible label, for compact contexts
  * such as a [[\CraftCms\Cms\Form\Nodes\Field::actions()]] slot.
+ *
+ * @since 6.0.0
  */
 class Checkbox extends Control
 {

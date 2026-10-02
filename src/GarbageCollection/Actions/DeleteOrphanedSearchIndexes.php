@@ -6,6 +6,9 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Support\Facades\Search;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteOrphanedSearchIndexes extends GarbageCollectionAction
 {
     public function __invoke(): void

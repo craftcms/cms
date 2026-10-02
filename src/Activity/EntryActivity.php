@@ -21,7 +21,11 @@ use DateTimeInterface;
 
 use function CraftCms\Cms\t;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class EntryActivity
 {
     /** @var array<string, string> */

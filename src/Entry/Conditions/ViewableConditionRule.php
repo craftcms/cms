@@ -22,7 +22,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
- * @since 4.4.0
+ * @since 6.0.0
  */
 class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

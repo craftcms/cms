@@ -14,6 +14,9 @@ use NumberFormatter;
 use RuntimeException;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class Locale implements Stringable
 {
     public const int ATTR_POSITIVE_PREFIX = 0;

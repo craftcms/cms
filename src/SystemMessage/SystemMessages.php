@@ -32,6 +32,8 @@ use Tpetry\QueryExpressions\Value\Value;
  *     ]));
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class SystemMessages

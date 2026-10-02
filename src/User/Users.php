@@ -77,6 +77,9 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Users
 {
@@ -807,6 +810,33 @@ class Users
         }
 
         return $changes;
+    }
+
+    /**
+     * Destroys all of a user’s sessions, besides the one the current request was made from
+     * (if it belongs to the same user).
+     *
+     * This should be called whenever a security-sensitive change is made to a user’s account, such as
+     * enabling a new authentication method, so that any sessions which were established beforehand
+     * are no longer trusted. The user’s “remember me” token is cycled as well, so other devices can’t
+     * use it to sign back in.
+     */
+    public function destroyOtherSessions(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $userModel = UserModel::findOrFail($user->id);
+            $userModel->setRememberToken(Str::random(60));
+            $userModel->save();
+
+            $query = DB::table(Table::SESSIONS)->where('user_id', $user->id);
+
+            // Leave the current request’s session alone, if it belongs to the same user
+            if ($user->getIsCurrent() && request()->hasSession()) {
+                $query->where('id', '!=', request()->session()->getId());
+            }
+
+            $query->delete();
+        });
     }
 
     public function invalidateUserSessions(User $user): void

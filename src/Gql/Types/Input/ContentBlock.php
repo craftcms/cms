@@ -9,6 +9,9 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends InputObjectType
 {
     public static function getType(ContentBlockField $context): mixed

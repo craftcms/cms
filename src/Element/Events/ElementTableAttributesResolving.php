@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * ElementTableAttributesResolving event is triggered when registering the table attributes for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementTableAttributesResolving
 {

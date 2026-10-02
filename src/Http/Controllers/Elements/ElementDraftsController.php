@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Form\FormPayload;
@@ -42,6 +43,9 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementDraftsController
 {
     use EditsElement;
@@ -252,24 +256,24 @@ class ElementDraftsController
      * top level, scoped to whatever the request asked for, and shipping it
      * twice would double the size of every keystroke's autosave.
      *
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    private function editScreenData(ElementInterface $element, ?FormPayload $form): ?array
+    private function editScreenData(ElementInterface $element, ?FormPayload $form): array
     {
         $viewModel = $element::editViewModelClass();
 
-        if ($viewModel === null) {
-            return null;
-        }
-
         // Saving got this far, so the user can save this element.
-        $data = new $viewModel($element, $this->request, true)
-            ->withForm($form)
-            ->toArray();
+        $data = new $viewModel($element, $this->request, true)->withForm($form)->toArray();
 
-        unset($data['form']);
+        event($event = new ElementEditorPayloadResolving(
+            $element,
+            $data,
+            $this->request->header('X-Craft-Container-Id') ?? $this->request->input('editorContainerId', 'main-form'),
+        ));
 
-        return $data;
+        unset($event->data['form']);
+
+        return $event->data;
     }
 
     public function ensure(): Response

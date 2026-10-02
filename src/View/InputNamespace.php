@@ -8,6 +8,9 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Scoped;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class InputNamespace
 {

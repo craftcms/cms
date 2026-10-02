@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementActionMenuItemsResolving The event that is triggered when defining action menu items.
  *
  * {@see HasControlPanelUI::getActionMenuItems()}
+ *
+ * @since 6.0.0
  */
 class ElementActionMenuItemsResolving
 {

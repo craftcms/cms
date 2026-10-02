@@ -8,6 +8,8 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 /**
  * Single-select option field data class.
+ *
+ * @since 6.0.0
  */
 class SingleOptionFieldData extends OptionData
 {

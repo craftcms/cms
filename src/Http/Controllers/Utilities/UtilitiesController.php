@@ -19,6 +19,9 @@ use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UtilitiesController
 {
     public function __construct(

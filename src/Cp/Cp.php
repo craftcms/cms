@@ -42,6 +42,9 @@ use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Cp
 {
     /**

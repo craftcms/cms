@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * ElementActionsResolving event is triggered when registering the available bulk actions for an element type.
+ *
+ * @since 6.0.0
  */
 class ElementActionsResolving
 {

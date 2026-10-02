@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * @since 6.0.0
+ */
 class WorkflowException extends HttpException implements ShouldntReport
 {
     public function __construct(string $message)

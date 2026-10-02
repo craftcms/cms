@@ -16,6 +16,8 @@ use Twig\Node\PrintNode;
 /**
  * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()`
  * event tags in templates as they’re being compiled.
+ *
+ * @since 6.0.0
  */
 class EventTagFinder extends BaseEventTagVisitor
 {

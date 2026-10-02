@@ -15,6 +15,9 @@ use Override;
 
 use function CraftCms\Cms\craftAuth;
 
+/**
+ * @since 6.0.0
+ */
 class SendQueuedUserNotifications extends SendQueuedNotifications
 {
     private bool $restoreUserElements = false;

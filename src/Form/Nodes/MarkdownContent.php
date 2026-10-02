@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class MarkdownContent implements Node
 {
     use Conditionable;

@@ -50,6 +50,8 @@ use function Termwind\render;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (resolved source, query, index data, paginator) are memoized privately since
  * payload methods may be invoked in any order.
+ *
+ * @since 6.0.0
  */
 abstract class ContentIndexViewModel extends ViewModel
 {
@@ -440,10 +442,10 @@ abstract class ContentIndexViewModel extends ViewModel
 
         // A crumb is an action item like the options are, so the full set
         // doubles as the current one's switcher menu. One source is no choice
-        // at all, so it gets a plain crumb.
+        // at all, so it gets a plain crumb. It names the page you're on, so it
+        // doesn't link to it.
         $crumbs[] = new ActionItem()
             ->label($current['label'])
-            ->href($current['href'])
             ->items($choices->count() > 1 ? $options : []);
 
         return $crumbs;

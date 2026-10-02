@@ -18,6 +18,9 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 class CreateTokenCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

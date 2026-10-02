@@ -289,8 +289,9 @@
 
   .thumbsview {
     display: grid;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    margin-block: var(--c-spacing-md);
   }
 
   .thumbsview > li {

@@ -55,8 +55,10 @@ use function CraftCms\Cms\t;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (the compiled form) are memoized privately since payload methods may be
  * invoked in any order.
+ *
+ * @since 6.0.0
  */
-abstract class ElementEditViewModel extends ViewModel
+class ElementEditViewModel extends ViewModel
 {
     /**
      * How many revisions {@see self::contextMenu()} lists — a most-recent
@@ -96,7 +98,22 @@ abstract class ElementEditViewModel extends ViewModel
      * nested input names, so the existing save controllers read it without a
      * translation layer.
      */
-    abstract protected function elementSaveUrl(): string;
+    protected function elementSaveUrl(): string
+    {
+        return Url::actionUrl('elements/save');
+    }
+
+    /** @return array<string, int|string|null> */
+    public function saveParams(): array
+    {
+        return [
+            'elementType' => $this->element::class,
+            'elementId' => $this->element->getIsDraft() || $this->element->getIsRevision()
+                ? $this->element->getCanonicalId()
+                : $this->element->id,
+            'siteId' => $this->element->siteId,
+        ];
+    }
 
     /**
      * Adopts an already-compiled field layout instead of compiling one.
@@ -389,7 +406,8 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * The drafts-and-revisions switcher shown beside the breadcrumbs.
+     * The drafts and revisions the editor can switch between, listed in the
+     * Revisions tab and folded into {@see self::revisionCrumb()}.
      *
      * Groups are flattened into a single item list — headings become `heading`
      * entries the client renders as non-interactive rows — because the action
@@ -398,6 +416,12 @@ abstract class ElementEditViewModel extends ViewModel
      * @return array<string, mixed>|null
      */
     public function contextMenu(): ?array
+    {
+        return once(fn (): ?array => $this->buildContextMenu());
+    }
+
+    /** @return array<string, mixed>|null */
+    private function buildContextMenu(): ?array
     {
         $element = $this->element->isProvisionalDraft
             ? $this->element->getCanonical(true)
@@ -645,11 +669,65 @@ abstract class ElementEditViewModel extends ViewModel
      */
     public function crumbs(): array
     {
-        $crumbs = $this->elementCrumbs($this->element);
+        $revisionCrumb = $this->revisionCrumb();
 
-        $siteCrumb = $this->siteCrumb();
+        return array_values(array_filter([
+            $this->siteCrumb(),
+            ...$this->elementCrumbs($this->element, hyperlink: $revisionCrumb !== null),
+            $revisionCrumb,
+        ]));
+    }
 
-        return $siteCrumb === null ? $crumbs : [$siteCrumb, ...$crumbs];
+    /**
+     * A crumb naming the draft or revision being edited — or “Current” — with
+     * a menu switching between them.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function revisionCrumb(): ?array
+    {
+        $contextMenu = $this->contextMenu();
+
+        if ($contextMenu === null) {
+            return null;
+        }
+
+        $label = t('Current');
+        $items = [];
+        $groupIndex = null;
+
+        foreach ($contextMenu['items'] as $item) {
+            if ($item['type'] === 'heading') {
+                $items[] = ['type' => 'group', 'heading' => $item['label'], 'items' => []];
+                $groupIndex = array_key_last($items);
+
+                continue;
+            }
+
+            if ($item['type'] === 'hr') {
+                $items[] = ['type' => 'hr'];
+                $groupIndex = null;
+
+                continue;
+            }
+
+            if ($item['selected']) {
+                $label = $item['label'];
+            }
+
+            $link = Arr::only($item, ['type', 'label', 'href', 'selected']);
+
+            if ($groupIndex === null) {
+                $items[] = $link;
+            } else {
+                $items[$groupIndex]['items'][] = $link;
+            }
+        }
+
+        return [
+            'label' => $label,
+            'items' => $items,
+        ];
     }
 
     /**

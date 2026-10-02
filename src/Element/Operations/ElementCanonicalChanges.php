@@ -19,7 +19,11 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 readonly class ElementCanonicalChanges
 {
     public function __construct(

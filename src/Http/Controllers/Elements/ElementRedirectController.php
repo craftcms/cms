@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Url;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementRedirectController
 {
     use EditsElement;

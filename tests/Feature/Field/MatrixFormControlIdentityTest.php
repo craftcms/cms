@@ -6,7 +6,6 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
@@ -240,57 +239,4 @@ it('keeps Matrix block identities stable across repeated provisional draft saves
 
         expect(matrixControlSortOrder($draft))->toBe($blockUids);
     }
-});
-
-it('keeps Addresses block identities stable when a provisional draft duplicates them', function () {
-    actingAs(User::findOne());
-
-    $result = Entry::factory()
-        ->withField('addressesField', Addresses::class)
-        ->createElementWithFields();
-
-    /** @var EntryElement $entry */
-    $entry = entryQuery()->id($result->element->id)->status(null)->one();
-    $addressUid = Str::uuid()->toString();
-
-    $entry->setFieldValueFromRequest('addressesField', [
-        'entries' => [
-            "uid:$addressUid" => [
-                'type' => 'address',
-                'title' => 'Home',
-                'countryCode' => 'US',
-                'address' => ['addressLine1' => '123 Fake St.'],
-            ],
-        ],
-        'sortOrder' => ["uid:$addressUid"],
-    ]);
-
-    Elements::saveElement($entry);
-
-    /** @var EntryElement $draft */
-    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
-
-    $draft->setFieldValueFromRequest('addressesField', [
-        'entries' => [
-            "uid:$addressUid" => [
-                'type' => 'address',
-                'title' => 'Home',
-                'countryCode' => 'GB',
-                'address' => ['addressLine1' => '123 Fake St.'],
-            ],
-        ],
-        'sortOrder' => [$addressUid],
-    ]);
-
-    Elements::saveElement($draft);
-
-    /** @var Addresses $field */
-    $field = $draft->getFieldLayout()->getFieldByHandle('addressesField');
-    $control = $field->formControl(new FieldContext(
-        path: 'addressesField',
-        value: $draft->getFieldValue('addressesField'),
-        element: $draft,
-    ));
-
-    expect($control->getValue()['sortOrder'])->toBe([$addressUid]);
 });

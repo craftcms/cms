@@ -40,6 +40,8 @@ use InvalidArgumentException;
  * sufficient for WCAG 1.3.1 and 3.3.2. Note that a group name *supplements*
  * per-control labels rather than replacing them, so children still need their
  * own accessible names.
+ *
+ * @since 6.0.0
  */
 class Group extends Container
 {

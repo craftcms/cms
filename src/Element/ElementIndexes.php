@@ -29,6 +29,8 @@ use function CraftCms\Cms\t;
  * XHR endpoints, and {@see ElementIndexResource}.
  * Page-payload assembly lives in the view model; legacy HTML formatting in the
  * resource.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class ElementIndexes

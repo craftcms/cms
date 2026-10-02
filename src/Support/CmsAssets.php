@@ -9,6 +9,9 @@ use RuntimeException;
 
 use function Illuminate\Filesystem\join_paths;
 
+/**
+ * @since 6.0.0
+ */
 class CmsAssets
 {
     private const string PACKAGE = 'craftcms/cms-assets';

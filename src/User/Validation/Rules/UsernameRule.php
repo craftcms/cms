@@ -11,6 +11,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Validates that a username does not contain whitespace.
+ *
+ * @since 6.0.0
  */
 class UsernameRule implements ValidationRule
 {

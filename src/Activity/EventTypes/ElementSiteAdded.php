@@ -9,6 +9,9 @@ use CraftCms\Cms\Activity\Models\ActivityEvent;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementSiteAdded extends ActivityEventType
 {
     protected const string LABEL = 'Added to site';

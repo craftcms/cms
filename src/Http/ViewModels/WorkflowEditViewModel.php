@@ -26,6 +26,9 @@ use CraftCms\Cms\Workflow\WorkflowStageTypes;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class WorkflowEditViewModel extends ViewModel
 {
     public function __construct(

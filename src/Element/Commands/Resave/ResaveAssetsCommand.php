@@ -9,6 +9,9 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ResaveAssetsCommand extends ResaveCommand
 {
     #[Override]

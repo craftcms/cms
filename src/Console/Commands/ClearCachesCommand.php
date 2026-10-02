@@ -16,6 +16,9 @@ use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\table;
 
+/**
+ * @since 6.0.0
+ */
 class ClearCachesCommand extends Command
 {
     use CraftCommand;

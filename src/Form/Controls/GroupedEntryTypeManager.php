@@ -13,6 +13,9 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class GroupedEntryTypeManager extends Control
 {
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string

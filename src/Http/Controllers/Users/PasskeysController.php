@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class PasskeysController
 {
     use ConfirmsPasswords;
@@ -75,6 +78,8 @@ readonly class PasskeysController
 
     public function delete(Request $request): Response
     {
+        $this->requireConfirmedPassword();
+
         $uid = $request->validate([
             'uid' => ['required', 'string'],
         ])['uid'];

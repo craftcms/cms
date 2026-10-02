@@ -12,6 +12,8 @@ use CraftCms\Cms\User\Users;
  * @event DefaultUserGroupsResolving The event that is triggered when defining the default user groups to assign to a publicly-registered user.
  *
  * {@see Users::getDefaultUserGroups()}
+ *
+ * @since 6.0.0
  */
 class DefaultUserGroupsResolving
 {

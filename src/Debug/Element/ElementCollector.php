@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DebugBar\DataCollector\ObjectCountCollector;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ElementCollector extends ObjectCountCollector
 {
     public const string NAME = 'elements';

@@ -12,6 +12,9 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use League\Flysystem\MountManager;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class UploadedFile
 {
     private ?string $localPath = null;

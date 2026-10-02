@@ -182,17 +182,25 @@ it('passes a redirecting action response on as the JSON redirect', function () {
         ->assertJsonPath('redirect', 'https://example.test/somewhere');
 });
 
-it('includes exporter metadata in the refreshed element response', function () {
+it('includes exporter metadata in the refreshed element response', function (string $context) {
     $entry = EntryModel::factory()->createElement();
 
     ($this->performElementAction)([
+        'context' => $context,
+        'source' => '__IMP__',
         'elementType' => Entry::class,
         'elementAction' => Delete::class,
         'elementIds' => [$entry->id],
     ])->assertOk()
+        ->assertJsonStructure(['html'])
         ->assertJsonPath('exporters.0.type', Raw::class)
         ->assertJsonPath('exporters.0.formattable', true);
-});
+
+    expect(Entry::find()->id($entry->id)->status(null)->one())->toBeNull();
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('applies an embedded action only to the derivative owner clone', function () {
     $fixture = embeddedActionFixture();
@@ -385,6 +393,7 @@ it('places each embedded duplicate immediately after its source in selection ord
 
     ($this->performElementAction)([
         ...$manager,
+        'sortable' => false,
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
         'elementType' => Entry::class,
         'source' => '__IMP__',
@@ -404,7 +413,7 @@ it('places each embedded duplicate immediately after its source in selection ord
 });
 
 it('duplicates into a derivative owner without preparing the source', function () {
-    $fixture = embeddedActionFixture(['Alpha', 'Bravo']);
+    $fixture = embeddedActionFixture(['Alpha', 'Bravo'], 3);
     $manager = $fixture['control']->props()['manager'];
     $source = $fixture['nestedEntries'][0];
 
@@ -437,25 +446,27 @@ it('duplicates into a derivative owner without preparing the source', function (
         ->toBe($fixture['owner']->id);
 });
 
-it('rejects an embedded duplicate selection that would exceed the field maximum', function () {
+it('stops duplicating when the field maximum is reached', function () {
     $fixture = embeddedActionFixture(['Alpha', 'Bravo'], 3);
     $manager = $fixture['control']->props()['manager'];
 
     ($this->performElementAction)([
         ...$manager,
+        'maxElements' => 100,
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
         'elementType' => Entry::class,
         'source' => '__IMP__',
         'elementAction' => Duplicate::class,
         'elementIds' => array_column($fixture['nestedEntries'], 'id'),
-    ])->assertBadRequest()
-        ->assertJsonPath('message', 'Could not duplicate the selected elements because the field allows a maximum of 3 elements.');
+    ])->assertOk();
 
-    expect(Entry::find()
+    $entries = Entry::find()
         ->fieldId($fixture['field']->id)
         ->ownerId($fixture['draft']->id)
         ->status(null)
         ->drafts(null)
-        ->ids())
-        ->toBe(array_column($fixture['nestedEntries'], 'id'));
+        ->orderBy('elements_owners.sortOrder')
+        ->all();
+
+    expect(array_column($entries, 'title'))->toBe(['Alpha', 'Alpha', 'Bravo']);
 });

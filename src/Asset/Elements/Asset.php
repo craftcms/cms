@@ -164,6 +164,8 @@ use function CraftCms\Cms\t;
  * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool}}
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
+ *
+ * @since 6.0.0
  */
 #[Ruleset(AssetRules::class)]
 class Asset extends Element

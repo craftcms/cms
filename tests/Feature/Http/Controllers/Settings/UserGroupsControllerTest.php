@@ -77,6 +77,8 @@ test('create requires pro edition', function () {
             ->where('form.values.id', null)
             ->where('form.values.permissions', [])
             ->where('submit.method', 'post')
+            ->where('crumbs.3.label', 'New user group')
+            ->where('crumbs.3.href', null)
             ->where('form.nodes', fn (Collection $nodes): bool => $nodes
                 ->contains(fn (array $node): bool => ($node['control']['path'] ?? null) === ['handle']
                     && ($node['control']['props']['source'] ?? null) === ['name'])));

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings\Users;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -38,6 +39,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserGroupsController extends BaseUserSettingsController
 {
     use ConfirmsPasswords;
@@ -61,7 +65,7 @@ class UserGroupsController extends BaseUserSettingsController
         }
 
         return Inertia::render('settings/users/groups/Index', [
-            'crumbs' => $this->crumbs(t('User Groups')),
+            'crumbs' => $this->crumbs(),
             'title' => t('User Settings'),
             'subnav' => $this->subnav(),
             'groups' => $this->userGroups->getAllGroups(),
@@ -74,7 +78,11 @@ class UserGroupsController extends BaseUserSettingsController
 
         return new CpScreenResponse()
             ->title(t('Create a new user group'))
-            ->crumbs($this->crumbs(t('User Groups')))
+            ->crumbs([
+                ...$this->crumbs(),
+                new ActionItem()->label(t('User Groups'))->href(cp_url('settings/users')),
+                new ActionItem()->label(t('New user group')),
+            ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
                 'form' => $this->form($group, $userPermissions, true),
@@ -98,9 +106,11 @@ class UserGroupsController extends BaseUserSettingsController
         return new CpScreenResponse()
             ->editUrl($group->getCpEditUrl())
             ->title(trim($group->name) ?: t('Edit User Group'))
-            ->crumbs(array_merge($this->crumbs(t('User Groups'), cp_url('settings/users')), [
-                ['label' => $group->name],
-            ]))
+            ->crumbs([
+                ...$this->crumbs(),
+                new ActionItem()->label(t('User Groups'))->href(cp_url('settings/users')),
+                new ActionItem()->label($group->name),
+            ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
                 'form' => $this->form($group, $userPermissions),

@@ -21,6 +21,8 @@ use CraftCms\Cms\Support\Json;
  *         ->name('color')
  *         ->value('7ab55c')
  *         ->presets(['#ffffff', '#000000']);
+ *
+ * @since 6.0.0
  */
 class InputColor extends Input
 {

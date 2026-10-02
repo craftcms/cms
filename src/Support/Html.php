@@ -36,6 +36,8 @@ use function CraftCms\Cms\template;
 
 /**
  * @mixin YiiHtml
+ *
+ * @since 6.0.0
  */
 class Html
 {

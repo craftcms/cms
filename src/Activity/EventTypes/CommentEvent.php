@@ -14,6 +14,9 @@ use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract class CommentEvent extends ActivityEventType
 {
     protected const string LABEL = 'Commented';

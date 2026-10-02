@@ -20,6 +20,9 @@ use ReflectionUnionType;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class Typecast
 {
     private const string TYPE_BOOL = 'bool';

@@ -33,6 +33,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class DatabaseServiceProvider extends ServiceProvider
 {
     #[Override]

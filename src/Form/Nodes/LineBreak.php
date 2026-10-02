@@ -12,6 +12,9 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class LineBreak implements Node
 {
     use Conditionable;

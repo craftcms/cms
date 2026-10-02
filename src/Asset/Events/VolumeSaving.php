@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * @event VolumeSaving The event that is triggered before a volume is saved.
+ *
+ * @since 6.0.0
  */
 class VolumeSaving
 {

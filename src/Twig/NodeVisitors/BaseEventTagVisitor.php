@@ -9,6 +9,8 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * EventTagFinder adds “head”, “beginBody”, and “endBody”
  * events to the template as it’s being compiled.
+ *
+ * @since 6.0.0
  */
 abstract class BaseEventTagVisitor implements NodeVisitorInterface
 {

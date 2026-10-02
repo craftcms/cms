@@ -9,7 +9,11 @@ use CraftCms\Cms\Gql\Types\Input\File;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type ArgumentConfig from Argument */
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ *
+ * @since 6.0.0
+ */
 class Asset extends ElementMutationArguments
 {
     /** @return array<string, ArgumentConfig> */

@@ -14,6 +14,9 @@ use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class HasDescendantsRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string

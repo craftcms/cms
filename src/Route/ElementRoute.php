@@ -12,6 +12,9 @@ use InvalidArgumentException;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementRoute
 {
     public string $destination;

@@ -8,6 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @since 6.0.0
+ */
 class TableRequest extends FormRequest
 {
     public function page(): int

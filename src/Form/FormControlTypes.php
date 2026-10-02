@@ -30,7 +30,7 @@ use CraftCms\Cms\Form\Controls\Markdown;
 use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedEntries;
+use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
@@ -46,6 +46,8 @@ use Illuminate\Container\Attributes\Singleton;
  * Registers Control type classes available to Control Panel Forms.
  *
  * @extends TypeRegistry<Control>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class FormControlTypes extends TypeRegistry
@@ -77,7 +79,7 @@ class FormControlTypes extends TypeRegistry
         Missing::class,
         Money::class,
         NestedElementBlocks::class,
-        NestedEntries::class,
+        NestedElements::class,
         Number::class,
         PermissionTree::class,
         Range::class,

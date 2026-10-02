@@ -8,6 +8,9 @@ use CraftCms\Cms\Field\Data\LinkData as FieldLinkData;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class LinkData extends ObjectType
 {
     #[Override]

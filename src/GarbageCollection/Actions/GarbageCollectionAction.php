@@ -13,6 +13,9 @@ use Illuminate\Database\Query\Builder;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 
+/**
+ * @since 6.0.0
+ */
 abstract class GarbageCollectionAction
 {
     use InteractsWithIO;

@@ -19,6 +19,9 @@ use InvalidArgumentException;
 use RuntimeException;
 use StdClass;
 
+/**
+ * @since 6.0.0
+ */
 class ProjectConfigHelper
 {
     /**

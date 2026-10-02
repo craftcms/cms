@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Gql\Events;
 
 /**
  * @event GqlEagerLoadableFieldsResolving The event that is triggered when defining additional eager-loadable GraphQL fields.
+ *
+ * @since 6.0.0
  */
 class GqlEagerLoadableFieldsResolving
 {

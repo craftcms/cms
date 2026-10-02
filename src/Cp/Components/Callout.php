@@ -21,6 +21,8 @@ use Stringable;
  * Renders directly (no Blade view) — the component is a single element whose
  * chrome lives in the web component. Content strings are HTML-encoded; pass
  * an `Htmlable` for trusted markup.
+ *
+ * @since 6.0.0
  */
 class Callout extends ViewComponent
 {

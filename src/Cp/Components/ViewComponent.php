@@ -26,6 +26,8 @@ use Twig\Markup;
  * or another {@see ViewComponent} (rendered into the slot, with its `slot`
  * attribute set for you). Plain strings are HTML-encoded; pass an `Htmlable`
  * (e.g. `HtmlString`) for trusted markup.
+ *
+ * @since 6.0.0
  */
 abstract class ViewComponent implements Htmlable, Stringable
 {

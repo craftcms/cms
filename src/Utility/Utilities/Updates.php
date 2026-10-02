@@ -13,6 +13,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Updates represents a Updates dashboard widget.
+ *
+ * @since 6.0.0
  */
 class Updates extends Utility
 {

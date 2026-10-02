@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Support;
 
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @since 6.0.0
+ */
 class Diff
 {
     /**

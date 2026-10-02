@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementSourcesResolving The event that is triggered when registering the available sources for the element type.
  *
  * {@see HasSources::sources()}
+ *
+ * @since 6.0.0
  */
 class ElementSourcesResolving
 {

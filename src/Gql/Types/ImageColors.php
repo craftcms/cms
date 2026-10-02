@@ -8,6 +8,9 @@ use CraftCms\Cms\Image\Data\ImageColors as ImageColorsData;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImageColors extends ObjectType
 {
     #[Override]

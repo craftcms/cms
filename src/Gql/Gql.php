@@ -82,6 +82,8 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  *
  * @phpstan-type SchemaComponents array<string, array{label: string, nested?: array<string, array{label: string}>}>
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class Gql

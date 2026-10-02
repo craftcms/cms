@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Asset\AssetsHelper;
 
+/**
+ * @since 6.0.0
+ */
 class Io
 {
     public function getMaxUploadSize(): float|int

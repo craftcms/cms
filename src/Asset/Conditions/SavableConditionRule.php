@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public static function isSelectableForCondition(ConditionInterface $condition): bool

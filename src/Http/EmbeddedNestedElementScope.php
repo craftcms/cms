@@ -15,13 +15,16 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @since 6.0.0
+ */
 class EmbeddedNestedElementScope
 {
     private const array ELEMENT_INDEX_SCOPE_CRITERIA = [
@@ -133,13 +136,26 @@ class EmbeddedNestedElementScope
         $field = $this->field($owner);
         $static = $owner->getIsRevision() || ! $this->isAuthorized('manageNestedElements', $owner);
 
-        if ($field instanceof Matrix) {
-            return $this->indexConfig = $field->embeddedIndexConfig($owner, $static);
-        }
+        $config = $this->request->validate([
+            'allowedViewModes' => ['sometimes', 'array'],
+            'allowedViewModes.*' => ['string'],
+            'showHeaderColumn' => ['sometimes', 'boolean'],
+            'defaultTableColumns' => ['sometimes', 'array'],
+            'defaultTableColumns.*' => ['string'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
+            'sortable' => ['sometimes', 'boolean'],
+            'canPaste' => ['sometimes', 'boolean'],
+            'static' => ['sometimes', 'boolean'],
+            'fieldLayouts' => ['sometimes', 'array'],
+            'fieldLayouts.*' => ['array'],
+        ]);
 
         return $this->indexConfig = [
             ...NestedElementManager::defaultIndexConfig($owner, $field, $this->attribute()),
-            'static' => $static,
+            ...Arr::except($config, ['per_page', 'fieldLayouts']),
+            'pageSize' => $this->request->integer('per_page', 50),
+            'fieldLayouts' => array_map(FieldLayout::createFromConfig(...), $config['fieldLayouts'] ?? []),
+            'static' => $static || ($config['static'] ?? false),
         ];
     }
 

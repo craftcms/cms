@@ -2,9 +2,8 @@
   /**
    * The drafts-and-revisions list in the editor's Revisions tab.
    *
-   * Fed by the same payload as the breadcrumb switcher (`ElementContextMenu`):
-   * a flat list where `heading` rows stand in for the nesting the action menu
-   * has no shape for. Here there's room for real groups, so the flat list is
+   * Fed by the same payload as the breadcrumb's revision switcher: a flat list
+   * where `heading` rows stand in for the nesting. Here there's room for real groups, so the flat list is
    * folded back into them — a leading unlabeled group for "Current", then one
    * per heading. Anything past the `hr` is the "View all revisions" footer.
    */

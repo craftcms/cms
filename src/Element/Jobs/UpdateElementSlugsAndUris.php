@@ -15,6 +15,8 @@ use Override;
 
 /**
  * Updates element slugs and URIs.
+ *
+ * @since 6.0.0
  */
 class UpdateElementSlugsAndUris extends Job
 {

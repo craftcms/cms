@@ -24,6 +24,8 @@ use Stringable;
  *
  * Unlike {@see Input}, `autofocus()` is honored for any current user (no
  * `getAutofocusPreferred()` check) — matching the legacy textarea template.
+ *
+ * @since 6.0.0
  */
 class Textarea extends ViewComponent
 {

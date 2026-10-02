@@ -613,20 +613,17 @@
     const elementType = props.control.props.elementType;
 
     if (canUseVueSlideout()) {
-      // The element's own edit screen, the way an element index opens it.
-      // Elements picked since the last render don't know it yet; entries can
-      // still get their editor through the generic edit action.
       const href =
         element.cpEditUrl ??
-        (elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
-          ? EditElementController.url(undefined, {
-              query: {
-                elementType,
-                elementId: element.id,
-                siteId: element.siteId ?? null,
-              },
-            })
-          : null);
+        EditElementController[
+          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
+        ].url(undefined, {
+          query: {
+            elementType,
+            elementId: element.id,
+            siteId: element.siteId ?? null,
+          },
+        });
 
       if (href) {
         void openSlideout(href, {
@@ -788,7 +785,7 @@
       </div>
 
       <div slot="footer">
-        <div class="flex justify-between mt-1"></div>
+        <div class="element-selection-footer"></div>
       </div>
     </component>
   </div>
@@ -805,5 +802,14 @@
     border-start-start-radius: var(--c-radius-md);
     border-start-end-radius: var(--c-radius-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .element-selection-footer {
+    display: flex;
+    justify-content: space-between;
+
+    &:not(:empty) {
+      margin-block-start: var(--c-spacing-sm);
+    }
   }
 </style>

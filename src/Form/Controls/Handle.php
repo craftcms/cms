@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class Handle extends Control
 {
     /** @var list<string>|null */

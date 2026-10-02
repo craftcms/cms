@@ -27,6 +27,8 @@ use Yiisoft\Arrays\ArrayableTrait;
 /**
  * @implements Arrayable<string, mixed>
  * @implements ArrayAccess<string, mixed>
+ *
+ * @since 6.0.0
  */
 #[Ruleset(ValidatableRules::class)]
 abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, ComponentInterface, Validatable

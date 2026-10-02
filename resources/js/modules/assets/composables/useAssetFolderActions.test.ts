@@ -7,8 +7,9 @@ const visit = vi.hoisted(() => vi.fn());
 const VolumeFolderSelectorModal = vi.hoisted(() => vi.fn());
 const onActionPerformed = vi.fn();
 
-vi.mock('@craftcms/ui', () => ({
+vi.mock('@craftcms/ui', async () => ({
   actionClient: {post},
+  isHttpError: (await import('@craftcms/ui/utilities/api/http')).isHttpError,
   getActionUrl: (action: string) => `/actions/${action}`,
   t: (message: string, params?: Record<string, string>) =>
     params
@@ -89,7 +90,7 @@ it('creates a subfolder in the requested parent folder', async () => {
 
 it('keeps create and rename failures in their open dialogs', async () => {
   post.mockRejectedValueOnce({
-    isAxiosError: true,
+    isHttpError: true,
     response: {data: {message: 'A folder with that name already exists.'}},
   });
   window.dispatchEvent(
@@ -105,7 +106,7 @@ it('keeps create and rename failures in their open dialogs', async () => {
   );
 
   post.mockRejectedValueOnce({
-    isAxiosError: true,
+    isHttpError: true,
     response: {data: {message: 'The folder could not be renamed.'}},
   });
   window.dispatchEvent(

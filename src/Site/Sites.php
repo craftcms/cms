@@ -46,6 +46,9 @@ use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Sites
 {

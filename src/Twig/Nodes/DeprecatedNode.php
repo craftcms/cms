@@ -15,6 +15,8 @@ use Twig\Node\Node;
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
+ *
+ * @since 6.0.0
  */
 #[YieldReady]
 class DeprecatedNode extends Node

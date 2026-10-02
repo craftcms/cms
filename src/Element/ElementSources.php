@@ -32,7 +32,11 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
-/** @phpstan-type SourceConfig array{sites?: array<array-key, int|string>|false, ...} */
+/**
+ * @phpstan-type SourceConfig array{sites?: array<array-key, int|string>|false, ...}
+ *
+ * @since 6.0.0
+ */
 #[Scoped]
 class ElementSources
 {

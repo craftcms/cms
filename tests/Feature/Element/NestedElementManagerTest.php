@@ -26,6 +26,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
@@ -53,6 +54,8 @@ class LegacyMatrixInputField extends Matrix
         return $this->inputHtml($value, $element, false);
     }
 }
+
+class TestPluginNestedElement extends AddressElement {}
 
 function createMatrixEntryType(): EntryTypeModel
 {
@@ -415,7 +418,8 @@ it('normalizes creation and paste entry type data for manager data payloads', fu
         'label' => 'New address',
         'attributes' => ['typeId' => 17],
     ]])
-        ->and($data['pasteableEntryTypeIds'])->toBe([17, 23])
+        ->and($data['pasteableData'])->toBe(['attribute' => 'entryTypeId', 'values' => ['17', 23]])
+        ->and($data)->not->toHaveKey('pasteableEntryTypeIds')
         ->and(NestedElementManager::htmlManagerSettings($data)['createAttributes'])->toBe(['typeId' => 17]);
 })->with([
     'cards data' => 'getCardsData',
@@ -612,6 +616,69 @@ it('provides permitted card menu events for the hosting field', function (bool $
     'static' => [false, true, true],
     'unauthorized' => [false, false, false],
 ]);
+
+it('builds a shared nested elements control for attribute-backed owners', function (string $viewMode) {
+    $user = UserModel::factory()->createElement();
+
+    $control = $user->getAddressManager()->formControl('addresses', $user, $viewMode, [
+        'showInGrid' => true,
+        'canCreate' => true,
+    ]);
+    $props = $control->props();
+
+    expect($control)->toBeInstanceOf(NestedElements::class)
+        ->and($props['viewMode'])->toBe($viewMode)
+        ->and($props['unavailableMessage'])->toBeNull()
+        ->and($props['manager']['elementType'])->toBe(AddressElement::class)
+        ->and($props['manager']['ownerId'])->toBe($user->id)
+        ->and($props['manager']['attribute'])->toBe('addresses')
+        ->and($props['manager']['canCreate'])->toBeTrue()
+        ->and($props['manager'])->not->toHaveKeys(['elements', 'indexSettings', 'pasteableEntryTypeIds']);
+
+    if ($viewMode === 'index') {
+        expect($props['index'])->toHaveKeys(['indexSettings', 'initial'])
+            ->and($props['index']['initial'])->toHaveKeys(['data', 'pagination']);
+    } else {
+        expect($props)->not->toHaveKey('index')
+            ->and($props['cards'])->toBe([]);
+    }
+})->with([
+    'cards' => 'cards',
+    'card grid' => 'cards-grid',
+    'index' => 'index',
+]);
+
+it('builds the shared control for plugin nested element types', function () {
+    $user = UserModel::factory()->createElement();
+    $manager = new NestedElementManager(
+        TestPluginNestedElement::class,
+        fn (ElementInterface $owner) => AddressElement::find()->id(false),
+        [
+            'attribute' => 'pluginItems',
+            'valueGetter' => fn (ElementInterface $owner) => AddressElement::find()->id(false),
+        ],
+    );
+
+    $control = $manager->formControl('pluginItems', $user, 'cards', ['canCreate' => true]);
+
+    expect($control)->toBeInstanceOf(NestedElements::class)
+        ->and($control->component())->toBe('craft:nested-elements')
+        ->and($control->props()['manager'])->toMatchArray([
+            'elementType' => TestPluginNestedElement::class,
+            'attribute' => 'pluginItems',
+            'canCreate' => true,
+        ]);
+});
+
+it('explains why a nested elements control is unavailable for unsaved owners', function () {
+    $user = UserModel::factory()->createElement();
+
+    $props = $user->getAddressManager()->formControl('addresses', new User, 'cards')->props();
+
+    expect($props['manager'])->toBeNull()
+        ->and($props['cards'])->toBe([])
+        ->and($props['unavailableMessage'])->toBe('Addresses can only be created after the user has been saved.');
+});
 
 it('returns no index or cards data for unsaved owners', function () {
     $user = UserModel::factory()->createElement();

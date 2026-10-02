@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Database\Events;
 
 use Illuminate\Database\Connection;
 
+/**
+ * @since 6.0.0
+ */
 class BackupCreating
 {
     /** @param string[]|null $ignoreTables */

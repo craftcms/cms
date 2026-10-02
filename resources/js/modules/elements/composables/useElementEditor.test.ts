@@ -7,7 +7,7 @@ import {
   shallowReactive,
 } from 'vue';
 import {router} from '@inertiajs/vue3';
-import axios from 'axios';
+import {HttpError, http} from '@craftcms/ui/utilities/api/http';
 import {
   afterEach,
   beforeEach,
@@ -355,8 +355,8 @@ describe('useElementEditor', () => {
           component: 'craft:field',
           props: {label: 'Cards', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
-            component: 'craft:nested-entries',
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+            component: 'craft:nested-elements',
             props: {
               viewMode: 'cards',
               manager: null,
@@ -1476,7 +1476,7 @@ describe('useElementEditor', () => {
     });
 
     function stubSaveRequest(response: () => Promise<unknown>) {
-      return vi.spyOn(axios, 'request').mockImplementation(response as never);
+      return vi.spyOn(http, 'request').mockImplementation(response as never);
     }
 
     /** A panel whose opener registered `onSaved`, as every opener here does. */
@@ -1577,10 +1577,10 @@ describe('useElementEditor', () => {
       root.addEventListener('craft:nested-validation', listener);
       // A plain stand-in rather than a spy: a spy tracks the rejected promise
       // it returns, and reports that as unhandled.
-      const request = axios.request;
-      axios.request = (() =>
+      const request = http.request;
+      http.request = (() =>
         Promise.reject(
-          new axios.AxiosError('Bad Request', '400', undefined, undefined, {
+          new HttpError('Bad Request', 'ERR_BAD_REQUEST', {headers: {}}, {
             status: 400,
             data: {
               message: 'Couldn’t save entry.',
@@ -1590,7 +1590,7 @@ describe('useElementEditor', () => {
           } as never)
         )) as never;
       onTestFinished(() => {
-        axios.request = request;
+        http.request = request;
       });
       const {editor} = mount(payload(), handledSlideout(), {
         root: () => root,

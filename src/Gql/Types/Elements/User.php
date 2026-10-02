@@ -10,6 +10,9 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class User extends Element
 {
     public function __construct(array $config)

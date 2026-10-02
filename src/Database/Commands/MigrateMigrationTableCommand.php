@@ -14,6 +14,9 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class MigrateMigrationTableCommand extends Command
 {
     use ConfirmableTrait;

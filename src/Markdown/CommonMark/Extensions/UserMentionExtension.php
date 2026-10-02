@@ -10,6 +10,9 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Extension\ExtensionInterface;
 use League\CommonMark\Extension\Mention\Mention;
 
+/**
+ * @since 6.0.0
+ */
 class UserMentionExtension implements ExtensionInterface
 {
     private const string URL_PREFIX = 'craft-user:';

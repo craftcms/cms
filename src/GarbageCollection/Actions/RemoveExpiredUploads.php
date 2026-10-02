@@ -9,6 +9,9 @@ use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class RemoveExpiredUploads extends GarbageCollectionAction
 {
     public function __construct(

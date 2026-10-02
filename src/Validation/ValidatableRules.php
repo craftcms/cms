@@ -12,6 +12,8 @@ use Override;
  * attributes and messages from the subject.
  *
  * @extends Ruleset<Validatable>
+ *
+ * @since 6.0.0
  */
 class ValidatableRules extends Ruleset
 {

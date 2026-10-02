@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\ConditionBuilderAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
+/**
+ * @since 6.0.0
+ */
 class ConditionBuilderRenderer
 {
     public function __construct(private readonly ConditionInterface $condition, private readonly bool $editable = true) {}

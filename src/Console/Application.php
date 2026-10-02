@@ -12,6 +12,8 @@ use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 class Application extends \Illuminate\Console\Application
 {

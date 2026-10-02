@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @since 6.0.0
+ */
 class GqlResponse extends JsonResponse
 {
     /**

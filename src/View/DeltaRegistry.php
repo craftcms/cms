@@ -14,6 +14,8 @@ use Illuminate\Container\Attributes\Scoped;
  * that didn't change over the lifespan of the page will be omitted from the POST request.
  * This registry collects the input names, their initial values, and which names should be
  * considered pre-modified, so the client-side JavaScript can perform the diff.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class DeltaRegistry

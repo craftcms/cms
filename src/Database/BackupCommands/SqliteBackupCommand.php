@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Database\BackupCommands;
 
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class SqliteBackupCommand extends BackupCommand
 {
     public function backup(): string

@@ -35,6 +35,8 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type TextExpanderTrigger from HasTextExpander
  *
  * @phpstan-type SuggestionOption array{label: string, value: string, data: array{hint: mixed}}
+ *
+ * @since 6.0.0
  */
 class SelectOptions
 {

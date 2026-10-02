@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Component\Component;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Image extends Component
 {
     /** @var callable|null */

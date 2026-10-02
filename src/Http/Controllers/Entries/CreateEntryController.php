@@ -28,6 +28,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class CreateEntryController
 {
     use RespondsWithFlash;

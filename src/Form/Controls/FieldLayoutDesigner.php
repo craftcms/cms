@@ -12,6 +12,9 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class FieldLayoutDesigner extends Control
 {
     private ?string $elementType = null;

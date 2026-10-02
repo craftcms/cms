@@ -9,6 +9,8 @@ use Illuminate\Support\Collection;
 
 /**
  * @event ElementSourceSortOptionsResolving The event that is triggered when defining the available sort options for a source.
+ *
+ * @since 6.0.0
  */
 class ElementSourceSortOptionsResolving
 {

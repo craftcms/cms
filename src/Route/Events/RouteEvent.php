@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Route\Events;
 
 use CraftCms\Cms\Route\Data\Route;
 
+/**
+ * @since 6.0.0
+ */
 abstract class RouteEvent
 {
     public function __construct(

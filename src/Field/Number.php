@@ -43,6 +43,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Number represents a Number field.
+ *
+ * @since 6.0.0
  */
 class Number extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

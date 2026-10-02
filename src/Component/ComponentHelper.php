@@ -13,6 +13,9 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class ComponentHelper
 {
     /**

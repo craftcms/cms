@@ -8,6 +8,8 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 readonly class LicenseData
 {

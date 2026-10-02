@@ -20,6 +20,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Entry link type.
+ *
+ * @since 6.0.0
  */
 class Entry extends BaseElementLinkType
 {

@@ -9,6 +9,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event FolderRenaming The event that is triggered before a folder is renamed.
+ *
+ * @since 6.0.0
  */
 class FolderRenaming
 {

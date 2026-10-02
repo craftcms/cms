@@ -19,7 +19,7 @@ export default class CraftFieldGroup extends LitElement {
         craft-field-group {
           display: grid;
           grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: var(--gap, var(--c-spacing-lg)) var(--c-spacing-sm);
+          gap: var(--gap, calc(var(--c-spacing) * 6)) var(--c-spacing-sm);
           container-type: inline-size;
         }
 

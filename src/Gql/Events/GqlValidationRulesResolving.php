@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Gql\Events;
 
 /**
  * @event GqlValidationRulesResolving The event that is triggered when defining GraphQL validation rules.
+ *
+ * @since 6.0.0
  */
 class GqlValidationRulesResolving
 {

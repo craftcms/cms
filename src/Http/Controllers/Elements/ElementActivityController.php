@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementActivityController
 {
     use ElementCrumbs;
@@ -75,7 +78,7 @@ readonly class ElementActivityController
                 'title' => $entry->getUiLabel(),
             ]))
             ->crumbs([
-                ...$this->crumbs($entry, current: false),
+                ...$this->crumbs($entry),
                 [
                     'label' => t('Activity'),
                     'current' => true,

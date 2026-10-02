@@ -28,6 +28,8 @@ use Illuminate\Support\Arr;
  *     postalCode?: string|null,
  *     sortingCode?: string|null,
  * }
+ *
+ * @since 6.0.0
  */
 class Address extends Control
 {

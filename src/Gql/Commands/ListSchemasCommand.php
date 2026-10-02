@@ -9,6 +9,9 @@ use CraftCms\Cms\Gql\Gql;
 use Illuminate\Console\Command;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ListSchemasCommand extends Command
 {
     use CraftCommand;

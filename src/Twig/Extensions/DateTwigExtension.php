@@ -20,6 +20,9 @@ use Twig\Extension\CoreExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
+/**
+ * @since 6.0.0
+ */
 class DateTwigExtension extends AbstractExtension
 {
     #[Override]

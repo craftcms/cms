@@ -31,6 +31,9 @@ use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class CpScreenResponse implements Responsable
 {
     use Conditionable;

@@ -8,6 +8,9 @@ use CraftCms\Cms\Form\Contracts\Control as ControlContract;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Control implements ControlContract
 {
     protected mixed $value = null;

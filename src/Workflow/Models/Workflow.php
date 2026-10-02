@@ -13,7 +13,11 @@ use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
-/** @property Collection<int, WorkflowStageData> $stages */
+/**
+ * @property Collection<int, WorkflowStageData> $stages
+ *
+ * @since 6.0.0
+ */
 class Workflow extends BaseModel
 {
     use HasUid;

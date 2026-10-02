@@ -23,6 +23,8 @@ use Override;
 /**
  * @phpstan-import-type ArgumentConfig from Argument
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
  */
 class Entry extends Structure
 {

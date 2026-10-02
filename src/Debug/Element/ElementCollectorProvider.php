@@ -11,6 +11,9 @@ use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use Fruitcake\LaravelDebugbar\CollectorProviders\AbstractCollectorProvider;
 use Illuminate\Contracts\Events\Dispatcher;
 
+/**
+ * @since 6.0.0
+ */
 class ElementCollectorProvider extends AbstractCollectorProvider
 {
     public function __invoke(Dispatcher $events): void

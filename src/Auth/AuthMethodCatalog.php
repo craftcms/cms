@@ -16,6 +16,8 @@ use Illuminate\Container\Attributes\Singleton;
  * @internal
  *
  * @extends TypeRegistry<AuthMethodInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class AuthMethodCatalog extends TypeRegistry

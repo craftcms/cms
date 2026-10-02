@@ -20,6 +20,8 @@ use Illuminate\Support\Collection;
  * @property WorkflowStatus $status
  * @property int $activityRootEventId
  * @property array<string, array<string, mixed>>|null $payload
+ *
+ * @since 6.0.0
  */
 class WorkflowRun extends BaseModel
 {

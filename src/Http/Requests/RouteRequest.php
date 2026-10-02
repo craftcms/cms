@@ -13,6 +13,9 @@ use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class RouteRequest extends FormRequest
 {
     /** @return array<string, list<string>> */

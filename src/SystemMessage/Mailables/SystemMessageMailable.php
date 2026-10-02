@@ -9,6 +9,9 @@ use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 
+/**
+ * @since 6.0.0
+ */
 class SystemMessageMailable extends CraftMailable
 {
     /**

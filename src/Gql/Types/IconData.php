@@ -8,6 +8,9 @@ use CraftCms\Cms\Field\Data\IconData as FieldIconData;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class IconData extends ObjectType
 {
     #[Override]

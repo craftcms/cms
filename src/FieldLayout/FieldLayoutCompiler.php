@@ -13,6 +13,9 @@ use CraftCms\Cms\Form\FormResolver;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FieldLayoutCompiler
 {
     public function __construct(private readonly FormResolver $resolver) {}

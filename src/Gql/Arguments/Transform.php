@@ -8,6 +8,9 @@ use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class Transform extends Arguments
 {
     #[\Override]

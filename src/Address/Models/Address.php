@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class Address extends BaseModel
 {
     /** @use HasFactory<AddressFactory> */

@@ -7,13 +7,15 @@ import {
   unref,
   watch,
 } from 'vue';
-import axios, {
-  type AxiosError,
-  type AxiosInstance,
-  type AxiosRequestConfig,
-  type AxiosResponse,
-  type CancelTokenSource,
-} from 'axios';
+import {
+  http,
+  isCancel,
+  isHttpError,
+  type HttpClient,
+  type HttpError,
+  type HttpRequestConfig,
+  type HttpResponse,
+} from '@craftcms/ui/utilities/api/http';
 import {useHelpers} from '@/common/composables/useCraftData';
 import {apiClient} from '@craftcms/ui/utilities/api/apiClient';
 import type {FormValue, FormValues} from '@/modules/forms/types';
@@ -31,8 +33,8 @@ type RequestData =
   | null;
 
 // Options interface
-interface UseAxiosOptions<T = FormValue> extends Omit<
-  AxiosRequestConfig,
+interface UseFetchOptions<T = FormValue> extends Omit<
+  HttpRequestConfig,
   'url' | 'params'
 > {
   immediate?: boolean;
@@ -41,17 +43,17 @@ interface UseAxiosOptions<T = FormValue> extends Omit<
   transform?: (data: T) => T | Promise<T>;
   enabled?: MaybeRef<boolean>;
   debounce?: number;
-  onSuccess?: (data: T, response: AxiosResponse) => void;
-  onError?: (error: AxiosError) => void;
+  onSuccess?: (data: T, response: HttpResponse) => void;
+  onError?: (error: HttpError) => void;
   initialData?: T | null;
-  axiosInstance?: AxiosInstance;
+  client?: HttpClient;
 }
 
 // Return type interface
-interface UseAxiosReturn<T> {
+interface UseFetchReturn<T> {
   data: Ref<T | null>;
   error: Ref<unknown>;
-  state: Ref<AxiosFetchState>;
+  state: Ref<FetchState>;
   execute: (postData?: RequestData) => Promise<T | undefined>;
   isLoading: ComputedRef<boolean>;
   isSuccess: ComputedRef<boolean>;
@@ -60,17 +62,12 @@ interface UseAxiosReturn<T> {
   abort: () => void;
 }
 
-export type AxiosFetchState =
-  | 'idle'
-  | 'loading'
-  | 'success'
-  | 'error'
-  | 'aborted';
+export type FetchState = 'idle' | 'loading' | 'success' | 'error' | 'aborted';
 
 export function useFetch<T = FormValue>(
   url: MaybeRef<string>,
-  options: UseAxiosOptions<T> = {}
-): UseAxiosReturn<T> {
+  options: UseFetchOptions<T> = {}
+): UseFetchReturn<T> {
   // Options with defaults
   const {
     immediate = true,
@@ -83,13 +80,14 @@ export function useFetch<T = FormValue>(
     onError,
     initialData = null,
     method = 'get',
-    axiosInstance = axios,
-    ...axiosOptions
+    client = http,
+    signal,
+    ...requestOptions
   } = options;
 
   // Reactive state
   const data = shallowRef<T | null>(initialData);
-  const state = ref<AxiosFetchState>('idle');
+  const state = ref<FetchState>('idle');
   const error = ref<unknown>(null);
 
   const isLoading = computed(() => state.value === 'loading');
@@ -104,8 +102,8 @@ export function useFetch<T = FormValue>(
 
   const computedMethod = computed<string>(() => unref(method.toLowerCase()));
 
-  // Axios cancel token
-  let cancelTokenSource: CancelTokenSource | null = null;
+  // Aborts the in-flight request when it's superseded, disabled, or aborted
+  let controller: AbortController | null = null;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // The actual fetch function
@@ -113,30 +111,34 @@ export function useFetch<T = FormValue>(
     if (!computedUrl.value || !computedEnabled.value) return;
 
     // Cancel previous request
-    if (cancelTokenSource) {
-      cancelTokenSource.cancel('Request superseded by new request');
-    }
+    controller?.abort();
 
-    const request = axios.CancelToken.source();
-    cancelTokenSource = request;
+    const request = new AbortController();
+    controller = request;
+    // A caller-provided signal can also abort the request.
+    if (signal?.aborted) {
+      request.abort();
+    } else {
+      signal?.addEventListener('abort', () => request.abort(), {once: true});
+    }
     state.value = 'loading';
     error.value = null;
 
     try {
-      const response = await axiosInstance.request<T>({
+      const response = await client.request<T>({
         method: computedMethod.value,
         url: computedUrl.value,
         params: computedParams.value,
-        cancelToken: request.token,
+        signal: request.signal,
         data: computedMethod.value === 'get' ? undefined : postData,
-        ...axiosOptions,
+        ...requestOptions,
       });
 
-      request.token.throwIfRequested();
+      request.signal.throwIfAborted();
       const transformedData = transform
         ? await transform(response.data)
         : response.data;
-      request.token.throwIfRequested();
+      request.signal.throwIfAborted();
 
       state.value = 'success';
       data.value = transformedData;
@@ -144,12 +146,12 @@ export function useFetch<T = FormValue>(
 
       return transformedData;
     } catch (err: unknown) {
-      if (request !== cancelTokenSource) return;
+      if (request !== controller) return;
 
-      if (axios.isCancel(err)) {
+      if (isCancel(err) || request.signal.aborted) {
         state.value = 'aborted';
-      } else if (axios.isAxiosError(err)) {
-        console.error('Axios error:', err.response?.data);
+      } else if (isHttpError(err)) {
+        console.error('HTTP error:', err.response?.data);
         state.value = 'error';
         error.value = err.response?.data || err.message || 'Unknown error';
         onError?.(err);
@@ -192,9 +194,7 @@ export function useFetch<T = FormValue>(
           if (debounceTimer) {
             clearTimeout(debounceTimer);
           }
-          if (cancelTokenSource) {
-            cancelTokenSource.cancel('Request disabled');
-          }
+          controller?.abort();
         }
       },
       {immediate, deep: true}
@@ -211,9 +211,7 @@ export function useFetch<T = FormValue>(
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
-    if (cancelTokenSource) {
-      cancelTokenSource.cancel('Request cancelled by user');
-    }
+    controller?.abort();
   };
 
   return {
@@ -231,7 +229,7 @@ export function useFetch<T = FormValue>(
 
 export function usePost<T = FormValue>(
   url: MaybeRef<string>,
-  options: UseAxiosOptions<T> = {}
+  options: UseFetchOptions<T> = {}
 ) {
   return useFetch(url, {
     immediate: false,
@@ -242,7 +240,7 @@ export function usePost<T = FormValue>(
 
 export function useActionClient<T = FormValue>(
   url: MaybeRef<string>,
-  options: UseAxiosOptions<T> = {}
+  options: UseFetchOptions<T> = {}
 ) {
   const method = options.method ?? 'POST';
 
@@ -258,13 +256,13 @@ export function useActionClient<T = FormValue>(
 
 export function useApiClient<T = FormValue>(
   url: MaybeRef<string>,
-  options: UseAxiosOptions<T> = {}
+  options: UseFetchOptions<T> = {}
 ) {
   const {getApiUrl} = useHelpers();
   const apiUrl = computed(() => getApiUrl(unref(url)));
 
   return useFetch(apiUrl, {
     ...options,
-    axiosInstance: apiClient,
+    client: apiClient,
   });
 }

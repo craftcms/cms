@@ -8,6 +8,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * @event FieldLayoutSaving The event that is triggered before a field layout is saved.
+ *
+ * @since 6.0.0
  */
 class FieldLayoutSaving extends FieldLayoutEvent
 {

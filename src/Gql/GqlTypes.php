@@ -27,6 +27,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<SingularTypeInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class GqlTypes extends TypeRegistry

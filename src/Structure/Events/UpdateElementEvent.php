@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Structure\Enums\Action;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 abstract class UpdateElementEvent
 {
     private ?ElementInterface $targetElement = null;

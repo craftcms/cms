@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Shared;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @since 6.0.0
+ */
 class BasePivot extends Pivot
 {
     public const ?string CREATED_AT = 'dateCreated';

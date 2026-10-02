@@ -35,6 +35,8 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 class ConsoleServiceProvider extends ServiceProvider
 {

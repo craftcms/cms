@@ -10,6 +10,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use Illuminate\Validation\Rule;
 
+/**
+ * @since 6.0.0
+ */
 class RouteToken extends Component
 {
     /** @var class-string<ElementInterface> */

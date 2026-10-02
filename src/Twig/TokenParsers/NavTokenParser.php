@@ -10,6 +10,9 @@ use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+/**
+ * @since 6.0.0
+ */
 class NavTokenParser extends AbstractTokenParser
 {
     public function getTag(): string

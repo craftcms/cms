@@ -8,6 +8,8 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * @event FieldSaving The event that is triggered before a field is saved.
+ *
+ * @since 6.0.0
  */
 class FieldSaving extends FieldEvent
 {

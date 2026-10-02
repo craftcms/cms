@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use Illuminate\Contracts\View\Engine;
 
+/**
+ * @since 6.0.0
+ */
 class TwigEngine implements Engine
 {
     /** @param array<string, mixed> $data */

@@ -8,6 +8,8 @@ use CraftCms\Cms\Site\Data\Site;
 
 /**
  * @event PrimarySiteChanged The event that is triggered after the primary site has changed
+ *
+ * @since 6.0.0
  */
 class PrimarySiteChanged
 {

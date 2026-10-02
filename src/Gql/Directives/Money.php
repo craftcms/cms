@@ -12,6 +12,9 @@ use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class Money extends Directive
 {
     public const string FORMAT_AMOUNT = 'amount';

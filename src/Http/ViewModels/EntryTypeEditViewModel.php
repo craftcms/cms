@@ -34,6 +34,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class EntryTypeEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */

@@ -16,6 +16,7 @@ use Override;
  * @method static \CraftCms\Cms\View\TemplateManager forgetRenderers()
  * @method static bool isRenderingTemplate()
  * @method static bool isRenderingPageTemplate()
+ * @method static bool isRenderingStringTemplate()
  * @method static string renderTemplate(string $template, array $variables = [], \CraftCms\Cms\View\TemplateMode|null $templateMode = null, bool $publicOnly = false, \CraftCms\Cms\View\TemplateEngine|string|null $renderer = null)
  * @method static string renderSandboxedTemplate(string $template, array $variables = [], \CraftCms\Cms\View\TemplateMode|null $templateMode = null, bool $publicOnly = false)
  * @method static string renderPageTemplate(string $template, array $variables = [], \CraftCms\Cms\View\TemplateMode|null $templateMode = null, bool $publicOnly = false, \CraftCms\Cms\View\TemplateEngine|string|null $renderer = null)

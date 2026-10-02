@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Auth;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 class TwoFactorRateLimiter
 {
     public const string NAME = 'two-factor';

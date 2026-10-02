@@ -15,6 +15,8 @@ use Stringable;
  * If `html` is set, it will be used instead of the default inline input HTML.
  *
  * {@see HasControlPanelUI::getInlineAttributeInputHtml()}
+ *
+ * @since 6.0.0
  */
 class ElementInlineAttributeInputHtmlResolving
 {

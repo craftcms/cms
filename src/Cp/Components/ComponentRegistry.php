@@ -11,6 +11,8 @@ use InvalidArgumentException;
  * Maps template-facing component names to their {@see ViewComponent} classes,
  * backing the `ui()` helper and the `ui` Twig function. Plugins can register
  * additional components.
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class ComponentRegistry

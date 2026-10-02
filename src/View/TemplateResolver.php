@@ -16,6 +16,9 @@ use Twig\Error\LoaderError;
 use function CraftCms\Cms\t;
 use function Illuminate\Filesystem\join_paths;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class TemplateResolver
 {

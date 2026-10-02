@@ -1,6 +1,6 @@
 import {computed, type ComputedRef, type Ref, ref} from 'vue';
 import {t} from '@craftcms/ui';
-import axios from 'axios';
+import {http} from '@craftcms/ui/utilities/api/http';
 
 /**
  * State returned from updater API endpoints
@@ -40,7 +40,7 @@ export function useUpdater(initialState: UpdaterState): UseUpdaterReturn {
     let response;
 
     try {
-      response = await axios.post(
+      response = await http.post(
         actionUrl,
         {data: state.value.data},
         {
@@ -135,7 +135,7 @@ export function useUpdater(initialState: UpdaterState): UseUpdaterReturn {
     ];
 
     // Try to disable maintenance mode
-    axios
+    http
       .post(
         state.value.finishUrl,
         {data: state.value.data},

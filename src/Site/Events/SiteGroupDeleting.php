@@ -8,6 +8,8 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 
 /**
  * @event SiteGroupDeleting The event that is triggered before a site group is deleted.
+ *
+ * @since 6.0.0
  */
 class SiteGroupDeleting
 {

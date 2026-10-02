@@ -8,6 +8,9 @@ use CraftCms\Cms\Cms;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract readonly class GqlController
 {
     protected function ensureGqlEnabled(): void

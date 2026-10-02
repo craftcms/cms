@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate;
 
+/**
+ * @since 6.0.0
+ */
 class AuthenticateIfLive extends Authenticate
 {
     #[\Override]

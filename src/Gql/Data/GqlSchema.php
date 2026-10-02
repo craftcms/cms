@@ -11,6 +11,9 @@ use Illuminate\Validation\Rule;
 use Override;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class GqlSchema extends Component implements Stringable
 {
     public ?int $id = null;

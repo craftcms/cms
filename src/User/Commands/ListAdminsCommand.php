@@ -14,6 +14,9 @@ use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\table;
 
+/**
+ * @since 6.0.0
+ */
 class ListAdminsCommand extends Command
 {
     use Colors;

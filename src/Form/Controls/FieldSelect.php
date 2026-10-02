@@ -16,6 +16,8 @@ use Illuminate\Support\Arr;
  * `_includes/forms/fieldSelect` component select.
  *
  * The value is the selected field's ID.
+ *
+ * @since 6.0.0
  */
 class FieldSelect extends Control
 {

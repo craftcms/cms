@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * @event AssetReplaced The event that is triggered after an asset's file is replaced.
+ *
+ * @since 6.0.0
  */
 class AssetReplaced
 {

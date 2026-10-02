@@ -11,6 +11,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UriFormatRule implements ValidationRule
 {
     public function __construct(

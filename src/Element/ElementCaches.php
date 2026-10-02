@@ -15,6 +15,9 @@ use Illuminate\Container\Attributes\Singleton;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementCaches
 {

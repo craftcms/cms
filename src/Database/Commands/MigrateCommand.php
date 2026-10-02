@@ -39,6 +39,8 @@ use function Laravel\Prompts\confirm;
  *         ->setPaths([__DIR__.'/migrations']));
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 class MigrateCommand extends Command implements Isolatable
 {
@@ -300,7 +302,10 @@ class MigrateCommand extends Command implements Isolatable
 
         PromptTask::run('Preparing database', function (Logger $logger) {
             $logger->subLabel('Creating migration table');
-            $this->callSilent('migrate:install');
+
+            // Use Craft's own repository, not `migrate:install`. They'er the same
+            // only Craft's adds the `track` column.
+            $this->getMigrator('craft')->getRepository()->createRepository();
         }, keepSummary: true, output: $this->output);
     }
 }

@@ -25,6 +25,9 @@ use Stringable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
     #[AllowedInSandbox]

@@ -9,7 +9,11 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Support\Arrayable;
 
-/** PHP counterpart to the `<craft-permission-tree>` web component. */
+/**
+ * PHP counterpart to the `<craft-permission-tree>` web component.
+ *
+ * @since 6.0.0
+ */
 class PermissionTree extends ViewComponent
 {
     use HasDisabled;

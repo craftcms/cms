@@ -13,6 +13,9 @@ use Override;
 
 use function Laravel\Prompts\suggest;
 
+/**
+ * @since 6.0.0
+ */
 class ConvertCharsetCommand extends Command
 {
     use CraftCommand;

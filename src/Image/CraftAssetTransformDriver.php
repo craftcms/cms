@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';

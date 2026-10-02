@@ -8,7 +8,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
-/** @phpstan-import-type UploadedFileData from Assets */
+/**
+ * @phpstan-import-type UploadedFileData from Assets
+ *
+ * @since 6.0.0
+ */
 class AssetsUploadedFilesLocating
 {
     public function __construct(

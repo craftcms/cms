@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
@@ -81,6 +82,7 @@ use PDO;
 use Reflector;
 use SimpleXMLElement;
 use SoapClient;
+use SQLite3;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Twig\Environment as TwigEnvironment;
@@ -93,14 +95,19 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use XMLReader;
+use XMLWriter;
 use XSLTProcessor;
 use yii\behaviors\AttributeTypecastBehavior;
+use ZipArchive;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
@@ -497,6 +504,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException('No class specified for create().');
         }
 
+        // String and object templates (title formats, URI formats, system messages, etc.) are authored
+        // via the control panel/project config rather than the filesystem, so create() isn't allowed there
+        if (Template::isRenderingStringTemplate()) {
+            throw new InvalidArgumentException('create() cannot be used in string or object templates.');
+        }
+
         foreach ([
             /** @phpstan-ignore-next-line */
             AttributeTypecastBehavior::class,
@@ -513,6 +526,9 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             FnStream::class,
             SimpleXMLElement::class,
             Reflector::class,
+            SQLite3::class,
+            XMLWriter::class,
+            ZipArchive::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));

@@ -13,12 +13,16 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Routing\Redirector;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class EmbeddedIndexViewModel extends ContentIndexViewModel
 {
     protected const string RENDER_CONTEXT = ElementSources::CONTEXT_EMBEDDED_INDEX;
@@ -154,6 +158,15 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         $primarySort = $this->sort()[0] ?? null;
 
         return ($primarySort['field'] ?? null) === 'sortOrder' && ($primarySort['direction'] ?? 'asc') === 'asc';
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function fieldLayouts(): array
+    {
+        return array_map(
+            fn (FieldLayout $layout): array => ['type' => $layout->type, ...($layout->getConfig() ?? [])],
+            $this->indexSource->fieldLayouts ?? [],
+        );
     }
 
     #[Override]

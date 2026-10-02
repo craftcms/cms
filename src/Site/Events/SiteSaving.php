@@ -8,6 +8,8 @@ use CraftCms\Cms\Site\Data\Site;
 
 /**
  * @event SiteSaving The event that is triggered before a site is saved.
+ *
+ * @since 6.0.0
  */
 class SiteSaving
 {

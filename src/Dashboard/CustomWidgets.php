@@ -14,6 +14,9 @@ use League\CommonMark\Extension\FrontMatter\FrontMatterParser;
 use Symfony\Component\Finder\SplFileInfo;
 use UnexpectedValueException;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class CustomWidgets
 {
