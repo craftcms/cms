@@ -335,26 +335,8 @@ Craft.Preview = Garnish.Base.extend(
 
       if (this.settings.standaloneMode) {
         if (data.actionMenu) {
-          const labelId = Craft.namespaceId(
-            'action-menu-label',
-            this.namespace
-          );
-          const menuId = Craft.namespaceId('action-menu', this.namespace);
-          $('<label/>', {
-            id: labelId,
-            class: 'visually-hidden',
-            text: Craft.t('app', 'Actions'),
-          }).appendTo(this.$editorHeader);
-          const $actionBtn = $('<button/>', {
-            class: 'btn action-btn header-btn',
-            type: 'button',
-            title: Craft.t('app', 'Actions'),
-            'aria-controls': menuId,
-            'aria-describedby': labelId,
-            'data-disclosure-trigger': 'true',
-          }).appendTo(this.$editorHeader);
+          // A `<craft-action-menu>`, which brings its own invoker
           $(data.actionMenu).appendTo(this.$editorHeader);
-          $actionBtn.disclosureMenu();
         }
 
         if (data.editUrl) {

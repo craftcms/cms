@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -111,9 +112,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'action' => $behavior->action,
             'extraToolbarItems' => $extraToolbarItems,
             'submitButtonLabel' => $behavior->submitButtonLabel,
-            'actionMenu' => $this->_actionMenu($behavior, false, [
-                'withButton' => false,
-            ], $namespace),
+            'actionMenu' => $this->_slideoutActionMenu($behavior, $namespace),
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
@@ -256,6 +255,38 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         return $this->_menu($itemsFactory, $config + [
             'id' => 'action-menu',
         ], $namespace);
+    }
+
+    /**
+     * Renders a slideout's action menu as a `<craft-action-menu>`.
+     */
+    private function _slideoutActionMenu(CpScreenResponseBehavior $behavior, ?string $namespace): ?string
+    {
+        if ($behavior->actionMenuItems === null) {
+            return null;
+        }
+
+        $render = function() use ($behavior): ?string {
+            $items = array_filter(
+                app(MenuHtml::class)->normalizeMenuItems(call_user_func($behavior->actionMenuItems) ?? []),
+                fn(array $item) => !($item['destructive'] ?? false),
+            );
+
+            if (empty($items)) {
+                return null;
+            }
+
+            return ActionMenu::make()
+                ->menuItems(array_values($items))
+                ->label(t('Actions'))
+                ->toHtml();
+        };
+
+        if ($namespace) {
+            return InputNamespace::namespaceInputs($render, $namespace);
+        }
+
+        return $render();
     }
 
     private function _menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
