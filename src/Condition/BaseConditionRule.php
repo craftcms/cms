@@ -1,0 +1,272 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
+
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
+use CraftCms\Cms\Form\Controls\Hidden;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Validation\Rule;
+
+use function CraftCms\Cms\t;
+
+/**
+ * BaseConditionRule provides a base implementation for condition rules.
+ *
+ * @property bool $isNew Whether the rule is new
+ * @property-read string $uiLabel The rule’s option label
+ *
+ * @since 6.0.0
+ */
+abstract class BaseConditionRule extends Component implements ConditionRuleInterface
+{
+    protected const string OPERATOR_EQ = '=';
+
+    protected const string OPERATOR_NE = '!=';
+
+    protected const string OPERATOR_LT = '<';
+
+    protected const string OPERATOR_LTE = '<=';
+
+    protected const string OPERATOR_GT = '>';
+
+    protected const string OPERATOR_GTE = '>=';
+
+    protected const string OPERATOR_BEGINS_WITH = 'bw';
+
+    protected const string OPERATOR_ENDS_WITH = 'ew';
+
+    protected const string OPERATOR_CONTAINS = '**';
+
+    protected const string OPERATOR_IN = 'in';
+
+    protected const string OPERATOR_NOT_IN = 'ni';
+
+    protected const string OPERATOR_EMPTY = 'empty';
+
+    protected const string OPERATOR_NOT_EMPTY = 'notempty';
+
+    /**
+     * @var string|null UUID
+     */
+    public ?string $uid = null;
+
+    /**
+     * @var string The selected operator.
+     */
+    public string $operator;
+
+    /**
+     * @var bool Whether to reload the condition builder when the operator changes
+     */
+    protected bool $reloadOnOperatorChange = false;
+
+    private ConditionInterface $_condition;
+
+    public ConditionInterface $condition {
+        get => $this->getCondition();
+        set {
+            $this->setCondition($value);
+        }
+    }
+
+    /**
+     * @see getAutofocus()
+     * @see setAutofocus()
+     */
+    private bool $_autofocus = false;
+
+    public bool $autofocus {
+        get => $this->getAutofocus();
+        set {
+            $this->setAutofocus($value);
+        }
+    }
+
+    /** @var array<string, mixed> */
+    public array $config {
+        get => $this->getConfig();
+    }
+
+    public function __construct(object|array $config = [])
+    {
+        parent::__construct($config);
+
+        $this->uid ??= Str::uuid()->toString();
+    }
+
+    public static function supportsProjectConfig(): bool
+    {
+        return true;
+    }
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        return true;
+    }
+
+    public function getLabelHint(): ?string
+    {
+        return null;
+    }
+
+    public function showLabelHint(): bool
+    {
+        return false;
+    }
+
+    public function getCondition(): ConditionInterface
+    {
+        return $this->_condition;
+    }
+
+    public function setCondition(ConditionInterface $condition): void
+    {
+        $this->_condition = $condition;
+    }
+
+    public function getGroupLabel(): ?string
+    {
+        return null;
+    }
+
+    public function getConfig(): array
+    {
+        $config = [
+            'class' => static::class,
+            'uid' => $this->uid,
+        ];
+
+        if (! empty($this->operators())) {
+            $config['operator'] = $this->operator;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the operators that should be allowed for this rule.
+     *
+     * @return string[]
+     */
+    protected function operators(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the value fields.
+     *
+     * @return list<Node>
+     */
+    protected function inputNodes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the option label for a given operator.
+     */
+    protected function operatorLabel(string $operator): string
+    {
+        return match ($operator) {
+            self::OPERATOR_EQ => t('equals'),
+            self::OPERATOR_NE => t('does not equal'),
+            self::OPERATOR_LT => t('is less than'),
+            self::OPERATOR_LTE => t('is less than or equals'),
+            self::OPERATOR_GT => t('is greater than'),
+            self::OPERATOR_GTE => t('is greater than or equals'),
+            self::OPERATOR_BEGINS_WITH => t('begins with'),
+            self::OPERATOR_ENDS_WITH => t('ends with'),
+            self::OPERATOR_CONTAINS => t('contains'),
+            self::OPERATOR_IN => t('is one of'),
+            self::OPERATOR_NOT_IN => t('is not one of'),
+            self::OPERATOR_EMPTY => t('is empty'),
+            self::OPERATOR_NOT_EMPTY => t('has a value'),
+            default => $operator,
+        };
+    }
+
+    /**
+     * @param  array<int|string, string|array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
+    protected function formOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn (string|array $option, int|string $value): array => is_array($option) ? $option : ['value' => (string) $value, 'label' => $option])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Rule fields sit inline beside the rule picker, which already names what's
+     * being matched, so their labels are only announced to screen readers.
+     * Date fields keep theirs visible, since “From” and “To” are otherwise
+     * indistinguishable.
+     */
+    public function getForm(FormContext $context = new FormContext): Form
+    {
+        $nodes = [
+            ...$this->operatorNodes(),
+            ...$this->inputNodes(),
+        ];
+
+        foreach ($nodes as $node) {
+            if ($node instanceof Field && ! $node->getControl() instanceof DateTime) {
+                $node->labelSrOnly();
+            }
+        }
+
+        return Form::make($nodes);
+    }
+
+    /** @return list<Node> */
+    protected function operatorNodes(): array
+    {
+        $operators = $this->operators();
+        $nodes = [];
+
+        if (count($operators) > 1) {
+            $nodes[] = Field::make(t('Operator'), Choice::make('operator')
+                ->options(array_map(fn (string $operator): array => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators))
+                ->withoutPlaceholder()
+                ->value($this->operator)
+                ->reactive($this->reloadOnOperatorChange));
+        } elseif ($operators !== []) {
+            $nodes[] = Action::make(Hidden::make('operator')->value(reset($operators)));
+        }
+
+        return $nodes;
+    }
+
+    #[\Override]
+    public function getRules(): array
+    {
+        return array_merge(parent::getRules(), [
+            'uid' => ['nullable'],
+            'condition' => ['nullable'],
+            'operator' => ['nullable', Rule::in($this->operators())],
+        ]);
+    }
+
+    public function getAutofocus(): bool
+    {
+        return $this->_autofocus;
+    }
+
+    public function setAutofocus(bool $autofocus = true): void
+    {
+        $this->_autofocus = $autofocus;
+    }
+}

@@ -1,0 +1,191 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
+use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
+
+use function CraftCms\Cms\cp_url;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+    Queue::fake();
+
+    config()->set('filesystems.disks.edit-asset-test', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/edit-asset-controller-test'),
+    ]);
+
+    $layout = FieldLayout::make(Asset::class)
+        // The Title field is mandatory, so the layout supplies it itself.
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab
+            ->add(new AltField(['uid' => 'asset-alt'])));
+    $config = $layout->getConfig();
+    $config['tabs'][0]['uid'] = 'asset-content';
+    $layout = FieldLayoutModel::factory()->create(['type' => Asset::class, 'config' => $config]);
+
+    $this->volume = Volume::factory()->create([
+        'fs' => 'edit-asset-test',
+        'fieldLayoutId' => $layout->id,
+    ]);
+    $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
+
+    $this->asset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volume->id,
+        'folderId' => $this->folder->id,
+        'filename' => 'current-file.png',
+        'kind' => 'image',
+    ]);
+
+    // The title lives on `elements_sites`, not the `assets` row the factory
+    // writes, so it's set through the element.
+    $this->asset->title = 'Current Title';
+    Elements::saveElement($this->asset);
+});
+
+it('renders the asset edit screen as an Inertia page', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('assets/Edit')
+            ->where('elementId', $this->asset->id)
+            ->where('canonicalId', $this->asset->id)
+            ->where('elementType', Asset::class)
+            ->where('siteId', $this->asset->siteId)
+            ->where('volumeId', $this->volume->id)
+            ->where('folderId', $this->folder->id)
+            ->where('title', 'Current Title')
+            ->where('readOnly', false)
+            ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/activity'))
+        );
+});
+
+it('ends the breadcrumbs with an unlinked chip for the asset', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', function (Collection $crumbs) {
+                $chip = $crumbs->last()['html'] ?? '';
+
+                return str_contains($chip, 'data-id="'.$this->asset->id.'"')
+                    && ! str_contains($chip, '<a ');
+            })
+            ->etc()
+        );
+});
+
+it('compiles the field layout into a form payload', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('form.nodes')
+            ->where('form.values.title', 'Current Title')
+        );
+});
+
+it('renders the filename as a sidebar meta field', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarForm.values.newFilename', 'current-file.png')
+        );
+});
+
+it('posts to the generic element save action', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('saveUrl', fn (string $url): bool => str_contains($url, 'elements/save'))
+        );
+});
+
+it('does not autosave, since assets have no drafts', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('canAutosave', false)
+            ->where('draftId', null)
+            ->where('isProvisionalDraft', false)
+            ->where('contextMenu', null)
+        );
+});
+
+it('offers the asset’s own actions in the action menu', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actionMenu', function (Collection $items): bool {
+                $types = $items->pluck('behavior.type')->all();
+
+                return in_array('download', $types, true)
+                    && in_array('replaceFile', $types, true);
+            })
+        );
+});
+
+it('re-keys rename errors onto the field that posts them', function () {
+    $asset = Asset::find()->id($this->asset->id)->one();
+    $asset->errors()->add('newLocation', '“exe” is not an allowed file extension.');
+
+    expect($asset->formErrors())
+        ->not->toHaveKey('newLocation')
+        ->toHaveKey('newFilename');
+});
+
+it('rejects an id that doesn’t resolve to an asset', function () {
+    get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
+});
+
+it('shows the image preview’s placeholder over a gradient between the image’s edge colors', function () {
+    AssetModel::whereKey($this->asset->id)->update(['colors' => json_encode([
+        'dominant' => '#3a6ea5',
+        'grid' => [
+            ['#ff0000', '#3a6ea5', '#0000ff'],
+            ['#990000', '#3a6ea5', '#000099'],
+        ],
+    ])]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains(
+                $html,
+                'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #d40000, #0000d4)',
+            ) && str_contains($html, 'placeholder="data:image/png;base64,'))
+        );
+});
+
+it('leaves the preview background alone without a usable dominant color', function (?string $colors) {
+    AssetModel::whereKey($this->asset->id)->update(['colors' => $colors]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains($html, 'thumb-container')
+                && ! str_contains($html, 'style='))
+        );
+})->with([
+    'not sampled yet' => [null],
+    'inconclusive' => ['{"dominant":null,"grid":[]}'],
+    'no grid' => ['{"dominant":"#3a6ea5","grid":[]}'],
+    'not a hex color' => ['{"dominant":null,"grid":[["red;x"]]}'],
+]);
+
+it('shows the uploader as a plain chip in the metadata', function () {
+    AssetModel::whereKey($this->asset->id)->update(['uploaderId' => User::findOne()->id]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('metadataHtml', fn (string $html): bool => new Crawler($html)
+                ->filter('craft-chip')
+                ->attr('appearance') === 'plain')
+        );
+});

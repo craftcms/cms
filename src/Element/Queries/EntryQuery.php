@@ -1,0 +1,405 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Queries;
+
+use Closure;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesAuthors;
+use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryDates;
+use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryTypes;
+use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesRef;
+use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesSections;
+use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Sections;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Override;
+
+use function CraftCms\Cms\currentUser;
+
+/**
+ * @template T of Entry
+ *
+ * @extends ElementQuery<T>
+ *
+ * @since 6.0.0
+ */
+class EntryQuery extends ElementQuery implements NestedElementQueryInterface
+{
+    use QueriesAuthors;
+    use QueriesEntryDates;
+    use QueriesEntryTypes;
+    use QueriesNestedElements {
+        cacheTags as nestedTraitCacheTags;
+        fieldLayouts as nestedTraitFieldLayouts;
+    }
+    use QueriesRef;
+    use QueriesSections;
+
+    #[Override]
+    public bool $withStructure {
+        get {
+            if (! isset($this->withStructure)) {
+                $this->withStructure = true;
+            }
+
+            return $this->withStructure;
+        }
+    }
+
+    #[Override]
+    protected string $table = Table::ENTRIES;
+
+    /** @var array<string, int> */
+    #[Override]
+    protected array $defaultOrderBy = [
+        'entries.postDate' => SORT_DESC,
+        'entries.id' => SORT_DESC,
+    ];
+
+    public static function getFieldIdColumn(): string
+    {
+        return 'entries.fieldId';
+    }
+
+    public static function getPrimaryOwnerIdColumn(): string
+    {
+        return 'entries.primaryOwnerId';
+    }
+
+    public static function mustHaveField(): bool
+    {
+        return false;
+    }
+
+    public static function mustHaveOwner(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @var bool|null Whether to only return entries that the user has permission to view.
+     *
+     * @used-by editable()
+     */
+    public ?bool $editable = null;
+
+    /**
+     * @var bool|null Whether to only return entries that the user has permission to save.
+     *
+     * @used-by savable()
+     */
+    public ?bool $savable = null;
+
+    /** @param array<string, mixed> $config */
+    public function __construct(array $config = [])
+    {
+        // Default status
+        $config['status'] ??= [
+            Entry::STATUS_LIVE,
+        ];
+
+        parent::__construct(Entry::class, $config);
+
+        $this->query->addSelect([
+            'entries.sectionId as sectionId',
+            'entries.fieldId as fieldId',
+            'entries.primaryOwnerId as primaryOwnerId',
+            'entries.typeId as typeId',
+            'entries.postDate as postDate',
+            'entries.expiryDate as expiryDate',
+        ]);
+
+        if (Cms::config()->staticStatuses) {
+            $this->query->addSelect(['entries.status as status']);
+        }
+
+        $this->beforeQuery(static function (self $query) {
+            static::applyEditable($query, $query->editable, $query);
+            static::applySavable($query, $query->savable, $query);
+        });
+    }
+
+    #[Override]
+    protected function statusCondition(string $status): Closure
+    {
+        if (
+            Cms::config()->staticStatuses &&
+            in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED])
+        ) {
+            return fn (Builder $query) => $query
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
+                ->where('entries.status', $status);
+        }
+
+        // Always consider “now” to be the current time @ 59 seconds into the minute.
+        // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
+        // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
+        $currentTime = now()->endOfMinute()->setTimezone('UTC');
+
+        return match ($status) {
+            Entry::STATUS_LIVE => fn (Builder $query) => $query
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
+                ->where('entries.postDate', '<=', $currentTime)
+                ->where(function (Builder $query) use ($currentTime) {
+                    $query->whereNull('entries.expiryDate')
+                        ->orWhere('entries.expiryDate', '>', $currentTime);
+                }),
+            Entry::STATUS_PENDING => fn (Builder $query) => $query
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
+                ->where('entries.postDate', '>', $currentTime),
+            Entry::STATUS_EXPIRED => fn (Builder $query) => $query
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
+                ->whereNotNull('entries.expiryDate')
+                ->where('entries.expiryDate', '<=', $currentTime),
+            default => parent::statusCondition($status),
+        };
+    }
+
+    /**
+     * Sets the [[$editable]] property.
+     *
+     * @param  bool|null  $value  The property value (defaults to true)
+     *
+     * @uses $editable
+     */
+    /** @return self<T> */
+    public function editable(?bool $value = true): self
+    {
+        $this->editable = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[$savable]] property.
+     *
+     * @param  bool|null  $value  The property value (defaults to true)
+     * @return self self reference
+     *
+     * @uses $savable
+     */
+    /** @return self<T> */
+    public function savable(?bool $value = true): self
+    {
+        $this->savable = $value;
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the entries’ statuses.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches entries…
+     * | - | -
+     * | `'live'` _(default)_ | that are live.
+     * | `'pending'` | that are pending (enabled with a Post Date in the future).
+     * | `'expired'` | that are expired (enabled with an Expiry Date in the past).
+     * | `'disabled'` | that are disabled.
+     * | `['live', 'pending']` | that are live or pending.
+     * | `['not', 'live', 'pending']` | that are not live or pending.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch disabled entries #}
+     * {% set {elements-var} = {twig-method}
+     *   .status('disabled')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch disabled entries
+     * ${elements-var} = {element-class}::find()
+     *     ->status('disabled')
+     *     ->all();
+     * ```
+     */
+    #[Override]
+    public function status(array|string|null $value): static
+    {
+        /** @var static */
+        return parent::status($value);
+    }
+
+    /** @param EntryQuery<Entry> $entryQuery */
+    public static function applyEditable(BuilderContract $query, ?bool $value, EntryQuery $entryQuery): void
+    {
+        self::applyAuthParam($query, $value, $entryQuery, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
+    }
+
+    /** @param EntryQuery<Entry> $entryQuery */
+    public static function applySavable(BuilderContract $query, ?bool $value, EntryQuery $entryQuery): void
+    {
+        self::applyAuthParam($query, $value, $entryQuery, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
+    }
+
+    /**
+     * @param  self<T>  $query
+     * @param  EntryQuery<Entry>  $entryQuery
+     */
+    private static function applyAuthParam(
+        BuilderContract $query,
+        ?bool $value,
+        EntryQuery $entryQuery,
+        string $permissionPrefix,
+        string $peerPermissionPrefix,
+        string $peerDraftPermissionPrefix,
+    ): void {
+        if ($value === null) {
+            return;
+        }
+
+        $user = currentUser();
+
+        if (! $user) {
+            $query->whereRaw('0 = 1');
+
+            return;
+        }
+
+        $sections = Sections::getAllSections();
+
+        if ($sections->isEmpty()) {
+            return;
+        }
+
+        $outerQuery = $query;
+
+        $query->where(function (Builder $query) use ($outerQuery, $value, $entryQuery, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
+            $partialAccessSections = [];
+
+            foreach ($sections as $section) {
+                if (! $user->can("$permissionPrefix:$section->uid")) {
+                    continue;
+                }
+
+                $excludePeerEntries = $section->type !== SectionType::Single && ! $user->can("$peerPermissionPrefix:$section->uid");
+                $excludePeerDrafts = $entryQuery->drafts !== false && ! $user->can("$peerDraftPermissionPrefix:$section->uid");
+
+                if ($excludePeerEntries || $excludePeerDrafts) {
+                    $partialAccessSections[] = $section->id;
+
+                    $userId = $user->getCraftUserId();
+
+                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $userId, $excludePeerEntries, $section) {
+                        $query->where('entries.sectionId', $section->id);
+
+                        if ($excludePeerEntries) {
+                            $query->whereExists(
+                                DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
+                                    ->whereColumn('entries_authors.entryId', 'entries.id')
+                                    ->where('entries_authors.authorId', $userId)
+                            );
+                        }
+
+                        if ($excludePeerDrafts) {
+                            $query->where(function (Builder $query) use ($userId) {
+                                $query->whereNull('elements.draftId')
+                                    ->orWhere('drafts.creatorId', $userId);
+                            });
+                        }
+                    });
+                } else {
+                    $fullyAuthorizedSectionIds[] = $section->id;
+                }
+            }
+
+            if (! empty($fullyAuthorizedSectionIds)) {
+                if (count($fullyAuthorizedSectionIds) === count($sections)) {
+                    // They have access to everything
+                    if (! $value) {
+                        $outerQuery->whereRaw('0 = 1');
+
+                        return;
+                    }
+
+                    return;
+                }
+
+                $query->orWhereIn('entries.sectionId', $fullyAuthorizedSectionIds);
+            }
+
+            // They don't have access to anything
+            if (empty($partialAccessSections) && $value) {
+                $outerQuery->whereRaw('0 = 1');
+
+                return;
+            }
+        }, boolean: $value ? 'and' : 'and not');
+    }
+
+    #[Override]
+    protected function cacheTags(): array
+    {
+        $tags = [];
+
+        // If the type is set, go with that instead of the section
+        if ($this->typeId) {
+            foreach (Arr::wrap($this->typeId) as $typeId) {
+                $tags[] = "entryType:$typeId";
+            }
+        } elseif ($this->sectionId) {
+            foreach (Arr::wrap($this->sectionId) as $sectionId) {
+                $tags[] = "section:$sectionId";
+            }
+        }
+
+        array_push($tags, ...$this->nestedTraitCacheTags());
+
+        return $tags;
+    }
+
+    /** @return Collection<int, FieldLayout> */
+    #[Override]
+    protected function fieldLayouts(): Collection
+    {
+        $this->normalizeTypeId($this);
+        $this->normalizeSectionId($this);
+
+        $fieldLayouts = [];
+
+        if ($this->typeId) {
+            foreach ($this->typeId as $entryTypeId) {
+                $entryType = EntryTypes::getEntryTypeById($entryTypeId);
+                if ($entryType) {
+                    $fieldLayouts[] = $entryType->getFieldLayout();
+                }
+            }
+
+            return collect($fieldLayouts);
+        }
+
+        if ($this->sectionId) {
+            foreach ($this->sectionId as $sectionId) {
+                if ($section = Sections::getSectionById($sectionId)) {
+                    foreach ($section->getEntryTypes() as $entryType) {
+                        $fieldLayouts[] = $entryType->getFieldLayout();
+                    }
+                }
+            }
+
+            return collect($fieldLayouts);
+        }
+
+        return $this->nestedTraitFieldLayouts();
+    }
+}

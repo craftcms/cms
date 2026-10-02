@@ -1,0 +1,105 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started/Installation" />
+
+# Installation
+
+## In the control panel
+
+Nothing to install.
+The CP already loads the whole library, so a Twig template or a Vue page in a plugin can use any element on this site directly:
+
+```twig
+<craft-callout variant="warning">
+  This section has no entry types.
+</craft-callout>
+```
+
+From PHP, prefer the component classes in `src/Cp/Components/` over writing the tag by hand — they carry typed setters and handle slot content:
+
+```php
+use CraftCms\Cms\Cp\Components\Button;
+
+echo Button::make()
+    ->variant('primary')
+    ->icon('plus')
+    ->label(Craft::t('app', 'New entry'));
+```
+
+## Outside the control panel
+
+Install the package and its two peers:
+
+```sh
+npm install @craftcms/ui lit @lion/ui
+```
+
+Import a component for its side effect — importing registers the custom element, so the tag works from that point on:
+
+```js
+import '@craftcms/ui/components/button/button.js';
+```
+
+```html
+<craft-button variant="primary">Save</craft-button>
+```
+
+Import the whole library when you would rather not track individual paths. It registers every element:
+
+```js
+import '@craftcms/ui';
+```
+
+The named exports are the classes, for when you need the type or want to extend one:
+
+```js
+import {CraftButton} from '@craftcms/ui';
+```
+
+## Styles
+
+The components carry their own styles in shadow DOM, so they look right without a stylesheet.
+What they do not carry is the token layer that gives them their colours, spacing, and type — those are custom properties inherited from the page, so they have to be defined once at the root:
+
+```js
+import '@craftcms/ui/styles/cp.css';
+```
+
+Skip it and every component still renders, using whatever the fallbacks in its own stylesheet say. That is a working page, not a Craft-looking one.
+
+## Vue
+
+Custom elements pass straight through Vue's compiler as long as it knows not to resolve them as Vue components. Any tag with a hyphen is treated that way, so `<craft-button>` works with no configuration.
+
+Bind rich values as properties with `.prop`, and listen for events with `@`:
+
+```vue
+<craft-select-rich
+  :label="label"
+  .options="options"
+  @model-value-changed="onChange"
+/>
+```
+
+Typed wrappers are generated for the whole library if you would rather have Vue's own prop and event checking:
+
+```js
+import CraftButton from '@craftcms/ui/vue/button.js';
+```
+
+## TypeScript
+
+Every component augments `HTMLElementTagNameMap`, so `document.querySelector` is typed once the component is imported:
+
+```ts
+// CraftButton, not HTMLElement
+const button = document.querySelector('craft-button');
+```
+
+The package also ships its [custom elements manifest](https://github.com/webcomponents/custom-elements-manifest), which editors read for completion and hover documentation inside markup:
+
+```json
+{
+  "html.customData": ["./node_modules/@craftcms/ui/dist/custom-elements.json"]
+}
+```

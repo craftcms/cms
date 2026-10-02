@@ -1,0 +1,2 @@
+// line 1
+redirect(CraftCms\Cms\Support\Url::url("/dashboard"), 302)->throwResponse();

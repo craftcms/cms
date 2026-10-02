@@ -1,0 +1,14 @@
+{% set attributes = {
+    id: id ?? "copytext#{random()}",
+    class: (class ?? [])|explodeClass|push('copytextbtn'),
+    role: 'button',
+    title: 'Copy to clipboard'|t('app'),
+    aria: {
+        describedby: describedBy ?? false,
+    },
+    tabindex: '0',
+} %}
+
+<craft-copy-attribute value="{{ value }}">
+    {{ value }}
+</craft-copy-attribute>

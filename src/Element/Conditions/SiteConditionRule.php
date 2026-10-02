@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Conditions;
+
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Database\Query\Builder;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
+{
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        // Exclude from element query conditions
+        if ($condition instanceof ElementCondition && $condition->forQuery) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getLabel(): string
+    {
+        return t('Site');
+    }
+
+    protected function options(): array
+    {
+        return Sites::getEditableSites()
+            ->map(fn (Site $site) => [
+                'label' => $site->getUiLabel(),
+                'value' => $site->uid,
+            ])
+            ->all();
+    }
+
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
+    {
+        ElementQuery::applySiteId($query, $this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
+    }
+
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->getSite()->uid);
+    }
+}

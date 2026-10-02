@@ -1,0 +1,2 @@
+// line 1
+dump(($context["entry"] ?? null), '', 1);

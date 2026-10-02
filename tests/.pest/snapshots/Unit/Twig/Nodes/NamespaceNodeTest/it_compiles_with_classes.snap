@@ -1,0 +1,13 @@
+// line 1
+$_namespace = "myNamespace";
+if ($_namespace !== null && $_namespace !== '') {
+    yield CraftCms\Cms\Support\Facades\InputNamespace::namespaceInputs(function () use (&$context, $macros, $blocks) {
+        return \Twig\Extension\CoreExtension::captureOutput((function () use (&$context, $macros, $blocks) {
+            yield "<input name=\"title\">";
+            return; yield;
+        })());
+    }, $_namespace, withClasses: true);
+} else {
+    yield "<input name=\"title\">";
+}
+unset($_namespace);

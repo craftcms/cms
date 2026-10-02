@@ -1,0 +1,61 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as BadgeStories from './badge.stories';
+
+<Meta of={BadgeStories} name="Docs" />
+
+# Badge
+
+`<craft-badge>` is a small status pill: a coloured [Indicator](?path=/docs/components-indicator--docs) dot followed by a label.
+Use it to surface an object's state where it is read at a glance — an entry's status in an index, an order's payment state in a header.
+
+<Canvas of={BadgeStories.Default} sourceState="shown" />
+
+The label is the default slot, and `fill` sets the colour.
+The badge renders its surface, border, and text in the quiet tone of that colour, and the indicator in the loud one, so the pill stays legible against the page while the dot carries the signal.
+
+## Colour
+
+`fill` takes a value from the shared `Color` palette:
+
+<Canvas of={BadgeStories.AllColors} sourceState="shown" />
+
+Unlike Indicator, the badge is limited to the palette and does not take arbitrary CSS colours — `fill` is typed as `ColorValue`, so an unknown colour fails to type-check rather than rendering as nothing.
+
+Setting it reflects the resolved colour onto the host's `data-color` attribute, which is what scopes the `--c-color-*` tokens the badge's styles read.
+That is the same mechanism described on the [Colorable](?path=/docs/tokens-colorable--docs) page.
+
+### Semantic colours
+
+`Color` also carries aliases that resolve to palette values — `Color.Success` is `emerald`, `Color.Warning` is `orange`, `Color.Danger` is `red`, `Color.Info` is `blue`.
+Reach for these when the colour carries meaning, so intent survives a palette retune:
+
+<Canvas of={BadgeStories.SemanticColors} sourceState="shown" />
+
+## Replacing the Indicator
+
+The `prefix` slot holds the indicator, so slotting your own content replaces it — an icon, or a marker of your own:
+
+<Canvas of={BadgeStories.CustomPrefix} sourceState="shown" />
+
+## Styling
+
+The badge sizes itself in `em`, so set `font-size` on the host to scale the whole pill, indicator included:
+
+```css
+craft-badge {
+  font-size: var(--c-text-sm);
+}
+```
+
+Its colours come from the generic colorable tokens — `--c-color-fill-quiet` for the surface, `--c-color-border-quiet` for the border, `--c-color-on-quiet` for the text.
+Because `fill` scopes those tokens, change a badge's colour through `fill` rather than by overriding them.
+
+## Accessibility
+
+The default indicator is decorative and deliberately unlabelled: the badge's own text already names the status, and a labelled dot beside it would be announced twice.
+
+Replace the `prefix` with something meaningful and that changes — give it its own accessible name, such as a `label` on the [Indicator](?path=/docs/components-indicator--docs) or [Icon](?path=/docs/components-icon--docs).
+
+## Properties
+
+<ArgTypes of={BadgeStories} />

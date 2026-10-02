@@ -1,0 +1,55 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as NavItemStories from './nav-item.stories';
+
+<Meta of={NavItemStories} name="Docs" />
+
+# Nav Item
+
+`<craft-nav-item>` is one entry in the control panel's navigation.
+
+<Canvas of={NavItemStories.Default} sourceState="shown" />
+
+Items belong inside a [Nav List](?path=/docs/components-nav-list--docs), which supplies the list semantics that make the group announce as a list with a count rather than as a run of loose links.
+
+## States and Markers
+
+`active` marks the entry for the current section:
+
+<Canvas of={NavItemStories.Active} sourceState="shown" />
+
+`indicator` adds a marker for something needing attention:
+
+<Canvas of={NavItemStories.WithIndicator} sourceState="shown" />
+
+`external` opens the link in a new tab and shows the external-link icon, so the behaviour is visible before the click rather than surprising after it.
+
+## Nested Navigation
+
+The `subnav` slot holds child items:
+
+<Canvas of={NavItemStories.WithChildren} sourceState="shown" />
+
+<Canvas of={NavItemStories.Group} sourceState="shown" />
+
+<Canvas of={NavItemStories.TogglePositionPrefix} sourceState="shown" />
+
+A subnav can belong to an item that is not itself a link:
+
+<Canvas of={NavItemStories.SubnavWithoutLabel} sourceState="shown" />
+
+## Collapsed Navigation
+
+`icon-only` collapses the item to its icon. The label is still announced, so the item keeps its name — and a subnav moves into a flyout rather than disappearing, which is what keeps the children reachable at any width.
+
+## Accessibility
+
+The item is a link, so it is focusable and activates on Enter without help.
+
+Two things are worth attention:
+
+- **`icon-only` hides the label visually, not from assistive technology.** A collapsed navigation is still fully named. Do not "help" by removing the label.
+- **`active` is presentational.** Marking the current page for a screen reader is `aria-current`, which the surrounding navigation should set — the colour alone does not announce anything.
+
+## Properties
+
+<ArgTypes of={NavItemStories} />

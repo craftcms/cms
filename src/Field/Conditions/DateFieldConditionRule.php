@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Field\Conditions;
+
+use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
+use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Form\Contracts\Node;
+use DateTimeInterface;
+use RuntimeException;
+
+/**
+ * @since 6.0.0
+ */
+class DateFieldConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
+{
+    use FieldConditionRuleTrait;
+
+    /** @return list<Node> */
+    #[\Override]
+    protected function inputNodes(): array
+    {
+        if (! $this->field() instanceof Date) {
+            throw new RuntimeException;
+        }
+
+        return parent::inputNodes();
+    }
+
+    /** @return array<int, string>|string|null */
+    protected function elementQueryParam(): array|string|null
+    {
+        if (! $this->field() instanceof Date) {
+            return null;
+        }
+
+        return $this->queryParamValue();
+    }
+
+    /** @param DateTimeInterface|null $value */
+    protected function matchFieldValue(mixed $value): bool
+    {
+        if (! $this->field() instanceof Date) {
+            return true;
+        }
+
+        return $this->matchValue($value);
+    }
+}

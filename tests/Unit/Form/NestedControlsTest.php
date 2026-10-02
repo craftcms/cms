@@ -1,0 +1,187 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Form\Controls\ContentBlock;
+use CraftCms\Cms\Form\Controls\NestedElementBlocks;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use Symfony\Component\DomCrawler\Crawler;
+
+function nestedControlsForm(): Form
+{
+    $contentBlock = ContentBlock::make('content')->form(Form::make([
+        Field::make('Body', Text::make('body')),
+    ]));
+
+    return Form::make([
+        Field::make('Content',
+            NestedElementBlocks::make('matrix')
+                ->entryTypes(['text' => 'Text'])
+                ->forms([
+                    'block-a' => Form::make([
+                        Field::make('Heading', Text::make('heading')),
+                        Field::make('Content block', $contentBlock),
+                    ]),
+                ]),
+        ),
+    ]);
+}
+
+function nestedControlsContext(): FormContext
+{
+    return new FormContext(
+        namespace: 'settings',
+        values: ['settings' => ['matrix' => [
+            'entries' => ['block-a' => [
+                'type' => 'text',
+                'heading' => 'Welcome',
+                'content' => ['body' => 'Nested body'],
+            ]],
+            'sortOrder' => ['block-a'],
+        ]]],
+        errors: ['matrix.entries.block-a.content.body' => ['Body is invalid.']],
+    );
+}
+
+it('resolves nested Form scopes recursively with one ancestor atomic group', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $matrix = $payload->nodes[0]->control;
+    $entryForm = $matrix->forms[0];
+    $contentBlock = $entryForm->nodes[1]->control;
+    $contentBlockForm = $contentBlock->forms[0];
+    $body = $contentBlockForm->nodes[0]->control;
+
+    expect($matrix->component)->toBe('craft:nested-element-blocks')
+        ->and($entryForm->scope)->toBe(['settings', 'matrix', 'entries', 'block-a'])
+        ->and($entryForm->refreshable)->toBeTrue()
+        ->and($contentBlock->component)->toBe('craft:content-block')
+        ->and($contentBlockForm->scope)->toBe(['settings', 'matrix', 'entries', 'block-a', 'content'])
+        ->and($body->path)->toBe(['settings', 'matrix', 'entries', 'block-a', 'content', 'body'])
+        ->and($body->deltaGroup)->toBe(['settings', 'matrix'])
+        ->and($payload->errors)->toBe([[
+            'path' => $body->path,
+            'messages' => ['Body is invalid.'],
+        ]]);
+});
+
+it('returns a nested Form payload for a dependent refresh scope', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $scope = ['settings', 'matrix', 'entries', 'block-a'];
+    $nested = $payload->forScope($scope);
+
+    expect($nested->scope)->toBe($scope)
+        ->and($nested->nodes)->toHaveCount(2)
+        ->and($nested->values)->toBe($payload->values)
+        ->and($nested->errors)->toBe($payload->errors)
+        ->and($nested->globalErrors)->toBe([]);
+});
+
+it('renders nested Controls with Craft web components and no nested forms', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+
+    expect($crawler->filter('form form'))->toHaveCount(0)
+        ->and($crawler->filter('craft-matrix-input [data-matrix-block][data-id="block-a"]'))->toHaveCount(1)
+        ->and($crawler->filter('.pane[data-content-block]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-reorder-button'))->toHaveCount(1)
+        ->and($crawler->filter('craft-button[data-form-matrix-remove]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[matrix][sortOrder][]"][value="block-a"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[matrix][entries][block-a][heading]"][value="Welcome"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[matrix][entries][block-a][content][body]"][value="Nested body"]'))->toHaveCount(1)
+        ->and($crawler->text())->toContain('Body is invalid.');
+});
+
+it('frames server-rendered Matrix blocks the same way the browser control does', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+    $block = $crawler->filter('[data-matrix-block][data-id="block-a"]');
+
+    expect($block->filter('craft-card'))->toHaveCount(1)
+        ->and($block->filter('craft-card > [slot="header"] [data-matrix-block-titlebar]'))->toHaveCount(1)
+        ->and($block->filter('craft-card > [slot="header"] [data-matrix-block-actions] craft-reorder-button'))->toHaveCount(1)
+        ->and($block->filter('craft-card > [data-matrix-block-fields]'))->toHaveCount(1)
+        // A nested element's own thumbnail must not sit where `craft-card` looks
+        // for its own, or the block reserves a thumbnail column it never fills.
+        ->and($block->filter('craft-card > [slot="thumbnail"]'))->toHaveCount(0)
+        ->and($crawler->filter('[data-matrix-blocks][role="list"]'))->toHaveCount(1);
+});
+
+it('keeps Craft 5 class names off server-rendered Matrix blocks', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+
+    // The legacy stylesheet styles these, and would restyle the card frame.
+    expect($crawler->filter('craft-matrix-input')->filter(
+        '.matrix, .matrix-field, .blocks, .buttons, .matrixblock, .js-deletable, .titlebar, .blocktype, .actions, .fields, .preview, .move-btn, .drag-handle'
+    ))->toHaveCount(0)
+        ->and($crawler->filter('[data-matrix-field] > [data-matrix-blocks] > [data-matrix-block]'))->toHaveCount(1);
+});
+
+it('posts the per-block state the browser stack carries in its value', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+
+    // Serialized from the DOM here, so enabled and collapsed need inputs of their
+    // own — Craft 5's block.twig wrote both.
+    expect($crawler->filter('input[name="settings[matrix][entries][block-a][enabled]"][value="1"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[matrix][entries][block-a][collapsed]"]'))->toHaveCount(1);
+});
+
+it('writes the block identity the element clipboard reads off the DOM', function () {
+    $form = Form::make([
+        Field::make('Content',
+            NestedElementBlocks::make('matrix')
+                ->entryTypes(['text' => 'Text'])
+                ->blocks(['block-a' => [
+                    'label' => 'Entry 12',
+                    'actions' => [],
+                    'data' => ['element-id' => 12, 'owner-id' => 5, 'site-id' => 1],
+                ]])
+                ->forms(['block-a' => Form::make([Field::make('Heading', Text::make('heading'))])]),
+        ),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+    $block = $crawler->filter('[data-matrix-block]')->first();
+
+    // `data-id` stays the UID — what the sort order and the posted value are
+    // keyed by — so the element id rides alongside it.
+    expect($block->attr('data-id'))->toBe('block-a')
+        ->and($block->attr('data-element-id'))->toBe('12')
+        ->and($block->attr('data-owner-id'))->toBe('5')
+        ->and($block->attr('data-site-id'))->toBe('1')
+        ->and($block->attr('data-ui-label'))->toBe('Entry 12');
+});
+
+it('declares which Controls hold nested forms', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $matrix = $payload->nodes[0]->control;
+    $contentBlock = $matrix->forms[0]->nodes[1]->control;
+    $heading = $matrix->forms[0]->nodes[0]->control;
+
+    // A change inside one of these marks the field holding it, so the browser
+    // has to be told which they are. Leaf Controls ship nothing.
+    expect($matrix->nestsForms)->toBeTrue()
+        ->and($matrix->jsonSerialize())->toHaveKey('nestsForms', true)
+        ->and($contentBlock->nestsForms)->toBeTrue()
+        ->and($heading->nestsForms)->toBeFalse()
+        ->and($heading->jsonSerialize())->not->toHaveKey('nestsForms');
+});
+
+it('uses explicit empty canonical values', function () {
+    $form = Form::make([
+        Field::make()->control(NestedElementBlocks::make('matrix')->entryTypes(['text' => 'Text'])),
+        Field::make()->control(ContentBlock::make('content')),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+
+    expect($payload->values)->toBe(['settings' => [
+        'matrix' => ['entries' => [], 'sortOrder' => []],
+        'content' => null,
+    ]]);
+});

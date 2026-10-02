@@ -1,10 +1,7 @@
 <template>
   <div>
     <div
-      v-if="
-        rowData.detail.content &&
-        (!rowData.detail.showAsList || rowData.detail.showAsList === undefined)
-      "
+      v-if="rowData.detail.content && !rowData.detail.showAsList"
       v-html="rowData.detail.content"
     ></div>
     <div v-if="rowData.detail.content && rowData.detail.showAsList">
@@ -85,7 +82,8 @@
 
 <style lang="scss">
   .detail-list {
-    padding: 0.2rem 0.5rem;
+    padding-block: 0.2rem;
+    padding-inline: 0.5rem;
   }
 
   .detail-list-bg {
@@ -93,7 +91,7 @@
   }
 
   .detail-list-key {
-    padding-right: 0.25rem;
+    padding-inline-end: 0.25rem;
     font-weight: bold;
   }
 </style>

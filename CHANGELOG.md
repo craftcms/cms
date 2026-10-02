@@ -1,512 +1,1982 @@
-# Release Notes for Craft CMS 5
+# Release Notes for Craft CMS 6
 
 ## Unreleased
 
-- Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
-- Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
-- `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
-- Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
+- Brought back users’ gradient-based default avatars.
+- Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
+- Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
+- Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
+- Added `Craft.isCancel()`.
+- Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
+- Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
+- `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
+- `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use Axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
+- Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
+- The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
+- Removed `Cp.$axios`.
+- Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
+- Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Added `CraftCms\Cms\Search\Events\KeywordsIndexing::$layoutElementUid`. ([#13991](https://github.com/craftcms/cms/pull/13991))
+- The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where searching or clearing a search on element indexes moved keyboard focus away from the search input. ([#19785](https://github.com/craftcms/cms/pull/19785))
+- Fixed an accessibility issue where `craft-button` links couldn’t be reached with the <kbd>Tab</kbd> key. ([#19785](https://github.com/craftcms/cms/pull/19785))
+- Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
+- Fixed a bug where Addresses fields’ configured Cards and Index view modes weren’t used in element forms. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where nested element cards’ Copy, Duplicate, and Delete actions were always disabled. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where nested elements without their own edit page, such as addresses, couldn’t be opened from their cards. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where nested element slideouts for element types other than entries always used the legacy editor. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where addresses couldn’t be saved from an element editor slideout. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where element actions couldn’t find a user’s addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
+- Fixed a bug where plugins’ control panel nav items weren’t showing their icons. ([#19794](https://github.com/craftcms/cms/pull/19794))
+- Fixed a bug where `craft:up` could fail on installs that didn’t have a migrations table yet. ([#19796](https://github.com/craftcms/cms/pull/19796))
+- Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
 
-## 5.0.0-alpha.3 - 2023-12-21
+## 6.0.0-alpha.19 - 2026-10-01
 
-- Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
-- Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
-- Matrix and Addresses fields now remember their view settings between page loads.
-- JSON field values in Craft 4 will now get decoded when updating to Craft 5, for fields whose `dbType()` method returns an associative array or `yii\db\Schema::TYPE_JSON`. ([#14017](https://github.com/craftcms/cms/discussions/14017))
-- Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`).
-- `craft\elements\NestedElementMananger` instances used by custom fields must now be configured with a `field` key set to the field instance, rather than `fieldHandle`.
-- Deprecated `craft\events\SearchEvent::$siteId`.
-- Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
-- Fixed an error that could occur when updating to Craft 5. ([#14067](https://github.com/craftcms/cms/issues/14067))
-- Fixed a bug where various features weren’t working. ([#14062](https://github.com/craftcms/cms/pull/14062))
-- Fixed a bug where Matrix and Addresses fields were overriding each others’ view states. ([#13976](https://github.com/craftcms/cms/pull/13976))
-- Fixed an error that could occur when updating to Craft 5, if any Matrix fields hadn’t been saved since before Craft 3.2. ([#14061](https://github.com/craftcms/cms/issues/14061))
-- Fixed a bug where globalized Matrix sub-fields could have the same handle as existing global fields, when updating to Craft 5. ([#14052](https://github.com/craftcms/cms/issues/14052))
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
-## 5.0.0-alpha.2 - 2023-12-15
+### Control Panel UI
+- Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
+- Control panel success, notice, and error messages now go through a single message system instead of several different ones, and are no longer shown twice or lost between pages.
+- Messages now stack, newest first, and spread out on hover or focus. A “Skip to messages” link reaches them from the keyboard. They can be swiped away, errors and messages with actions stay until dismissed, and errors are announced to screen readers immediately.
+- Improved element index searches to update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Added support for controller actions and named Laravel routes in section and Matrix site settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
+- Rearranged and cleaned up the control panel’s page shell layout, with improved mobile support. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Control panel pages can now set `contentMaxWidth` and `centerContent` options. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Added close buttons to element detail tabs. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Element editor slideouts now have action menus and “Open in a new tab” buttons. ([#19748](https://github.com/craftcms/cms/pull/19748))
+- Removed the legacy control panel stylesheet from Inertia pages. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- `ElementEditor` now supports rendering as a full page in addition to a slideout. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Improved the overall accessibility of the control panel. ([#19699](https://github.com/craftcms/cms/pull/19699))
+- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520), [#19749](https://github.com/craftcms/cms/pull/19749))
+- Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
+- Improved the styling for collapsible field groups.
+- Improved the layout and dark mode styling of user edit screens. ([#19765](https://github.com/craftcms/cms/pull/19765))
+- Improved the styling of control panel tables and lightswitches. ([#19766](https://github.com/craftcms/cms/pull/19766))
+- Improved disabled secondary form actions with explanatory tooltips.
+- The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
+- Added reusable server-built form modals and the `formModal` element action behavior. ([#19768](https://github.com/craftcms/cms/pull/19768))
+- Added optional `sidebarForm` and `metadataHtml` props to `Form.vue` pages, allowing sidebar controls to be saved alongside the main form. ([#19778](https://github.com/craftcms/cms/pull/19778))
+- Added support for `CraftCms\Cms\Http\Responses\CpScreenResponse::addAltAction()` submissions on Inertia Form pages and slideouts. ([#19779](https://github.com/craftcms/cms/pull/19779))
+- Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
+- Added the `placeholder` property to `<craft-thumbnail>`, for an image to show while the thumbnail loads. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Form\Controls\Combobox\CreateOption` for creating and selecting resources in comboboxes, including user photo volumes. ([#19777](https://github.com/craftcms/cms/pull/19777))
+- Added the `--c-thumbnail-image-radius` custom property to `<craft-thumbnail>`, and its other custom properties can now be set on an ancestor. ([#19758](https://github.com/craftcms/cms/pull/19758))
+- Content in `<craft-chip>`’s `prefix` slot no longer replaces its thumbnail, icon, and status; it’s shown before them. ([#19758](https://github.com/craftcms/cms/pull/19758))
+- Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
+- Added `CraftCms\Cms\Form\Nodes\Callout::padding()`, supported by PHP and Vue form rendering. ([#19773](https://github.com/craftcms/cms/pull/19773))
+- Restored Score sorting for element index searches and preserved previous sort fields as tie-breakers. ([#19731](https://github.com/craftcms/cms/pull/19731))
 
-- Added `craft\helpers\Cp::moneyFieldHtml()`.
-- Added `craft\helpers\Cp::moneyInputHtml()`.
-- Renamed `craft\services\Addresses::saveLayout()` to `saveFieldLayout()`.
-- `craft\base\Field::valueSql()` now accepts a `$key` argument. ([#14040](https://github.com/craftcms/cms/discussions/14040))
-- `craft\base\FieldInterface::getValueSql()` now accepts a `$key` argument. ([#14040](https://github.com/craftcms/cms/discussions/14040))
-- `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
-- `craft\web\View::setNamespace()` is no longer strict about namespaces matching HTML `id` attribute rules. ([#13943](https://github.com/craftcms/cms/issues/13943))
-- Fixed a bug where custom fields’ element query params weren’t getting applied for more than one global field with the referenced handle. ([#13983](https://github.com/craftcms/cms/pull/13983))
-- Fixed a bug where Date fields with “Show Time Zone” enabled weren’t displaying the correct time.
-- Fixed an error that occurred when updating to Craft 5 if there were any soft-deleted entry types. ([#14039](https://github.com/craftcms/cms/issues/14039))
-- Fixed an error that occurred when updating to Craft 5 if there were any entry types with duplicate handles. ([#14043](https://github.com/craftcms/cms/issues/14043))
+### Assets
+- Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
+- Added support for upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API. ([#19604](https://github.com/craftcms/cms/pull/19604))
+- Added background uploads in the Assets index that continue during Control Panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
+- The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
+- Added `crop`, `fit`, `stretch`, and `letterbox` modes to `craft-thumbnail`, and removed size-dependent asset thumbnail cropping.
+- Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
+- Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color and a grid of the average colors of its regions. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Asset edit sidebars now fill the space around image previews with a gradient between the colors of the image’s left and right edges. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Control panel uploads now sample image colors in the browser and send them along, so the server doesn’t need to sample the file itself. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- `<img>` tags returned by `CraftCms\Cms\Asset\Elements\Asset::getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates and the `blurhash` field in GraphQL queries. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))
+- Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
+- Added `CraftCms\Cms\Asset\Elements\Asset::$colors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getBlurhash()`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getPlaceholderDataUrl()`. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$uploadColors`. ([#19751](https://github.com/craftcms/cms/pull/19751))
+- Added `CraftCms\Cms\Image\Blurhash`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\ColorGrid`. ([#19755](https://github.com/craftcms/cms/pull/19755))
+- Added `CraftCms\Cms\Image\Data\ImageColors`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Added `CraftCms\Cms\Image\Images::colors()`. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750))
+- Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
+- Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
 
-## 5.0.0-alpha.1 - 2023-12-13
+### Conditions
+- Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
+- Removed the “Show unpermitted files” and “Allowed File Types” settings from Assets, Link, and Markdown fields, in favor of “Viewable” and “File Type” condition rules in the “Selectable Assets Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
+- Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
+- Added `CraftCms\Cms\Condition\BaseConditionGroup`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilderPayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilderRenderer`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilder`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionRulePayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionComponentInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionGroupInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionInterface::createGroup()`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getForm()`, which replaces `getHtml()`. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::isSelectableForCondition()`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Condition\Enums\GroupOperator`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface`, which element condition rules that modify element queries should now implement. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Element\Conditions\ElementCondition`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Removed `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getHtml()`. `getForm()` must be implemented instead. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 
-### Content Management
-- Redesigned the global breadcrumb bar to include quick links to other areas of the control panel, page context menus, and action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
-- All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
-- Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
-- Element indexes now support inline editing for some custom field values.
-- Element chips and cards now include quick action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
-- Entry edit pages now include quick links to other sections’ index sources.
-- Asset edit pages now include quick links to other volumes’ index sources.
-- Assets’ Alternative Text fields are now translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
-- Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
-- Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
-- Selected elements within relational fields now include a dedicated drag handle.
-- Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” quick action, or the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut, can be used instead.
-- Improved the styling of element chips.
-- Improved checkbox-style deselection behavior for control panel items, to account for double-clicks.
-- Table views are no longer available for element indexes on mobile.
-- Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
+### Fields
+- Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
+- Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
+- Restored Matrix fields’ configured Cards and Cards Grid view modes in element forms.
+- Restored Matrix fields’ configured Index view mode in element forms.
+- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
+- Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
+- Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
 
-### User Management
-- Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.
-- Added a “Require Two-Step Verification” system setting, which can be set to “All users”, “Admins”, and individual user groups.
-- Added passkey support (authentication via fingerprint or facial recognition).
-- User account settings are now split into “Profile”, “Addresses”, and “Permissions” pages, plus “Password & Verification” and “Passkeys” pages when editing one’s own account.
-- Users’ “Username”, “Full Name”, “Photo”, and “Email” native fields can now be managed via the user field layout, and now show up alongside custom fields within user slideouts.
-- Users with more than 50 addresses will now display them as a paginated element index.
-- New users are now created in an unpublished draft state, so adding a user photo, addresses, and permissions can each be done before the user is fully saved.
-- The login page now includes a “Sign in with a passkey” button.
-- The login modal and elevated session modal have been redesigned to be consistent with the login page.
-- User sessions are now treated as elevated immediately after login, per the `elevatedSessionDuration` config setting.
+### Entries & Sections
+- Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
+- Entry types’ Color fields now show a dropdown menu. ([#19760](https://github.com/craftcms/cms/pull/19760))
 
-### Accessibility
-- Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
-- Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
-- Element selection modals now show checkboxes for selectable elements.
-- Elements within relational fields are no longer focusable at the container level.
-- Relational fields now use the proper list semantics.
-- Improved the accessibility of the login page, login modal, and elevated session modal.
+### Workflows
+- Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Changes to enabled entries in sections with a workflow are now saved as drafts, which must be submitted for review and approved by each workflow stage before they can be applied. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the “User Review” workflow stage type, which supports per-group approval requirements, carried-over approvals, change requests, and email notifications for reviewers. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added a “Workflow” element details tab, for submitting drafts for review, reviewing them, and viewing workflow activity history. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface` and `CraftCms\Cms\Workflow\Stages\WorkflowStage`, for creating custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\WorkflowStageTypes`, for registering custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowableInterface`, which element types can implement to support workflows. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Workflows` and `CraftCms\Cms\Support\Facades\Workflows`. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the `CraftCms\Cms\Workflow\Events\WorkflowTransitioning`, `WorkflowTransitioned`, and `WorkflowCommented` events. ([#19667](https://github.com/craftcms/cms/pull/19667))
 
-### Administration
-- Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
-- Field layouts can now choose to include previewable fields’ content in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
-- Field layouts can now override custom fields’ handles.
-- Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
-- Entry types are now managed independently of sections.
-- Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
-- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
-- Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
-- Matrix fields now have “Entry URI Format” and “Template” settings for each site.
-- Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
-- The address field layout is now accessed via **Settings** → **Addresses**.
-- Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
-- Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
-- Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
-- Removed the concept of field groups.
-- `entrify/*` commands now ask if an entry type already exists for the section.
-- The `resave/entries` command now accepts a `--field` option.
-- The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
-- Removed the `resave/matrix-blocks` command.
+### Elements
+- Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
+- Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
+- Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
+- Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
 
-### Development
-- Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
-- Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
-- Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
-- Element queries now have an `inBulkOp` param, which limits the results to elements which were involved in a bulk operation. ([#14032](https://github.com/craftcms/cms/pull/14032))
-- Address queries now have `addressLine1`, `addressLine2`, `administrativeArea`, `countryCode`, `dependentLocality`, `firstName`, `fullName`, `lastName`, `locality`, `organizationTaxId`, `organization`, `postalCode`, and `sortingCode` params.
-- Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
-- Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
-- Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
-- Added the `|firstWhere` and `|flatten` Twig filters.
-- Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
-- Controller actions which require a `POST` request will now respond with a 405 error code if another request method is used. ([#13397](https://github.com/craftcms/cms/discussions/13397))
+### Users & Auth
+- Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
+- Added the `authGuard` and `authPasswordBroker` general config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 
-### Extensibility
-- Elements now store their content in an `elements_sites.content` column as JSON, rather than across multiple columns in a `content` table. ([#2009](https://github.com/craftcms/cms/issues/2009), [#4308](https://github.com/craftcms/cms/issues/4308), [#7221](https://github.com/craftcms/cms/issues/7221), [#7750](https://github.com/craftcms/cms/issues/7750), [#12954](https://github.com/craftcms/cms/issues/12954))
-- Slugs are no longer required on elements that don’t have a URI format.
-- Element types’ `fieldLayouts()` and `defineFieldLayouts()` methods’ `$source` arguments must now accept `null` values.
-- All element types can now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`), by implementing `craft\base\FieldLayoutProviderInterface` on the field layout provider class, and ensuring that `defineFieldLayouts()` is returning field layouts via their providers.
-- All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
-- Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
-- Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
-- Added the `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, and `siteMenuItems()` global functions for control panel templates.
-- The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
-- The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
-- Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
-- Added `craft\auth\methods\AuthMethodInterface`.
-- Added `craft\auth\methods\BaseAuthMethod`.
-- Added `craft\auth\methods\RecoveryCodes`.
-- Added `craft\auth\methods\TOTP`.
-- Added `craft\auth\passkeys\CredentialRepository`.
-- Added `craft\base\ApplicationTrait::getAuth()`.
-- Added `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`.
-- Added `craft\base\Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML`.
-- Added `craft\base\Element::crumbs()`.
-- Added `craft\base\Element::destructiveActionMenuItems()`.
-- Added `craft\base\Element::inlineAttributeInputHtml()`.
-- Added `craft\base\Element::safeActionMenuItems()`.
-- Added `craft\base\Element::shouldValidateTitle()`.
-- Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
-- Added `craft\base\ElementInterface::getActionMenuItems()`.
-- Added `craft\base\ElementInterface::getCardBodyHtml()`.
-- Added `craft\base\ElementInterface::getChipLabelHtml()`.
-- Added `craft\base\ElementInterface::getCrumbs()`.
-- Added `craft\base\ElementInterface::getInlineAttributeInputHtml()`.
-- Added `craft\base\ElementInterface::hasDrafts()`.
-- Added `craft\base\ElementInterface::hasThumbs()`.
-- Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
-- Added `craft\base\ElementTrait::$deletedWithOwner`.
-- Added `craft\base\ElementTrait::$eagerLoadInfo`.
-- Added `craft\base\ElementTrait::$elementQueryResult`.
-- Added `craft\base\ElementTrait::$forceSave`.
-- Added `craft\base\ElementTrait::$propagatingFrom`.
-- Added `craft\base\Field::valueSql()`.
-- Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
-- Added `craft\base\FieldInterface::getValueSql()`.
-- Added `craft\base\FieldInterface::isMultiInstance()`.
-- Added `craft\base\FieldInterface::queryCondition()`, which accepts an element query param value and returns the corresponding query condition.
-- Added `craft\base\FieldLayoutElement::isMultiInstance()`.
-- Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
-- Added `craft\base\FieldTrait::$layoutElement`.
-- Added `craft\base\InlineEditableFieldInterface`.
-- Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
-- Added `craft\base\NestedElementTrait`.
-- Added `craft\base\ThumbableFieldInterface`.
-- Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
-- Added `craft\behaviors\EventBehavior`.
-- Added `craft\controllers\EntryTypesController`.
-- Added `craft\db\Connection::getIsMaria()`.
-- Added `craft\db\QueryParam`.
-- Added `craft\db\Table::ELEMENTS_OWNERS`.
-- Added `craft\db\Table::SECTIONS_ENTRYTYPES`.
-- Added `craft\db\mysql\ColumnSchema::$collation`.
-- Added `craft\db\mysql\QueryBuilder::jsonContains()`.
-- Added `craft\db\mysql\QueryBuilder::jsonExtract()`.
-- Added `craft\db\mysql\Schema::supportsMb4()`.
-- Added `craft\db\pgsql\QueryBuilder::jsonContains()`.
-- Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
-- Added `craft\db\pgsql\Schema::supportsMb4()`.
-- Added `craft\elements\Address::GQL_TYPE_NAME`.
-- Added `craft\elements\Asset::gqlTypeName()`.
-- Added `craft\elements\Category::gqlTypeName()`.
-- Added `craft\elements\Entry::$collapsed`.
-- Added `craft\elements\Entry::$dirty`.
-- Added `craft\elements\Entry::gqlTypeName()`.
-- Added `craft\elements\Entry::setOwner()`.
-- Added `craft\elements\NestedElementManager`.
-- Added `craft\elements\Tag::gqlTypeName()`.
-- Added `craft\elements\User::GQL_TYPE_NAME`.
-- Added `craft\elements\User::authenticateWithPasskey()`.
-- Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
-- Added `craft\elements\conditions\addresses\AddressLine1ConditionRule`.
-- Added `craft\elements\conditions\addresses\AddressLine2ConditionRule`.
-- Added `craft\elements\conditions\addresses\AdministrativeAreaConditionRule`.
-- Added `craft\elements\conditions\addresses\CountryConditionRule`.
-- Added `craft\elements\conditions\addresses\DependentLocalityConditionRule`.
-- Added `craft\elements\conditions\addresses\FullNameConditionRule`.
-- Added `craft\elements\conditions\addresses\LocalityConditionRule`.
-- Added `craft\elements\conditions\addresses\OrganizationConditionRule`.
-- Added `craft\elements\conditions\addresses\OrganizationTaxIdConditionRule`.
-- Added `craft\elements\conditions\addresses\PostalCodeConditionRule`.
-- Added `craft\elements\conditions\addresses\SortingCodeConditionRule`.
-- Added `craft\elements\conditions\entries\MatrixFieldConditionRule`.
-- Added `craft\elements\db\EagerLoadInfo`.
-- Added `craft\elements\db\EagerLoadPlan::$lazy`.
-- Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
-- Added `craft\elements\db\ElementQuery::$eagerLoadHandle`.
-- Added `craft\elements\db\ElementQueryInterface::eagerly()`.
-- Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`.
-- Added `craft\elements\db\ElementQueryInterface::prepForEagerLoading()`.
-- Added `craft\elements\db\ElementQueryInterface::wasCountEagerLoaded()`.
-- Added `craft\elements\db\ElementQueryInterface::wasEagerLoaded()`.
-- Added `craft\enums\AttributeStatus`.
-- Added `craft\enums\ElementIndexViewMode`.
-- Added `craft\enums\PropagationMethod`.
-- Added `craft\enums\TimePeriod`.
-- Added `craft\events\BulkElementsEvent`.
-- Added `craft\events\BulkOpEvent`. ([#14032](https://github.com/craftcms/cms/pull/14032))
-- Added `craft\events\DefineEntryTypesForFieldEvent`.
-- Added `craft\events\DefineFieldHtmlEvent::$inline`.
-- Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
-- Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
-- Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
-- Added `craft\fieldlayoutelements\BaseField::previewable()`.
-- Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
-- Added `craft\fieldlayoutelements\BaseField::thumbable()`.
-- Added `craft\fieldlayoutelements\CustomField::$handle`.
-- Added `craft\fieldlayoutelements\TextField::inputAttributes()`.
-- Added `craft\fieldlayoutelements\users\EmailField`.
-- Added `craft\fieldlayoutelements\users\FullNameField`.
-- Added `craft\fieldlayoutelements\users\PhotoField`.
-- Added `craft\fieldlayoutelements\users\UsernameField`.
-- Added `craft\fields\Addresses`.
-- Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
-- Added `craft\fields\Matrix::getEntryTypes()`.
-- Added `craft\fields\Matrix::getEntryTypesForField()`.
-- Added `craft\fields\Matrix::getSupportedSitesForElement()`.
-- Added `craft\fields\Matrix::setEntryTypes()`.
-- Added `craft\fields\Matrix::supportedSiteIds()`.
-- Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
-- Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
-- Added `craft\helpers\App::isWindows()`.
-- Added `craft\helpers\App::silence()`.
-- Added `craft\helpers\ArrayHelper::lastValue()`.
-- Added `craft\helpers\Cp::checkboxGroupFieldHtml()`.
-- Added `craft\helpers\Cp::checkboxGroupHtml()`.
-- Added `craft\helpers\Cp::disclosureMenu()`.
-- Added `craft\helpers\Cp::elementCardHtml()`.
-- Added `craft\helpers\Cp::elementChipHtml()`.
-- Added `craft\helpers\Cp::elementIndexHtml()`.
-- Added `craft\helpers\Cp::normalizeMenuItems()`.
-- Added `craft\helpers\Cp::siteMenuItems()`.
-- Added `craft\helpers\Db::defaultCollation()`.
-- Added `craft\helpers\Db::prepareForJsonColumn()`.
-- Added `craft\helpers\ElementHelper::actionConfig()`.
-- Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
-- Added `craft\helpers\ElementHelper::elementEditorUrl()`.
-- Added `craft\helpers\ElementHelper::rootElementIfCanonical()`.
-- Added `craft\helpers\Gql::getSchemaContainedSections()`.
-- Added `craft\helpers\Json::detectIndent()`.
-- Added `craft\helpers\Json::encodeToFile()`.
-- Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
-- Added `craft\i18n\Locale::$aliasOf`.
-- Added `craft\i18n\Locale::setDisplayName()`.
-- Added `craft\migrations\BaseContentRefactorMigration`.
-- Added `craft\models\FieldLayout::getCardBodyFields()`.
-- Added `craft\models\FieldLayout::getElementByUid()`.
-- Added `craft\models\FieldLayout::getFieldById()`.
-- Added `craft\models\FieldLayout::getThumbField()`.
-- Added `craft\models\FsListing::getAdjustedUri()`.
-- Added `craft\models\Section::getCpEditUrl()`.
-- Added `craft\models\Volume::$altTranslationKeyFormat`.
-- Added `craft\models\Volume::$altTranslationMethod`.
-- Added `craft\models\Volume::getSubpath()`.
-- Added `craft\models\Volume::setSubpath()`.
-- Added `craft\queue\BaseBatchedElementJob`. ([#14032](https://github.com/craftcms/cms/pull/14032))
-- Added `craft\queue\BaseBatchedJob::after()`.
-- Added `craft\queue\BaseBatchedJob::afterBatch()`.
-- Added `craft\queue\BaseBatchedJob::before()`.
-- Added `craft\queue\BaseBatchedJob::beforeBatch()`.
-- Added `craft\services\Auth`.
-- Added `craft\services\Entries::refreshEntryTypes()`.
-- Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
-- Added `craft\services\Fields::getAllLayouts()`.
-- Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
-- Added `craft\services\Gql::defineContentArgumentsForFields()`.
-- Added `craft\services\Gql::getOrSetContentArguments()`.
-- Added `craft\services\ProjectConfig::find()`.
-- Added `craft\services\ProjectConfig::flush()`.
-- Added `craft\services\ProjectConfig::writeYamlFiles()`.
-- Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
-- Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
-- Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
-- Added `craft\web\CpScreenResponseBehavior::$site`.
-- Added `craft\web\CpScreenResponseBehavior::actionMenuItems()`.
-- Added `craft\web\CpScreenResponseBehavior::contextMenuItems()`.
-- Added `craft\web\CpScreenResponseBehavior::selectableSites()`.
-- Added `craft\web\CpScreenResponseBehavior::site()`.
-- Added `craft\web\Request::getQueryParamsWithoutPath()`.
-- Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
-- All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
-- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it.
-- Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
-- Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
-- Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
-- Renamed `craft\base\Element::getThumbAlt()` to `thumbAlt()` and made it protected.
-- Renamed `craft\base\Element::getThumbUrl()` to `thumbUrl()` and made it protected.
-- Renamed `craft\base\Element::tableAttributeHtml()` to `attributeHtml()`.
-- Renamed `craft\base\ElementInterface::getTableAttributeHtml()` to `getAttributeHtml()`.
-- Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
-- Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
-- Renamed `craft\base\conditions\BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES` to `EVENT_REGISTER_CONDITION_RULES`.
-- Renamed `craft\base\conditions\BaseCondition::conditionRuleTypes()` to `selectableConditionRules()`.
-- Renamed `craft\events\BatchElementActionEvent` to `MultiElementActionEvent`.
-- Renamed `craft\events\RegisterConditionRuleTypesEvent` to `RegisterConditionRulesEvent`, and its `$conditionRuleTypes` property has been renamed to `$conditionRules`.
-- Renamed `craft\events\SetElementTableAttributeHtmlEvent` to `DefineAttributeHtmlEvent`.
-- Renamed `craft\fields\BaseRelationField::tableAttributeHtml()` to `previewHtml()`, and it now accepts an `ElementCollection` argument, rather than `Collection`.
-- Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
-- Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
-- Renamed `craft\helpers\MailerHelper\EVENT_REGISTER_MAILER_TRANSPORT_TYPES` to `EVENT_REGISTER_MAILER_TRANSPORTS`.
-- Renamed `craft\services\Addresses::getLayout()` to `getFieldLayout()`.
-- Renamed `craft\services\Utilities::EVENT_REGISTER_UTILITY_TYPES` to `EVENT_REGISTER_UTILITIES`.
-- Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- Renamed `craft\web\CpScreenResponseBehavior::$content()` and `content()` to `$contentHtml` and `contentHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- Renamed `craft\web\CpScreenResponseBehavior::$contextMenu()` and `contextMenu()` to `$contextMenuHtml` and `contextMenuHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
-- `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
-- `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
-- `craft\base\ElementInterface::findSource()` no longer needs to specify a default value for the `context` argument.
-- `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
-- `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
-- `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
-- `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
-- `craft\base\ElementInterface::setParent()` no longer needs to specify a default value for the `parent` argument.
-- `craft\base\ElementInterface::setRevisionCreatorId()` no longer needs to specify a default value for the `creatorId` argument.
-- `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
-- `craft\base\Field::inputHtml()` now has an `$inline` argument.
-- `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
-- `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
-- `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
-- `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
-- `craft\elements\User::getAddresses()` now returns a collection.
-- `craft\enums\LicenseKeyStatus` is now an enum.
-- `craft\events\AuthenticateUserEvent::$password` can now be null, if the user is being authenticated with a passkey.
-- `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
-- `craft\fields\Matrix::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
-- `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
-- `craft\helpers\Cp::fieldHtml()` now supports a `labelExtra` config value.
-- `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
-- `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
-- `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
-- `craft\helpers\StringHelper::toString()` now supports backed enums.
-- `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
-- `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
-- `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
-- `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
-- `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
-- `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
-- `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
-- `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
-- `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
-- `craft\services\Users::activateUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::deactivateUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::removeCredentials()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::shunMessageForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::suspendUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::unlockUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::unshunMessageForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::unsuspendUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\services\Users::verifyEmailForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\web\View::setNamespace()` now throws an `InvalidArgumentException` for namespaces that don’t confirm to HTML `id` attribute rules (possibly followed by sets of properly-formatted strings wrapped in square brackets). ([#13943](https://github.com/craftcms/cms/issues/13943))
-- Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
-- Deprecated the `cp.elements.element` control panel template hook.
-- Deprecated `craft\events\DefineElementInnerHtmlEvent`.
-- Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
-- Removed the `_includes/revisionmenu.twig` control panel template.
-- Removed `craft\base\ApplicationTrait::getMatrix()`.
-- Removed `craft\base\Element::$contentId`.
-- Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
-- Removed `craft\base\Element::ATTR_STATUS_OUTDATED`. `craft\enums\AttributeStatus::Outdated` should be used instead.
-- Removed `craft\base\ElementInterface::getContentTable()`.
-- Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
-- Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.
-- Removed `craft\base\ElementInterface::gqlTypeNameByContext()`.
-- Removed `craft\base\ElementInterface::hasContent()`.
-- Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
-- Removed `craft\base\FieldInterface::getGroup()`.
-- Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
-- Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `queryCondition()`.
-- Removed `craft\base\FieldTrait::$groupId`.
-- Removed `craft\base\FieldTrait::$layoutId`.
-- Removed `craft\base\FieldTrait::$sortOrder`.
-- Removed `craft\base\FieldTrait::$tabId`.
-- Removed `craft\base\conditions\ConditionInterface::getConditionRuleTypes()`.
-- Removed `craft\controllers\Sections::actionDeleteEntryType()`.
-- Removed `craft\controllers\Sections::actionEditEntryType()`.
-- Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
-- Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
-- Removed `craft\controllers\Sections::actionSaveEntryType()`.
-- Removed `craft\controllers\UsersController::EVENT_REGISTER_USER_ACTIONS`. `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS` should be used instead.
-- Removed `craft\db\Table::FIELDGROUPS`.
-- Removed `craft\elements\MatrixBlock`.
-- Removed `craft\elements\db\ElementQuery::$contentTable`.
-- Removed `craft\elements\db\MatrixBlockQuery`.
-- Removed `craft\enums\PatchManifestFileAction`.
-- Removed `craft\enums\PeriodType`.
-- Removed `craft\enums\PluginUpdateStatus`.
-- Removed `craft\enums\VersionUpdateStatus`.
-- Removed `craft\errors\MatrixBlockTypeNotFoundException`.
-- Removed `craft\events\BlockTypesEvent`.
-- Removed `craft\events\FieldGroupEvent`.
-- Removed `craft\events\RegisterUserActionsEvent`.
-- Removed `craft\fieldlayoutelements\users\AddressesField`.
-- Removed `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`.
-- Removed `craft\fields\Matrix::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
-- Removed `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
-- Removed `craft\fields\Matrix::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
-- Removed `craft\fields\Matrix::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
-- Removed `craft\fields\Matrix::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
-- Removed `craft\fields\Matrix::contentTable`.
-- Removed `craft\fields\Matrix::getBlockTypeFields()`.
-- Removed `craft\fields\Matrix::getBlockTypes()`.
-- Removed `craft\fields\Matrix::setBlockTypes()`.
-- Removed `craft\gql\arguments\elements\MatrixBlock`.
-- Removed `craft\gql\interfaces\elements\MatrixBlock`.
-- Removed `craft\gql\resolvers\elements\MatrixBlock`.
-- Removed `craft\gql\types\elements\MatrixBlock`.
-- Removed `craft\gql\types\generators\MatrixBlockType`.
-- Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
-- Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
-- Removed `craft\helpers\ElementHelper::fieldColumn()`.
-- Removed `craft\helpers\ElementHelper::fieldColumnFromField()`.
-- Removed `craft\helpers\FieldHelper`.
-- Removed `craft\helpers\Gql::canMutateEntries()`.
-- Removed `craft\models\EntryType::$sectionId`.
-- Removed `craft\models\EntryType::$sortOrder`.
-- Removed `craft\models\EntryType::getSection()`.
-- Removed `craft\models\FieldGroup`.
-- Removed `craft\models\MatrixBlockType`.
-- Removed `craft\models\Section::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
-- Removed `craft\models\Section::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
-- Removed `craft\models\Section::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
-- Removed `craft\models\Section::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
-- Removed `craft\models\Section::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
-- Removed `craft\records\EntryType::getSection()`.
-- Removed `craft\records\Field::getGroup()`.
-- Removed `craft\records\Field::getOldColumnSuffix()`.
-- Removed `craft\records\FieldGroup`.
-- Removed `craft\records\FieldLayout::getFields()`.
-- Removed `craft\records\FieldLayout::getTabs()`.
-- Removed `craft\records\FieldLayoutField`.
-- Removed `craft\records\FieldLayoutTab`.
-- Removed `craft\records\MatrixBlockType`.
-- Removed `craft\records\MatrixBlock`.
-- Removed `craft\services\Content`.
-- Removed `craft\services\Elements::$duplicatedElementIds`.
-- Removed `craft\services\Elements::$duplicatedElementSourceIds`.
-- Removed `craft\services\Fields::EVENT_AFTER_DELETE_FIELD_GROUP`.
-- Removed `craft\services\Fields::EVENT_AFTER_SAVE_FIELD_GROUP`.
-- Removed `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
-- Removed `craft\services\Fields::EVENT_BEFORE_DELETE_FIELD_GROUP`.
-- Removed `craft\services\Fields::EVENT_BEFORE_SAVE_FIELD_GROUP`.
-- Removed `craft\services\Fields::deleteGroup()`.
-- Removed `craft\services\Fields::deleteGroupById()`.
-- Removed `craft\services\Fields::getAllGroups()`.
-- Removed `craft\services\Fields::getFieldIdsByLayoutIds()`.
-- Removed `craft\services\Fields::getFieldsByGroupId()`.
-- Removed `craft\services\Fields::getGroupById()`.
-- Removed `craft\services\Fields::getGroupByUid()`.
-- Removed `craft\services\Fields::getLayoutTabsById()`.
-- Removed `craft\services\Fields::handleChangedGroup()`.
-- Removed `craft\services\Fields::handleDeletedGroup()`.
-- Removed `craft\services\Fields::saveGroup()`.
-- Removed `craft\services\Fields::updateColumn()`.
-- Removed `craft\services\Matrix`.
-- Removed `craft\services\Plugins::setPluginLicenseKeyStatus()`.
-- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
-- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
-- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
-- Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
-- Removed `craft\services\Sections::reorderEntryTypes()`.
-- Removed `craft\web\CpScreenResponseBehavior::$contextMenuHtml`. `$contextMenuItems` should be used instead.
-- Removed `craft\web\CpScreenResponseBehavior::contextMenuHtml()`. `contextMenuItems()` should be used instead.
-- Removed `craft\web\CpScreenResponseBehavior::contextMenuTemplate()`. `contextMenuItems()` should be used instead.
-- Removed `craft\web\User::startElevatedSession()`. `login()` should be used instead.
-- Added `Craft.BaseElementSelectInput::defineElementActions()`.
-- Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
-- Added `Craft.CP::showSiteCrumbMenuItem()`.
-- Added `Craft.CP::updateContext()`.
-- Added `Garnish.DisclosureMenu::addGroup()`.
-- Added `Garnish.DisclosureMenu::addHr()`.
-- Added `Garnish.DisclosureMenu::addItem()`.
-- Added `Garnish.DisclosureMenu::createItem()`.
-- Added `Garnish.DisclosureMenu::getFirstDestructiveGroup()`.
-- Added `Garnish.DisclosureMenu::isPadded()`.
-- `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
+### Filesystems
+- Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Added `CraftCms\Cms\Asset\Models\Volume::$hasUrls`, which determines whether the volume’s assets have public URLs. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Added `CraftCms\Cms\Config\GeneralConfig::$uploadSessionDisk` and `getUploadSessionDisk()`, which determine the disk used to stage upload sessions. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Renamed `CraftCms\Cms\Config\GeneralConfig::$tempAssetUploadFs` to `$tempAssetUploadDisk`, and `getTempAssetUploadFs()` to `getTempAssetUploadDisk()`, which now reference a Laravel filesystem disk exclusively. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Renamed `CraftCms\Cms\Cp\SelectOptions::getFsOptions()` to `getDiskOptions()`, which now returns Laravel filesystem disk options exclusively. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Asset\Assets::getTempAssetUploadFs()` and `CraftCms\Cms\Asset\AssetsHelper::isTempUploadFs()`. `Assets::getTempAssetUploadDisk()` should be used instead, which now returns a Laravel filesystem disk. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Cp\Components\FilesystemSelect` and `CraftCms\Cms\Form\Controls\FilesystemSelect`. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Filesystem\Filesystems`, `FilesystemTypes`, `Contracts\FsInterface`, `Filesystems\Filesystem` (and its `DiskFilesystem`, `Local`, `MissingFs`, and `Temp` implementations), `Resources\FsResource`, `Events\FilesystemRenamed`, and `CraftCms\Cms\Support\Facades\Filesystems`. Laravel filesystem disks should be configured and referenced directly instead; Craft filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Http\Controllers\Settings\FilesystemsController` and `CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel`, along with the Filesystems control panel settings page. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Plugin\Concerns\HasFilesystemTypes`. Plugins can no longer register custom Craft filesystem types. ([#19650](https://github.com/craftcms/cms/pull/19650))
+
+### Plugins & Extensibility
+- Added `CraftCms\Cms\Form\Controls\Text::suffix()` for display-only suffix text in PHP and Vue form controls. ([#19770](https://github.com/craftcms/cms/pull/19770))
+- Added `CraftCms\Cms\Element\Data\ElementSiteSettings`, the shared base for element URI and route settings. ([#19762](https://github.com/craftcms/cms/pull/19762))
+- Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added `CraftCms\Cms\Form\Nodes\Group::expanded()`, allowing collapsible section groups to start expanded in Vue and HTML forms. ([#19772](https://github.com/craftcms/cms/pull/19772))
+- Added `CraftCms\Cms\Route\CurrentElement`, a contextual attribute for injecting the matched element into controller actions and route closures. ([#19762](https://github.com/craftcms/cms/pull/19762))
+- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added `CraftCms\Cms\Support\Url::stripCpTrigger()`. ([#19724](https://github.com/craftcms/cms/pull/19724))
+- `CraftCms\Cms\Support\Url::removeParam()` now accepts an array of param names. ([#19724](https://github.com/craftcms/cms/pull/19724))
+- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Removed `CraftCms\Cms\Support\Url::baseUrl()`, `cpHost()`, `encodeParams()`, `host()`, `isFullUrl()`, `removeParams()`, and `rootRelativeUrl()`. (They remain available on `craft\helpers\UrlHelper` through the Yii adapter.) ([#19724](https://github.com/craftcms/cms/pull/19724))
+- Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
+- Added `CraftCms\Cms\Support\Flash::all()`, `make()`, and `push()`, and a `$target` argument to `Flash::success()`, `error()`, and `notice()` for showing a message in an inline outlet rather than the default message display.
+- Added the `messages` Inertia shared prop, which carries every flashed control panel message with its type, settings, and id.
+- Added `useMessages()` and `useMessageOutlet()` for showing control panel messages from Vue, and the `craft-message` window event for showing them from anywhere else.
+- `asSuccess()` and `asFailure()` JSON responses now include a `messages` list on control panel requests, and `asSuccess()` no longer also flashes the message to the session for JSON responses.
+- `asFailure()` now flashes its message even when the response has validation errors.
+- Deprecated the `flash` Inertia shared prop. `messages` should be used instead.
+- Removed `useFlash()`, `useFlashMessages()`, and the `FlashMessages` Vue component. `useMessages()` should be used instead.
+- Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 
 ### System
-- Craft now requires PHP 8.2 or later.
-- Craft now requires the Symfony Filesystem component directly.
-- Craft now requires `bacon/bacon-qr-code`.
-- Craft now requires `composer/semver` directly.
-- Craft now requires `pragmarx/google2fa`.
-- Craft now requires `pragmarx/recovery`.
-- Craft now requires `web-auth/webauthn-lib`.
-- Craft no longer requires `composer/composer`.
-- New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
-- The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
-- Improved the initial page load performance for element edit pages that contain Matrix fields.
-- Improved the performance of autosaves for elements with newly-created Matrix entries.
-- Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
+- Improved performance of element queries, control panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Removed HTMX.
+- Base site URLs, including `url('')`, `siteUrl('')`, and homepage URLs, now respect the `addTrailingSlashesToUrls` config setting, so they no longer end with a trailing slash by default. The `siteUrl` Twig variable still always ends with a trailing slash. ([#19723](https://github.com/craftcms/cms/pull/19723))
+- Fixed `CraftCms\Cms\Support\Env::parse()` to preserve unknown aliases rather than throw an exception. ([#19535](https://github.com/craftcms/cms/pull/19535))
+- Fixed a bug where validating filesystem attributes could resolve `CraftCms\Cms\Filesystem\Filesystems\Filesystem::getRootUrl()`. ([#19535](https://github.com/craftcms/cms/pull/19535))
+- Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
+- Fixed a bug where `resave` and `update-statuses` commands reported skipped revisions as root element lookup errors.
+- Fixed a bug where visiting the logout path while signed out would store it as the post-login redirect, so signing in would immediately sign the user back out. ([#19551](https://github.com/craftcms/cms/pull/19551))
+- Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.
+- Fixed a bug where authenticated control panel requests to Yii2 adapter controller actions were treated as unauthenticated. ([#19556](https://github.com/craftcms/cms/pull/19556))
+- Fixed a bug where save errors using shortened field paths could fail to appear on Controls within nested Forms. ([#19565](https://github.com/craftcms/cms/pull/19565))
+- Fixed a bug where failed plugin installation or uninstallation could leave project config writable. ([#19566](https://github.com/craftcms/cms/pull/19566))
+- Fixed a bug where cached template resolution could ignore the current site, registered template roots, or lookup options. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where orphan cleanup could delete the wrong rows for composite foreign keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where deleting a site could transfer its content despite selecting the delete option. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where object templates could render through an outdated Twig environment or behave differently after caching. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where preparing Composer changes could leave `composer.json` partially modified after a failure. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where worker events or progress updates could reactivate cancelled queue jobs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cached search term normalization could use the wrong language. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested Twig namespace tags or exceptions could leave the wrong input namespace active. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed decimal rounding errors involving high-precision values, scientific notation, and negative numbers. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where generating a URL for another site could leave that site selected after an exception. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where percentage formatting could lose decimal precision during multiplication. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested cache collection could extend expiration deadlines or ignore expired dependencies. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where support request emails could omit errors encountered while preparing their attachments. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where preparing a control panel response could discard or leak an input namespace. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where screen rendering could generate action menu items twice, producing duplicate events or inconsistent action IDs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where indexing large asset volumes could exceed memory or database parameter limits. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where asset folder lookups could return stale or inconsistent results after folders were saved or deleted. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where concurrent image downloads could delete each other’s temporary files, and failed downloads could leave temporary files behind. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where loading an image transform index could lose its output format. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where asset factories could create assets and their folders in different volumes. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where Money field conditions could compare incorrect units or lose precision. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where numeric conditions could ignore zero-valued bounds. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where splitting relation criteria could discard field and source site restrictions. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cached field layouts could retain outdated custom field handles or identities. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where Link fields could lose labels and attributes during normalization or localization. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where generated field propagation could retain old element state and run during later element operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where validation errors could replace generated field handles and cause subsequent validation failures. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where JSON fields could misinterpret valid objects containing `__ERROR__` or `__VALUE__` keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where repairing a field layout UID could undo repairs to its tab and element UIDs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where field usage metadata could lose field layout UIDs and produce incorrect links or empty groups. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where queued resaves could handle null field defaults differently from inline resaves. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where duplicating an entry could apply submitted changes to the original entry. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where the first access to lazily loaded entry authors could return no authors. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where entries deleted with their entry type or section could fail to be restored with it. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where removing supported sites from a section could leave obsolete entry site data. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where sections’ site settings tables didn’t have status switches.
+- Fixed a bug where creating a section from the command line could ignore a selected existing entry type. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element queries could select the wrong site variant when requesting unique results across sites. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where bulk duplication could save partial results after a validation failure. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element indexes could select automatic sources outside their available source collection. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element indexes could discard the selected source’s status criteria. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where component overrides could affect other instances of the same component. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element query results could eager-load relations twice. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cloned element queries could use callbacks that still read criteria from the original query. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed an error that occurred when deeply duplicating descendants. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed database errors and incorrect ordering when repairing structures. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where user group metadata could be saved before permission elevation was checked. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where rejected user permission changes could leave some permissions updated. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where verification email delivery addresses could alter account identity or be lost when notifications were queued. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed inconsistent account eligibility checks when signing into the control panel with OAuth. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where named OAuth providers could overwrite each other’s configuration. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed account updates could leave in-memory account state inconsistent with persisted data. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed filesystem resolution could leave a previously generated disk available with outdated configuration. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed inconsistent plugin license statuses, issues, and trial information when reading cached metadata. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested GraphQL mutation inputs could affect how sibling inputs were normalized. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where switching GraphQL schemas could reuse types, arguments, or loaders from the previous schema. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where resetting generated GraphQL state could unnecessarily invalidate cached query results. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
+- Fixed a bug where saving project config repeatedly could persist the same changes more than once. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where project config path processing state could leak between application instances. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
+- Fixed a bug where no confirmation dialog was shown when deleting entry types and custom fields. ([#19582](https://github.com/craftcms/cms/pull/19582))
+- Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder. ([#19603](https://github.com/craftcms/cms/pull/19603))
+- Fixed a bug where field types could remain unchanged or switch to an unintended option when their combobox query was submitted with <kbd>Return</kbd>. ([#19614](https://github.com/craftcms/cms/pull/19614))
+- Fixed a bug where brand icons, including the Markdown field type icon, were not displayed in combobox options. ([#19614](https://github.com/craftcms/cms/pull/19614))
+- Fixed a bug where creating an entry type from an entry type select field opened an empty slideout. ([#19617](https://github.com/craftcms/cms/pull/19617))
+- Fixed a bug where unpaginated Inertia admin tables could show nonfunctional pagination controls. ([#19618](https://github.com/craftcms/cms/pull/19618))
+- Fixed a bug where Save and continue editing left newly created control panel items on their creation page. ([#19619](https://github.com/craftcms/cms/pull/19619))
+- Fixed a bug where the “Structure” sorting option was missing from structure element indexes. ([#19620](https://github.com/craftcms/cms/pull/19620))
+- Fixed a bug where Asset link type settings were ignored by Link and Markdown fields. ([#19623](https://github.com/craftcms/cms/pull/19623))
+- Fixed duplicate plus icons on user management actions. ([#19627](https://github.com/craftcms/cms/pull/19627))
+- Fixed a bug where Markdown fields could collapse when initialized inside hidden containers. ([#19635](https://github.com/craftcms/cms/pull/19635))
+- Fixed a bug where the account navigation sidebar was missing when editing a user. ([#19643](https://github.com/craftcms/cms/pull/19643))
+- Fixed a bug where saved drafts without canonical elements were missing from element indexes. ([#19649](https://github.com/craftcms/cms/pull/19649))
+- Fixed a bug where Matrix Index views could show content from the wrong site.
+- Fixed a bug where reopening a Matrix entry from an Index view could show its canonical content instead of the owner draft’s content.
+- Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
+- Fixed a bug where users in single-site installations could be denied access to localized elements because they lacked an unavailable site permission. ([#19666](https://github.com/craftcms/cms/pull/19666))
+- Fixed a bug where unsaved drafts could not be deleted from element indexes. ([#19668](https://github.com/craftcms/cms/pull/19668))
+- Fixed a bug where modifier-clicking or middle-clicking on some control panel links wasn’t opening the link in a new tab.
+- Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
+- Fixed an error that occurred when loading the Users index if a user belonged to a user group. ([#19673](https://github.com/craftcms/cms/pull/19673))
+- Fixed an error that could occur when rendering element table rows with strict Twig variables enabled. ([#19679](https://github.com/craftcms/cms/pull/19679))
+- Fixed an error that occurred when moving folders directly beneath an asset volume’s root folder. ([#19680](https://github.com/craftcms/cms/pull/19680))
+- Fixed a bug where folders in the Assets index couldn’t be selected, created, renamed, moved, or deleted. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where assets and folders couldn’t be moved by dragging them onto a folder in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where clicking a folder in the Assets index didn’t navigate into it or keep the breadcrumbs in sync. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index search couldn’t be expanded to include subfolders. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where <kbd>Shift</kbd>+<kbd>Space</kbd> didn’t preview the selected file in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the “Preview file” modal was unstyled.
+- Fixed a bug where clicking an asset in the Assets index didn’t open its editor. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index’s folder dialogs could render behind other overlays, lose their centering, or not focus their name field. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed multiple bugs with Table fields, including new columns moving or defaulting to Checkbox, settings rows not being draggable, and element edit forms failing when the field value was null. ([#19687](https://github.com/craftcms/cms/pull/19687))
+- Fixed a bug where combobox fields rendered through the Form API displayed their label twice. ([#19694](https://github.com/craftcms/cms/pull/19694))
+- Fixed a bug where visually-hidden labels, headings, and status messages were visible on some control panel pages.
+- Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
+- Fixed a bug where pressing <kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> in a slideout could also save the page behind it. ([#19705](https://github.com/craftcms/cms/pull/19705))
+- Fixed various bugs with Customize Sources modals. ([#19713](https://github.com/craftcms/cms/pull/19713))
+- Fixed an error that could occur when saving elements, if their field layouts still referenced legacy component classes. ([#19719](https://github.com/craftcms/cms/pull/19719))
+- Fixed an error that could occur when rendering field settings.
+- Fixed a bug where migrations that wrote to the project config had to be defensive about its `readOnly` state. ([#19726](https://github.com/craftcms/cms/pull/19726))
+- Fixed a bug where Shift-selecting a shorter range didn’t deselect items outside the new range. ([#19727](https://github.com/craftcms/cms/pull/19727))
+- Fixed a bug where select inputs could lose their selected value if their options were loaded asynchronously. ([#19728](https://github.com/craftcms/cms/pull/19728))
+- Fixed a bug where table rows could stop being draggable after their reorder handles were replaced. ([#19729](https://github.com/craftcms/cms/pull/19729))
+- Fixed a bug where plugin-provided download element actions didn’t trigger file downloads from element indexes. ([#19730](https://github.com/craftcms/cms/pull/19730))
+- Fixed a bug where asset indexing left temporary copies of remote images behind. ([#19740](https://github.com/craftcms/cms/pull/19740))
+- Fixed a bug where uploaded and replaced assets’ modification dates came from their temporary files rather than the stored files.
+- Fixed an accessibility issue where the Date, Time, and Time zone inputs within `<craft-input-date-time>` didn’t have individual accessible names. ([#19741](https://github.com/craftcms/cms/pull/19741))
+- Fixed a bug where the Delete element action reported success when some elements couldn't be deleted. ([#19743](https://github.com/craftcms/cms/pull/19743))
+- Fixed a bug where element index sort direction buttons did nothing. ([#19744](https://github.com/craftcms/cms/pull/19744))
+- Fixed an error in the Yii adapter during installation or updates when `CRAFT_SITE` or `X-Craft-Site` referenced a missing site. ([#19745](https://github.com/craftcms/cms/pull/19745))
+- Fixed a bug where the Edit and View bulk actions did nothing on element indexes. ([#19747](https://github.com/craftcms/cms/pull/19747))
+- Fixed an error that occurred when using an icon picker. ([#19752](https://github.com/craftcms/cms/issues/19752))
+- Fixed a validation error that occurred when saving an entry type with a color. ([#19753](https://github.com/craftcms/cms/issues/19753))
+- Fixed a validation error that occurred when saving a Color field with no color palette, even if “Allow custom colors” was enabled.
+- Fixed a bug where element index selection ranges could use a stale anchor after clearing selection or switching view modes. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element index searches could move keyboard focus after a page load. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals could display results from an outdated request. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element selector modals requested search results on every keystroke. ([#19754](https://github.com/craftcms/cms/pull/19754))
+- Fixed a bug where element chips didn’t show their status indicators, and their thumbnails weren’t sized, spaced, or centered for the chip. ([#19758](https://github.com/craftcms/cms/pull/19758))
+- Fixed a bug where money inputs could be hidden within fields or submit their values under the wrong name. ([#19767](https://github.com/craftcms/cms/pull/19767))
+- Fixed a bug where reactive controls in element editors didn’t refresh their field layouts, including nested form scopes. ([#19769](https://github.com/craftcms/cms/pull/19769))
+- Fixed a bug where Form API field instructions displayed Markdown and inline HTML as plain text in Vue forms. ([#19771](https://github.com/craftcms/cms/pull/19771))
+- Fixed a bug where `<craft-callout>` boxes didn’t span all columns in grid layouts. ([#19773](https://github.com/craftcms/cms/pull/19773))
+- Fixed a bug where `<craft-input>` fields with a `maxlength` weren’t sized to fit it, which made the element index pagination’s page input overlap the “Next page” button.
+- Fixed a bug where condition builders passed raw condition values to form change listeners. ([#19774](https://github.com/craftcms/cms/pull/19774))
+- Fixed a bug where failed settings saves could lose input and validation errors when a successful save would redirect to another page. ([#19775](https://github.com/craftcms/cms/pull/19775))
+- Fixed a bug where card designer previews could fail to render because the preview request omitted the element type. ([#19776](https://github.com/craftcms/cms/pull/19776))
+
+## 6.0.0-alpha.18 - 2026-09-01
+
+- Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
+- Added `CraftCms\Cms\Asset\AssetTransformers` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
+- Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`.
+- Added a control panel notification center and `CraftCms\Cms\Cp\Notifications\CpNotification`, backed by Laravel database notifications. Deprecated announcement service compatibility remains available through `craftcms/yii2-adapter`.
+- Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
+- Removed `CraftCms\Cms\Config\GeneralConfig::$isSystemLive`, `app()->isLive()`, and the core `craft:on` and `craft:off` commands. Deprecated compatibility remains available through `craftcms/yii2-adapter`.
+- Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.
+- Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
+- Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
+- Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
+- Improved new password fields to provide the configured password rules to supported password managers. ([#19516](https://github.com/craftcms/cms/pull/19516))
+- Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
+- Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
+- Element edit screens now indicate which fields a draft has unapplied changes to.
+- Fixed a bug where the control panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
+- Fixed a bug where field layout changes weren’t saved on entry type settings screens.
+- Fixed a bug where Typecast would throw when trying to set properties that didn’t exist. ([#19492](https://github.com/craftcms/cms/pull/19492))
+- Fixed a bug where POST requests to legacy action URLs weren’t getting routed properly. ([#19478](https://github.com/craftcms/cms/issues/19478))
+- Fixed a JavaScript error that occurred when creating a new Dashboard widget. ([#19479](https://github.com/craftcms/cms/issues/19479))
+- Fixed a bug where users without a local password could not start an elevated session using OAuth. ([#19512](https://github.com/craftcms/cms/pull/19512))
+- Fixed a bug where Yii log targets configured via `config/craft/app.php` did not receive messages logged with `Craft::info()` and related methods. ([#19517](https://github.com/craftcms/cms/pull/19517))
+- Moved filesystem URL settings to `CraftCms\Cms\Filesystem\Filesystems\Local`, with legacy filesystem compatibility remaining available through `craftcms/yii2-adapter`. ([#19525](https://github.com/craftcms/cms/pull/19525))
+
+## 6.0.0-alpha.17 - 2026-08-18
+
+- Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.
+- Changed `CraftCms\Cms\Auth\Passkeys\Passkeys::verifyPasskey()` to return the updated credential record on success.
+- Changed GraphQL AST value decoding to use `webonyx/graphql-php` while preserving Craft-specific query condition validation.
+- Improved element queries to retain only explicitly supplied custom-field criteria.
+- Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
+- Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.
+- Improved job progress persistence by using an atomic upsert.
+- Changed `CraftCms\Cms\Support\Json::decode()` to use exception-based JSON decoding.
+- Changed `craft:db:drop-all-tables` to use Laravel’s schema API.
+- Replaced the asset index lifecycle flags with `CraftCms\Cms\Asset\Enums\AssetIndexStatus` and explicit status transitions.
+- Added `CraftCms\Cms\Plugin\Plugin::settingsForm()` for defining standard plugin settings pages with the control panel Form system. ([#19439](https://github.com/craftcms/cms/pull/19439))
+- Removed `CraftCms\Cms\Plugin\Plugin::settingsHtml()`. `settingsForm()` should be used instead; Yii-era plugin settings HTML remains supported by `craftcms/yii2-adapter`. ([#19439](https://github.com/craftcms/cms/pull/19439))
+- Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
+- Added a slideout system for the Inertia/Vue control panel, which renders any `CpScreenResponse`-based screen as an in-page panel from a normal Inertia response, alongside the existing legacy `Craft.CpScreenSlideout`. ([#19354](https://github.com/craftcms/cms/pull/19354))
+- Added `CraftCms\Cms\Http\Responses\CpScreenResponse::screenData()`. ([#19354](https://github.com/craftcms/cms/pull/19354))
+- Removed the `Pane.vue` Vue component in favor of the `craft-pane` web component. ([#19398](https://github.com/craftcms/cms/pull/19398))
+- Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Improved structure mutation reliability by representing each pending change as a single immutable operation.
+- Improved Project Config change event handler registration by keeping callbacks and ordering metadata together.
+- Fixed a bug where Table field column handles became arrays after failed validation.
+- Fixed a bug where nested or concurrent searches could overwrite another search’s parser state.
+- Fixed a bug where cached user permission trees could become stale after permission changes or be modified by assignability filtering.
+- Fixed inconsistent handling of forced-disabled plugin configuration values.
+- Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
+- Fixed a bug where throwing validation could run the validation lifecycle twice.
+- Fixed a bug where `CraftCms\Cms\Element\ElementCollection::with()` could pass incompatible element classes into eager loading.
+- Fixed a bug where cache options and tags registered via `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()` were unavailable as Artisan commands.
+- Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380](https://github.com/craftcms/cms/discussions/19380))
+- Fixed a bug where Yii asset bundles registered with `craft\web\View::registerAssetBundle()` during plugin initialization were not included in rendered pages. ([#19393](https://github.com/craftcms/cms/pull/19393))
+- Fixed a bug where legacy asset bundle dependencies could be rendered after their dependent resources when using `craftcms/yii2-adapter`. ([#19394](https://github.com/craftcms/cms/pull/19394))
+- Fixed an error that occurred when `config/craft/app.web.php` or `config/craft/app.console.php` was present.
+- Fixed a bug where jobs run on the sync queue could remain marked as reserved after completing. ([#19431](https://github.com/craftcms/cms/pull/19431))
+- Fixed a bug where Addresses fields weren’t reading the value posted by the control panel form, so removing every address didn’t stick and blank addresses could be created. ([#19432](https://github.com/craftcms/cms/pull/19432))
+- Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
+- Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
+- Fixed a bug where the `jobprogress` table was missing `dateCompleted` and `dateFailed` columns for installs that were upgraded from Craft 5.
+- Fixed a bug where failed queue jobs were losing their descriptions. ([#19444](https://github.com/craftcms/cms/issues/19444))
+- Fixed a bug where queue job details in the Queue Manager utility included “Error” and timestamp values even if they were null.
+
+## 6.0.0-alpha.16 - 2026-08-05
+
+- Fixed a bug where Yii-style migrations could be required twice. ([#19376](https://github.com/craftcms/cms/pull/19376))
+- Fixed a bug where the legacy `craft\base\Widget` class wasn’t fully implementing `CraftCms\Cms\Dashboard\Contracts\WidgetInterface`. ([#19375](https://github.com/craftcms/cms/pull/19375))
+
+## 6.0.0-alpha.15 - 2026-08-04
+
+- Added support for Markdown-based custom Dashboard widgets in the application’s `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
+- Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
+- Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
+- Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
+- Added support for configuring field layout field instruction positions.
+- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
+- Added a renderer-neutral control panel Form system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
+- Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Changed `CraftCms\Cms\Cp\FormFields::textFromConfig()` to accept an optional `CraftCms\Cms\Cp\Components\Input` instance as a second argument, so callers can build on an existing component instead of always creating a plain `Input`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Changed `CraftCms\Cms\Search\Events\SearchPerformed` to be a readonly, immutable event; its `$results` and `$scores` properties can no longer be overridden by listeners. `CraftCms\Cms\Search\Events\SearchScoresResolving` should be used to override scores instead. ([#19308](https://github.com/craftcms/cms/pull/19308))
+- Added `CraftCms\Cms\Asset\AssetFileKinds`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Cp\Components\Button::action()`, for declarative click actions. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Added `CraftCms\Cms\Cp\Components\Button::inherit()`. ([#19306](https://github.com/craftcms/cms/pull/19306))
+- Added `CraftCms\Cms\Cp\Components\InputColor`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Components\InputPassword`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Data\NavItem::group()`. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Added `CraftCms\Cms\Cp\Enums\ButtonVariant`. ([#19306](https://github.com/craftcms/cms/pull/19306))
+- Added `CraftCms\Cms\Cp\FormFields::colorFromConfig()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\FormFields::passwordFromConfig()`, `passwordHtml()`, and `passwordFieldHtml()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Html\ElementHtml::elementCardLabelHtml()`, `elementCardActionsHtml()`, `elementCardThumbHtml()`, and `elementCardThumbAlignment()`. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Added `CraftCms\Cms\Cp\Settings::registerSetting()` and `registerReadOnlySetting()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Dashboard\WidgetTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Database\Commands\MigrateCommand::registerMigrator()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Element\ElementTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Element\NestedElementManager::getCardsData()` and `getIndexData()`. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Added `CraftCms\Cms\Field\FieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Field\LinkTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Field\NestedEntryFieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\FieldLayout\NativeFields`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Filesystem\FilesystemTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlArguments`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlDirectives`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlMutations`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlQueries`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Image\ImageTransformers`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Image\Raster::getInterventionImage()`.
+- Added `CraftCms\Cms\Plugin\Plugin::$filesystemTypes`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$gqlDirectives`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$gqlMutations`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$gqlQueries`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$gqlTypes`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$linkTypes`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::$siteTemplateRoots`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::getCacheOptions()`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::getCacheTags()`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::getNativeFields()`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Plugin\Plugin::getSystemMessages()`. ([#19307](https://github.com/craftcms/cms/pull/19307))
+- Added `CraftCms\Cms\Search\Events\SearchResultsResolving`. ([#19308](https://github.com/craftcms/cms/pull/19308))
+- Added `CraftCms\Cms\Search\Events\SearchScoresResolving`. ([#19308](https://github.com/craftcms/cms/pull/19308))
+- Added `CraftCms\Cms\Support\Facades\AuthMethods`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\SystemMessage\SystemMessages::register()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Twig\Variables\Cp::color()` and `password()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\User\UserPermissions::registerPermissionGroup()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Utility\UtilityTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\View\TemplateCacheCollectors`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Support\Concerns\EvaluatesClosures` and support for closure values in fluent CP component and field layout builder APIs.
+- Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
+- Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
+- Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
+- Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Auth\Events\AuthMethodsResolving`. `CraftCms\Cms\Auth\AuthMethods::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Cp\Events\RegisterCpSettings` and `CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings`. `CraftCms\Cms\Cp\Settings::registerSetting()` and `registerReadOnlySetting()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving`. `CraftCms\Cms\Dashboard\WidgetTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Database\Events\MigratorsResolving`. `CraftCms\Cms\Database\Commands\MigrateCommand::registerMigrator()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Element\Events\ElementResaveCommandsResolving`. A normal Artisan command in the `craft:resave` namespace should be registered instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Element\Events\ElementTypesResolving`. `CraftCms\Cms\Element\ElementTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\FieldTypesResolving`. `CraftCms\Cms\Field\FieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\LinkTypesResolving`. `CraftCms\Cms\Field\LinkTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving`. `CraftCms\Cms\Field\NestedEntryFieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving`. `CraftCms\Cms\FieldLayout\NativeFields::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving`. `CraftCms\Cms\Filesystem\FilesystemTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving`. `CraftCms\Cms\Gql\GqlArguments::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlDirectivesResolving`. `CraftCms\Cms\Gql\GqlDirectives::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlMutationsResolving`. `CraftCms\Cms\Gql\GqlMutations::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlQueriesResolving`. `CraftCms\Cms\Gql\GqlQueries::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlTypesResolving`. `CraftCms\Cms\Gql\GqlTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Image\Events\ImageTransformersResolving`. `CraftCms\Cms\Image\ImageTransformers::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Image\Images::MINIMUM_IMAGICK_VERSION` and `craft\services\Images::MINIMUM_IMAGICK_VERSION`.
+- Removed `CraftCms\Cms\Image\Raster::getImagineImage()`.
+- Removed `CraftCms\Cms\Search\Events\ScoringResults` in favor of the following new events: ([#19308](https://github.com/craftcms/cms/pull/19308))
+  - `CraftCms\Cms\Search\Events\SearchResultsResolving`
+  - `CraftCms\Cms\Search\Events\SearchScoresResolving`
+- Removed `CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving`. `CraftCms\Cms\SystemMessage\SystemMessages::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\User\Events\UserPermissionsResolving`. `CraftCms\Cms\User\UserPermissions::registerPermissionGroup()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving` and `CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving`. `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Utility\Events\UtilitiesResolving`. `CraftCms\Cms\Utility\UtilityTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\View\Events\CpTemplateRootsResolving` and `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`. `CraftCms\Cms\View\TemplateCacheCollectors::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added the `@craftcms/ui/factory` module, a jQuery-free layer of typed element factories that mirror the `src/Cp/Components` PHP builders. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `createTextInput()` and `createCopyTextPrompt()` to the `@craftcms/ui/factory` module. ([#19333](https://github.com/craftcms/cms/pull/19333))
+- Added `turnOn()`, `turnOff()`, and `turnIndeterminate()` methods to the `<craft-switch>` web component. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added a `group` property to the `<craft-nav-item>` web component, for rendering a subnav as a non-collapsible semantic grouping. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Added `Garnish.CustomSelect` and `Garnish.MenuBtn` to `@craftcms/garnish`, jQuery-free TypeScript ports of the legacy floating listbox menu and menu-button classes. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Moved the `Craft.ComponentSelectInput` control panel JavaScript class out of the core bundle into a `yii2-adapter` compatibility asset, since `<craft-component-select>` is now used everywhere in core; the `componentSelect.twig` `jsClass` escape hatch still works for plugin subclasses. ([#19333](https://github.com/craftcms/cms/pull/19333))
+- Moved the `Craft.AssetMover`, `Craft.AssetSelectorModal`, `Craft.BaseElementSelectInput`, `Craft.BaseElementSelectorModal`, `Craft.BaseUploader`, `Craft.Chart`, `Craft.CpModal`, `Craft.CustomizeSourcesModal`, `Craft.DataTableSorter`, `Craft.ElementActionTrigger`, `Craft.ElementDeletionManager`, `Craft.ElementTableSorter`, `Craft.EntrySelectInput`, `Craft.Grid`, `Craft.PreviewFileModal`, `Craft.Tabs`, `Craft.TagSelectInput`, `Craft.Uploader`, and `Craft.VolumeFolderSelectorModal` control panel JavaScript classes from the legacy jQuery bundle to TypeScript modules. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Changed `<craft-nav-item>` to render as a `<span>` instead of an `<a>` when it has no `href`, dropping `aria-current` in that case. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Changed element index table rows and cards so clicking anywhere on them (other than an interactive control) selects them, extending the selection range on shift-click just like clicking a row’s checkbox. ([#19351](https://github.com/craftcms/cms/pull/19351))
+- Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Removed the `Craft.DeleteUserModal` control panel JavaScript class. It was deprecated in 5.10.0 and unused. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Fixed a bug where Blade templates rendered through Craft used path-based view names, preventing named Laravel view composers from running. ([#19177](https://github.com/craftcms/cms/issues/19177))
+- Fixed a bug where the `accent` semantic color used by colorable elements (e.g. `craft-callout`, `[data-color]`) rendered red instead of blue, due to a drifted color mapping in `@craftcms/ui`. ([#19306](https://github.com/craftcms/cms/pull/19306))
+- Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
+- Fixed a bug where Yii adapter plugins could cause legacy control panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
+- Fixed a bug where assets’ Alternative Text values could not be cleared. ([#19310](https://github.com/craftcms/cms/issues/19310))
+- Fixed a bug where element deletion confirmation dialogs could display unresolved pluralization syntax. ([#19311](https://github.com/craftcms/cms/issues/19311))
+- Fixed a bug where replacing an asset would fail silently. ([#19312](https://github.com/craftcms/cms/issues/19312))
+- Fixed JavaScript errors that could occur throughout the control panel. ([#19313](https://github.com/craftcms/cms/issues/19313))
+- Fixed a bug where `forms.checkboxField()` and `CraftCms\Cms\Cp\FormFields::checkboxFieldHtml()` rendered an empty field. ([#19338](https://github.com/craftcms/cms/pull/19338))
+- Fixed a bug where Utility pages weren’t rendering, and were logging `$ is not defined` and `window.Cp.config is not a function` errors to the console. ([#19340](https://github.com/craftcms/cms/pull/19340))
+- Fixed a bug where `actionClient` requests for bare action paths could corrupt the `?site=` query string on multi-site installs. ([#19342](https://github.com/craftcms/cms/pull/19342))
+- `Craft.cp.announce()` now accepts live regions that are plain elements as well as jQuery collections. ([#19340](https://github.com/craftcms/cms/pull/19340))
+
+## 6.0.0-alpha.14 - 2026-07-22
+
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
+
+- Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Added `CraftCms\Cms\Cp\Components\Button`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\ButtonGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Callout::hideIcon()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\Components\Callout`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Checkbox`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\CheckboxGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\CheckboxSelect`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\ChoiceGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\ComponentRegistry`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Field`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\FieldGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Icon`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\Components\Input`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\Components\Lightswitch`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Radio`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\RadioGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Textarea`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\Components\ViewComponent`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\EvaluatesClosures`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\HasAppearance`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\HasDisabled`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\HasId`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\HasSize`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Concerns\HasVariant`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Enums\Appearance`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Enums\Size`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Enums\Variant`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::buttonFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::buttonGroupFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::checkboxFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::checkboxGroupFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::checkboxSelectFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::lightswitchFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::radioFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::radioGroupFieldHtml()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::radioGroupFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::textareaFromConfig()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\FormFields::textFromConfig()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Support\Facades\Template`. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- Added `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- Added `CraftCms\Cms\Twig\Variables\Cp::button()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::buttonGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::checkbox()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::checkboxGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::checkboxSelect()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::lightswitch()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::radio()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::radioGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::text()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Twig\Variables\Cp::textarea()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\ui()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\View\TemplateManager`. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- `template()` and `pageTemplate()` now accept an optional template renderer name. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- `TemplateRendered` and `PageTemplateRendered` events now expose the final renderer name via `$rendererName`; the corresponding before events no longer expose renderer identity. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- Replaced `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager`. HTML sanitizers should now be registered via `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()` rather than `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers::register()`. ([#19292](https://github.com/craftcms/cms/pull/19292))
+- Removed `CraftCms\Cms\Plugin\Events\PluginUnregistered`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::bootPlugin()`. `boot()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Fixed a bug where the legacy `yii\web\JqueryAsset` wasn’t resolving properly. ([#19264](https://github.com/craftcms/cms/pull/19264))
+- Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19267](https://github.com/craftcms/cms/pull/19267))
+- Fixed a bug where queued resaves ignored offset and limit criteria or accepted non-positive batch sizes. ([#19271](https://github.com/craftcms/cms/pull/19271))
+- Fixed a bug where failed password and passkey login attempts incremented invalid-login counters twice. ([#19283](https://github.com/craftcms/cms/pull/19283))
+- Fixed bugs that could prevent authored content from being deleted or reassigned safely when deleting users. ([#19273](https://github.com/craftcms/cms/pull/19273))
+- Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
+- Fixed a bug where one-time two-factor authentication credentials could be accepted by concurrent login attempts. ([#19282](https://github.com/craftcms/cms/pull/19282))
+- Fixed issues with `craft:users:set-password` password validation, exit statuses, and session invalidation. ([#19272](https://github.com/craftcms/cms/pull/19272))
+- Fixed a bug where selected GraphQL mutations could be mistaken for cacheable queries. ([#19284](https://github.com/craftcms/cms/pull/19284))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a bug where two-factor authentication could lose login state or verify the wrong user during impersonation. ([#19274](https://github.com/craftcms/cms/pull/19274))
+- Fixed a bug where new Matrix blocks weren’t getting created. ([#19161](https://github.com/craftcms/cms/issues/19161))
+
+## 6.0.0-alpha.13 - 2026-07-16
+
+- Updated logout routes to require CSRF-protected POST requests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/ff6f20717a48e7ede5fbbe47487e7bb8ef71da78))
+- Updated control panel configuration serialization to use `Illuminate\Support\Js::from()`. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/f844ae1cc3b02659ff68eb320ff7d2190a2a01da))
+- Updated the project testing guidelines to emphasize behavior-focused tests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/63b452d4b82d066566ad653ea39f6c1ad949eaa3))
+- Updated queue connection retry windows to exceed Craft’s maximum job timeout. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/21bff956e964679a3f9951545bdf059473e0e5e8))
+- Updated core queue jobs to resolve their dependencies through Laravel’s service container. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/dced32fc03120f27bc82ca61a9d960b95786ee03))
+- Updated automatic garbage collection to run as a unique queue job. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/a35f815f3d9096311fc891b33c31427af865d902))
+- Updated two-factor authentication recovery codes to be encrypted at rest. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fb560d68a1d4f3a4e02b360c5bcacde27780fa05))
+- Improved field reference cleanup performance. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/303054c48d45f33d43c6781664729fd01a6130f3))
+- Improved numeric element reference resolution performance. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/08e882820aa0681e55c346f57102dfb1792e142c))
+- Improved element merge performance by avoiding per-relation and per-structure queries. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/202c2f6782ac59d15cf8cbda32ab4304807b0407))
+- Improved search indexing memory use when indexing many elements. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/117c2c5f222eec8acb2371937928a364a52c0fb0))
+- Improved asset indexing performance when finding missing and empty folders. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fe4974ab449f2e0402b333cf77282d04f4ee5558))
+- Prevented duplicate image transform jobs from being queued for the same transform. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/059ccbed6ccd41c12dea1a5eb806f281e5878290))
+- Removed duplicate control panel icon alias registrations. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/e8acf264f2bad6fd4c7c0f3de742ad85f89cdbbb))
+- Fixed a bug where GraphQL asset mutations weren’t executing HTTP requests for remote asset URLs. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/35e54924d7404ce21a591ece04a970afc5a3ae80))
+- Fixed a bug where failed relation writes could leave partial relation changes persisted. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/4f466d0730e266ea347a069807be6bc7a61e3afc))
+- Fixed a bug where element merge replacement jobs could be dispatched before their database transaction was committed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/a50f8cb6fe6f037d7fc95a3b7305fb09a57759ff))
+- Fixed a bug where section project-config jobs could be dispatched before their database transaction was committed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/3b54bc28253cade054a10a879252a8d102571a33))
+- Fixed a bug where passkey login attempts weren’t rate limited. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/e6f7deca8eaba4c056b27358bb9b0b89b96e0cc5))
+- Fixed a bug where relation localization could not be retried safely after a failed run. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/915b8196d920cc1d27d352e1fe773a921a258e46))
+- Fixed a bug where project config mutex cleanup could release a lock owned by another process. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/845e2795c5158dfe1249d7543331e2a163e9dc3f))
+- Fixed a bug where nested structure operations could release their mutex lock before the outer operation completed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/9f5157ae9745a4677117cdfeb0051a82b8af916b))
+- Fixed a bug where two-factor authentication verification attempts weren’t rate limited. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/f4f11c8ef465fa981ee32d2c1ed84ea8b8e8d13e))
+- Fixed a bug where user photo uploads could exceed the configured maximum upload size. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fc3fa25f5e7c9108b9e465b1d93ea5d116cf3e08))
+- Fixed a bug where unsafe filenames could be used for Craft support attachments. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/2872b891eca9d243901e186b6bba76150fc0d16e))
+- Fixed a bug where a failed legacy field type migration could leave project config events muted. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/0b22858254f9d6ef54e1f4aaca4de055a1c7f388))
+- Fixed a bug where TemplateGlobals were being resolved every time a Blade component rendered. ([#19257](https://github.com/craftcms/cms/pull/19257))
+- Fixed a bug where Craft updates could fail with a 503 response when the action URL contained query parameters.
+
+## 6.0.0-alpha.12 - 2026-07-15
+
+- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Login attempts are now rate limited.
+- Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
+- Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
+- Fixed a bug where site routes weren’t being registered for each localized site value.
+- Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
+- Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))
+- Fixed a bug where requests to the `loginPath`, `setPasswordPath`, and `verifyEmailPath` were getting redirected to the control panel. ([#19229](https://github.com/craftcms/cms/pull/19229))
+- Fixed a bug where Laravel translation fallbacks weren’t applied when `translationDebugOutput` was enabled. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where custom plugin settings `FormRequest` classes could persist unvalidated settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where failed Craft API responses weren’t processing response headers. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where Craft plugin service providers could be skipped when the plugin’s Composer metadata also defined Laravel package discovery settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where event-registered user permissions weren’t getting saved. ([#19232](https://github.com/craftcms/cms/issues/19232))
+- Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes. ([#19242](https://github.com/craftcms/cms/pull/19242))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
+
+## 6.0.0-alpha.11 - 2026-07-07
+
+- Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
+- The login page now lists Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
+- Fixed a bug where some control panel resources and pages weren’t loading properly. ([#19214](https://github.com/craftcms/cms/issues/19214))
+
+## 6.0.0-alpha.10 - 2026-07-03
+
+- It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Added SQLite database support. ([#19149](https://github.com/craftcms/cms/pull/19149))
+- Control panel resources are now provided by a `craftcms/cms-assets` package. ([#19162](https://github.com/craftcms/cms/pull/19162))
+- Renamed `CraftCms\Cms\Twig\PageLifecycle` to `CraftCms\Cms\View\PageLifecycle`. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
+- Fixed a bug where the login page would show a CSRF token mismatch on http requests
+- Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
+- Fixed an error that occurred when saving Users source settings after selecting the Groups table column. ([#19184](https://github.com/craftcms/cms/pull/19184))
+- Fixed a bug where database backups weren’t using the `--single-transaction` or `--column-statistics=0` flags on MySQL.
+- Fixed a bug where Content Block fields’ nested fields weren’t available as table columns on element indexes.
+
+## 6.0.0-alpha.9 - 2026-06-23
+
+- Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
+- Added `CraftCms\Cms\Translation\Formatter::asRelativeTime()`. ([#19146](https://github.com/craftcms/cms/pull/19146))
+- Updated `webonyx/graphql-php` to 15.33.1. ([#18757](https://github.com/craftcms/cms/pull/18757))
+- `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a “This password does not use the Bcrypt algorithm” error that could occur when logging in with a user whose password was set in an earlier version of Craft.
+- Fixed a “File name is not a string” error that could occur when an error was encountered when rendering a string template. ([#19122](https://github.com/craftcms/cms/pull/19122))
+- Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
+- Fixed a bug where plugin `$styles`, `$scripts`, and `$publishables` weren’t published automatically when the plugin was installed or enabled. ([#19137](https://github.com/craftcms/cms/pull/19137))
+- Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
+- Fixed a bug where Craft wasn’t applying the Settings → General timezone to PHP’s default timezone. ([#19138](https://github.com/craftcms/cms/pull/19138))
+- Fixed a bug where entry queries weren’t fetching structure data by default.
+- Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
+- Fixed a bug where the Settings index page didn’t include “Globals”, “Categories”, or “Tags” links, when the concepts were supported. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed errors that occurred when editing global sets, category groups, and tag groups. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where it wasn’t possible to create new categories. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
+- Fixed a bug where preview tokens weren’t taking the `previewTokenDuration` config setting into account.
+- Fixed a bug where success/failure notifications weren’t being shown after deleting elements. ([#19028](https://github.com/craftcms/cms/pull/19028))
+
+## 6.0.0-alpha.8 - 2026-06-17
+
+- Added `CraftCms\Cms\Twig\AllowableInSandbox`.
+- Fixed a bug where Blade templates weren’t loading for text/Markdown mail. ([#19106](https://github.com/craftcms/cms/pull/19106))
+- Fixed a bug where it wasn’t possible to change the primary site, or edit site statuses. ([#19109](https://github.com/craftcms/cms/issues/19109))
+
+## 6.0.0-alpha.7 - 2026-06-16
+
+- Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
+- Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
+- Added `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$ruleset`.
+- Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
+- Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`.
+- Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\` to reflect its broader applicability to components and rulesets.
+- Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
+- Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed an error that could occur when `CraftCms\Cms\Support\DateTimeHelper::toDateTime()` returned a `DateTimeInterface` implementation other than `DateTime`. ([#19079](https://github.com/craftcms/cms/pull/19079))
+- Fixed a bug where “Replace relation” action buttons weren’t working.
+- Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+- Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
+- Fixed a bug where queue job progress labels weren’t getting translated.
+- Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
+- Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
+- Fixed a bug where plugin templates were not being loaded correctly
+- Fixed a bug where query string params were getting registered as variables in Twig templates. ([#19090](https://github.com/craftcms/cms/discussions/19090))
+- Fixed a bug where parsed site URLs would get saved to the project config. ([#19092](https://github.com/craftcms/cms/issues/19092))
+
+## 6.0.0-alpha.6 - 2026-06-03
+
+- Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
+- Added `CraftCms\Cms\User\Contracts\CraftUser` and `CraftUserTrait`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Removed `CraftCms\Cms\Auth\UserProvider`; the Craft guard now defaults to Laravel’s Eloquent provider using `CraftCms\Cms\User\Models\User`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Added `\CraftCms\Cms\craftUser()`/`\CraftCms\Cms\craftUser()` and `request()->craftUser()` as Craft-safe ways to access the authenticated user. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- `Element::getIterator()` no longer includes custom field values. ([#19004](https://github.com/craftcms/cms/issues/19004))
+- Fixed a bug where checking the elevated session timeout could overwrite newer session data, which could prevent passkeys from being created.
+- Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
+- Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+- Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
+- Fixed a bug where removing all permissions from a user wouldn’t save. ([#18995](https://github.com/craftcms/cms/pull/18995))
+- Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixes a bug where the “View entry” permission was listed twice for Single sections, causing a SQL error when both were selected. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixes a bug where user group handles weren’t getting auto-generated. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixed a JavaScript error that could occur in the control panel when a custom element was registered more than once.
+- Fixed a bug where control panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy control panel JavaScript wasn’t loaded and initialized on all control panel pages.
+- Fixed a styling issue with user avatars.
+
+## 6.0.0-alpha.5 - 2026-05-27
+
+- Improved emoji shortcode handling performance for strings without shortcode delimiters.
+- Improved element query performance by caching element source table column listings in memory.
+- Improved nested entry type resolution by avoiding unnecessary owner element queries.
+- Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
+- The `loginPath` config setting is now `false` by default.
+- Renamed the `PluginsLoaded` event to `PluginsRegistered`. ([#18973](https://github.com/craftcms/cms/pull/18973))
+- Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
+- Fixed an error that occurred when rendering the database update screen outside control panel template mode.
+- Fixed an error that occurred when Redis was configured as the session driver.
+- Fixed a bug where legacy control panel URL rules couldn’t route directly to templates. ([#18972](https://github.com/craftcms/cms/pull/18972))
+- Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could attempt to assign read-only, private-set, protected-set, or setterless virtual properties.
+- Fixed a bug where publishable Craft assets were registered during web requests.
+- Fixed a bug where eager-loading didn’t treat address, content block, and entry queries as nested element queries.
+- Fixed a bug where lazy eager-loading nested element fields could reuse owner criteria and return the wrong elements.
+- Fixed an error that occurred when Updates were cached and deserialized.
+- Fixed an error that prevented link fields from saving.
+- Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
+- Fixed a bug where `CraftCms\Cms\Validation\Contracts\Validatable::prepareForValidation()` wasn’t called consistently, and plain `Validatable` classes without a configured ruleset couldn’t be validated. ([#18944](https://github.com/craftcms/cms/pull/18944))
+- Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
+- Fixed an error that occurred when uploading assets to fields with dynamic default upload locations. ([#18949](https://github.com/craftcms/cms/pull/18949))
+- Fixed a bug where Craft could look for the license key in `config/license.key` instead of `config/craft/license.key`.
+- Fixed a styling issue that occurred when editable table cells had a `code` class. ([#18900](https://github.com/craftcms/cms/issues/18900))
+
+## 6.0.0-alpha.4 - 2026-05-19
+
+- Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
+- Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
+- Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
+- Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
+- Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897))
+- Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
+- Fixed a bug where plugin routes were not being registered with the `web` middleware.
+- Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
+- Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
+- Fixed an error that occurred when using the legacy cache service with a new dependency object ([#18904](https://github.com/craftcms/cms/pull/18904))
+- Fixed a bug where clearing submitted values could retain the previous value. ([#18905](https://github.com/craftcms/cms/issues/18905))
+- Fixed a bug where a legacy Yii action controller would result in a 404 when returning `null` as the response ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that could occur because `ol` and `ul` were not normalizing the attributes ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that occurred when trying to upload an asset through a legacy filesystem plugin ([#18908](https://github.com/craftcms/cms/pull/18908))
+
+## 6.0.0-alpha.3 - 2026-05-15
+
+- Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
+- Added a missing migration that adds `minAuthors` to the section table ([#18875](https://github.com/craftcms/cms/pull/18875))
+- Fixed a bug where the `cpTrigger` would be appended twice to the URL after running migrations from the control panel. ([#18858](https://github.com/craftcms/cms/pull/18858))
+- Fixed an error that occurred when rendering element indexes with blank source headings. ([#18891](https://github.com/craftcms/cms/pull/18891))
+- Fixed an error that occurred when uninstalling plugins. ([#18862](https://github.com/craftcms/cms/pull/18862))
+- Fixed an error that could occur when control panel HTML values were passed as `Stringable` objects. ([#18883](https://github.com/craftcms/cms/pull/18883))
+- Fixed a bug where plugin package config files could affect plugin settings before being published. ([#18885](https://github.com/craftcms/cms/pull/18885))
+- Fixed a bug where the control panel would continuously poll for queue job info, even if there were no active jobs. ([#18853](https://github.com/craftcms/cms/issues/18853))
+- Fixed a bug where legacy redirect responses were not being handled. ([#18860](https://github.com/craftcms/cms/pull/18860))
+- Fixed a bug where email addresses couldn’t be saved when applying unpublished user drafts. ([#18882](https://github.com/craftcms/cms/pull/18882))
+- Fixed a bug where the Updates utility wasn’t showing available updates. ([#18884](https://github.com/craftcms/cms/pull/18884))
+
+## 6.0.0-alpha.2 - 2026-05-13
+
+- Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
+- Added support for Symfony-style array config files in `config/craft/sanitizers/`. ([#18808](https://github.com/craftcms/cms/pull/18808))
+- Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Added the legacy `paginate` Twig variable back.
+- Added CP access permission checks to control panel action routes.
+- The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
+- Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
+- Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
+- Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
+- Improved control panel icon loading performance.
+- Fixed a PHP error that occurred when saving a Structure section with a Max Levels value. ([#18809](https://github.com/craftcms/cms/issues/18809))
+- Fixed a bug where plugin settings pages were missing registered scripts and styles. ([#18815](https://github.com/craftcms/cms/pull/18815))
+- Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
+- Fixed an issue with Typecast where typed setters wouldn’t have precedence over private properties.
+- Fixed a bug where control panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
+- Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18810](https://github.com/craftcms/cms/issues/18810))
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
+- Fixed a bug where `runQueueAutomatically` wasn’t being respected. ([#18817](https://github.com/craftcms/cms/pull/18817))
+- Fixed a bug where `CraftCms\Cms\Validation\Rules\EnvValueRule` could parse boolean values incorrectly.
+- Fixed a bug where Blade templates weren’t resolving correctly.
+- Fixed a bug where console command aliases weren’t prefixed with `craft:`.
+- Fixed a bug where element duplication included IDs.
+- Fixed a bug where legacy action requests didn’t resolve correctly when using `DefaultController`.
+- Fixed a bug where legacy controller CSRF validation exclusions weren’t always respected.
+- Fixed a bug where legacy plugin settings weren’t saved correctly.
+- Fixed a bug where legacy redirects and streamed responses weren’t forwarded to Laravel correctly.
+- Fixed a bug where preview requests could write template caches.
+- Fixed a bug where private templates couldn’t be used as section templates.
+- Fixed a bug where the legacy `Application::EVENT_AFTER_REQUEST` event wasn’t triggered.
+- Fixed a bug where the password reset email throttle applied to control panel requests.
+- Fixed a bug where the Support widget could render unescaped HTML.
+- Fixed a bug where Twig macros were allowed in sandboxed templates.
+- Fixed a bug where user passkeys weren’t persisting.
+- Fixed an error that occurred when validation errors stored in the session were plain arrays.
+- Fixed compatibility issues with legacy element queries.
+- Fixed compatibility issues with legacy fallback routes.
+- Fixed legacy model behavior when unsafe config keys were provided.
+- Fixed permissions enforcement when duplicating Matrix blocks.
+- Fixed permissions enforcement when saving user fields through generic element save endpoints.
+- Fixed a bug where a `yii\base\InvalidConfigException` would be thrown when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
+- Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
+- Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
+- Fixed a bug where an address’ ownership ids could be overridden unintentionally.
+- Fixed a bug where `getHasSsoIdentity()` would return `false` when Socialite was not installed but the user had an SSO identity.
+- Fixed a bug where the site’s offline status was not being enforced on matched element routes.
+- Fixed a user photo validation issue with file extensions.
+- Fixed a bug where legacy controllers could return `null` but were not considered handled.
+- Improved performance of the dashboard by reducing the amount of queries for widgets
+- Fixed a bug where criteria added to clones of executed element queries could be ignored. ([#18826](https://github.com/craftcms/cms/pull/18826))
+- Fixed a bug where Yii2 behaviors registered from plugins weren’t getting attached at the right time. ([#18824](https://github.com/craftcms/cms/issues/18824))
+- Fixed an error that occurred when running `craft:install` in environments where Laravel Prompts can only render tasks statically. ([#18830](https://github.com/craftcms/cms/pull/18830))
+- Fix legacy model array access for null properties ([#18843](https://github.com/craftcms/cms/pull/18843))
+- Fix Twig access to Laravel error bags ([#18841](https://github.com/craftcms/cms/pull/18841))
+- Fixed a bug where singles were throwing an exception ([#18845](https://github.com/craftcms/cms/issue/18845))
+- Fixed a bug where plugin settings were not saving consistently ([#18849](https://github.com/craftcms/cms/pull/18849))
+- Fixed a bug where deprecated string-based `orderBy()` arguments could cause element queries to throw an unknown column exception. ([#18852](https://github.com/craftcms/cms/pull/18852))
+- Fixed a bug where Laravel HTTP exceptions weren’t passed to legacy error handler event listeners. ([#18854](https://github.com/craftcms/cms/pull/18854))
+- Fixed a bug where FieldLayouts were being flashed to the session as arrays. ([#18847](https://github.com/craftcms/cms/pull/18847))
+
+## 6.0.0-alpha.1 - 2026-05-06
+
+### Development
+- Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
+- Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
+
+### Extensibility
+- Added `CraftCms\Cms\Support\Arr`.
+- Added `CraftCms\Cms\Support\DateTimeHelper`.
+- Added `CraftCms\Cms\Support\File`.
+- Added `CraftCms\Cms\Support\Facades\Path`.
+- Added `CraftCms\Cms\Support\Facades\Markdown`.
+- Added `CraftCms\Cms\Support\Path`.
+- Added `CraftCms\Cms\Support\Str`.
+- Added `CraftCms\Cms\Support\Url`.
+- Added `CraftCms\Cms\action_url()`, `CraftCms\Cms\cp_url()`, and `CraftCms\Cms\site_url()` helper functions.
+- `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
+- Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
+- Deprecated `craft\helpers\ConfigHelper`. `CraftCms\Cms\Support\Config` should be used instead.
+- Deprecated `craft\helpers\DateTimeHelper`. `CraftCms\Cms\Support\DateTimeHelper` should be used instead.
+- Deprecated `craft\helpers\Diff`. `CraftCms\Cms\Support\Diff` should be used instead.
+- Deprecated `craft\helpers\ElementHelper`. `CraftCms\Cms\Element\ElementHelper` should be used for core element helper APIs, `CraftCms\Cms\Element\ElementSources` for source lookup, `CraftCms\Cms\Element\ElementAttributeRenderer` for attribute rendering, `CraftCms\Cms\Element\Drafts` for provisional draft helpers, `CraftCms\Cms\Field\Enums\TranslationMethod` for translation helpers, and `Illuminate\Support\Facades\Context` with `CraftCms\Cms\Element\Drafts::CONTEXT_PREVIEW_USER_ID` for preview-user context.
+- Deprecated `craft\helpers\Html`. `CraftCms\Cms\Support\Html` should be used instead.
+- Deprecated `craft\helpers\HtmlPurifier`. `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` should be used for HTML sanitization, and `CraftCms\Cms\Support\Str` should be used for UTF-8 cleanup instead.
+- Deprecated `craft\helpers\HtmlPurifier::process()`. `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers::sanitize()` should be used instead.
+- Deprecated `craft\helpers\HtmlPurifier::cleanUtf8()`.
+- Deprecated `craft\helpers\HtmlPurifier::convertToUtf8()`. `CraftCms\Cms\Support\Str::convertToUtf8()` should be used instead.
+- Deprecated `craft\helpers\HtmlPurifier::configure()`. `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers::defaults()` or a custom sanitizer registration should be used instead.
+- Deprecated `config/craft/htmlpurifier/*.json` sanitizer config files. Sanitizers should be registered on `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` instead.
+- Deprecated `craft\services\Path`. `CraftCms\Cms\Support\Path` should be used instead.
+- Deprecated `craft\helpers\SessionHelper`. `Illuminate\Support\Facades\Session` should be used instead.
+- Deprecated `craft\helpers\Sequence`. `CraftCms\Cms\Support\Sequence` should be used instead.
+- Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
+- Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
+- Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
+- Deprecated `craft\helpers\App::env()`, `CraftCms\Cms\Support\Env::get()` should be used instead.
+- Deprecated `craft\markdown\Markdown`, `craft\markdown\GithubMarkdown`, `craft\markdown\MarkdownExtra`, and `craft\markdown\PreEncodedMarkdown`. `CraftCms\Cms\Support\Facades\Markdown` should be used instead.
+- Deprecated `craft\helpers\DateRange`. `CraftCms\Cms\Shared\Enums\DateRangeType` and `CraftCms\Cms\Shared\Enums\DateRangePeriod` should be used instead.
+- Deprecated `craft\helpers\Cp`. One of the following classes should be used instead:
+  - `CraftCms\Cms\Cp\Alerts`
+  - `CraftCms\Cms\Cp\FormFields`
+  - `CraftCms\Cms\Cp\Html\ContentHtml`
+  - `CraftCms\Cms\Cp\Html\ElementHtml`
+  - `CraftCms\Cms\Cp\Html\ElementIndexHtml`
+  - `CraftCms\Cms\Cp\Html\MenuHtml`
+  - `CraftCms\Cms\Cp\Html\PreviewHtml`
+  - `CraftCms\Cms\Cp\Html\StatusHtml`
+  - `CraftCms\Cms\Cp\Icons`
+  - `CraftCms\Cms\Cp\RequestedSite`
+- Deprecated `craft\helpers\Json`. `CraftCms\Cms\Support\Json` should be used instead.
+- Deprecated `craft\services\Composer`. `CraftCms\Cms\Support\Composer` should be used instead.
+- Deprecated `craft\enums\Color`. `CraftCms\Cms\Support\Enums\Color` should be used instead.
+- Deprecated `craft\enums\AttributeStatus`. `CraftCms\Cms\Element\Enums\AttributeStatus` should be used instead.
+- Deprecated `craft\enums\CmsEdition`. `CraftCms\Cms\Edition` should be used instead.
+- Deprecated `craft\enums\ElementIndexViewMode`. `CraftCms\Cms\Element\Enums\ElementIndexViewMode` should be used instead.
+- Deprecated `craft\enums\LicenseKeyStatus`. `CraftCms\Cms\Support\Enums\LicenseKeyStatus` should be used instead.
+- Deprecated `craft\enums\MenuItemType`. `CraftCms\Cms\Element\Enums\MenuItemType` should be used instead.
+- Deprecated `craft\enums\PropagationMethod`. `CraftCms\Cms\Element\Enums\PropagationMethod` should be used instead.
+- Deprecated `craft\enums\TimePeriod`. `CraftCms\Cms\Support\Enums\TimePeriod` should be used instead.
+- Deprecated `craft\services\Gc`. `CraftCms\Cms\GarbageCollection\GarbageCollection` should be used instead.
+- Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\nameparsing\CustomLanguage`. `CraftCms\Cms\Shared\Nameparser\CustomLanguage` should be used instead.
+- Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
+  - #### General helpers
+  - `App:devMode()` -> `app()->hasDebugModeEnabled()`
+  - `App:parseBooleanEnv()` --> `\CraftCms\Cms\Support\Env::parseBoolean()`
+  - `App:normalizeValue()` --> `\CraftCms\Cms\normalizeValue()`
+  - `App:maxPowerCaptain()` --> `\CraftCms\Cms\maxPowerCaptain()`
+  - `App:silence()` --> `\CraftCms\Cms\silence()`
+  - `App:backtrace()` --> `\CraftCms\Cms\backtraceAsString()`
+  - #### Env
+  - `App:env()` --> `\CraftCms\Cms\Support\Env::get()`
+  - `App:parseEnv()` --> `\CraftCms\Cms\Support\Env::parse()`
+  - #### PHP
+  - `App:phpVersion()` --> `\CraftCms\Cms\Support\PHP::version()`
+  - `App:extensionVersion()` --> `\CraftCms\Cms\Support\PHP::extensionVersion()`
+  - `App:phpConfigValueAsBool()` --> `\CraftCms\Cms\Support\PHP::configValueAsBool()`
+  - `App:phpConfigValueInBytes()` --> `\CraftCms\Cms\Support\PHP::configValueInBytes()`
+  - `App:phpSizeToBytes()` --> `\CraftCms\Cms\Support\PHP::sizeToBytes()`
+  - `App:phpConfigValueAsPaths()` --> `\CraftCms\Cms\Support\PHP::configValueAsPaths()`
+  - `App:normalizePhpPaths()` --> `\CraftCms\Cms\Support\PHP::normalizePaths()`
+  - `App:isPathAllowed()` --> `\CraftCms\Cms\Support\PHP::isPathAllowed()`
+  - `App:phpExecutable()` --> `\CraftCms\Cms\Support\PHP::executable()`
+  - `App:testIniSet()` --> `\CraftCms\Cms\Support\PHP::testIniSet()`
+  - `App:checkForValidIconv()` --> `\CraftCms\Cms\Support\PHP::checkForValidIconv()`
+  - `App:supportsIdn()` --> `\CraftCms\Cms\Support\PHP::supportsIdn()`
+  - #### License
+  - `App:licenseKey()` --> `app(\CraftCms\Cms\License\License::class)->key()`
+  - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
+  - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
+  - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
+  -
+- Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
+- Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
+- Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\Url` should be used instead.
+
+#### Deprecator
+- Added `CraftCms\Cms\Support\Facades\Deprecator`.
+- Added `CraftCms\Cms\Deprecator\Commands\ClearDeprecations`.
+- Removed `craft\console\controllers\ClearDeprecationsController.php`.
+- Deprecated `craft\services\Deprecator`. `CraftCms\Cms\Deprecator\Deprecator` should be used instead.
+- Deprecated `craft\models\DeprecationError`. `CraftCms\Cms\Deprecator\Models\DeprecationError` should be used instead.
+- Deprecated `craft\errors\DeprecationException`. `CraftCms\Cms\Deprecator\Exceptions\DeprecationException` should be used instead.
+
+#### Console commands
+- Added `php craft twig:cache` - Precompile Twig views
+- Added `php craft twig:clear` - Clear precompiled Twig views
+- `craft\console\controllers\EnvController` has been removed in favor of the classes below:
+  - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
+  - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`
+  - `CraftCms\Cms\Console\Commands\Env\EnvShowCommand` => `php craft env:show`
+- `craft\console\controllers\IndexAssetsController` has been removed in favor of the classes below:
+  - `CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand` => `php craft index-assets:cleanup`
+  - `CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand` => `php craft index-assets:all`
+  - `CraftCms\Cms\Asset\Commands\IndexOneAssetCommand` => `php craft index-assets:one`
+- `craft\console\controllers\BaseSystemStatusController`, `craft\console\controllers\OnController`, and `craft\console\controllers\OffController` have been removed in favor of the classes below:
+  - `CraftCms\Cms\Console\Commands\System\OnCommand` => `php craft on`
+  - `CraftCms\Cms\Console\Commands\System\OffCommand` => `php craft off`
+- `craft\console\controllers\ElementsController` has been removed in favor of the classes below:
+  - `CraftCms\Cms\Element\Commands\DeleteCommand` => `php craft elements:delete`
+  - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
+  - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
+- `craft\console\controllers\UpdateStatusesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
+- `craft\console\controllers\utils\FixElementUidsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
+- `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
+- `craft\console\controllers\utils\PruneOrphanedEntriesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
+- `craft\console\controllers\utils\PruneProvisionalDraftsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
+- `craft\console\controllers\utils\PruneRevisionsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
+- `craft\console\controllers\utils\RepairController::actionProjectConfig()` has been removed in favor of the class below:
+  - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
+
+#### Mutex
+
+Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
+
+- Deprecated `craft\mutex\Mutex`
+- Deprecated `craft\mutex\MutexTrait`
+- Deprecated `Craft::$app->getMutex()`
+
+#### Components
+- Deprecated `craft\base\ComponentInterface`. `CraftCms\Cms\Component\Contracts\ComponentInterface` should be used instead.
+- Deprecated `craft\base\ConfigurableComponentInterface`. `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface` should be used instead.
+- Deprecated `craft\base\SavableComponentInterface`. `CraftCms\Cms\Component\Contracts\SavableComponentInterface` should be used instead.
+
+#### Dashboard & Widgets
+
+##### Controllers
+- Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
+  - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
+
+##### Deprecations
+- Deprecated `Craft::$app->getDashboard()`. `app(\CraftCms\Cms\Dashboard\Dashboard::class)` should be used instead.
+- Deprecated `craft\services\Dashboard`. `CraftCms\Cms\Dashboard\Dashboard` should be used instead.
+- Deprecated `craft\base\Widget`. `CraftCms\Cms\Dashboard\Widgets\Widget` should be used instead.
+- Deprecated `craft\base\WidgetInterface`. `CraftCms\Cms\Dashboard\Contracts\WidgetInterface` should be used instead.
+- Deprecated `craft\base\WidgetTrait`.
+- Deprecated `craft\widgets\CraftSupport`. `CraftCms\Cms\Dashboard\Widgets\CraftSupport` should be used instead.
+- Deprecated `craft\widgets\Feed`. `CraftCms\Cms\Dashboard\Widgets\Feed` should be used instead.
+- Deprecated `craft\widgets\MissingWidget`. `CraftCms\Cms\Dashboard\Widgets\MissingWidget` should be used instead.
+- Deprecated `craft\widgets\MyDrafts`. `CraftCms\Cms\Dashboard\Widgets\MyDrafts` should be used instead.
+- Deprecated `craft\widgets\NewUsers`. `CraftCms\Cms\Dashboard\Widgets\NewUsers` should be used instead.
+- Deprecated `craft\widgets\QuickPost`. `CraftCms\Cms\Dashboard\Widgets\QuickPost` should be used instead.
+- Deprecated `craft\widgets\RecentEntries`. `CraftCms\Cms\Dashboard\Widgets\RecentEntries` should be used instead.
+- Deprecated `craft\widgets\Updates`. `CraftCms\Cms\Dashboard\Widgets\Updates` should be used instead.
+- Deprecated `craft\records\Widget`. `CraftCms\Cms\Dashboard\Models\Widget` should be used instead.
+
+##### Events
+
+- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving` should be used instead.
+- Deprecated `craft\events\WidgetEvent` in favor of the following new events:
+  - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
+  - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
+  - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
+  - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
+
+### Address
+
+- Added `CraftCms\Cms\Support\Facades\Addresses`.
+
+### Assets
+
+- Added `CraftCms\Cms\Asset\AssetsHelper`.
+- Added `CraftCms\Cms\Support\Facades\Assets`.
+- Added `CraftCms\Cms\Support\Facades\AssetIndexer` facade.
+- Added `CraftCms\Cms\Support\Facades\Folders`.
+- Deprecated `craft\helpers\Assets`. `CraftCms\Cms\Asset\AssetsHelper` should be used instead.
+- Deprecated `craft\services\Assets`. `CraftCms\Cms\Asset\Assets` and `CraftCms\Cms\Asset\Folders` should be used instead.
+- Deprecated `\craft\records\Asset`. `\CraftCms\Cms\Asset\Models\Asset` should be used instead.
+- Deprecated `\craft\records\AssetIndexData`. `\CraftCms\Cms\Asset\Models\AssetIndexData` should be used instead.
+- Deprecated `\craft\records\AssetIndexingSession`. `\CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
+- Deprecated `\craft\records\Volume`. `\CraftCms\Cms\Asset\Models\Volume` should be used instead.
+- Deprecated `\craft\records\VolumeFolder`. `\CraftCms\Cms\Asset\Models\VolumeFolder` should be used instead.
+- Deprecated `\craft\controllers\AssetIndexesController`. `\CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController` should be used instead.
+- Deprecated `craft\services\AssetIndexer`. `CraftCms\Cms\Asset\AssetIndexer` should be used instead.
+- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Models\AssetIndexData` should be used instead.
+- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
+- Deprecated `craft\errors\AssetException`. `CraftCms\Cms\Asset\Exceptions\AssetException` should be used instead.
+- Deprecated `craft\errors\AssetDisallowedExtensionException`. `CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException` should be used instead.
+- Deprecated `craft\errors\AssetNotIndexableException`. `CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException` should be used instead.
+- Deprecated `craft\errors\FileException`. `CraftCms\Cms\Asset\Exceptions\FileException` should be used instead.
+- Deprecated `craft\errors\ImageException`. `CraftCms\Cms\Asset\Exceptions\ImageException` should be used instead.
+- Deprecated `craft\errors\ImageTransformException`. `CraftCms\Cms\Asset\Exceptions\ImageTransformException` should be used instead.
+- Deprecated `craft\errors\MissingAssetException`. `CraftCms\Cms\Asset\Exceptions\MissingAssetException` should be used instead.
+- Deprecated `craft\errors\MissingVolumeFolderException`. `CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException` should be used instead.
+- Deprecated `craft\errors\VolumeException`. `CraftCms\Cms\Asset\Exceptions\VolumeException` should be used instead.
+
+#### Events
+
+- Added `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`.
+- Added `CraftCms\Cms\Asset\Events\SetAssetFilename`.
+- Deprecated `craft\events\SetAssetFilenameEvent`. `CraftCms\Cms\Asset\Events\SetAssetFilename` should be used instead.
+- Deprecated `craft\events\RegisterAssetFileKindsEvent`. `CraftCms\Cms\Asset\Events\AssetFileKindsResolving` should be used instead.
+- Deprecated `craft\events\ReplaceAssetEvent` in favor of the following new events:
+  - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplacing`
+  - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplaced`
+- Deprecated `craft\events\DefineAssetThumbUrlEvent`. `CraftCms\Cms\Asset\Events\ThumbUrlResolving` should be used instead.
+- Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\PreviewHandlerResolving` should be used instead.
+
+### Auth
+
+- Refactored the authentication system to use Laravel’s authentication system.
+- Added `CraftCms\Cms\Auth\Events\SettingPassword`.
+- Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
+- Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
+- Deprecated `craft\web\User`. `auth()->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
+- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\UserAuthenticating` should be used instead.
+- Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
+- Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
+- Deprecated `\craft\records\SsoIdentity`. `\CraftCms\Cms\Auth\Models\SsoIdentity` should be used instead.
+- Deprecated `\craft\records\WebAuthn`. `\CraftCms\Cms\Auth\Models\WebAuthn` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::authorize`. `CraftCms\Cms\Auth\SessionAuth::authorize` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::deauthorize`. `CraftCms\Cms\Auth\SessionAuth::deauthorize` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker()->tokenExists($user, $code)` should be used instead.
+- Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
+  - Elevated sessions now work through [Laravel’s password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+- Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
+  - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+  - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+  - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
+- Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+
+#### Authorization
+
+Craft 6 now uses [Laravel’s authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
+
+##### Added
+
+- Added `CraftCms\Cms\Auth\Events\ElementAuthorizing` event for customizing element authorization.
+- Added `CraftCms\Cms\Element\Policies\ElementPolicy` base policy for element authorization.
+- Added element-specific authorization policies:
+  - `CraftCms\Cms\Address\Policies\AddressPolicy`
+  - `CraftCms\Cms\Asset\Policies\AssetPolicy`
+  - `CraftCms\Cms\Entry\Policies\EntryPolicy`
+  - `CraftCms\Cms\User\Policies\UserPolicy`
+  - `CraftCms\Cms\Field\Policies\ContentBlockPolicy`
+
+#### Passkeys
+
+- Added `CraftCms\Cms\Auth\Passkeys\Passkeys`.
+- Deprecated `craft\services\Auth` passkey methods. The following should be used instead:
+  - `Auth::hasPasskeys()` -> `app(Passkeys::class)->hasPasskeys()`
+  - `Auth::getPasskeys()` -> `app(Passkeys::class)->getPasskeys()`
+  - `Auth::getPasskeyCreationOptions()` -> `app(Passkeys::class)->getPasskeyCreationOptions()`
+  - `Auth::verifyPasskeyCreationResponse()` -> `app(Passkeys::class)->verifyPasskeyCreationResponse()`
+  - `Auth::getPasskeyRequestOptions()` -> `app(Passkeys::class)->getPasskeyRequestOptions()`
+  - `Auth::verifyPasskey()` -> `app(Passkeys::class)->verifyPasskey()`
+  - `Auth::deletePasskey()` -> `app(Passkeys::class)->deletePasskey()`
+- Deprecated `craft\auth\passkeys\CredentialRepository`. `CraftCms\Cms\Auth\Passkeys\CredentialRepository` should be used instead.
+- Deprecated `craft\auth\passkeys\WebauthnServer`. `CraftCms\Cms\Auth\Passkeys\WebauthnServer` should be used instead.
+
+### Conditions
+
+#### Added
+
+- Added `CraftCms\Cms\Support\Facades\Conditions`.
+
+#### Controllers
+
+- Removed `craft\controllers\ConditionsController`. `CraftCms\Cms\Http\Controllers\ConditionsController` should be used instead.
+
+#### Deprecations
+
+##### Service
+
+- Deprecated `craft\services\Conditions`. `CraftCms\Cms\Condition\Conditions` should be used instead.
+
+##### Base Conditions
+
+- Deprecated `craft\base\conditions\ConditionInterface`. `CraftCms\Cms\Condition\Contracts\ConditionInterface` should be used instead.
+- Deprecated `craft\base\conditions\ConditionRuleInterface`. `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface` should be used instead.
+- Deprecated `craft\base\conditions\BaseCondition`. `CraftCms\Cms\Condition\BaseCondition` should be used instead.
+- Deprecated `craft\base\conditions\BaseConditionRule`. `CraftCms\Cms\Condition\BaseConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseTextConditionRule`. `CraftCms\Cms\Condition\BaseTextConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseNumberConditionRule`. `CraftCms\Cms\Condition\BaseNumberConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseSelectConditionRule`. `CraftCms\Cms\Condition\BaseSelectConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseMultiSelectConditionRule`. `CraftCms\Cms\Condition\BaseMultiSelectConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseLightswitchConditionRule`. `CraftCms\Cms\Condition\BaseLightswitchConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseDateRangeConditionRule`. `CraftCms\Cms\Condition\BaseDateRangeConditionRule` should be used instead.
+- Deprecated `craft\base\conditions\BaseElementSelectConditionRule`. `CraftCms\Cms\Condition\BaseElementSelectConditionRule` should be used instead.
+
+##### Elements
+
+- Deprecated `craft\elements\conditions\ElementCondition`. `CraftCms\Cms\Element\Conditions\ElementCondition` should be used instead.
+- Deprecated `craft\elements\conditions\ElementConditionInterface`. `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface` should be used instead.
+- Deprecated `craft\elements\conditions\ElementConditionRuleInterface`. `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface` should be used instead.
+- Deprecated `craft\elements\conditions\HintableConditionRuleTrait`. `CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait` should be used instead.
+- Deprecated `craft\elements\conditions\TitleConditionRule`. `CraftCms\Cms\Element\Conditions\TitleConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\SlugConditionRule`. `CraftCms\Cms\Element\Conditions\SlugConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\UriConditionRule`. `CraftCms\Cms\Element\Conditions\UriConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\IdConditionRule`. `CraftCms\Cms\Element\Conditions\IdConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\StatusConditionRule`. `CraftCms\Cms\Element\Conditions\StatusConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\HasUrlConditionRule`. `CraftCms\Cms\Element\Conditions\HasUrlConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\HasDescendantsRule`. `CraftCms\Cms\Element\Conditions\HasDescendantsRule` should be used instead.
+- Deprecated `craft\elements\conditions\LevelConditionRule`. `CraftCms\Cms\Element\Conditions\LevelConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\DateCreatedConditionRule`. `CraftCms\Cms\Element\Conditions\DateCreatedConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\DateUpdatedConditionRule`. `CraftCms\Cms\Element\Conditions\DateUpdatedConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\SiteConditionRule`. `CraftCms\Cms\Element\Conditions\SiteConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\SiteGroupConditionRule`. `CraftCms\Cms\Element\Conditions\SiteGroupConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\LanguageConditionRule`. `CraftCms\Cms\Element\Conditions\LanguageConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\RelatedToConditionRule`. `CraftCms\Cms\Element\Conditions\RelatedToConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\NotRelatedToConditionRule`. `CraftCms\Cms\Element\Conditions\NotRelatedToConditionRule` should be used instead.
+
+##### Entries
+
+- Deprecated `craft\elements\conditions\entries\EntryCondition`. `CraftCms\Cms\Entry\Conditions\EntryCondition` should be used instead.
+- Deprecated `craft\elements\conditions\entries\PostDateConditionRule`. `CraftCms\Cms\Entry\Conditions\PostDateConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\ExpiryDateConditionRule`. `CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\SectionConditionRule`. `CraftCms\Cms\Entry\Conditions\SectionConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\TypeConditionRule`. `CraftCms\Cms\Entry\Conditions\TypeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\AuthorConditionRule`. `CraftCms\Cms\Entry\Conditions\AuthorConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\AuthorGroupConditionRule`. `CraftCms\Cms\Entry\Conditions\AuthorGroupConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\ViewableConditionRule`. `CraftCms\Cms\Entry\Conditions\ViewableConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\SavableConditionRule`. `CraftCms\Cms\Entry\Conditions\SavableConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\entries\FieldConditionRule`. `CraftCms\Cms\Entry\Conditions\FieldConditionRule` should be used instead.
+
+##### Users
+
+- Deprecated `craft\elements\conditions\users\UserCondition`. `CraftCms\Cms\User\Conditions\UserCondition` should be used instead.
+- Deprecated `craft\elements\conditions\users\UsernameConditionRule`. `CraftCms\Cms\User\Conditions\UsernameConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\EmailConditionRule`. `CraftCms\Cms\User\Conditions\EmailConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\FirstNameConditionRule`. `CraftCms\Cms\User\Conditions\FirstNameConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\LastNameConditionRule`. `CraftCms\Cms\User\Conditions\LastNameConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\GroupConditionRule`. `CraftCms\Cms\User\Conditions\GroupConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\AdminConditionRule`. `CraftCms\Cms\User\Conditions\AdminConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\CredentialedConditionRule`. `CraftCms\Cms\User\Conditions\CredentialedConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\LastLoginDateConditionRule`. `CraftCms\Cms\User\Conditions\LastLoginDateConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\users\AffiliatedSiteConditionRule`. `CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule` should be used instead.
+
+##### Assets
+
+- Deprecated `craft\elements\conditions\assets\AssetCondition`. `CraftCms\Cms\Asset\Conditions\AssetCondition` should be used instead.
+- Deprecated `craft\elements\conditions\assets\VolumeConditionRule`. `CraftCms\Cms\Asset\Conditions\VolumeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\FilenameConditionRule`. `CraftCms\Cms\Asset\Conditions\FilenameConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\FileTypeConditionRule`. `CraftCms\Cms\Asset\Conditions\FileTypeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\FileSizeConditionRule`. `CraftCms\Cms\Asset\Conditions\FileSizeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\HeightConditionRule`. `CraftCms\Cms\Asset\Conditions\HeightConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\WidthConditionRule`. `CraftCms\Cms\Asset\Conditions\WidthConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\DateModifiedConditionRule`. `CraftCms\Cms\Asset\Conditions\DateModifiedConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\HasAltConditionRule`. `CraftCms\Cms\Asset\Conditions\HasAltConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\UploaderConditionRule`. `CraftCms\Cms\Asset\Conditions\UploaderConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\SavableConditionRule`. `CraftCms\Cms\Asset\Conditions\SavableConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\assets\ViewableConditionRule`. `CraftCms\Cms\Asset\Conditions\ViewableConditionRule` should be used instead.
+
+##### Addresses
+
+- Deprecated `craft\elements\conditions\addresses\AddressCondition`. `CraftCms\Cms\Address\Conditions\AddressCondition` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\FullNameConditionRule`. `CraftCms\Cms\Address\Conditions\FullNameConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\OrganizationConditionRule`. `CraftCms\Cms\Address\Conditions\OrganizationConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\OrganizationTaxIdConditionRule`. `CraftCms\Cms\Address\Conditions\OrganizationTaxIdConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\LocalityConditionRule`. `CraftCms\Cms\Address\Conditions\LocalityConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\DependentLocalityConditionRule`. `CraftCms\Cms\Address\Conditions\DependentLocalityConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\PostalCodeConditionRule`. `CraftCms\Cms\Address\Conditions\PostalCodeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\SortingCodeConditionRule`. `CraftCms\Cms\Address\Conditions\SortingCodeConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\CountryConditionRule`. `CraftCms\Cms\Address\Conditions\CountryConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\AdministrativeAreaConditionRule`. `CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\AddressLine1ConditionRule`. `CraftCms\Cms\Address\Conditions\AddressLine1ConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\AddressLine2ConditionRule`. `CraftCms\Cms\Address\Conditions\AddressLine2ConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\AddressLine3ConditionRule`. `CraftCms\Cms\Address\Conditions\AddressLine3ConditionRule` should be used instead.
+- Deprecated `craft\elements\conditions\addresses\FieldConditionRule`. `CraftCms\Cms\Address\Conditions\FieldConditionRule` should be used instead.
+
+##### Fields
+
+- Deprecated `craft\fields\conditions\FieldConditionRuleInterface`. `CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface` should be used instead.
+- Deprecated `craft\fields\conditions\FieldConditionRuleTrait`. `CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait` should be used instead.
+- Deprecated `craft\fields\conditions\GeneratedFieldConditionRule`. `CraftCms\Cms\Field\Conditions\GeneratedFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\TextFieldConditionRule`. `CraftCms\Cms\Field\Conditions\TextFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\NumberFieldConditionRule`. `CraftCms\Cms\Field\Conditions\NumberFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\MoneyFieldConditionRule`. `CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\OptionsFieldConditionRule`. `CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\RelationalFieldConditionRule`. `CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\LightswitchFieldConditionRule`. `CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\EmptyFieldConditionRule`. `CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\DateFieldConditionRule`. `CraftCms\Cms\Field\Conditions\DateFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\CountryFieldConditionRule`. `CraftCms\Cms\Field\Conditions\CountryFieldConditionRule` should be used instead.
+- Deprecated `craft\fields\conditions\LinkFieldConditionRule`. `CraftCms\Cms\Field\Conditions\LinkFieldConditionRule` should be used instead.
+
+##### Events
+
+- Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\ConditionRulesResolving` should be used instead.
+
+### Drafts
+
+- Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.
+- Deprecated `craft\events\DraftEvent`. One of the events extending `CraftCms\Cms\Element\Events\DraftEvent` should be used instead.
+- Deprecated `craft\behaviors\DraftBehavior`. `CraftCms\Cms\Element\Concerns\Draftable` should be used instead.
+
+### Elements
+
+- Added `CraftCms\Cms\Element\ElementCaches` and `CraftCms\Cms\Support\Facades\ElementCaches`.
+  - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::startCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::collectCacheTags()`. `CraftCms\Cms\Element\ElementCaches::collectCacheTags()` should be used instead.
+  - Deprecated `craft\services\Elements::setCacheExpiryDate()`. `CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()` should be used instead.
+  - Deprecated `craft\services\Elements::collectCacheInfoForElement()`. `CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()` should be used instead.
+  - Deprecated `craft\services\Elements::stopCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateAllCaches()`. `CraftCms\Cms\Element\ElementCaches::invalidateAll()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateCachesForElementType()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElementType()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateCachesForElement()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElement()` should be used instead.
+- Added `CraftCms\Cms\Element\BulkOp\BulkOps`, `CraftCms\Cms\Element\BulkOp\BulkOpDeferrals`, and `CraftCms\Cms\Support\Facades\BulkOps`.
+  - Deprecated `craft\services\Elements::getBulkOpKeys()`. `CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()` should be used instead.
+  - Deprecated `craft\services\Elements::beginBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::start()` should be used instead.
+  - Deprecated `craft\services\Elements::resumeBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::resume()` should be used instead.
+  - Deprecated `craft\services\Elements::endBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::end()` should be used instead.
+  - Deprecated `craft\services\Elements::trackElementInBulkOps()`. `CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()` should be used instead.
+  - Deprecated `craft\services\Elements::ensureBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::ensure()` should be used instead.
+  - Deprecated `craft\events\BulkOpEvent::defer()`. `CraftCms\Cms\Element\BulkOp\BulkOps::defer()` should be used instead.
+- Added `CraftCms\Cms\Element\ElementActivity`, `CraftCms\Cms\Element\Data\ElementActivity`, `CraftCms\Cms\Element\Enums\ElementActivityType`, and `CraftCms\Cms\Support\Facades\ElementActivity`.
+  - Deprecated `craft\services\Elements::getRecentActivity()`. `CraftCms\Cms\Element\ElementActivity::getRecentActivity()` should be used instead.
+  - Deprecated `craft\services\Elements::trackActivity()`. `CraftCms\Cms\Element\ElementActivity::trackActivity()` should be used instead.
+- Added `CraftCms\Cms\Element\Actions\ElementAction`, `CraftCms\Cms\Element\ElementActions`, `CraftCms\Cms\Element\Contracts\DeleteActionInterface`, `CraftCms\Cms\Element\Contracts\ElementActionInterface`, `CraftCms\Cms\Element\Events\ElementActionPerformed`, `CraftCms\Cms\Element\Events\ElementActionPerforming`, `CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController`, and `CraftCms\Cms\Support\Facades\ElementActions`.
+- Added Laravel-native element action classes under `CraftCms\Cms\Element\Actions`, `CraftCms\Cms\Asset\Actions`, `CraftCms\Cms\Entry\Actions`, and `CraftCms\Cms\User\Actions`.
+- Added `CraftCms\Cms\Element\ElementExporters`, `CraftCms\Cms\Element\Contracts\ElementExporterInterface`, `CraftCms\Cms\Element\Exporters\ElementExporter`, `CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController`, and `CraftCms\Cms\Support\Facades\ElementExporters`.
+- Added Laravel-native element exporter classes under `CraftCms\Cms\Element\Exporters`.
+- Deprecated `craft\errors\InvalidTypeException`. `CraftCms\Cms\Element\Exceptions\InvalidTypeException` should be used instead.
+- Deprecated `craft\errors\UnsupportedSiteException`. `CraftCms\Cms\Element\Exceptions\UnsupportedSiteException` should be used instead.
+- Deprecated `craft\base\ElementAction`, `craft\base\ElementActionInterface`, `craft\elements\actions\DeleteActionInterface`, and the legacy `craft\elements\actions\*` classes. The corresponding `CraftCms\Cms\Element\Actions\*`, `CraftCms\Cms\Asset\Actions\*`, `CraftCms\Cms\Entry\Actions\*`, and `CraftCms\Cms\User\Actions\*` classes should be used instead.
+- Deprecated `craft\base\ElementExporter`, `craft\base\ElementExporterInterface`, and the legacy `craft\elements\exporters\*` classes. The corresponding `CraftCms\Cms\Element\Exporters\*` classes should be used instead.
+
+#### Validation
+
+Craft 6 introduces a new validation system that uses Laravel’s Validator instead of Yii2’s model validation.
+
+##### Added
+
+- Added `CraftCms\Cms\Validation\Contracts\Validatable` interface for classes that support Laravel-style validation.
+- Added `CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset` interface for classes that use a `Ruleset` class to define validation rules.
+- Added `CraftCms\Cms\Validation\Ruleset` abstract class for defining validation rules, messages, and preparation logic.
+- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component’s ruleset class.
+- Added `CraftCms\Cms\Validation\Concerns\Validates` trait for simple validation support.
+- Added `CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset` trait for ruleset-based validation.
+- Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
+- Added `CraftCms\Cms\Validation\Concerns\InteractsWithValidator` trait providing common validator interactions.
+- Added `CraftCms\Cms\Element\Validation\ElementRules` abstract class for defining element-specific validation rules.
+- Added `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` event for plugins to modify element validation rules.
+- Added `CraftCms\Cms\Element\Validation\Rules\ElementUriRule` for validating element URIs.
+- Added element-specific ruleset classes:
+  - `CraftCms\Cms\Address\Validation\AddressRules`
+  - `CraftCms\Cms\Asset\Validation\AssetRules`
+  - `CraftCms\Cms\Entry\Validation\EntryRules`
+  - `CraftCms\Cms\User\Validation\UserRules`
+  - `CraftCms\Cms\Field\Elements\ContentBlockRules`
+- Added `CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule` for validating asset locations.
+- Added `CraftCms\Cms\User\Validation\Rules\UserPasswordRule` for validating user passwords.
+- Added `CraftCms\Cms\User\Validation\Rules\UsernameRule` for validating usernames.
+- Added `CraftCms\Cms\Validation\Rules\UniqueCaseInsensitiveRule` for case-insensitive unique validation.
+- Added `CraftCms\Cms\Validation\Rules\DisallowMb4` for disallowing 4-byte UTF-8 characters.
+- Added `CraftCms\Cms\Validation\Rules\MoneyRule` for validating money values.
+
+##### Changed
+
+- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel’s validation format.
+- Added `FieldInterface::prepareForElementValidation()` for preparing field values before validation.
+- Validation rules are now defined as Laravel-style arrays (e.g., `['required', 'string', 'max:255']`).
+
+##### Deprecations
+
+- Deprecated `craft\base\Model::hasErrors()`. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.
+- Deprecated `craft\base\Model::getErrors()`. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.
+- Deprecated `craft\base\Model::addErrors()`. Use `->errors()->add($attribute, $message)` instead.
+- Deprecated `craft\base\Model::clearErrors()`. Use `->errors()->forget()` instead.
+- Deprecated `CraftCms\Cms\Component\Concerns\ValidatableComponent`. Use `CraftCms\Cms\Validation\Concerns\Validates` instead.
+- Deprecated `CraftCms\Cms\Component\Contracts\ValidatableComponentInterface`. Use `CraftCms\Cms\Validation\Contracts\Validatable` instead.
+- Deprecated `\craft\records\ContentBlock`. `\CraftCms\Cms\Element\Models\ContentBlock` should be used instead.
+- Deprecated `\craft\records\Draft`. `\CraftCms\Cms\Element\Models\Draft` should be used instead.
+- Deprecated `\craft\records\Element`. `\CraftCms\Cms\Element\Models\Element` should be used instead.
+- Deprecated `\craft\records\Element_SiteSettings`. `\CraftCms\Cms\Element\Models\ElementSiteSettings` should be used instead.
+- Deprecated `\craft\records\Revision`. `\CraftCms\Cms\Element\Models\Revision` should be used instead.
+
+### ElementSources
+
+- Deprecated `craft\services\ElementSources`. `CraftCms\Cms\Element\ElementSources` should be used instead.
+- Deprecated `craft\events\DefineSourceSortOptionsEvent`. `CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving` should be used instead.
+- Deprecated `craft\events\DefineSourceTableAttributesEvent`. `CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving` should be used instead.
+
+### Element Queries
+
+- Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
+- Deprecated `craft\elements\db\NestedElementQueryInterface`. `CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface` should be used instead.
+- Deprecated `craft\elements\db\NestedElementQueryTrait`. `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements` should be used instead.
+- Deprecated `craft\elements\db\OrderByPlaceholderExpression`. `CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression` should be used instead.
+- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Element\Queries\AddressQuery` should be used instead.
+- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Element\Queries\AssetQuery` should be used instead.
+- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Element\Queries\ContentBlockQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Element\Queries\ElementQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQueryInterface`
+- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Element\Queries\EntryQuery` should be used instead.
+- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Element\Queries\UserQuery` should be used instead.
+
+### Entries & Entry Types
+
+- Updated entry type table pagination to return Laravel-style pagination metadata and use the `pageTrigger` query parameter.
+- Deprecated `craft\services\Entries`. `CraftCms\Cms\Entry\Entries` and `CraftCms\Cms\Entry\EntryTypes` should be used instead.
+- Deprecated `craft\models\EntryType`. `CraftCms\Cms\Entry\Data\EntryType` should be used instead.
+- Deprecated `craft\records\EntryType`. `CraftCms\Cms\Entry\Models\EntryType` should be used instead.
+- Deprecated `craft\records\Entry`. `CraftCms\Cms\Entry\Models\Entry` should be used instead.
+- Deprecated `craft\errors\EntryTypeNotFoundException`. `CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException` should be used instead.
+- Deprecated `craft\events\EntryTypeEvent`. One of these should be used instead:
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\Entry\Events\ApplyingEntryTypeDelete`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaving`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
+- Removed `craft\controllers\EntriesController`. The following controllers now implement this functionality:
+  - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
+  - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
+  - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
+- Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
+- Removed `craft\console\controllers\EntryTypesController` in favor of:
+  - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
+
+### Component
+
+- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2’s `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
+- Added `CraftCms\Cms\Component\Exceptions\InvalidCallException`, replacing `yii\base\InvalidCallException`.
+- Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
+
+### Field Layouts
+
+#### Added
+
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutForm`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutFormTab`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutFormElement`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider`.
+- Added `CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout` trait.
+
+#### Deprecations
+- Deprecated `craft\models\FieldLayout`. `CraftCms\Cms\FieldLayout\FieldLayout` should be used instead.
+- Deprecated `craft\models\FieldLayoutTab`. `CraftCms\Cms\FieldLayout\FieldLayoutTab` should be used instead.
+- Deprecated `craft\base\FieldLayoutComponent`. `CraftCms\Cms\FieldLayout\FieldLayoutComponent` should be used instead.
+- Deprecated `craft\base\FieldLayoutElement`. `CraftCms\Cms\FieldLayout\FieldLayoutElement` should be used instead.
+- Deprecated `craft\base\FieldLayoutProviderInterface`. `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface` should be used instead.
+- Deprecated `craft\records\FieldLayout`. `CraftCms\Cms\FieldLayout\Models\FieldLayout` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseField`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseNativeField`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseUiElement`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement` should be used instead.
+- Deprecated `craft\fieldlayoutelements\CustomField`. `CraftCms\Cms\FieldLayout\LayoutElements\CustomField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Heading`. `CraftCms\Cms\FieldLayout\LayoutElements\Heading` should be used instead.
+- Deprecated `craft\fieldlayoutelements\HorizontalRule`. `CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Html`. `CraftCms\Cms\FieldLayout\LayoutElements\Html` should be used instead.
+- Deprecated `craft\fieldlayoutelements\LineBreak`. `CraftCms\Cms\FieldLayout\LayoutElements\LineBreak` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Markdown`. `CraftCms\Cms\FieldLayout\LayoutElements\Markdown` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Template`. `CraftCms\Cms\FieldLayout\LayoutElements\Template` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TextField`. `CraftCms\Cms\FieldLayout\LayoutElements\TextField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TextareaField`. `CraftCms\Cms\FieldLayout\LayoutElements\TextareaField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Tip`. `CraftCms\Cms\FieldLayout\LayoutElements\Tip` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\TitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\FullNameField`. `CraftCms\Cms\FieldLayout\LayoutElements\FullNameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\AddressField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\AddressField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\CountryCodeField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\CountryCodeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\LabelField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\LabelField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\LatLongField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\LatLongField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\OrganizationField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\OrganizationTaxIdField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationTaxIdField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\assets\AssetTitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\assets\AssetTitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\assets\AltField`. `CraftCms\Cms\FieldLayout\LayoutElements\assets\AltField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\entries\EntryTitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\UsernameField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\FullNameField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\FullNameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\EmailField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\AffiliatedSiteField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\PhotoField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField` should be used instead.
+- Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving` should be used instead.
+- Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving` should be used instead.
+
+### Fields
+
+- Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
+- Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
+- Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
+- Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.
+- Deprecated `craft\errors\InvalidFieldException`. `CraftCms\Cms\Field\Exceptions\InvalidFieldException` should be used instead.
+- Deprecated `craft\fields\data\ColorData`. `CraftCms\Cms\Field\Data\ColorData` should be used instead.
+- Deprecated `craft\fields\data\IconData`. `CraftCms\Cms\Field\Data\IconData` should be used instead.
+- Deprecated `craft\fields\data\JsonData`. `CraftCms\Cms\Field\Data\JsonData` should be used instead.
+- Deprecated `craft\fields\data\LinkData`. `CraftCms\Cms\Field\Data\LinkData` should be used instead.
+- Deprecated `craft\fields\data\MultiOptionsFieldData`. `CraftCms\Cms\Field\Data\MultiOptionsFieldData` should be used instead.
+- Deprecated `craft\fields\data\OptionData`. `CraftCms\Cms\Field\Data\OptionData` should be used instead.
+- Deprecated `craft\fields\data\SingleOptionFieldData`. `CraftCms\Cms\Field\Data\SingleOptionFieldData` should be used instead.
+- Deprecated `craft\fields\linktypes\Asset`. `CraftCms\Cms\Field\LinkTypes\Asset` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseElementLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseElementLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseTextLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseTextLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\Category`. `CraftCms\Cms\Field\LinkTypes\Category` should be used instead.
+- Deprecated `craft\fields\linktypes\Email`. `CraftCms\Cms\Field\LinkTypes\Email` should be used instead.
+- Deprecated `craft\fields\linktypes\Entry`. `CraftCms\Cms\Field\LinkTypes\Entry` should be used instead.
+- Deprecated `craft\fields\linktypes\Phone`. `CraftCms\Cms\Field\LinkTypes\Phone` should be used instead.
+- Deprecated `craft\fields\linktypes\Sms`. `CraftCms\Cms\Field\LinkTypes\Sms` should be used instead.
+- Deprecated `craft\fields\linktypes\Url`. `CraftCms\Cms\Field\LinkTypes\Url` should be used instead.
+- Deprecated `craft\fields\Addresses`. `CraftCms\Cms\Field\Addresses` should be used instead.
+- Deprecated `craft\fields\Assets`. `CraftCms\Cms\Field\Assets` should be used instead.
+- Deprecated `craft\fields\BaseOptionsField`. `CraftCms\Cms\Field\BaseOptionsField` should be used instead.
+- Deprecated `craft\fields\BaseRelationField`. `CraftCms\Cms\Field\BaseRelationField` should be used instead.
+- Deprecated `craft\fields\ButtonGroup`. `CraftCms\Cms\Field\ButtonGroup` should be used instead.
+- Deprecated `craft\fields\Categories`. `CraftCms\Cms\Field\Categories` should be used instead.
+- Deprecated `craft\fields\Checkboxes`. `CraftCms\Cms\Field\Checkboxes` should be used instead.
+- Deprecated `craft\fields\Color`. `CraftCms\Cms\Field\Color` should be used instead.
+- Deprecated `craft\fields\ContentBlock`. `CraftCms\Cms\Field\ContentBlock` should be used instead.
+- Deprecated `craft\fields\Country`. `CraftCms\Cms\Field\Country` should be used instead.
+- Deprecated `craft\fields\Date`. `CraftCms\Cms\Field\Date` should be used instead.
+- Deprecated `craft\fields\Dropdown`. `CraftCms\Cms\Field\Dropdown` should be used instead.
+- Deprecated `craft\fields\Email`. `CraftCms\Cms\Field\Email` should be used instead.
+- Deprecated `craft\fields\Entries`. `CraftCms\Cms\Field\Entries` should be used instead.
+- Deprecated `craft\fields\Icon`. `CraftCms\Cms\Field\Icon` should be used instead.
+- Deprecated `craft\fields\Json`. `CraftCms\Cms\Field\Json` should be used instead.
+- Deprecated `craft\fields\Lightswitch`. `CraftCms\Cms\Field\Lightswitch` should be used instead.
+- Deprecated `craft\fields\Link`. `CraftCms\Cms\Field\Link` should be used instead.
+- Deprecated `craft\fields\Matrix`. `CraftCms\Cms\Field\Matrix` should be used instead.
+- Deprecated `craft\fields\MissingField`. `CraftCms\Cms\Field\MissingField` should be used instead.
+- Deprecated `craft\fields\Money`. `CraftCms\Cms\Field\Money` should be used instead.
+- Deprecated `craft\fields\MultiSelect`. `CraftCms\Cms\Field\MultiSelect` should be used instead.
+- Deprecated `craft\fields\Number`. `CraftCms\Cms\Field\Number` should be used instead.
+- Deprecated `craft\fields\PlainText`. `CraftCms\Cms\Field\PlainText` should be used instead.
+- Deprecated `craft\fields\RadioButtons`. `CraftCms\Cms\Field\RadioButtons` should be used instead.
+- Deprecated `craft\fields\Range`. `CraftCms\Cms\Field\Range` should be used instead.
+- Deprecated `craft\fields\Table`. `CraftCms\Cms\Field\Table` should be used instead.
+- Deprecated `craft\fields\Tags`. `CraftCms\Cms\Field\Tags` should be used instead.
+- Deprecated `craft\fields\Time`. `CraftCms\Cms\Field\Time` should be used instead.
+- Deprecated `craft\fields\Url`. `CraftCms\Cms\Field\Url` should be used instead.
+- Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
+- Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
+
+### Filesystems
+
+- Deprecated `craft\errors\InvalidSubpathException`. `CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException` should be used instead.
+
+### GQL
+
+- Deprecated `\craft\records\GqlSchema`. `\CraftCms\Cms\Gql\Models\GqlSchema` should be used instead.
+- Deprecated `\craft\records\GqlToken`. `\CraftCms\Cms\Gql\Models\GqlToken` should be used instead.
+
+### HTTP
+
+- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\Cors`. Use Laravel’s CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
+- Deprecated `craft\filters\Headers`. Use Laravel middleware instead. (see https://laravel.com/docs/middleware)
+- Deprecated `craft\filters\ConditionalFilterTrait`.
+- Deprecated `craft\filters\SiteFilterTrait`.
+- Deprecated `craft\filters\UtilityAccess`.
+- Deprecated `craft\controllers\AppController::actionLicensingIssues()`. `CraftCms\Cms\Http\Middleware\EnforceLicenses` should be used instead.
+- Removed `craft\controllers\AppController::actionHealthCheck()`. `CraftCms\Cms\Http\Controllers\App\HealthCheckController` should be used instead.
+- Removed `craft\controllers\AppController::actionGetCpAlerts()` and `actionShunCpAlert()`. `CraftCms\Cms\Http\Controllers\App\CpAlertsController` should be used instead.
+- Removed `craft\controllers\AppController::actionIconPickerOptions()`. Use `CraftCms\Cms\Http\Controllers\IconController::pickerOptions()` instead.
+- Removed `craft\controllers\AppController::actionSetLicenseShunCookie()`. `CraftCms\Cms\Http\Controllers\App\LicensesController::setShunCookie()` should be used instead.
+- Removed `craft\controllers\AppController::actionGetPluginLicenseInfo()` and `actionUpdatePluginLicense()`. `CraftCms\Cms\Http\Controllers\App\PluginsController` should be used instead.
+- Removed `craft\controllers\AppController::actionBrokenImage()`. `CraftCms\Cms\Http\Middleware\ShowBrokenImage` should be used instead.
+- Removed `craft\controllers\AppController::actionRenderElements()` and `actionRenderComponents()`. `CraftCms\Cms\Http\Controllers\App\RenderController` should be used instead.
+- Removed `craft\controllers\NotFoundController`. Laravel’s exception handling should be used instead.
+- Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.
+- Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
+- Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
+
+### Mail
+
+- Added `CraftCms\Cms\Email\Commands\SendTestMailCommand`.
+- Added `CraftCms\Cms\Email\Mailables\CraftMailable`, a base mailable class that automatically applies project config email settings (from, replyTo, mailer) with site-specific overrides.
+- Added `CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable`.
+- Deprecated `Craft::$app->getMailer()`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
+- Deprecated `craft\mail\Mailer`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
+- Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
+- Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
+- Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
+- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel’s `mail` config and drivers.
+
+### Migrations
+
+Craft and Yii’s migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
+
+The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
+
+- Deprecated `craft\db\Migration`. `CraftCms\Cms\Database\Migration` should be used instead.
+- Deprecated `craft\db\MigrationManager`
+- Removed `craft\helpers\MigrationHelper` as it was deprecated since 4.0.0.
+- Removed `craft\console\controllers\InstallController` in favor of:
+  - `CraftCms\Cms\Console\Commands\InstallCommand`
+  - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
+- Removed `craft\console\controllers\MigrateController` in favor of:
+  - `CraftCms\Cms\Database\Commands\MigrateCommand`
+- Removed `craft\console\controllers\UpController` in favor of:
+  - `CraftCms\Cms\Console\Commands\UpCommand`
+
+### Plugins
+
+#### Added
+- The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
+
+#### Deprecations
+
+- Deprecated `craft\services\Plugins`. `CraftCms\Cms\Plugin\Plugins` should be used instead.
+- Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
+- Deprecated `craft\base\PluginTrait`.
+- Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
+- Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
+- Deprecated `craft\errors\InvalidLicenseKeyException`. `CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException` should be used instead.
+
+#### Controllers
+- Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
+
+#### Commands
+- Removed `craft\console\controllers\PluginController` in favor of:
+  - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable`
+  - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable`
+  - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install`
+  - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall`
+  - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list`
+
+#### Events
+- Deprecated `craft\events\PluginEvent` in favor of the following new events:
+  - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalling`;
+  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoading`;
+  - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
+  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalling`;
+  - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
+  - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
+  - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
+  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
+  - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
+  - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
+
+### Request
+
+- Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
+- Added `Request::isCpRequest()`, `Request::isSiteRequest()`, `Request::isActionRequest()`, `Request::actionSegments()`, `Request::actionSegmentsToRoute()`, `Request::duplicateWithUri()`, `Request::getToken()`, and `Request::getSigned()` macros.
+- Updated paginated requests to resolve the current page from the configured `pageTrigger` query parameter rather than path-style pagination segments.
+
+### Security
+
+- Added `CraftCms\Cms\Support\Security`.
+- Added `CraftCms\Cms\Support\Facades\Security`.
+- Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
+- Deprecated `Craft::$app->getSecurity()` in favor of Laravel’s Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
+- Deprecated the `blowfishHashCost` general config setting in favor of Laravel’s `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
+
+### Updates
+
+The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Update\Updates` should be used instead.
+
+Moved the following controllers:
+- `craft\controllers\ConfigSyncController` => `CraftCms\Cms\Http\Controllers\ConfigSyncController`
+- `craft\controllers\InstallController` => `CraftCms\Cms\Http\Controllers\InstallController`
+- `craft\controllers\MigrateController` => `CraftCms\Cms\Http\Controllers\MigrateController`
+- `craft\controllers\PluginStoreController` => `CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController`
+- `craft\controllers\PluginStore\InstallController` => `CraftCms\Cms\Http\Controllers\PluginStore\InstallController`
+- `craft\controllers\PluginStore\RemoveController` => `CraftCms\Cms\Http\Controllers\PluginStore\RemoveController`
+- `craft\controllers\UpdaterController` => `CraftCms\Cms\Http\Controllers\Updates\UpdaterController`
+- `craft\controllers\UpdatesController` => `CraftCms\Cms\Http\Controllers\Updates\UpdatesController`
+- `craft\console\controllers\UpdateController` in favor of these commands:
+  - `CraftCms\Cms\Update\Commands\UpdateCommand`
+  - `CraftCms\Cms\Update\Commands\ComposerInstallCommand`
+  - `CraftCms\Cms\Update\Commands\InfoCommand`
+
+##### Deprecations & removals
+- Deprecated `craft\helpers\Install`. `CraftCms\Cms\Site\Concerns\SiteDefaults` should be used instead.
+- Deprecated `craft\helpers\Update`. The only method was `checkPhpConstraint` which is now available on `CraftCms\Cms\Support\PHP::checkConstraint()`
+- Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Update\Events\CriticalUpdateReleasedEvent`
+- Removed `craft\models\Update`. `CraftCms\Cms\Update\Data\Update` should be used instead.
+- Removed `craft\models\UpdateRelease`. `CraftCms\Cms\Update\Data\UpdateRelease` should be used instead.
+- Removed `craft\models\Updates`. `CraftCms\Cms\Update\Data\Updates` should be used instead.
+
+#### Users
+
+- Removed `craft\console\controllers\UsersController` in favor of the following commands (signatures are the same):
+  - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
+  - `CraftCms\Cms\User\Commands\CreateCommand`
+  - `CraftCms\Cms\User\Commands\DeleteCommand`
+  - `CraftCms\Cms\User\Commands\ImpersonateCommand`
+  - `CraftCms\Cms\User\Commands\ListAdminsCommand`
+  - `CraftCms\Cms\User\Commands\LogoutAllCommand`
+  - `CraftCms\Cms\User\Commands\PasswordResetUrlCommand`
+  - `CraftCms\Cms\User\Commands\Remove2faCommand`
+  - `CraftCms\Cms\User\Commands\SetPasswordCommand`
+  - `CraftCms\Cms\User\Commands\UnlockCommand`
+
+### Project Config
+
+- Deprecated `craft\services\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfig` should be used instead.
+- Removed `craft\controllers\ProjectConfigController` in favor of `CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController`
+- Removed `craft\console\controllers\PcController` & `craft\console\controllers\ProjectConfigController` in favor of the following commands:
+  - `CraftCms\Cms\ProjectConfig\Commands\ApplyCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\DiffCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\ExportCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\GetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RebuildCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RemoveCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\SetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\TouchCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
+  - All commands can be called using either `php craft project-config` or `php craft pc`
+- Deprecated `craft\events\ConfigEvent` in favor of the following events:
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
+- Deprecated `craft\services\ProjectConfig::EVENT_AFTER_APPLY_CHANGES`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`
+- Deprecated `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`
+- Added `CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten`
+- Deprecated `craft\services\ProjectConfig::EVENT_REBUILD`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt`
+- Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
+- Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
+- Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
+- Removed `craft\models\ProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ProjectConfigData`
+- Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
+- Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
+
+### Revisions
+
+- Deprecated `craft\services\Revisions`. `CraftCms\Cms\Element\Revisions` should be used instead.
+- Deprecated `craft\events\RevisionEvent`. One of the events extending `CraftCms\Cms\Element\Events\RevisionEvent` should be used instead.
+- Deprecated `craft\behaviors\RevisionBehavior`. `CraftCms\Cms\Element\Concerns\Revisionable` should be used instead.
+
+### Routes
+
+- Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
+- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel’s routing](https://laravel.com/docs/12.x/routing) instead.
+
+### Search
+
+- Added `CraftCms\Cms\Support\Facades\Search`.
+- Deprecated `craft\services\Search`. `CraftCms\Cms\Search\Search` should be used instead.
+- Deprecated `Craft::$app->getSearch()`. `CraftCms\Cms\Support\Facades\Search` or `app(CraftCms\Cms\Search\Search::class)` should be used instead.
+- Deprecated `craft\search\SearchQuery`. `CraftCms\Cms\Search\SearchQuery` should be used instead.
+- Deprecated `craft\search\SearchQueryTerm`. `CraftCms\Cms\Search\SearchQueryTerm` should be used instead.
+- Deprecated `craft\search\SearchQueryTermGroup`. `CraftCms\Cms\Search\SearchQueryTermGroup` should be used instead.
+- Deprecated `craft\events\SearchEvent` in favor of the following new events:
+  - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\SearchStarting`
+  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
+  - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\ScoringResults`
+- Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\KeywordsIndexing` should be used instead.
+
+### Sections
+
+- Updated section index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
+- Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
+- Deprecated `craft\models\Section`. `CraftCms\Cms\Section\Data\Section` should be used instead.
+- Deprecated `craft\records\Section`. `CraftCms\Cms\Section\Models\Section` should be used instead.
+- Deprecated `craft\models\Section_SiteSettings`. `CraftCms\Cms\Section\Data\SectionSiteSettings` should be used instead.
+- Deprecated `craft\records\Section_SiteSettings`. `CraftCms\Cms\Section\Models\SectionSiteSettings` should be used instead.
+- Deprecated `craft\events\SectionEvent`. One of these should be used instead:
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleting`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\SectionDeletionApplying`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaving`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
+- Removed `craft\controllers\SectionsController` in favor of `CraftCms\Cms\Http\Controllers\SectionsController`
+- Removed `craft\console\controllers\SectionsController` in favor of:
+  - `CraftCms\Cms\Section\Commands\CreateCommand`
+  - `CraftCms\Cms\Section\Commands\DeleteCommand`
+- Added `CraftCms\Cms\Section\Enums\DefaultPlacement`
+- Added `CraftCms\Cms\Section\Enums\SectionType`
+- Deprecated `craft\errors\SectionNotFoundException`. `CraftCms\Cms\Section\Exceptions\SectionNotFoundException` should be used instead.
+
+### Sites
+
+- Deprecated `craft\services\Sites`. `CraftCms\Cms\Site\Sites` should be used instead.
+- Deprecated `craft\models\Site`. `CraftCms\Cms\Site\Data\Site` should be used instead.
+- Deprecated `craft\models\SiteGroup`. `CraftCms\Cms\Site\Data\SiteGroup` should be used instead.
+- Deprecated `craft\records\Site`. `CraftCms\Cms\Site\Models\Site` should be used instead.
+- Deprecated `craft\records\SiteGroup`. `CraftCms\Cms\Site\Models\SiteGroup` should be used instead.
+- Deprecated `craft\events\SiteEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\events\DeleteSiteEvent`. One of `CraftCms\Cms\Site\Events\SiteDeleting` or `CraftCms\Cms\Site\Events\SiteDeleted` should be used instead.
+- Deprecated `craft\events\ReorderSitesEvent`. One of `CraftCms\Cms\Site\Events\SitesReordering` or `CraftCms\Cms\Site\Events\SitesReordered` should be used instead.
+- Deprecated `craft\events\SiteGroupEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\errors\SiteNotFoundException`. `CraftCms\Cms\Site\Exceptions\SiteNotFoundException` should be used instead.
+- Deprecated `craft\errors\SiteGroupNotFoundException`.
+
+- Removed `craft\controllers\SitesController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController`
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController`
+
+### Structures
+
+- Deprecated `craft\services\Structures`. `CraftCms\Cms\Structure\Structures` should be used instead.
+- Deprecated `craft\models\Structure`. `CraftCms\Cms\Structure\Data\Structure` should be used instead.
+- Deprecated `craft\records\Structure`. `CraftCms\Cms\Structure\Models\Structure` should be used instead.
+- Deprecated `craft\records\StructureElement`. `CraftCms\Cms\Structure\Models\StructureElement` should be used instead.
+- Replaced `craft\controllers\StructuresController`. `CraftCms\Cms\Http\Controllers\StructuresController`.
+- Replaced structure related commands in `craft\console\controllers\RepairController` with:
+  - `\CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand`
+  - `\CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand`
+
+### System Messages
+
+- Deprecated `craft\services\SystemMessages`. `CraftCms\Cms\SystemMessage\SystemMessages` should be used instead.
+- Deprecated `craft\models\SystemMessage` and `craft\records\SystemMessage`. `CraftCms\Cms\SystemMessage\Models\SystemMessage` should be used instead.
+- Replaced `craft\controllers\SystemMessagesController` with `CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController`
+
+### Tokens
+
+- Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.
+- Deprecated `craft\records\Token`. `CraftCms\Cms\RouteToken\Models\RouteToken` should be used instead.
+
+### Twig
+
+- Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
+- Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\View\TemplateManager` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\Twig\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\Support\Facades\Twig` facade, resolving to `CraftCms\Cms\Twig\Twig`.
+- Added `CraftCms\Cms\Twig\Environment`, moved from `craft\web\twig\Environment`.
+- Added `CraftCms\Cms\Twig\TemplateResolver`.
+- Added `CraftCms\Cms\Twig\TemplateLoader`.
+- Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
+- Added helper functions in the `CraftCms\Cms` namespace: `template()`, `sandboxedTemplate()`, `pageTemplate()`, `renderString()`, `renderSandboxedString()`, `renderObjectTemplate()`, `renderSandboxedObjectTemplate()`.
+- Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
+- Deprecated `craft\web\View::getTwig()`. `CraftCms\Cms\Twig\Twig::get()` should be used instead.
+- Deprecated `craft\web\View::setTwig()`. `CraftCms\Cms\Twig\Twig::set()` should be used instead.
+- Deprecated `craft\web\View::createTwig()`. `CraftCms\Cms\Twig\Twig::create()` should be used instead.
+- Deprecated `craft\web\View::registerCpTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\View::registerSiteTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\View::registerTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\View::renderTemplate()`. `CraftCms\Cms\View\TemplateManager::renderTemplate()` or the `template()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedTemplate()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderPageTemplate()`. `CraftCms\Cms\View\TemplateManager::renderPageTemplate()` or the `pageTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderString()`. `CraftCms\Cms\View\TemplateManager::renderTwigString()` or the `renderString()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedString()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedString()` or the `renderSandboxedString()` helper should be used instead.
+- Deprecated `craft\web\View::renderObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::renderObjectTemplate()` or the `renderObjectTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::normalizeObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::normalizeObjectTemplate()` should be used instead.
+- Deprecated `craft\web\View::getIsRenderingTemplate()`. `CraftCms\Cms\View\TemplateManager::isRenderingTemplate()` should be used instead.
+- Deprecated `craft\web\View::getIsRenderingPageTemplate()`. `CraftCms\Cms\View\TemplateManager::isRenderingPageTemplate()` should be used instead.
+- Deprecated `craft\web\twig\Environment`. `CraftCms\Cms\Twig\Environment` should be used instead.
+- Deprecated `craft\web\View::EVENT_AFTER_CREATE_TWIG`. `CraftCms\Cms\Twig\Events\TwigCreated` should be used instead.
+- Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\Twig\TemplateResolver::doesTemplateExist()` should be used instead.
+- Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\Twig\TemplateResolver::resolveTemplate()` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
+
+#### Events
+
+- Added `CraftCms\Cms\Twig\Events\TwigCreated`, dispatched when a Twig environment is created.
+- Added `CraftCms\Cms\Twig\Events\TemplateRendering`, dispatched before a template is rendered. Supports cancellation via `ValidatableEvent`.
+- Added `CraftCms\Cms\Twig\Events\TemplateRendered`, dispatched after a template is rendered. Has a mutable `output` property.
+- Added `CraftCms\Cms\Twig\Events\PageTemplateRendering`, dispatched before a page template is rendered. Supports cancellation via `ValidatableEvent`.
+- Added `CraftCms\Cms\Twig\Events\PageTemplateRendered`, dispatched after a page template is rendered. Has a mutable `output` property.
+- Added `CraftCms\Cms\Twig\Events\PageStarting`, dispatched when page rendering begins.
+- Added `CraftCms\Cms\Twig\Events\PageEnded`, dispatched when page rendering ends. Has nullable `headHtml`, `bodyBeginHtml`, and `bodyEndHtml` properties for overriding `HtmlStack` output.
+- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\TemplateRendering` should be used instead.
+- Deprecated `craft\web\View::EVENT_AFTER_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\TemplateRendered` should be used instead.
+- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE`. `CraftCms\Cms\Twig\Events\PageTemplateRendering` should be used instead.
+- Deprecated `craft\web\View::EVENT_AFTER_RENDER_PAGE_TEMPLATE`. `CraftCms\Cms\Twig\Events\PageTemplateRendered` should be used instead.
+
+### Translations
+
+- Deprecated `craft\i18n\FormatConverter`. `CraftCms\Cms\Translation\FormatConverter` should be used instead.
+- Deprecated `craft\i18n\Formatter`. `CraftCms\Cms\Translation\Formatter` should be used instead.
+- Deprecated `craft\i18n\I18N`. `CraftCms\Cms\Translation\I18N` should be used instead.
+- Deprecated `craft\i18n\Locale`. `CraftCms\Cms\Translation\Locale` should be used instead.
+- Deprecated `craft\i18n\MessageFormatter`.
+- Deprecated `craft\i18n\PhpMessageSource`.
+- Deprecated `craft\i18n\Translation`. `CraftCms\Cms\Support\Facades\I18N` should be used instead.
+- Deprecated `Craft::t`. `CraftCms\Cms\t` should be used instead.
+
+### Users
+
+- `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable`, `Illuminate\Contracts\Auth\Access\Authorizable`, `Illuminate\Contracts\Auth\CanResetPassword`, and `Illuminate\Contracts\Auth\MustVerifyEmail`.
+- Added `CraftCms\Cms\User\Notifications\VerifyEmailNotification`.
+- `Users::purgeExpiredPendingUsers()` now joins the `password_reset_tokens` table to find expired pending users.
+- Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker()->tokenExists($user, $code)` should be used instead.
+- Removed `craft\controllers\UsersController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
+  - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
+  - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
+- Removed `\craft\controllers\UserSettingsController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController`
+- Deprecated `UserGroupEvent` in favor of:
+  - `CraftCms\Cms\User\Events\UserGroupSaving`
+  - `CraftCms\Cms\User\Events\UserGroupSaved`
+  - `CraftCms\Cms\User\Events\UserGroupDeletionApplying`
+  - `CraftCms\Cms\User\Events\UserGroupDeleting`
+  - `CraftCms\Cms\User\Events\UserGroupDeleted`
+- Deprecated `\craft\exceptions\UserGroupNotFoundException`.
+- Deprecated `\craft\services\UserGroups`. `CraftCms\Cms\User\UserGroups` should be used instead.
+- Deprecated `\craft\models\UserGroup`. `CraftCms\Cms\User\Data\UserGroup` should be used instead.
+- Deprecated `\craft\records\User`. `\CraftCms\Cms\User\Models\User` should be used instead.
+- Deprecated `\craft\records\UserGroup`. `\CraftCms\Cms\User\Models\UserGroup` should be used instead.
+- Deprecated `\craft\records\UserPermission`. `\CraftCms\Cms\User\Models\UserPermission` should be used instead.
+- Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
+- Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
+- Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\EditUserScreensResolving` should be used instead.
+
+### View
+
+- Added `CraftCms\Cms\View\TwigEngine`.
+- Added `CraftCms\Cms\View\HtmlStack`.
+- Added `CraftCms\Cms\Support\Facades\HtmlStack`.
+- Added `CraftCms\Cms\View\Enums\Position` enum.
+- Added `CraftCms\Cms\View\InputNamespace`.
+- Added `CraftCms\Cms\Support\Facades\InputNamespace`.
+- Added `CraftCms\Cms\View\TemplateHooks`.
+- Added `CraftCms\Cms\Support\Facades\TemplateHooks`.
+- Added `CraftCms\Cms\View\DeltaRegistry`.
+- Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
+- Added `CraftCms\Cms\View\TemplateMode` enum.
+- Added `CraftCms\Cms\View\Events\CpTemplateRootsResolving`.
+- Added `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`.
+- Added `CraftCms\Cms\View\TemplateCaches`.
+- Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
+- Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
+- Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
+- Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
+- Added `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`.
+- Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
+- Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
+- Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerJsFile()`. `CraftCms\Cms\View\HtmlStack::jsFile()` should be used instead.
+- Deprecated `craft\web\View::registerCss()`. `CraftCms\Cms\View\HtmlStack::css()` should be used instead.
+- Deprecated `craft\web\View::registerCssFile()`. `CraftCms\Cms\View\HtmlStack::cssFile()` should be used instead.
+- Deprecated `craft\web\View::registerScript()`. `CraftCms\Cms\View\HtmlStack::script()` should be used instead.
+- Deprecated `craft\web\View::registerScriptWithVars()`. `CraftCms\Cms\View\HtmlStack::scriptWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerHtml()`. `CraftCms\Cms\View\HtmlStack::html()` should be used instead.
+- Deprecated `craft\web\View::registerMetaTag()`. `CraftCms\Cms\View\HtmlStack::metaTag()` should be used instead.
+- Deprecated `craft\web\View::registerLinkTag()`. `CraftCms\Cms\View\HtmlStack::linkTag()` should be used instead.
+- Deprecated `craft\web\View::registerTranslations()`. `CraftCms\Cms\View\HtmlStack::translations()` should be used instead.
+- Deprecated `craft\web\View::registerJsImport()`. `CraftCms\Cms\View\HtmlStack::jsImport()` should be used instead.
+- Deprecated `craft\web\View::registerIcons()`. `CraftCms\Cms\View\HtmlStack::icons()` should be used instead.
+- Deprecated `craft\web\View::startJsBuffer()`. `CraftCms\Cms\View\HtmlStack::startJsBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsBuffer()`. `CraftCms\Cms\View\HtmlStack::clearJsBuffer()` should be used instead.
+- Deprecated `craft\web\View::startScriptBuffer()`. `CraftCms\Cms\View\HtmlStack::startScriptBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearScriptBuffer()`. `CraftCms\Cms\View\HtmlStack::clearScriptBuffer()` should be used instead.
+- Deprecated `craft\web\View::startCssBuffer()`. `CraftCms\Cms\View\HtmlStack::startCssBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearCssBuffer()`. `CraftCms\Cms\View\HtmlStack::clearCssBuffer()` should be used instead.
+- Deprecated `craft\web\View::startCssFileBuffer()`. `CraftCms\Cms\View\HtmlStack::startCssFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearCssFileBuffer()`. `CraftCms\Cms\View\HtmlStack::clearCssFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::startJsFileBuffer()`. `CraftCms\Cms\View\HtmlStack::startJsFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsFileBuffer()`. `CraftCms\Cms\View\HtmlStack::clearJsFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::startHtmlBuffer()`. `CraftCms\Cms\View\HtmlStack::startHtmlBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearHtmlBuffer()`. `CraftCms\Cms\View\HtmlStack::clearHtmlBuffer()` should be used instead.
+- Deprecated `craft\web\View::startMetaTagBuffer()`. `CraftCms\Cms\View\HtmlStack::startMetaTagBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearMetaTagBuffer()`. `CraftCms\Cms\View\HtmlStack::clearMetaTagBuffer()` should be used instead.
+- Deprecated `craft\web\View::startJsImportBuffer()`. `CraftCms\Cms\View\HtmlStack::startJsImportBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsImportBuffer()`. `CraftCms\Cms\View\HtmlStack::clearJsImportBuffer()` should be used instead.
+- Deprecated `craft\web\View::getNamespace()`. `CraftCms\Cms\View\InputNamespace::get()` should be used instead.
+- Deprecated `craft\web\View::setNamespace()`. `CraftCms\Cms\View\InputNamespace::set()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputs()`. `CraftCms\Cms\View\InputNamespace::namespaceInputs()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputName()`. `CraftCms\Cms\View\InputNamespace::namespaceInputName()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputId()`. `CraftCms\Cms\View\InputNamespace::namespaceInputId()` should be used instead.
+- Deprecated `craft\web\View::TEMPLATE_MODE_CP`. `CraftCms\Cms\View\TemplateMode::Cp` should be used instead.
+- Deprecated `craft\web\View::TEMPLATE_MODE_SITE`. `CraftCms\Cms\View\TemplateMode::Site` should be used instead.
+- Deprecated `craft\web\View::getTemplateMode()`. `CraftCms\Cms\View\TemplateMode::get()` should be used instead.
+- Deprecated `craft\web\View::setTemplateMode()`. `CraftCms\Cms\View\TemplateMode::set()` should be used instead.
+- Deprecated `craft\web\View::getTemplatesPath()`. `CraftCms\Cms\View\TemplateMode::templatesPath()` should be used instead.
+- Deprecated `craft\web\View::getCpTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
+- Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\CpTemplateRootsResolving` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\SiteTemplateRootsResolving` should be used instead.
+- Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
+- Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
+- Deprecated `craft\web\View::getModifiedDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getModifiedNames()` should be used instead.
+- Deprecated `craft\web\View::setInitialDeltaValue()`. `CraftCms\Cms\View\DeltaRegistry::setInitialValue()` should be used instead.
+- Deprecated `craft\web\View::getInitialDeltaValues()`. `CraftCms\Cms\View\DeltaRegistry::getInitialValues()` should be used instead.
+- Deprecated `craft\web\View::getIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::isActive()` should be used instead.
+- Deprecated `craft\web\View::setIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::setActive()` should be used instead.
+- Deprecated `craft\web\View::hook()`. `CraftCms\Cms\View\TemplateHooks::register()` should be used instead.
+- Deprecated `craft\web\View::invokeHook()`. `CraftCms\Cms\View\TemplateHooks::invoke()` should be used instead.

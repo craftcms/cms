@@ -1,0 +1,48 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SpinnerStories from './spinner.stories';
+
+<Meta of={SpinnerStories} name="Docs" />
+
+# Spinner
+
+`<craft-spinner>` is an indeterminate loading indicator, for work whose progress cannot be measured.
+
+<Canvas of={SpinnerStories.Default} sourceState="shown" />
+
+When progress _can_ be measured, use [Progress](?path=/docs/components-progress--docs) or [Progress Bar](?path=/docs/components-progress-bar--docs) instead — a spinner that runs for thirty seconds tells a person nothing about whether to wait.
+
+## Showing and Hiding
+
+`visible` toggles the spinner, and `show()` / `hide()` do the same from script, each firing a matching event.
+
+Hiding keeps the spinner in the layout rather than removing it:
+
+<Canvas of={SpinnerStories.Hidden} sourceState="shown" />
+
+That is the point — content around it does not jump as work starts and stops:
+
+<Canvas of={SpinnerStories.HoldsItsSpace} sourceState="shown" />
+
+If you want the space back, remove the element rather than hiding it.
+
+## Sizing
+
+The spinner is sized in `em`, so it takes the font size of what contains it:
+
+<Canvas of={SpinnerStories.Sizes} sourceState="shown" />
+
+## Accessibility
+
+The spinner itself is presentational — an animated shape carries no meaning to a screen reader.
+
+**Slot text saying what is loading.** It is visually hidden and announced, which is the only thing making the wait perceivable to someone who cannot see the animation:
+
+```html
+<craft-spinner>Loading entries</craft-spinner>
+```
+
+A spinner with an empty slot is silent. That is occasionally right — inside a button that already says "Saving…" — but it is a decision to make rather than a default to accept.
+
+## Properties
+
+<ArgTypes of={SpinnerStories} />

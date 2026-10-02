@@ -1,0 +1,56 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="JavaScript API/Factory" />
+
+# Factory
+
+The factory builds a component in JavaScript and hands back the element, with no markup and no jQuery.
+
+```js
+import {createSwitch} from '@craftcms/ui/factory';
+
+const toggle = createSwitch({
+  name: 'enabled',
+  label: 'Enabled',
+  on: true,
+  onChange: (on) => console.log(on),
+});
+
+container.append(toggle);
+```
+
+Every builder takes a single config object and returns the element. Nothing is inserted for you — append the result where it belongs. The one exception is `createCopyTextPrompt`, which is a dialog: it appends itself to `<body>` and opens.
+
+Each function is the client-side twin of a PHP component in `src/Cp/Components/`, so a control built here and one rendered by Twig produce the same element.
+
+## What is available
+
+| Function               | Returns                        | Config                 |
+| ---------------------- | ------------------------------ | ---------------------- |
+| `createSwitch`         | `<craft-switch>`               | `SwitchConfig`         |
+| `createTextInput`      | `<input class="text">`         | `TextInputConfig`      |
+| `createInputColor`     | `<craft-input-color>`          | `InputColorConfig`     |
+| `createInputPassword`  | `<craft-input-password>`       | `InputPasswordConfig`  |
+| `createSlidePicker`    | `<craft-slide-picker>`         | `SlidePickerConfig`    |
+| `createCopyTextPrompt` | `<craft-dialog>`, already open | `CopyTextPromptConfig` |
+
+Import them from `@craftcms/ui/factory`, or one at a time from `@craftcms/ui/factory/create-switch` and so on. Each config interface is exported alongside its function.
+
+## Form values
+
+The controls that carry a value are form-associated, so a `name` is all it takes to post one:
+
+```js
+const picker = createSlidePicker({name: 'columns', min: 1, max: 6, value: 3});
+form.append(picker);
+
+new FormData(form).get('columns'); // "3"
+```
+
+There is no hidden input behind them, and `form.reset()` puts back the value the control started with.
+
+## Not the whole legacy surface
+
+`createTextInput` returns a native `<input>` rather than a custom element, because that is what the rest of the CP's text inputs are built from. It renders markup only. The behaviour the legacy `Craft.ui.createTextInput` layered on top — the placeholder animation and characters-left counter from `Garnish.NiceText`, the password wrapper, the mobile autofocus suppression — stays in the legacy shim that wraps this function's result.
+
+Reach for [Utilities](?path=/docs/javascript-api-utilities--docs) for the smaller pieces the factory itself is built from, including `createButton`.

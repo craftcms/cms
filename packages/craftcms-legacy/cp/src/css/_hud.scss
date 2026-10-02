@@ -1,0 +1,166 @@
+@use 'variables';
+@use '@craftcms/sass/mixins';
+
+// HUD styles live in resources/js/common/slideouts/panel-stack.css.
+
+.modal {
+  z-index: 100;
+  box-sizing: border-box;
+  @include mixins.modal;
+}
+
+.header,
+.footer {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.header,
+.footer {
+  background-color: var(--gray-100);
+}
+
+.header {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 24px;
+  box-shadow: inset 0 -1px 0 var(--border-hairline);
+
+  h1 {
+    margin: 0;
+  }
+
+  &::after {
+    @include mixins.clearafter;
+  }
+}
+
+.footer {
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding-block: 5px;
+  padding-inline: var(--pane-padding, var(--xl));
+  box-shadow: inset 0 1px 0 var(--border-hairline);
+
+  &.flex {
+    & > * {
+      margin-block-end: 0;
+    }
+  }
+}
+
+.modal .body {
+  padding: var(--modal-padding);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.pane,
+.modal .body {
+  .header {
+    margin-block: calc(var(--pane-padding, 24px) * -1) var(--pane-padding, 24px);
+    margin-inline: calc(var(--pane-padding, 24px) * -1);
+  }
+
+  .footer {
+    margin-block: var(--pane-padding, 24px) calc(var(--pane-padding, 24px) * -1);
+    margin-inline: calc(var(--pane-padding, 24px) * -1);
+  }
+}
+
+.modal-shade {
+  z-index: 100;
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--shade-bg);
+
+  &:not(.visible) {
+    display: none;
+  }
+
+  &.blurred {
+    backdrop-filter: blur(10px);
+  }
+}
+
+.modal {
+  position: fixed;
+  overflow: hidden;
+
+  &:not(.fitted, .fullscreen) {
+    width: 66%;
+    height: 66%;
+    min-width: 600px;
+    min-height: 400px;
+  }
+
+  &.fitted {
+    width: auto;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  &.fullscreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  &.alert .body {
+    padding-inline-start: 76px;
+
+    &::before {
+      @include mixins.icon;
+      margin-inline: -58px 0;
+      margin-block: -6px 0;
+      float: inline-start;
+      content: 'alert';
+      font-size: 40px;
+      color: var(--light-text-color);
+    }
+  }
+
+  &.secure .body {
+    padding-inline-start: 76px;
+
+    &::before {
+      @include mixins.icon;
+      margin-inline: -56px 0;
+      margin-block: -14px 0;
+      float: inline-start;
+      content: 'secure';
+      font-size: 58px;
+      color: var(--light-text-color);
+    }
+  }
+
+  .resizehandle {
+    position: absolute;
+    z-index: 1;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    width: 24px;
+    height: 24px;
+    cursor: nwse-resize;
+    padding: var(--xs);
+
+    path {
+      fill: var(--ui-control-color);
+    }
+
+    body.rtl & {
+      .ltr {
+        display: none;
+      }
+    }
+
+    body.ltr & {
+      .rtl {
+        display: none;
+      }
+    }
+  }
+}

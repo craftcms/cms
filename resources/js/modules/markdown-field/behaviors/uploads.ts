@@ -1,0 +1,75 @@
+import {t} from '@craftcms/ui';
+import type {Options} from 'overtype';
+import {store} from '@/routes/craft/actions/craft/cp/uploads';
+import {FileUpload} from '@/upload-client';
+import {useMessages} from '@/modules/messages/useMessages';
+import {escapeMarkdownLabel} from './utilities';
+
+type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
+
+const ASSET_REF_HANDLE = 'asset';
+
+const messages = useMessages();
+
+export function fileUploadOptions(
+  uploadFolderId: number | null,
+  uploadSiteId: number | string
+): NonNullable<Options['fileUpload']> | undefined {
+  if (!uploadFolderId) {
+    return undefined;
+  }
+
+  return {
+    batch: false,
+    enabled: true,
+    // Let the upload session enforce the configured asset size limit.
+    maxSize: Number.MAX_SAFE_INTEGER,
+    onInsertFile: (file) => {
+      const upload = Array.isArray(file) ? file[0] : file;
+      if (!upload) {
+        throw new Error('No file was selected for upload.');
+      }
+      return uploadFile(upload, uploadFolderId, uploadSiteId);
+    },
+  };
+}
+
+async function uploadFile(
+  file: File,
+  uploadFolderId: number,
+  uploadSiteId: number | string
+): Promise<string> {
+  const task = new FileUpload<UploadResult>(file, {
+    url: store.url(),
+    parameters: {folderId: uploadFolderId},
+  });
+
+  try {
+    const data = await task.upload();
+
+    return uploadedAssetMarkdown(file, data, uploadSiteId);
+  } catch (error) {
+    messages.error(
+      error instanceof Error ? error.message : t('Couldn’t upload file.')
+    );
+
+    throw error;
+  }
+}
+
+function uploadedAssetMarkdown(
+  file: File,
+  response: UploadResult,
+  uploadSiteId: number | string
+): string {
+  if (!response.assetId) {
+    throw new Error(response.message || t('Couldn’t upload file.'));
+  }
+
+  const label = escapeMarkdownLabel(response.filename || file.name);
+  const ref = `{${ASSET_REF_HANDLE}:${response.assetId}@${uploadSiteId}:url}`;
+
+  return file.type.startsWith('image/')
+    ? `![${label}](${ref})`
+    : `[${label || ref}](${ref})`;
+}

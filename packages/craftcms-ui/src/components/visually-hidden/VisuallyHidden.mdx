@@ -1,0 +1,40 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as VisuallyHiddenStories from './visually-hidden.stories';
+
+<Meta of={VisuallyHiddenStories} name="Docs" />
+
+# Visually Hidden
+
+`<craft-visually-hidden>` hides its content visually while leaving it available to screen readers.
+
+<Canvas of={VisuallyHiddenStories.Default} sourceState="shown" />
+
+There is text in that example. It is in the document, in the accessibility tree, and in the tab order — it just is not painted.
+
+## When to Use It
+
+For text that names something the design conveys another way:
+
+- an icon-only control, where the icon carries the meaning visually
+- a table column whose header is implied by position
+- a live region reporting progress that is already visible as a spinner
+
+<Canvas of={VisuallyHiddenStories.InContext} sourceState="shown" />
+
+**Hidden is not removed.** `display: none` and `hidden` take content out of the accessibility tree entirely; this keeps it in. That difference is the whole point, and it is why `display: none` is not a substitute.
+
+## Checking It
+
+`debug` reveals the content, which is a faster way to see what a screen reader would announce than reaching for one:
+
+<Canvas of={VisuallyHiddenStories.Debug} sourceState="shown" />
+
+## A Caution
+
+Hidden text is text nobody proofreads. It goes stale, it gets missed in translation passes, and it is invisible in a design review.
+
+Prefer a visible label where one fits. Reach for this when the design genuinely cannot carry one — not as a way to satisfy an accessibility check while leaving the interface unlabelled.
+
+## Properties
+
+<ArgTypes of={VisuallyHiddenStories} />

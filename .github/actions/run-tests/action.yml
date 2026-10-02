@@ -1,0 +1,107 @@
+name: 'Run Tests'
+description: 'Setup PHP, install dependencies, and run a test command'
+
+inputs:
+  test-command:
+    description: 'The test command to run'
+    required: true
+  tia:
+    description: 'Use TIA on pull requests and record fresh baselines on 6.x pushes'
+    required: false
+    default: 'false'
+  tia-environment:
+    description: 'Environment identifier for isolating TIA baselines (e.g. mysql)'
+    required: false
+    default: default
+  php-version:
+    description: 'PHP version to install'
+    required: false
+    default: '8.5'
+  coverage:
+    description: 'Coverage driver to use'
+    required: false
+    default: 'none'
+  github-token:
+    description: 'GitHub token for Composer'
+    required: false
+    default: ''
+  packagist-username:
+    description: 'Packagist username'
+    required: false
+    default: ''
+  packagist-token:
+    description: 'Packagist token'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Additional directory to run composer install in (e.g. yii2-adapter)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi, sodium
+        tools: composer:v2
+        ini-values: display_errors=On, memory_limit=4G
+        coverage: ${{ inputs.coverage }}
+        # Pass an empty token so setup-php doesn't write GITHUB_TOKEN into
+        # Composer's auth config. Composer 2.9.7's regex rejects the new
+        # GITHUB_TOKEN format (composer/composer#12849).
+        github-token: ''
+      env:
+        # COMPOSER_TOKEN: ${{ inputs.github-token }}
+        COMPOSER_AUTH_JSON: |
+          {
+            "http-basic": {
+              "repo.packagist.com": {
+                "username": "${{ inputs.packagist-username }}",
+                "password": "${{ inputs.packagist-token }}"
+              }
+            }
+          }
+
+    - name: Set version
+      shell: bash
+      run: composer config version "6.x-dev"
+
+    - name: Install dependencies
+      uses: ramsey/composer-install@v3
+
+    - name: Set additional directory version
+      if: inputs.working-directory != ''
+      shell: bash
+      run: composer config version "6.x-dev"
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Install additional directory dependencies
+      if: inputs.working-directory != ''
+      uses: ramsey/composer-install@v3
+      with:
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Restore TIA baseline
+      if: inputs.tia == 'true' && github.event_name == 'pull_request'
+      uses: actions/cache/restore@v4
+      with:
+        path: .phpunit.cache/tia
+        key: pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-${{ github.event.pull_request.base.sha }}
+        restore-keys: |
+          pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-
+
+    - name: Run tests
+      shell: bash
+      env:
+        CRAFT_TIA_DIRECTORY: ${{ inputs.tia == 'true' && '.phpunit.cache/tia' || '' }}
+      run: ${{ inputs.test-command }} ${{ inputs.tia == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/6.x' && '--tia --fresh' || '' }}
+
+    - name: Save TIA baseline
+      if: inputs.tia == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/6.x'
+      uses: actions/cache/save@v4
+      with:
+        path: .phpunit.cache/tia
+        key: pest-tia-v2-${{ github.ref_name }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-${{ github.sha }}

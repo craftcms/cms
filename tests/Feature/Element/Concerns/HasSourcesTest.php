@@ -1,0 +1,151 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
+use Illuminate\Support\Facades\Event;
+
+class TestHasSourcesElement extends Element
+{
+    #[Override]
+    public static function displayName(): string
+    {
+        return 'Test Element';
+    }
+}
+
+describe('multiPageSources', function () {
+    test('returns false by default', function () {
+        expect(TestHasSourcesElement::multiPageSources())->toBeFalse();
+    });
+});
+
+describe('sources', function () {
+    test('returns array for context', function (string $context) {
+        expect(Entry::sources($context))->toBeArray();
+    })->with(['index', 'modal', 'field', 'settings']);
+
+    test('memoizes results for same class and context', function () {
+        $resolvedContexts = [];
+
+        Event::listen(function (ElementSourcesResolving $event) use (&$resolvedContexts) {
+            if ($event->elementType === TestHasSourcesElement::class) {
+                $resolvedContexts[] = $event->context;
+                $event->sources = [['key' => 'resolved-'.count($resolvedContexts)]];
+            }
+        });
+
+        TestHasSourcesElement::sources('index');
+        $sources = TestHasSourcesElement::sources('index');
+        TestHasSourcesElement::sources('modal');
+
+        expect($sources)->toBe([['key' => 'resolved-1']])
+            ->and($resolvedContexts)->toBe(['index', 'modal']);
+    });
+
+    test('triggers ElementSourcesResolving event', function () {
+        $eventTriggered = false;
+
+        Event::listen(function (ElementSourcesResolving $event) use (&$eventTriggered) {
+            if ($event->elementType === TestHasSourcesElement::class) {
+                $eventTriggered = true;
+                $event->sources = [];
+            }
+        });
+
+        TestHasSourcesElement::sources('modal');
+
+        expect($eventTriggered)->toBeTrue();
+    });
+});
+
+describe('findSource', function () {
+    test('returns null by default', function () {
+        $result = Entry::findSource('nonexistent', 'index');
+
+        expect($result)->toBeNull();
+    });
+});
+
+describe('sourcePath', function () {
+    test('returns null by default', function () {
+        $result = Entry::sourcePath('source', 'step', 'index');
+
+        expect($result)->toBeNull();
+    });
+});
+
+describe('modifyCustomSource', function () {
+    test('returns config unchanged by default', function () {
+        $config = ['key' => 'value', 'nested' => ['array' => true]];
+        $result = Entry::modifyCustomSource($config);
+
+        expect($result)->toBe($config);
+    });
+
+    test('reads a condition saved as a rule group', function () {
+        $section = Section::factory()->create(['handle' => 'news']);
+        $sectionRule = ['class' => SectionConditionRule::class, 'values' => [$section->uid]];
+
+        // An empty group, as project config stores it once `rules` is dropped.
+        expect(Entry::modifyCustomSource(['condition' => ['conditionRules' => ['operator' => 'and']]]))
+            ->not->toHaveKey('data');
+
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => ['operator' => 'and', 'rules' => [$sectionRule]]],
+        ])['data']['handle'] ?? null)->toBe('news');
+
+        // Under “or”, the rule limits some entries, not the whole source.
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => ['operator' => 'or', 'rules' => [$sectionRule]]],
+        ]))->not->toHaveKey('data');
+
+        // Conditions saved before rule groups: a flat list, all required.
+        expect(Entry::modifyCustomSource([
+            'condition' => ['conditionRules' => [$sectionRule]],
+        ])['data']['handle'] ?? null)->toBe('news');
+    });
+});
+
+describe('fieldLayouts', function () {
+    test('returns array', function () {
+        $layouts = Entry::fieldLayouts(null);
+
+        expect($layouts)->toBeArray();
+    });
+
+    test('returns array for singles source', function () {
+        $entryType = EntryType::factory()->create();
+
+        Section::factory()->withEntryTypes($entryType)->create([
+            'type' => SectionType::Single,
+        ]);
+
+        $layouts = Entry::fieldLayouts('singles');
+
+        expect($layouts)->toBeArray()
+            ->and($layouts)->not()->toBeEmpty();
+    });
+
+    test('triggers ElementFieldLayoutsResolving event', function () {
+        $eventTriggered = false;
+
+        Event::listen(function (ElementFieldLayoutsResolving $event) use (&$eventTriggered) {
+            if ($event->elementType === Entry::class) {
+                $eventTriggered = true;
+                $event->fieldLayouts = [];
+            }
+        });
+
+        Entry::fieldLayouts(null);
+
+        expect($eventTriggered)->toBeTrue();
+    });
+});

@@ -1,0 +1,62 @@
+<script setup lang="ts">
+  import useCraftData from '@/common/composables/useCraftData';
+  import ActionList from '@/common/components/ActionList.vue';
+  import {navItemActions} from '@/common/composables/navActions';
+  import {
+    withNavBadges,
+    withNavSelection,
+  } from '@/common/composables/navSelection';
+  import {computed} from 'vue';
+  import {usePage} from '@inertiajs/vue3';
+
+  const page = usePage<{
+    queue: {
+      enabled: boolean;
+      displayedJob: any;
+      hasReservedJobs: boolean;
+      hasWaitingJobs: boolean;
+    };
+  }>();
+
+  const {nav: sharedNav, navBadges} = useCraftData();
+
+  // The tree arrives once and then stays put, so neither the trail nor the
+  // badge counts are in it — both are decided per page, here.
+  // Server shape in, descriptors out: the trail and the badges are decided
+  // against the nav's own fields, then the whole tree becomes the same
+  // descriptors a menu would draw.
+  const nav = computed(() =>
+    navItemActions(
+      withNavBadges(
+        withNavSelection(sharedNav.value, page.url),
+        navBadges.value
+      )
+    )
+  );
+
+  // `ActionList` draws the levels. Under `trail` the branch you're in expands
+  // in place and everything else opens in a flyout on hover; `inline` makes
+  // every branch expandable instead, for a floating sidebar, where a flyout
+  // would open off the edge of a screen the drawer already covers.
+  const {iconOnly = false, mode = 'trail'} = defineProps<{
+    iconOnly?: boolean;
+    mode?: 'trail' | 'flyout' | 'inline';
+  }>();
+  const queue = computed(() => page.props.queue);
+</script>
+
+<template>
+  <craft-nav-list>
+    <ActionList
+      :actions="nav"
+      as="craft-nav-item"
+      :icon-only="iconOnly"
+      :mode="mode"
+    />
+    <cp-queue-indicator
+      :displayed-job.prop="queue.displayedJob"
+      :has-reserved-jobs.prop="queue.hasReservedJobs"
+      :has-waiting-jobs.prop="queue.hasWaitingJobs"
+    ></cp-queue-indicator>
+  </craft-nav-list>
+</template>

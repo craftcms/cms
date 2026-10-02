@@ -1,0 +1,76 @@
+name: 'ci / Pest'
+on:
+  push: {branches: [6.x]}
+  workflow_dispatch:
+
+concurrency:
+  group: tia-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    if: github.ref == 'refs/heads/6.x'
+    name: 'Tia Baseline'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+
+      - name: Restore Custom Elements Manifest
+        id: cem
+        uses: actions/cache@v4
+        with:
+          path: packages/craftcms-ui/dist/custom-elements.json
+          key: cem-${{ hashFiles('packages/craftcms-ui/src/components/**', 'packages/craftcms-ui/custom-elements-manifest.config.mjs', 'packages/craftcms-ui/package.json', 'packages/craftcms-ui/tsconfig.json') }}
+
+      - name: Setup Vite+
+        if: steps.cem.outputs.cache-hit != 'true'
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+          run-install: false
+
+      - name: Generate Custom Elements Manifest
+        if: steps.cem.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile --filter @craftcms/ui
+          vp run @craftcms/ui#build:manifest
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      - name: Install libvips
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+
+      - name: Copy tests .env
+        shell: bash
+        run: |
+          cp ./tests/.env.example.sqlite ./tests/.env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+          touch database/craft_tests.sqlite
+
+      - name: Run tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-command: ./vendor/bin/pest --parallel --ci --compact --tia --fresh
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
+          coverage: 'pcov'
+        env:
+          CRAFT_REQUIRE_VIPS: '1'
+
+      - name: Resolve TIA baseline path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload TIA baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: pest-tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30

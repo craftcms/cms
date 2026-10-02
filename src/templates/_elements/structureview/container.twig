@@ -1,9 +1,0 @@
-{% include "_elements/structure" with {
-    context:             context,
-    elements:            elements,
-    disabledElementIds:  disabledElementIds,
-    collapsedElementIds: collapsedElementIds,
-    structure:           structure,
-    sortable:            (context == 'index'),
-    newChildUrl:         (context == 'index' and newChildUrl is defined ? newChildUrl : null),
-} only %}

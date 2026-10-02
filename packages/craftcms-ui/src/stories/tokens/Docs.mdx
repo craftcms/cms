@@ -1,0 +1,232 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import VariantsMeta, {
+  AppearanceScale,
+  ButtonMatrix,
+  CalloutMatrix,
+} from './variants.stories';
+
+<Meta of={VariantsMeta} />
+
+# Variants & Appearances
+
+The component system uses two independent properties to control how semantic color is applied to UI elements:
+
+- **Variant** - _What kind of message is this?_ Values: `neutral`, `success`, `warning`, `danger`, `info`
+- **Appearance** - _How prominently should it be displayed?_ Values: `solid`, `fill`, `outline-fill`, `outline`, `plain`
+
+Any variant can be combined with any appearance. A `danger` callout can be a bold `solid` banner or a subtle `plain` inline hint. The variant stays the same; the appearance controls how loudly it speaks.
+
+---
+
+## How variants work
+
+Setting `variant="danger"` on a component remaps a set of **generic** CSS custom properties to the corresponding **semantic group** tokens. Components author their styles against the generic tokens, so they never need to know which color group is active.
+
+```css
+[variant='danger'] {
+  --c-color-fill-loud: var(--c-color-danger-fill-loud);
+  --c-color-fill-normal: var(--c-color-danger-fill-normal);
+  --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
+  --c-color-border-*: var(--c-color-danger-border- *);
+  --c-color-on-*: var(--c-color-danger-on- *);
+}
+```
+
+This indirection happens in `src/styles/variants.styles.ts`, a shared Lit CSS module that any component can import.
+
+---
+
+## How appearances work
+
+Appearances consume the generic tokens set by the variant and apply them with varying intensity:
+
+<table>
+  <thead>
+    <tr>
+      <th>Appearance</th>
+      <th>Background</th>
+      <th>Border</th>
+      <th>Text</th>
+      <th>Intensity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>solid</code>
+      </td>
+      <td>
+        <code>fill-loud</code>
+      </td>
+      <td>
+        <code>border-loud</code>
+      </td>
+      <td>
+        <code>on-loud</code>
+      </td>
+      <td>Highest — full color fill</td>
+    </tr>
+    <tr>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>fill-normal</code>
+      </td>
+      <td>transparent</td>
+      <td>
+        <code>on-normal</code>
+      </td>
+      <td>Medium — muted fill, no border</td>
+    </tr>
+    <tr>
+      <td>
+        <code>outline-fill</code>
+      </td>
+      <td>
+        <code>fill-normal</code>
+      </td>
+      <td>
+        <code>border-normal</code>
+      </td>
+      <td>
+        <code>on-normal</code>
+      </td>
+      <td>Medium — muted fill with border</td>
+    </tr>
+    <tr>
+      <td>
+        <code>outline</code>
+      </td>
+      <td>transparent</td>
+      <td>
+        <code>border-quiet</code>
+      </td>
+      <td>
+        <code>on-quiet</code>
+      </td>
+      <td>Low — border only</td>
+    </tr>
+    <tr>
+      <td>
+        <code>plain</code>
+      </td>
+      <td>transparent</td>
+      <td>transparent</td>
+      <td>
+        <code>on-quiet</code>
+      </td>
+      <td>Lowest — text only</td>
+    </tr>
+  </tbody>
+</table>
+
+Each level uses a different loudness tier (`loud`, `normal`, or `quiet`) of the same token group, creating a consistent intensity scale across all variants.
+
+### Appearance scale
+
+Each row shows a single variant rendered at every appearance level, from most prominent to most subtle:
+
+<Canvas of={AppearanceScale} />
+
+---
+
+## Variant x Appearance matrix
+
+The full matrix of all variant and appearance combinations, rendered with `<craft-callout>`:
+
+<Canvas of={CalloutMatrix} />
+
+---
+
+## Component-specific subsets
+
+Not every component supports the full set of variants and appearances. Components define the subset that makes sense for their use case.
+
+### Button
+
+Buttons use **3 variants** (`accent`, `neutral`, `danger`) and **3 appearances** (`solid`, `outline`, `plain`).
+
+<Canvas of={ButtonMatrix} />
+
+---
+
+## Using in a new component
+
+### 1. Import the shared variant styles
+
+Components supporting variants should import `variants.styles.ts` to get the standard variant-to-token mapping:
+
+```ts
+import {LitElement, css, type CSSResultGroup} from 'lit';
+import {property} from 'lit/decorators.js';
+import variantsStyles from '@src/styles/variants.styles.js';
+import {Variant, type VariantKey} from '@src/types';
+
+export default class MyComponent extends LitElement {
+  static override styles: CSSResultGroup = [variantsStyles, styles];
+
+  @property({reflect: true})
+  variant: VariantKey = Variant.Neutral;
+}
+```
+
+### 2. Author styles against generic tokens
+
+Write your component CSS using the generic `--c-color-*` custom properties. The variant mapping fills these in automatically:
+
+```css
+:host {
+  background-color: var(--c-color-fill-normal);
+  border: 1px solid var(--c-color-border-normal);
+  color: var(--c-color-on-normal);
+}
+```
+
+### 3. Color one region instead of the whole component (optional)
+
+Every rule in `variants.styles.ts` matches two ways: `:host([variant~='…'])`,
+which is the case above, and `[data-variant~='…']`, which any element inside
+your shadow root can ask for by attribute:
+
+```ts
+html`<div class="callout__action" data-variant=${this.variant}></div>`;
+```
+
+That's the shadow-DOM twin of the `[data-color]` rules in
+`shared/colorable.css`, which only reach light DOM. The tokens are ordinary
+custom properties, so a region set this way overrides the palette it inherits
+from the host — and a region that should stay neutral while the host is
+coloured can say `data-variant="neutral"`.
+
+### 4. Add appearance support (optional)
+
+If your component needs multiple visual intensities, add an `appearance` property and style each level:
+
+```ts
+import {Appearance, type AppearanceKey} from '@src/types';
+
+@property({reflect: true})
+appearance: AppearanceKey = Appearance.Fill;
+```
+
+```css
+:host([appearance~='accent']) {
+  background-color: var(--c-color-fill-loud);
+  border-color: var(--c-color-border-loud);
+  color: var(--c-color-on-loud);
+}
+
+:host([appearance~='plain']) {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--c-color-on-quiet);
+}
+```
+
+### Key conventions
+
+- **Reflect properties** - both `variant` and `appearance` should use `reflect: true` so they appear as HTML attributes for CSS matching.
+- **Use `~=` selectors** - appearance selectors in existing components use `[appearance~='value']` (word matching) rather than `[appearance='value']` (exact matching).
+- **Default to neutral** - set sensible defaults (`Variant.Neutral` / the most common appearance) so components look correct without explicit attributes.
+- **Define custom subsets when needed** - if the standard `Variant` or `Appearance` type doesn't fit (like Button's `primary` variant), define component-specific values instead of forcing the shared types.

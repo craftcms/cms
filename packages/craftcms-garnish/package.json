@@ -1,0 +1,80 @@
+{
+  "name": "@craftcms/garnish",
+  "version": "0.0.0",
+  "description": "Modern, tree-shakeable TypeScript rewrite of Craft CMS's Garnish UI library",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftcms/npm-packages.git"
+  },
+  "keywords": [
+    "craftcms",
+    "garnish",
+    "ui"
+  ],
+  "scripts": {
+    "build": "vp pack",
+    "build:watch": "vp pack --watch",
+    "dev": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "test": "vp test run",
+    "test:dev": "vp test",
+    "test:coverage": "vp test run --coverage",
+    "format": "vp fmt ./src ./tests ./stories ./.storybook",
+    "check:format": "vp fmt --check ./src ./tests ./stories ./.storybook",
+    "check:types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "pnpm run check:types && pnpm run check:format"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./compat": {
+      "development": "./src/compat.ts",
+      "types": "./dist/compat.d.ts",
+      "import": "./dist/compat.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "peerDependencies": {
+    "jquery": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "jquery": {
+      "optional": true
+    }
+  },
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/craftcms/npm-packages/issues"
+  },
+  "homepage": "https://github.com/craftcms/npm-packages#readme",
+  "devDependencies": {
+    "@storybook/addon-a11y": "catalog:",
+    "@storybook/addon-docs": "catalog:",
+    "@storybook/addon-themes": "catalog:",
+    "@storybook/html-vite": "^10.6.0",
+    "@total-typescript/tsconfig": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "happy-dom": "catalog:",
+    "storybook": "catalog:",
+    "typescript": "catalog:",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vitest": "4.1.10",
+    "vite-plus": "catalog:"
+  }
+}

@@ -1,0 +1,11 @@
+{# Renders a <craft-button> web component from the legacy button variables
+   (`type`, `id`, `class`, `disabled`, `readOnly`, `label`/`labelHtml`,
+   `icon`/`iconHtml`, `spinner`, `busyMessage`/`failureMessage`/
+   `retryMessage`/`successMessage`, `attributes`).
+
+   The legacy-to-component mapping lives in FormFields::buttonFromConfig().
+   `spinner` is absorbed — the web component renders its own spinner while
+   loading; the busy/failure/retry/success messages pass through as data
+   attributes. #}
+
+{{- craft.cp.button(_context)|raw -}}

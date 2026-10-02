@@ -1,0 +1,140 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
+
+use function CraftCms\Cms\t;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+    Session::passwordConfirmed();
+});
+
+it('requires login for index', function () {
+    auth()->logout();
+
+    get(action([PasskeysController::class, 'index']))
+        ->assertRedirect();
+});
+
+test('index', function () {
+    get(action([PasskeysController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Passkeys')
+            ->has('passkeys'));
+});
+
+describe('creationOptions', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertUnauthorized();
+    });
+
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+
+        postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertStatus(423);
+    });
+
+    it('returns WebAuthn options with required fields', function () {
+        $response = postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertOk()
+            ->json();
+
+        $options = Json::decode($response['options']);
+
+        expect($options)->toBeArray();
+        expect($options)->toHaveKeys(['challenge', 'rp', 'user']);
+    });
+});
+
+describe('verifyCreation', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'verifyCreation']))
+            ->assertUnauthorized();
+    });
+
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+
+        postJson(action([PasskeysController::class, 'verifyCreation']))
+            ->assertStatus(423);
+    });
+
+    it('validates credentials parameter is required', function () {
+        postJson(action([PasskeysController::class, 'verifyCreation']), [])
+            ->assertJsonValidationErrorFor('credentials');
+    });
+
+    it('returns failure for invalid credentials', function () {
+        postJson(action([PasskeysController::class, 'verifyCreation']), [
+            'credentials' => json_encode(['invalid' => 'data']),
+            'credentialName' => 'Test Passkey',
+        ])->assertBadRequest()
+            ->assertJson(['message' => 'Passkey creation failed.']);
+    });
+});
+
+describe('delete', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'delete']))
+            ->assertUnauthorized();
+    });
+
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+        $passkey = WebAuthn::factory()->create(['userId' => User::findOne()->id]);
+
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => $passkey->uid,
+        ])->assertStatus(423);
+
+        expect(WebAuthn::whereKey($passkey->id)->exists())->toBeTrue();
+    });
+
+    it('validates uid parameter is required', function () {
+        postJson(action([PasskeysController::class, 'delete']), [])
+            ->assertJsonValidationErrorFor('uid');
+    });
+
+    it('deletes the current user’s passkey', function () {
+        $passkey = WebAuthn::factory()->create(['userId' => User::findOne()->id]);
+        $otherPasskey = WebAuthn::factory()->create();
+
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => $passkey->uid,
+        ])
+            ->assertOk()
+            ->assertJson(['message' => t('Passkey deleted.')]);
+
+        expect(WebAuthn::whereKey($passkey->id)->exists())->toBeFalse()
+            ->and(WebAuthn::whereKey($otherPasskey->id)->exists())->toBeTrue();
+    });
+
+    it('does not delete another user’s passkey', function () {
+        $otherPasskey = WebAuthn::factory()->create();
+
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => $otherPasskey->uid,
+        ])->assertOk();
+
+        expect(WebAuthn::whereKey($otherPasskey->id)->exists())->toBeTrue();
+    });
+});

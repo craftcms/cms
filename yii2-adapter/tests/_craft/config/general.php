@@ -1,0 +1,19 @@
+<?php
+
+use CraftCms\Cms\Support\Env;
+
+/**
+ * General Configuration
+ *
+ * All of your system's general configuration settings go in here.
+ * You can see a list of the default settings in craft/app/config/defaults/general.php
+ */
+return [
+    'devMode' => true,
+    'omitScriptNameInUrls' => true,
+    'cpTrigger' => 'adminustriggerus',
+    'slugWordSeparator' => '--',
+    'allowUppercaseInSlug' => true,
+    'enableTwigSandbox' => true,
+    'securityKey' => Env::get('CRAFT_SECURITY_KEY'),
+];

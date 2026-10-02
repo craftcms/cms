@@ -27,11 +27,11 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://craftcms.com/docs/4.x/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
+Please take a couple minutes to read through Craft’s [code of conduct](https://craftcms.com/docs/5.x/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/master/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/main/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 
@@ -55,17 +55,72 @@ npm install
 npm run docs:dev
 ```
 
-Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8000/`. Changes you make to the `.md` files will automatically trigger a live reload of the pages in the browser.
+Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8080/`. Changes you make to the `.md` files will automatically trigger a live reload of the pages in the browser.
 
 ## Control Panel Translations
 
 We manage Craft’s Control Panel translations with [Crowdin](https://crowdin.com/project/craft-cms).
 
-If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) folder if you prefer. 
+If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [resources/translations/](https://github.com/craftcms/cms/tree/develop/resources/translations) folder if you prefer. 
 
 ## Core Enhancements
 
 If you would like to work on a new core feature or improvement, first create a [GitHub issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
+
+## Control Panel Front End
+
+This repo uses [pnpm](https://pnpm.io) as its package manager, pinned via the
+`packageManager` field in `package.json`. Install dependencies with `pnpm install`
+(or `vp install`, which resolves the pinned pnpm for you). `npm install` will not
+work — the workspace packages are linked with pnpm's `workspace:` protocol.
+
+In order to work on the control panel front end, run `pnpm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/ui` watcher, with output from each prefixed so you can tell them apart.
+
+That covers most control panel work. If you also need to edit files under `packages/craftcms-legacy`, run `pnpm run dev:legacy` instead, which additionally starts the legacy webpack watcher.
+
+If getting into the weeds is your thing, more detail on these pieces is provided below.
+
+### Control Panel Assets
+
+The source files specific to the control panel live in the `resources` folder. Production builds are written to the local `cms-assets` package so they can be published through `craftcms/cms-assets`. To develop assets for the control panel, there are two commands:
+```shell
+# Run the Vite development server
+pnpm run dev
+
+# Build assets for production
+pnpm run build
+```
+
+### `@craftcms/ui` package
+
+The control panel is largely backed by web components that live in the `@craftcms/ui` package within the `packages/craftcms-ui` directory. Like other packages, it has its own build process that can be run independently of the control panel.
+```shell
+# Run the build in watch mode. Assets will be rebuilt on every change
+pnpm run dev:ui
+
+# Run the build for production
+pnpm run build:ui
+```
+
+In practice, you rarely work on one without the other, which is why `pnpm run dev` runs both together.
+
+### `@craftcms/garnish` package
+
+`@craftcms/garnish` doesn't need its own watcher during development. The Vite dev server resolves it directly from source in `packages/craftcms-garnish/src`, so changes show up immediately. Production builds (and typechecking) use its built `dist` output instead, produced by `pnpm run build:garnish` or `pnpm run build:all`.
+
+### Legacy Bundles
+
+> [!NOTE]  
+> Updating the legacy bundles should be a rare occurrence. Avoid when possible.
+
+All the styles and scripts used to support the control panel up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
+```sh
+# Build assets for production
+pnpm run build:bundles
+
+# Run dev server to develop a specific package
+pnpm run dev:bundles -- --config-name=cp
+```
 
 ## Pull Requests
 
@@ -75,4 +130,3 @@ Pull requests should clearly describe the problem and solution. Include the rele
 Thanks for being awesome.
 
 :cocktail:
-

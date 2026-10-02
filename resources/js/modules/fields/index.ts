@@ -1,0 +1,278 @@
+import {createCopyTextPrompt} from '@craftcms/ui/factory';
+import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+import type {SlideoutSaveResult} from '@/common/slideouts/types';
+import {MatrixEntry} from '@/modules/matrix/matrix-entry';
+import {
+  MATRIX_SELECTION_ACTION,
+  syncSelectionMenu,
+} from '@/modules/matrix/selection-menu';
+
+/**
+ * Window listeners for the declarative actions carried by a field's "⋮" action
+ * menu (see `Field::actionMenuItems()` and `BaseField::copyAttributeAction()`).
+ *
+ * These used to be registered per-item as inline jQuery keyed on the item's
+ * DOM id. That never reached an Inertia-rendered page — the registered JS only
+ * ships on a full page load — so the behavior travels with the item as a
+ * `{type: 'event'}` action descriptor instead, and `runAction()` dispatches it
+ * here. `runAction` merges the invoking element in as `detail.trigger`.
+ */
+
+// `craft:edit-field` — the "Field settings" item. Opens the field's settings
+// screen in a slideout and, on save, re-announces it as the bubbling
+// `field-saved` event the field layout designer listens for to refresh its
+// selector (see `field-layout-designer/element.ts`).
+// SAFETY: craft:edit-field is a registered CustomEvent with a {fieldId} payload.
+window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
+  const {fieldId, trigger} = ev.detail ?? {};
+
+  if (!fieldId) {
+    return;
+  }
+
+  const announceSaved = (detail: unknown) => {
+    // Dispatched from the trigger, not the window: the designer scopes its
+    // listener to the settings slideout the menu was opened from.
+    (trigger instanceof HTMLElement ? trigger : window).dispatchEvent(
+      new CustomEvent('field-saved', {bubbles: true, detail})
+    );
+  };
+
+  // Focus the trigger so closing the slideout returns focus to it.
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
+
+  const url = Craft.getCpUrl('settings/fields/edit', {fieldId});
+
+  if (canUseVueSlideout()) {
+    void openSlideout(url, {
+      opener: trigger instanceof HTMLElement ? trigger : null,
+      onSaved: ({data, draft}: SlideoutSaveResult) => {
+        // An autosaved draft isn't a finished save; don't refresh on it.
+        if (!draft) {
+          announceSaved(data);
+        }
+      },
+    });
+
+    return;
+  }
+
+  const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
+    params: {fieldId},
+  });
+
+  slideout.on('submit', ({response}: any) => announceSaved(response?.data));
+}) as EventListener);
+
+// `craft:edit-entry-type` — the "Entry type settings" item on a Matrix block.
+// Admin-only; the server only emits the item when admin changes are allowed.
+// SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
+window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
+  const {entryTypeId, trigger} = ev.detail ?? {};
+
+  if (!entryTypeId) {
+    return;
+  }
+
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
+
+  const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
+
+  if (canUseVueSlideout()) {
+    void openSlideout(url, {
+      opener: trigger instanceof HTMLElement ? trigger : null,
+    });
+
+    return;
+  }
+
+  new Craft.CpScreenSlideout(url);
+}) as EventListener);
+
+// `craft:copy-text-prompt` — the "Copy field handle" / "Copy attribute name"
+// items. Shows the value in a read-only field with a copy button, matching what
+// the legacy `Craft.ui.createCopyTextPrompt` handler did.
+// SAFETY: craft:copy-text-prompt is a registered CustomEvent with a {label, value} payload.
+window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
+  const {label, value} = ev.detail ?? {};
+
+  if (typeof value !== 'string') {
+    return;
+  }
+
+  createCopyTextPrompt({label, value});
+}) as EventListener);
+
+/**
+ * The `craft-field` the invoking menu item belongs to. `craft-action-menu`
+ * keeps its content in place (Lion's dropdown config is local placement), so
+ * the item is still a descendant of the field it was rendered into.
+ */
+function fieldFor(trigger: unknown): HTMLElement | null {
+  return trigger instanceof HTMLElement
+    ? trigger.closest<HTMLElement>('craft-field')
+    : null;
+}
+
+/**
+ * Elements matching `selector` that belong to `field` itself rather than to a
+ * field nested inside it — the job the legacy selectors did with explicit
+ * direct-descendant chains, which the two render paths spell differently.
+ */
+function ownElements(field: HTMLElement, selector: string): HTMLElement[] {
+  return [...field.querySelectorAll<HTMLElement>(selector)].filter(
+    (el) => el.closest('craft-field') === field
+  );
+}
+
+// `craft:matrix-toggle-all` — the Matrix field's "Expand/Collapse all blocks"
+// items. Expanding when nothing is collapsed (or vice versa) is a no-op.
+// SAFETY: craft:matrix-toggle-all is a registered CustomEvent with a {collapse} payload.
+window.addEventListener('craft:matrix-toggle-all', ((ev: CustomEvent) => {
+  const {collapse, trigger} = ev.detail ?? {};
+  const field = fieldFor(trigger);
+
+  if (!field) {
+    return;
+  }
+
+  for (const block of ownElements(field, '[data-matrix-block]')) {
+    const entry = MatrixEntry.forContainer(block);
+
+    if (collapse) {
+      entry?.collapse();
+    } else {
+      entry?.expand();
+    }
+  }
+}) as EventListener);
+
+// `craft:matrix-selection-action` — the Matrix field's "Collapse/Expand selected
+// blocks" and "Disable/Enable selected blocks" items, for server-rendered
+// blocks. The Vue control applies them to its own blocks, which have no
+// MatrixEntry controller.
+// SAFETY: craft:matrix-selection-action is a registered CustomEvent with an {action} payload.
+window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
+  const {action, trigger} = ev.detail ?? {};
+  const field = fieldFor(trigger);
+
+  if (!field) {
+    return;
+  }
+
+  // Selecting goes through the input's own Select, whose change callback keeps
+  // the menu in step.
+  if (action === 'select' || action === 'deselect') {
+    const [block] = ownElements(field, '[data-matrix-block]');
+    const select = block
+      ? MatrixEntry.forContainer(block)?.matrix.entrySelect
+      : null;
+
+    if (action === 'select') {
+      select?.selectAll();
+    } else {
+      select?.deselectAll();
+    }
+
+    return;
+  }
+
+  let applied = false;
+
+  for (const block of ownElements(
+    field,
+    '[data-matrix-block][data-selected]'
+  )) {
+    const entry = MatrixEntry.forContainer(block);
+
+    if (!entry) {
+      continue;
+    }
+
+    applied = true;
+
+    switch (action) {
+      case 'collapse':
+        entry.collapse();
+        break;
+      case 'expand':
+        entry.expand();
+        break;
+      case 'disable':
+        entry.disable();
+        break;
+      case 'enable':
+        entry.enable();
+        break;
+      case 'disableForSite':
+        entry.disableForSite();
+        break;
+      case 'enableForSite':
+        entry.enableForSite();
+        break;
+      case 'disableGlobally':
+        entry.disableGlobally();
+        break;
+      case 'enableGlobally':
+        entry.enableGlobally();
+        break;
+    }
+  }
+
+  // The items now read for what was just done — "Expand selected blocks", say.
+  if (applied) {
+    syncSelectionMenu(field);
+  }
+}) as EventListener);
+
+// `craft:copy-nested-elements` — the "Copy all …" item on Matrix and Addresses
+// fields. Hands the cards to the CP clipboard, which stores them in
+// localStorage for paste targets like the nested element manager.
+// SAFETY: craft:copy-nested-elements is a registered CustomEvent with a {selector, elementType, fieldId} payload.
+window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
+  const {selector, elementType, fieldId, trigger} = ev.detail ?? {};
+  const field = fieldFor(trigger);
+
+  if (!field || typeof selector !== 'string') {
+    return;
+  }
+
+  // `dataset` reads are strings; the legacy `$.data()` calls these replace
+  // returned numbers.
+  const numeric = (value: string | undefined): number | null =>
+    value === undefined || value === '' || Number.isNaN(Number(value))
+      ? null
+      : Number(value);
+
+  const elements = ownElements(field, selector)
+    // A Matrix block's `data-id` is its UID — the identity everything else in
+    // the field is keyed by — so its element id rides on `data-element-id`.
+    // Cards elsewhere put the element id on `data-id` and have no `element-id`.
+    .map((el) => {
+      const entryTypeId = numeric(el.dataset.entryTypeId);
+
+      return {
+        type: String(elementType),
+        fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
+        id: el.dataset.elementId ?? el.dataset.id!,
+        draftId: numeric(el.dataset.draftId),
+        revisionId: numeric(el.dataset.revisionId),
+        ownerId: numeric(el.dataset.ownerId),
+        siteId: numeric(el.dataset.siteId),
+        ...(entryTypeId === null ? {} : {data: {entryTypeId}}),
+      };
+    })
+    // A block the browser minted has no element behind it yet, so there's
+    // nothing for the clipboard to point at — its `data-id` is still a UID.
+    .filter((element) => numeric(element.id) !== null);
+
+  if (!elements.length) {
+    return;
+  }
+
+  Craft.cp?.copyElements?.(elements);
+}) as EventListener);

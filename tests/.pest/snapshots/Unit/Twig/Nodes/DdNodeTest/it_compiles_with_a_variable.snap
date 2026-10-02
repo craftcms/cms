@@ -1,0 +1,2 @@
+// line 1
+dd(($context["entry"] ?? null));

@@ -1,0 +1,230 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Middleware;
+
+use Closure;
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Cp\SiteSwitcher;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\QueueState;
+use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
+use Inertia\Inertia;
+use Inertia\Middleware;
+use Inertia\Support\Header;
+use Override;
+
+use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUserElement;
+
+/**
+ * @since 6.0.0
+ */
+class HandleInertiaRequests extends Middleware
+{
+    /**
+     * Asks for the nav tree to be sent again, although the client already has
+     * it — by a visit following something that changed what the nav lists,
+     * such as saving an element type's sources.
+     */
+    public const string REFRESH_NAV_HEADER = 'X-Craft-Refresh-Nav';
+
+    #[Override]
+    public function handle(Request $request, Closure $next)
+    {
+        $htmlStack = app(HtmlStack::class);
+
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        View::composer('app', function ($view) use ($htmlStack) {
+            $view->with([
+                'headHtml' => $htmlStack->headHtml(),
+                'bodyHtml' => $htmlStack->bodyHtml(),
+            ]);
+        });
+
+        $response = parent::handle($request, $next);
+
+        /*
+         * Because we have both inertia and non-inertia pages we have a bit of
+         * code in cp.ts that figures out when we need a full refresh or not.
+         * That check relies on `x-redirect` which is usually set by Yii, but
+         * sometimes we need to redirect from within laravel. This adds the
+         * header so our cp.ts code still works.
+         *
+         * Once everything is inertia, this should be able to be removed.
+         */
+        if (
+            $request->isMethod('GET') &&
+            $request->inertia() &&
+            ! $response->headers->has(Header::INERTIA) &&
+            str_contains((string) $response->headers->get('Content-Type'), 'text/html')
+        ) {
+            $response->headers->set('X-Redirect', $request->fullUrl());
+        }
+
+        return $response;
+    }
+
+    /**
+     * The root template that's loaded on the first page visit.
+     *
+     * @see https://inertiajs.com/server-side-setup#root-template
+     *
+     * @var string
+     */
+    #[Override]
+    protected $rootView = 'app';
+
+    /**
+     * Determines the current asset version.
+     *
+     * @see https://inertiajs.com/asset-versioning
+     */
+    #[Override]
+    public function version(Request $request): ?string
+    {
+        return Cp::vite()->manifestHash();
+    }
+
+    /**
+     * Define the props that are shared by default.
+     *
+     * @see https://inertiajs.com/shared-data
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    public function share(Request $request): array
+    {
+        $isInstalled = Cms::isInstalled();
+
+        if (! $isInstalled) {
+            return parent::share($request);
+        }
+
+        // The site the CP is working with, not the request's: `getCurrentSite()`
+        // is documented to always be the primary site on a CP request, so
+        // sharing it would have every screen read the primary site's content
+        // no matter which one `?site=` names.
+        $currentSite = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
+        $updates = app(Updates::class);
+        $nav = app(Navigation::class);
+        $progressService = app(JobProgress::class);
+        $currentUser = null;
+        $generalConfig = app(GeneralConfig::class);
+
+        $updatePending = $updates->isCraftUpdatePending();
+
+        if (! $updatePending) {
+            $currentUser = currentUserElement();
+        }
+
+        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
+            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
+            : Icons::svg('c-outline');
+
+        return [
+            ...parent::share($request),
+            // Always included, so a partial reload can't consume the flashed
+            // messages without delivering them.
+            'messages' => Inertia::always(fn () => Flash::all()),
+            // @deprecated Read `messages`, which also carries notices, message
+            // settings and ids.
+            'flash' => fn () => [
+                'success' => Flash::getSuccess(),
+                'error' => Flash::getError(),
+            ],
+            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? new QueueState($progressService) : [
+                'displayedJob' => null,
+                'hasReservedJobs' => false,
+                'hasWaitingJobs' => false,
+            ],
+            'isMultiSite' => fn () => Sites::isMultiSite(),
+            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            'locale' => fn () => app()->getLocale(),
+            'craft' => fn () => [
+                'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
+                'general' => Cp::config()->toArray(),
+                'system' => [
+                    'name' => Cms::systemName(),
+                    'icon' => $systemIcon,
+                ],
+                'app' => [
+                    'version' => Cms::VERSION,
+                    'edition' => Edition::get()->toArray(),
+                ],
+                'site' => $currentSite ? [
+                    'id' => $currentSite->id,
+                    'handle' => $currentSite->handle,
+                    'url' => $currentSite->getBaseUrl(),
+                ] : null,
+                'currentUser' => $currentUser ? [
+                    'id' => $currentUser->id,
+                    'username' => $currentUser->username,
+                    'email' => $currentUser->email,
+                    'name' => $currentUser->name,
+                    'thumbHtml' => $currentUser->getThumbHtml(30),
+                    'admin' => $currentUser->admin,
+                ] : null,
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+                'maintenanceMode' => app()->isDownForMaintenance(),
+                'devMode' => app()->hasDebugModeEnabled(),
+                'allowAdminChanges' => $generalConfig->allowAdminChanges,
+                'orientation' => I18N::getLocale()->getOrientation(),
+                'baseCpUrl' => cp_url(),
+                'actionUrl' => action_url(),
+                'baseApiUrl' => Api::craftApiEndpoint(),
+                // Sent on the first response and not again: the tree is the
+                // same on every page, so re-serialising it into each one is
+                // pure weight. It carries no selection for that reason — the
+                // front end marks the trail from the URL it's on — and no
+                // badge counts, which are volatile and ride along below.
+                // Keyed by site: the tree now lists only the sources that run
+                // on the site the CP is working with, so it's cached per site
+                // on the client and re-sent the first time each one is opened,
+                // rather than once for the whole session.
+                //
+                // Left empty while a Craft update is pending: the tree is built
+                // from sections, volumes and the rest, which a migration that
+                // hasn't run yet may not have added columns for — and the
+                // updater screen is the one that has to render for the user to
+                // run it. The key changes with it, so the real tree is sent
+                // once the update is through.
+                'nav' => $updatePending
+                    ? Inertia::once(fn (): array => [])->as('craft.nav.pending')
+                    : Inertia::once(fn () => $nav->getTree())
+                        ->as('craft.nav.'.($nav->navSiteId() ?? 'all'))
+                        ->fresh($request->headers->has(self::REFRESH_NAV_HEADER)),
+                // The site switcher that leads the breadcrumbs. Per-request
+                // rather than `once`, since its links point at whichever page
+                // you're currently on.
+                'siteCrumb' => fn () => app(SiteSwitcher::class)->crumb(),
+                'navBadges' => fn (): object => $updatePending
+                    ? (object) []
+                    : (object) $nav->getBadgeCounts(),
+            ],
+        ];
+    }
+}

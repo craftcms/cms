@@ -1,0 +1,32 @@
+{
+  "plugins": ["stylelint-use-logical-spec"],
+  "overrides": [
+    {
+      "files": ["**/*.vue", "**/*.html"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["**/*.scss"],
+      "customSyntax": "postcss-scss"
+    },
+    {
+      "files": ["**/*.ts"],
+      "customSyntax": "postcss-lit"
+    }
+  ],
+  "rules": {
+    "liberty/use-logical-spec": [
+      "always",
+      {
+        "except": [
+          "height",
+          "width",
+          "max-height",
+          "min-height",
+          "min-width",
+          "max-width"
+        ]
+      }
+    ]
+  }
+}

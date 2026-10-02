@@ -1,0 +1,15 @@
+{# Renders a <craft-input-color> web component from the legacy color variables —
+   a hex text input paired with a native color-picker swatch and an optional
+   preset datalist. This replaces the old `.color-container` markup (swatch,
+   `#` indicator, `.color-input` text field) and the separate `Craft.ColorInput`
+   JS, which the component now handles natively.
+
+   The legacy-to-component mapping lives in FormFields::colorFromConfig(), which
+   reuses the text-input mapping (see `_includes/forms/text`). #}
+
+{%- set inputAttributes = inputAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{- craft.cp.color(_context)|raw -}}

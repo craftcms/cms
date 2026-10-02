@@ -1,0 +1,40 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ButtonGroupStories from './button-group.stories';
+
+<Meta of={ButtonGroupStories} name="Docs" />
+
+# Button Group
+
+`<craft-button-group>` joins related buttons into a single visual unit.
+
+<Canvas of={ButtonGroupStories.Default} sourceState="shown" />
+
+<Canvas of={ButtonGroupStories.WithActions} sourceState="shown" />
+
+## Radio Mode
+
+Given a `name`, the group becomes a single-choice control — a segmented toggle rather than a row of independent buttons:
+
+<Canvas of={ButtonGroupStories.RadioMode} sourceState="shown" />
+
+<Canvas of={ButtonGroupStories.RadioModeVariants} sourceState="shown" />
+
+<Canvas of={ButtonGroupStories.RadioModeIcons} sourceState="shown" />
+
+<Canvas of={ButtonGroupStories.FormAssociated} sourceState="shown" />
+
+In this mode the group is form-associated and posts like any other field, so a segmented control does not need a hidden input beside it.
+
+## Choosing Between Modes
+
+Without a `name` the buttons are actions; with one they are options.
+
+That is a real semantic difference, not styling: in radio mode the group is announced as a radio group and arrow keys move between the options, which is wrong for a row of independent actions and right for a choice.
+
+## Icon Buttons
+
+A segmented control of icons is compact and easy to misread. Each button still needs a name — see [Icon](?path=/docs/components-icon--docs) — because the group announces the choice, not what each option means.
+
+## Properties
+
+<ArgTypes of={ButtonGroupStories} />

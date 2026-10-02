@@ -1,0 +1,37 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Elements/Overview" />
+
+# Element index
+
+`elements/index` owns the element listing, its query behavior, preferences, and selection. Page indexes use Inertia; detached indexes use local response payloads. Both use the same model and renderer.
+
+```text
+ElementIndexPage                 ElementPicker
+  page actions and bulk actions   source/site selection and choosing
+              \                    /
+                  ElementIndex
+                    toolbar, layout, live region, pagination
+                    ElementTable / ElementCards / ElementThumbs
+                      ElementTable uses common DataTable
+```
+
+`ElementIndex` accepts an explicit view model. Its model exposes source/site changes, refresh, selection clearing, and row lookup. Request bookkeeping and raw row-selection state stay in the model implementation. The picker refreshes and selects uploads through `refresh({selectId})`.
+
+## Selection
+
+`useElementIndex` creates one `useElementIndexSelection` controller. Table, cards, and thumbnails share its selection state and range anchor. Eligibility and read-only checks apply across every view. Clearing selection also clears the anchor; replacing the visible row order prunes unavailable rows and resets the anchor.
+
+## Page and detached behavior
+
+Search waits 500 ms after typing; Enter applies immediately. Status and conditions apply immediately, and filter changes reset pagination. Searching selects relevance order and clearing it restores the source preference.
+
+Page search visits replace history entries and preserve scroll and state. Detached requests share one request identity for payload acceptance, query confirmation, and loading state.
+
+## Shared table controls
+
+`AdminTable` composes common `DataTable` and `PaginationControls` for settings tables. These controls have no element or Inertia dependencies. Element structure controls and selection UI live in `ElementTable`.
+
+## Accessibility
+
+`ElementIndex` owns one live region for loading, results, and selection changes. The shared table retains sortable-header instructions and sort-focus restoration. The contained layout owns its scrolling rules, so the picker does not style private index classes.

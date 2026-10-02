@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Support;
+
+use Closure;
+use Illuminate\Support\Collection;
+use PropertyHookType;
+use ReflectionClass;
+use ReflectionProperty;
+
+/**
+ * @since 6.0.0
+ */
+class Utils
+{
+    /** @return Collection<int, ReflectionProperty> */
+    public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection
+    {
+        return collect(new ReflectionClass($target)->getProperties())
+            ->filter(fn (ReflectionProperty $property) => $property->isPublic() && ! $property->isPrivateSet() && ! $property->isStatic() && $property->isDefault())
+            ->filter($filter ?? fn () => true);
+    }
+
+    /** @return array<string, mixed> */
+    public static function getPublicProperties(object|string $target, ?Closure $filter = null): array
+    {
+        return self::getPublicReflectionProperties($target, $filter)
+            ->reject(fn (ReflectionProperty $property) => $property->isVirtual() && ! $property->hasHook(PropertyHookType::Get))
+            ->mapWithKeys(function (ReflectionProperty $property) use ($target) {
+                if (! $property->isInitialized($target)) {
+                    // If a type of `array` is given with no value, let's assume users want
+                    // it prefilled with an empty array...
+                    $value = $property->getType()
+                        && method_exists($property->getType(), 'getName')
+                        && $property->getType()->getName() === 'array' ? [] : null;
+                } else {
+                    $value = $property->getValue($target);
+                }
+
+                return [$property->getName() => $value];
+            })
+            ->all();
+    }
+
+    /** @return string[] */
+    public static function getPublicAttributes(object|string $target, ?Closure $filter = null): array
+    {
+        return self::getPublicReflectionProperties($target, $filter)
+            ->map(fn (ReflectionProperty $property) => $property->getName())
+            ->all();
+    }
+}

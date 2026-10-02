@@ -1,0 +1,124 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Workbench\App\Providers;
+
+use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
+use CraftCms\Cms\Asset\Data\UploadResult;
+use CraftCms\Cms\Condition\ConditionBuilderPayload;
+use CraftCms\Cms\Condition\ConditionRulePayload;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
+use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Data\NotificationButtonData;
+use CraftCms\Cms\Cp\Data\NotificationData;
+use CraftCms\Cms\Dashboard\Data\WidgetData;
+use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
+use CraftCms\Cms\Element\Data\NestedElementCard;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
+use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Update\Data\UpdaterState;
+use CraftCms\Cms\Update\Data\Updates;
+use CraftCms\Cms\User\Data\Permission;
+use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Data\UserSettings;
+use CraftCms\Cms\View\HtmlFragment;
+use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
+use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
+use CraftCms\Cms\Workflow\Data\WorkflowStageData;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use DateTimeInterface;
+use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
+use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
+use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
+use Workbench\App\TypeScript\ClassListClassTransformer;
+use Workbench\App\TypeScript\ClassListTransformedProvider;
+use Workbench\App\TypeScript\ExportedNamespaceWriter;
+use Workbench\App\TypeScript\ViewModelTransformer;
+
+class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicationServiceProvider
+{
+    protected function configure(TypeScriptTransformerConfigFactory $config): void
+    {
+        $config
+            ->outputDirectory(dirname(__DIR__, 3).'/resources/js/generated')
+            ->writer(new ExportedNamespaceWriter('types.d.ts'))
+            ->replaceType(DateTimeInterface::class, 'string')
+            ->provider(new ClassListTransformedProvider(
+                [
+                    AssetTransformerIndexData::class,
+                    UploadResult::class,
+                    UploadSessionData::class,
+                    GqlSchema::class,
+                    GqlToken::class,
+                    ImageTransform::class,
+                    EntryType::class,
+                    EntryTypeIndexData::class,
+                    NestedElementCard::class,
+                    ChoicePresentation::class,
+                    ControlMode::class,
+                    ControlPayload::class,
+                    ConditionBuilderPayload::class,
+                    ConditionRulePayload::class,
+                    GroupOperator::class,
+                    FormPayload::class,
+                    WidgetData::class,
+                    WidgetTypeData::class,
+                    NodePayload::class,
+                    ActionItem::class,
+                    NavItem::class,
+                    NotificationButtonData::class,
+                    NotificationData::class,
+                    Permission::class,
+                    PermissionGroup::class,
+                    Route::class,
+                    Updates::class,
+                    UpdaterState::class,
+                    HtmlFragment::class,
+                    AssetIndexViewModel::class,
+                    ContentIndexViewModel::class,
+                    EntryIndexViewModel::class,
+                    FieldEditViewModel::class,
+                    UserAddressesViewModel::class,
+                    UserIndexViewModel::class,
+                    UserPasskeysViewModel::class,
+                    UserPermissionsViewModel::class,
+                    UserPreferencesViewModel::class,
+                    UserSettings::class,
+                    UserSignInProvidersViewModel::class,
+                    WorkflowEditViewModel::class,
+                    WorkflowDraftReviewData::class,
+                    WorkflowReviewData::class,
+                    WorkflowStageData::class,
+                    WorkflowStatus::class,
+                ],
+                [
+                    new EnumTransformer,
+                    new ViewModelTransformer,
+                    new ClassListClassTransformer,
+                ],
+            ));
+    }
+}

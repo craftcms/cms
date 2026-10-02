@@ -1,0 +1,194 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Gql\Resolvers;
+
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Gql\Events\ElementPopulated;
+use CraftCms\Cms\Gql\Events\ElementPopulating;
+use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Support\Facades\Elements;
+use GraphQL\Error\UserError;
+use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputObjectField;
+use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\WrappingType;
+use Illuminate\Support\Facades\Cache;
+
+/**
+ * @since 6.0.0
+ */
+abstract class ElementMutationResolver extends MutationResolver
+{
+    /**
+     * Constant used to reference content fields in resolution data storage.
+     */
+    public const string CONTENT_FIELD_KEY = '_contentFields';
+
+    /**
+     * @var string[]
+     */
+    protected array $immutableAttributes = ['id', 'uid'];
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T  $element
+     * @param  array<string, mixed>  $arguments
+     * @return T
+     *
+     * @throws GqlException if data not found.
+     */
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
+    {
+        $normalized = false;
+
+        if ($resolveInfo) {
+            $arguments = $this->recursivelyNormalizeArgumentValues($resolveInfo, $arguments);
+            $normalized = true;
+        }
+
+        $contentFields = $this->getResolutionData(self::CONTENT_FIELD_KEY) ?? [];
+
+        foreach ($this->immutableAttributes as $attribute) {
+            unset($arguments[$attribute]);
+        }
+
+        // Fire a 'beforeMutationPopulateElement' event
+        event($event = new ElementPopulating(
+            resolverClass: static::class,
+            arguments: $arguments,
+            element: $element,
+        ));
+        $arguments = $event->arguments;
+        $element = $event->element;
+
+        foreach ($arguments as $argument => $value) {
+            if (isset($contentFields[$argument])) {
+                if (! $normalized) {
+                    $value = $this->normalizeValue($argument, $value);
+                }
+                $element->setFieldValueFromRequest($argument, $value);
+            } elseif ($element->canSetProperty($argument)) {
+                $element->{$argument} = $value;
+            }
+        }
+
+        // Fire an 'afterMutationPopulateElement' event
+        event($event = new ElementPopulated(
+            resolverClass: static::class,
+            arguments: $arguments,
+            element: $element,
+        ));
+
+        return $event->element;
+    }
+
+    /**
+     * @throws UserError if validation errors.
+     */
+    protected function saveElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        if ($element->enabled && $element->ruleset->inScenarios(ElementRules::SCENARIO_DEFAULT)) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
+
+        $isNotNew = $element->id;
+        if ($isNotNew) {
+            $mutex = Cache::lock("element:$element->id", 15);
+            if (! $mutex->get()) {
+                abort(500, 'Could not acquire a lock to save the element.');
+            }
+        }
+
+        try {
+            Elements::saveElement($element);
+        } finally {
+            if ($isNotNew) {
+                $mutex->release();
+            }
+        }
+
+        if ($element->errors()->count()) {
+            $validationErrors = [];
+
+            foreach ($element->getFirstErrors() as $errorMessage) {
+                $validationErrors[] = $errorMessage;
+            }
+
+            throw new UserError(implode("\n", $validationErrors));
+        }
+
+        return $element;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $mutationArguments
+     * @return array<array-key, mixed>
+     */
+    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments): array
+    {
+        $arguments = array_values(array_filter(
+            $resolveInfo->fieldDefinition->args ?? [],
+            fn (object $argument): bool => $argument instanceof Argument,
+        ));
+
+        return $this->_traverseAndNormalizeArguments($arguments, $mutationArguments);
+    }
+
+    /**
+     * @param  array<array-key, Argument|InputObjectField>  $argumentDefinitions
+     * @param  array<array-key, mixed>  $mutationArguments
+     * @return array<array-key, mixed>
+     */
+    private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
+    {
+        $normalized = [];
+        $argumentTypeDefsByName = [];
+
+        // Keep track of known argument names and the corresponding input types.
+        /** @var Argument $argumentDefinition */
+        foreach ($argumentDefinitions as $argumentDefinition) {
+            $typeDef = $argumentDefinition->getType();
+
+            if ($typeDef instanceof WrappingType) {
+                $typeDef = $typeDef->getInnermostType();
+            }
+
+            $argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;
+        }
+
+        // Now look at the actual provided arguments
+        foreach ($mutationArguments as $argumentName => $value) {
+            if (is_numeric($argumentName)) {
+                // If this just an array of values, iterate over those elements
+                $normalized[$argumentName] = $this->_traverseAndNormalizeArguments($argumentDefinitions, $value);
+            } else {
+                // Find the relevant type def
+                $argumentTypeDef = $argumentTypeDefsByName[$argumentName];
+
+                // If it's an input object, traverse that
+                if ($argumentTypeDef instanceof InputObjectType) {
+                    if (! empty($argumentTypeDef->getFields())) {
+                        $value = $this->_traverseAndNormalizeArguments($argumentTypeDef->getFields(), $value);
+                    }
+                }
+
+                // Use the normalizer, if it exists
+                $normalizer = $argumentTypeDef->config['normalizeValue'] ?? null;
+                if ($normalizer && is_callable($normalizer)) {
+                    $normalized[$argumentName] = $normalizer($value);
+                } else {
+                    $normalized[$argumentName] = $value;
+                }
+            }
+        }
+
+        return $normalized;
+    }
+}

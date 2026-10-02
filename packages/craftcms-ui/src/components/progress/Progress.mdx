@@ -1,0 +1,50 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ProgressStories from './progress.stories';
+
+<Meta of={ProgressStories} name="Docs" />
+
+# Progress
+
+`<craft-progress>` shows progress as a radial arc.
+
+<Canvas of={ProgressStories.ProgressStates} sourceState="shown" />
+
+Use it where progress has to sit in a small, fixed space — beside a row, inside a button, in a toolbar. For progress with room to spread out, or that needs a status line, use [Progress Bar](?path=/docs/components-progress-bar--docs).
+
+When you cannot measure progress at all, use [Spinner](?path=/docs/components-spinner--docs).
+
+## Determinate and Indeterminate
+
+<Canvas of={ProgressStories.AnimatedProgress} sourceState="shown" />
+
+<Canvas of={ProgressStories.Indeterminate} sourceState="shown" />
+
+Reach for indeterminate only when the total genuinely is not known. A spinning arc tells a person nothing about whether to wait, so a real percentage is always the better answer where one exists.
+
+## Completion
+
+<Canvas of={ProgressStories.CompleteAnimation} sourceState="shown" />
+
+<Canvas of={ProgressStories.AutoComplete} sourceState="shown" />
+
+The `complete` event fires when the completion animation finishes, rather than when the value reaches 100 — so anything that should happen after the indicator has visibly settled can wait for it.
+
+## Sizing and Colour
+
+<Canvas of={ProgressStories.CustomSize} sourceState="shown" />
+
+<Canvas of={ProgressStories.IndeterminateSizes} sourceState="shown" />
+
+<Canvas of={ProgressStories.CustomColors} sourceState="shown" />
+
+Size and stroke width are custom properties, so the arc scales without redrawing.
+
+## Accessibility
+
+The arc is drawn on a canvas, which means it has no text and nothing a screen reader can read from the drawing itself.
+
+Whatever it accompanies has to carry the state in text — "Uploading 3 of 8" beside the arc, not the arc alone. A percentage that exists only as an angle is a percentage some people cannot read.
+
+## Properties
+
+<ArgTypes of={ProgressStories} />

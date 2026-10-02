@@ -1,0 +1,12 @@
+{# Builds its own live regions; see resources/js/modules/messages/components/cp-messages.ts #}
+<cp-messages
+  id="messages"
+  position="{{ currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start' }}"
+></cp-messages>
+
+{% set messages = cpMessages() %}
+{% if messages %}
+  {% js %}
+    (window.CraftMessageQueue = window.CraftMessageQueue || []).push(...{{ messages|json_encode|raw }});
+  {% endjs %}
+{% endif %}

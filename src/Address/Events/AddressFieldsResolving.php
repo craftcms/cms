@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Address\Events;
+
+/**
+ * @since 6.0.0
+ */
+abstract class AddressFieldsResolving
+{
+    public function __construct(
+        public string $countryCode,
+        /** @var string[] $fields The fields available for the country */
+        public array $fields,
+    ) {}
+}

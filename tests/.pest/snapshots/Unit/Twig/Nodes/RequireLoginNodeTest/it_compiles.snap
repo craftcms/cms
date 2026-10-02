@@ -1,0 +1,4 @@
+// line 1
+if (\CraftCms\Cms\craftAuth()->guest()) {
+    throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
+}

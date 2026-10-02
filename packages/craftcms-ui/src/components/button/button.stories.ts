@@ -1,0 +1,240 @@
+import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
+import {html} from 'lit';
+
+import './button.js';
+import type CraftButton from './button.js';
+import '../icon/icon.js';
+import '../chip/chip.js';
+import {ButtonVariant} from '@src/components/button/button';
+
+const buttonVariants = Object.values(ButtonVariant);
+
+// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `button.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftButton>('craft-button');
+
+type CraftButtonArgs = CraftButton & typeof args;
+
+const meta = {
+  title: 'Components/Button',
+  component: 'craft-button',
+  parameters: {
+    layout: 'centered',
+  },
+  args: {...args, label: 'Button', variant: ButtonVariant.Fill},
+  argTypes,
+} satisfies Meta<CraftButtonArgs>;
+
+export default meta;
+type Story = StoryObj<CraftButtonArgs>;
+
+/**
+ * Every variant. `primary` and `danger` are solid and colored; the rest are the
+ * neutral palette in their named appearance.
+ */
+export const Default: Story = {
+  render: () => html`
+    <div class="flex gap-2 items-center flex-wrap">
+      ${buttonVariants.map(
+        (variant) => html`
+          <craft-button variant="${variant}">${variant}</craft-button>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
+ * With the `inherit` property, the neutral variants adopt the ambient colorable
+ * palette (any `[data-color]` / colorable ancestor, e.g. a callout). `primary`
+ * and `danger` keep their own colors regardless.
+ */
+export const Inherit: Story = {
+  render: () => html`
+    <div class="grid gap-4">
+      ${['accent', 'violet', 'success'].map(
+        (color) => html`
+          <div
+            data-color="${color}"
+            class="flex gap-2 items-center flex-wrap"
+            style="padding: 0.75rem; border-radius: 8px; background: var(--c-color-fill-quiet);"
+          >
+            ${[
+              ButtonVariant.Solid,
+              ButtonVariant.Fill,
+              ButtonVariant.Outline,
+              ButtonVariant.Dashed,
+              ButtonVariant.Plain,
+              ButtonVariant.Link,
+            ].map(
+              (variant) => html`
+                <craft-button variant="${variant}" inherit
+                  >${variant}</craft-button
+                >
+              `
+            )}
+            <craft-button variant="${ButtonVariant.Primary}"
+              >primary</craft-button
+            >
+            <craft-button variant="${ButtonVariant.Danger}"
+              >danger</craft-button
+            >
+          </div>
+        `
+      )}
+    </div>
+  `,
+};
+
+export const Sizes: Story = {
+  args: {},
+  render: (args) => html`
+    <div class="flex gap-2 items-center">
+      ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+        (size) => html`<craft-button size="${size}">${size}</craft-button>`
+      )}
+    </div>
+  `,
+};
+
+export const Icons: Story = {
+  render: () => html`
+    <div class="flex gap-2 items-center flex-wrap">
+      <craft-button icon="location">Prefix icon</craft-button>
+      <craft-button icon="chevron-down" icon-position="suffix"
+        >Suffix icon</craft-button
+      >
+      <craft-button>
+        <craft-icon slot="prefix" name="location"></craft-icon>
+        Slotted prefix
+        <craft-icon slot="suffix" name="chevron-down"></craft-icon>
+      </craft-button>
+      <craft-button icon>
+        <craft-icon name="location" label="Location"></craft-icon>
+      </craft-button>
+      <craft-button icon size="small">
+        <craft-icon name="location" label="Location"></craft-icon>
+      </craft-button>
+    </div>
+  `,
+};
+
+/**
+ * `flush` pulls a button out by the space around its content, so a `plain`
+ * button's label or icon lines up with the text beside it. The dashed box is
+ * the edge the content aligns to.
+ */
+export const Flush: Story = {
+  render: () => html`
+    <div
+      class="grid gap-4"
+      style="inline-size: 20rem; outline: 1px dashed var(--c-color-border-normal);"
+    >
+      <div class="flex justify-between items-center">
+        <strong>Revisions</strong>
+        <craft-button
+          variant="plain"
+          size="small"
+          icon="xmark-large"
+          flush="inline-end"
+          aria-label="Close"
+        ></craft-button>
+      </div>
+      <p style="margin: 0">Text above a flush button.</p>
+      <div>
+        <craft-button variant="plain" flush="inline-start"
+          >Show more</craft-button
+        >
+      </div>
+      <div class="flex">
+        <craft-button variant="plain" icon="pen" flush aria-label="Edit">
+        </craft-button>
+      </div>
+    </div>
+  `,
+};
+
+export const Loading: Story = {
+  args: {
+    loading: true,
+  },
+  render: (args) => html`
+    <craft-button ?loading="${args.loading}"> Submit </craft-button>
+  `,
+};
+
+export const Links: Story = {
+  args: {},
+  render: () => html`
+    <div class="grid gap-4">
+      <div class="flex gap-2 items-center">
+        ${buttonVariants.map(
+          (variant) => html`
+            <craft-button variant="${variant}" href="#"
+              >${variant} link</craft-button
+            >
+          `
+        )}
+      </div>
+      <div class="flex gap-2 items-center">
+        ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+          (size) =>
+            html`<craft-button href="#" size="${size}">${size}</craft-button>`
+        )}
+      </div>
+      <div class="flex gap-2 items-center">
+        <craft-button href="https://craftcms.com" target="_blank"
+          >New tab</craft-button
+        >
+        <craft-button href="/file.zip" download="file.zip"
+          >Download</craft-button
+        >
+        <craft-button href="#" disabled>Disabled link</craft-button>
+      </div>
+    </div>
+  `,
+};
+
+/**
+ * Disabled buttons across every variant. `disabled` also removes the link
+ * behaviour from an `href` button, which then renders as plain text rather
+ * than an anchor, and it suppresses the hover, active and focus treatments the
+ * variants otherwise carry.
+ *
+ * Each variant keeps its own colors, muted, rather than all collapsing to one
+ * flat grey — so a disabled primary still reads as the primary action.
+ */
+export const Disabled: Story = {
+  render: () => html`
+    <div class="grid gap-4">
+      <div class="flex gap-2 items-center flex-wrap">
+        ${buttonVariants.map(
+          (variant) => html`
+            <craft-button variant="${variant}" disabled
+              >${variant}</craft-button
+            >
+          `
+        )}
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        <craft-button disabled icon="location">With icon</craft-button>
+        <craft-button disabled icon="gear" aria-label="Settings"></craft-button>
+        <craft-button disabled loading>Loading</craft-button>
+        <craft-button href="#" disabled>Disabled link</craft-button>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+          (size) =>
+            html`<craft-button size="${size}" disabled>${size}</craft-button>`
+        )}
+      </div>
+    </div>
+  `,
+};

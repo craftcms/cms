@@ -1,0 +1,36 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ReorderButtonStories from './reorder-button.stories';
+
+<Meta of={ReorderButtonStories} name="Docs" />
+
+# Reorder Button
+
+`<craft-reorder-button>` moves an item up or down a list from the keyboard.
+
+<Canvas of={ReorderButtonStories.Default} sourceState="shown" />
+
+It is the accessible counterpart to a drag handle. Dragging is a pointer gesture with no keyboard equivalent, so a list that can only be reordered by dragging cannot be reordered by everyone.
+
+## Position
+
+<Canvas of={ReorderButtonStories.First} sourceState="shown" />
+
+<Canvas of={ReorderButtonStories.Last} sourceState="shown" />
+
+`position` tells the button where its item sits, so the direction that would go nowhere is disabled rather than silently doing nothing.
+
+<Canvas of={ReorderButtonStories.Horizontal} sourceState="shown" />
+
+<Canvas of={ReorderButtonStories.Disabled} sourceState="shown" />
+
+## Accessibility
+
+This component exists for accessibility, so the thing to get right is the announcement.
+
+Moving an item changes the list, and that change is invisible to a screen reader unless something says so. The button reports the move; the list is responsible for making the new order perceivable — usually a live region naming the item and its new position.
+
+Without that, a person can reorder a list and have no way of knowing whether it worked.
+
+## Properties
+
+<ArgTypes of={ReorderButtonStories} />

@@ -1,0 +1,63 @@
+<script setup lang="ts">
+  import {t} from '@craftcms/ui';
+  import type {UrlMethodPair} from '@inertiajs/core';
+  import {computed, ref} from 'vue';
+  import MetadataDetails from '@/common/components/MetadataDetails.vue';
+  import type {FormAction, FormSaveOptions} from '@/common/types';
+  import {pathsMatch} from '@/modules/forms/runtime';
+  import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
+  import FormPage from '@/pages/Form.vue';
+
+  const props = defineProps<{
+    form: FormPayload;
+    submit: UrlMethodPair;
+    refreshUrl: string | null;
+    supportedTranslationMethods: Record<string, string[]>;
+    formActions?: FormAction[];
+    /** The field's ID and usages, from `CpScreenResponse::metaSidebarHtml()`. */
+    details?: string | null;
+  }>();
+
+  const formPage = ref<{
+    save(options?: FormSaveOptions): void;
+    setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
+  }>();
+  const formActions = computed<FormAction[]>(() => [
+    {
+      label: t('Save and add another'),
+      onClick: () =>
+        formPage.value?.save({data: {addAnother: 1}, preserveState: false}),
+    },
+    ...(props.formActions ?? []),
+  ]);
+
+  function onChange(change: FormChange, values: FormPayload['values']): void {
+    if (!pathsMatch(change.path, ['type'])) {
+      return;
+    }
+
+    const supported =
+      props.supportedTranslationMethods[String(values.type)] ?? [];
+
+    if (!supported.includes(String(values.translationMethod))) {
+      formPage.value?.setValue(
+        ['translationMethod'],
+        supported[0] ?? 'none',
+        change.kind
+      );
+    }
+  }
+</script>
+
+<template>
+  <MetadataDetails :html="details" />
+
+  <FormPage
+    ref="formPage"
+    :form="form"
+    :submit="submit"
+    :form-actions="formActions"
+    :refresh-url="refreshUrl ?? undefined"
+    @change="onChange"
+  />
+</template>

@@ -1,0 +1,169 @@
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {Required} from '@lion/ui/form-core.js';
+
+import './input.js';
+import type CraftInput from './input.js';
+
+async function createInput(
+  attrs: Record<string, string> = {},
+  innerHTML = '<label slot="label">Handle</label>'
+): Promise<CraftInput> {
+  const element = document.createElement('craft-input') as CraftInput;
+  for (const [name, value] of Object.entries(attrs)) {
+    element.setAttribute(name, value);
+  }
+  element.innerHTML = innerHTML;
+  document.body.append(element);
+  await element.updateComplete;
+  // Lion wires the label and feedback relations after its own first update,
+  // so give it a turn before reading them.
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await element.updateComplete;
+  return element;
+}
+
+/** Lion's native input, which is the element the component drives. */
+function native(element: CraftInput): HTMLInputElement {
+  return element.querySelector('input')!;
+}
+
+beforeEach(() => {
+  document.body.innerHTML = '';
+});
+
+describe('craft-input', () => {
+  it('renders a native input with the label wired to it', async () => {
+    const element = await createInput();
+    const label = element.querySelector('label')!;
+
+    expect(native(element)).toBeTruthy();
+    // Lion rewrites the label's `for` to the id it generated for the input,
+    // which is what makes clicking the label focus the field.
+    expect(label.getAttribute('for')).toBe(native(element).id);
+    expect(native(element).id).not.toBe('');
+  });
+
+  it('defaults to a medium control', async () => {
+    expect((await createInput()).size).toBe('medium');
+  });
+
+  it('carries the value as Lion s modelValue', async () => {
+    const element = await createInput();
+
+    element.modelValue = 'entryType';
+    await element.updateComplete;
+
+    expect(native(element).value).toBe('entryType');
+  });
+
+  /**
+   * `maxlength` caps the value and is also the width hint: a four-character
+   * field should not stretch across the page.
+   */
+  it('applies maxlength to the native input', async () => {
+    const element = await createInput({maxlength: '12'});
+    await element.updateComplete;
+
+    expect(native(element).maxLength).toBe(12);
+    expect(native(element).size).toBe(12);
+  });
+
+  it('keeps an explicit input size over the maxlength', async () => {
+    const element = await createInput({maxlength: '3'});
+    element.inputSize = 8;
+    await element.updateComplete;
+
+    expect(native(element).size).toBe(8);
+  });
+
+  it('reflects the width override so the stylesheet can act on it', async () => {
+    const element = await createInput({maxlength: '4', width: 'full'});
+
+    expect(element.getAttribute('width')).toBe('full');
+    expect(native(element).hasAttribute('size')).toBe(false);
+  });
+
+  /** These are presentation flags the stylesheet keys off, so they reflect. */
+  it('reflects its presentation flags', async () => {
+    const element = await createInput({
+      monospace: '',
+      center: '',
+      small: '',
+    });
+
+    expect(element.monospace).toBe(true);
+    expect(element.center).toBe(true);
+    expect(element.hasAttribute('monospace')).toBe(true);
+    expect(element.hasAttribute('center')).toBe(true);
+  });
+
+  it('passes a type through to the native input', async () => {
+    const element = await createInput({type: 'email'});
+    await element.updateComplete;
+
+    expect(native(element).type).toBe('email');
+  });
+
+  it('disables the native input', async () => {
+    const element = await createInput({disabled: ''});
+    await element.updateComplete;
+
+    expect(native(element).disabled).toBe(true);
+  });
+
+  /**
+   * `inputSize`, `min`, `max`, and `step` are properties rather than
+   * attributes, and are synced onto the native input after render.
+   */
+  it('syncs the native-only properties onto the input', async () => {
+    const element = await createInput({type: 'number'});
+
+    element.min = 1;
+    element.max = 10;
+    element.step = 2;
+    await element.updateComplete;
+
+    expect(native(element).getAttribute('min')).toBe('1');
+    expect(native(element).getAttribute('max')).toBe('10');
+    expect(native(element).getAttribute('step')).toBe('2');
+  });
+});
+
+describe('craft-input aria-invalid', () => {
+  it('synchronizes aria-invalid with the native input', async () => {
+    const element = await createInput();
+    const input = native(element);
+
+    element.setAttribute('aria-invalid', 'true');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.setAttribute('aria-invalid', 'false');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+  });
+
+  it('preserves validation-managed aria-invalid without an override', async () => {
+    const element = await createInput();
+    const input = native(element);
+    element.modelValue = '';
+    element.validators = [new Required()];
+    element.submitted = true;
+    await element.updateComplete;
+    await element.updateComplete;
+
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.setAttribute('aria-invalid', 'false');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+
+    element.removeAttribute('aria-invalid');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.placeholder = 'Unrelated update';
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
+});

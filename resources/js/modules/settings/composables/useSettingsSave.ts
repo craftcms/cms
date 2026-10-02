@@ -1,0 +1,374 @@
+import {useEventListener} from '@vueuse/core';
+import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
+import {computed, type Ref} from 'vue';
+import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
+import type {FormSaveOptions} from '@/common/types';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+import {useSlideout} from '@/common/slideouts/useSlideout';
+import {firstMessages} from '@/common/slideouts/errors';
+import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
+import {topStackedPanel} from '@/common/slideouts/panel-stack';
+import {showMessagesFromResponse} from '@/modules/messages';
+
+interface PasswordConfirmationOptions<T> {
+  required: (data: T) => boolean;
+  minimumRemainingSeconds?: number;
+}
+
+export interface UseSettingsSaveOptions<T extends object> {
+  transform?: (data: T) => object;
+  /** Uses the existing topmost-panel save listener for alternate submissions. */
+  onSaveShortcut?: (event: KeyboardEvent) => void;
+  /** Receives the response data when saving from a slideout. */
+  onSuccess?: (data?: any) => void;
+  /** Called with a failed slideout save's response data, before the errors are applied. */
+  onError?: (data: any) => void;
+  /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
+  onBeforeSave?: () => void;
+  /**
+   * Awaited before submitting; resolving `false` calls the save off. For work
+   * the submission depends on, like creating the draft it will save.
+   */
+  prepare?: () => Promise<boolean>;
+  /**
+   * Whether a successful slideout save closes the panel even when it was asked
+   * to stay open — when what was being edited no longer exists as it was.
+   */
+  forceClose?: () => boolean;
+  passwordConfirmation?: PasswordConfirmationOptions<T>;
+  /**
+   * Sugar over {@link passwordConfirmation}: require an elevated session when the
+   * named fields differ from their initial values, or `'*'` for any dirty change
+   * (via Inertia's `form.isDirty`). Ignored when `passwordConfirmation` is set
+   * explicitly — reach for that when you need a custom predicate or
+   * `minimumRemainingSeconds`.
+   */
+  elevatedFields?: Array<keyof T> | '*';
+}
+
+interface SettingsSaveSlideout {
+  instance: Pick<SlideoutInstance, 'containerId'>;
+  close(options?: {force?: boolean}): void;
+  saved(result?: SlideoutSaveResult): boolean;
+}
+
+export interface SettingsSaveDependencies {
+  request: typeof http.request;
+  reload: typeof router.reload;
+  elevatedSession: Pick<typeof elevatedSessionManager, 'require'>;
+  slideout: SettingsSaveSlideout | null;
+  redirectUrl: Readonly<Ref<string | undefined>>;
+}
+
+function defaultDependencies(): SettingsSaveDependencies {
+  const page = usePage<{redirectUrl?: string}>();
+
+  return {
+    request: (...args) => http.request(...args),
+    reload: (...args) => router.reload(...args),
+    elevatedSession: elevatedSessionManager,
+    slideout: useSlideout(),
+    redirectUrl: computed(() => page.props.redirectUrl),
+  };
+}
+
+export function useSettingsSave<T extends object>(
+  form: InertiaForm<T>,
+  action: any,
+  options: UseSettingsSaveOptions<T> = {},
+  dependencies: SettingsSaveDependencies = defaultDependencies()
+) {
+  // Non-null when this screen is rendering inside a slideout, in which case
+  // saving must not navigate — see `submitInSlideout()`.
+  const {elevatedSession, redirectUrl, reload, request, slideout} =
+    dependencies;
+
+  // `elevatedFields` is sugar that generates a `passwordConfirmation` config, so
+  // the proactive check and the 423 retry below both flow through one path. An
+  // explicit `passwordConfirmation` always wins.
+  const passwordConfirmation =
+    options.passwordConfirmation ??
+    elevatedFieldsConfirmation(form, options.elevatedFields);
+
+  // Handle cmd + s events
+  useEventListener('keydown', (event) => {
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.key.toLowerCase() === 's' &&
+      !event.altKey
+    ) {
+      // Only the topmost panel (or the page, when none is open) saves.
+      const top = topStackedPanel();
+      const isTopmost = top
+        ? slideout &&
+          top.element.dataset.slideoutId === slideout.instance.containerId
+        : !slideout;
+
+      if (!isTopmost) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (options.onSaveShortcut) {
+        options.onSaveShortcut(event);
+      } else if (!event.shiftKey) {
+        save({redirect: false});
+      }
+    }
+  });
+
+  function save({
+    redirect = true,
+    action: actionOverride,
+    preserveScroll = true,
+    keepOpen = !redirect,
+    data: extraData = {},
+    // Reset page state when this screen sends the user elsewhere, while saves
+    // that remain on the current screen keep their local state by default.
+    // Validation failures preserve input and errors instead of remounting.
+    preserveState = redirect && (extraData.redirect || redirectUrl.value)
+      ? 'errors'
+      : true,
+  }: FormSaveOptions = {}) {
+    options.onBeforeSave?.();
+
+    const submitOptions = redirect
+      ? {
+          preserveScroll,
+          preserveState,
+        }
+      : {
+          replace: true,
+          preserveScroll,
+        };
+
+    /**
+     * Save from inside a slideout, without navigating.
+     *
+     * `form.submit()` is an Inertia visit, which would replace the page *behind*
+     * the panel. The controllers already answer JSON whenever the request
+     * accepts it (`RespondsWithFlash`), so this posts directly and drives the
+     * form state by hand. Note the failure status is **400**, not Laravel's
+     * usual 422 — `asJsonFailure()` picks it.
+     */
+    async function submitInSlideout(retried = false): Promise<void> {
+      const route = actionOverride ?? action();
+      const routeIsString = Object(route).constructor === String;
+
+      form.clearErrors();
+      form.processing = true;
+
+      try {
+        const payload: Record<string, any> = {
+          ...(options.transform?.(form.data()) ?? form.data()),
+          ...extraData,
+        };
+        // Slideout submissions never navigate, including alternate redirects.
+        delete payload.redirect;
+
+        const response = await request({
+          url: routeIsString ? String(route) : route.url,
+          method: routeIsString ? 'post' : (route.method ?? 'post'),
+          data: payload,
+          headers: {
+            'X-Craft-Container-Id': slideout!.instance.containerId,
+          },
+        });
+
+        form.processing = false;
+        showMessagesFromResponse(response.data);
+        options.onSuccess?.(response.data);
+
+        // An opener that registered `onSaved` refreshes itself, and knows
+        // better than we do what actually needs refreshing. Before the close:
+        // closing drops the panel from the store, taking its handler with it.
+        const handled = slideout!.saved({data: response.data});
+
+        // Continue-editing submissions keep the panel open. `force` because
+        // the form can still read dirty right after a save; Inertia clears it when its
+        // defaults are updated, which the page behind does on reload.
+        if (!keepOpen || options.forceClose?.()) {
+          slideout!.close({force: true});
+        }
+
+        if (handled) {
+          return;
+        }
+
+        // Otherwise refresh the page behind to pick up whatever was just
+        // saved. `reload()` preserves scroll and state inherently.
+        reload();
+      } catch (error) {
+        form.processing = false;
+
+        if (
+          !isHttpError<{
+            errors?: Record<string, string | string[]>;
+          }>(error)
+        ) {
+          throw error;
+        }
+
+        const status = error.response?.status;
+
+        if (passwordConfirmation && status === 423 && !retried) {
+          void elevatedSession
+            .require({
+              force: true,
+              minimumRemainingSeconds:
+                passwordConfirmation.minimumRemainingSeconds,
+            })
+            .then((confirmed) => {
+              if (confirmed) {
+                void submitInSlideout(true);
+              }
+            });
+
+          return;
+        }
+
+        if (error.response?.data) {
+          options.onError?.(error.response.data);
+        }
+
+        const errors = error.response?.data?.errors;
+
+        if (errors) {
+          const messages = firstMessages(errors);
+          Object.assign(form.errors, messages);
+          form.setError(form.errors);
+
+          return;
+        }
+
+        throw error;
+      }
+    }
+
+    function submit(retried = false) {
+      if (slideout) {
+        void submitInSlideout(retried);
+
+        return;
+      }
+
+      form
+        .clearErrors()
+        .transform((data: T) => {
+          const transformedData = options.transform?.(data) ?? data;
+
+          const payload: Record<string, any> = {
+            ...transformedData,
+            ...extraData,
+          };
+
+          // An explicit redirect from extra data or the transform takes
+          // precedence over the screen's default target.
+          if (redirect && redirectUrl.value && !('redirect' in payload)) {
+            payload.redirect = redirectUrl.value;
+          }
+
+          return payload;
+        })
+        .submit(actionOverride ?? action(), {
+          ...submitOptions,
+          onHttpException: (response) => {
+            if (!passwordConfirmation || response.status !== 423 || retried) {
+              return;
+            }
+
+            void elevatedSession
+              .require({
+                force: true,
+                minimumRemainingSeconds:
+                  passwordConfirmation.minimumRemainingSeconds,
+              })
+              .then((confirmed) => {
+                if (confirmed) {
+                  submit(true);
+                }
+              });
+
+            return false;
+          },
+          onSuccess: options.onSuccess,
+        });
+    }
+
+    if (options.prepare) {
+      const prepare = options.prepare;
+      void prepare().then((ready) => {
+        if (ready) {
+          confirmAndSubmit();
+        }
+      });
+
+      return;
+    }
+
+    confirmAndSubmit();
+
+    function confirmAndSubmit(): void {
+      if (passwordConfirmation?.required(form.data())) {
+        void elevatedSession
+          .require({
+            minimumRemainingSeconds:
+              passwordConfirmation.minimumRemainingSeconds,
+          })
+          .then((confirmed) => {
+            if (confirmed) {
+              submit();
+            }
+          });
+
+        return;
+      }
+
+      submit();
+    }
+  }
+
+  return {save};
+}
+
+/**
+ * Build a {@link PasswordConfirmationOptions} from the `elevatedFields` sugar.
+ * An array snapshots each field's initial value and requires elevation when any
+ * changes; `'*'` defers to Inertia's own dirty tracking.
+ */
+function elevatedFieldsConfirmation<T extends object>(
+  form: InertiaForm<T>,
+  fields: Array<keyof T> | '*' | undefined
+): PasswordConfirmationOptions<T> | undefined {
+  if (!fields) {
+    return undefined;
+  }
+
+  if (fields === '*') {
+    return {required: () => form.isDirty};
+  }
+
+  const baseline = new Map<keyof T, string>(
+    fields.map((field) => [field, normalize(form[field])])
+  );
+
+  return {
+    required: (data) =>
+      fields.some((field) => normalize(data[field]) !== baseline.get(field)),
+  };
+}
+
+/**
+ * Stringify a field value for change comparison. Arrays are sorted first so a set
+ * of permissions/groups compares equal regardless of order.
+ */
+function normalize<T>(value: T): string {
+  return Array.isArray(value)
+    ? JSON.stringify(
+        [...value].sort((a, b) =>
+          JSON.stringify(a).localeCompare(JSON.stringify(b))
+        )
+      )
+    : JSON.stringify(value);
+}

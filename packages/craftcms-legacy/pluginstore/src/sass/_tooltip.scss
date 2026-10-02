@@ -1,0 +1,89 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+.tooltip {
+  display: block !important;
+  z-index: 10000;
+  background: var(--white);
+  box-shadow: 0 25px 100px rgb(0 0 0 / 50%);
+  padding: 24px;
+
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: 12px;
+    border-color: white;
+  }
+
+  &[x-placement^='top'] {
+    margin-block-end: 12px;
+
+    .tooltip-arrow {
+      border-width: 12px 12px 0;
+      border-inline-start-color: transparent !important;
+      border-inline-end-color: transparent !important;
+      border-block-end-color: transparent !important;
+      inset-block-end: -12px;
+      inset-inline-start: calc(50% - 12px);
+      margin-block: 0;
+    }
+  }
+
+  &[x-placement^='bottom'] {
+    margin-block-start: 12px;
+
+    .tooltip-arrow {
+      border-width: 0 12px 12px;
+      border-inline-start-color: transparent !important;
+      border-inline-end-color: transparent !important;
+      border-block-start-color: transparent !important;
+      inset-block-start: -12px;
+      inset-inline-start: calc(50% - 12px);
+      margin-block: 0;
+    }
+  }
+
+  &[x-placement^='right'] {
+    margin-inline-start: 12px;
+
+    .tooltip-arrow {
+      border-width: 12px 12px 12px 0;
+      border-inline-start-color: transparent !important;
+      border-block-start-color: transparent !important;
+      border-block-end-color: transparent !important;
+      inset-inline-start: -12px;
+      inset-block-start: calc(50% - 12px);
+      margin-inline: 0;
+    }
+  }
+
+  &[x-placement^='left'] {
+    margin-inline-end: 12px;
+
+    .tooltip-arrow {
+      border-width: 12px 0 12px 12px;
+      border-block-start-color: transparent !important;
+      border-inline-end-color: transparent !important;
+      border-block-end-color: transparent !important;
+      inset-inline-end: -12px;
+      inset-block-start: calc(50% - 12px);
+      margin-inline: 0;
+    }
+  }
+
+  &[aria-hidden='true'] {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.15s,
+      visibility 0.15s;
+  }
+
+  &[aria-hidden='false'] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+}

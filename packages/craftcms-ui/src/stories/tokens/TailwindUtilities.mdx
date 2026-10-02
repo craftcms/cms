@@ -1,0 +1,58 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import TailwindMeta, {
+  BorderColors,
+  Colors,
+  Layers,
+  Spacing,
+  Surfaces,
+} from './tailwind.stories';
+
+<Meta of={TailwindMeta} />
+
+# Tailwind Utilities
+
+`@craftcms/ui/tailwind.css` maps Craft's design tokens into Tailwind's theme, so utility classes resolve to the tokens rather than to fixed values. A class like `border-quiet` or `z-popover` follows the active theme, and color classes follow the surrounding `data-color`.
+
+```css
+@import '@craftcms/ui/styles/cp.css'; /* the token values */
+@import '@craftcms/ui/tailwind.css'; /* the utilities */
+@import 'tailwindcss';
+```
+
+The tables below are read from `tailwind.css` itself, so they always list what the theme actually generates. Click any class or token to copy it.
+
+---
+
+## Surfaces
+
+The surface tokens as backgrounds: `bg-default`, `bg-raised`, `bg-sunken`, `bg-overlay` and `bg-form`. They are defined in Tailwind's background-color namespace, which only feeds `bg-*`, so they don't also produce `text-default`.
+
+<Canvas of={Surfaces} />
+
+## Colors
+
+Every `--color-*` name works with each color utility: `bg-`, `text-`, `border-`, `outline-`, `fill-` and so on.
+
+<Canvas of={Colors} />
+
+## Border colors
+
+`border-quiet`, `border-normal` and `border-loud` use the contextual border tokens. They are defined in Tailwind's border-color namespace, which only feeds `border-*` and `divide-*`, so they don't also produce `bg-quiet` or `text-quiet`.
+
+<Canvas of={BorderColors} />
+
+## Spacing
+
+The named `--c-spacing-*` steps, for padding, margin, gap and `space-*`. Numeric classes such as `p-4` keep working alongside them.
+
+They are mapped per utility rather than through `--spacing-*`: Tailwind reads `--spacing-*` for `w-*`, `max-w-*` and `min-w-*` before their container sizes, so a `--spacing-sm` would turn `max-w-sm` into 4px.
+
+<Canvas of={Spacing} />
+
+## Layers
+
+Semantic z-index layers, lowest to highest. Use these for anything that stacks against other parts of the page. A component lifting one of its own parts over another can keep a small local value instead.
+
+Slideouts, HUDs and legacy modals share `z-overlay` and are ordered by their place in the document. Native modal `<dialog>` elements sit in the browser's top layer and need no layer at all. Named layers have no negative form (`-z-popover` isn't generated).
+
+<Canvas of={Layers} />
