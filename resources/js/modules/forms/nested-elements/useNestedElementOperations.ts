@@ -513,7 +513,9 @@ export function useNestedElementOperations(
           : undefined;
       }
 
-      const editUrl = EditElementController.url(undefined, {
+      const editUrl = EditElementController[
+        '/{cpTrigger?}/{actionTrigger?}/elements/edit'
+      ].url(undefined, {
         query: {
           ...editParams,
           fresh: 1,

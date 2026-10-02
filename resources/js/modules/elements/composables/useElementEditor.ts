@@ -85,6 +85,7 @@ export interface ElementContextMenuItem {
 
 /** The shared payload every {@link ElementEditViewModel} emits. */
 export interface ElementEditPayload {
+  editorContainerId?: string;
   elementId: number | null;
   canonicalId: number | null;
   elementType: string;
@@ -165,6 +166,8 @@ interface Options {
    * whatever the type's save action needs to resolve the element it's saving.
    */
   saveData?: () => FormValues;
+  /** Adapts form state before autosave and explicit submissions. */
+  transform?: (data: object) => FormValues;
   /**
    * Where the screen's content is rendered. Failed saves announce invalid
    * nested elements from here, so the nested element fields inside hear it.
@@ -180,7 +183,7 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData, root}: Options = {}) {
+export function useElementEditor({saveData, root, transform}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -286,6 +289,9 @@ export function useElementEditor({saveData, root}: Options = {}) {
     return {
       ...props.nestedContext,
       ...(props.fresh ? {fresh: 1} : {}),
+      ...(props.editorContainerId
+        ? {editorContainerId: props.editorContainerId}
+        : {}),
     };
   }
 
@@ -298,6 +304,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
+    transform: requestValues,
     // Autosave moves the draft's `dateUpdated` without a visit, so the poller
     // has to re-baseline against what the save just wrote — otherwise it reads
     // our own keystrokes back as an edit from elsewhere. `activity` is
@@ -462,6 +469,10 @@ export function useElementEditor({saveData, root}: Options = {}) {
     }
   }
 
+  function requestValues(data: object): FormValues {
+    return transform?.(data) ?? ({...data} as FormValues);
+  }
+
   /**
    * Re-renders the field layout from the server, keeping unsaved values.
    *
@@ -603,7 +614,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
         const transformed =
           pendingAction.value?.includeFormData === false
             ? {}
-            : {...saveData?.(), ...data};
+            : {...saveData?.(), ...requestValues(data)};
         // Shared `elements/*` actions need generic identity params: the
         // type-specific ones (an entry's `entryId`) mean nothing there.
         if (autosave.draftId.value !== null) {

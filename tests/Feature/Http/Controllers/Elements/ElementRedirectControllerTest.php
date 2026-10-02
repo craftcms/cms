@@ -184,7 +184,7 @@ it('renders the entry editor for standard control panel edit urls', function () 
     get(cp_url("edit/$entry->id-$entry->slug"))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('title', 'Inline Block')
             ->where('saveUrl', fn (string $url): bool => str_contains($url, 'elements/save'))
         );

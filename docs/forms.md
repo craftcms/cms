@@ -154,8 +154,11 @@ Screens that manage an owner's nested elements outside an element editor render 
 Control's props, passing `savedNestedOwner()` as its `owner` so changes apply to the saved owner and the screen
 re-renders afterwards (see `pages/users/Addresses.vue`).
 
-A nested element type gets the Inertia editor in those slideouts by returning its `ElementEditorController` from
-`ElementInterface::editControllerClass()`.
+Nested element types use the shared Inertia element editor automatically. They supply their field layout and
+`sidebarForm()`, and can extend `ElementEditViewModel` through `ElementInterface::editViewModelClass()` when they
+need additional payload or a different save action. `ElementEditorPayloadResolving` lets listeners modify the
+prepared payload for edit screens and autosave responses. With the Yii adapter installed, existing editor HTML events
+and `prepareEditScreen()` customizations are rendered around the native forms.
 
 ### FieldLayout component settings
 

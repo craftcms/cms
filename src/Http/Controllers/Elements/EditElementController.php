@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
+use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -38,6 +39,7 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -85,15 +87,6 @@ class EditElementController
 
         if (! $element) {
             abort(400, 'No element was identified by the request.');
-        }
-
-        // Element types with an Inertia editor get it everywhere but the legacy jQuery slideouts,
-        // which ask for JSON without `X-Inertia` — Vue slideouts, and full page loads of
-        // `edit/{id}` URLs, which is where nested entries' edit pages live.
-        $editorController = $element::editControllerClass();
-
-        if ($editorController !== null && ($this->request->inertia() || ! $this->request->wantsJson())) {
-            return app($editorController)->render($element);
         }
 
         // If this is an outdated draft, merge in the latest canonical changes
@@ -156,6 +149,20 @@ class EditElementController
                 $isRevision => SessionAuth::authorize("previewRevision:$element->revisionId"),
                 default => SessionAuth::authorize("previewElement:$canonical->id"),
             };
+        }
+
+        if ($this->request->inertia() || ! $this->request->wantsJson()) {
+            $viewModelClass = $element::editViewModelClass();
+
+            $viewModel = new $viewModelClass($element, $this->request, $canSave, $mergeCanonicalChanges);
+
+            event($event = new ElementEditorPayloadResolving(
+                $element,
+                $viewModel->toArray(),
+                $this->request->header('X-Craft-Container-Id') ?? 'main-form',
+            ));
+
+            return Inertia::render('elements/Edit', $event->data);
         }
 
         // Screen prep

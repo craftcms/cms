@@ -13,7 +13,8 @@
 
 ### Extensibility
 - Added `CraftCms\Cms\Form\Controls\NestedElements`, `CraftCms\Cms\Element\NestedElementManager::formControl()`, and `CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface`, allowing plugins to manage custom nested element types as cards or embedded element indexes.
-- Added `CraftCms\Cms\Http\Controllers\Elements\ElementEditorController` and `CraftCms\Cms\Element\Contracts\ElementInterface::editControllerClass()`, allowing element types to opt into the Inertia editor for nested element slideouts and `elements/edit` URLs.
+- Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types.
+- Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsForm()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsNodes()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.

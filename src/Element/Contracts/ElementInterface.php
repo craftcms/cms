@@ -24,7 +24,6 @@ use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Http\Controllers\Elements\ElementEditorController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Site\Data\Site;
@@ -930,20 +929,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function hasRevisions(): bool;
 
     /**
-     * Returns the view model that builds this element type’s edit screen
-     * payload, or null if its editor hasn’t been ported off the legacy screen.
+     * Returns the view model used by the edit screen and autosave responses.
      *
-     * @return class-string<ElementEditViewModel>|null
+     * @return class-string<ElementEditViewModel>
      */
-    public static function editViewModelClass(): ?string;
-
-    /**
-     * Returns the controller that renders this element type’s Inertia edit
-     * screen, or null if its editor hasn’t been ported off the legacy screen.
-     *
-     * @return class-string<ElementEditorController<covariant ElementInterface>>|null
-     */
-    public static function editControllerClass(): ?string;
+    public static function editViewModelClass(): string;
 
     /**
      * Prepares the response for the element’s Edit screen.

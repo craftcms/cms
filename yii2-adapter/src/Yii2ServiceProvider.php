@@ -21,6 +21,7 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\MigrationRepository;
 use CraftCms\Cms\Database\Migrator as CoreMigrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
@@ -55,6 +56,7 @@ use CraftCms\Yii2Adapter\Console\OnCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
+use CraftCms\Yii2Adapter\Element\LegacyElementEditorScreen;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Form\LegacyConditions;
@@ -276,6 +278,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Event::listen(ElementEditorPayloadResolving::class, LegacyElementEditorScreen::class);
+
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),

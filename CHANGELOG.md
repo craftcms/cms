@@ -16,7 +16,8 @@
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
 - Added `CraftCms\Cms\Form\Controls\NestedElements`, `CraftCms\Cms\Element\NestedElementManager::formControl()`, and `CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface`, allowing plugins to manage custom nested element types as cards or embedded element indexes.
-- Added `CraftCms\Cms\Http\Controllers\Elements\ElementEditorController` and `CraftCms\Cms\Element\Contracts\ElementInterface::editControllerClass()`, allowing element types to opt into the Inertia editor for nested element slideouts and `elements/edit` URLs.
+- Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types.
+- Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`.
 - The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses.
 - Deprecated `CraftCms\Cms\Form\Controls\NestedEntries`. `NestedElements` should be used instead.
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead.
