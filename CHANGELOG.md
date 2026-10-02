@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Brought back users’ gradient-based default avatars.
+- Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
