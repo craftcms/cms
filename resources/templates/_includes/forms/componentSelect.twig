@@ -30,7 +30,7 @@
 
 {# sort the options by handle, then label #}
 {% if showHandles %}
-  {% set options = options|sort((a, b) => a is instance of('craft\\base\\Grippable') ? a.getHandle() <=> b is instance of('craft\\base\\Grippable') ? b.getHandle()) %}
+  {% set options = options|sort((a, b) => a is instance of('CraftCms\\Cms\\Component\\Contracts\\Grippable') ? a.getHandle() <=> b is instance of('CraftCms\\Cms\\Component\\Contracts\\Grippable') ? b.getHandle()) %}
 {% endif %}
 {% set options = options|sort((a, b) => a.getUiLabel() <=> b.getUiLabel()) %}
 
@@ -119,15 +119,15 @@
       {{ disclosureMenu(options|map(component => {
         type: 'button',
         label: component.getUiLabel(),
-        handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
-        info: showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null,
-        icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
-        color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
+        handle: showHandles and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Grippable') ? component.getHandle() : null,
+        info: showDescription and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Describable') ? component.getDescription() : null,
+        icon: component is instance of('CraftCms\\Cms\\Component\\Contracts\\Iconic') ? component.getIcon() : null,
+        color: component is instance of('CraftCms\\Cms\\Component\\Contracts\\Colorable') ? component.getColor() : null,
         attributes: {
           data: {
             type: className(component),
             id: component.getId(),
-            handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+            handle: showHandles and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Grippable') ? component.getHandle() : null,
           },
         },
         liAttributes: {
@@ -159,14 +159,14 @@
 
         <div slot="content">
           {% for component in options %}
-            {% set optionHandle = showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null %}
-            {% set optionDescription = showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null %}
+            {% set optionHandle = showHandles and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Grippable') ? component.getHandle() : null %}
+            {% set optionDescription = showDescription and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Describable') ? component.getDescription() : null %}
             {# `hidden` is consumer-owned visibility (already selected); the menu's
                `searchable` filter uses the separate `data-search-hidden` channel and
                matches against textContent + `data-keywords`. #}
             {% tag 'craft-action-item' with {
-              icon: component is instance of('craft\\base\\Iconic') ? (component.getIcon() ?: false) : false,
-              'icon-color': component is instance of('craft\\base\\Colorable') ? (component.getColor().value ?? false) : false,
+              icon: component is instance of('CraftCms\\Cms\\Component\\Contracts\\Iconic') ? (component.getIcon() ?: false) : false,
+              'icon-color': component is instance of('CraftCms\\Cms\\Component\\Contracts\\Colorable') ? (component.getColor().value ?? false) : false,
               hidden: component.getId() in valueIds,
               data: {
                 type: className(component),
