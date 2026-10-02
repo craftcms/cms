@@ -15,6 +15,7 @@
 - Removed `Cp.$axios`.
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
 - Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
+- Fixed a bug where `craft:up` could fail on installs that didn’t have a migrations table yet. ([#19796](https://github.com/craftcms/cms/pull/19796))
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
 
 ## 6.0.0-alpha.19 - 2026-10-01
