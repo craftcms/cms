@@ -13,6 +13,9 @@ use Override;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class OrganizationTaxIdField extends TextField implements ImportableFieldLayoutElementInterface
 {
     use ImportableFieldLayoutElement;

@@ -21,6 +21,9 @@ use Illuminate\Validation\ValidationException;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UserPhotoUploads implements UploadHandler
 {
     public function __construct(private Users $users) {}

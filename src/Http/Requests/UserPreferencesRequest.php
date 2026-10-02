@@ -9,6 +9,9 @@ use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @since 6.0.0
+ */
 class UserPreferencesRequest extends FormRequest
 {
     public function authorize(): bool

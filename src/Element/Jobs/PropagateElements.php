@@ -19,6 +19,8 @@ use Override;
 
 /**
  * Propagates elements to other sites.
+ *
+ * @since 6.0.0
  */
 class PropagateElements extends BatchedElementJob
 {

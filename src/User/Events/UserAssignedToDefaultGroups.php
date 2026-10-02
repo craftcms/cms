@@ -10,6 +10,8 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserAssignedToDefaultGroups The event that is triggered after a user is assigned to the default user group.
+ *
+ * @since 6.0.0
  */
 class UserAssignedToDefaultGroups
 {

@@ -56,6 +56,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Content Block field type
+ *
+ * @since 6.0.0
  */
 class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface, ImportableElementContainerFieldInterface
 {

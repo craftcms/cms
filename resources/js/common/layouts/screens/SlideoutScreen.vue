@@ -47,6 +47,7 @@
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import FormActions from '@/common/components/FormActions.vue';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -491,8 +492,16 @@
 
         <LayoutSlotOutlet name="submit-button">
           <slot name="submit-button">
+            <FormActions
+              v-if="form && props.formActions?.length"
+              :form="form"
+              :action-items="props.formActions"
+              :submit-label="submitLabel"
+              :read-only="readOnly"
+              :save-disabled="props.saveDisabled"
+            />
             <craft-button
-              v-if="canSave && !readOnly && !props.saveDisabled"
+              v-else-if="canSave && !readOnly && !props.saveDisabled"
               type="submit"
               :variant="ButtonVariant.Primary"
               :loading="

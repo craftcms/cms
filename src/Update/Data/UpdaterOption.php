@@ -12,6 +12,8 @@ use Spatie\TypeScriptTransformer\Attributes\Optional;
  * @internal
  *
  * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
  */
 class UpdaterOption implements Arrayable
 {

@@ -8,5 +8,7 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserActivated The event that is triggered after a user is activated.
+ *
+ * @since 6.0.0
  */
 class UserActivated extends UserEvent {}

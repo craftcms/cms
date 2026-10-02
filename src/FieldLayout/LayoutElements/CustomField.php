@@ -54,6 +54,8 @@ use function CraftCms\Cms\t;
  * @property UserCondition|null $editCondition The user condition which determines who can edit this field
  *
  * @phpstan-consistent-constructor
+ *
+ * @since 6.0.0
  */
 class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {

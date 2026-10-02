@@ -15,6 +15,8 @@ use Illuminate\Support\Arr;
 /**
  * A Markdown string Control. Its canonical value is a plain string or null;
  * Markdown is authored and previewed by the renderer, never accepted as HTML.
+ *
+ * @since 6.0.0
  */
 class Markdown extends Control
 {

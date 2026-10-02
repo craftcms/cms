@@ -10,6 +10,9 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 
+/**
+ * @since 6.0.0
+ */
 abstract class WorkflowStage extends Component implements WorkflowStageInterface
 {
     use ConfigurableComponent;

@@ -33,6 +33,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SectionsController
 {
     use RespondsWithFlash;

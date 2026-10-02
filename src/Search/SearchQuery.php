@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Search;
 
 use CraftCms\Cms\Support\Str;
 
+/**
+ * @since 6.0.0
+ */
 class SearchQuery
 {
     /**

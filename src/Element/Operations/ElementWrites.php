@@ -57,7 +57,11 @@ use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementWrites
 {

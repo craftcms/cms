@@ -8,6 +8,8 @@ use CraftCms\Cms\User\Data\UserGroup;
 
 /**
  * @event UserGroupSaved The event that is triggered after a user group is saved.
+ *
+ * @since 6.0.0
  */
 class UserGroupSaved
 {

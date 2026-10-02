@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
  * Users have no drafts, revisions, or editable status, so this is the field
  * layout plus the account navigation the sibling screens (Permissions,
  * Preferences, Addresses, …) share.
+ *
+ * @since 6.0.0
  */
 class UserEditViewModel extends ElementEditViewModel
 {
@@ -109,6 +111,7 @@ class UserEditViewModel extends ElementEditViewModel
             new ActionItem()
                 ->html(app(ElementHtml::class)->elementChipHtml($this->user, [
                     'showDraftName' => false,
+                    'hyperlink' => true,
                     'appearance' => Appearance::Plain->value,
                 ]))
                 ->current(true),

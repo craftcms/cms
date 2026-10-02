@@ -14,6 +14,9 @@ use Illuminate\View\Compilers\BladeCompiler;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 class AuthDirective
 {
     public static function register(BladeCompiler $blade): void

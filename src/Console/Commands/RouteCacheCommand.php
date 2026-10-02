@@ -9,6 +9,9 @@ use Illuminate\Foundation\Console\RouteCacheCommand as LaravelRouteCacheCommand;
 use Illuminate\Routing\RouteCollection;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RouteCacheCommand extends LaravelRouteCacheCommand
 {
     #[Override]

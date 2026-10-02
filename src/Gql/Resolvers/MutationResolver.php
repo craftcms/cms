@@ -9,6 +9,9 @@ use CraftCms\Cms\Gql\GqlHelper;
 use Exception;
 use GraphQL\Error\Error;
 
+/**
+ * @since 6.0.0
+ */
 abstract class MutationResolver extends Component
 {
     /**

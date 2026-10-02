@@ -12,6 +12,9 @@ use Illuminate\Support\Collection;
 use Override;
 use Yiisoft\Arrays\ArrayableInterface;
 
+/**
+ * @since 6.0.0
+ */
 class Arr extends \Illuminate\Support\Arr
 {
     /**

@@ -67,7 +67,7 @@
     {
       method: 'post',
       immediate: false,
-      axiosInstance: actionClient,
+      client: actionClient,
     }
   );
   const errors = computed<FormPayload['errors']>(() => {

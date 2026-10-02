@@ -9,6 +9,9 @@ use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @since 6.0.0
+ */
 class EmailSettingsRequest extends FormRequest
 {
     /** @return array<string, list<string|object>> */

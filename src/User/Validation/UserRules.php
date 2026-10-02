@@ -24,6 +24,8 @@ use function CraftCms\Cms\t;
  * @extends ElementRules<User>
  *
  * @property User $subject
+ *
+ * @since 6.0.0
  */
 class UserRules extends ElementRules
 {

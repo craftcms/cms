@@ -14,6 +14,8 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseUiElement is the base class for UI elements that can be included in field layouts.
+ *
+ * @since 6.0.0
  */
 abstract class BaseUiElement extends FieldLayoutElement
 {

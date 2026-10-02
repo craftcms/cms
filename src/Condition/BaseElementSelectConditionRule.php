@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
+ *
+ * @since 6.0.0
  */
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {

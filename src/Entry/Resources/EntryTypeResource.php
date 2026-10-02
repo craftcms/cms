@@ -9,7 +9,11 @@ use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Entry\Data\EntryType;
 use Illuminate\Http\Request;
 
-/** @mixin EntryType */
+/**
+ * @mixin EntryType
+ *
+ * @since 6.0.0
+ */
 class EntryTypeResource extends JsonResource
 {
     /** @return array<string, scalar|array<array-key, scalar|array<string, scalar|null>|null>|object|null> */

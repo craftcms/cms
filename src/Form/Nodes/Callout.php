@@ -15,6 +15,9 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class Callout implements Node
 {
     use Conditionable;

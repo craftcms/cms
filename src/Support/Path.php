@@ -13,6 +13,9 @@ use Illuminate\Contracts\Foundation\Application;
 
 use function Illuminate\Filesystem\join_paths;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Path
 {

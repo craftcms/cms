@@ -15,6 +15,9 @@ use CraftCms\Cms\Gql\Types\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Element extends ObjectType
 {
     public function __construct(array $config)

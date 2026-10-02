@@ -19,6 +19,9 @@ use Override;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 final class DeleteAllOfTypeCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

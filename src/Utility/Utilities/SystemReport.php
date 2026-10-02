@@ -25,6 +25,8 @@ use function CraftCms\Cms\template;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
+ *
+ * @since 6.0.0
  */
 class SystemReport extends Utility
 {

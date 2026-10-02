@@ -9,6 +9,9 @@ use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Support\Facades\Queue;
 
+/**
+ * @since 6.0.0
+ */
 abstract readonly class ProgressListener
 {
     public function __construct(

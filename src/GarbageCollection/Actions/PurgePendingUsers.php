@@ -6,6 +6,9 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Support\Facades\Users;
 
+/**
+ * @since 6.0.0
+ */
 class PurgePendingUsers extends GarbageCollectionAction
 {
     public function __invoke(): void

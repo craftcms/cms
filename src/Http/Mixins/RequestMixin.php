@@ -17,6 +17,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 
+/**
+ * @since 6.0.0
+ */
 class RequestMixin
 {
     public function craftUser(): Closure

@@ -16,6 +16,9 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use UnexpectedValueException;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class HtmlSanitizerManager extends Manager
 {

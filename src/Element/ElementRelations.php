@@ -14,6 +14,9 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ElementRelations
 {

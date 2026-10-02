@@ -11,6 +11,9 @@ use GraphQL\Utils\SchemaPrinter;
 use Illuminate\Console\Command;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class PrintSchemaCommand extends Command
 {
     use CraftCommand;

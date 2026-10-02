@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Asset extends Element
 {
     public function __construct(array $config)

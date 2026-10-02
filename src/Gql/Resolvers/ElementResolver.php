@@ -18,6 +18,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ElementResolver extends Resolver
 {
     /** @param array<string, mixed> $arguments */

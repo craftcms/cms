@@ -19,6 +19,8 @@ use CraftCms\Cms\View\HtmlStack;
  * always sets all three properties via `View::placeholderHtml()`,
  * so the `HtmlStack` fallback only applies in a pure Laravel
  * context (without the yii2-adapter).
+ *
+ * @since 6.0.0
  */
 class PageEnded
 {

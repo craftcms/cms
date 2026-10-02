@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\Handlers\RelationArgumentHandler;
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 class ArgumentManager extends Component
 {
     /**

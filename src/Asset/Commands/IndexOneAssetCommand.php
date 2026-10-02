@@ -12,6 +12,9 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Override;
 use Symfony\Component\Console\Input\InputOption;
 
+/**
+ * @since 6.0.0
+ */
 class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

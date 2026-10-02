@@ -10,6 +10,9 @@ use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
+/**
+ * @since 6.0.0
+ */
 class Text extends Control
 {
     use HasTextExpander;

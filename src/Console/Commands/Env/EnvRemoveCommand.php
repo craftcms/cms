@@ -10,6 +10,9 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Foundation\Application;
 
+/**
+ * @since 6.0.0
+ */
 class EnvRemoveCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;

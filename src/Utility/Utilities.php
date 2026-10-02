@@ -11,6 +11,9 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\currentUser;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class Utilities
 {

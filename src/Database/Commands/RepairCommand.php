@@ -12,6 +12,9 @@ use Override;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * @since 6.0.0
+ */
 class RepairCommand extends Command
 {
     use CraftCommand;

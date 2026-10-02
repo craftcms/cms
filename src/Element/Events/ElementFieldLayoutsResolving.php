@@ -13,6 +13,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
  * associated with elements from a given source.
  *
  * {@see HasSources::fieldLayouts()}
+ *
+ * @since 6.0.0
  */
 class ElementFieldLayoutsResolving
 {

@@ -25,6 +25,8 @@ use function CraftCms\Cms\craftAsset;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 readonly class PluginStoreController
 {

@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
-  import {ref} from 'vue';
+  import {computed, ref} from 'vue';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
-  import type {ActionItem, FormSaveOptions} from '@/common/types';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import type {FormAction, FormSaveOptions} from '@/common/types';
   import {pathsMatch} from '@/modules/forms/runtime';
   import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
   import FormPage from '@/pages/Form.vue';
@@ -14,7 +13,7 @@
     submit: UrlMethodPair;
     refreshUrl: string | null;
     supportedTranslationMethods: Record<string, string[]>;
-    formActions?: ActionItem[];
+    formActions?: FormAction[];
     /** The field's ID and usages, from `CpScreenResponse::metaSidebarHtml()`. */
     details?: string | null;
   }>();
@@ -23,16 +22,14 @@
     save(options?: FormSaveOptions): void;
     setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
   }>();
-  const formActions: ActionItem[] = [
+  const formActions = computed<FormAction[]>(() => [
     {
       label: t('Save and add another'),
       onClick: () =>
         formPage.value?.save({data: {addAnother: 1}, preserveState: false}),
     },
     ...(props.formActions ?? []),
-  ];
-
-  useAppLayout({formActions});
+  ]);
 
   function onChange(change: FormChange, values: FormPayload['values']): void {
     if (!pathsMatch(change.path, ['type'])) {
@@ -59,6 +56,7 @@
     ref="formPage"
     :form="form"
     :submit="submit"
+    :form-actions="formActions"
     :refresh-url="refreshUrl ?? undefined"
     @change="onChange"
   />

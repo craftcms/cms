@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Section\Events;
 
 use CraftCms\Cms\Section\Data\Section;
 
+/**
+ * @since 6.0.0
+ */
 class SectionSaved
 {
     public function __construct(

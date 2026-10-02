@@ -17,6 +17,8 @@ use function CraftCms\Cms\craftAsset;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 class MoneyAsset implements LegacyAssetInterface
 {

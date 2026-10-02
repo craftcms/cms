@@ -74,6 +74,8 @@ use function CraftCms\Cms\t;
  *     criteria:array{fieldId:int|null, allowOwnerDrafts:true, allowOwnerRevisions:true},
  *     createElement:callable,
  * }
+ *
+ * @since 6.0.0
  */
 class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {

@@ -16,6 +16,8 @@ use RuntimeException;
 
 /**
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.
+ *
+ * @since 6.0.0
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {

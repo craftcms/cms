@@ -487,7 +487,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         );
         data = response.data;
       } catch (e) {
-        // SAFETY: Craft action request errors use Axios's response data envelope.
+        // SAFETY: Craft action request errors carry the response data envelope.
         craft().cp.displayError(
           (e as {response?: {data?: {message?: string}}})?.response?.data
             ?.message

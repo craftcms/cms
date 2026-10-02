@@ -18,7 +18,11 @@ use Override;
 use Stringable;
 use Traversable;
 
-/** @implements IteratorAggregate<mixed, mixed> */
+/**
+ * @implements IteratorAggregate<mixed, mixed>
+ *
+ * @since 6.0.0
+ */
 class JsonData extends Component implements AllowableInSandbox, IteratorAggregate, Serializable, Stringable
 {
     private ?string $invalidInput = null;

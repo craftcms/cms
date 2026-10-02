@@ -55,6 +55,10 @@ export class ConfigService {
   }
 
   getActionUrl(path: string) {
+    if (path.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(path)) {
+      return path;
+    }
+
     return this.#buildUrl(this.#require('actionUrl'), path);
   }
 

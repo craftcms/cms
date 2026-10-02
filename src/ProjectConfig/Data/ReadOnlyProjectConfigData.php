@@ -7,6 +7,9 @@ namespace CraftCms\Cms\ProjectConfig\Data;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 
+/**
+ * @since 6.0.0
+ */
 class ReadOnlyProjectConfigData
 {
     /** @param array<string|int, mixed> $data */

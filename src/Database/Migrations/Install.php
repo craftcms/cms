@@ -46,6 +46,9 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\warning;
 
+/**
+ * @since 6.0.0
+ */
 class Install extends Migration
 {
     public function __construct(

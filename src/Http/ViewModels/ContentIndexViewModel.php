@@ -50,6 +50,8 @@ use function Termwind\render;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (resolved source, query, index data, paginator) are memoized privately since
  * payload methods may be invoked in any order.
+ *
+ * @since 6.0.0
  */
 abstract class ContentIndexViewModel extends ViewModel
 {

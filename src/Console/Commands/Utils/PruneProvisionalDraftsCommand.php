@@ -15,6 +15,9 @@ use Illuminate\Support\Collection;
 use Override;
 use stdClass;
 
+/**
+ * @since 6.0.0
+ */
 class PruneProvisionalDraftsCommand extends Command
 {
     use CraftCommand;

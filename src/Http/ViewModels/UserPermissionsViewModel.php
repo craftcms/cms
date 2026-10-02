@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserPermissionsViewModel extends ViewModel
 {
     public function __construct(

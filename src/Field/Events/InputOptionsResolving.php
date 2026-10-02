@@ -11,6 +11,8 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 /**
  * @phpstan-import-type Option from BaseOptionsField
  * @phpstan-import-type Optgroup from BaseOptionsField
+ *
+ * @since 6.0.0
  */
 class InputOptionsResolving
 {

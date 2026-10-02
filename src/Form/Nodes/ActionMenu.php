@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
  * render path and the Vue one. Behavior travels with each item as a
  * declarative `action` descriptor rather than registered JS — see
  * {@see ActionMenuComponent}.
+ *
+ * @since 6.0.0
  */
 class ActionMenu implements Node
 {

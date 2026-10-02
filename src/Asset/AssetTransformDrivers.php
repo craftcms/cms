@@ -13,6 +13,9 @@ use Illuminate\Support\Manager;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class AssetTransformDrivers extends Manager
 {

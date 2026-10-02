@@ -8,6 +8,9 @@ use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class FilesystemServiceProvider extends ServiceProvider
 {
     public function boot(): void

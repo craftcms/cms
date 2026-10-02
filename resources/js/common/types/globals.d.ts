@@ -3,7 +3,8 @@ import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
-import type {AxiosRequestConfig, AxiosResponse} from 'axios';
+import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
+import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 
 type LegacySettingValue =
   | string
@@ -151,8 +152,9 @@ interface CraftStatic {
   sendActionRequest(
     method: string,
     action: string,
-    options?: AxiosRequestConfig
-  ): Promise<AxiosResponse>;
+    options?: LegacyRequestOptions
+  ): Promise<HttpResponse>;
+  isCancel(error: unknown): boolean;
   namespaceId(id: string, namespace?: string | null): string;
   initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(

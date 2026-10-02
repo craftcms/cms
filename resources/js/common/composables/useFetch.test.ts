@@ -1,29 +1,35 @@
-import axios from 'axios';
+import {
+  createHttpClient,
+  type HttpResponse,
+} from '@craftcms/ui/utilities/api/http';
 import {expect, it, vi} from 'vite-plus/test';
 import {useFetch} from './useFetch';
 
 it('ignores a superseded HTTP response', async () => {
-  const client = axios.create();
+  const client = createHttpClient();
   let finish!: () => void;
 
-  vi.spyOn(client, 'request')
+  const requestSpy = vi
+    .spyOn(client, 'request')
     .mockImplementationOnce(
       () =>
         new Promise((resolve) => {
-          finish = () => resolve({data: 'Old'});
+          finish = () => resolve({data: 'Old'} as HttpResponse);
         })
     )
-    .mockResolvedValueOnce({data: 'New'});
+    .mockResolvedValueOnce({data: 'New'} as HttpResponse);
 
   const request = useFetch<string>('/example', {
     immediate: false,
-    axiosInstance: client,
+    client: client,
   });
 
   const first = request.execute();
   expect(request.isLoading.value).toBe(true);
 
   await request.execute();
+  // The superseded request is aborted, not just ignored.
+  expect(requestSpy.mock.calls[0]![0].signal?.aborted).toBe(true);
   finish();
 
   expect(await first).toBeUndefined();
@@ -32,7 +38,7 @@ it('ignores a superseded HTTP response', async () => {
 });
 
 it('stays loading during a transform and discards its superseded result', async () => {
-  const client = axios.create();
+  const client = createHttpClient();
   vi.spyOn(client, 'request').mockResolvedValue({data: 'Raw'});
 
   let finish!: () => void;
@@ -48,7 +54,7 @@ it('stays loading during a transform and discards its superseded result', async 
 
   const request = useFetch<string>('/example', {
     immediate: false,
-    axiosInstance: client,
+    client: client,
     transform,
   });
 

@@ -8,6 +8,9 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use GraphQL\Type\Definition\NamedType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class TypeLoader
 {
     /**

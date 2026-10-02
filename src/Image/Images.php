@@ -39,6 +39,9 @@ use Throwable;
 
 use function CraftCms\Cms\maxPowerCaptain;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Images
 {

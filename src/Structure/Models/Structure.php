@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @since 6.0.0
+ */
 class Structure extends BaseModel
 {
     /** @use HasFactory<StructureFactory> */

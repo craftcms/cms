@@ -14,6 +14,8 @@ use Override;
 
 /**
  * Localizes relations for a field that has changed from global to site-specific.
+ *
+ * @since 6.0.0
  */
 class LocalizeRelations extends Job
 {

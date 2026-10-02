@@ -8,6 +8,9 @@ use CraftCms\Cms\Activity\Models\ActivityEvent;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class CommentDeleted extends CommentEvent
 {
     protected const string LABEL = 'Comment removed';

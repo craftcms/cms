@@ -12,6 +12,9 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class ElementIndexSourcesController
 {
     public function __construct(

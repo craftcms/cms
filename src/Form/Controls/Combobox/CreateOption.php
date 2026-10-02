@@ -6,7 +6,11 @@ namespace CraftCms\Cms\Form\Controls\Combobox;
 
 use JsonSerializable;
 
-/** An option that opens a resource's create screen and selects the saved record. */
+/**
+ * An option that opens a resource's create screen and selects the saved record.
+ *
+ * @since 6.0.0
+ */
 readonly class CreateOption implements JsonSerializable
 {
     public function __construct(

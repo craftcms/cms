@@ -25,7 +25,11 @@ use Illuminate\Database\DatabaseManager;
 use InvalidArgumentException;
 use RuntimeException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class ConfigRebuilder
 {
     public function __construct(

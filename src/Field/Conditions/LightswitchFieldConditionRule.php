@@ -12,6 +12,9 @@ use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Form\Contracts\Node;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

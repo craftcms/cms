@@ -4,12 +4,8 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted(() => ({
-  layout: vi.fn(),
+  formProps: vi.fn(),
   save: vi.fn(),
-}));
-
-vi.mock('@/common/composables/useAppLayout', () => ({
-  useAppLayout: state.layout,
 }));
 
 vi.mock('@/common/components/DynamicHtmlRenderer.vue', () => ({
@@ -22,7 +18,11 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
 
 vi.mock('@/pages/Form.vue', () => ({
   default: defineComponent({
-    setup: (_, {expose}) => {
+    props: ['formActions'],
+    setup: (props, {expose}) => {
+      state.formProps({
+        formActions: props.formActions,
+      });
       expose({save: state.save});
 
       return () => h('div');
@@ -43,7 +43,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.layout.mockClear();
+  state.formProps.mockClear();
   state.save.mockReset();
   container = document.createElement('div');
   document.body.append(container);
@@ -66,7 +66,7 @@ it('saves the current values as a new entry type', async () => {
   app.mount(container);
   await nextTick();
 
-  state.layout.mock.calls[0]![0].formActions[0].onClick();
+  state.formProps.mock.calls[0]![0].formActions[0].onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {saveAsNew: true},

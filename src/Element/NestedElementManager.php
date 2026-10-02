@@ -55,6 +55,8 @@ use function CraftCms\Cms\t;
  * or Matrix fields -> nested entries.
  *
  * If this is for a custom field, [[field]] must be set. Otherwise, [[attribute]] must be set.
+ *
+ * @since 6.0.0
  */
 class NestedElementManager extends Component
 {

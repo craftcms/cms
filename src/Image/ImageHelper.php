@@ -14,6 +14,9 @@ use InvalidArgumentException;
 use Throwable;
 use TypeError;
 
+/**
+ * @since 6.0.0
+ */
 class ImageHelper
 {
     // Bounds metadata scans for formats whose dimensions aren't in fixed header bytes.

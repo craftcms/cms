@@ -9,7 +9,11 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
-/** A palette color control whose value is a color slug or null. */
+/**
+ * A palette color control whose value is a color slug or null.
+ *
+ * @since 6.0.0
+ */
 class ColorSelect extends Control
 {
     private bool $allowTransparent = false;

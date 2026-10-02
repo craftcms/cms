@@ -11,6 +11,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\task;
 
+/**
+ * @since 6.0.0
+ */
 class PromptTask
 {
     /**

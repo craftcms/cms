@@ -9,6 +9,8 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event EditUserScreensResolving The event that is triggered when defining the screens that should be
  * shown for the user being edited.
+ *
+ * @since 6.0.0
  */
 class EditUserScreensResolving
 {

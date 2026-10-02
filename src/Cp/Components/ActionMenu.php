@@ -52,6 +52,8 @@ use function CraftCms\Cms\t;
  * rendering in one
  * {@see InputNamespace::namespaceInputs()}
  * closure themselves, so the IDs aren't doubled up.
+ *
+ * @since 6.0.0
  */
 class ActionMenu extends ViewComponent
 {

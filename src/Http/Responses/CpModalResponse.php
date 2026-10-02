@@ -21,6 +21,9 @@ use Stringable;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class CpModalResponse implements Responsable
 {
     use Conditionable;

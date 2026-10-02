@@ -10,6 +10,9 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class TextFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

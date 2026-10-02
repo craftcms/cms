@@ -2,6 +2,14 @@ includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon
 
+services:
+    -
+        class: CraftCms\Cms\Tests\Support\RequireSinceTagRule
+        arguments:
+            sourceDirectory: %currentWorkingDirectory%/src
+        tags:
+            - phpstan.rules.rule
+
 parameters:
     phpVersion: 80500
     level: 6

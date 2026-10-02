@@ -8,7 +8,11 @@ use CraftCms\Cms\Gql\Types\QueryArgument;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type ArgumentConfig from Argument */
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ *
+ * @since 6.0.0
+ */
 abstract class Arguments
 {
     /** @return array<string, ArgumentConfig> */

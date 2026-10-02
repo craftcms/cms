@@ -14,6 +14,8 @@ use Override;
 
 /**
  * Renders an HTML fragment as sanitized, non-interactive field layout content.
+ *
+ * @since 6.0.0
  */
 class Html extends FieldLayoutElement
 {

@@ -15,6 +15,8 @@ use Override;
 
 /**
  * Finds and replaces text in element content.
+ *
+ * @since 6.0.0
  */
 class FindAndReplace extends BatchedJob
 {

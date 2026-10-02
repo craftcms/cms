@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Image\Events;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 
+/**
+ * @since 6.0.0
+ */
 class DeletingTransformedImage
 {
     public function __construct(

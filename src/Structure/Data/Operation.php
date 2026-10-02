@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Structure\Data;
 
 use CraftCms\Cms\Structure\Models\StructureElement;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Operation
 {
     public const string MakeRoot = 'makeRoot';

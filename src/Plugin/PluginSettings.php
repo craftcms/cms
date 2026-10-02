@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Component\Component;
 
+/**
+ * @since 6.0.0
+ */
 abstract class PluginSettings extends Component
 {
     /** @return array<string, mixed> */

@@ -13,6 +13,9 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseLinkType extends Component implements ConfigurableComponentInterface
 {
     use ConfigurableComponent;

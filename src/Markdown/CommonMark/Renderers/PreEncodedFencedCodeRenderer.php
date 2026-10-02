@@ -12,6 +12,9 @@ use League\CommonMark\Renderer\NodeRendererInterface;
 use League\CommonMark\Util\HtmlElement;
 use League\CommonMark\Xml\XmlNodeRendererInterface;
 
+/**
+ * @since 6.0.0
+ */
 class PreEncodedFencedCodeRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): HtmlElement

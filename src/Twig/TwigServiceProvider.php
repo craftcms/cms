@@ -11,6 +11,9 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use Twig\Loader\LoaderInterface;
 
+/**
+ * @since 6.0.0
+ */
 class TwigServiceProvider extends ServiceProvider
 {
     #[Override]

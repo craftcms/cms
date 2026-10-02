@@ -18,6 +18,9 @@ use InvalidArgumentException;
 use Override;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class GeneralConfig extends BaseConfig
 {
     use Conditionable;

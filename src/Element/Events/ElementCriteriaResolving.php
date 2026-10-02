@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
+/**
+ * @since 6.0.0
+ */
 class ElementCriteriaResolving
 {
     public function __construct(

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Shared\Nameparser;
 
 use TheIconic\NameParser\LanguageInterface;
 
+/**
+ * @since 6.0.0
+ */
 readonly class CustomLanguage implements LanguageInterface
 {
     /** @var array<string, string> */

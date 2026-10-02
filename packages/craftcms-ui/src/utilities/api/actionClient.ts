@@ -1,10 +1,10 @@
-import axios, {type RawAxiosRequestHeaders} from 'axios';
 import {Csrf} from '@src/services/Csrf';
 import {ConfigService} from '@src/services/Config';
+import {createHttpClient} from './http.js';
 
 /**
  * Builds an action URL using the runtime-configured action base
- * (`Url::actionUrl()`), so the CP trigger isn't hard-coded to `/admin`.
+ * (`Url::actionUrl()`), preserving root-relative and absolute URLs.
  */
 export function getActionUrl(action: string = '') {
   return ConfigService.getInstance().getActionUrl(action);
@@ -13,7 +13,7 @@ export function getActionUrl(action: string = '') {
 /**
  * @TODO
  */
-export function actionHeaders(): RawAxiosRequestHeaders {
+export function actionHeaders(): Record<string, string> {
   // The body-end sync script records what the page has loaded on the `Craft`
   // global (see PHP's RegisteredClientAssets); fall back to the Cp config.
   const craftGlobal = (window as {Craft?: Record<string, unknown>}).Craft;
@@ -39,7 +39,7 @@ export function actionHeaders(): RawAxiosRequestHeaders {
   return headers;
 }
 
-export const actionClient = axios.create();
+export const actionClient = createHttpClient();
 
 export const csrf = new Csrf();
 
@@ -59,25 +59,20 @@ actionClient.interceptors.request.use(async (config) => {
   //   triggers, so it resolves against the origin only. `URL.origin` supplies
   //   scheme + host (+ port) without the `protocol` trailing-colon /
   //   port-doubling pitfalls.
-  // - An absolute URL is left untouched, per axios semantics.
-  if (
-    config.url &&
-    !config.url.startsWith('/') &&
-    !/^[a-z][a-z\d+.-]*:/i.test(config.url)
-  ) {
+  // - An absolute URL is left untouched.
+  if (config.url) {
     config.url = getActionUrl(config.url);
-  } else if (config.url?.startsWith('/')) {
-    config.baseURL = new URL(getActionUrl()).origin;
+
+    if (config.url.startsWith('/')) {
+      config.baseURL = new URL(getActionUrl()).origin;
+    }
   }
 
-  // Set X-Requested-With header
-  config.headers.set('X-Requested-With', 'XMLHttpRequest');
-
-  // Merge action headers
-  const headers = actionHeaders();
-  Object.entries(headers).forEach(([key, value]) => {
-    config.headers.set(key, value);
-  });
+  config.headers = {
+    ...config.headers,
+    'X-Requested-With': 'XMLHttpRequest',
+    ...actionHeaders(),
+  };
 
   // @TODO Make sure we really don't need this anymore
   // if (
@@ -88,7 +83,7 @@ actionClient.interceptors.request.use(async (config) => {
   // ) {
   //   const tokenValue = await csrf.getToken();
   //   if (tokenValue) {
-  //     config.headers.set('X-CSRF-Token', tokenValue);
+  //     config.headers['X-CSRF-Token'] = tokenValue;
   //   }
   // }
 
@@ -99,18 +94,20 @@ actionClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
-    if (
-      error.response?.status === 419 ||
-      (error.response?.status === 403 && !originalRequest._retry)
-    ) {
-      originalRequest._retry = true;
-
+    // Retry once with a fresh CSRF token. Requests that already retried are
+    // marked through `meta` so a persistent 419/403 can't loop.
+    if ((status === 419 || status === 403) && !originalRequest?.meta?.retried) {
       try {
         csrf.clearToken();
-        originalRequest.headers['X-CSRF-Token'] = await csrf.refreshToken();
+        const token = await csrf.refreshToken();
 
-        return axios(originalRequest);
+        return actionClient.request({
+          ...originalRequest,
+          headers: {...originalRequest.headers, 'X-CSRF-Token': token},
+          meta: {...originalRequest.meta, retried: true},
+        });
       } catch (refreshError) {
         console.error('Failed to refresh CSRF token:', refreshError);
         return Promise.reject(refreshError);

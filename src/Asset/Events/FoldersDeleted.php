@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Asset\Events;
 
 /**
  * @event FoldersDeleted The event that is triggered after folders are deleted.
+ *
+ * @since 6.0.0
  */
 class FoldersDeleted
 {

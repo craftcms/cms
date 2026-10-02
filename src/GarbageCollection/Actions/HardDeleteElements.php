@@ -15,6 +15,8 @@ use Tpetry\QueryExpressions\Language\Alias;
  * Hard-deletes eligible elements.
  *
  * Any soft-deleted nested elements that have revisions will be skipped, as their revisions may still be needed by the owner element.
+ *
+ * @since 6.0.0
  */
 class HardDeleteElements extends GarbageCollectionAction
 {

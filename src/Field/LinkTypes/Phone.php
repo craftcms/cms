@@ -10,6 +10,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Phone number link type.
+ *
+ * @since 6.0.0
  */
 class Phone extends BaseTextLinkType
 {

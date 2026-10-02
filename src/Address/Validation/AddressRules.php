@@ -22,6 +22,8 @@ use Override;
  * @extends ElementRules<Address>
  *
  * @property Address $subject
+ *
+ * @since 6.0.0
  */
 class AddressRules extends ElementRules
 {

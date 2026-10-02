@@ -8,6 +8,9 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ResaveAddressesCommand extends ResaveCommand
 {
     #[Override]

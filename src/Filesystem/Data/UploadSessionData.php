@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Filesystem\Data;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Contracts\Support\Arrayable;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 readonly class UploadSessionData implements Arrayable
 {
     /**

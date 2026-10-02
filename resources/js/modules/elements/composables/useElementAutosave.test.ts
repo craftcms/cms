@@ -103,7 +103,7 @@ describe('useElementAutosave', () => {
 
   it('records a failure without throwing', async () => {
     postSpy.mockRejectedValue({
-      isAxiosError: true,
+      isHttpError: true,
       response: {data: {message: 'Nope.'}},
     });
 

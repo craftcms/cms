@@ -71,6 +71,8 @@ use Illuminate\Support\Facades\Gate;
  *         static: bool,
  *     },
  * }
+ *
+ * @since 6.0.0
  */
 class UserAddressesViewModel extends ViewModel
 {

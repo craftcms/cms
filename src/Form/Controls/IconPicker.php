@@ -8,7 +8,11 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
 
-/** An icon-name Control. Its canonical value is a string or null. */
+/**
+ * An icon-name Control. Its canonical value is a string or null.
+ *
+ * @since 6.0.0
+ */
 class IconPicker extends Control
 {
     private bool $freeOnly = false;

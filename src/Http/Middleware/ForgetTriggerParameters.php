@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
  * This middleware removes the cpTrigger and actionTrigger parameters
  * from the route. Otherwise, these parameters will be added
  * as the first parameter to every controller action.
+ *
+ * @since 6.0.0
  */
 class ForgetTriggerParameters
 {

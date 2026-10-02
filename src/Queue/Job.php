@@ -17,6 +17,8 @@ use Illuminate\Queue\SerializesModels;
  * Base class for Craft queue jobs.
  *
  * Provides progress tracking integration with JobProgressService.
+ *
+ * @since 6.0.0
  */
 abstract class Job implements DescribableJob, ShouldQueue
 {

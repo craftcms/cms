@@ -10,6 +10,9 @@ use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
 
+/**
+ * @since 6.0.0
+ */
 class TwigClearCommand extends Command
 {
     use CraftCommand;

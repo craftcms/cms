@@ -10,6 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class EditionController
 {
     use RespondsWithFlash;

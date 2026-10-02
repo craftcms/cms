@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * @event AssetIndexVolumesResolving The event that is triggered when listing the available volumes to index.
+ *
+ * @since 6.0.0
  */
 class AssetIndexVolumesResolving
 {

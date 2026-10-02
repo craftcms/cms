@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
 /**
  * A nested-entry manager whose elements are managed outside the owner form.
  * Its cards and index metadata are presentation data, never a submitted field value.
+ *
+ * @since 6.0.0
  */
 class NestedEntries extends Control
 {

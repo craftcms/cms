@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 readonly class AddLogContext
 {
     public function __construct(

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Queue\Listeners;
 
 use Illuminate\Queue\Events\JobProcessed;
 
+/**
+ * @since 6.0.0
+ */
 readonly class StoreCompleted extends ProgressListener
 {
     public function handle(JobProcessed $event): void

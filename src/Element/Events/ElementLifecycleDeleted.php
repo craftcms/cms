@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Element;
  * @event ElementLifecycleDeleted The event that is triggered after the element is deleted.
  *
  * {@see Element::afterDelete()}
+ *
+ * @since 6.0.0
  */
 class ElementLifecycleDeleted
 {

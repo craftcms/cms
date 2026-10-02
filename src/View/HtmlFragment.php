@@ -7,7 +7,11 @@ namespace CraftCms\Cms\View;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
-/** @implements Arrayable<string, string> */
+/**
+ * @implements Arrayable<string, string>
+ *
+ * @since 6.0.0
+ */
 readonly class HtmlFragment implements Arrayable, JsonSerializable
 {
     public function __construct(

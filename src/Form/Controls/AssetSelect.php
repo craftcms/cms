@@ -17,6 +17,8 @@ use CraftCms\Cms\Field\Assets;
  * Deciding *whether* uploads are allowed is the field's job — see
  * {@see Assets::selectControl()} — because it depends on the field's upload
  * settings and the volume permissions behind them.
+ *
+ * @since 6.0.0
  */
 class AssetSelect extends ElementSelect
 {

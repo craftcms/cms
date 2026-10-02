@@ -16,6 +16,8 @@ use Override;
  * @extends ElementRules<Asset>
  *
  * @property Asset $subject
+ *
+ * @since 6.0.0
  */
 class AssetRules extends ElementRules
 {

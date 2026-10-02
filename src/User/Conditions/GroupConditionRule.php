@@ -20,6 +20,9 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public static function isSelectableForCondition(ConditionInterface $condition): bool

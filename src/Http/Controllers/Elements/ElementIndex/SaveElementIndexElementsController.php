@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class SaveElementIndexElementsController
 {
     private ElementIndexRequest $request;

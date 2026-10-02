@@ -9,6 +9,9 @@ use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 class Trim extends Directive
 {
     public static function create(): GqlDirective

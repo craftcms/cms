@@ -8,6 +8,9 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Sequence
 {
     /**

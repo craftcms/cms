@@ -26,6 +26,8 @@ use Illuminate\Container\Attributes\Singleton;
  * Registers Node type classes available to Control Panel Forms.
  *
  * @extends TypeRegistry<Node>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class FormNodeTypes extends TypeRegistry

@@ -26,6 +26,9 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class PhotoField extends BaseNativeField
 {
     #[Override]

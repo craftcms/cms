@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 
+/**
+ * @since 6.0.0
+ */
 class TemplateContent implements Node
 {
     use Conditionable;

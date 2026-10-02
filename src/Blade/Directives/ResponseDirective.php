@@ -12,6 +12,9 @@ use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
 use DateTimeInterface;
 use Illuminate\View\Compilers\BladeCompiler;
 
+/**
+ * @since 6.0.0
+ */
 class ResponseDirective
 {
     public static function register(BladeCompiler $blade): void

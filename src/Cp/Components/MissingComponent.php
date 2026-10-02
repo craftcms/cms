@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Cp\Components;
 use Illuminate\Contracts\Support\Htmlable;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class MissingComponent extends ViewComponent
 {
     private string $error = '';

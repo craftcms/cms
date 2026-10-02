@@ -10,6 +10,9 @@ use Illuminate\Database\Grammar;
 use Tpetry\QueryExpressions\Concerns\IdentifiesDriver;
 use Tpetry\QueryExpressions\Concerns\StringizeExpression;
 
+/**
+ * @since 6.0.0
+ */
 readonly class JsonExtract implements Expression
 {
     use IdentifiesDriver;

@@ -23,6 +23,8 @@ use CraftCms\Cms\Element\ElementCollection;
  * ```
  *
  * @template TElement of ElementInterface
+ *
+ * @since 6.0.0
  */
 class DefineDeletionBlockers
 {

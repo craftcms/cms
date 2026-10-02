@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Asset\Data;
 use CraftCms\Cms\Form\Nodes\Field;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class AssetTransformDriverDefinition
 {
     /**

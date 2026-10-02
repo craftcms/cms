@@ -12,6 +12,9 @@ use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Node\ForNode;
 use Twig\Node\Node;
 
+/**
+ * @since 6.0.0
+ */
 #[YieldReady]
 class NavNode extends ForNode
 {

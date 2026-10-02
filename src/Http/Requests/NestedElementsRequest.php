@@ -13,6 +13,9 @@ use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @since 6.0.0
+ */
 class NestedElementsRequest extends FormRequest
 {
     private ?ElementInterface $owner = null;

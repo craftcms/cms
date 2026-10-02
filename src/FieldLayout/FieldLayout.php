@@ -44,6 +44,8 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-type GeneratedField array{uid: string, name?: string, handle?: string, template?: string}
  * @phpstan-type GeneratedFieldConfig array{uid?: string, name?: string, handle?: string, template?: string}
+ *
+ * @since 6.0.0
  */
 class FieldLayout extends Component
 {

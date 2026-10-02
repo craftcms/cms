@@ -10,6 +10,9 @@ use League\CommonMark\Extension\InlinesOnly\InlinesOnlyExtension;
 use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\MarkdownConverter;
 
+/**
+ * @since 6.0.0
+ */
 class ExtraFlavor extends Flavor
 {
     public function __invoke(MarkdownOptions $options): MarkdownConverter

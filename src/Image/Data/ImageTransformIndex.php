@@ -8,6 +8,9 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use DateTimeInterface;
 
+/**
+ * @since 6.0.0
+ */
 class ImageTransformIndex extends Component
 {
     public ?int $id = null;

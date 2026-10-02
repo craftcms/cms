@@ -72,6 +72,8 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
  *
  * @phpstan-type UploadedFileData array{type:'data', filename:string, mimeType:string, data:string}|array{type:'file'|'upload', filename:string, mimeType:string|null, path:string}
+ *
+ * @since 6.0.0
  */
 class Assets extends BaseRelationField
 {

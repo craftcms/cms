@@ -20,6 +20,9 @@ use Throwable;
 use Transliterator;
 use voku\helper\ASCII;
 
+/**
+ * @since 6.0.0
+ */
 class Str extends \Illuminate\Support\Str
 {
     /**

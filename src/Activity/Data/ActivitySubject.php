@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Activity\Data;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use InvalidArgumentException;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivitySubject
 {
     public function __construct(

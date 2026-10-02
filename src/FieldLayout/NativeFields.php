@@ -28,6 +28,8 @@ use InvalidArgumentException;
  *     });
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class NativeFields

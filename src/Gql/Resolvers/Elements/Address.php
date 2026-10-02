@@ -16,6 +16,9 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @since 6.0.0
+ */
 class Address extends ElementResolver
 {
     /** @param array<string, mixed> $arguments */

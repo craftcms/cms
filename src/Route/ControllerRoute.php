@@ -14,6 +14,9 @@ use ReflectionMethod;
 use ReflectionParameter;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class ControllerRoute
 {
     /**

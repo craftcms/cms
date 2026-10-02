@@ -8,6 +8,9 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Session\SessionManager;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Impersonation
 {
