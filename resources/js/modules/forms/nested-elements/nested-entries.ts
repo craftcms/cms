@@ -1,6 +1,7 @@
 import {t, isHttpError} from '@craftcms/ui';
 import {normalizeClass} from 'vue';
 import type {PaginationData} from '@/common/types';
+import type {QueryParams} from '@/common/types/query';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
@@ -71,7 +72,7 @@ export type NestedContentIndexData = Omit<
   reorderable: boolean;
   headHtml?: string;
   bodyHtml?: string;
-  fieldLayouts?: Array<Record<string, string | number | boolean | null>>;
+  fieldLayouts?: QueryParams[];
 };
 
 export type NestedEntriesProps = {
@@ -91,6 +92,28 @@ export function nestedOwnerParams(
     ownerId,
     ownerSiteId: manager.ownerSiteId,
     attribute: manager.attribute,
+  };
+}
+
+export function nestedIndexParams(
+  manager: NestedEntriesManager,
+  ownerId: number,
+  initial?: NestedContentIndexData
+) {
+  return {
+    ...nestedOwnerParams(manager, ownerId),
+    ...(initial
+      ? {
+          sortable: manager.sortable,
+          canPaste: manager.canPaste,
+          static: initial.viewState.static ?? false,
+          showHeaderColumn: initial.viewState.showHeaderColumn,
+          per_page: initial.pagination.per_page,
+          allowedViewModes: initial.viewModes.map(({mode}) => mode),
+          defaultTableColumns: initial.defaultTableColumns,
+          fieldLayouts: initial.fieldLayouts ?? [],
+        }
+      : {}),
   };
 }
 

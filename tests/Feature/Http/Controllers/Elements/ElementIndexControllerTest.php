@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
@@ -431,6 +434,72 @@ it('applies server-owned Matrix index configuration', function () {
         ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
         ->and($actions[Delete::class]['selectionAttribute'])->toBe('deletable');
 });
+
+it('preserves posted native index settings without changing owner scope or authorization', function (bool $authorized, bool $canReorder) {
+    $columnField = Field::factory()->create(['handle' => 'addressIndexColumn', 'type' => PlainText::class]);
+    $layout = FieldLayout::factory()->forField($columnField)->create(['type' => Address::class]);
+    Fields::refreshFields();
+    $owner = UserModel::factory()->createElement();
+    AddressModel::factory()->withOwnedElement($owner, 1)->createElement(['addressLine1' => 'First']);
+    AddressModel::factory()->withOwnedElement($owner, 2)->createElement(['addressLine1' => 'Second']);
+    $config = [
+        'sortable' => true,
+        'canPaste' => true,
+        'pageSize' => 1,
+        'allowedViewModes' => ['table'],
+        'defaultViewMode' => 'table',
+        'defaultTableColumns' => ['addressLine1'],
+        'fieldLayouts' => [Fields::getLayoutById($layout->id)],
+    ];
+    $manager = $owner->getAddressManager()->getIndexData($owner, $config);
+    $initial = EmbeddedIndexViewModel::forOwner(
+        Address::class,
+        $owner,
+        'addresses',
+        $owner->getAddressManager()->getIndexConfig($owner, $config),
+    )->payload();
+    $otherOwner = UserModel::factory()->createElement();
+    AddressModel::factory()->withOwnedElement($otherOwner, 1)->createElement(['addressLine1' => 'Wrong owner']);
+
+    if (! $authorized) {
+        SessionAuth::deauthorize("manageNestedElements::$owner->id::addresses");
+    }
+
+    if (! $canReorder) {
+        SessionAuth::deauthorize("reorderNestedElements::$owner->id::addresses");
+    }
+
+    $response = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$manager,
+        'elementType' => Address::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '__IMP__',
+        'viewMode' => 'table',
+        'per_page' => $initial['pagination']['per_page'],
+        'sortable' => true,
+        'canPaste' => true,
+        'allowedViewModes' => ['table'],
+        'defaultTableColumns' => $initial['defaultTableColumns'],
+        'fieldLayouts' => $initial['fieldLayouts'] ?? [],
+        'baseCriteria' => ['ownerId' => $otherOwner->id],
+        'criteria' => ['ownerId' => $otherOwner->id],
+        'static' => false,
+    ])->assertOk()
+        ->assertJsonPath('pagination.per_page', 1)
+        ->assertJsonPath('pagination.total', 2)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('defaultTableColumns', ['addressLine1'])
+        ->assertJsonPath('viewModes.0.mode', 'table')
+        ->assertJsonCount(1, 'viewModes')
+        ->assertJsonPath('viewState.static', ! $authorized)
+        ->assertJsonPath('reorderable', $authorized && $canReorder);
+
+    expect(array_column($response->json('tableColumns'), 'value'))->toContain("field:$columnField->uid");
+})->with([
+    'editable' => [true, true],
+    'read-only' => [false, true],
+    'reordering not authorized' => [true, false],
+]);
 
 it('disables embedded reordering when the view is filtered or re-sorted', function (Closure $query) {
     $fixture = embeddedMatrixIndexFixture();

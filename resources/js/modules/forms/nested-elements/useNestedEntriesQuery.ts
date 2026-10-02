@@ -23,7 +23,7 @@ import type {ElementIndexExportFormat} from '@/modules/elements/index/types/expo
 import {
   markInvalidEntries,
   nestedEntriesErrorMessage,
-  nestedOwnerParams,
+  nestedIndexParams,
   type NestedContentIndexData,
   type NestedEntriesProps,
   type NestedIndexEntry,
@@ -129,7 +129,11 @@ export function useNestedEntriesQuery(options: {
 
       return {
         fieldLayouts: payload.fieldLayouts,
-        extraParams: nestedOwnerParams(currentManager, currentManager.ownerId),
+        extraParams: nestedIndexParams(
+          currentManager,
+          currentManager.ownerId,
+          options.props().index?.initial
+        ),
       };
     },
     inlineEditing: options.saveInline
@@ -154,7 +158,11 @@ export function useNestedEntriesQuery(options: {
       const {data} = await actionClient.post<NestedContentIndexData>(
         getElements.url(),
         {
-          ...nestedOwnerParams(currentManager, currentManager.ownerId),
+          ...nestedIndexParams(
+            currentManager,
+            currentManager.ownerId,
+            options.props().index?.initial
+          ),
           elementType: currentManager.elementType,
           context: 'embeddedIndex',
           source: '__IMP__',
@@ -231,7 +239,11 @@ export function useNestedEntriesQuery(options: {
         method: 'POST',
         url: exportIndex.url(),
         body: {
-          ...nestedOwnerParams(currentManager, currentManager.ownerId),
+          ...nestedIndexParams(
+            currentManager,
+            currentManager.ownerId,
+            options.props().index?.initial
+          ),
           elementType: currentManager.elementType,
           context: 'embeddedIndex',
           source: '__IMP__',

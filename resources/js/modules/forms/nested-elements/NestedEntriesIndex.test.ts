@@ -584,7 +584,7 @@ describe('NestedEntriesIndex', () => {
     actionItem(root, 'Download selected').click();
     await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
 
-    expect(actions.run.mock.calls[0]![0]).toEqual({
+    expect(actions.run.mock.calls[0]![0]).toMatchObject({
       type: 'download',
       method: 'GET',
       url: '/actions/plugin/download?token=plugin-token',
@@ -625,7 +625,7 @@ describe('NestedEntriesIndex', () => {
     actionItem(root, 'Archive selected').click();
     await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
 
-    expect(actions.run.mock.calls[0]![0]).toEqual({
+    expect(actions.run.mock.calls[0]![0]).toMatchObject({
       type: 'http',
       method: 'POST',
       url: '/actions/plugin/archive',

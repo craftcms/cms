@@ -28,7 +28,6 @@
       label: string;
     };
     id: string;
-    fieldLayouts?: Array<Record<string, string | number | boolean | null>>;
   };
 
   const props = defineProps<{
@@ -61,12 +60,12 @@
     elementType: context?.elementType ?? page.props.elementType,
     context: context?.context ?? page.props.context ?? 'index',
     source: context?.source ?? page.props.source,
-    fieldLayouts: context?.fieldLayouts,
     id: `filters`,
   } as FilterHudRequest);
 
   http.transform((data) => ({
     ...data,
+    fieldLayouts: context?.fieldLayouts,
     conditionConfig: conditions.value ?? undefined,
   }));
 
