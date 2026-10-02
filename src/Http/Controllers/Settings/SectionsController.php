@@ -10,7 +10,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -44,7 +43,6 @@ readonly class SectionsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
         private FormResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -247,7 +245,6 @@ readonly class SectionsController
         return new SectionEditViewModel(
             $section,
             $sites,
-            $this->entryTypes,
             $this->formResolver,
             $brandNew,
             $this->readOnly,

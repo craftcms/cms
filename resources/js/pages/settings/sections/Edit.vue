@@ -2,12 +2,10 @@
   import type {UrlMethodPair} from '@inertiajs/core';
   import {toUriFormat} from '@craftcms/ui';
   import {ref} from 'vue';
-  import type {EntryType, SectionSiteSettingsData} from '@/common/types';
-  import EntryTypeSelect from '@/modules/entry-types/components/EntryTypeSelect.vue';
+  import type {SectionSiteSettingsData} from '@/common/types';
   import type {
     FormChange,
     FormChangeKind,
-    FormControlOverrideProps,
     FormPayload,
     FormValue,
   } from '@/modules/forms/types';
@@ -28,7 +26,6 @@
     submit: UrlMethodPair;
     refreshUrl: string | null;
     brandNew: boolean;
-    entryTypes: EntryType[];
     homepageUri: string;
     templateOptions: Array<unknown>;
     isMultiSite: boolean;
@@ -38,30 +35,6 @@
   const formPage = ref<{
     setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
   }>();
-
-  function selectedEntryTypes(value: FormValue): EntryType[] {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value.flatMap((id) => {
-      const entryType = props.entryTypes.find(
-        (candidate) => candidate.id === Number(id)
-      );
-
-      return entryType ? [entryType] : [];
-    });
-  }
-
-  function setEntryTypes(
-    entryTypes: EntryType[],
-    setValue: FormControlOverrideProps['setValue']
-  ): void {
-    setValue(
-      entryTypes.map((entryType) => entryType.id),
-      'discrete'
-    );
-  }
 
   function siteSettings(value: FormValue): SiteSettings {
     if (!isRecord(value)) {
@@ -110,14 +83,6 @@
     :refresh-url="refreshUrl ?? undefined"
     @change="onChange"
   >
-    <template #entryTypes="{value, setValue, editable}">
-      <EntryTypeSelect
-        :entry-types="entryTypes"
-        :model-value="selectedEntryTypes(value)"
-        @update:model-value="setEntryTypes($event, setValue)"
-      />
-    </template>
-
     <template #sites="{value, values, setValue, editable}">
       <SiteSettingsTable
         :is-multisite="isMultiSite"

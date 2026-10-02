@@ -11,8 +11,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\EntryTypeSelect;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Number;
@@ -34,7 +34,6 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Workflow\Models\Workflow;
-use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
@@ -47,7 +46,6 @@ class SectionEditViewModel extends ViewModel
     public function __construct(
         private readonly Section $section,
         private readonly Sites $sites,
-        private readonly EntryTypes $entryTypesService,
         private readonly FormResolver $formResolver,
         public readonly bool $brandNew,
         private readonly bool $readOnly,
@@ -102,9 +100,9 @@ class SectionEditViewModel extends ViewModel
             Separator::make('entry-types-separator'),
             Heading::make('entry-types-heading', t('Entry Types'))
                 ->description(t('Choose the types of entries that can be included in this section.')),
-            Field::make(control: Choice::make('entryTypes')
-                ->options($this->entryTypeOptions())
-                ->multiple()),
+            Field::make(control: EntryTypeSelect::make('entryTypes')
+                ->allowOverrides()
+                ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
             Heading::make('site-settings-heading', t('Site settings'))
                 ->description(t('Choose which sites this section should be available in, and configure the site-specific settings.')),
@@ -197,12 +195,6 @@ class SectionEditViewModel extends ViewModel
             : action([SectionsController::class, 'renderForm']);
     }
 
-    /** @return Collection<int, EntryType> */
-    public function entryTypes(): Collection
-    {
-        return $this->entryTypesService->getAllEntryTypes();
-    }
-
     public function homepageUri(): string
     {
         return Element::HOMEPAGE_URI;
@@ -244,7 +236,7 @@ class SectionEditViewModel extends ViewModel
             'handle' => $this->section->handle ?? '',
             'type' => $this->section->type ?? SectionType::Channel,
             'entryTypes' => array_map(
-                fn ($entryType): int => (int) $entryType->id,
+                EntryTypeSelect::selectionValue(...),
                 $this->section->entryTypes,
             ),
             'workflowId' => $this->section->workflowId,
@@ -257,18 +249,6 @@ class SectionEditViewModel extends ViewModel
             'previewTargets' => $this->section->previewTargets ?? [],
             'sites' => $siteSettings,
         ];
-    }
-
-    /** @return list<array{label: string, value: int}> */
-    private function entryTypeOptions(): array
-    {
-        return $this->entryTypesService->getAllEntryTypes()
-            ->map(fn ($entryType): array => [
-                'label' => $entryType->name,
-                'value' => (int) $entryType->id,
-            ])
-            ->values()
-            ->all();
     }
 
     private function siteSettingsControl(): Table
