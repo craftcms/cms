@@ -7,6 +7,7 @@
    * before that.
    */
   import type {UrlMethodPair} from '@inertiajs/core';
+  import type {FormAction} from '@/common/types';
   import FormPage from '@/pages/Form.vue';
   import type {FormPayload, FormValue} from '@/modules/forms/types';
   import type {StepPayload} from '@/modules/import/mapping/types';
@@ -21,6 +22,7 @@
     validateStepUrl: string | null;
     stepMappingUrl: string;
     nestedColsUrl: string;
+    formActions?: FormAction[];
   }>();
 
   const urls = {
@@ -48,7 +50,7 @@
 </script>
 
 <template>
-  <FormPage :form="form" :submit="submit">
+  <FormPage :form="form" :submit="submit" :form-actions="formActions">
     <template #steps="{value, setValue, editable, errors}">
       <StepList
         :model-value="asSteps(value)"

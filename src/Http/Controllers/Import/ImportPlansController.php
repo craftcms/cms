@@ -502,12 +502,16 @@ class ImportPlansController
             ))
             ->when(
                 $editable,
-                callback: function (CpScreenResponse $response) use ($importPlan) {
+                callback: function (CpScreenResponse $response) use ($importPlan, $currentUser) {
                     $response
                         ->action('import/save')
                         ->redirectUrl('import/{handle}');
 
-                    if ($importPlan->isEditable()) {
+                    if (! $importPlan->isEditable()) {
+                        return;
+                    }
+
+                    if ($currentUser?->can('deleteImportPlans')) {
                         $response->addAltAction(t('Delete'), [
                             'variant' => 'danger',
                             'action' => [
@@ -523,7 +527,9 @@ class ImportPlansController
                                 ]),
                             ],
                         ]);
+                    }
 
+                    if ($currentUser?->can('triggerImportPlans')) {
                         $response->addAltAction(t('Run this import plan'), [
                             'action' => [
                                 'type' => 'http',
