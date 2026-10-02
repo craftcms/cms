@@ -1,12 +1,7 @@
-import axios, {
-  type AxiosProxyConfig,
-  type CancelToken,
-  type InternalAxiosRequestConfig,
-} from 'axios';
 import {actionClient} from './actionClient.js';
+import {createHttpClient, type HttpRequestConfig} from './http.js';
 
 let loadingApiHeaders = false;
-let apiHeaderWaitlist: Promise<any>[] = [];
 let apiHeaders: Record<string, string> | null = null;
 
 /**
@@ -16,11 +11,11 @@ export function getApiUrl(action: string = '') {
   return `https://api.craftcms.com/v1/${action}`;
 }
 
-async function getApiHeaders(cancelToken?: CancelToken) {
+async function getApiHeaders(signal?: AbortSignal) {
   if (loadingApiHeaders) {
     // @TODO: I'm not sure we need a queue here
     // apiHeaderWaitlist.push(
-    //   sendApiRequest("POST", "app/api-headers", { cancelToken }),
+    //   sendApiRequest("POST", "app/api-headers", { signal }),
     // );
     return;
   }
@@ -34,9 +29,7 @@ async function getApiHeaders(cancelToken?: CancelToken) {
     const response = await actionClient.post<Record<string, string>>(
       'app/api-headers',
       undefined,
-      {
-        cancelToken,
-      }
+      {signal}
     );
 
     return response.data;
@@ -50,26 +43,14 @@ async function getApiHeaders(cancelToken?: CancelToken) {
   }
 }
 
-export const apiClient = axios.create({
+export const apiClient = createHttpClient({
   baseURL: 'https://api.craftcms.com/v1/', // @TODO Make configurable
 });
 
-async function apiHeadersRequestInterceptor(
-  config: InternalAxiosRequestConfig
+async function processApiHeaders(
+  headers: Record<string, string>,
+  signal?: AbortSignal
 ) {
-  if (apiHeaders) {
-    Object.entries(apiHeaders).forEach(([key, value]) => {
-      config.headers.set(key, value);
-    });
-  } else {
-    config.params = config.params || {};
-    config.params.processCraftHeaders = 1;
-  }
-
-  return config;
-}
-
-async function processApiHeaders(headers: any, cancelToken: CancelToken) {
   if (apiHeaders) {
     return;
   }
@@ -77,7 +58,7 @@ async function processApiHeaders(headers: any, cancelToken: CancelToken) {
   const {data} = await actionClient.post(
     'app/process-api-response-headers',
     {headers},
-    {cancelToken}
+    {signal}
   );
 
   // @TODO look into this, the previous code was checking if the headers were already processed but we don't seem to need to.
@@ -92,49 +73,35 @@ async function processApiHeaders(headers: any, cancelToken: CancelToken) {
   return apiHeaders;
 }
 
-async function apiHeadersResponseInterceptor(response: any) {
-  await processApiHeaders(response.headers, response.config.cancelToken);
-  return response;
-}
-
 apiClient.interceptors.request.use(async (config) => {
-  const {cancelToken} = config;
+  const headers = await getApiHeaders(config.signal);
 
-  const headers = await getApiHeaders(cancelToken);
-  // Force the API to process the Craft headers if this is the first API request
-  if (headers) {
-    Object.entries(headers).forEach(([key, value]) => {
-      config.headers.set(key, value);
-    });
-  }
-
-  const finalConfig = {
-    ...config,
-    params: {
-      ...(Cp.apiParams || {}),
-      ...config.params,
-      v: new Date().getTime(),
-    },
+  const params = {
+    ...(Cp.apiParams || {}),
+    ...(config.params instanceof URLSearchParams
+      ? Object.fromEntries(config.params)
+      : config.params),
+    v: new Date().getTime(),
+    // Force the API to process the Craft headers if this is the first API request
+    ...(headers ? {} : {processCraftHeaders: 1}),
   };
 
-  if (!headers) {
-    finalConfig.params.processCraftHeaders = 1;
-  }
-
-  if (Cp.httpProxy) {
-    finalConfig.proxy = Cp.httpProxy as AxiosProxyConfig;
-  }
-
-  return finalConfig;
+  return {
+    ...config,
+    headers: {...config.headers, ...headers},
+    params,
+  };
 });
 
-apiClient.interceptors.request.use(apiHeadersRequestInterceptor);
-apiClient.interceptors.response.use(apiHeadersResponseInterceptor);
+apiClient.interceptors.response.use(async (response) => {
+  await processApiHeaders(response.headers, response.config.signal);
+  return response;
+});
 
 export function sendApiRequest(
   method: string,
   uri: string,
-  options: Record<any, any> = {}
+  options: HttpRequestConfig = {}
 ) {
   return apiClient.request({
     method,

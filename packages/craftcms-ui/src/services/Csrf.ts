@@ -1,6 +1,6 @@
-import axios from 'axios';
 import {ConfigService} from './Config.js';
 import {actionClient} from '../utilities/api/actionClient.js';
+import {http} from '../utilities/api/http.js';
 
 interface SessionInfoResponseData {
   isGuest: boolean;
@@ -49,7 +49,7 @@ export class Csrf {
           const config = ConfigService.getInstance();
           config.set('csrfTokenName', csrfTokenName);
           config.set('csrfTokenValue', csrfTokenValue);
-          axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfTokenValue;
+          http.defaults.headers['X-CSRF-TOKEN'] = csrfTokenValue;
 
           const craft = (window as {Craft?: {csrfTokenValue?: string}}).Craft;
           if (craft) {

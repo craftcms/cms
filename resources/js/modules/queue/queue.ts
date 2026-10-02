@@ -7,7 +7,7 @@ import type {
   QueueServiceOptions,
 } from './types';
 import {JobStatus} from './types';
-import axios from 'axios';
+import {http, isCancel} from '@craftcms/ui/utilities/api/http';
 // Imports stay relative or bare-package here: this module is also bundled by
 // the legacy webpack build (via CP.js), which doesn't know the `@/` alias.
 import {ConfigService} from '@craftcms/ui/services/Config';
@@ -94,7 +94,7 @@ export class QueueService extends EventTarget {
     }
 
     try {
-      await axios.post(this.#config.getActionUrl('queue/run'));
+      await http.post(this.#config.getActionUrl('queue/run'));
     } catch (e: unknown) {
       // Ignore errors - queue might already be running
       console.error(e);
@@ -224,7 +224,7 @@ export class QueueService extends EventTarget {
     this.#abortController = new AbortController();
 
     try {
-      const response = await axios.get<QueueJobData>(
+      const response = await http.get<QueueJobData>(
         this.#config.getActionUrl('queue/get-job-info'),
         {
           params: {dontExtendSession: 1},
@@ -243,16 +243,16 @@ export class QueueService extends EventTarget {
       }
     } catch (error) {
       // Ignore aborted requests
-      if (error instanceof Error && error.name === 'CanceledError') {
+      if (isCancel(error)) {
         return;
       }
 
       // For auth errors, stop tracking - user needs to log in
-      // SAFETY: Queue requests reject with Axios errors carrying an optional response status.
-      const axiosError = error as {response?: {status: number}};
+      // SAFETY: Queue requests reject with HttpErrors carrying an optional response status.
+      const httpError = error as {response?: {status: number}};
       if (
-        axiosError.response?.status === 400 ||
-        axiosError.response?.status === 403
+        httpError.response?.status === 400 ||
+        httpError.response?.status === 403
       ) {
         this.stopTracking();
         return;

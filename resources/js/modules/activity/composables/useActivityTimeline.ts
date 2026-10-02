@@ -70,7 +70,7 @@ export function useActivityTimeline(
     computed(() => props.url),
     {
       method: 'post',
-      axiosInstance: actionClient,
+      client: actionClient,
       immediate: false,
       refetch: false,
       onSuccess: () => void scrollToEnd(),

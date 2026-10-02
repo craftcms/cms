@@ -35,6 +35,14 @@ it('can be rendered', function () {
             ->where('widgets.3.name', 'Feed'));
 });
 
+it('does not load axios', function () {
+    actingAs(User::find()->one());
+
+    get(action([DashboardController::class, 'index']))
+        ->assertOk()
+        ->assertDontSee('legacy/axios/dist/axios.js');
+});
+
 it('can render a Quick Post widget with empty settings', function () {
     $user = User::find()->one();
     actingAs($user);

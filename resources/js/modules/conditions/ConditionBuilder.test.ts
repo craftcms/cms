@@ -274,7 +274,7 @@ it.each([
   [new Error('Offline'), 'Couldn’t update the condition rule.'],
   [
     {
-      isAxiosError: true,
+      isHttpError: true,
       response: {data: {message: 'The selected condition rule is invalid.'}},
     },
     'The selected condition rule is invalid.',
@@ -418,7 +418,7 @@ it('aborts an operator refresh when switching type and ignores its late response
 
   await selectType('Slug');
   await vi.waitFor(() => expect(submitted().rules[0]?.class).toBe('Slug'));
-  expect(post.mock.calls[0]?.[0]?.cancelToken?.reason).toBeDefined();
+  expect(post.mock.calls[0]?.[0]?.signal?.aborted).toBe(true);
 
   finish();
   await post.mock.results[0]!.value;
@@ -438,10 +438,10 @@ it('aborts a pending refresh when its rule is removed', async () => {
   const post = vi.spyOn(actionClient, 'request').mockReturnValueOnce(pending);
   await mount(builder([rule()]));
   await changeOperator();
-  const cancelToken = post.mock.calls[0]?.[0]?.cancelToken;
+  const signal = post.mock.calls[0]?.[0]?.signal;
   button('Remove').click();
   await nextTick();
-  expect(cancelToken?.reason).toBeDefined();
+  expect(signal?.aborted).toBe(true);
 
   reject(new DOMException('Aborted', 'AbortError'));
   await vi.waitFor(() =>
@@ -457,7 +457,7 @@ it('shows rule validation errors on apply and allows a successful retry', async 
   const initial = rule();
   vi.spyOn(actionClient, 'request')
     .mockRejectedValueOnce({
-      isAxiosError: true,
+      isHttpError: true,
       response: {
         data: {
           errors: {

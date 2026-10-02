@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {InputRange} from 'dom-input-range';
-import type {AxiosResponse} from 'axios';
+import type {HttpResponse} from '@src/utilities/api/http';
 import {actionClient} from '@src/utilities/api/actionClient';
 import type CraftPopover from '../popover/popover.js';
 import type CraftTextExpander from './text-expander.js';
@@ -654,18 +654,18 @@ describe('craft-text-expander', () => {
   it('debounces async sources and discards stale results', async () => {
     vi.useFakeTimers();
     let resolveFirst!: (
-      response: AxiosResponse<readonly TextExpanderOption[]>
+      response: HttpResponse<readonly TextExpanderOption[]>
     ) => void;
     let resolveSecond!: (
-      response: AxiosResponse<readonly TextExpanderOption[]>
+      response: HttpResponse<readonly TextExpanderOption[]>
     ) => void;
     const firstRequest = new Promise<
-      AxiosResponse<readonly TextExpanderOption[]>
+      HttpResponse<readonly TextExpanderOption[]>
     >((resolve) => {
       resolveFirst = resolve;
     });
     const secondRequest = new Promise<
-      AxiosResponse<readonly TextExpanderOption[]>
+      HttpResponse<readonly TextExpanderOption[]>
     >((resolve) => {
       resolveSecond = resolve;
     });
@@ -696,10 +696,10 @@ describe('craft-text-expander', () => {
     await vi.advanceTimersByTimeAsync(150);
     resolveFirst({
       data: [{label: 'Stale', value: '#STALE'}],
-    } as AxiosResponse<readonly TextExpanderOption[]>);
+    } as HttpResponse<readonly TextExpanderOption[]>);
     resolveSecond({
       data: [{label: 'Current', value: '#CURRENT'}],
-    } as AxiosResponse<readonly TextExpanderOption[]>);
+    } as HttpResponse<readonly TextExpanderOption[]>);
     await Promise.resolve();
     await expander.updateComplete;
 
@@ -740,7 +740,7 @@ describe('craft-text-expander', () => {
     vi.useFakeTimers();
     vi.spyOn(actionClient, 'get').mockResolvedValue({
       data: {},
-    } as unknown as AxiosResponse<readonly TextExpanderOption[]>);
+    } as unknown as HttpResponse<readonly TextExpanderOption[]>);
     const {expander, target} = await createFixture({
       '@': {source: 'text-expander/options'},
     });

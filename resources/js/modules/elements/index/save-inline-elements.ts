@@ -1,5 +1,4 @@
-import {actionClient, t} from '@craftcms/ui';
-import axios from 'axios';
+import {actionClient, t, isHttpError} from '@craftcms/ui';
 import SaveElementIndexElementsController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/SaveElementIndexElementsController';
 import type {InlineEditingSaveResult} from './composables/useInlineEditing';
 
@@ -21,7 +20,7 @@ export async function saveInlineElements(
 
     return data;
   } catch (cause) {
-    const message = axios.isAxiosError<{message?: string}>(cause)
+    const message = isHttpError<{message?: string}>(cause)
       ? cause.response?.data?.message
       : cause instanceof Error
         ? cause.message

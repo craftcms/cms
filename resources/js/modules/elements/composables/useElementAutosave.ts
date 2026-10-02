@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/ui';
+import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
@@ -7,7 +7,6 @@ import type {
   FormPayload,
   FormValues,
 } from '@/modules/forms/types';
-import axios from 'axios';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -174,7 +173,7 @@ export function useElementAutosave<T extends object>(
       }
 
       status.value = 'failed';
-      if (axios.isAxiosError<{message?: string}>(e)) {
+      if (isHttpError<{message?: string}>(e)) {
         error.value = e.response?.data?.message ?? null;
         httpStatus.value = e.response?.status ?? null;
       }

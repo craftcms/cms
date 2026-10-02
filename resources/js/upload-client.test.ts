@@ -1,5 +1,5 @@
 import {Blob as NodeBlob, File as NodeFile} from 'node:buffer';
-import axios, {AxiosError} from 'axios';
+import {http} from '@craftcms/ui/utilities/api/http';
 import {afterEach, beforeEach, expect, it, vi} from 'vitest';
 import {
   FileUpload,
@@ -22,7 +22,6 @@ let sessionCount: number;
 let holdTransfers: boolean;
 let s3: boolean;
 let uploaded: boolean;
-let adapter: typeof axios.defaults.adapter;
 let transport: UploadSession['transport'] | undefined;
 
 class Transfer {
@@ -146,36 +145,18 @@ beforeEach(() => {
   vi.stubGlobal('Blob', NodeBlob);
   vi.stubGlobal('File', NodeFile);
   vi.stubGlobal('XMLHttpRequest', Transfer);
-  adapter = axios.defaults.adapter;
-  axios.defaults.adapter = async (config) => {
-    const response = await control(config.url, {
-      method: config.method?.toUpperCase(),
-      body: config.data,
-      headers: config.headers.toJSON(),
-      signal: config.signal,
-    });
-    const result = {
-      data: await response.text(),
-      status: response.status,
-      statusText: response.statusText,
-      headers: {},
-      config,
-    };
-    if (!response.ok) {
-      throw new AxiosError(
-        'Request failed',
-        undefined,
-        config,
-        undefined,
-        result
-      );
-    }
-    return result;
-  };
+  // Route control requests (made through the shared HTTP client) to `control`.
+  vi.stubGlobal('fetch', (url: string, init: RequestInit) =>
+    control(url, {
+      method: init.method,
+      body: init.body,
+      headers: Object.fromEntries(new Headers(init.headers)),
+      signal: init.signal,
+    })
+  );
 });
 
 afterEach(() => {
-  axios.defaults.adapter = adapter;
   vi.unstubAllGlobals();
 });
 
@@ -211,8 +192,8 @@ it('connects a Craft session to tus and returns the handler response idempotentl
 
 it('uses the server-created S3 multipart upload without application headers on storage requests', async () => {
   s3 = true;
-  const defaults = axios.defaults.headers.common;
-  axios.defaults.headers.common = {...defaults, Authorization: 'global-token'};
+  const defaults = http.defaults.headers;
+  http.defaults.headers = {...defaults, Authorization: 'global-token'};
   try {
     const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
       url: '/start',
@@ -244,7 +225,7 @@ it('uses the server-created S3 multipart upload without application headers on s
       });
     }
   } finally {
-    axios.defaults.headers.common = defaults;
+    http.defaults.headers = defaults;
   }
 });
 

@@ -7,9 +7,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Event;
 
 /** @return list<string> Labels, with separators spelled out. */
 function descriptorList(ElementInterface $element, ElementActionContext $context): array
@@ -91,6 +93,19 @@ it('honours showInChips over the destructive default', function (array $item, bo
         true,
     ],
 ]);
+
+it('includes items added by event listeners, filtered for the context', function () {
+    $this->actingAs(User::first());
+    $element = contextualEntry();
+
+    Event::listen(function (ElementActionMenuDescriptorsResolving $event) {
+        $event->items[] = ['label' => 'Sync', 'behavior' => ['type' => 'link', 'href' => 'https://example.com']];
+        $event->items[] = ['label' => 'Purge', 'destructive' => true, 'behavior' => ['type' => 'link', 'href' => 'https://example.com']];
+    });
+
+    expect(descriptorList($element, ElementActionContext::Editor))->toContain('Sync', 'Purge')
+        ->and(descriptorList($element, ElementActionContext::Field))->toContain('Sync')->not->toContain('Purge');
+});
 
 it('defaults to the editor context', function () {
     $this->actingAs(User::first());
