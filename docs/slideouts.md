@@ -240,32 +240,18 @@ open and keeps saving as the user types, so an opener that refreshes on it shoul
 
 ### The element editor
 
-The `elements/edit` screen is the exception: it doesn't submit itself. Drafts, autosaving,
-provisional drafts, delta submission and tab error indicators all live in `Craft.ElementEditor`, so
-the panel hands that screen over to it rather than reimplementing any of it — the same deal
-`ElementEditorSlideout` strikes for the jQuery stack.
+Inertia requests to `elements/edit` render the shared `elements/Edit` page. Entry edit URLs
+use the same controller. Every element type has a default `ElementEditViewModel`; types can
+extend it to customize their payload and save parameters.
 
-`useElementEditor()` builds the editor and gives it the shell's regions: the panel `<form>`, the
-content and details columns, the header as a spinner host. Everything else is adapted through
-callbacks — `updateTabs`/`getTabManager` onto a `Craft.Tabs` the bridge owns, submit results onto
-the panel's own success and error handling.
+`useElementEditor()` drives the native Form renderers, drafts, autosave, and saves in both pages
+and slideouts. The slideout provides its own payload and owner context through the same editor.
+With the Yii adapter installed, element HTML events and `prepareEditScreen()` can wrap or replace the native content and sidebar;
+inputs added by those customizations are included in saves, and registered assets load after the
+content is ready.
 
-Two wrinkles worth knowing:
-
-- **Settings arrive as `screen.elementEditorSettings`,** not through `$(container).data()`.
-  `EditElementController` branches on `$request->inertia()` and calls `CpScreenResponse::screenData()`
-  instead of emitting the usual script. That script looks the container up by id, and it runs while
-  Vue still has the panel's subtree detached from the document, so the lookup finds nothing. Any
-  screen with the same problem can use `screenData()` the same way.
-- **The editor is built on a `ready` signal, not on mount.** Fragments are appended asynchronously
-  (`appendHeadHtml()` resolves only once the screen's assets have loaded), and the editor snapshots
-  the form to detect changes — snapshotting an empty form would read every field as an edit. So
-  `cp/Screen` waits until *all* of its fragments have reported in, then calls the callback provided
-  under `ScreenContentReadyKey`.
-
-Once the editor is running it owns the screen: `SlideoutScreen` routes Save to it, hides the Save
-button on a static screen (a revision), and lets it rename Cancel to "Close" once a provisional
-draft exists.
+Legacy jQuery slideouts continue to request JSON without the Inertia header. They receive the
+legacy `CpScreenResponse` and use `Craft.ElementEditor`.
 
 ### Unsaved changes
 

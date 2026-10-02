@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -25,6 +27,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -139,7 +142,7 @@ it('renders the current entry edit screen for each control panel route', functio
     get($route($entry))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('title', 'Current Title')
             ->where('elementId', $entry->id)
             ->where('readOnly', false)
@@ -189,6 +192,26 @@ it('returns 400 when no element is identified by the request', function () {
     ])->assertBadRequest();
 });
 
+it('renders an address through the generic editor without editor registration', function () {
+    $owner = UserModel::factory()->createElement();
+    $address = AddressModel::factory()->withOwnedElement($owner, 1)->createElement([
+        'countryCode' => 'US',
+    ]);
+
+    $response = getJson(action(EditElementController::class, [
+        'elementType' => Address::class,
+        'elementId' => $address->id,
+        'siteId' => $address->siteId,
+        'ownerId' => $owner->id,
+    ]), ['X-Inertia' => 'true'])->assertOk();
+
+    expect($response->json('component'))->toBe('elements/Edit')
+        ->and($response->json('props.elementId'))->toBe($address->id)
+        ->and($response->json('props.saveUrl'))->toContain('elements/save')
+        ->and($response->json('props.saveParams.elementType'))->toBe(Address::class)
+        ->and($response->json('props.nestedContext.ownerId'))->toBe($owner->id);
+});
+
 it('returns a json editor payload for the current element', function () {
     $entry = EntryModel::factory()
         ->forSection($this->section)
@@ -226,13 +249,7 @@ it('returns a json editor payload for the current element', function () {
         );
 });
 
-/**
- * The Vue slideout builds its own `Craft.ElementEditor`, so it needs the same
- * settings — but not the same delivery. The injected script looks the
- * container up by id, and it runs while Vue still has the panel's subtree
- * detached from the document, so the settings travel as a prop instead.
- */
-it('sends element editor settings as a prop to an Inertia slideout', function () {
+it('renders the generic asset editor in an Inertia slideout', function () {
     Queue::fake();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
@@ -249,18 +266,10 @@ it('sends element editor settings as a prop to an Inertia slideout', function ()
         'X-Craft-Container-Id' => 'slideout-1',
     ])->assertOk();
 
-    expect($response->json('component'))->toBe('cp/Screen')
-        ->and($response->json('props.screen.elementEditorSettings'))
-        ->toMatchArray([
-            'elementId' => $asset->id,
-            'canonicalId' => $asset->id,
-            'isStatic' => false,
-            'isProvisionalDraft' => false,
-        ])
-        // The jQuery hand-off is the other branch's job, and emitting both
-        // would double-instantiate the editor.
-        ->and($response->json('props.bodyHtml'))
-        ->not->toContain('elementEditorSettings');
+    expect($response->json('component'))->toBe('elements/Edit')
+        ->and($response->json('props.elementId'))->toBe($asset->id)
+        ->and($response->json('props.readOnly'))->toBeFalse()
+        ->and($response->json('props.saveParams.elementId'))->toBe($asset->id);
 });
 
 it('renders the entry editor for an entry opened in an Inertia slideout', function () {
@@ -278,7 +287,7 @@ it('renders the entry editor for an entry opened in an Inertia slideout', functi
         'X-Craft-Container-Id' => 'slideout-1',
     ])->assertOk();
 
-    expect($response->json('component'))->toBe('content/Edit')
+    expect($response->json('component'))->toBe('elements/Edit')
         ->and($response->json('props.elementId'))->toBe($entry->id)
         ->and($response->json('props.saveUrl'))->toContain('entries/save-entry')
         ->and($response->json('props.saveParams'))->toMatchArray([
@@ -301,7 +310,7 @@ it('renders a nested entry through the owner it was opened from', function () {
         'X-Craft-Container-Id' => 'slideout-1',
     ])->assertOk();
 
-    expect($response->json('component'))->toBe('content/Edit')
+    expect($response->json('component'))->toBe('elements/Edit')
         ->and($response->json('props.saveUrl'))->toContain('elements/save')
         ->and($response->json('props.saveForDerivativeUrl'))->toContain('elements/save-nested-element-for-derivative')
         ->and($response->json('props.saveParams'))->toMatchArray([
@@ -456,7 +465,7 @@ it('renders a nested entry’s own edit page with the entry editor', function ()
     get($block->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('elementId', $block->id)
             ->where('cpEditUrl', $block->getCpEditUrl())
         );

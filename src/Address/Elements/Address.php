@@ -654,6 +654,22 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         parent::afterSave($isNew);
     }
 
+    /**
+     * The address Form control posts its fields under `address`.
+     *
+     * @param  array<string,mixed>  $values
+     */
+    #[Override]
+    public function setAttributesFromRequest(array $values): void
+    {
+        if (isset($values['address']) && is_array($values['address'])) {
+            $values = [...$values['address'], ...$values];
+            unset($values['address']);
+        }
+
+        parent::setAttributesFromRequest($values);
+    }
+
     #[Override]
     public function getFieldLayout(): FieldLayout
     {

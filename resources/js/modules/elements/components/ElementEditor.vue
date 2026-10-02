@@ -6,7 +6,13 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, nextTick, provide, useTemplateRef} from 'vue';
+  import {
+    computed,
+    nextTick,
+    provide,
+    useTemplateRef,
+    type Component,
+  } from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
@@ -43,7 +49,16 @@
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
     saveData?: () => FormValues;
+    transform?: (data: object) => FormValues;
+    formWrapper?: Component;
+    showDetails?: boolean;
   }>();
+
+  const editor = useElementEditor({
+    saveData: props.saveData,
+    transform: props.transform,
+    root: () => contentEl.value,
+  });
 
   const {
     activity,
@@ -68,10 +83,7 @@
     submitAction,
     updatePayload,
     workflowReviewLocked,
-  } = useElementEditor({
-    saveData: props.saveData,
-    root: () => contentEl.value,
-  });
+  } = editor;
 
   provide(NestedOwnerEditorKey, {
     async prepare(path) {
@@ -115,6 +127,7 @@
 
   const hasDetails = computed(
     () =>
+      Boolean(props.showDetails) ||
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
@@ -370,18 +383,23 @@
   <div ref="content" class="py-3">
     <CpContainer>
       <component
-        :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-        v-if="formPayload"
+        :is="formWrapper ?? 'div'"
+        v-bind="formWrapper ? {editor, region: 'content'} : {}"
       >
-        <FormRenderer
-          ref="renderer"
-          :payload="formPayload"
-          :errors="errors"
-          :refresh="formPayload.refreshable ? refreshLayout : undefined"
-          :modified="autosave.modified.value"
-          :disabled="workflowReviewLocked"
-          @update:mutation="onMutation"
-        />
+        <component
+          :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
+          v-if="formPayload"
+        >
+          <FormRenderer
+            ref="renderer"
+            :payload="formPayload"
+            :errors="errors"
+            :refresh="formPayload.refreshable ? refreshLayout : undefined"
+            :modified="autosave.modified.value"
+            :disabled="workflowReviewLocked"
+            @update:mutation="onMutation"
+          />
+        </component>
       </component>
 
       <slot :payload="payload" />
@@ -406,17 +424,22 @@
         <slot name="details-header" :payload="payload" />
 
         <MetadataDetailsContent :html="payload.metadataHtml">
-          <template v-if="sidebarPayload" #default>
-            <craft-field-group>
-              <FormRenderer
-                ref="sidebarRenderer"
-                :payload="sidebarPayload"
-                :errors="sidebarErrors"
-                :modified="autosave.modified.value"
-                :disabled="workflowReviewLocked"
-                @update:mutation="onSidebarMutation"
-              />
-            </craft-field-group>
+          <template #default>
+            <component
+              :is="formWrapper ?? 'div'"
+              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+            >
+              <craft-field-group v-if="sidebarPayload">
+                <FormRenderer
+                  ref="sidebarRenderer"
+                  :payload="sidebarPayload"
+                  :errors="sidebarErrors"
+                  :modified="autosave.modified.value"
+                  :disabled="workflowReviewLocked"
+                  @update:mutation="onSidebarMutation"
+                />
+              </craft-field-group>
+            </component>
           </template>
         </MetadataDetailsContent>
       </template>

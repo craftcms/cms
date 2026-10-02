@@ -11,7 +11,7 @@ import {
   DELETE_ACTION,
   DUPLICATE_ACTION,
 } from '@/modules/elements/index/element-action-identity';
-import type {NestedContentIndexData, NestedEntry} from './nested-entries';
+import type {NestedContentIndexData, NestedElement} from './nested-elements';
 
 export function standardElementAction(
   key: string,
@@ -63,10 +63,10 @@ export function nestedElementAction(
   };
 }
 
-export function nestedEntry(
+export function nestedElement(
   id: number,
-  overrides: Partial<NestedEntry> = {}
-): NestedEntry {
+  overrides: Partial<NestedElement> = {}
+): NestedElement {
   const editUrl = `/edit/${id}?elementId=${id}`;
 
   return {
@@ -113,7 +113,7 @@ export function inlineTitleInput(id: number, label = `Title ${id}`) {
 }
 
 export function nestedIndexPayload(
-  entries: NestedEntry[],
+  elements: NestedElement[],
   options: {
     page?: number;
     lastPage?: number;
@@ -127,7 +127,7 @@ export function nestedIndexPayload(
   const page = options.page ?? 1;
   const perPage = options.perPage ?? 2;
   const lastPage = options.lastPage ?? 1;
-  const total = options.total ?? entries.length;
+  const total = options.total ?? elements.length;
   const from = (page - 1) * perPage + 1;
 
   return {
@@ -163,7 +163,7 @@ export function nestedIndexPayload(
     defaultTableColumns: [],
     sort: [{field: 'sortOrder', direction: 'asc'}],
     sortOptions: [{label: 'Order', value: 'sortOrder', defaultDir: 'asc'}],
-    data: entries,
+    data: elements,
     actions:
       options.actions === undefined ? standardNestedActions : options.actions,
     pagination: {
@@ -175,7 +175,7 @@ export function nestedIndexPayload(
       next_page_url: page < lastPage ? `/page/${page + 1}` : null,
       prev_page_url: page > 1 ? `/page/${page - 1}` : null,
       from,
-      to: Math.min(from + entries.length - 1, total),
+      to: Math.min(from + elements.length - 1, total),
     },
     headHtml: '',
     bodyHtml: '',

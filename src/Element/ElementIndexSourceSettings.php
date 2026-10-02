@@ -52,7 +52,6 @@ readonly class ElementIndexSourceSettings
         public bool $canPaste = false,
         public bool $prevalidate = false,
         public ?int $fieldId = null,
-        public ?int $maxElements = null,
         public ?string $storageKey = null,
     ) {}
 
@@ -145,7 +144,6 @@ readonly class ElementIndexSourceSettings
             canPaste: (bool) ($config['canPaste'] ?? false),
             prevalidate: (bool) ($config['prevalidate'] ?? false),
             fieldId: isset($config['fieldId']) ? (int) $config['fieldId'] : null,
-            maxElements: isset($config['maxElements']) ? (int) $config['maxElements'] : null,
             storageKey: isset($config['storageKey']) ? (string) $config['storageKey'] : null,
         );
     }

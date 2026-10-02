@@ -81,19 +81,13 @@ trait HasControlPanelUI
     private array $_uiLabelPath = [];
 
     /**
-     * The view model that builds this element type's edit screen payload, or
-     * `null` for a type whose editor hasn't been ported off the legacy screen.
+     * The view model used by the edit screen and autosave responses.
      *
-     * The edit controllers construct it directly — they know their own element
-     * type. This is for the shared `elements/*` actions, which don't: autosave
-     * rebuilds the screen payload so the client can adopt the state the save
-     * left the element in, and has only the element to go on.
-     *
-     * @return class-string<ElementEditViewModel>|null
+     * @return class-string<ElementEditViewModel>
      */
-    public static function editViewModelClass(): ?string
+    public static function editViewModelClass(): string
     {
-        return null;
+        return ElementEditViewModel::class;
     }
 
     /**

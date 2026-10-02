@@ -69,6 +69,8 @@ class CraftAxiosDependentAssetBundle extends AssetBundle
 }
 
 beforeEach(function() {
+    $this->withoutVite();
+
     HtmlStack::clear();
 
     $view = Craft::$app->getView();

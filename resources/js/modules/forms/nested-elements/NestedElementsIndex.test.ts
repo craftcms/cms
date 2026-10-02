@@ -6,15 +6,15 @@ import {
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
-import type {NestedEntriesProps, NestedEntry} from './nested-entries';
-import NestedEntriesIndex from './NestedEntriesIndex.vue';
-import {NestedEntriesControlKey} from './nested-entries-context';
+import type {NestedElementsProps, NestedElement} from './nested-elements';
+import NestedElementsIndex from './NestedElementsIndex.vue';
+import {NestedElementsControlKey} from './nested-elements-context';
 import {
   button,
   DELETE_ACTION,
   goToPage,
   inlineTitleInput,
-  nestedEntry,
+  nestedElement,
   nestedElementAction,
   nestedIndexPayload,
   pageInput,
@@ -39,7 +39,7 @@ vi.mock('@inertiajs/vue3', async () => ({
   usePage: () => ({props: {readOnly: false}}),
 }));
 
-describe('NestedEntriesIndex', () => {
+describe('NestedElementsIndex', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let root: HTMLElement | undefined;
   let restoreElementInternals = () => {};
@@ -55,11 +55,11 @@ describe('NestedEntriesIndex', () => {
     restoreElementInternals();
   });
 
-  function entry(
+  function element(
     id: number,
     data: Record<string, unknown> = {},
-    overrides: Partial<NestedEntry> = {}
-  ): NestedEntry {
+    overrides: Partial<NestedElement> = {}
+  ): NestedElement {
     const {
       copyable = true,
       duplicatable = true,
@@ -67,7 +67,7 @@ describe('NestedEntriesIndex', () => {
       ...cardData
     } = data;
 
-    return nestedEntry(id, {
+    return nestedElement(id, {
       capabilities: {
         copyable: Boolean(copyable),
         duplicatable: Boolean(duplicatable),
@@ -107,15 +107,15 @@ describe('NestedEntriesIndex', () => {
     editable = true,
     mode = 'table',
     pages = [
-      [entry(11), entry(12)],
-      [entry(13), entry(14)],
+      [element(11), element(12)],
+      [element(13), element(14)],
     ],
     reorderable = true,
     actions,
   }: {
     editable?: boolean;
     mode?: 'table' | 'cards';
-    pages?: NestedEntry[][];
+    pages?: NestedElement[][];
     reorderable?: boolean;
     actions?: BulkActionItem[] | null;
   } = {}) {
@@ -185,7 +185,7 @@ describe('NestedEntriesIndex', () => {
       })),
       refresh: vi.fn(async () => {}),
     };
-    const control: NestedEntriesProps = {
+    const control: NestedElementsProps = {
       viewMode: 'index',
       manager: {
         elementType: 'Entry',
@@ -200,7 +200,7 @@ describe('NestedEntriesIndex', () => {
         maxElements: 10,
         createButtonLabel: 'New entry',
         createAttributes: [{label: 'Entry', attributes: {typeId: 9}}],
-        pasteableEntryTypeIds: [],
+        pasteableData: null,
       },
       cards: [],
       index: {
@@ -211,19 +211,19 @@ describe('NestedEntriesIndex', () => {
         },
         initial: payload(1, mode),
       },
-    } as NestedEntriesProps;
+    } as NestedElementsProps;
 
     root = document.createElement('div');
     document.body.append(root);
     app = createApp({
       setup() {
-        provide(NestedEntriesControlKey, {
+        provide(NestedElementsControlKey, {
           path: ['fields', 'entries'],
           markModified: vi.fn(),
         });
         provide(NestedOwnerEditorKey, owner);
 
-        return () => h(NestedEntriesIndex, {control, editable});
+        return () => h(NestedElementsIndex, {control, editable});
       },
     });
     app.mount(root);
@@ -352,7 +352,7 @@ describe('NestedEntriesIndex', () => {
       'confirm',
       vi.fn(() => true)
     );
-    const {root} = mount({mode: 'cards', pages: [[entry(31), entry(47)]]});
+    const {root} = mount({mode: 'cards', pages: [[element(31), element(47)]]});
     await waitForIdle(root);
     expect(
       [...root.querySelectorAll('craft-button')].filter(
@@ -488,7 +488,7 @@ describe('NestedEntriesIndex', () => {
       mode: 'cards',
       pages: [
         [
-          nestedEntry(11, {
+          nestedElement(11, {
             capabilities: {
               copyable: false,
               duplicatable: true,
@@ -517,7 +517,7 @@ describe('NestedEntriesIndex', () => {
 
   it('saves inline edits in the prepared owner scope', async () => {
     const {root} = mount({
-      pages: [[entry(11, {}, {inlineInputHtml: inlineTitleInput(11)})]],
+      pages: [[element(11, {}, {inlineInputHtml: inlineTitleInput(11)})]],
     });
     button(root, 'Edit inline').click();
     const input = await vi.waitFor(() => {
@@ -653,7 +653,7 @@ describe('NestedEntriesIndex', () => {
     const {root, craft} = mount({
       pages: [
         [
-          entry(
+          element(
             11,
             {label: 'Alpha'},
             {
@@ -745,7 +745,7 @@ describe('NestedEntriesIndex', () => {
   });
 
   it('leaves table links native when the owner is read-only', () => {
-    const {root, craft} = mount({editable: false, pages: [[entry(11)]]});
+    const {root, craft} = mount({editable: false, pages: [[element(11)]]});
     const link = root.querySelector<HTMLAnchorElement>(
       'a[href="/edit/11?elementId=11"]'
     )!;

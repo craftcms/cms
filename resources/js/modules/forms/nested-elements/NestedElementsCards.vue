@@ -4,30 +4,30 @@
   import {computed, useTemplateRef} from 'vue';
   import type {Selectable} from '@/common/composables/useSelectable';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
-  import NestedEntryCardActions from './NestedEntryCardActions.vue';
+  import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
+  import NestedElementCardActions from './NestedElementCardActions.vue';
   import {
     nestedCreateChoices,
-    type NestedEntry,
-    type NestedEntriesManager,
-  } from './nested-entries';
+    type NestedElement,
+    type NestedElementsManager,
+  } from './nested-elements';
   import {
-    useNestedEntryActions,
-    useNestedEntryActionEvents,
-  } from './nested-entry-actions';
+    useNestedElementActions,
+    useNestedElementActionEvents,
+  } from './nested-element-actions';
   import type {
-    NestedEntryOperations,
-    NestedEntryQuickEdit,
-  } from './useNestedEntryOperations';
+    NestedElementOperations,
+    NestedElementQuickEdit,
+  } from './useNestedElementOperations';
 
   const props = defineProps<{
-    cards: NestedEntry[];
-    manager: NestedEntriesManager | null;
+    cards: NestedElement[];
+    manager: NestedElementsManager | null;
     selection: Selectable<number>;
     singleColumn: boolean;
     editable: boolean;
-    operations: NestedEntryOperations;
-    quickEdit: NestedEntryQuickEdit;
+    operations: NestedElementOperations;
+    quickEdit: NestedElementQuickEdit;
     editOpener?: HTMLElement | null;
   }>();
   const container = useTemplateRef<HTMLElement>('container');
@@ -35,22 +35,22 @@
   const reorderable = computed(
     () => props.operations.canReorder.value && !props.operations.busy.value
   );
-  const actions = useNestedEntryActions({
-    entries: () => props.cards,
+  const actions = useNestedElementActions({
+    elements: () => props.cards,
     manager: () => props.manager,
     selection: props.selection,
     operations: props.operations,
     busy: props.operations.busy,
   });
 
-  function actionIds(entry: NestedEntry): number[] {
-    return props.selection.isSelected(entry.id)
+  function actionIds(element: NestedElement): number[] {
+    return props.selection.isSelected(element.id)
       ? [...props.selection.selectedIds.value]
-      : [entry.id];
+      : [element.id];
   }
 
-  useNestedEntryActionEvents(container, {
-    entries: () => props.cards,
+  useNestedElementActionEvents(container, {
+    elements: () => props.cards,
     actionIds,
     editable: () => props.editable,
     busy: props.operations.busy,
@@ -98,9 +98,9 @@
         @reorder="operations.reorder"
       >
         <template #actions="{element}">
-          <NestedEntryCardActions
-            :entry="element as NestedEntry"
-            :entries="cards"
+          <NestedElementCardActions
+            :element="element as NestedElement"
+            :elements="cards"
             :selection="selection"
             :single-column="singleColumn"
             :editable="editable"
@@ -125,11 +125,11 @@
         @click="operations.paste()"
         >{{ operations.pasteButtonLabel.value }}</craft-button
       >
-      <NestedEntriesCreateButton
+      <NestedElementsCreateButton
         v-if="manager?.canCreate"
         class="grow basis-full"
         :choices="createChoices"
-        :label="manager.createButtonLabel || t('New entry')"
+        :label="manager.createButtonLabel || t('New element')"
         :disabled="operations.busy.value || !operations.canAdd(1)"
         @create="operations.create"
       />
