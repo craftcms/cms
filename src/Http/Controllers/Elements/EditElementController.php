@@ -202,7 +202,7 @@ class EditElementController
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->crumbs($this->crumbs($element))
+            ->crumbs($this->crumbs($element, hyperlink: false))
             ->contextMenuItems(fn () => $this->contextMenuItems(
                 element: $element,
                 isUnpublishedDraft: $isUnpublishedDraft,
