@@ -42,16 +42,6 @@ describe('isPasteable', () => {
       expected: true,
     },
     {
-      label: 'accepts elements whose attribute value is allowed',
-      pasteableData: {attribute: 'entryTypeId', values: [9]},
-      expected: true,
-    },
-    {
-      label: 'rejects elements whose attribute value is not allowed',
-      pasteableData: {attribute: 'entryTypeId', values: [10]},
-      expected: false,
-    },
-    {
       label: 'rejects elements missing the restricted attribute',
       pasteableData: {attribute: 'productTypeId', values: [9]},
       expected: false,

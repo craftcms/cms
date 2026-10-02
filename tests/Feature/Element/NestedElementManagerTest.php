@@ -670,29 +670,6 @@ it('builds the shared control for plugin nested element types', function () {
         ]);
 });
 
-it('gives Vue cards structured nested action events', function () {
-    $user = UserModel::factory()->createElement();
-    $address = AddressModel::factory()->createElement([
-        'primaryOwnerId' => $user->id,
-    ]);
-
-    DB::table(Table::ELEMENTS_OWNERS)->insert([
-        'elementId' => $address->id,
-        'ownerId' => $user->id,
-        'sortOrder' => 1,
-    ]);
-
-    $cards = $user->getAddressManager()->formControl('addresses', $user, 'cards-grid', ['canCreate' => true])->props()['cards'];
-    $actions = collect($cards[0]['actionMenuItems'])->pluck('action.name')->filter()->unique()->values()->all();
-
-    expect($actions)->toBe(['craft:nested-element-action'])
-        ->and($cards[0]['capabilities'])->toBe([
-            'copyable' => true,
-            'duplicatable' => true,
-            'deletable' => true,
-        ]);
-});
-
 it('explains why a nested elements control is unavailable for unsaved owners', function () {
     $user = UserModel::factory()->createElement();
 

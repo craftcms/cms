@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -19,6 +21,7 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -56,11 +59,17 @@ test('index cards carry the nested actions the shared manager runs', function ()
             ->where('addresses.cards.0.actionMenuItems', function (Collection $items): bool {
                 $items = $items->toArray();
                 $attributes = collect($items)->pluck('attributes.data')->filter()->collapse();
+                $actionNames = collect($items)->pluck('action.name')->filter()->unique()->values()->all();
 
                 return $attributes->has('duplicate-action')
                     && $attributes->has('delete-action')
-                    && collect($items)->every(fn (array $item) => ! isset($item['action']) || $item['action']['name'] === 'craft:nested-element-action');
-            }));
+                    && $actionNames === ['craft:nested-element-action'];
+            })
+            ->where('addresses.cards.0.capabilities', [
+                'copyable' => true,
+                'duplicatable' => true,
+                'deletable' => true,
+            ]));
 });
 
 test('index renders the Inertia addresses page', function () {
@@ -158,7 +167,7 @@ test('store ignores ownership attributes', function () {
         ->and($address->fieldId)->toBeNull();
 });
 
-test('the shared manager’s element actions run on the user’s addresses', function () {
+test('duplicates a user address after opening the Addresses screen', function () {
     $user = User::findOne();
     $address = new Address([
         'ownerId' => $user->id,
@@ -171,16 +180,11 @@ test('the shared manager’s element actions run on the user’s addresses', fun
     ]);
     expect(Elements::saveElement($address))->toBeTrue();
 
-    // Rendering the manager grants the session its nested element authorization.
-    $user->getAddressManager()->formControl('addresses', $user, 'cards-grid', ['canCreate' => true]);
+    $response = getJson(action([AddressesController::class, 'index']), ['X-Inertia' => 'true'])->assertOk();
 
     postJson(action(PerformElementActionController::class), [
-        'elementType' => Address::class,
+        ...$response->json('props.addresses.manager'),
         'elementAction' => Duplicate::class,
-        'ownerElementType' => User::class,
-        'ownerId' => $user->id,
-        'ownerSiteId' => $user->siteId,
-        'attribute' => 'addresses',
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
         'source' => '__IMP__',
         'elementIds' => [$address->id],
