@@ -15,6 +15,7 @@
 {% set showActionMenus = showActionMenus ?? true %}
 {% set hyperlinks = hyperlinks ?? false %}
 {% set withSearchInput = withSearchInput ?? (options|length > 5) %}
+{% set checkboxOptions = checkboxOptions ?? false %}
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set registerJs = registerJs ?? true %}
@@ -66,6 +67,7 @@
     'show-description': showDescription ? true : 'false',
     'show-action-menus': showActionMenus ? true : 'false',
     hyperlinks: hyperlinks ? true : 'false',
+    'checkbox-options': checkboxOptions ? true : 'false',
     'create-action': createAction ?: false,
     disabled: disabled,
     'data-id': 'component-select',
@@ -163,11 +165,15 @@
             {% set optionDescription = showDescription and component is instance of('CraftCms\\Cms\\Component\\Contracts\\Describable') ? component.getDescription() : null %}
             {# `hidden` is consumer-owned visibility (already selected); the menu's
                `searchable` filter uses the separate `data-search-hidden` channel and
-               matches against textContent + `data-keywords`. #}
+               matches against textContent + `data-keywords`. With `checkboxOptions`,
+               selected options stay listed and are checked instead of hidden. #}
+            {% set optionSelected = component.getId() in valueIds %}
             {% tag 'craft-action-item' with {
+              type: checkboxOptions ? 'checkbox' : false,
+              checked: checkboxOptions and optionSelected,
               icon: component is instance of('CraftCms\\Cms\\Component\\Contracts\\Iconic') ? (component.getIcon() ?: false) : false,
               'icon-color': component is instance of('CraftCms\\Cms\\Component\\Contracts\\Colorable') ? (component.getColor().value ?? false) : false,
-              hidden: component.getId() in valueIds,
+              hidden: not checkboxOptions and optionSelected,
               data: {
                 type: className(component),
                 id: component.getId(),

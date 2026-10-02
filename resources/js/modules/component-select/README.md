@@ -168,6 +168,19 @@ turn selection off; pass `selectable: true` to also render chip checkboxes.
 
 The legacy `addItemsToActionMenus` setting stays folded into always-on.
 
+## Checkbox options (`checkboxOptions`)
+
+By default a selected component's Choose-menu option is `hidden`. With
+`checkboxOptions: true` in the Twig (`checkbox-options` on the element), the
+options render as `craft-action-item type="checkbox"` instead: selected ones
+stay listed and `checked`, and activating a checked option removes its chip.
+The menu stays open while options are toggled. At the `limit` it stays
+available, and picking another option replaces the last chip. Selection state
+goes through `#markOptionSelected`/`#markOptionDeselected`. The public
+`showOption`/`hideOption` keep their `hidden` meaning for
+`<craft-entry-type-manager>`, which doesn't use this mode, because it hides
+options that are selected in sibling groups.
+
 ## Deferred
 
 - Behavioral/browser verification (add/remove/reorder chips, chip selection +

@@ -162,6 +162,7 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
       showActionMenus: this.#boolAttr('show-action-menus', true),
       hyperlinks: this.#boolAttr('hyperlinks', false),
       createAction: this.getAttribute('create-action'),
+      checkboxOptions: this.#boolAttr('checkbox-options', false),
       disabled: this.#boolAttr('disabled', false),
     };
 
