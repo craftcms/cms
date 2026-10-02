@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers.
 - Brought back users’ gradient-based default avatars.
 - Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))

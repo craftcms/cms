@@ -214,6 +214,14 @@ describe('useNestedEntriesQuery', () => {
       columns: ['dateUpdated'],
       sort: [{field: 'postDate', direction: 'desc'}],
       showInGrid: true,
+      sortable: true,
+      canPaste: true,
+      static: false,
+      showHeaderColumn: true,
+      per_page: 7,
+      allowedViewModes: ['cards', 'table'],
+      defaultTableColumns: ['postDate'],
+      fieldLayouts: [],
     });
     expect(state.mode.value).toBe('cards');
   });
@@ -235,9 +243,11 @@ describe('useNestedEntriesQuery', () => {
     expect(ui.post).not.toHaveBeenCalled();
   });
 
-  it('posts only owner scope, index query, and permitted runtime flags', async () => {
+  it('carries rendered index settings through query and export requests', async () => {
     ui.post.mockResolvedValue({data: payload()});
-    const state = setup();
+    const state = setup({
+      initial: payload({fieldLayouts: [{tabs: [{name: 'Variant details'}]}]}),
+    });
 
     state.status.value = 'disabled';
     await vi.waitFor(() => expect(ui.post).toHaveBeenCalledOnce());
@@ -255,10 +265,16 @@ describe('useNestedEntriesQuery', () => {
       sort: [{field: 'sortOrder', direction: 'asc'}],
       status: 'disabled',
       showInGrid: false,
+      sortable: true,
+      canPaste: true,
+      static: false,
+      showHeaderColumn: true,
+      per_page: 7,
+      allowedViewModes: ['cards', 'table'],
+      defaultTableColumns: ['postDate'],
+      fieldLayouts: [{tabs: [{name: 'Variant details'}]}],
     });
     expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('fieldId');
-    expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('per_page');
-    expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('fieldLayouts');
 
     state.props.manager!.ownerId = 73;
     await state.load(true);
@@ -271,6 +287,18 @@ describe('useNestedEntriesQuery', () => {
     state.props.manager!.prevalidate = true;
     await vi.waitFor(() =>
       expect(ui.post.mock.lastCall![1]).toMatchObject({prevalidate: true})
+    );
+
+    await state.model.view.exportElements!('csv', 'Expanded', []);
+    expect(actions.run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ownerId: 73,
+          per_page: 7,
+          allowedViewModes: ['cards', 'table'],
+          fieldLayouts: [{tabs: [{name: 'Variant details'}]}],
+        }),
+      })
     );
   });
 

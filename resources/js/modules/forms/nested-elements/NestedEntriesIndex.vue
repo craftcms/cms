@@ -29,7 +29,7 @@
   import {useNestedEntriesControl} from './nested-entries-context';
   import {
     nestedCreateChoices,
-    nestedOwnerParams,
+    nestedIndexParams,
     type NestedEntriesProps,
     type NestedEntry,
     type NestedIndexEntry,
@@ -161,6 +161,7 @@
   const actions = useNestedEntryActions({
     entries,
     manager,
+    initial: () => props.control.index?.initial,
     selection,
     operations,
     busy: () => busy.value || loading.value,
@@ -253,7 +254,11 @@
       | false = false;
     await operations.mutate(async (ownerId) => {
       result = await saveInlineElements(body, {
-        ...nestedOwnerParams(currentManager, ownerId),
+        ...nestedIndexParams(
+          currentManager,
+          ownerId,
+          props.control.index?.initial
+        ),
         elementType: currentManager.elementType,
         siteId: currentManager.ownerSiteId,
         context: 'embeddedIndex',
@@ -397,7 +402,15 @@
           :element-type="model.view.elementIndex.elementType"
           :source="model.view.elementIndex.source?.key"
           :context="model.view.elementIndex.context"
-          :params="manager ? nestedOwnerParams(manager, manager.ownerId) : {}"
+          :params="
+            manager
+              ? nestedIndexParams(
+                  manager,
+                  manager.ownerId,
+                  control.index?.initial
+                )
+              : {}
+          "
           :perform="actions.perform"
           @edit="openSelectedEntry"
           @view="openSelectedEntry"

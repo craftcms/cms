@@ -18,6 +18,8 @@ import {copyElements} from '@/modules/elements/index/copy-elements';
 import {runElementAction} from '@/modules/elements/index/element-actions';
 import {
   nestedOwnerParams,
+  nestedIndexParams,
+  type NestedContentIndexData,
   type NestedEntry,
   type NestedEntriesManager,
 } from './nested-entries';
@@ -26,6 +28,7 @@ import type {NestedEntryOperations} from './useNestedEntryOperations';
 export function useNestedEntryActions(options: {
   entries: MaybeRefOrGetter<NestedEntry[]>;
   manager: MaybeRefOrGetter<NestedEntriesManager | null>;
+  initial?: MaybeRefOrGetter<NestedContentIndexData | undefined>;
   selection: Selectable<number>;
   operations: NestedEntryOperations;
   busy: MaybeRefOrGetter<boolean>;
@@ -50,7 +53,9 @@ export function useNestedEntryActions(options: {
 
     let performed = false;
     await options.operations.mutate(async (ownerId) => {
-      performed = await run(nestedOwnerParams(manager, ownerId));
+      performed = await run(
+        nestedIndexParams(manager, ownerId, toValue(options.initial))
+      );
       return performed ? undefined : false;
     });
 
