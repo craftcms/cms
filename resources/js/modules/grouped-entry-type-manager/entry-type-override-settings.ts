@@ -191,6 +191,9 @@ async function applyOverrides(
         // Not a JSON value — nothing to preserve.
       }
       input.value = JSON.stringify(config);
+      // Programmatic value changes don't fire `change`; announce it so
+      // wrapping form controls pick up the new override config.
+      input.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
     // Re-init any UI within the chip (description info icon, indicator tooltips).
