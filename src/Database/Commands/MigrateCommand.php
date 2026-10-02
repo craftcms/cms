@@ -303,13 +303,8 @@ class MigrateCommand extends Command implements Isolatable
         PromptTask::run('Preparing database', function (Logger $logger) {
             $logger->subLabel('Creating migration table');
 
-            // Craft's own repository, rather than `migrate:install`: the
-            // migrations are tracked per track, and only
-            // `MigrationRepository::createRepository()` gives the table the
-            // `track` column that depends on. Laravel's command builds the
-            // stock three-column table, so the very next thing the command
-            // does — reading pending migrations, which filters on `track` —
-            // failed on a database that had no migrations table yet.
+            // Use Craft's own repository, not `migrate:install`. They'er the same
+            // only Craft's adds the `track` column.
             $this->getMigrator('craft')->getRepository()->createRepository();
         }, keepSummary: true, output: $this->output);
     }
