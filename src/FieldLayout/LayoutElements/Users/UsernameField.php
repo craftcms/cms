@@ -6,6 +6,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -19,8 +21,10 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class UsernameField extends TextField
+class UsernameField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public bool $mandatory = true;
 
@@ -91,5 +95,11 @@ class UsernameField extends TextField
         return [
             'autocomplete' => $element->getIsCurrent() ? 'username' : 'off',
         ];
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
     }
 }

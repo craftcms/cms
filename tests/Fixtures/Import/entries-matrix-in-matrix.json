@@ -1,0 +1,31 @@
+[
+    {
+        "sectionId": "fixtureSection",
+        "typeId": "fixtureType",
+        "title": "file entry with matrix in matrix",
+        "myMatrix": [
+            {
+                "type": "outerEt",
+                "title": "file outer block",
+                "fields": {
+                    "myNestedMatrix": [
+                        {
+                            "type": "blockEt",
+                            "title": "file inner block 1",
+                            "fields": {
+                                "plainText": "inner one"
+                            }
+                        },
+                        {
+                            "type": "blockEt",
+                            "title": "file inner block 2",
+                            "fields": {
+                                "plainText": "inner two"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]
