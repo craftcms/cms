@@ -6,6 +6,8 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserFieldsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -14,6 +16,7 @@ use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -39,6 +42,23 @@ it('requires authentication', function () {
     post(action([UserSettingsController::class, 'renderForm']))->assertRedirect();
     post(action([UserSettingsController::class, 'store']))->assertRedirect();
 });
+
+it('leads each user settings screen with a linked Users crumb', function (string $controller) {
+    Edition::set(Edition::Pro);
+
+    get(action([$controller, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Settings')
+            ->where('crumbs.1.label', 'Users')
+            ->where('crumbs.1.href', cp_url('settings/users'))
+            ->etc());
+})->with([
+    'groups' => UserGroupsController::class,
+    'fields' => UserFieldsController::class,
+    'settings' => UserSettingsController::class,
+]);
 
 it('requires admin changes to save settings', function () {
     Cms::config()->allowAdminChanges = false;

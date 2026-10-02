@@ -168,7 +168,7 @@ it('leaves sortable checkbox teardown to its custom element', () => {
   const designer = Object.create(
     CardViewDesigner.prototype
   ) as CardViewDesigner;
-  designer.cancelToken = null;
+  designer.abortController = null;
   designer.sortableCheckboxSelect = document.createElement(
     'craft-sortable-checkbox-select'
   );

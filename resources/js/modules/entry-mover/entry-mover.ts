@@ -1,5 +1,4 @@
 import {Base, Modal, Select} from '@craftcms/garnish';
-import axios from 'axios';
 
 declare const Craft: any;
 
@@ -34,7 +33,7 @@ export class EntryMover extends Base {
   currentSectionUid: string | null = null;
   elementIndex: LegacyElementIndex | null = null;
 
-  #cancelToken: {cancel(): void; token: unknown} | null = null;
+  #abortController: AbortController | null = null;
   #sectionsList: HTMLElement | null = null;
   #selectBtn: HTMLElement | null = null;
   #sectionSelect: Select | null = null;
@@ -131,12 +130,12 @@ export class EntryMover extends Base {
   }
 
   getCompatibleSections(): void {
-    if (this.#cancelToken) {
-      this.#cancelToken.cancel();
+    if (this.#abortController) {
+      this.#abortController.abort();
     }
 
     this.#selectBtn?.classList.add('loading');
-    this.#cancelToken = axios.CancelToken.source();
+    this.#abortController = new AbortController();
 
     Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
       data: {
@@ -144,7 +143,7 @@ export class EntryMover extends Base {
         siteId: this.elementIndex?.siteId,
         currentSectionUid: this.currentSectionUid,
       },
-      cancelToken: this.#cancelToken?.token,
+      signal: this.#abortController.signal,
     })
       .then(({data}: {data?: {listHtml?: string}}) => {
         const listHtml = data?.listHtml;
@@ -186,7 +185,7 @@ export class EntryMover extends Base {
       })
       .finally(() => {
         this.#selectBtn?.classList.remove('loading');
-        this.#cancelToken = null;
+        this.#abortController = null;
       });
   }
 

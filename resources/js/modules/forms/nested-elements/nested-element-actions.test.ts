@@ -1,14 +1,14 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {NestedEntry} from './nested-entries';
+import type {NestedElement} from './nested-elements';
 import {
-  nestedEntryActions,
-  useNestedEntryActionEvents,
-} from './nested-entry-actions';
+  nestedElementActions,
+  useNestedElementActionEvents,
+} from './nested-element-actions';
 import {
   DELETE_ACTION,
   nestedElementAction,
-  nestedEntry,
+  nestedElement,
   standardElementAction,
 } from './nested-index.fixture';
 
@@ -19,11 +19,11 @@ it('disables a row action when any selected entry lacks its capability', () => {
     'deletable',
     'http'
   );
-  const first = nestedEntry(11, {
+  const first = nestedElement(11, {
     actionMenuItems: [nestedElementAction(11, deleteAction)],
   });
-  const permittedSecond = nestedEntry(12);
-  const forbiddenSecond = nestedEntry(12, {
+  const permittedSecond = nestedElement(12);
+  const forbiddenSecond = nestedElement(12, {
     capabilities: {
       copyable: true,
       duplicatable: true,
@@ -31,7 +31,7 @@ it('disables a row action when any selected entry lacks its capability', () => {
     },
   });
   const options = {
-    entry: first,
+    element: first,
     ids: [11, 12],
     index: 0,
     count: 2,
@@ -41,13 +41,13 @@ it('disables a row action when any selected entry lacks its capability', () => {
     canReorder: false,
     canAdd: () => true,
   };
-  const permittedActions = nestedEntryActions({
+  const permittedActions = nestedElementActions({
     ...options,
-    selectedEntries: [first, permittedSecond],
+    selectedElements: [first, permittedSecond],
   });
-  const forbiddenActions = nestedEntryActions({
+  const forbiddenActions = nestedElementActions({
     ...options,
-    selectedEntries: [first, forbiddenSecond],
+    selectedElements: [first, forbiddenSecond],
   });
 
   expect(permittedActions).toHaveLength(1);
@@ -64,7 +64,7 @@ it('disables a row action when any selected entry lacks its capability', () => {
   ).toBe(true);
 });
 
-describe('useNestedEntryActionEvents', () => {
+describe('useNestedElementActionEvents', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let root: HTMLElement | undefined;
 
@@ -81,15 +81,15 @@ describe('useNestedEntryActionEvents', () => {
       paste: vi.fn(),
       move: vi.fn(),
     };
-    const entries = [{id: 11}, {id: 12}] as NestedEntry[];
+    const elements = [{id: 11}, {id: 12}] as NestedElement[];
 
     root = document.createElement('div');
     document.body.append(root);
     app = createApp({
       setup() {
         const container = ref<HTMLElement>();
-        useNestedEntryActionEvents(container, {
-          entries,
+        useNestedElementActionEvents(container, {
+          elements,
           actionIds: () => [11, 12],
           editable,
           busy,

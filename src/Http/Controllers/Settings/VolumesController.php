@@ -190,6 +190,7 @@ class VolumesController extends BaseAssetSettingsController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Assets'), 'settings/assets')
             ->addCrumb(t('Volumes'), 'settings/assets')
+            ->addCrumb($title)
             ->inertiaPage('Form', new VolumeEditViewModel(
                 $volume,
                 $volumes,

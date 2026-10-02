@@ -75,6 +75,20 @@ it('renders the asset edit screen as an Inertia page', function () {
         );
 });
 
+it('ends the breadcrumbs with an unlinked chip for the asset', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', function (Collection $crumbs) {
+                $chip = $crumbs->last()['html'] ?? '';
+
+                return str_contains($chip, 'data-id="'.$this->asset->id.'"')
+                    && ! str_contains($chip, '<a ');
+            })
+            ->etc()
+        );
+});
+
 it('compiles the field layout into a form payload', function () {
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page

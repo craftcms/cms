@@ -327,7 +327,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 
     public function shouldApplyNestedElementParams(): bool
     {
-        return isset($this->fieldId);
+        // `fieldId(false)` asks for addresses outside any field, i.e. user addresses
+        return isset($this->fieldId) && $this->fieldId !== false;
     }
 
     public static function mustHaveField(): bool
@@ -365,13 +366,19 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
         $this->beforeQuery(static function (self $addressQuery) {
             self::normalizeNestedElementParams($addressQuery);
 
-            if (! isset($addressQuery->fieldId) && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
+            $outsideFields = ! isset($addressQuery->fieldId) || $addressQuery->fieldId === false;
+
+            if ($outsideFields && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
                 // User addresses don't get rows in the elements_owners table
                 if (! $addressQuery->primaryOwnerId && ! $addressQuery->ownerId) {
                     throw new QueryAbortedException;
                 }
 
                 $addressQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
+            }
+
+            if ($addressQuery->fieldId === false) {
+                $addressQuery->whereNull('addresses.fieldId');
             }
 
             static::applyCountryCode($addressQuery, $addressQuery->countryCode);

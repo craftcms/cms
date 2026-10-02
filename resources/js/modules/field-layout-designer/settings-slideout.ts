@@ -8,7 +8,7 @@ export interface OpenLayoutSettingsOptions {
   triggerElement?: HTMLElement | null;
   /** Identifies the component being edited, for the refresh request. */
   requestData: () => FormValues;
-  /** Persists the settings. Rejects with the axios error on a failure. */
+  /** Persists the settings. Rejects with the request error on a failure. */
   apply: (values: FormValues) => Promise<void>;
 }
 

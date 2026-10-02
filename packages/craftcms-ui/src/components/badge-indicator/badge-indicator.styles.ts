@@ -13,7 +13,7 @@ export default css`
     background-color: var(--_badge-color);
     color: var(--_text-color);
     border-radius: var(--c-radius-full);
-    border: 2px solid Canvas;
+    border: 2px solid var(--c-surface-default);
   }
 
   .badge-indicator--secondary {

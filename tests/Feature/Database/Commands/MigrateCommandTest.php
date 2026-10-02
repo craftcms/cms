@@ -59,6 +59,20 @@ it('adds the migration track column before checking pending migrations', functio
     expect(Schema::hasColumn(Table::MIGRATIONS, 'track'))->toBeTrue();
 });
 
+it('creates the migration table with its track column when there is none', function () {
+    Schema::dropIfExists(Table::MIGRATIONS);
+
+    artisan('craft:migrate:all', [
+        '--force' => true,
+        '--no-backup' => true,
+        '--track' => 'craft',
+    ])
+        ->expectsConfirmation('Apply the above migrations?', 'yes')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn(Table::MIGRATIONS, 'track'))->toBeTrue();
+});
+
 it('runs additional migrators', function () {
     $migrator = Mockery::mock(Migrator::class);
     $migrator->expects('getTrack')->andReturn('custom');

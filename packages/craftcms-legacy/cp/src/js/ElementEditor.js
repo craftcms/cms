@@ -37,7 +37,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      */
     formObserver: null,
     formHost: null,
-    cancelToken: null,
+    abortController: null,
     ignoreFailedRequest: false,
     queue: null,
     savingDraft: false,
@@ -1456,7 +1456,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.failed = false;
       this.httpStatus = null;
       this.httpError = null;
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
 
       this.statusIcons()
         .velocity('stop')
@@ -1513,7 +1513,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'POST',
           'elements/save-draft',
           {
-            cancelToken: this.cancelToken.token,
+            signal: this.abortController.signal,
             headers: this._saveHeaders,
             data: params.join('&'),
           }
@@ -1758,7 +1758,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.lastSerializedValue = data;
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
 
       // Prep the data to be saved, keeping track of the first input name for each delta group
       let preparedData = this.prepareData(data);
@@ -1786,7 +1786,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'POST',
           'elements/update-field-layout',
           {
-            cancelToken: this.cancelToken.token,
+            signal: this.abortController.signal,
             headers: this._saveHeaders,
             data: preparedData,
           }
@@ -2109,9 +2109,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       // Abort the current save request if there is one
-      if (this.cancelToken) {
+      if (this.abortController) {
         this.ignoreFailedRequest = true;
-        this.cancelToken.cancel();
+        this.abortController.abort();
       }
 
       this.trigger('beforeSubmit');

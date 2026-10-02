@@ -173,6 +173,19 @@ Sidebar metadata
   }
 }
 
+.context-label {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--c-spacing-sm);
+  padding-inline: var(--c-spacing-md);
+  font-size: calc(11rem / 16);
+  font-weight: normal;
+  line-height: 1.5;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: var(--c-radius-full);
+}
+
 /**
 CP Checkbox Select (minimal legacy styling)
  */

@@ -81,6 +81,7 @@ describe('edit', function () {
                 ->where('docTitle', t('Profile'))
                 ->has('crumbs', 2)
                 ->where('crumbs.0.label', t('Users'))
+                ->where('crumbs.1.html', fn (string $html) => str_contains($html, '<a class="label-link"'))
                 ->has('form.nodes')
                 ->has('subnav'));
     });

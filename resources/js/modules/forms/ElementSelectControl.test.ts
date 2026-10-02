@@ -757,21 +757,33 @@ describe('ElementSelectControl', () => {
       );
     });
 
-    it('opens entries in a Vue slideout when the page hosts one', async () => {
-      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
-      const root = await mount({
-        props: {elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry'},
-        value: [5],
-      });
+    it.each([
+      'CraftCms\\Cms\\Entry\\Elements\\Entry',
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+    ])(
+      'opens %s in the generic editor when it has no edit URL',
+      async (elementType) => {
+        vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+        const root = await mount({
+          props: {
+            elementType,
+            elements: [{id: 5, label: 'Some element', siteId: 2}],
+          },
+          value: [5],
+        });
 
-      doubleClick(chip(root));
+        doubleClick(chip(root));
 
-      expect(createElementEditor).not.toHaveBeenCalled();
-      expect(stub.openSlideout).toHaveBeenCalledOnce();
-      const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
-      const params = new URL(href, 'https://example.test').searchParams;
-      expect(params.get('elementId')).toBe('5');
-    });
+        expect(createElementEditor).not.toHaveBeenCalled();
+        expect(stub.openSlideout).toHaveBeenCalledOnce();
+        const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
+        const url = new URL(href, 'https://example.test');
+        expect(url.pathname).toMatch(/\/elements\/edit$/);
+        expect(url.searchParams.get('elementType')).toBe(elementType);
+        expect(url.searchParams.get('elementId')).toBe('5');
+        expect(url.searchParams.get('siteId')).toBe('2');
+      }
+    );
 
     it('opens an element’s own edit screen in a Vue slideout', async () => {
       vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
@@ -792,16 +804,6 @@ describe('ElementSelectControl', () => {
         '/admin/assets/edit/5',
         expect.objectContaining({onSaved: expect.any(Function)})
       );
-    });
-
-    it('keeps elements without an edit screen in the legacy editor', async () => {
-      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
-      const root = await mount({value: [5]});
-
-      doubleClick(chip(root));
-
-      expect(stub.openSlideout).not.toHaveBeenCalled();
-      expect(createElementEditor).toHaveBeenCalledOnce();
     });
 
     it('stays put when the double-click lands on the chip’s checkbox', async () => {

@@ -43,6 +43,13 @@ class UserEditViewModel extends ElementEditViewModel
         return Url::actionUrl('users/save-user');
     }
 
+    /** @return array<string, int|string|null> */
+    #[Override]
+    public function saveParams(): array
+    {
+        return ['userId' => $this->user->id];
+    }
+
     /** What `users/save-user` resolves the account from. */
     public function userId(): ?int
     {
@@ -111,6 +118,7 @@ class UserEditViewModel extends ElementEditViewModel
             new ActionItem()
                 ->html(app(ElementHtml::class)->elementChipHtml($this->user, [
                     'showDraftName' => false,
+                    'hyperlink' => true,
                     'appearance' => Appearance::Plain->value,
                 ]))
                 ->current(true),

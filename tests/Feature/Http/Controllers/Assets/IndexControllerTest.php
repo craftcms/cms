@@ -465,9 +465,7 @@ it('gives the index a header trail like every other index has', function () {
                 && $crumbs->first()['label'] === 'Assets'
                 && str_ends_with((string) $crumbs->first()['href'], '/assets')
                 && $crumbs->last()['label'] === 'Test Volume'
-                // Linked by the URL the nav and the rest of the CP use, not a
-                // `?source=` query naming the same thing.
-                && str_ends_with((string) $crumbs->last()['href'], "/assets/{$volume->handle}")
+                && $crumbs->last()['href'] === null
             )
             ->etc()
         );

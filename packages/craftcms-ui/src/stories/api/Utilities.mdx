@@ -86,15 +86,15 @@ emitChange(this); // the value was committed
 
 ## The rest
 
-| Module             | What it is                                                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `cookies`          | A cookie manager. `new Cookies(defaults)`, then `get`/`set`/`remove`.                                                   |
-| `create`           | `createButton`, `createSubmitButton`, `createPasteButton` — the button builders the factory and the legacy shims share. |
-| `format`           | `formatNumber()`, plus `cpHumanizer` for durations.                                                                     |
-| `escapeHtml`       | Escapes HTML special characters in a string.                                                                            |
-| `thumbnail-loader` | `ThumbnailLoader` and `ThumbnailWorker`, which fetch and swap element thumbnails.                                       |
-| `overlay-events`   | `wireOverlayLifecycleEvents()` — see below.                                                                             |
-| `overlay-position` | `viewportEscapingModifiers` — Popper modifiers that let a fixed-strategy overlay escape a clipping ancestor.            |
-| `api`              | `actionClient` and `apiClient`, the configured Axios instances for CP action requests and the Craft API.                |
+| Module             | What it is                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cookies`          | A cookie manager. `new Cookies(defaults)`, then `get`/`set`/`remove`.                                                                                |
+| `create`           | `createButton`, `createSubmitButton`, `createPasteButton` — the button builders the factory and the legacy shims share.                              |
+| `format`           | `formatNumber()`, plus `cpHumanizer` for durations.                                                                                                  |
+| `escapeHtml`       | Escapes HTML special characters in a string.                                                                                                         |
+| `thumbnail-loader` | `ThumbnailLoader` and `ThumbnailWorker`, which fetch and swap element thumbnails.                                                                    |
+| `overlay-events`   | `wireOverlayLifecycleEvents()` — see below.                                                                                                          |
+| `overlay-position` | `viewportEscapingModifiers` — Popper modifiers that let a fixed-strategy overlay escape a clipping ancestor.                                         |
+| `api`              | `actionClient` and `apiClient` for CP action requests and the Craft API, built on the `http` client (`createHttpClient`, `isHttpError`, `isCancel`). |
 
 `wireOverlayLifecycleEvents(host)` is what gives [Dialog](?path=/docs/components-dialog--docs), [Popover](?path=/docs/components-popover--docs), and [Tooltip](?path=/docs/components-tooltip--docs) their four lifecycle events. It bridges Lion's `opened-changed` to `craft-show` and `craft-hide` as the state flips, then `craft-after-show` and `craft-after-hide` once the update settles. Call it once from a constructor to give an overlay component the same contract.

@@ -1,7 +1,7 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import type {DefineComponent} from 'vue';
-import axios from 'axios';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
+import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
@@ -60,10 +60,6 @@ const Cp = {
     return queue;
   },
 
-  get $axios() {
-    return axios;
-  },
-
   get $inertia() {
     return inertiaPageRegistry;
   },
@@ -110,9 +106,8 @@ const Cp = {
   async start() {
     this.init();
 
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfTokenValue');
+    http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
+    http.defaults.headers['X-CSRF-TOKEN'] = this.$config.get('csrfTokenValue');
 
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];

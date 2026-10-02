@@ -24,41 +24,41 @@
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import type {ElementIndexRow} from '@/modules/elements/index/composables/useContentIndexData';
-  import NestedEntryCardActions from './NestedEntryCardActions.vue';
-  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
-  import {useNestedEntriesControl} from './nested-entries-context';
+  import NestedElementCardActions from './NestedElementCardActions.vue';
+  import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
+  import {useNestedElementsControl} from './nested-elements-context';
   import {
     nestedCreateChoices,
-    nestedOwnerParams,
-    type NestedEntriesProps,
-    type NestedEntry,
-    type NestedIndexEntry,
-  } from './nested-entries';
+    nestedIndexParams,
+    type NestedElementsProps,
+    type NestedElement,
+    type NestedIndexElement,
+  } from './nested-elements';
   import {
-    nestedEntryActions,
-    useNestedEntryActions,
-    useNestedEntryActionEvents,
-  } from './nested-entry-actions';
-  import {useNestedEntriesQuery} from './useNestedEntriesQuery';
+    nestedElementActions,
+    useNestedElementActions,
+    useNestedElementActionEvents,
+  } from './nested-element-actions';
+  import {useNestedElementsQuery} from './useNestedElementsQuery';
   import {
-    useNestedEntryOperations,
-    type NestedEntryOperations,
-  } from './useNestedEntryOperations';
+    useNestedElementOperations,
+    type NestedElementOperations,
+  } from './useNestedElementOperations';
 
   const props = defineProps<{
-    control: NestedEntriesProps;
+    control: NestedElementsProps;
     editable: boolean;
   }>();
 
   const owner = inject(NestedOwnerEditorKey, null);
-  const controlContext = useNestedEntriesControl();
+  const controlContext = useNestedElementsControl();
   const container = ref<HTMLElement>();
   const busy = shallowRef(false);
   const error = shallowRef('');
   const preparedOwnerId = shallowRef<number | null>(null);
   const manager = computed(() => props.control.manager);
   const editable = computed(() => props.editable);
-  const effectiveControl = computed<NestedEntriesProps>(() => ({
+  const effectiveControl = computed<NestedElementsProps>(() => ({
     ...props.control,
     manager: manager.value
       ? {
@@ -67,26 +67,26 @@
         }
       : null,
   }));
-  const columnHelper = createCraftColumnHelper<NestedIndexEntry>();
-  let queryState!: ReturnType<typeof useNestedEntriesQuery>;
-  let operations!: NestedEntryOperations;
+  const columnHelper = createCraftColumnHelper<NestedIndexElement>();
+  let queryState!: ReturnType<typeof useNestedElementsQuery>;
+  let operations!: NestedElementOperations;
   let serverActions!: ComputedRef<BulkActionItem[]>;
   let canInteractWithOrder!: ComputedRef<boolean>;
-  let movedEntryId: number | null = null;
+  let movedElementId: number | null = null;
 
-  const entries = computed<NestedIndexEntry[]>(() =>
-    queryState ? queryState.entries.value : []
+  const elements = computed<NestedIndexElement[]>(() =>
+    queryState ? queryState.elements.value : []
   );
   const loading = computed(() => queryState?.loading.value ?? false);
 
-  queryState = useNestedEntriesQuery({
+  queryState = useNestedElementsQuery({
     props: () => effectiveControl.value,
     busy,
     error,
     onLoaded: async () => {
-      if (movedEntryId !== null) {
-        operations.focusEntry(movedEntryId);
-        movedEntryId = null;
+      if (movedElementId !== null) {
+        operations.focusElement(movedElementId);
+        movedElementId = null;
       } else if (document.activeElement === container.value) {
         operations?.onContainerFocus();
       }
@@ -107,12 +107,12 @@
             (option) => option.value === column.id
           ),
         })),
-        ...((elementIndex.data as NestedIndexEntry[]).some(
-          (entry) => entry.actionMenuItems?.length
+        ...((elementIndex.data as NestedIndexElement[]).some(
+          (element) => element.actionMenuItems?.length
         )
           ? [
               columnHelper.actions(({row}) => [
-                hActionMenu(row.original as NestedIndexEntry),
+                hActionMenu(row.original as NestedIndexElement),
               ]),
             ]
           : []),
@@ -140,8 +140,8 @@
   );
   const {selection, selectedIds, clearSelection} = queryState.selection;
 
-  operations = useNestedEntryOperations({
-    entries,
+  operations = useNestedElementOperations({
+    elements,
     offset,
     canReorder,
     selection,
@@ -153,14 +153,15 @@
     controlPath: controlContext.path,
     container,
     markModified: controlContext.markModified,
-    refreshCreatedEntryOnOpen: false,
+    refreshCreatedElementOnOpen: false,
     busy,
     error,
     ownerId: preparedOwnerId,
   });
-  const actions = useNestedEntryActions({
-    entries,
+  const actions = useNestedElementActions({
+    elements,
     manager,
+    initial: () => props.control.index?.initial,
     selection,
     operations,
     busy: () => busy.value || loading.value,
@@ -168,10 +169,10 @@
 
   const createChoices = computed(() => nestedCreateChoices(manager.value));
   const canCreate = computed(() => props.editable && manager.value?.canCreate);
-  const selectedEntries = computed(() =>
+  const selectedElements = computed(() =>
     table
       .getSelectedRowModel()
-      .rows.map((row) => row.original as NestedIndexEntry)
+      .rows.map((row) => row.original as NestedIndexElement)
   );
   serverActions = computed(() =>
     (queryState.payloadActions.value ?? []).map((action) => ({
@@ -181,35 +182,37 @@
         busy.value ||
         loading.value ||
         (action.key === DUPLICATE_ACTION &&
-          !operations.canAdd(selectedEntries.value.length)),
+          !operations.canAdd(selectedElements.value.length)),
     }))
   );
   const movePage = ref(page.value === 1 ? 2 : page.value - 1);
   const quickEdit = operations.quickEdit;
 
-  function openSelectedEntry(detail: BulkActionEventDetail): void {
+  function openSelectedElement(detail: BulkActionEventDetail): void {
     if (detail.elementIds.length === 1) {
       quickEdit.openById(detail.elementIds[0]!, detail.trigger);
     }
   }
 
-  function actionEntries(entry: NestedEntry): NestedEntry[] {
-    return selection.isSelected(entry.id) ? selectedEntries.value : [entry];
+  function actionElements(element: NestedElement): NestedElement[] {
+    return selection.isSelected(element.id)
+      ? selectedElements.value
+      : [element];
   }
 
-  function rowActions(entry: NestedEntry) {
-    const selectedActionEntries = actionEntries(entry);
-    const ids = selectedActionEntries.map((item) => item.id);
-    const index = entries.value.findIndex(
-      (candidate) => candidate.id === entry.id
+  function rowActions(element: NestedElement) {
+    const selectedActionElements = actionElements(element);
+    const ids = selectedActionElements.map((item) => item.id);
+    const index = elements.value.findIndex(
+      (candidate) => candidate.id === element.id
     );
 
-    return nestedEntryActions({
-      entry,
-      selectedEntries: selectedActionEntries,
+    return nestedElementActions({
+      element,
+      selectedElements: selectedActionElements,
       ids,
       index,
-      count: entries.value.length,
+      count: elements.value.length,
       editable: props.editable,
       busy: busy.value || loading.value,
       canPaste: operations.canPaste.value,
@@ -219,18 +222,19 @@
     });
   }
 
-  function hActionMenu(entry: NestedEntry) {
+  function hActionMenu(element: NestedElement) {
     return h(ActionMenu, {
       label: t('Actions for {name}', {
-        name: String(entry.cardAttributes?.data?.label ?? entry.id),
+        name: String(element.cardAttributes?.data?.label ?? element.id),
       }),
-      actions: rowActions(entry),
+      actions: rowActions(element),
     });
   }
 
-  useNestedEntryActionEvents(container, {
-    entries,
-    actionIds: (entry) => actionEntries(entry).map((selected) => selected.id),
+  useNestedElementActionEvents(container, {
+    elements,
+    actionIds: (element) =>
+      actionElements(element).map((selected) => selected.id),
     editable,
     busy: computed(() => busy.value || loading.value),
     enabled: computed(() => mode.value === 'table' || mode.value === 'cards'),
@@ -253,7 +257,11 @@
       | false = false;
     await operations.mutate(async (ownerId) => {
       result = await saveInlineElements(body, {
-        ...nestedOwnerParams(currentManager, ownerId),
+        ...nestedIndexParams(
+          currentManager,
+          ownerId,
+          props.control.index?.initial
+        ),
         elementType: currentManager.elementType,
         siteId: currentManager.ownerSiteId,
         context: 'embeddedIndex',
@@ -283,7 +291,7 @@
     const ids = [...selectedIds.value] as number[];
     const moved = await operations.reorderIds(ids, pageOffset(targetPage));
     if (moved) {
-      movedEntryId = ids[0] ?? null;
+      movedElementId = ids[0] ?? null;
       page.value = targetPage;
     }
   }
@@ -319,14 +327,14 @@
     movePage.value = currentPage === 1 ? 2 : currentPage - 1;
   });
   watch([page, mode], clearSelection);
-  watch(entries, () => selection.prune(entries.value.map(({id}) => id)));
+  watch(elements, () => selection.prune(elements.value.map(({id}) => id)));
 
   useEventListener(window, 'craft:nested-validation', (event: Event) => {
     if (
       event.target instanceof Element &&
       event.target.contains(container.value ?? null)
     ) {
-      queryState.setInvalidEntries(
+      queryState.setInvalidElements(
         (event as CustomEvent<{ids: number[]}>).detail.ids
       );
     }
@@ -353,7 +361,7 @@
           'data-nested-id': row.id,
           class: {
             error: normalizeClass(
-              (row as NestedIndexEntry).cardAttributes?.class
+              (row as NestedIndexElement).cardAttributes?.class
             )
               .split(/\s+/)
               .includes('error'),
@@ -380,10 +388,10 @@
           @click="queryState.load()"
           >{{ t('Refresh') }}</craft-button
         >
-        <NestedEntriesCreateButton
+        <NestedElementsCreateButton
           v-if="canCreate && manager"
           :choices="createChoices"
-          :label="manager.createButtonLabel || t('New entry')"
+          :label="manager.createButtonLabel || t('New element')"
           :disabled="busy || loading || !operations.canAdd(1)"
           @create="operations.create"
         />
@@ -392,15 +400,23 @@
       <template #footer>
         <ElementBulkActionsBar
           :selected-ids="selectedIds"
-          :selected-elements="selectedEntries"
+          :selected-elements="selectedElements"
           :actions="serverActions"
           :element-type="model.view.elementIndex.elementType"
           :source="model.view.elementIndex.source?.key"
           :context="model.view.elementIndex.context"
-          :params="manager ? nestedOwnerParams(manager, manager.ownerId) : {}"
+          :params="
+            manager
+              ? nestedIndexParams(
+                  manager,
+                  manager.ownerId,
+                  control.index?.initial
+                )
+              : {}
+          "
           :perform="actions.perform"
-          @edit="openSelectedEntry"
-          @view="openSelectedEntry"
+          @edit="openSelectedElement"
+          @view="openSelectedElement"
           @clear="clearSelection"
         >
           <label
@@ -431,9 +447,9 @@
       </template>
 
       <template #card-actions="{element}">
-        <NestedEntryCardActions
-          :entry="element as NestedEntry"
-          :entries="entries"
+        <NestedElementCardActions
+          :element="element as NestedElement"
+          :elements="elements"
           :selection="selection"
           :single-column="false"
           :editable="editable"

@@ -21,8 +21,6 @@ use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-use function CraftCms\Cms\t;
-
 /**
  * @since 6.0.0
  */
@@ -103,16 +101,6 @@ class PerformElementActionController
 
         if ($embedded) {
             $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload());
-
-            if (
-                $action instanceof Duplicate &&
-                $nestedSource->maxElements !== null &&
-                $elementType::indexElementCount(clone $elementQuery, $sourceKey) + $selectedElements->count() > $nestedSource->maxElements
-            ) {
-                return $this->asFailure(t('Could not duplicate the selected elements because the field allows a maximum of {max} elements.', [
-                    'max' => $nestedSource->maxElements,
-                ]));
-            }
         }
 
         $actionQuery = (clone $elementQuery)
@@ -133,13 +121,17 @@ class PerformElementActionController
                 if ($action instanceof Duplicate) {
                     $action->setNestedOwner($owner);
                     $preparedElements = $selectedElements;
-                    $orderedElementIds = (clone $elementQuery)
-                        ->offset(0)
-                        ->limit(null)
-                        ->orderBy('sortOrder')
-                        ->status(null)
-                        ->ids();
-                    $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
+
+                    // Duplicates go right after their sources, for nested elements that have an order.
+                    if ($nestedElementScope->canReorder()) {
+                        $orderedElementIds = (clone $elementQuery)
+                            ->offset(0)
+                            ->limit(null)
+                            ->orderBy('sortOrder')
+                            ->status(null)
+                            ->ids();
+                        $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
+                    }
                 } else {
                     $preparedElements = $selectedElements
                         ->map(fn (NestedElementInterface $element): NestedElementInterface => NestedElementManager::prepareElementForOwner($element, $owner));
