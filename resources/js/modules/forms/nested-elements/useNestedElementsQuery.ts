@@ -201,7 +201,7 @@ export function useNestedElementsQuery(options: {
     () => index.view.data.value as NestedIndexElement[]
   );
   const page = computed({
-    get: () => table.getState().pagination.pageIndex + 1,
+    get: () => table.atoms.pagination.get().pageIndex + 1,
     set: (value: number) => table.setPageIndex(value - 1),
   });
   const pagination = computed(() => index.payload.value.pagination);

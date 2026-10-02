@@ -3,7 +3,7 @@
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
@@ -71,7 +71,7 @@
   }
 
   const columnHelper = createCraftColumnHelper<Provider>();
-  const table = useVueTable<Provider>({
+  const table = useCraftTable<Provider>({
     get data() {
       return page.props.providers;
     },
@@ -137,8 +137,6 @@
         ]),
       ];
     },
-    getCoreRowModel: getCoreRowModel<Provider>(),
-    enableSorting: false,
   });
 </script>
 

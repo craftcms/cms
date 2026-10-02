@@ -136,7 +136,7 @@
       <template #search-options>
         <craft-checkbox
           v-if="page.props.search && page.props.canSearchSubfolders"
-          class="mt-2"
+          class="mt-md"
           .checked="page.props.includeSubfolders"
           @model-value-changed="setIncludeSubfolders"
         >
@@ -174,7 +174,7 @@
           )
         }}
       </p>
-      <div slot="footer" class="flex gap-2 justify-end">
+      <div slot="footer" class="flex gap-md justify-end">
         <craft-button @click="resolveConflictChoice('cancel')">
           {{ t('Cancel') }}
         </craft-button>
@@ -196,7 +196,7 @@
       @craft-before-hide="resolveDragFolderConflictChoice('cancel')"
     >
       <p>{{ dragFolderConflictPrompt?.message }}</p>
-      <div slot="footer" class="flex gap-2 justify-end">
+      <div slot="footer" class="flex gap-md justify-end">
         <craft-button @click="resolveDragFolderConflictChoice('cancel')">
           {{ t('Cancel') }}
         </craft-button>
@@ -219,7 +219,7 @@
       @craft-before-hide="closeNewFolder"
       @craft-after-show="focusNewFolderName"
     >
-      <form class="flex flex-col gap-4" @submit.prevent="createSubfolder">
+      <form class="flex flex-col gap-lg" @submit.prevent="createSubfolder">
         <CraftInput
           ref="newFolderNameInput"
           v-model="newFolderName"
@@ -229,7 +229,7 @@
           autofocus
         />
       </form>
-      <div slot="footer" class="flex gap-2 justify-end">
+      <div slot="footer" class="flex gap-md justify-end">
         <craft-button type="button" @click="closeNewFolder">
           {{ t('Cancel') }}
         </craft-button>
@@ -248,7 +248,7 @@
       :label="t('Rename folder')"
       @craft-before-hide="closeRename"
     >
-      <form class="flex flex-col gap-4" @submit.prevent="submitRename">
+      <form class="flex flex-col gap-lg" @submit.prevent="submitRename">
         <CraftInput
           v-model="renameName"
           :label="t('Folder name')"
@@ -257,7 +257,7 @@
           autofocus
         />
       </form>
-      <div slot="footer" class="flex gap-2 justify-end">
+      <div slot="footer" class="flex gap-md justify-end">
         <craft-button type="button" @click="closeRename">
           {{ t('Cancel') }}
         </craft-button>
@@ -277,7 +277,7 @@
       @craft-before-hide="resolveFolderConflictChoice('cancel')"
     >
       <p>{{ folderConflictPrompt?.message }}</p>
-      <div slot="footer" class="flex gap-2 justify-end">
+      <div slot="footer" class="flex gap-md justify-end">
         <craft-button @click="resolveFolderConflictChoice('cancel')">
           {{ t('Cancel') }}
         </craft-button>

@@ -4,7 +4,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import PluginDetails from '@/modules/plugin-manager/components/PluginDetails.vue';
   import PluginStatus from '@/modules/plugin-manager/components/PluginStatus.vue';
   import PluginActionMenu from '@/modules/plugin-manager/components/PluginActionMenu.vue';
@@ -31,7 +31,7 @@
   });
 
   const columnHelper = createCraftColumnHelper<PluginInfo>();
-  const table = useVueTable({
+  const table = useCraftTable({
     state: {
       get columnVisibility() {
         return {
@@ -72,7 +72,6 @@
     get data() {
       return plugins.value;
     },
-    getCoreRowModel: getCoreRowModel<PluginInfo>(),
   });
 
   /**
