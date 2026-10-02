@@ -1,5 +1,13 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, h, nextTick, reactive, type App, type Component} from 'vue';
+import {
+  createApp,
+  h,
+  nextTick,
+  reactive,
+  type App,
+  type Component,
+  type SetupContext,
+} from 'vue';
 import type {IndexSite} from '@/modules/elements/types/sites';
 
 vi.mock('@craftcms/ui', () => ({
@@ -9,7 +17,13 @@ vi.mock('@craftcms/ui', () => ({
 }));
 
 vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
-  default: {name: 'CraftInput', render: () => h('input')},
+  default: {
+    name: 'CraftInput',
+    inheritAttrs: false,
+    setup(_props: unknown, {attrs, slots}: SetupContext) {
+      return () => h('craft-input', attrs, slots.default?.());
+    },
+  },
 }));
 
 vi.mock('@craftcms/ui/vue/CraftSelectRich.vue', () => ({
@@ -71,6 +85,7 @@ function mount(props: Record<string, unknown>) {
   document.body.append(container);
 
   const onSiteChange = vi.fn();
+  const onSearchUpdate = vi.fn();
   const onSortDirectionUpdate = vi.fn();
   const toolbarProps = reactive<Record<string, unknown>>({
     search: '',
@@ -94,6 +109,7 @@ function mount(props: Record<string, unknown>) {
         ...toolbarProps,
         sortDirection: state.sortDirection,
         onSiteChange,
+        'onUpdate:search': onSearchUpdate,
         'onUpdate:sortDirection': (value: 'asc' | 'desc') => {
           state.sortDirection = value;
           onSortDirectionUpdate(value);
@@ -103,7 +119,13 @@ function mount(props: Record<string, unknown>) {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
 
-  return {onSiteChange, onSortDirectionUpdate, state, toolbarProps};
+  return {
+    onSiteChange,
+    onSearchUpdate,
+    onSortDirectionUpdate,
+    state,
+    toolbarProps,
+  };
 }
 
 function siteMenu(): HTMLElement | null {
@@ -269,4 +291,30 @@ it('changes sort direction when its actual direction button is clicked', async (
   expect(descending.active).toBe(true);
   expect(ascending.getAttribute('aria-pressed')).toBe('false');
   expect(descending.getAttribute('aria-pressed')).toBe('true');
+});
+
+it('returns focus to the search input when the search is cleared', () => {
+  const {onSearchUpdate} = mount({search: 'needle'});
+  const input = container!.querySelector<HTMLElement>(
+    'craft-input[name="search"]'
+  )!;
+  const focus = vi.spyOn(input, 'focus');
+
+  container!
+    .querySelector('craft-icon[label="Clear search"]')!
+    .closest<HTMLElement>('craft-button')!
+    .click();
+
+  expect(onSearchUpdate).toHaveBeenCalledWith('');
+  expect(focus).toHaveBeenCalled();
+});
+
+it('keeps the search input enabled while results load', () => {
+  mount({processing: true});
+
+  expect(
+    container!
+      .querySelector('craft-input[name="search"]')!
+      .hasAttribute('disabled')
+  ).toBe(false);
 });
