@@ -10,7 +10,7 @@ use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Controls\NestedEntries;
+use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -25,7 +25,7 @@ beforeEach(function() {
     $this->actingAs(User::factory()->admin()->create());
 });
 
-it('renders legacy Matrix cards with the nested entries control in read-only forms', function() {
+it('renders legacy Matrix cards with the nested elements control in read-only forms', function() {
     $entryType = EntryTypeModel::factory()->create([
         'name' => 'Card',
         'handle' => 'card',
@@ -70,7 +70,7 @@ it('renders legacy Matrix cards with the nested entries control in read-only for
         flags: JSON_THROW_ON_ERROR,
     );
 
-    expect($control)->toBeInstanceOf(NestedEntries::class)
+    expect($control)->toBeInstanceOf(NestedElements::class)
         ->and($settings)->toMatchArray([
             'sortable' => false,
             'canCreate' => false,

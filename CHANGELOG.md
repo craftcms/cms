@@ -19,7 +19,6 @@
 - Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types.
 - Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`.
 - The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses.
-- Deprecated `CraftCms\Cms\Form\Controls\NestedEntries`. `NestedElements` should be used instead.
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead.
 - Fixed a bug where Addresses fields’ configured Cards and Index view modes weren’t used in element forms.
 - Fixed a bug where nested element cards’ Copy, Duplicate, and Delete actions were always disabled.
