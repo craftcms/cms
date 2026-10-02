@@ -14,6 +14,7 @@
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - Removed `Cp.$axios`.
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
+- Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls.
 
 ## 6.0.0-alpha.19 - 2026-10-01
 

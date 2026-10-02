@@ -153,17 +153,25 @@ it('returns native Laravel download responses for download actions', function ()
         ->and($response->getContent())->toBe('downloaded');
 });
 
-it('includes exporter metadata in the refreshed element response', function () {
+it('includes exporter metadata in the refreshed element response', function (string $context) {
     $entry = EntryModel::factory()->createElement();
 
     ($this->performElementAction)([
+        'context' => $context,
+        'source' => '__IMP__',
         'elementType' => Entry::class,
         'elementAction' => Delete::class,
         'elementIds' => [$entry->id],
     ])->assertOk()
+        ->assertJsonStructure(['html'])
         ->assertJsonPath('exporters.0.type', Raw::class)
         ->assertJsonPath('exporters.0.formattable', true);
-});
+
+    expect(Entry::find()->id($entry->id)->status(null)->one())->toBeNull();
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('applies an embedded action only to the derivative owner clone', function () {
     $fixture = embeddedActionFixture();
