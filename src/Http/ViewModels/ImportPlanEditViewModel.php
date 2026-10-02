@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -50,25 +51,17 @@ class ImportPlanEditViewModel extends ViewModel
                 ->required(),
             FormField::make(t('Description'), Textarea::make('description'))
                 ->instructions(t('A description of what this import plan is for.')),
+            FormField::make(control: Table::make('steps')),
         ]), new FormContext(
             values: [
                 'uid' => $this->importPlan->uid,
                 'name' => $this->importPlan->name,
                 'handle' => $this->importPlan->handle,
                 'description' => $this->importPlan->description,
+                'steps' => $this->importPlan->serializeSteps() ?? [],
             ],
             mode: $mode,
         ));
-    }
-
-    /**
-     * The import plan's steps, as the step list on the edit screen holds them.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function steps(): array
-    {
-        return $this->importPlan->serializeSteps() ?? [];
     }
 
     /**
@@ -111,15 +104,5 @@ class ImportPlanEditViewModel extends ViewModel
     public function nestedColsUrl(): string
     {
         return action([ImportPlansController::class, 'nestedMappingCols']);
-    }
-
-    public function readOnly(): bool
-    {
-        return $this->readOnly;
-    }
-
-    public function canSave(): bool
-    {
-        return $this->canSave;
     }
 }

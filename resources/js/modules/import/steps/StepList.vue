@@ -58,11 +58,10 @@
     return byStep;
   });
 
-  /** Errors about the list as a whole — having no steps at all, or a slideout that failed to open. */
-  const listErrors = computed(() => [
-    ...(props.errors?.steps ?? []),
-    ...(requestError.value ? [requestError.value] : []),
-  ]);
+  /** A slideout that failed to open. Errors about the list as a whole belong to its form field. */
+  const listErrors = computed(() =>
+    requestError.value ? [requestError.value] : []
+  );
 
   function newStep(): StepPayload {
     return {

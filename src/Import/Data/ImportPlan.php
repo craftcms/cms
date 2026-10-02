@@ -70,6 +70,15 @@ class ImportPlan extends Component implements CpEditable, Validatable
         parent::__construct($config);
     }
 
+    #[Override]
+    public function fields(): array
+    {
+        return [
+            ...parent::fields(),
+            'steps' => fn (self $importPlan): ?array => $importPlan->serializeSteps(),
+        ];
+    }
+
     /**
      * Sets the name for the import plan.
      *

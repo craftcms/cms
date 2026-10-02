@@ -221,34 +221,6 @@ it('shows a server error on the step it belongs to', () => {
   );
 });
 
-it('shows an error about the list itself when there are no steps', () => {
-  // `steps` with nothing after it is the list's own error, not a row's
-  mount([], {errors: {steps: ['An import plan needs at least one step.']}});
-
-  expect(container.querySelector('.error-list')!.textContent).toContain(
-    'An import plan needs at least one step.'
-  );
-});
-
-it('keeps a list error and a row error apart', () => {
-  mount([step()], {
-    errors: {
-      steps: ['An import plan needs at least one step.'],
-      'steps.step-1.source': ['File does not exist.'],
-    },
-  });
-
-  expect(container.querySelector('.error-list')!.textContent).toContain(
-    'An import plan needs at least one step.'
-  );
-  expect(container.querySelector('.error-list')!.textContent).not.toContain(
-    'File does not exist.'
-  );
-  expect(container.querySelector('li .error')!.textContent).toContain(
-    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
-  );
-});
-
 it('reports a slideout that fails to open instead of doing nothing', async () => {
   state.openStepSlideout.mockRejectedValue(new Error('Request failed.'));
   mount([]);
