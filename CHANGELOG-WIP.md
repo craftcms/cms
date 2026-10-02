@@ -12,6 +12,8 @@
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 
 ### Extensibility
+- Added `CraftCms\Cms\Form\Controls\NestedElements`, `CraftCms\Cms\Element\NestedElementManager::formControl()`, and `CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface`, allowing plugins to manage custom nested element types as cards or embedded element indexes.
+- Added `CraftCms\Cms\Http\Controllers\Elements\ElementEditorController` and `CraftCms\Cms\Element\Contracts\ElementInterface::editControllerClass()`, allowing element types to opt into the Inertia editor for nested element slideouts and `elements/edit` URLs.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsForm()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsNodes()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.

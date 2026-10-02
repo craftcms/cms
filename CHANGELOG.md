@@ -15,6 +15,17 @@
 - Removed `Cp.$axios`.
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
+- Added `CraftCms\Cms\Form\Controls\NestedElements`, `CraftCms\Cms\Element\NestedElementManager::formControl()`, and `CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface`, allowing plugins to manage custom nested element types as cards or embedded element indexes.
+- Added `CraftCms\Cms\Http\Controllers\Elements\ElementEditorController` and `CraftCms\Cms\Element\Contracts\ElementInterface::editControllerClass()`, allowing element types to opt into the Inertia editor for nested element slideouts and `elements/edit` URLs.
+- The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses.
+- Deprecated `CraftCms\Cms\Form\Controls\NestedEntries`. `NestedElements` should be used instead.
+- Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead.
+- Fixed a bug where Addresses fields’ configured Cards and Index view modes weren’t used in element forms.
+- Fixed a bug where nested element cards’ Copy, Duplicate, and Delete actions were always disabled.
+- Fixed a bug where nested elements without their own edit page, such as addresses, couldn’t be opened from their cards.
+- Fixed a bug where nested element slideouts for element types other than entries always used the legacy editor.
+- Fixed a bug where addresses couldn’t be saved from an element editor slideout.
+- Fixed a bug where element actions couldn’t find a user’s addresses.
 
 ## 6.0.0-alpha.19 - 2026-10-01
 
@@ -109,9 +120,6 @@
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
 - Restored Matrix fields’ configured Cards and Cards Grid view modes in element forms.
 - Restored Matrix fields’ configured Index view mode in element forms.
-- Fixed a bug where Matrix Index views could show content from the wrong site.
-- Fixed a bug where reopening a Matrix entry from an Index view could show its canonical content instead of the owner draft’s content.
-- Addresses fields’ configured Cards and Index view modes are now used in element forms.
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
@@ -136,18 +144,8 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Restored expand/collapse and drag interactions on structure element index views. ([#19691](https://github.com/craftcms/cms/pull/19691))
-- Fixed a bug where the Delete element action reported success when some elements couldn't be deleted. ([#19743](https://github.com/craftcms/cms/pull/19743))
-- Fixed a bug where plugin-provided download element actions didn’t trigger file downloads from element indexes. ([#19730](https://github.com/craftcms/cms/pull/19730))
-- Fixed a bug where saving an element draft could send a redundant autosave request. ([#19704](https://github.com/craftcms/cms/pull/19704))
-- Fixed a bug where `resave` and `update-statuses` commands reported skipped revisions as root element lookup errors.
-- Fixed a bug where nested element cards’ Copy, Duplicate, and Delete actions were always disabled.
-- Fixed a bug where nested elements without their own edit page, such as addresses, couldn’t be opened from their cards.
-- Fixed a bug where nested element slideouts for element types other than entries always used the legacy editor.
 
 ### Users & Auth
-- The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses.
-- Fixed a bug where addresses couldn’t be saved from an element editor slideout.
-- Fixed a bug where element actions couldn’t find a user’s addresses.
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Added the `authGuard` and `authPasswordBroker` general config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 
@@ -185,14 +183,6 @@
 - `asFailure()` now flashes its message even when the response has validation errors.
 - Deprecated the `flash` Inertia shared prop. `messages` should be used instead.
 - Removed `useFlash()`, `useFlashMessages()`, and the `FlashMessages` Vue component. `useMessages()` should be used instead.
-- Added `CraftCms\Cms\Form\Controls\NestedElements` and the `craft:nested-elements` Vue control, which manage any nested element type as cards or an embedded element index.
-- Added `CraftCms\Cms\Element\NestedElementManager::formControl()`.
-- Added `CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface`, for fields and owner elements that provide their nested elements’ embedded index config.
-- Added `CraftCms\Cms\Http\Controllers\Elements\ElementEditorController`, the shared base for Inertia element edit screens.
-- Added `CraftCms\Cms\Element\Contracts\ElementInterface::editControllerClass()`. Element types that return a controller get their Inertia editor in nested element slideouts and `elements/edit` URLs.
-- Added `NestedElements.vue` and `savedNestedOwner()`, for managing an owner’s nested elements outside an element editor.
-- Deprecated `CraftCms\Cms\Form\Controls\NestedEntries`. `NestedElements` should be used instead.
-- Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` is used instead.
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 
 ### System
