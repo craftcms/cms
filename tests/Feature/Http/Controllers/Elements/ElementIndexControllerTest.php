@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -143,10 +144,14 @@ it('requires authentication for get-elements', function () {
     ])->assertUnauthorized();
 });
 
-it('returns element HTML and action metadata for get-elements', function () {
+it('returns element HTML and action metadata for get-elements', function (string $context) {
     EntryModel::factory()->count(2)->create();
 
-    ($this->postIndexAction)('get-elements')->assertOk()
+    $response = ($this->postIndexAction)('get-elements', [
+        'context' => $context,
+        'source' => '__IMP__',
+        'sortable' => true,
+    ])->assertOk()
         ->assertJsonStructure([
             'html',
             'headHtml',
@@ -155,7 +160,14 @@ it('returns element HTML and action metadata for get-elements', function () {
             'actionsBodyHtml',
             'exporters',
         ]);
-});
+
+    expect(array_column($response->json('actions') ?? [], 'type'))->toContain(Delete::class)
+        ->and(array_column($response->json('exporters') ?? [], 'type'))->toContain(Raw::class)
+        ->and(new Crawler($response->json('html'))->filter('tbody .move')->count())->toBe(2);
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('renders element table rows with strict Twig variables', function () {
     app(Twig::class)->get(TemplateMode::Cp)->enableStrictVariables();
