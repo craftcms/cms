@@ -23,6 +23,3 @@ export {GroupedEntryTypeManager, Group, CraftEntryTypeManager};
 export {attachChipMoveActions} from './grouped-entry-type-manager';
 export type {GroupedEntryTypeManagerSettings} from './grouped-entry-type-manager';
 export {groupedEntryTypeManagerData} from './support';
-
-// The Vue components in ./components (EntryTypeChip.vue, EntryTypeSelect.vue)
-// are a separate, Inertia-page concern and are imported directly by path.
