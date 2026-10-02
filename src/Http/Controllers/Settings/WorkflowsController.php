@@ -128,6 +128,7 @@ class WorkflowsController
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Workflows'), 'settings/workflows')
+            ->addCrumb($title)
             ->inertiaPage('settings/workflows/Edit', app(WorkflowEditViewModel::class, [
                 'workflow' => $workflow,
                 'readOnly' => $this->readOnly,

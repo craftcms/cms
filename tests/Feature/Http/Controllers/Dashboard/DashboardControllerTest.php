@@ -11,6 +11,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -26,6 +27,9 @@ it('can be rendered', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Dashboard')
+            ->has('crumbs', 1)
+            ->where('crumbs.0.label', t('Dashboard'))
+            ->where('crumbs.0.href', null)
             ->has('widgets', 4)
             ->where('widgets.0.name', 'Recent Entries')
             ->where('widgets.3.name', 'Feed'));

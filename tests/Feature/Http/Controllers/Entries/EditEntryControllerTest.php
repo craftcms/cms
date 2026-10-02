@@ -272,6 +272,28 @@ it('lists drafts and revisions in the context menu', function () {
         );
 });
 
+it('ends the breadcrumbs with a revision switcher instead of naming the draft in the chip', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+
+    get(cp_url(sprintf('entries/news/%d-%s?draftId=%d', $this->entry->id, $this->entry->slug, $draft->draftId)))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', function (Collection $crumbs) {
+                $chip = $crumbs->get($crumbs->count() - 2);
+                $revisionCrumb = $crumbs->last();
+                $drafts = collect($revisionCrumb['items'])->firstWhere('heading', 'Drafts');
+
+                return ! str_contains($chip['html'], 'Working Draft')
+                    && str_contains($chip['html'], '<a ')
+                    && $revisionCrumb['label'] === 'Working Draft'
+                    && $revisionCrumb['items'][0]['label'] === 'Current'
+                    && $drafts['items'][0]['label'] === 'Working Draft'
+                    && $drafts['items'][0]['selected'] === true;
+            })
+            ->etc()
+        );
+});
+
 it('caps the context menu at five revisions, listing every draft', function () {
     foreach (range(1, 7) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");

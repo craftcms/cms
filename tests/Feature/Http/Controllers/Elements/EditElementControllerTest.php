@@ -449,6 +449,14 @@ function createEditElementMatrixFixture(): array
     ];
 }
 
+it('names the owner’s draft in a nested entry’s owner crumb', function () {
+    ['ownerDraft' => $ownerDraft, 'block' => $block] = createEditElementMatrixFixture();
+
+    $block->setOwner($ownerDraft);
+
+    expect(last($block->getCrumbs())->html)->toContain('Owner Draft');
+});
+
 it('renders a nested entry’s own edit page with the entry editor', function () {
     ['block' => $block] = createEditElementMatrixFixture();
 

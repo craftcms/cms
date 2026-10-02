@@ -20,7 +20,6 @@
   import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
-  import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
@@ -216,13 +215,6 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="payload.contextMenu" name="context-menu">
-    <ElementContextMenu
-      :label="payload.contextMenu.label"
-      :items="payload.contextMenu.items"
-    />
-  </LayoutSlot>
-
   <LayoutSlot
     v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
     name="content-toolbar-meta"

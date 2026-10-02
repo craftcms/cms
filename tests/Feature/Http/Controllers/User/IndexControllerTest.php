@@ -151,19 +151,21 @@ it('crumbs the “all users” source by name', function () {
         );
 });
 
-it('adds a source crumb that links the source’s own slug URL', function () {
-    // Every user source publishes the slug that selects it, so the crumb links
-    // `users/admins` rather than a `?source=` query.
+it('adds an unlinked source crumb whose switcher links the source’s own slug URL', function () {
+    // Every user source publishes the slug that selects it, so the switcher
+    // links `users/admins` rather than a `?source=` query.
     get("/{$this->cpTrigger}/users/admins")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->count('crumbs', 2)
             ->where('crumbs.0.label', 'Users')
             ->where('crumbs.1.label', 'Admins')
-            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/users/admins"))
-            ->where('crumbs.1.items', fn ($actions) => collect($actions)
-                ->where('selected', true)
-                ->pluck('label')
-                ->all() === ['Admins'])
+            ->where('crumbs.1.href', null)
+            ->where('crumbs.1.items', function ($actions) {
+                $selected = collect($actions)->where('selected', true);
+
+                return $selected->pluck('label')->all() === ['Admins']
+                    && str_ends_with((string) $selected->first()['href'], "/{$this->cpTrigger}/users/admins");
+            })
         );
 });

@@ -39,7 +39,7 @@ class UserFieldsController extends BaseUserSettingsController
 
         return new CpScreenResponse()
             ->title(t('User Settings'))
-            ->crumbs($this->crumbs(t('User Profile Fields')))
+            ->crumbs($this->crumbs())
             ->inertiaPage('settings/users/Fields', [
                 'subnav' => $this->subnav(),
                 'fieldLayoutDesigner' => [
