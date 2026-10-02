@@ -288,6 +288,11 @@ it('can delete an entry type', function () {
 
 it('renders the entry type select', function () {
     $entryType = EntryType::first();
+    $other = EntryType::factory()->create([
+        'handle' => 'otherType',
+        'icon' => 'newspaper',
+        'color' => Color::Red->value,
+    ]);
 
     $html = postJson(action([EntryTypesController::class, 'renderSelect']), [
         'value' => [['id' => $entryType->id, 'name' => 'Overridden']],
@@ -304,7 +309,11 @@ it('renders the entry type select', function () {
         ->toContain('<craft-component-select')
         ->toContain('name="entryTypes[]"')
         ->toContain('Overridden')
-        ->toContain('command="--create-item"');
+        ->toContain('command="--create-item"')
+        ->toContain('checkbox-options')
+        ->and($html)->toMatch(sprintf('/<craft-action-item type="checkbox" checked [^>]*data-id="%s"/', $entryType->id))
+        ->and($html)->toMatch(sprintf('/<craft-action-item type="checkbox" icon="newspaper" icon-color="red" [^>]*data-id="%s"/', $other->id))
+        ->and($html)->toContain('>otherType</span>');
 });
 
 it('can render override settings', function () {

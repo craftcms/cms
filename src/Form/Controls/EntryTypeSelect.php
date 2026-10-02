@@ -60,6 +60,7 @@ class EntryTypeSelect extends Control
             'allowOverrides' => $allowOverrides,
             'create' => $create && ! $disabled,
             'disabled' => $disabled,
+            'checkboxOptions' => true,
         ]), $namespace);
     }
 
