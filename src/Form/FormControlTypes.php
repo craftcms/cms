@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\EntryTypeSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FieldSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
@@ -67,6 +68,7 @@ class FormControlTypes extends TypeRegistry
         Date::class,
         DateTime::class,
         ElementSelect::class,
+        EntryTypeSelect::class,
         FieldLayoutDesigner::class,
         FieldSelect::class,
         GroupedEntryTypeManager::class,

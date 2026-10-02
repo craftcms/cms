@@ -307,6 +307,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('entry-types/render-form', [EntryTypesController::class, 'renderForm']);
+            Route::post('entry-types/render-select', [EntryTypesController::class, 'renderSelect']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
