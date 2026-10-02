@@ -16,6 +16,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
