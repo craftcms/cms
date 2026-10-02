@@ -12,6 +12,8 @@ use Override;
 
 /**
  * @property array<int, array<string, mixed>>|null $steps
+ *
+ * @since 6.0.0
  */
 class ImportPlan extends BaseModel
 {

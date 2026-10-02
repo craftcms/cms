@@ -12,6 +12,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Imports data into SystemMessage models.
+ *
+ * @since 6.0.0
  */
 class SystemMessageImporter extends ModelImporter
 {

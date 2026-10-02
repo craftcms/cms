@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @event ItemImported The event that is triggered after data is imported.
+ *
+ * @since 6.0.0
  */
 final readonly class ItemImported
 {

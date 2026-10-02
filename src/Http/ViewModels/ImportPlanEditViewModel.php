@@ -22,6 +22,9 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ImportPlanEditViewModel extends ViewModel
 {
     public function __construct(

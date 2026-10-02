@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\ImportHelper;
 
+/**
+ * @since 6.0.0
+ */
 class ImportPlanMapViewModel extends ViewModel
 {
     /** @var array<int|string, array<string, mixed>>|null */

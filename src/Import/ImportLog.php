@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Import;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ImportLog
 {

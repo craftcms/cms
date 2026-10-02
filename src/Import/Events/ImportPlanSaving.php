@@ -9,6 +9,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event ImportPlanSaving The event that is triggered before an import plan is saved.
+ *
+ * @since 6.0.0
  */
 class ImportPlanSaving
 {

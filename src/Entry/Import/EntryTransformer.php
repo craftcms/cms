@@ -10,6 +10,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 
+/**
+ * @since 6.0.0
+ */
 class EntryTransformer extends ElementTransformer
 {
     /**

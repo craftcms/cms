@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 
 /**
  * @event ImportDispatched The event that is triggered after an import plan is dispatched to the queue.
+ *
+ * @since 6.0.0
  */
 class ImportDispatched
 {

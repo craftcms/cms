@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Support\Facades\Folders;
 
+/**
+ * @since 6.0.0
+ */
 class AssetTransformer extends ElementTransformer
 {
     /**

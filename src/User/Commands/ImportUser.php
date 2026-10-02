@@ -8,6 +8,9 @@ use CraftCms\Cms\Import\Commands\Import;
 use CraftCms\Cms\User\Import\UserImporter;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImportUser extends Import
 {
     #[Override]

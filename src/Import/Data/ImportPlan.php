@@ -27,6 +27,8 @@ use function CraftCms\Cms\t;
 /**
  * A named, handled import plan: an ordered list of steps, each of which pairs an importer type
  * with its own source, transformer, settings and mapping.
+ *
+ * @since 6.0.0
  */
 class ImportPlan extends Component implements CpEditable, Validatable
 {

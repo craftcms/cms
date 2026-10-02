@@ -8,6 +8,9 @@ use InvalidArgumentException;
 use Override;
 use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
 
+/**
+ * @since 6.0.0
+ */
 class Csv implements DataTypeInterface
 {
     #[Override]

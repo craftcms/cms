@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
  * @event ImportChunkStarted The event that is triggered when a queued import job starts processing a chunk of a step’s data.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportChunkStarted
 {

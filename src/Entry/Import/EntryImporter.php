@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Imports data into Entry elements.
+ *
+ * @since 6.0.0
  */
 class EntryImporter extends ElementImporter
 {

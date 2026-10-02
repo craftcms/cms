@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Json implements DataTypeInterface
 {
     #[Override]

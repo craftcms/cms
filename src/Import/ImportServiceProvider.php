@@ -11,6 +11,9 @@ use CraftCms\Cms\User\Commands\ImportUser;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImportServiceProvider extends ServiceProvider
 {
     #[Override]

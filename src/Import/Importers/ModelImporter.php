@@ -23,6 +23,8 @@ use RuntimeException;
  * A model is importable if and only if a ModelImporter subclass is registered for it, via the
  * RegisterImporterTypes event.
  * Element types must use an ElementImporter subclass instead (see EntryImporter, AssetImporter, UserImporter).
+ *
+ * @since 6.0.0
  */
 abstract class ModelImporter extends BaseImporter
 {

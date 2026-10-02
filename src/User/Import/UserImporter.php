@@ -13,6 +13,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Imports data into User elements.
+ *
+ * @since 6.0.0
  */
 class UserImporter extends ElementImporter
 {

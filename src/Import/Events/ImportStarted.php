@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
  * @event ImportStarted The event that is triggered when an import (a queued import plan or a CLI import) starts running.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportStarted
 {

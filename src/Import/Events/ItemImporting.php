@@ -9,6 +9,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event ItemImporting The event that is triggered before data is imported.
+ *
+ * @since 6.0.0
  */
 class ItemImporting
 {

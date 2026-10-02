@@ -10,6 +10,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event ImportDispatching The event that is triggered before an import plan is dispatched to the queue.
+ *
+ * @since 6.0.0
  */
 class ImportDispatching
 {

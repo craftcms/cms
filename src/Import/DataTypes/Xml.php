@@ -10,6 +10,9 @@ use Exception;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Xml implements DataTypeInterface
 {
     #[Override]

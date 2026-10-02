@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Support\Attributes;
 
 use Attribute;
 
+/**
+ * @since 6.0.0
+ */
 #[Attribute]
 final readonly class Importable
 {

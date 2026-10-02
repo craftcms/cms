@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Import\Events;
 
 use CraftCms\Cms\Import\Importers\BaseImporter;
 
+/**
+ * @since 6.0.0
+ */
 class RegisterImporterTypes
 {
     /**

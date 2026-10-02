@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ImportPlan
 {

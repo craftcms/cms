@@ -34,6 +34,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Imports data into Asset elements.
+ *
+ * @since 6.0.0
  */
 class AssetImporter extends ElementImporter
 {

@@ -19,6 +19,8 @@ use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
  *     $event->dataTypes['xyz'] = MyDataType::class;
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 class RegisterDataTypes
 {

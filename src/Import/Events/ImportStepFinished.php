@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
  * @event ImportStepFinished The event that is triggered after every item of an import step has been processed.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportStepFinished
 {

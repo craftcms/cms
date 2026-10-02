@@ -8,6 +8,9 @@ use CraftCms\Cms\Import\Commands\Import;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ImportSystemMessage extends Import
 {
     #[Override]

@@ -37,6 +37,9 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseImporter
 {
     public protected(set) ?string $source = null;

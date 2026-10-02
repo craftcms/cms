@@ -13,6 +13,9 @@ use Symfony\Component\Console\Input\InputOption;
 
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 class ImportAsset extends Import
 {
     #[Override]

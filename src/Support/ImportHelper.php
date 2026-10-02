@@ -21,6 +21,8 @@ use CraftCms\Cms\Support\Facades\Fields;
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
  * @phpstan-type MappableLeaf array{path: string, segments: list<string>}
  * @phpstan-type IncomingCol array{segments: list<string>, value: string}
+ *
+ * @since 6.0.0
  */
 class ImportHelper
 {

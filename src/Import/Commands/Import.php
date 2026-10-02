@@ -32,6 +32,8 @@ use function Laravel\Prompts\text;
  * If you create a new import command that extends this class,
  * you should register it from your Plugin's boot() method via
  * $this->commands() method and pass an array containing FQCN of the new command(s).
+ *
+ * @since 6.0.0
  */
 abstract class Import extends Command implements PromptsForMissingInput
 {

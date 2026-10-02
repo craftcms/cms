@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Import\Transformers;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use League\Fractal\TransformerAbstract;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseTransformer extends TransformerAbstract
 {
     /**

@@ -37,6 +37,9 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Import
 {

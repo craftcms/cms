@@ -8,6 +8,8 @@ use CraftCms\Cms\Import\Data\ImportPlan;
 
 /**
  * @event ImportPlanSaved The event that is triggered after an import plan is saved.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportPlanSaved
 {

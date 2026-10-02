@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
  * @event ImportFinished The event that is triggered after an import (a queued import plan or a CLI import) has finished.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportFinished
 {

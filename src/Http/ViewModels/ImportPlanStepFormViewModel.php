@@ -24,6 +24,8 @@ use function CraftCms\Cms\t;
 /**
  * The form shown in an import plan step's slideout: the importer type, the data it reads, and
  * whatever settings that importer type asks for.
+ *
+ * @since 6.0.0
  */
 class ImportPlanStepFormViewModel extends ViewModel
 {

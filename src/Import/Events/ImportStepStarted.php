@@ -9,6 +9,8 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
  * @event ImportStepStarted The event that is triggered when a step of an import starts running.
+ *
+ * @since 6.0.0
  */
 final readonly class ImportStepStarted
 {

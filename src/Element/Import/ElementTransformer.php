@@ -9,6 +9,9 @@ use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\ImportHelper;
 
+/**
+ * @since 6.0.0
+ */
 class ElementTransformer extends BaseTransformer
 {
     /**
