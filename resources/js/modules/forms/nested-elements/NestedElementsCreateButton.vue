@@ -107,7 +107,7 @@
         <craft-button
           v-bind="attributes"
           :id="invokerId"
-          data-create-entry
+          data-create-element
           type="button"
           variant="dashed"
           icon="plus"
@@ -122,7 +122,7 @@
       <craft-button
         v-for="(choice, index) in choices"
         :key="index"
-        data-create-entry
+        data-create-element
         type="button"
         variant="dashed"
         :icon="choice.icon ?? 'plus'"

@@ -2,9 +2,9 @@ import {effectScope, nextTick, reactive, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {
   NestedContentIndexData,
-  NestedEntriesProps,
-} from './nested-entries';
-import {useNestedEntriesQuery} from './useNestedEntriesQuery';
+  NestedElementsProps,
+} from './nested-elements';
+import {useNestedElementsQuery} from './useNestedElementsQuery';
 
 const ui = vi.hoisted(() => ({
   post: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('@craftcms/ui', async (original) => ({
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 
-describe('useNestedEntriesQuery', () => {
+describe('useNestedElementsQuery', () => {
   let scope: ReturnType<typeof effectScope>;
 
   afterEach(() => {
@@ -125,7 +125,7 @@ describe('useNestedEntriesQuery', () => {
         canPaste: true,
         sortable: true,
         createAttributes: [{label: 'Article', attributes: {typeId: 9}}],
-        pasteableEntryTypeIds: [9],
+        pasteableData: {attribute: 'entryTypeId', values: [9]},
       },
       cards: [],
       index: {
@@ -136,13 +136,13 @@ describe('useNestedEntriesQuery', () => {
         },
         initial,
       },
-    }) as unknown as NestedEntriesProps;
+    }) as unknown as NestedElementsProps;
     const busy = shallowRef(false);
     const error = shallowRef('');
     const onLoaded = vi.fn(async () => {});
     scope = effectScope();
     const state = scope.run(() =>
-      useNestedEntriesQuery({
+      useNestedElementsQuery({
         props: () => props,
         busy,
         error,
@@ -171,7 +171,7 @@ describe('useNestedEntriesQuery', () => {
     await nextTick();
 
     expect(ui.post).not.toHaveBeenCalled();
-    expect(state.entries.value.map(({id}) => id)).toEqual([29]);
+    expect(state.elements.value.map(({id}) => id)).toEqual([29]);
     expect(ui.appendHeadHtml).toHaveBeenCalledOnce();
     expect(ui.appendHeadHtml).toHaveBeenCalledWith('<style>.nested{}</style>');
     expect(ui.appendBodyHtml).toHaveBeenCalledOnce();
@@ -214,6 +214,14 @@ describe('useNestedEntriesQuery', () => {
       columns: ['dateUpdated'],
       sort: [{field: 'postDate', direction: 'desc'}],
       showInGrid: true,
+      sortable: true,
+      canPaste: true,
+      static: false,
+      showHeaderColumn: true,
+      per_page: 7,
+      allowedViewModes: ['cards', 'table'],
+      defaultTableColumns: ['postDate'],
+      fieldLayouts: [],
     });
     expect(state.mode.value).toBe('cards');
   });
@@ -235,9 +243,11 @@ describe('useNestedEntriesQuery', () => {
     expect(ui.post).not.toHaveBeenCalled();
   });
 
-  it('posts only owner scope, index query, and permitted runtime flags', async () => {
+  it('carries rendered index settings through query and export requests', async () => {
     ui.post.mockResolvedValue({data: payload()});
-    const state = setup();
+    const state = setup({
+      initial: payload({fieldLayouts: [{tabs: [{name: 'Variant details'}]}]}),
+    });
 
     state.status.value = 'disabled';
     await vi.waitFor(() => expect(ui.post).toHaveBeenCalledOnce());
@@ -255,10 +265,16 @@ describe('useNestedEntriesQuery', () => {
       sort: [{field: 'sortOrder', direction: 'asc'}],
       status: 'disabled',
       showInGrid: false,
+      sortable: true,
+      canPaste: true,
+      static: false,
+      showHeaderColumn: true,
+      per_page: 7,
+      allowedViewModes: ['cards', 'table'],
+      defaultTableColumns: ['postDate'],
+      fieldLayouts: [{tabs: [{name: 'Variant details'}]}],
     });
     expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('fieldId');
-    expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('per_page');
-    expect(ui.post.mock.calls[0]![1]).not.toHaveProperty('fieldLayouts');
 
     state.props.manager!.ownerId = 73;
     await state.load(true);
@@ -272,6 +288,18 @@ describe('useNestedEntriesQuery', () => {
     await vi.waitFor(() =>
       expect(ui.post.mock.lastCall![1]).toMatchObject({prevalidate: true})
     );
+
+    await state.model.view.exportElements!('csv', 'Expanded', []);
+    expect(actions.run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ownerId: 73,
+          per_page: 7,
+          allowedViewModes: ['cards', 'table'],
+          fieldLayouts: [{tabs: [{name: 'Variant details'}]}],
+        }),
+      })
+    );
   });
 
   it('hides initial rows while the selected mode awaits matching payload data', async () => {
@@ -280,11 +308,11 @@ describe('useNestedEntriesQuery', () => {
     const state = setup();
 
     state.mode.value = 'cards';
-    expect(state.entries.value).toEqual([]);
+    expect(state.elements.value).toEqual([]);
 
     pending.resolve({data: payload({viewState: {mode: 'cards'}})});
     await vi.waitFor(() => expect(state.loading.value).toBe(false));
-    expect(state.entries.value.map(({id}) => id)).toEqual([29]);
+    expect(state.elements.value.map(({id}) => id)).toEqual([29]);
   });
 
   it('surfaces request failures and applies response assets before notifying the owner', async () => {

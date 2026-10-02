@@ -44,8 +44,8 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from '../FormNodeList.vue';
-  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
-  import {isPasteable} from './nested-entries';
+  import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
+  import {isPasteable} from './nested-elements';
   import type {ActionItems} from '@/common/types';
   import {useMessages} from '@/modules/messages/useMessages';
   import {
@@ -252,9 +252,11 @@
 
     const fits = isPasteable(elements, {
       elementType,
-      entryTypeIds: Object.values(create.entryTypeIds),
+      pasteableData: {
+        attribute: 'entryTypeId',
+        values: Object.values(create.entryTypeIds),
+      },
       room: true,
-      requireEntryTypeId: true,
     });
 
     return fits ? elements : [];
@@ -1580,7 +1582,7 @@
         </template>
       </SelectableCardList>
       <div v-if="canAdd" class="mt-md">
-        <NestedEntriesCreateButton
+        <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
           :adding="adding"

@@ -2,17 +2,17 @@ import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
 import {uiLayerManager} from '@/modules/slideout/slideout';
 import {inputName} from '@/modules/forms/runtime';
 import type {FormValues} from '@/modules/forms/types';
-import type {AxiosRequestConfig} from 'axios';
+import {isHttpError} from '@craftcms/ui/utilities/api/http';
+import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 
 declare const Craft: any;
 declare const $: any;
-declare const axios: any;
 
 interface CpModalSettings {
   params: FormValues;
   containerElement: string;
   containerAttributes: Record<string, string>;
-  requestOptions: AxiosRequestConfig;
+  requestOptions: LegacyRequestOptions;
   closeOnSubmit: boolean;
   showSubmitButton: boolean;
   onSubmit: (event?: CpModalSubmitEvent) => void;
@@ -25,7 +25,6 @@ interface CpModalSubmitEvent {
 }
 
 interface CpModalRequestError extends Error {
-  isAxiosError?: boolean;
   response?: {
     status?: number;
     data?: {message?: string; errors?: Record<string, string[]>};
@@ -61,7 +60,7 @@ const DEFAULTS: CpModalSettings = {
  * the container/form operations, because the delta-tracking data
  * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) and the
  * `Craft.ui.*` field-error helpers share those jQuery conventions with the rest
- * of the CP-screen framework. `Craft`/`axios` stay page globals; `uiLayerManager`
+ * of the CP-screen framework. `Craft` stays a page global; `uiLayerManager`
  * comes from the slideout module.
  */
 export class CpModal extends Modal {
@@ -71,7 +70,7 @@ export class CpModal extends Modal {
   resizeObserver: ResizeObserver | null = null;
 
   #cpSettings: CpModalSettings;
-  #cancelToken: {cancel(): void; token: unknown} | null = null;
+  #abortController: AbortController | null = null;
   #ignoreFailedRequest = false;
   #fieldsWithErrors: unknown[] = [];
 
@@ -180,12 +179,12 @@ export class CpModal extends Modal {
       this.trigger('beforeLoad');
       this.showLoadSpinner();
 
-      if (this.#cancelToken) {
+      if (this.#abortController) {
         this.#ignoreFailedRequest = true;
-        this.#cancelToken.cancel();
+        this.#abortController.abort();
       }
 
-      this.#cancelToken = axios.CancelToken.source();
+      this.#abortController = new AbortController();
 
       Craft.sendActionRequest(
         'GET',
@@ -197,7 +196,7 @@ export class CpModal extends Modal {
               this.getParams(),
               this.#cpSettings.params
             ),
-            cancelToken: this.#cancelToken?.token,
+            signal: this.#abortController.signal,
             headers: {
               'X-Craft-Container-Id': this.#$container.attr('id'),
             },
@@ -235,7 +234,7 @@ export class CpModal extends Modal {
         .finally(() => {
           this.hideLoadSpinner();
           this.show();
-          this.#cancelToken = null;
+          this.#abortController = null;
         });
     });
   }
@@ -353,7 +352,7 @@ export class CpModal extends Modal {
 
   handleSubmitError(error: CpModalRequestError): void {
     if (
-      !error.isAxiosError ||
+      !isHttpError(error) ||
       !error.response ||
       ![400, 422].includes(error.response.status ?? 0)
     ) {
@@ -435,9 +434,9 @@ export class CpModal extends Modal {
   }
 
   close(): void {
-    if (this.#cancelToken) {
+    if (this.#abortController) {
       this.#ignoreFailedRequest = true;
-      this.#cancelToken.cancel();
+      this.#abortController.abort();
     }
 
     this.hide();

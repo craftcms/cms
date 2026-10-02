@@ -78,7 +78,7 @@ readonly class ElementActivityController
                 'title' => $entry->getUiLabel(),
             ]))
             ->crumbs([
-                ...$this->crumbs($entry, current: false),
+                ...$this->crumbs($entry),
                 [
                     'label' => t('Activity'),
                     'current' => true,

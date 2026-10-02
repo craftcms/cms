@@ -102,7 +102,6 @@
     "@uppy/tus": "^6.0.0",
     "@vueuse/core": "^14.3.0",
     "@vueuse/shared": "^14.3.0",
-    "axios": "catalog:",
     "d3": "catalog:",
     "fabric": "^7.4.0",
     "laravel-vite-plugin": "^3.1.0",

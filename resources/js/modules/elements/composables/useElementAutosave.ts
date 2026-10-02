@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/ui';
+import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
@@ -7,7 +7,6 @@ import type {
   FormPayload,
   FormValues,
 } from '@/modules/forms/types';
-import axios from 'axios';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -35,6 +34,8 @@ export interface ElementAutosaveOptions {
    * the server needs to resolve it through the owner it's being edited in.
    */
   params?: () => FormValues;
+  /** Adapts the editor's form state into the save request. */
+  transform?: (data: object) => FormValues;
   /** How long to wait after the last edit before saving, per change kind. */
   debounceMs?: Partial<Record<FormChangeKind, number>>;
   /**
@@ -121,7 +122,7 @@ export function useElementAutosave<T extends object>(
       siteId: options.siteId,
       ...options.params?.(),
     };
-    Object.assign(payload, form.data());
+    Object.assign(payload, options.transform?.(form.data()) ?? form.data());
 
     // No draft yet means this request creates one; an existing provisional
     // draft is targeted by id and stays provisional.
@@ -174,7 +175,7 @@ export function useElementAutosave<T extends object>(
       }
 
       status.value = 'failed';
-      if (axios.isAxiosError<{message?: string}>(e)) {
+      if (isHttpError<{message?: string}>(e)) {
         error.value = e.response?.data?.message ?? null;
         httpStatus.value = e.response?.status ?? null;
       }

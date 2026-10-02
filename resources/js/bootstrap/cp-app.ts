@@ -1,8 +1,7 @@
 import {ConfigService} from '@craftcms/ui';
 import type {App} from 'vue';
-import axios from 'axios';
 import {QueueService} from '@/modules/queue/queue';
-import {Axios, Config, Queue} from '@/common/types/keys';
+import {Config, Queue} from '@/common/types/keys';
 import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
 import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
 import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
@@ -35,7 +34,6 @@ export function installCpApp(app: App): void {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
 
   app.provide(Queue, queue);
-  app.provide(Axios, axios);
   app.provide(Config, config);
 
   app.component('QueueManager', QueueManager);

@@ -22,6 +22,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Users;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification as LaravelNotification;
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->users = app(Users::class);
@@ -614,4 +617,45 @@ test('canImpersonate', function () {
     expect($this->users->canImpersonate($user1, $user2))->toBeFalse();
     UserPermissions::saveUserPermissions($user1->id, ['viewUsers', 'editUsers', 'impersonateUsers']);
     expect($this->users->canImpersonate($user1, $user2))->toBeTrue();
+});
+
+test('destroyOtherSessions destroys all of the user’s sessions when they aren’t signed in', function () {
+    $user = UserModel::factory()->active()->createElement();
+    $otherUser = UserModel::factory()->active()->createElement();
+    $rememberToken = UserModel::findOrFail($user->id)->getRememberToken();
+
+    foreach ([[$user, 'session-a'], [$user, 'session-b'], [$otherUser, 'session-other']] as [$sessionUser, $id]) {
+        DB::table(Table::SESSIONS)->insert([
+            'id' => $id,
+            'user_id' => $sessionUser->id,
+            'payload' => '',
+            'last_activity' => time(),
+        ]);
+    }
+
+    $this->users->destroyOtherSessions($user);
+
+    expect(DB::table(Table::SESSIONS)->where('user_id', $user->id)->count())->toBe(0)
+        ->and(DB::table(Table::SESSIONS)->where('user_id', $otherUser->id)->count())->toBe(1)
+        ->and(UserModel::findOrFail($user->id)->getRememberToken())->not->toBe($rememberToken);
+});
+
+test('destroyOtherSessions preserves the current session', function () {
+    $user = UserModel::factory()->active()->createElement();
+    actingAs($user);
+    request()->setLaravelSession(app(Session::class));
+    $currentSessionId = request()->session()->getId();
+
+    foreach ([$currentSessionId, 'session-stale'] as $id) {
+        DB::table(Table::SESSIONS)->insert([
+            'id' => $id,
+            'user_id' => $user->id,
+            'payload' => '',
+            'last_activity' => time(),
+        ]);
+    }
+
+    $this->users->destroyOtherSessions($user);
+
+    expect(DB::table(Table::SESSIONS)->where('user_id', $user->id)->pluck('id')->all())->toBe([$currentSessionId]);
 });

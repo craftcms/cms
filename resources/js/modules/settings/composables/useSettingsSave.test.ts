@@ -13,7 +13,7 @@ vi.mock('@/common/slideouts/panel-stack', () => ({
   topStackedPanel: () => layers.top,
 }));
 
-const axiosRequest = vi.fn();
+const httpRequest = vi.fn();
 const routerReload = vi.fn();
 let slideout: SettingsSaveDependencies['slideout'] = null;
 const elevated = {require: vi.fn()};
@@ -26,7 +26,7 @@ interface TestFormData {
 
 function dependencies(): SettingsSaveDependencies {
   return {
-    request: axiosRequest,
+    request: httpRequest,
     reload: routerReload,
     elevatedSession: elevated,
     slideout,
@@ -78,7 +78,7 @@ function run<T>(fn: () => T): T {
 
 beforeEach(() => {
   layers.top = null;
-  axiosRequest.mockReset().mockResolvedValue({data: {message: 'Saved.'}});
+  httpRequest.mockReset().mockResolvedValue({data: {message: 'Saved.'}});
   routerReload.mockReset();
   redirectUrl.value = undefined;
   elevated.require.mockReset().mockResolvedValue(true);
@@ -106,7 +106,7 @@ describe('save shortcut with an open editor', () => {
       );
 
       expect(form.submit).toHaveBeenCalledTimes(panelOpen ? 0 : 1);
-      expect(axiosRequest).not.toHaveBeenCalled();
+      expect(httpRequest).not.toHaveBeenCalled();
     }
   );
 
@@ -131,7 +131,7 @@ describe('save shortcut with an open editor', () => {
       window.dispatchEvent(
         new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
       );
-      await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalledOnce());
+      await vi.waitFor(() => expect(httpRequest).toHaveBeenCalledOnce());
       expect(ownerForm.submit).not.toHaveBeenCalled();
     } finally {
       ownerScope.stop();
@@ -146,12 +146,12 @@ describe('useSettingsSave in a slideout', () => {
     const {save} = run(() => useTestSettingsSave(form));
 
     save();
-    await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalled());
+    await vi.waitFor(() => expect(httpRequest).toHaveBeenCalled());
 
     // An Inertia visit would replace the page behind the panel.
     expect(form.submit).not.toHaveBeenCalled();
 
-    const request = axiosRequest.mock.calls[0];
+    const request = httpRequest.mock.calls[0];
     if (!request) throw new Error('Expected the slideout request.');
     const req = request[0];
     expect(req.url).toBe('/admin/entry-types/save');
@@ -163,9 +163,9 @@ describe('useSettingsSave in a slideout', () => {
     const {save} = run(() => useTestSettingsSave(makeForm()));
 
     save();
-    await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalled());
+    await vi.waitFor(() => expect(httpRequest).toHaveBeenCalled());
 
-    const request = axiosRequest.mock.calls[0];
+    const request = httpRequest.mock.calls[0];
     if (!request) throw new Error('Expected the slideout request.');
     expect(request[0].data).not.toHaveProperty('redirect');
   });
@@ -179,9 +179,9 @@ describe('useSettingsSave in a slideout', () => {
     );
 
     save();
-    await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalled());
+    await vi.waitFor(() => expect(httpRequest).toHaveBeenCalled());
 
-    expect(axiosRequest.mock.calls[0]![0].data).toMatchObject({
+    expect(httpRequest.mock.calls[0]![0].data).toMatchObject({
       name: 'Widgets',
       fieldLayout: '[]',
     });
@@ -244,8 +244,8 @@ describe('useSettingsSave in a slideout', () => {
     // `asJsonFailure()` answers 400 — not Laravel's usual 422 — and sends
     // `{field: [message, …]}`, which has to flatten to one message per field
     // to match the full-page path.
-    axiosRequest.mockRejectedValue({
-      isAxiosError: true,
+    httpRequest.mockRejectedValue({
+      isHttpError: true,
       response: {status: 400, data: {errors: {name: ['Name is required.']}}},
     });
 
@@ -264,8 +264,8 @@ describe('useSettingsSave in a slideout', () => {
   });
 
   it('retries once behind an elevated session on 423', async () => {
-    axiosRequest
-      .mockRejectedValueOnce({isAxiosError: true, response: {status: 423}})
+    httpRequest
+      .mockRejectedValueOnce({isHttpError: true, response: {status: 423}})
       .mockResolvedValueOnce({data: {message: 'Saved.'}});
 
     const {save} = run(() =>
@@ -273,7 +273,7 @@ describe('useSettingsSave in a slideout', () => {
     );
 
     save();
-    await vi.waitFor(() => expect(axiosRequest).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(httpRequest).toHaveBeenCalledTimes(2));
 
     expect(elevated.require).toHaveBeenCalled();
   });
@@ -291,7 +291,7 @@ describe('useSettingsSave on a full page', () => {
     save();
 
     expect(form.submit).toHaveBeenCalled();
-    expect(axiosRequest).not.toHaveBeenCalled();
+    expect(httpRequest).not.toHaveBeenCalled();
   });
 
   it('preserves validation errors when redirecting and page state when continuing', () => {

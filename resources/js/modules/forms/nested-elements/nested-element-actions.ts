@@ -17,17 +17,20 @@ import type {Selectable} from '@/common/composables/useSelectable';
 import {copyElements} from '@/modules/elements/index/copy-elements';
 import {runElementAction} from '@/modules/elements/index/element-actions';
 import {
+  nestedIndexParams,
   nestedOwnerParams,
-  type NestedEntry,
-  type NestedEntriesManager,
-} from './nested-entries';
-import type {NestedEntryOperations} from './useNestedEntryOperations';
+  type NestedContentIndexData,
+  type NestedElement,
+  type NestedElementsManager,
+} from './nested-elements';
+import type {NestedElementOperations} from './useNestedElementOperations';
 
-export function useNestedEntryActions(options: {
-  entries: MaybeRefOrGetter<NestedEntry[]>;
-  manager: MaybeRefOrGetter<NestedEntriesManager | null>;
+export function useNestedElementActions(options: {
+  elements: MaybeRefOrGetter<NestedElement[]>;
+  manager: MaybeRefOrGetter<NestedElementsManager | null>;
+  initial?: MaybeRefOrGetter<NestedContentIndexData | undefined>;
   selection: Selectable<number>;
-  operations: NestedEntryOperations;
+  operations: NestedElementOperations;
   busy: MaybeRefOrGetter<boolean>;
 }) {
   async function perform(
@@ -50,7 +53,9 @@ export function useNestedEntryActions(options: {
 
     let performed = false;
     await options.operations.mutate(async (ownerId) => {
-      performed = await run(nestedOwnerParams(manager, ownerId));
+      performed = await run(
+        nestedIndexParams(manager, ownerId, toValue(options.initial))
+      );
       return performed ? undefined : false;
     });
 
@@ -68,15 +73,15 @@ export function useNestedEntryActions(options: {
     trigger: HTMLElement
   ): Promise<void> {
     const manager = toValue(options.manager);
-    const entries = toValue(options.entries).filter((entry) =>
-      ids.includes(entry.id)
+    const elements = toValue(options.elements).filter((element) =>
+      ids.includes(element.id)
     );
     if (
       !manager ||
       !item.action ||
       !ids.length ||
-      entries.length !== ids.length ||
-      !selectionAllows(item, entries) ||
+      elements.length !== ids.length ||
+      !selectionAllows(item, elements) ||
       (item.key === DUPLICATE_ACTION && !options.operations.canAdd(ids.length))
     ) {
       return;
@@ -88,7 +93,7 @@ export function useNestedEntryActions(options: {
         | undefined;
       copyElements(manager.elementType, ids, [
         ...(serverElements ?? []),
-        ...entries,
+        ...elements,
       ]);
       return;
     }
@@ -113,9 +118,9 @@ export function useNestedEntryActions(options: {
   return {perform, performRow};
 }
 
-export interface NestedEntryActionsOptions {
-  entry: NestedEntry;
-  selectedEntries: NestedEntry[];
+export interface NestedElementActionsOptions {
+  element: NestedElement;
+  selectedElements: NestedElement[];
   ids: number[];
   index: number;
   count: number;
@@ -127,22 +132,22 @@ export interface NestedEntryActionsOptions {
   pasteLabel?: string;
 }
 
-export interface NestedEntryActionEvent {
+export interface NestedElementActionEvent {
   action: string;
   elementId: number;
   item?: BulkActionItem;
   trigger: HTMLElement;
 }
 
-export interface NestedEntryActionHandlers {
+export interface NestedElementActionHandlers {
   perform(item: BulkActionItem, ids: number[], trigger: HTMLElement): void;
   paste(beforeId: number): void;
   move(from: number, to: number): void;
 }
 
-export function nestedEntryActions({
-  entry,
-  selectedEntries,
+export function nestedElementActions({
+  element,
+  selectedElements,
   ids,
   index,
   count,
@@ -152,9 +157,9 @@ export function nestedEntryActions({
   canReorder,
   canAdd,
   pasteLabel,
-}: NestedEntryActionsOptions): ActionItem[] {
+}: NestedElementActionsOptions): ActionItem[] {
   return withoutStraySeparators(
-    (entry.actionMenuItems ?? []).flatMap((item): ActionItem[] => {
+    (element.actionMenuItems ?? []).flatMap((item): ActionItem[] => {
       if (
         !('action' in item) ||
         item.action?.type !== 'event' ||
@@ -199,7 +204,7 @@ export function nestedEntryActions({
             (!isCopy && busy) ||
             (action === 'element-action' &&
               (!elementAction ||
-                !selectionAllows(elementAction, selectedEntries) ||
+                !selectionAllows(elementAction, selectedElements) ||
                 (elementAction.key === DUPLICATE_ACTION &&
                   !canAdd(ids.length)))),
         },
@@ -208,23 +213,23 @@ export function nestedEntryActions({
   );
 }
 
-export function nestedEntryActionEvent(
+export function nestedElementActionEvent(
   event: Event,
   container: HTMLElement | null | undefined
-): NestedEntryActionEvent | null {
-  const detail = (event as CustomEvent<NestedEntryActionEvent>).detail;
+): NestedElementActionEvent | null {
+  const detail = (event as CustomEvent<NestedElementActionEvent>).detail;
 
   return detail?.trigger && container?.contains(detail.trigger) ? detail : null;
 }
 
-export function useNestedEntryActionEvents(
+export function useNestedElementActionEvents(
   container: Readonly<Ref<HTMLElement | null | undefined>>,
   options: {
-    entries: MaybeRefOrGetter<NestedEntry[]>;
-    actionIds: (entry: NestedEntry) => number[];
+    elements: MaybeRefOrGetter<NestedElement[]>;
+    actionIds: (element: NestedElement) => number[];
     editable: MaybeRefOrGetter<boolean>;
     busy: MaybeRefOrGetter<boolean>;
-    handlers: NestedEntryActionHandlers;
+    handlers: NestedElementActionHandlers;
     enabled?: MaybeRefOrGetter<boolean>;
   }
 ): void {
@@ -233,7 +238,7 @@ export function useNestedEntryActionEvents(
       return;
     }
 
-    const detail = nestedEntryActionEvent(event, container.value);
+    const detail = nestedElementActionEvent(event, container.value);
     const isCopy = isCopyAction(detail?.item);
     if (
       !detail ||
@@ -243,14 +248,16 @@ export function useNestedEntryActionEvents(
       return;
     }
 
-    const entries = toValue(options.entries);
-    const index = entries.findIndex((entry) => entry.id === detail.elementId);
-    const entry = entries[index];
-    if (!entry) {
+    const elements = toValue(options.elements);
+    const index = elements.findIndex(
+      (element) => element.id === detail.elementId
+    );
+    const element = elements[index];
+    if (!element) {
       return;
     }
 
-    const ids = options.actionIds(entry);
+    const ids = options.actionIds(element);
     switch (detail.action) {
       case 'element-action':
         if (detail.item) {
@@ -258,7 +265,7 @@ export function useNestedEntryActionEvents(
         }
         break;
       case 'paste':
-        options.handlers.paste(entry.id);
+        options.handlers.paste(element.id);
         break;
       case 'move-forward':
       case 'move-backward':

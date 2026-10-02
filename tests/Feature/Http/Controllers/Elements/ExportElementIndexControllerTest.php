@@ -41,11 +41,13 @@ it('returns 400 for unsupported exporters', function () {
     ])->assertStatus(400);
 });
 
-it('exports only the selected ids when criteria include an id filter', function () {
+it('exports only the selected ids when criteria include an id filter', function (string $context) {
     $included = EntryModel::factory()->createElement(['title' => 'Included']);
     EntryModel::factory()->createElement(['title' => 'Excluded']);
 
     $response = ($this->export)([
+        'context' => $context,
+        'source' => '__IMP__',
         'type' => Raw::class,
         'format' => 'json',
         'criteria' => [
@@ -60,7 +62,10 @@ it('exports only the selected ids when criteria include an id filter', function 
 
     expect($payload)->toHaveCount(1)
         ->and($payload[0]['id'])->toBe($included->id);
-});
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('exports the full query with an explicit limit when no ids are selected', function () {
     EntryModel::factory()->createElement(['title' => 'Zulu']);

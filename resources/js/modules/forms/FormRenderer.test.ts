@@ -2479,8 +2479,8 @@ describe('FormRenderer', () => {
                   deltaGroup: ['settings', 'matrix'],
                 }),
                 node({
-                  type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
-                  component: 'craft:nested-entries',
+                  type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+                  component: 'craft:nested-elements',
                   props: {
                     viewMode: 'cards',
                     cards: [],

@@ -1,7 +1,7 @@
 import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
 import {computed, type Ref} from 'vue';
-import axios from 'axios';
+import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
@@ -53,7 +53,7 @@ interface SettingsSaveSlideout {
 }
 
 export interface SettingsSaveDependencies {
-  request: typeof axios.request;
+  request: typeof http.request;
   reload: typeof router.reload;
   elevatedSession: Pick<typeof elevatedSessionManager, 'require'>;
   slideout: SettingsSaveSlideout | null;
@@ -64,7 +64,7 @@ function defaultDependencies(): SettingsSaveDependencies {
   const page = usePage<{redirectUrl?: string}>();
 
   return {
-    request: (...args) => axios.request(...args),
+    request: (...args) => http.request(...args),
     reload: (...args) => router.reload(...args),
     elevatedSession: elevatedSessionManager,
     slideout: useSlideout(),
@@ -203,7 +203,7 @@ export function useSettingsSave<T extends object>(
         form.processing = false;
 
         if (
-          !axios.isAxiosError<{
+          !isHttpError<{
             errors?: Record<string, string | string[]>;
           }>(error)
         ) {
