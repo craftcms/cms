@@ -15,7 +15,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -136,10 +135,6 @@ class EmbeddedNestedElementScope
         $owner = $this->resolveOwner();
         $field = $this->field($owner);
         $static = $owner->getIsRevision() || ! $this->isAuthorized('manageNestedElements', $owner);
-
-        if ($field instanceof Matrix) {
-            return $this->indexConfig = $field->embeddedIndexConfig($owner, $static);
-        }
 
         $config = $this->request->validate([
             'allowedViewModes' => ['sometimes', 'array'],

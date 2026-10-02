@@ -2,9 +2,9 @@ import {effectScope, nextTick, reactive, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {
   NestedContentIndexData,
-  NestedEntriesProps,
-} from './nested-entries';
-import {useNestedEntriesQuery} from './useNestedEntriesQuery';
+  NestedElementsProps,
+} from './nested-elements';
+import {useNestedElementsQuery} from './useNestedElementsQuery';
 
 const ui = vi.hoisted(() => ({
   post: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('@craftcms/ui', async (original) => ({
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 
-describe('useNestedEntriesQuery', () => {
+describe('useNestedElementsQuery', () => {
   let scope: ReturnType<typeof effectScope>;
 
   afterEach(() => {
@@ -125,7 +125,7 @@ describe('useNestedEntriesQuery', () => {
         canPaste: true,
         sortable: true,
         createAttributes: [{label: 'Article', attributes: {typeId: 9}}],
-        pasteableEntryTypeIds: [9],
+        pasteableData: {attribute: 'entryTypeId', values: [9]},
       },
       cards: [],
       index: {
@@ -136,13 +136,13 @@ describe('useNestedEntriesQuery', () => {
         },
         initial,
       },
-    }) as unknown as NestedEntriesProps;
+    }) as unknown as NestedElementsProps;
     const busy = shallowRef(false);
     const error = shallowRef('');
     const onLoaded = vi.fn(async () => {});
     scope = effectScope();
     const state = scope.run(() =>
-      useNestedEntriesQuery({
+      useNestedElementsQuery({
         props: () => props,
         busy,
         error,
@@ -171,7 +171,7 @@ describe('useNestedEntriesQuery', () => {
     await nextTick();
 
     expect(ui.post).not.toHaveBeenCalled();
-    expect(state.entries.value.map(({id}) => id)).toEqual([29]);
+    expect(state.elements.value.map(({id}) => id)).toEqual([29]);
     expect(ui.appendHeadHtml).toHaveBeenCalledOnce();
     expect(ui.appendHeadHtml).toHaveBeenCalledWith('<style>.nested{}</style>');
     expect(ui.appendBodyHtml).toHaveBeenCalledOnce();
@@ -308,11 +308,11 @@ describe('useNestedEntriesQuery', () => {
     const state = setup();
 
     state.mode.value = 'cards';
-    expect(state.entries.value).toEqual([]);
+    expect(state.elements.value).toEqual([]);
 
     pending.resolve({data: payload({viewState: {mode: 'cards'}})});
     await vi.waitFor(() => expect(state.loading.value).toBe(false));
-    expect(state.entries.value.map(({id}) => id)).toEqual([29]);
+    expect(state.elements.value.map(({id}) => id)).toEqual([29]);
   });
 
   it('surfaces request failures and applies response assets before notifying the owner', async () => {

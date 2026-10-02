@@ -76,7 +76,7 @@ it('renders the entry edit screen as an Inertia page', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('elementId', $this->entry->id)
             ->where('canonicalId', $this->entry->id)
             ->where('elementType', Entry::class)
@@ -216,7 +216,7 @@ it('renders a named draft in the Inertia editor', function () {
     )))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('draftId', $draft->draftId)
             ->where('isProvisionalDraft', false)
             ->where('readOnly', false)
@@ -240,7 +240,7 @@ it('renders a revision read-only in the Inertia editor', function () {
     )))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('readOnly', true)
             ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
                 && str_contains($url, 'elements/activity'))
@@ -329,7 +329,7 @@ it('renders a provisional draft in the Inertia editor', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('isProvisionalDraft', true)
             ->where('draftId', $draft->draftId)
             ->where('canonicalId', $this->entry->id)
@@ -369,7 +369,7 @@ it('renders an unpublished draft as a create screen', function () {
     get($draft->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
             ->where('contextMenu', null)
             ->etc()
@@ -396,7 +396,7 @@ it('creates a workflow entry as a draft before offering review', function () {
     get(Url::urlWithParams($draft->getCpEditUrl(), ['fresh' => 1]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
             ->where('editorActions.primary.tabId', null)
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
@@ -440,7 +440,7 @@ it('offers canonical creation for a disabled workflow entry', function () {
     get(Url::urlWithParams($draft->getCpEditUrl(), ['fresh' => 1]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
             ->where('editorActions.primary.actionUrl', null)
             ->where('editorActions.primary.tabId', null)
@@ -475,7 +475,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
     get($draft->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('content/Edit')
+            ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Request review')
             ->where('editorActions.primary.tabId', 'workflow')
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))

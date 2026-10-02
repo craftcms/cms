@@ -3,26 +3,29 @@
   import {computed, inject, ref, shallowRef, watch} from 'vue';
   import {useSelectable} from '@/common/composables/useSelectable';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
-  import NestedEntriesCards from './NestedEntriesCards.vue';
-  import {useNestedEntriesControl} from './nested-entries-context';
-  import {markInvalidEntries, type NestedEntriesProps} from './nested-entries';
+  import NestedElementsCards from './NestedElementsCards.vue';
+  import {useNestedElementsControl} from './nested-elements-context';
   import {
-    useNestedEntryOperations,
-    type NestedEntryOperations,
-  } from './useNestedEntryOperations';
+    markInvalidElements,
+    type NestedElementsProps,
+  } from './nested-elements';
+  import {
+    useNestedElementOperations,
+    type NestedElementOperations,
+  } from './useNestedElementOperations';
 
   const props = defineProps<{
-    control: NestedEntriesProps;
+    control: NestedElementsProps;
     editable: boolean;
   }>();
 
   const owner = inject(NestedOwnerEditorKey, null);
-  const controlContext = useNestedEntriesControl();
+  const controlContext = useNestedElementsControl();
   const container = ref<HTMLElement>();
-  const invalidEntryIds = ref<number[]>([]);
+  const invalidElementIds = ref<number[]>([]);
   const manager = computed(() => props.control.manager);
   const cards = computed(() =>
-    markInvalidEntries(props.control.cards, invalidEntryIds.value)
+    markInvalidElements(props.control.cards, invalidElementIds.value)
   );
   const editable = computed(() => props.editable);
   const offset = shallowRef(0);
@@ -30,14 +33,14 @@
   const canReorder = computed(
     () => props.editable && Boolean(manager.value?.sortable)
   );
-  let operations!: NestedEntryOperations;
+  let operations!: NestedElementOperations;
   const selection = useSelectable<number>({
-    ids: () => cards.value.map((entry) => entry.id),
+    ids: () => cards.value.map((element) => element.id),
     enabled: editable,
     readOnly: () => !props.editable || operations.busy.value,
   });
-  operations = useNestedEntryOperations({
-    entries: cards,
+  operations = useNestedElementOperations({
+    elements: cards,
     offset,
     canReorder,
     selection,
@@ -57,7 +60,7 @@
       event.target instanceof Element &&
       event.target.contains(container.value ?? null)
     ) {
-      invalidEntryIds.value = (
+      invalidElementIds.value = (
         event as CustomEvent<{ids: number[]}>
       ).detail.ids;
     }
@@ -69,7 +72,7 @@
     <div v-if="operations.error.value" role="alert">
       {{ operations.error.value }}
     </div>
-    <NestedEntriesCards
+    <NestedElementsCards
       :cards="cards"
       :manager="manager"
       :selection="selection"

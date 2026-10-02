@@ -387,7 +387,10 @@ it('includes the first server-rendered page in editable Matrix index controls', 
         ->and($props['index']['initial']['sort'])->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
         ->and($props['index']['initial']['reorderable'])->toBeTrue()
         ->and(json_decode(json_encode($props), true))->toBe($props)
-        ->and($props['manager']['pasteableEntryTypeIds'])->toBe([$fixture['nestedType']->id]);
+        ->and($props['manager']['pasteableData'])->toBe([
+            'attribute' => 'entryTypeId',
+            'values' => [$fixture['nestedType']->id],
+        ]);
 });
 
 it('keeps page assets outside an embedded Matrix initial payload', function () {
@@ -403,7 +406,7 @@ it('keeps page assets outside an embedded Matrix initial payload', function () {
         ->and(HtmlStack::headHtml())->toContain('/page-before-matrix.css');
 });
 
-it('applies server-owned Matrix index configuration', function () {
+it('uses posted Matrix index presentation settings while retaining the owner scope', function () {
     $fixture = embeddedMatrixIndexFixture();
     $props = $fixture['field']->formControl(new FieldContext(
         path: 'matrixField',
@@ -417,30 +420,30 @@ it('applies server-owned Matrix index configuration', function () {
         'source' => '__IMP__',
         'fieldId' => 999999,
         'viewMode' => 'table',
-        'allowedViewModes' => ['thumbs'],
+        'allowedViewModes' => ['table'],
         'defaultTableColumns' => ['dateUpdated'],
-        'fieldLayouts' => [],
-        'per_page' => 100,
+        'fieldLayouts' => $props['index']['initial']['fieldLayouts'],
+        'per_page' => 2,
         'showHeaderColumn' => false,
-        'sortable' => false,
-        'static' => true,
+        'sortable' => true,
+        'static' => false,
         'prevalidate' => true,
         'sort' => [['field' => 'sortOrder', 'direction' => 'desc']],
     ])->assertOk();
     $actions = collect($response->json('actions'))->keyBy('key');
 
-    expect($response->json('pagination.per_page'))->toBe(1)
-        ->and($response->json('data'))->toHaveCount(1)
+    expect($response->json('pagination.per_page'))->toBe(2)
+        ->and($response->json('data'))->toHaveCount(2)
         ->and($response->json('data.0.title'))->toContain('First')
         ->and($response->json('data.0.cardAttributes.class'))->toContain('removable')
         ->and($response->json('data.0.editUrl'))->toContain("fieldId={$fixture['field']->id}", 'prevalidate=1')
         ->and($response->json('sort'))->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
         ->and($response->json('reorderable'))->toBeTrue()
         ->and($response->json('viewState.static'))->toBeFalse()
-        ->and($response->json('viewState.showHeaderColumn'))->toBeTrue()
-        ->and($response->json('defaultTableColumns'))->toBe(['dateCreated'])
+        ->and($response->json('viewState.showHeaderColumn'))->toBeFalse()
+        ->and($response->json('defaultTableColumns'))->toBe(['dateUpdated'])
         ->and(array_column($response->json('tableColumns'), 'value'))->toContain("field:{$fixture['columnField']->uid}")
-        ->and(array_column($response->json('viewModes'), 'mode'))->toEqualCanonicalizing(['cards', 'table'])
+        ->and(array_column($response->json('viewModes'), 'mode'))->toBe(['table'])
         ->and($actions->keys()->all())->toContain(Copy::class, Duplicate::class, Delete::class)
         ->and($actions[Copy::class]['selectionAttribute'])->toBe('copyable')
         ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
@@ -579,7 +582,7 @@ it('scopes a read-only embedded Matrix index without granting mutation access', 
     ])->assertOk()
         ->assertJsonPath('pagination.total', 1)
         ->assertJsonPath('pagination.unfilteredTotal', 1)
-        ->assertJsonPath('pagination.per_page', 1)
+        ->assertJsonPath('pagination.per_page', 100)
         ->assertJsonPath('reorderable', false)
         ->assertJsonPath('viewState.static', true);
     $tableResponse = postJson(action([ElementIndexController::class, 'getElements']), [

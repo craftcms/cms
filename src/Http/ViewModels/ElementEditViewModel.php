@@ -58,7 +58,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class ElementEditViewModel extends ViewModel
+class ElementEditViewModel extends ViewModel
 {
     /**
      * How many revisions {@see self::contextMenu()} lists — a most-recent
@@ -98,7 +98,22 @@ abstract class ElementEditViewModel extends ViewModel
      * nested input names, so the existing save controllers read it without a
      * translation layer.
      */
-    abstract protected function elementSaveUrl(): string;
+    protected function elementSaveUrl(): string
+    {
+        return Url::actionUrl('elements/save');
+    }
+
+    /** @return array<string, int|string|null> */
+    public function saveParams(): array
+    {
+        return [
+            'elementType' => $this->element::class,
+            'elementId' => $this->element->getIsDraft() || $this->element->getIsRevision()
+                ? $this->element->getCanonicalId()
+                : $this->element->id,
+            'siteId' => $this->element->siteId,
+        ];
+    }
 
     /**
      * Adopts an already-compiled field layout instead of compiling one.

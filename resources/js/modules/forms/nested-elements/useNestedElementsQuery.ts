@@ -21,13 +21,13 @@ import type {
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ElementIndexExportFormat} from '@/modules/elements/index/types/exporters';
 import {
-  markInvalidEntries,
-  nestedEntriesErrorMessage,
+  markInvalidElements,
+  nestedElementsErrorMessage,
   nestedIndexParams,
   type NestedContentIndexData,
-  type NestedEntriesProps,
-  type NestedIndexEntry,
-} from './nested-entries';
+  type NestedElementsProps,
+  type NestedIndexElement,
+} from './nested-elements';
 
 type NestedColumns =
   UseDetachedElementIndexOptions<NestedContentIndexData>['columns'];
@@ -59,8 +59,8 @@ async function appendPayloadAssets(
   await appendBodyHtml(payload.bodyHtml ?? '');
 }
 
-export function useNestedEntriesQuery(options: {
-  props: () => NestedEntriesProps;
+export function useNestedElementsQuery(options: {
+  props: () => NestedElementsProps;
   busy: Ref<boolean>;
   error: Ref<string>;
   onLoaded: () => Promise<void>;
@@ -111,9 +111,9 @@ export function useNestedEntriesQuery(options: {
   }
 
   void appendPayloadAssets(initial).catch((cause) => {
-    options.error.value = nestedEntriesErrorMessage(
+    options.error.value = nestedElementsErrorMessage(
       cause,
-      t('Could not initialize nested entries.')
+      t('Could not initialize nested elements.')
     );
   });
 
@@ -139,7 +139,7 @@ export function useNestedEntriesQuery(options: {
     inlineEditing: options.saveInline
       ? {load: () => load(true), save: options.saveInline}
       : undefined,
-    exportElements: exportEntries,
+    exportElements: exportElements,
     rowReorder: options.rowReorder,
     pinnedColumn:
       props.index?.indexSettings?.showHeaderColumn === false
@@ -187,9 +187,9 @@ export function useNestedEntriesQuery(options: {
       await options.onLoaded();
     },
     onError: (cause) => {
-      options.error.value = nestedEntriesErrorMessage(
+      options.error.value = nestedElementsErrorMessage(
         cause,
-        t('Could not load nested entries.')
+        t('Could not load nested elements.')
       );
     },
   });
@@ -197,7 +197,9 @@ export function useNestedEntriesQuery(options: {
   index.restore();
 
   const {elementIndex, table, selection} = index.view;
-  const entries = computed(() => index.view.data.value as NestedIndexEntry[]);
+  const elements = computed(
+    () => index.view.data.value as NestedIndexElement[]
+  );
   const page = computed({
     get: () => table.getState().pagination.pageIndex + 1,
     set: (value: number) => table.setPageIndex(value - 1),
@@ -219,7 +221,7 @@ export function useNestedEntriesQuery(options: {
     }
   }
 
-  async function exportEntries(
+  async function exportElements(
     format: ElementIndexExportFormat = 'csv',
     type?: string,
     selectedIds: ReadonlyArray<string | number> = [],
@@ -263,9 +265,9 @@ export function useNestedEntriesQuery(options: {
         },
       });
     } catch (cause) {
-      options.error.value = nestedEntriesErrorMessage(
+      options.error.value = nestedElementsErrorMessage(
         cause,
-        t('Could not export nested entries.')
+        t('Could not export nested elements.')
       );
     } finally {
       options.busy.value = false;
@@ -285,11 +287,11 @@ export function useNestedEntriesQuery(options: {
     await index.load();
   }
 
-  function setInvalidEntries(ids: number[]): void {
+  function setInvalidElements(ids: number[]): void {
     prevalidate.value = true;
     index.payload.value = {
       ...index.payload.value,
-      data: markInvalidEntries(index.payload.value.data, ids),
+      data: markInvalidElements(index.payload.value.data, ids),
     };
   }
 
@@ -307,7 +309,7 @@ export function useNestedEntriesQuery(options: {
     model: index,
     elementIndex,
     payload: index.payload,
-    entries,
+    elements,
     table,
     search: index.view.search,
     status: index.view.status,
@@ -324,6 +326,6 @@ export function useNestedEntriesQuery(options: {
     load,
     refresh: load,
     resetSearch,
-    setInvalidEntries,
+    setInvalidElements,
   };
 }

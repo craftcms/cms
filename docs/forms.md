@@ -126,6 +126,43 @@ Return zero or one root Node. It may contain children or a composite Control. Th
 mode. Listen for `FieldLayoutFormResolving` to add, remove, or reorder typed Nodes after compilation; do not mutate
 rendered HTML or persisted layout data.
 
+### Nested elements
+
+Elements nested in an owner — Matrix and Addresses fields, a user's addresses, or a plugin's own nested element type —
+are managed by a `NestedElementManager`, which builds the shared `NestedElements` Control (`craft:nested-elements`). It
+renders the elements as cards or an embedded element index outside the owner's form, and handles creating, editing in
+a slideout, reordering, pasting, duplicating, and deleting them, including preparing the owner's draft first:
+
+```php
+use CraftCms\Cms\Form\Contracts\Control;
+
+public function formControl(FieldContext $context): Control
+{
+    return $this->manager()->formControl($context->path, $context->element, 'cards', [
+        'canCreate' => true,
+        'sortable' => true,
+        'maxElements' => $this->maxItems,
+    ]);
+}
+```
+
+The view mode is `cards`, `cards-grid`, or `index`. The frontend retains the initial index's display settings and
+sends them with later requests, including paging and inline saves. Fields and owner elements do not need a
+configuration provider. The frontend uses `maxElements` to disable operations when the whole selection will not
+fit. The backend resolves the owner and nested element scope on each request and checks the element type's or
+field's policies. Authoritative limits belong in those policies and field validation. A posted display setting
+cannot bypass them. As in 5.x, duplication can partially succeed if the selection no longer fits when it runs.
+
+Screens that manage an owner's nested elements outside an element editor render `NestedElements.vue` directly with the
+Control's props, passing `savedNestedOwner()` as its `owner` so changes apply to the saved owner and the screen
+re-renders afterwards (see `pages/users/Addresses.vue`).
+
+Nested element types use the shared Inertia element editor automatically. They supply their field layout and
+`sidebarForm()`, and can extend `ElementEditViewModel` through `ElementInterface::editViewModelClass()` when they
+need additional payload or a different save action. `ElementEditorPayloadResolving` lets listeners modify the
+prepared payload for edit screens and autosave responses. With the Yii adapter installed, existing editor HTML events
+and `prepareEditScreen()` customizations are rendered around the native forms.
+
 ### FieldLayout component settings
 
 Field layout components — tabs and layout elements — describe the form shown in the designer's settings slideout by

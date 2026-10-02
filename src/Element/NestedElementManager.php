@@ -28,8 +28,11 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Form\Controls\NestedElements;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Drafts as DraftsFacade;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -390,11 +393,8 @@ class NestedElementManager extends Component
         ?int $fieldId = null,
         ?int $ownerId = null,
         bool $prevalidate = false,
-    ): ?string {
-        if ($element->getCpEditUrl() === null) {
-            return null;
-        }
-
+    ): string {
+        // Nested elements are edited in an `elements/edit` slideout, whether or not they also have an edit page.
         return Url::cpUrl(Cms::config()->actionTrigger.'/elements/edit', array_filter([
             'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
             'siteId' => $element->siteId,
@@ -630,6 +630,62 @@ class NestedElementManager extends Component
     public function getIndexConfig(?ElementInterface $owner, array $config = []): array
     {
         return $this->normalizeViewConfig($this->normalizeIndexConfig($owner, $config));
+    }
+
+    /**
+     * Builds the Form control that manages these nested elements outside the owner's form,
+     * as cards or an embedded element index.
+     *
+     * This is what fields and owner screens hand the Vue editor, so every nested element type
+     * (entries, addresses, or a plugin's own) gets the same create, edit, reorder, paste, and
+     * delete behavior.
+     *
+     * @param  string|list<string>  $path  The control path within the owner's form
+     * @param  'cards'|'cards-grid'|'index'  $viewMode
+     * @param  array<string, mixed>  $config  The cards or index view config
+     */
+    public function formControl(string|array $path, ?ElementInterface $owner, string $viewMode, array $config = []): NestedElements
+    {
+        // The Vue cards build their action menus from structured card data.
+        $config += ['nestedActionEvents' => true];
+
+        $control = NestedElements::make($path)
+            ->viewMode($viewMode)
+            ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => $this->elementType::pluralDisplayName(),
+                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
+            ]));
+
+        if ($viewMode === self::VIEW_MODE_INDEX) {
+            $config = $this->getIndexConfig($owner, $config);
+            $data = $this->getIndexData($owner, $config);
+
+            if ($data === null) {
+                return $control;
+            }
+
+            if ($config['static']) {
+                $control->indexHtml($this->getIndexHtml($owner, $config));
+            }
+
+            return $control
+                ->manager(Arr::except($data, ['indexSettings']))
+                ->index([
+                    'indexSettings' => $data['indexSettings'],
+                    'initial' => EmbeddedIndexViewModel::forOwner(
+                        $this->elementType,
+                        $owner,
+                        $this->viewAttribute(),
+                        $config,
+                    )->payload(),
+                ]);
+        }
+
+        $data = $this->getCardsData($owner, $config);
+
+        return $control
+            ->manager($data === null ? null : Arr::except($data, ['elements']))
+            ->cards($data['elements'] ?? []);
     }
 
     /**
@@ -917,7 +973,6 @@ class NestedElementManager extends Component
             'canCreate' => $config['canCreate'],
             'canPaste' => $config['canPaste'],
             'pasteableData' => $config['pasteableData'],
-            'pasteableEntryTypeIds' => $this->pasteableEntryTypeIds($config['pasteableData']),
             'createAttributes' => $config['createAttributes'],
             'minElements' => $config['minElements'],
             'maxElements' => $config['maxElements'],
@@ -938,20 +993,6 @@ class NestedElementManager extends Component
         }, $settings['createAttributes']);
 
         return $settings;
-    }
-
-    /** @return list<int> */
-    private function pasteableEntryTypeIds(mixed $pasteableData): array
-    {
-        if (
-            ! is_array($pasteableData) ||
-            ($pasteableData['attribute'] ?? null) !== 'entryTypeId' ||
-            ! is_array($pasteableData['values'] ?? null)
-        ) {
-            return [];
-        }
-
-        return array_values(array_map(intval(...), $pasteableData['values']));
     }
 
     public function maintainNestedElements(ElementInterface $owner, bool $isNew): void
