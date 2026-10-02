@@ -5,14 +5,14 @@ import {
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
 import type {FormControlPayload} from '../types';
-import NestedEntriesControl from './NestedEntriesControl.vue';
-import type {NestedEntriesProps} from './nested-entries';
+import NestedElementsControl from './NestedElementsControl.vue';
+import type {NestedElementsProps} from './nested-elements';
 import {
   button,
   DUPLICATE_ACTION,
   goToPage,
   inlineTitleInput,
-  nestedEntry,
+  nestedElement,
   nestedIndexPayload,
   postsTo,
   selectRow,
@@ -35,7 +35,7 @@ vi.mock('@inertiajs/vue3', async () => ({
   usePage: () => ({props: {readOnly: false}}),
 }));
 
-describe('NestedEntriesControl', () => {
+describe('NestedElementsControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let root: HTMLElement | undefined;
   let restoreElementInternals = () => {};
@@ -159,9 +159,9 @@ describe('NestedEntriesControl', () => {
       await request.post(action.url, action.body);
     });
 
-    const control = reactive<FormControlPayload<NestedEntriesProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
-      component: 'craft:nested-entries',
+    const control = reactive<FormControlPayload<NestedElementsProps>>({
+      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+      component: 'craft:nested-elements',
       mode: 'editable',
       deltaGroup: ['fields', 'entries'],
       path: ['fields', 'entries'],
@@ -180,7 +180,7 @@ describe('NestedEntriesControl', () => {
           maxElements,
           createButtonLabel: 'New entry',
           createAttributes: [{label: 'Entry', attributes: {typeId: 9}}],
-          pasteableEntryTypeIds: [9],
+          pasteableData: {attribute: 'entryTypeId', values: [9]},
         },
         cards: [],
         index: {
@@ -201,7 +201,7 @@ describe('NestedEntriesControl', () => {
         provide(NestedOwnerEditorKey, {prepare, refresh: ownerRefresh});
 
         return () =>
-          h(NestedEntriesControl as any, {
+          h(NestedElementsControl as any, {
             control,
             editable: true,
             value: null,
@@ -416,7 +416,7 @@ function indexResponse(
   return {
     data: nestedIndexPayload(
       ids.map((id) =>
-        nestedEntry(
+        nestedElement(
           id,
           params.editable === true
             ? {inlineInputHtml: inlineTitleInput(id)}

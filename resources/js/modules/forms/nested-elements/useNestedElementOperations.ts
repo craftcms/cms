@@ -16,20 +16,20 @@ import {useCopiedElements} from '@/modules/matrix/copied-elements';
 import {craft} from '@/modules/matrix/interop';
 import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
 import {
-  canOpenEntry,
-  focusNestedEntry,
+  canOpenElement,
+  focusNestedElement,
   isPasteable,
-  nestedEntriesErrorMessage,
-  nestedEntryReorderOffset,
+  nestedElementsErrorMessage,
+  nestedElementReorderOffset,
   nestedOwnerParams,
   nestedPasteLabel,
-  type NestedEntriesManager,
-  type NestedEntry,
-} from './nested-entries';
+  type NestedElementsManager,
+  type NestedElement,
+} from './nested-elements';
 
-export interface NestedEntryQuickEdit {
+export interface NestedElementQuickEdit {
   readonly longPress: true;
-  openRow(entry: NestedEntry, opener?: HTMLElement | null): void;
+  openRow(element: NestedElement, opener?: HTMLElement | null): void;
   openById(id: string | number, opener?: HTMLElement | null): void;
   onDblClick(event: MouseEvent): void;
   onPrimaryLink(event: MouseEvent): void;
@@ -50,27 +50,27 @@ export interface LegacyElementEditorSlideout {
   };
 }
 
-export interface UseNestedEntryOperationsOptions {
-  entries: Readonly<Ref<NestedEntry[]>>;
+export interface UseNestedElementOperationsOptions {
+  elements: Readonly<Ref<NestedElement[]>>;
   offset: Readonly<Ref<number>>;
   canReorder: Readonly<Ref<boolean>>;
   selection: Selectable<number>;
   count: Readonly<Ref<number | null>>;
   refresh(reset?: boolean): Promise<void>;
-  manager: Readonly<Ref<NestedEntriesManager | null>>;
+  manager: Readonly<Ref<NestedElementsManager | null>>;
   owner: NestedOwnerEditor | null;
   editable: Readonly<Ref<boolean>>;
   controlPath: string[];
   container: Readonly<Ref<HTMLElement | null | undefined>>;
   markModified(): void;
-  refreshCreatedEntryOnOpen?: boolean;
+  refreshCreatedElementOnOpen?: boolean;
   busy?: Ref<boolean>;
   error?: Ref<string>;
   ownerId?: Ref<number | null>;
 }
 
-export function useNestedEntryOperations(
-  options: UseNestedEntryOperationsOptions
+export function useNestedElementOperations(
+  options: UseNestedElementOperationsOptions
 ) {
   const busy = options.busy ?? shallowRef(false);
   const error = options.error ?? shallowRef('');
@@ -78,8 +78,8 @@ export function useNestedEntryOperations(
   const preparedOwner = shallowRef<NestedOwnerContext | null>(null);
   const copied = useCopiedElements();
   const {announce} = useAnnouncer();
-  let focusEntryId: number | null = null;
-  let focusEntryIndex = -1;
+  let focusElementId: number | null = null;
+  let focusElementIndex = -1;
   let resetAfterChildSave = false;
 
   function canAdd(count: number): boolean {
@@ -101,7 +101,7 @@ export function useNestedEntryOperations(
 
     return isPasteable(copied.value, {
       elementType: manager.elementType,
-      entryTypeIds: manager.pasteableEntryTypeIds,
+      pasteableData: manager.pasteableData,
       room: manager.canPaste && canAdd(copied.value.length),
     });
   });
@@ -118,9 +118,9 @@ export function useNestedEntryOperations(
   }
 
   function setError(cause: unknown): void {
-    error.value = nestedEntriesErrorMessage(
+    error.value = nestedElementsErrorMessage(
       cause,
-      t('Could not update nested entries.')
+      t('Could not update nested elements.')
     );
   }
 
@@ -144,7 +144,7 @@ export function useNestedEntryOperations(
 
     if (!context) {
       throw new Error(
-        t('Could not save the owner draft. No nested entries were changed.')
+        t('Could not save the owner draft. No nested elements were changed.')
       );
     }
 
@@ -155,7 +155,7 @@ export function useNestedEntryOperations(
       !context.ownerIsInDerivativeTree
     ) {
       throw new Error(
-        t('Could not prepare the owner draft. No nested entries were changed.')
+        t('Could not prepare the owner draft. No nested elements were changed.')
       );
     }
 
@@ -166,7 +166,7 @@ export function useNestedEntryOperations(
   }
 
   function prepareEdit(
-    entry: NestedEntry
+    element: NestedElement
   ): (() => Promise<number | undefined>) | undefined {
     if (!options.editable.value) {
       return undefined;
@@ -174,8 +174,8 @@ export function useNestedEntryOperations(
 
     return async () => {
       if (
-        !entry.ownerIsCanonical ||
-        entry.isUnpublishedDraft ||
+        !element.ownerIsCanonical ||
+        element.isUnpublishedDraft ||
         options.manager.value?.ownerIsUnpublishedDraft
       ) {
         return undefined;
@@ -269,7 +269,7 @@ export function useNestedEntryOperations(
         document.activeElement === document.body ||
         document.activeElement === options.container.value
       ) {
-        restoreEntryFocus();
+        restoreElementFocus();
       }
     } catch (cause) {
       setError(cause);
@@ -296,26 +296,29 @@ export function useNestedEntryOperations(
     return slideout;
   }
 
-  function rememberEntry(entry: NestedEntry): void {
-    focusEntryId = entry.id;
-    focusEntryIndex = options.entries.value.findIndex(
-      (candidate) => candidate.id === entry.id
+  function rememberElement(element: NestedElement): void {
+    focusElementId = element.id;
+    focusElementIndex = options.elements.value.findIndex(
+      (candidate) => candidate.id === element.id
     );
   }
 
-  function openEntry(entry: NestedEntry, opener: HTMLElement | null): void {
-    if (!canOpenEntry(entry)) {
+  function openElement(
+    element: NestedElement,
+    opener: HTMLElement | null
+  ): void {
+    if (!canOpenElement(element)) {
       return;
     }
 
-    rememberEntry(entry);
-    const prepareNestedOwner = prepareEdit(entry);
+    rememberElement(element);
+    const prepareNestedOwner = prepareEdit(element);
     const onSaved = ({draft} = {} as SlideoutSaveResult): void => {
       onChildSaved(draft);
     };
 
     if (canUseVueSlideout()) {
-      void openSlideout(entry.editUrl, {
+      void openSlideout(element.editUrl, {
         opener,
         prepareNestedOwner,
         onSaved,
@@ -325,7 +328,7 @@ export function useNestedEntryOperations(
     }
 
     (opener ?? options.container.value)?.focus();
-    const editUrl = new URL(entry.editUrl, window.location.origin);
+    const editUrl = new URL(element.editUrl, window.location.origin);
 
     openLegacyEditor(
       Object.fromEntries(editUrl.searchParams),
@@ -340,7 +343,7 @@ export function useNestedEntryOperations(
               await slideout.elementEditor.saveDraft();
             }
             if (!slideout.elementEditor.settings.draftId) {
-              throw new Error(t('Could not save the nested entry draft.'));
+              throw new Error(t('Could not save the nested element draft.'));
             }
 
             slideout.elementEditor.settings.saveParams = {
@@ -354,25 +357,26 @@ export function useNestedEntryOperations(
     );
   }
 
-  function entryById(id: string | number): NestedEntry | null {
+  function elementById(id: string | number): NestedElement | null {
     return (
-      options.entries.value.find((entry) => String(entry.id) === String(id)) ??
-      null
+      options.elements.value.find(
+        (element) => String(element.id) === String(id)
+      ) ?? null
     );
   }
 
-  function entryFor(target: Element): NestedEntry | null {
+  function elementFor(target: Element): NestedElement | null {
     const item = target.closest<HTMLElement>('[data-index-id]');
 
-    return item?.dataset.indexId ? entryById(item.dataset.indexId) : null;
+    return item?.dataset.indexId ? elementById(item.dataset.indexId) : null;
   }
 
   function openQuickEdit(
-    entry: NestedEntry,
+    element: NestedElement,
     opener: HTMLElement | null = null
   ): void {
     if (options.editable.value) {
-      openEntry(entry, opener);
+      openElement(element, opener);
     }
   }
 
@@ -380,9 +384,9 @@ export function useNestedEntryOperations(
     id: string | number,
     opener: HTMLElement | null = null
   ): void {
-    const entry = entryById(id);
-    if (entry) {
-      openQuickEdit(entry, opener);
+    const element = elementById(id);
+    if (element) {
+      openQuickEdit(element, opener);
     }
   }
 
@@ -393,25 +397,25 @@ export function useNestedEntryOperations(
     }
 
     const row = target.closest<HTMLElement>('[data-index-id]');
-    const entry = row ? entryFor(row) : null;
+    const element = row ? elementFor(row) : null;
     const control = target.closest(ELEMENT_QUICK_EDIT_CONTROL_SELECTOR);
-    if (!row || !entry || (control && row.contains(control))) {
+    if (!row || !element || (control && row.contains(control))) {
       return;
     }
 
     event.preventDefault();
     window.getSelection()?.removeAllRanges();
 
-    if ((event.ctrlKey || event.metaKey) && entry.cpEditUrl) {
-      window.open(entry.cpEditUrl, '_blank', 'noopener');
+    if ((event.ctrlKey || event.metaKey) && element.cpEditUrl) {
+      window.open(element.cpEditUrl, '_blank', 'noopener');
 
       return;
     }
 
-    openQuickEdit(entry, row);
+    openQuickEdit(element, row);
   }
 
-  function primaryQuickEditLink(event: MouseEvent): NestedEntry | null {
+  function primaryQuickEditLink(event: MouseEvent): NestedElement | null {
     if (
       event.button !== 0 ||
       event.metaKey ||
@@ -424,14 +428,14 @@ export function useNestedEntryOperations(
     }
 
     const anchor = event.target.closest<HTMLAnchorElement>('a[href]');
-    const entry = entryFor(event.target);
-    if (!anchor || !entry?.editUrl || !options.editable.value) {
+    const element = elementFor(event.target);
+    if (!anchor || !element?.editUrl || !options.editable.value) {
       return null;
     }
 
     return new URL(anchor.href, window.location.origin).href ===
-      new URL(entry.editUrl, window.location.origin).href
-      ? entry
+      new URL(element.editUrl, window.location.origin).href
+      ? element
       : null;
   }
 
@@ -443,22 +447,22 @@ export function useNestedEntryOperations(
   }
 
   function onPrimaryLink(event: MouseEvent): void {
-    const entry = primaryQuickEditLink(event);
-    if (!entry) {
+    const element = primaryQuickEditLink(event);
+    if (!element) {
       return;
     }
 
     event.preventDefault();
     event.stopPropagation();
     openQuickEdit(
-      entry,
+      element,
       event.target instanceof HTMLElement
         ? event.target.closest<HTMLAnchorElement>('a[href]')
         : null
     );
   }
 
-  const quickEdit: NestedEntryQuickEdit = {
+  const quickEdit: NestedElementQuickEdit = {
     longPress: true,
     openRow: openQuickEdit,
     openById: openQuickEditById,
@@ -504,7 +508,9 @@ export function useNestedEntryOperations(
           onSaved
         );
 
-        return options.refreshCreatedEntryOnOpen === false ? false : undefined;
+        return options.refreshCreatedElementOnOpen === false
+          ? false
+          : undefined;
       }
 
       const editUrl = EditElementController.url(undefined, {
@@ -518,7 +524,7 @@ export function useNestedEntryOperations(
         onSaved: ({draft} = {}) => onSaved(Boolean(draft)),
       });
 
-      return options.refreshCreatedEntryOnOpen === false ? false : undefined;
+      return options.refreshCreatedElementOnOpen === false ? false : undefined;
     });
   }
 
@@ -536,22 +542,22 @@ export function useNestedEntryOperations(
           fieldId: manager.fieldId,
           siteId: manager.ownerSiteId,
         });
-        const beforeIndex = options.entries.value.findIndex(
-          (entry) => entry.id === beforeId
+        const beforeIndex = options.elements.value.findIndex(
+          (element) => element.id === beforeId
         );
         if (beforeIndex >= 0 && pasted.length && options.canReorder.value) {
           await actionClient.post(NestedElementsController.reorder.url(), {
             ...nestedOwnerParams(manager, preparedOwnerId),
-            elementIds: pasted.map((entry) => entry.id),
+            elementIds: pasted.map((element) => element.id),
             offset: options.offset.value + beforeIndex,
           });
         }
-        focusEntryId = pasted[0]?.id ?? null;
-        focusEntryIndex = Math.max(0, beforeIndex);
+        focusElementId = pasted[0]?.id ?? null;
+        focusElementIndex = Math.max(0, beforeIndex);
       },
       {reset: beforeId === undefined}
     );
-    restoreEntryFocus();
+    restoreElementFocus();
   }
 
   async function reorder(
@@ -559,19 +565,19 @@ export function useNestedEntryOperations(
     to: number,
     group = true
   ): Promise<void> {
-    const moved = options.entries.value[from];
+    const moved = options.elements.value[from];
     if (!options.canReorder.value || !moved) {
       return;
     }
 
     const ids =
       group && options.selection.isSelected(moved.id)
-        ? options.entries.value
-            .filter((entry) => options.selection.isSelected(entry.id))
-            .map((entry) => entry.id)
+        ? options.elements.value
+            .filter((element) => options.selection.isSelected(element.id))
+            .map((element) => element.id)
         : [moved.id];
-    const targetOffset = nestedEntryReorderOffset(
-      options.entries.value,
+    const targetOffset = nestedElementReorderOffset(
+      options.elements.value,
       ids,
       from,
       to,
@@ -581,9 +587,9 @@ export function useNestedEntryOperations(
       return;
     }
 
-    focusEntryId = moved.id;
+    focusElementId = moved.id;
     await reorderIds(ids, targetOffset);
-    restoreEntryFocus();
+    restoreElementFocus();
   }
 
   async function reorderIds(ids: number[], offset: number): Promise<boolean> {
@@ -620,29 +626,29 @@ export function useNestedEntryOperations(
     return reordered;
   }
 
-  function restoreEntryFocus(): void {
-    focusNestedEntry(
+  function restoreElementFocus(): void {
+    focusNestedElement(
       options.container.value,
-      options.entries.value,
-      focusEntryId,
-      focusEntryIndex
+      options.elements.value,
+      focusElementId,
+      focusElementIndex
     );
   }
 
-  function focusEntry(id: number, fallbackIndex = 0): void {
-    focusEntryId = id;
-    focusEntryIndex = fallbackIndex;
-    restoreEntryFocus();
+  function focusElement(id: number, fallbackIndex = 0): void {
+    focusElementId = id;
+    focusElementIndex = fallbackIndex;
+    restoreElementFocus();
   }
 
   function focusCreateButton(): void {
     options.container.value
-      ?.querySelector<HTMLElement>('[data-create-entry]')
+      ?.querySelector<HTMLElement>('[data-create-element]')
       ?.focus();
   }
 
   function onContainerFocus(): void {
-    void nextTick().then(restoreEntryFocus);
+    void nextTick().then(restoreElementFocus);
   }
 
   async function refreshFromBroadcaster(): Promise<void> {
@@ -688,10 +694,12 @@ export function useNestedEntryOperations(
     paste,
     reorder,
     reorderIds,
-    focusEntry,
+    focusElement,
     focusCreateButton,
     onContainerFocus,
   };
 }
 
-export type NestedEntryOperations = ReturnType<typeof useNestedEntryOperations>;
+export type NestedElementOperations = ReturnType<
+  typeof useNestedElementOperations
+>;

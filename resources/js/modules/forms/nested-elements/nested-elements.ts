@@ -1,4 +1,4 @@
-import {t, isHttpError} from '@craftcms/ui';
+import {isHttpError, t} from '@craftcms/ui';
 import {normalizeClass} from 'vue';
 import type {PaginationData} from '@/common/types';
 import type {QueryParams} from '@/common/types/query';
@@ -7,13 +7,13 @@ import type {InlineEditableRow} from '@/modules/elements/index/composables/useIn
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
 
-export type NestedEntry = CraftCms.Cms.Element.Data.NestedElementCard &
+export type NestedElement = CraftCms.Cms.Element.Data.NestedElementCard &
   InlineEditableRow &
   Record<string, unknown>;
 
-export type NestedIndexEntry = NestedEntry & {label: string};
+export type NestedIndexElement = NestedElement & {label: string};
 
-export type NestedEntriesManager = {
+export type NestedElementsManager = {
   elementType: string;
   canCreate: boolean;
   canPaste: boolean;
@@ -39,7 +39,16 @@ export type NestedEntriesManager = {
   attribute: string;
   fieldId: number;
   minElements?: number | null;
-  pasteableEntryTypeIds: number[];
+  pasteableData?: NestedPasteableData | null;
+};
+
+/**
+ * Restricts which copied elements can be pasted: each one's `data[attribute]`
+ * must be one of `values` (e.g. a Matrix field's entry type IDs).
+ */
+export type NestedPasteableData = {
+  attribute: string;
+  values: Array<string | number>;
 };
 
 export type NestedIndexOptions = {
@@ -65,7 +74,7 @@ export type NestedContentIndexData = Omit<
   ContentIndexData,
   'data' | 'exporters' | 'pagination' | 'actions'
 > & {
-  data: NestedIndexEntry[];
+  data: NestedIndexElement[];
   exporters: NestedIndexExporter[];
   pagination: NestedIndexPagination;
   actions: BulkActionItem[] | null;
@@ -75,16 +84,16 @@ export type NestedContentIndexData = Omit<
   fieldLayouts?: QueryParams[];
 };
 
-export type NestedEntriesProps = {
+export type NestedElementsProps = {
   viewMode: 'cards' | 'cards-grid' | 'index';
   unavailableMessage?: string | null;
-  manager: NestedEntriesManager | null;
-  cards: NestedEntry[];
+  manager: NestedElementsManager | null;
+  cards: NestedElement[];
   index?: NestedIndexOptions | null;
 };
 
 export function nestedOwnerParams(
-  manager: NestedEntriesManager,
+  manager: NestedElementsManager,
   ownerId: number
 ) {
   return {
@@ -96,7 +105,7 @@ export function nestedOwnerParams(
 }
 
 export function nestedIndexParams(
-  manager: NestedEntriesManager,
+  manager: NestedElementsManager,
   ownerId: number,
   initial?: NestedContentIndexData
 ) {
@@ -117,7 +126,7 @@ export function nestedIndexParams(
   };
 }
 
-export function nestedCreateChoices(manager: NestedEntriesManager | null) {
+export function nestedCreateChoices(manager: NestedElementsManager | null) {
   return (manager?.createAttributes ?? []).map((choice) => ({
     value: choice.attributes,
     label: choice.label,
@@ -131,22 +140,32 @@ export function isPasteable(
   copied: CopiedElementInfo[],
   options: {
     elementType: string;
-    entryTypeIds: number[];
+    pasteableData?: NestedPasteableData | null;
     room: boolean;
-    requireEntryTypeId?: boolean;
   }
 ): boolean {
+  const constraint = options.pasteableData;
+
   return (
     options.room &&
     copied.length > 0 &&
     copied.every(
       (element) =>
         element.type === options.elementType &&
-        (!options.requireEntryTypeId && options.entryTypeIds.length === 0
-          ? true
-          : element.data?.entryTypeId !== undefined &&
-            options.entryTypeIds.includes(element.data.entryTypeId))
+        (!constraint ||
+          isAllowedValue(element.data?.[constraint.attribute], constraint))
     )
+  );
+}
+
+/** Server-supplied IDs can arrive as strings, so values compare by their string form. */
+function isAllowedValue(
+  value: unknown,
+  constraint: NestedPasteableData
+): boolean {
+  return (
+    (typeof value === 'string' || typeof value === 'number') &&
+    constraint.values.some((allowed) => String(allowed) === String(value))
   );
 }
 
@@ -157,7 +176,7 @@ export function nestedPasteLabel(
 ): string {
   const names = craft().elementTypeNames[elementType ?? ''];
   const type =
-    names?.[count === 1 ? 2 : 3] ?? t(count === 1 ? 'entry' : 'entries');
+    names?.[count === 1 ? 2 : 3] ?? t(count === 1 ? 'element' : 'elements');
   const label = position
     ? t(position === 'above' ? 'Paste {type} above' : 'Paste {type} before', {
         type,
@@ -167,7 +186,7 @@ export function nestedPasteLabel(
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-export function nestedEntriesErrorMessage(
+export function nestedElementsErrorMessage(
   cause: unknown,
   fallback: string
 ): string {
@@ -178,15 +197,15 @@ export function nestedEntriesErrorMessage(
   return cause instanceof Error ? cause.message : fallback;
 }
 
-export function canOpenEntry(
-  entry: NestedEntry | null | undefined
-): entry is NestedEntry & {editUrl: string} {
-  return Boolean(entry?.editUrl && entry.cardAttributes?.data?.editable);
+export function canOpenElement(
+  element: NestedElement | null | undefined
+): element is NestedElement & {editUrl: string} {
+  return Boolean(element?.editUrl && element.cardAttributes?.data?.editable);
 }
 
-export function focusNestedEntry(
+export function focusNestedElement(
   container: HTMLElement | null | undefined,
-  entries: NestedEntry[],
+  elements: NestedElement[],
   id: number | null,
   fallbackIndex = 0
 ): void {
@@ -198,56 +217,60 @@ export function focusNestedEntry(
   const target =
     [...items].find((item) => Number(item.dataset.nestedId) === id) ??
     items.item(fallbackIndex);
-  const entry = entries.find(
+  const element = elements.find(
     (item) => item.id === Number(target?.dataset.nestedId)
   );
   const link = [
     ...(target?.querySelectorAll<HTMLAnchorElement>('a[href]') ?? []),
-  ].find((candidate) => candidate.getAttribute('href') === entry?.editUrl);
+  ].find((candidate) => candidate.getAttribute('href') === element?.editUrl);
   const button = target?.querySelector<HTMLElement>(
-    '[data-edit-entry], craft-action-menu craft-button[slot="invoker"]'
+    '[data-edit-element], craft-action-menu craft-button[slot="invoker"]'
   );
   (link ?? button)?.focus();
 }
 
-export function nestedEntryReorderOffset(
-  entries: NestedEntry[],
+export function nestedElementReorderOffset(
+  elements: NestedElement[],
   selectedIds: number[],
   from: number,
   to: number,
   pageOffset = 0
 ): number | null {
-  const moved = entries[from];
-  const target = entries[to];
+  const moved = elements[from];
+  const target = elements[to];
   if (!moved || !target || from === to) {
     return null;
   }
 
-  const remaining = entries.filter((entry) => !selectedIds.includes(entry.id));
-  const targetIndex = remaining.findIndex((entry) => entry.id === target.id);
+  const remaining = elements.filter(
+    (element) => !selectedIds.includes(element.id)
+  );
+  const targetIndex = remaining.findIndex(
+    (element) => element.id === target.id
+  );
 
   return targetIndex < 0
     ? null
     : pageOffset + targetIndex + (to > from ? 1 : 0);
 }
 
-export function markInvalidEntries<Entry extends NestedEntry>(
-  entries: Entry[],
+export function markInvalidElements<Entry extends NestedElement>(
+  elements: Entry[],
   invalidIds: number[]
 ): Entry[] {
   if (!invalidIds.length) {
-    return entries;
+    return elements;
   }
 
-  return entries.map(
-    (entry) =>
+  return elements.map(
+    (element) =>
       ({
-        ...entry,
+        ...element,
         cardAttributes: {
-          ...entry.cardAttributes,
+          ...element.cardAttributes,
           class: normalizeClass([
-            entry.cardAttributes?.class,
-            {error: invalidIds.includes(entry.id)},
+            element.cardAttributes?.class,
+            {error: invalidIds.includes(element.id)},
           ]),
         },
       }) as Entry

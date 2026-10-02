@@ -387,7 +387,10 @@ it('includes the first server-rendered page in editable Matrix index controls', 
         ->and($props['index']['initial']['sort'])->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
         ->and($props['index']['initial']['reorderable'])->toBeTrue()
         ->and(json_decode(json_encode($props), true))->toBe($props)
-        ->and($props['manager']['pasteableEntryTypeIds'])->toBe([$fixture['nestedType']->id]);
+        ->and($props['manager']['pasteableData'])->toBe([
+            'attribute' => 'entryTypeId',
+            'values' => [$fixture['nestedType']->id],
+        ]);
 });
 
 it('keeps page assets outside an embedded Matrix initial payload', function () {

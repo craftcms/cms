@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface;
 use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
@@ -44,7 +45,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedEntries;
+use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -61,7 +62,6 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
-use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -111,7 +111,7 @@ use function CraftCms\Cms\template;
  *
  * @since 6.0.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface, NestedIndexConfigProviderInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -1515,53 +1515,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** The Cards, Cards Grid, and Index view modes manage their entries outside the owner form. */
-    private function nestedEntriesControl(FieldContext $context): NestedEntries
+    private function nestedEntriesControl(FieldContext $context): NestedElements
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
             && $context->form->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
-        $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
-        $control = NestedEntries::make($context->path)
-            ->viewMode($this->viewMode)
-            ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => Entry::pluralDisplayName(),
-                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
-            ]));
 
-        if ($this->viewMode === self::VIEW_MODE_INDEX) {
-            $config = $this->entryManager()->getIndexConfig($owner, $config);
-            $data = $this->entryManager()->getIndexData($owner, $config);
-
-            if ($data === null) {
-                return $control;
-            }
-
-            if ($config['static']) {
-                $control->indexHtml($this->entryManager()->getIndexHtml($owner, $config));
-            }
-
-            $index = [
-                'indexSettings' => $data['indexSettings'],
-            ];
-
-            $index['initial'] = EmbeddedIndexViewModel::forOwner(
-                Entry::class,
-                $owner,
-                sprintf('field:%s', $this->handle),
-                $config,
-            )->payload();
-
-            return $control
-                ->manager(Arr::except($data, ['indexSettings']))
-                ->index($index);
-        }
-
-        $data = $this->entryManager()->getCardsData($owner, $config);
-
-        return $control
-            ->manager($data === null ? null : Arr::except($data, ['elements']))
-            ->cards($data['elements'] ?? []);
+        return $this->entryManager()->formControl(
+            $context->path,
+            $owner,
+            $this->viewMode,
+            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
+        );
     }
 
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
@@ -1663,8 +1629,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /** @return array<string, mixed> */
-    public function embeddedIndexConfig(ElementInterface $owner, bool $static): array
+    #[Override]
+    public function nestedIndexConfig(ElementInterface $owner, string $attribute, bool $static): array
     {
         $value = $owner->getFieldValue((string) $this->handle);
 

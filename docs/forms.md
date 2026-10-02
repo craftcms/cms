@@ -126,6 +126,37 @@ Return zero or one root Node. It may contain children or a composite Control. Th
 mode. Listen for `FieldLayoutFormResolving` to add, remove, or reorder typed Nodes after compilation; do not mutate
 rendered HTML or persisted layout data.
 
+### Nested elements
+
+Elements nested in an owner — Matrix and Addresses fields, a user's addresses, or a plugin's own nested element type —
+are managed by a `NestedElementManager`, which builds the shared `NestedElements` Control (`craft:nested-elements`). It
+renders the elements as cards or an embedded element index outside the owner's form, and handles creating, editing in
+a slideout, reordering, pasting, duplicating, and deleting them, including preparing the owner's draft first:
+
+```php
+use CraftCms\Cms\Form\Contracts\Control;
+
+public function formControl(FieldContext $context): Control
+{
+    return $this->manager()->formControl($context->path, $context->element, 'cards', [
+        'canCreate' => true,
+        'sortable' => true,
+        'maxElements' => $this->maxItems,
+    ]);
+}
+```
+
+The view mode is `cards`, `cards-grid`, or `index`. An index's later requests (paging, inline saves, element actions)
+rebuild its config without the original call, so a field or owner element whose index needs more than
+`NestedElementManager::defaultIndexConfig()` implements `NestedIndexConfigProviderInterface` to supply it.
+
+Screens that manage an owner's nested elements outside an element editor render `NestedElements.vue` directly with the
+Control's props, passing `savedNestedOwner()` as its `owner` so changes apply to the saved owner and the screen
+re-renders afterwards (see `pages/users/Addresses.vue`).
+
+A nested element type gets the Inertia editor in those slideouts by returning its `ElementEditorController` from
+`ElementInterface::editControllerClass()`.
+
 ### FieldLayout component settings
 
 Field layout components — tabs and layout elements — describe the form shown in the designer's settings slideout by

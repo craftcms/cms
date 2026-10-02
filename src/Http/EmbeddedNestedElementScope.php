@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedIndexConfigProviderInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
@@ -15,7 +16,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -137,8 +137,10 @@ class EmbeddedNestedElementScope
         $field = $this->field($owner);
         $static = $owner->getIsRevision() || ! $this->isAuthorized('manageNestedElements', $owner);
 
-        if ($field instanceof Matrix) {
-            return $this->indexConfig = $field->embeddedIndexConfig($owner, $static);
+        $provider = $field ?? $owner;
+
+        if ($provider instanceof NestedIndexConfigProviderInterface) {
+            return $this->indexConfig = $provider->nestedIndexConfig($owner, $this->attribute(), $static);
         }
 
         $config = $this->request->validate([

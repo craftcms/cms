@@ -133,13 +133,17 @@ class PerformElementActionController
                 if ($action instanceof Duplicate) {
                     $action->setNestedOwner($owner);
                     $preparedElements = $selectedElements;
-                    $orderedElementIds = (clone $elementQuery)
-                        ->offset(0)
-                        ->limit(null)
-                        ->orderBy('sortOrder')
-                        ->status(null)
-                        ->ids();
-                    $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
+
+                    // Duplicates go right after their sources, for nested elements that have an order.
+                    if ($nestedSource->sortable) {
+                        $orderedElementIds = (clone $elementQuery)
+                            ->offset(0)
+                            ->limit(null)
+                            ->orderBy('sortOrder')
+                            ->status(null)
+                            ->ids();
+                        $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
+                    }
                 } else {
                     $preparedElements = $selectedElements
                         ->map(fn (NestedElementInterface $element): NestedElementInterface => NestedElementManager::prepareElementForOwner($element, $owner));

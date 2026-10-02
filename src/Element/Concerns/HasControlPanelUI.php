@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Http\Controllers\Elements\ElementEditorController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -92,6 +94,21 @@ trait HasControlPanelUI
      * @return class-string<ElementEditViewModel>|null
      */
     public static function editViewModelClass(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * The controller that renders this element type's Inertia edit screen, or
+     * `null` for a type whose editor hasn't been ported off the legacy screen.
+     *
+     * The shared `elements/edit` action hands the element over to it, so
+     * slideouts (including nested elements') get the same editor as the type's
+     * own edit page.
+     *
+     * @return class-string<ElementEditorController<covariant ElementInterface>>|null
+     */
+    public static function editControllerClass(): ?string
     {
         return null;
     }

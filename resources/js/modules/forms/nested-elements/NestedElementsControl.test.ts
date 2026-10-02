@@ -8,8 +8,8 @@ import {
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
 import type {FormControlPayload} from '../types';
-import type {NestedEntriesProps, NestedEntry} from './nested-entries';
-import NestedEntriesControl from './NestedEntriesControl.vue';
+import type {NestedElementsProps, NestedElement} from './nested-elements';
+import NestedElementsControl from './NestedElementsControl.vue';
 import {
   DELETE_ACTION,
   nestedElementAction,
@@ -86,7 +86,7 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
     },
   },
 }));
-describe('NestedEntriesControl', () => {
+describe('NestedElementsControl', () => {
   let root: HTMLElement;
   let app: ReturnType<typeof createApp>;
 
@@ -120,9 +120,9 @@ describe('NestedEntriesControl', () => {
     return nestedElementAction(elementId, item, label) as ActionItemButton;
   }
 
-  function nestedEntry(
-    entry: Pick<NestedEntry, 'id'> & Partial<NestedEntry>
-  ): NestedEntry {
+  function nestedElement(
+    element: Pick<NestedElement, 'id'> & Partial<NestedElement>
+  ): NestedElement {
     return {
       siteId: null,
       entryTypeId: null,
@@ -147,7 +147,7 @@ describe('NestedEntriesControl', () => {
       cardFooterHtml: '',
       cardThumbHtml: '',
       thumbAlignment: 'end',
-      ...entry,
+      ...element,
     };
   }
 
@@ -157,8 +157,8 @@ describe('NestedEntriesControl', () => {
       refresh?: () => Promise<void>;
       editable?: boolean;
       vueSlideout?: boolean;
-      cards?: NestedEntry[];
-      manager?: Partial<NonNullable<NestedEntriesProps['manager']>>;
+      cards?: NestedElement[];
+      manager?: Partial<NonNullable<NestedElementsProps['manager']>>;
     } = {}
   ) {
     const legacyElementEditor = {
@@ -190,9 +190,9 @@ describe('NestedEntriesControl', () => {
     });
     root = document.createElement('div');
     document.body.append(root);
-    const control = reactive<FormControlPayload<NestedEntriesProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedEntries',
-      component: 'craft:nested-entries',
+    const control = reactive<FormControlPayload<NestedElementsProps>>({
+      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+      component: 'craft:nested-elements',
       mode: 'editable',
       deltaGroup: ['fields', 'cards'],
       path: ['fields', 'cards'],
@@ -209,11 +209,11 @@ describe('NestedEntriesControl', () => {
           canPaste: false,
           sortable: true,
           createAttributes: [{label: 'Entry', attributes: {}}],
-          pasteableEntryTypeIds: [],
+          pasteableData: null,
           ...options.manager,
         },
         cards: options.cards ?? [
-          nestedEntry({
+          nestedElement({
             id: 14,
             siteId: 1,
             cardHeaderHtml: '<b>Card</b>',
@@ -238,7 +238,7 @@ describe('NestedEntriesControl', () => {
         provide(NestedOwnerEditorKey, {prepare, refresh});
 
         return () =>
-          h(NestedEntriesControl as any, {
+          h(NestedElementsControl as any, {
             editable: options.editable ?? true,
             value: null,
             control,
@@ -269,7 +269,7 @@ describe('NestedEntriesControl', () => {
 
     action('Delete entry')!.click();
     await vi.waitFor(() =>
-      expect(root.textContent).toContain('No nested entries were changed')
+      expect(root.textContent).toContain('No nested elements were changed')
     );
 
     expect(prepare).toHaveBeenCalledOnce();
@@ -345,7 +345,7 @@ describe('NestedEntriesControl', () => {
     window.addEventListener('plugin:open', opened, {once: true});
     mount({
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 14,
           actionMenuItems: [
             {
@@ -402,12 +402,12 @@ describe('NestedEntriesControl', () => {
       const target =
         presentation === 'menu'
           ? action('Add Quote')!
-          : [...root.querySelectorAll<HTMLElement>('[data-create-entry]')].find(
-              (button) => button.textContent?.trim() === 'Add Quote'
-            )!;
+          : [
+              ...root.querySelectorAll<HTMLElement>('[data-create-element]'),
+            ].find((button) => button.textContent?.trim() === 'Add Quote')!;
       const opener =
         presentation === 'menu'
-          ? root.querySelector('[data-create-entry]')
+          ? root.querySelector('[data-create-element]')
           : target;
 
       expect((target as HTMLElement & {icon: string}).icon).toBe('quote-left');
@@ -452,7 +452,7 @@ describe('NestedEntriesControl', () => {
     });
     await nextTick();
 
-    root.querySelector<HTMLElement>('[data-create-entry]')!.click();
+    root.querySelector<HTMLElement>('[data-create-element]')!.click();
     await vi.waitFor(() => expect(createElementEditor).toHaveBeenCalledOnce());
 
     expect(slideout).not.toHaveBeenCalled();
@@ -470,7 +470,7 @@ describe('NestedEntriesControl', () => {
   it('restores focus by position when a saved child has a new identity', async () => {
     const refresh = vi.fn(async () => {
       control.props.cards = [
-        nestedEntry({
+        nestedElement({
           id: 28,
           siteId: 1,
           ownerId: 31,
@@ -482,7 +482,7 @@ describe('NestedEntriesControl', () => {
     const {control} = mount({
       refresh,
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 18,
           siteId: 1,
           ownerId: 31,
@@ -493,7 +493,7 @@ describe('NestedEntriesControl', () => {
       ],
     });
     await nextTick();
-    const button = root.querySelector<HTMLElement>('[data-edit-entry]')!;
+    const button = root.querySelector<HTMLElement>('[data-edit-element]')!;
     button.click();
     await vi.waitFor(() => expect(slideout).toHaveBeenCalledOnce());
     const editUrl = new URL(slideout.mock.lastCall![0], window.location.origin);
@@ -526,7 +526,7 @@ describe('NestedEntriesControl', () => {
       '/admin/actions/elements/edit?elementId=18&siteId=1&fieldId=7&ownerId=31';
     const {control} = mount({
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 18,
           siteId: 1,
           ownerId: 31,
@@ -542,7 +542,7 @@ describe('NestedEntriesControl', () => {
     expect(await slideout.mock.lastCall![1].prepareNestedOwner()).toBe(73);
 
     control.props.cards = [
-      nestedEntry({
+      nestedElement({
         id: 18,
         siteId: 1,
         ownerId: 31,
@@ -566,7 +566,7 @@ describe('NestedEntriesControl', () => {
     const {createElementEditor, legacyElementEditor} = mount({
       vueSlideout: false,
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 18,
           siteId: 1,
           ownerId: 31,
@@ -594,7 +594,7 @@ describe('NestedEntriesControl', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     mount({
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 18,
           editUrl: '/admin/actions/elements/edit?elementId=18',
           cpEditUrl: '/admin/entries/pages/18',
@@ -621,7 +621,7 @@ describe('NestedEntriesControl', () => {
   it('refreshes the owner once a nested editor’s draft saves settle', async () => {
     const {refresh} = mount({
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 41,
           editUrl: '/admin/actions/elements/edit?elementId=41',
           cardAttributes: {data: {editable: true}},
@@ -683,7 +683,7 @@ describe('NestedEntriesControl', () => {
       manager: {
         canPaste: true,
         canCreate: true,
-        pasteableEntryTypeIds: [17, 23],
+        pasteableData: {attribute: 'entryTypeId', values: [17, 23]},
       },
     });
     await nextTick();
@@ -701,7 +701,7 @@ describe('NestedEntriesControl', () => {
       manager: {
         canPaste: true,
         canCreate: true,
-        pasteableEntryTypeIds: [17, 23],
+        pasteableData: {attribute: 'entryTypeId', values: [17, 23]},
       },
     });
     await nextTick();
@@ -713,7 +713,7 @@ describe('NestedEntriesControl', () => {
     mount({
       editable: false,
       cards: [
-        nestedEntry({
+        nestedElement({
           id: 14,
           editUrl: '/edit/14',
           cardAttributes: {
@@ -730,12 +730,12 @@ describe('NestedEntriesControl', () => {
     expect(root.querySelector('[aria-label="Select 14"]')).toBeNull();
     expect(action('Delete entry')).toBeUndefined();
     expect(action('Duplicate')).toBeUndefined();
-    expect(root.querySelector('[data-edit-entry]')).not.toBeNull();
+    expect(root.querySelector('[data-edit-element]')).not.toBeNull();
   });
 
   it('marks invalid cards without requesting index data', async () => {
     mount();
-    const control = root.querySelector('.nested-entries')!;
+    const control = root.querySelector('.nested-elements')!;
     control.dispatchEvent(
       new CustomEvent('craft:nested-validation', {
         bubbles: true,

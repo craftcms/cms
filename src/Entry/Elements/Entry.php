@@ -66,6 +66,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
 use CraftCms\Cms\Route\ElementRoute;
@@ -326,6 +327,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public static function editViewModelClass(): string
     {
         return EntryEditViewModel::class;
+    }
+
+    #[Override]
+    public static function editControllerClass(): string
+    {
+        return EditEntryController::class;
     }
 
     #[Override]

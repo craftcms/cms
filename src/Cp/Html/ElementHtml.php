@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -1263,6 +1264,7 @@ readonly class ElementHtml
 
     private function contextIsAdministrative(string $context): bool
     {
-        return in_array($context, ['index', 'embedded-index', 'field']);
+        // Legacy element HTML says `embedded-index`; element index requests say `embeddedIndex`.
+        return in_array($context, ['index', 'embedded-index', ElementSources::CONTEXT_EMBEDDED_INDEX, 'field']);
     }
 }

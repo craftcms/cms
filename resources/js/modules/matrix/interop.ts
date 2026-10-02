@@ -123,7 +123,7 @@ export interface CopiedElementInfo {
   fieldId?: number | null;
   ownerId?: ElementId;
   siteId?: number | null;
-  data?: {entryTypeId?: number};
+  data?: Record<string, JsonValue | undefined> & {entryTypeId?: number};
 }
 
 type ElementId = string | number | null;
