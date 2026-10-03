@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'すべての選択を解除',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'デスクトップ',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'コントロールパネル経由で送信される場合、どのサイトからユーザーがメールを受信するかを決定します。',
     'Developer Response' => '開発者のレスポンス',
     'Development Settings' => '開発設定',
