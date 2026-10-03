@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'ยกเลิกการเลือกทั้งหมด',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'เดสก์ท็อป',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'กำหนดว่าผู้ใช้จะได้รับอีเมลจากเว็บไซต์ใด ในขณะที่ส่งอีเมลผ่านแผงควบคุม',
     'Developer Response' => 'คำตอบของนักพัฒนา',
     'Development Settings' => 'การตั้งค่าการพัฒนา',

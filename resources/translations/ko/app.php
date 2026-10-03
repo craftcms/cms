@@ -603,6 +603,7 @@ return [
     'Deselect All' => '전체 선택 해제',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => '데스크톱',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => '제어판을 통해 전송되는 경우 사용자가 어떤 사이트에서 이메일을 받을지 결정합니다.',
     'Developer Response' => '개발자 응답',
     'Development Settings' => '개발 설정',

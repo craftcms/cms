@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Αποεπιλογή όλων',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Επιτραπέζιος υπολογιστής',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Καθορίζει από ποιον ιστότοπο θα λαμβάνει email ο χρήστης, όταν αποστέλλονται μέσω του πίνακα ελέγχου.',
     'Developer Response' => 'Developer Response',
     'Development Settings' => 'Ρυθμίσεις ανάπτυξης',
