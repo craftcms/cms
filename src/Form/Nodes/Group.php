@@ -59,9 +59,13 @@ class Group extends Container
 
     private ?string $instructions = null;
 
+    private string $instructionsPosition = 'before';
+
     private ?string $tip = null;
 
     private ?string $warning = null;
+
+    private ?string $layoutUid = null;
 
     private ?int $width = null;
 
@@ -156,6 +160,14 @@ class Group extends Container
     }
 
     /** Field appearance only. */
+    public function instructionsPosition(string $instructionsPosition): static
+    {
+        $this->instructionsPosition = $instructionsPosition;
+
+        return $this;
+    }
+
+    /** Field appearance only. */
     public function tip(?string $tip): static
     {
         $this->tip = $tip;
@@ -167,6 +179,14 @@ class Group extends Container
     public function warning(?string $warning): static
     {
         $this->warning = $warning;
+
+        return $this;
+    }
+
+    /** Field appearance only. */
+    public function layoutUid(?string $layoutUid): static
+    {
+        $this->layoutUid = $layoutUid;
 
         return $this;
     }
@@ -212,10 +232,12 @@ class Group extends Container
             ...($this->asField && $this->required ? ['required' => true] : []),
             ...Arr::whereNotNull([
                 'instructions' => $this->instructions,
+                'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
                 'tip' => $this->tip,
                 'tipHtml' => $this->noticeHtml($this->tip),
                 'warning' => $this->warning,
                 'warningHtml' => $this->noticeHtml($this->warning),
+                'layoutUid' => $this->layoutUid,
                 'width' => $this->width,
                 'dependsOn' => $this->dependsOn,
             ]),
@@ -236,6 +258,7 @@ class Group extends Container
             ->label($label)
             ->required((bool) ($props['required'] ?? false))
             ->instructions($props['instructions'] ?? null)
+            ->instructionsPosition((string) ($props['instructionsPosition'] ?? 'before'))
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)
             ->input(
@@ -248,6 +271,7 @@ class Group extends Container
             ->attributes([
                 'class' => isset($props['width']) ? "width-{$props['width']}" : null,
                 'data-form-node' => $node->uid,
+                'data-layout-element' => $props['layoutUid'] ?? null,
             ])
             ->attributes(self::visibilityAttributes($props))
             ->toHtml();

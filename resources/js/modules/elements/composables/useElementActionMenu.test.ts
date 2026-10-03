@@ -7,6 +7,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {openFormModal} from '@/modules/forms/open-form-modal';
 import {
   createElementActionMenu,
   useElementActionMenu,
@@ -17,6 +18,7 @@ vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
 vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
   openImageEditorDialog: vi.fn(),
 }));
+vi.mock('@/modules/forms/open-form-modal', () => ({openFormModal: vi.fn()}));
 
 const {actionPost, deletionManagers} = vi.hoisted(() => ({
   actionPost: vi.fn(),
@@ -240,6 +242,38 @@ describe('useElementActionMenu', () => {
       assetId: '7',
     });
     expect(document.querySelector('form')).toBeNull();
+  });
+
+  it('opens a formModal behavior and reloads the page once it’s submitted', () => {
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation(() => undefined);
+
+    activate(
+      mount([
+        {
+          label: 'Receive',
+          behavior: {
+            type: 'formModal',
+            modalUrl: 'things/receive-modal',
+            actionUrl: 'things/receive',
+            params: {thingId: 4},
+          },
+        },
+      ])
+    );
+
+    expect(openFormModal).toHaveBeenCalledWith({
+      modalUrl: 'things/receive-modal',
+      actionUrl: 'things/receive',
+      params: {thingId: 4},
+      onSubmitted: expect.any(Function),
+    });
+    expect(reload).not.toHaveBeenCalled();
+
+    vi.mocked(openFormModal).mock.lastCall![0].onSubmitted!({});
+
+    expect(reload).toHaveBeenCalled();
   });
 
   describe('editImage', () => {

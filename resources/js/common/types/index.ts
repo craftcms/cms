@@ -5,8 +5,8 @@ import type {
   VariantKey,
 } from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
-import type {Component} from 'vue';
 import type {UrlMethodPair} from '@inertiajs/core';
+import type {Component} from 'vue';
 import type {FormValues} from '@/modules/forms/types';
 
 export type OptionData = ComboboxOptionData;
@@ -143,6 +143,8 @@ export interface ActionItemButton {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
+  fill?: string;
   /**
    * Items that hang off this one — the nav's own children.
    *
@@ -320,6 +322,7 @@ export type EditableTableCellType =
   | 'autosuggest'
   | 'template'
   | 'number'
+  | 'money'
   | 'singleline'
   | 'multiline'
   | 'heading'

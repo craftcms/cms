@@ -27,11 +27,16 @@ class Table extends Control
 
     private bool $allowReorder = false;
 
+    private ?string $addRowLabel = null;
+
     private ?int $minRows = null;
 
     private ?int $maxRows = null;
 
     private bool $keyed = false;
+
+    /** @var list<string> */
+    private array $hiddenRows = [];
 
     /** @var array<string, mixed> */
     private array $defaultValues = [];
@@ -53,10 +58,12 @@ class Table extends Control
             'allowAdd' => (bool) ($control->props['allowAdd'] ?? false),
             'allowDelete' => (bool) ($control->props['allowDelete'] ?? false),
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
+            'addRowLabel' => $control->props['addRowLabel'] ?? null,
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
             'defaultValues' => $control->props['defaultValues'] ?? [],
             'static' => $attributes['name'] === null,
+            'hiddenRows' => $control->props['hiddenRows'] ?? [],
             'errors' => $control->props['errors'] ?? [],
         ]);
     }
@@ -95,6 +102,13 @@ class Table extends Control
         return $this;
     }
 
+    public function addRowLabel(?string $addRowLabel): static
+    {
+        $this->addRowLabel = $addRowLabel;
+
+        return $this;
+    }
+
     public function minRows(?int $minRows): static
     {
         $this->minRows = $minRows;
@@ -112,6 +126,19 @@ class Table extends Control
     public function keyed(bool $keyed = true): static
     {
         $this->keyed = $keyed;
+
+        return $this;
+    }
+
+    /**
+     * Hide rows by key without removing their inputs or submitted values. Visibility
+     * is a prop so it can change on a reactive refresh without changing row values.
+     *
+     * @param  list<string>  $rowIds
+     */
+    public function hiddenRows(array $rowIds): static
+    {
+        $this->hiddenRows = $rowIds;
 
         return $this;
     }
@@ -147,9 +174,11 @@ class Table extends Control
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,
+            'addRowLabel' => $this->addRowLabel,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'hiddenRows' => $this->hiddenRows ?: null,
             'defaultValues' => $this->defaultValues,
             'errors' => $this->errors ?: null,
         ]);

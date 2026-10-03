@@ -5,6 +5,8 @@ import {
   withSubnavCrumbs,
 } from './subnavCrumbs';
 
+import type {BreadcrumbItem} from '@/common/types';
+
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
 
 function navCrumbItem(config: Partial<NavItem> & {label: string}): NavItem {
@@ -314,5 +316,117 @@ describe('withNavCrumbMenus', () => {
     const [crumb] = withNavCrumbMenus([{label: 'English', items}], NAV);
 
     expect(crumb!.items).toBe(items);
+  });
+
+  it('leaves a section that is nothing but its sources to the source crumb', () => {
+    const [entries, all] = withNavCrumbMenus(
+      [
+        {label: 'Entries', href: '/admin/content/entries'},
+        {
+          label: 'All entries',
+          href: '/admin/content/entries',
+          items: [{type: 'link', label: 'All entries', href: '/x'}],
+        },
+      ],
+      NAV,
+      '/admin/content/entries'
+    );
+
+    expect(entries!.items).toBeUndefined();
+    expect(all!.items).toHaveLength(3);
+  });
+
+  describe('in a plugin’s section', () => {
+    const COMMERCE = navCrumbItem({
+      label: 'Commerce',
+      href: '/admin/commerce',
+      subnav: [
+        navCrumbItem({label: 'Orders', href: '/admin/commerce/orders'}),
+        navCrumbItem({label: 'All products', href: '/admin/commerce/products'}),
+        navCrumbItem({
+          label: 'Product Types',
+          href: null,
+          group: true,
+          subnav: [
+            navCrumbItem({
+              label: 'Widgets',
+              href: '/admin/commerce/products/widgets',
+            }),
+            navCrumbItem({
+              label: 'Gizmos',
+              href: '/admin/commerce/products/gizmos',
+            }),
+          ],
+        }),
+        navCrumbItem({label: 'Inventory', href: '/admin/commerce/inventory'}),
+      ],
+    });
+    const PLUGIN_NAV = [navCrumbItem({label: 'Dashboard'}), COMMERCE];
+    const SOURCES = [
+      {type: 'link' as const, label: 'All products', href: '/x'},
+    ];
+
+    const productCrumbs = (current: string): Array<BreadcrumbItem> => [
+      {label: 'Commerce', href: '/admin/commerce'},
+      {label: 'Products', href: '/admin/commerce/products'},
+      {label: 'Current', href: current, items: SOURCES},
+    ];
+
+    it('gives the section’s crumb the whole section', () => {
+      const [commerce] = withNavCrumbMenus(
+        productCrumbs('/admin/commerce/products/gizmos'),
+        PLUGIN_NAV,
+        '/admin/commerce/products/gizmos'
+      );
+
+      expect(commerce!.items).toMatchObject([
+        {type: 'link', label: 'Orders', selected: false},
+        {type: 'link', label: 'All products', selected: false},
+        {
+          type: 'group',
+          heading: 'Product Types',
+          items: [
+            {type: 'link', label: 'Widgets', selected: false},
+            {type: 'link', label: 'Gizmos', selected: true},
+          ],
+        },
+        {type: 'link', label: 'Inventory', selected: false},
+      ]);
+    });
+
+    it('limits a source crumb to what sits under its index', () => {
+      const [, products, source] = withNavCrumbMenus(
+        productCrumbs('/admin/commerce/products'),
+        PLUGIN_NAV,
+        '/admin/commerce/products'
+      );
+
+      expect(products!.items).toBeUndefined();
+      expect(source!.items).toMatchObject([
+        {type: 'link', label: 'All products', selected: true},
+        {
+          type: 'group',
+          heading: 'Product Types',
+          items: [
+            {type: 'link', label: 'Widgets', selected: false},
+            {type: 'link', label: 'Gizmos', selected: false},
+          ],
+        },
+      ]);
+    });
+
+    it('gives the section’s crumb its menu on a screen with no switchers', () => {
+      const [commerce, inventory] = withNavCrumbMenus(
+        [
+          {label: 'Commerce', href: '/admin/commerce'},
+          {label: 'Inventory', href: '/admin/commerce/inventory'},
+        ],
+        PLUGIN_NAV,
+        '/admin/commerce/inventory'
+      );
+
+      expect(commerce!.items).toHaveLength(4);
+      expect(inventory!.items).toBeUndefined();
+    });
   });
 });

@@ -12,30 +12,7 @@ interface CheckboxGroupElement extends HTMLElement {
 }
 
 const state = vi.hoisted(() => ({
-  openSlideout: vi.fn(),
-  setPhotoVolume: vi.fn(),
   setRequire2fa: vi.fn(),
-}));
-
-vi.mock('@actions/Settings/VolumesController', () => ({
-  create: {url: () => '/settings/assets/new'},
-}));
-
-vi.mock('@/common/slideouts', () => ({
-  openSlideout: state.openSlideout,
-}));
-
-vi.mock('@craftcms/ui/vue/CraftCombobox.vue', () => ({
-  default: defineComponent({
-    emits: ['update:modelValue'],
-    setup:
-      (_, {emit}) =>
-      () =>
-        h('button', {
-          'data-create-volume': '',
-          onClick: () => emit('update:modelValue', '__createVolume__'),
-        }),
-  }),
 }));
 
 vi.mock('@/pages/Form.vue', () => ({
@@ -44,19 +21,6 @@ vi.mock('@/pages/Form.vue', () => ({
       (_, {slots}) =>
       () =>
         h('div', [
-          slots.photoVolumeUid?.({
-            control: control('photoVolumeUid', {
-              options: [
-                {label: 'Existing', value: 'existing'},
-                {label: 'Create a new volume…', value: '__createVolume__'},
-              ],
-            }),
-            value: '',
-            setValue: state.setPhotoVolume,
-            editable: true,
-            invalid: false,
-            required: false,
-          }),
           slots.require2fa?.({
             control: control('require2fa', {
               options: [
@@ -87,8 +51,6 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.openSlideout.mockReset();
-  state.setPhotoVolume.mockReset();
   state.setRequire2fa.mockReset();
   container = document.createElement('div');
   document.body.append(container);
@@ -97,24 +59,6 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
-});
-
-it('selects a volume created from the combobox', async () => {
-  mount();
-  container.querySelector<HTMLElement>('[data-create-volume]')?.click();
-
-  expect(state.openSlideout).toHaveBeenCalledWith(
-    '/settings/assets/new',
-    expect.objectContaining({onSaved: expect.any(Function)})
-  );
-
-  const openCall = state.openSlideout.mock.calls[0];
-  if (!openCall) throw new Error('Expected the volume slideout to open.');
-  openCall[1].onSaved({
-    data: {volume: {name: 'User Photos', uid: 'new-volume'}},
-  });
-
-  expect(state.setPhotoVolume).toHaveBeenCalledWith('new-volume');
 });
 
 it('keeps the exclusive two-step verification value shape', () => {

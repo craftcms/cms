@@ -115,7 +115,7 @@
   const {nav, siteCrumb} = useCraftData();
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
-      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? []),
+      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
       subnav.value
     );
 

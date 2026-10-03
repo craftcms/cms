@@ -3,6 +3,7 @@ import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
+import type {Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 
@@ -75,6 +76,7 @@ interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
   $elementDetailsTabs: ElementDetailsTabRegistry;
   $inertia: InertiaPageRegistry;
+  $router: Router;
 }
 
 interface CpNotificationSettings {
