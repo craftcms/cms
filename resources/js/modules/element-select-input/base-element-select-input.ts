@@ -8,6 +8,7 @@ import {
   DragSort,
   firstFocusableElement,
   hasAttr,
+  isCtrlKeyPressed,
   RETURN_KEY,
   Select,
   UP_KEY,
@@ -641,6 +642,31 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         }
       }
 
+      // Route the Edit actions through createElementEditor(), so the slideout knows about this input
+      $element
+        .find('[id*="action-edit"]')
+        .each((_: number, btn: HTMLElement) => {
+          const $btn = $(btn);
+          // Remove the existing handler, and change the ID in case it hasn't been registered yet
+          $btn
+            .off('activate')
+            .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
+          $btn.on('activate', (ev: any) => {
+            const cpEditUrl = $element.data('cp-url');
+            if (
+              cpEditUrl &&
+              ev.originalEvent &&
+              isCtrlKeyPressed(ev.originalEvent)
+            ) {
+              window.open(cpEditUrl);
+              return;
+            }
+            // focus on the button so that when the slideout is closed, it's returned to the button
+            $btn.focus();
+            this.createElementEditor($element);
+          });
+        });
+
       if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         Craft.ui
           .createButton({
@@ -840,6 +866,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
   replaceElement(elementId: number, replacementId: number): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.settings.allowRemove) {
+        reject('Elements cannot be removed from this input.');
+        return;
+      }
+
       const $existing = this.$elements.filter(`[data-id="${elementId}"]`);
 
       if (!$existing.length) {
