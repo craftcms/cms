@@ -9,6 +9,7 @@ import {
   type App,
 } from 'vue';
 import FormRenderer from './FormRenderer.vue';
+import {prepareHtmlNestedOwner} from '@/modules/elements/html-nested-owner';
 import {
   NestedOwnerEditorKey,
   nestedOwnerContext,
@@ -138,48 +139,7 @@ export function defineEntryFieldLayoutFormHost(
                     return null;
                   }
 
-                  const editor = $(form).data('elementEditor') as
-                    | {
-                        settings?: {
-                          isStatic?: boolean;
-                          canCreateDrafts?: boolean;
-                          draftId?: number | null;
-                          canonicalId?: number | null;
-                          isProvisionalDraft?: boolean;
-                        };
-                        saveDraft?: () => Promise<void>;
-                        getDraftElementId?: (id: number) => number;
-                      }
-                    | undefined;
-                  if (!editor || editor.settings?.isStatic) {
-                    return null;
-                  }
-
-                  if (editor.settings?.canCreateDrafts) {
-                    await editor.saveDraft?.();
-                    if (!editor.settings.draftId) {
-                      return null;
-                    }
-                  }
-
-                  const ownerId =
-                    editor.getDraftElementId?.(context.ownerId) ??
-                    context.ownerId;
-                  return {
-                    ...context,
-                    ownerId,
-                    canonicalId: editor.settings?.canonicalId,
-                    draftId: editor.settings?.draftId,
-                    isProvisionalDraft: editor.settings?.isProvisionalDraft,
-                    ownerIsDerivative:
-                      ownerId !== context.ownerId || context.ownerIsDerivative,
-                    ownerIsInDerivativeTree:
-                      ownerId !== context.ownerId ||
-                      context.ownerIsInDerivativeTree,
-                    requiresDerivative: Boolean(
-                      editor.settings?.canCreateDrafts
-                    ),
-                  };
+                  return prepareHtmlNestedOwner(form, context);
                 },
                 refresh: async () => {
                   if (!this.#payload.value) {
