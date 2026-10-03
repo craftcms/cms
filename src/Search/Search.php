@@ -82,34 +82,42 @@ class Search
             return true;
         }
 
-        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
+        $customFields = array_values(array_filter(
+            $element->getFieldLayout()?->getCustomFields() ?? [],
+            fn (FieldInterface $field) => $field->searchable && $field->layoutElement !== null,
+        ));
+
+        // Reindex every instance of a field when any of its instances is being reindexed, so rows
+        // indexed before keywords were split by layout element (which cover every instance) are
+        // always replaced as a whole.
+        /** @var array<int, true>|null $updateFieldIds */
+        $updateFieldIds = null;
+
+        if ($fieldHandles !== null) {
+            $fieldHandles = array_flip($fieldHandles);
+            $updateFieldIds = [];
+
+            foreach ($customFields as $field) {
+                if (isset($fieldHandles[$field->handle])) {
+                    $updateFieldIds[$field->id] = true;
+                }
+            }
+        }
+
         /** @var array<string, FieldInterface> $updateFields */
         $updateFields = [];
         /** @var array<string, int> $ignoreFields */
         $ignoreFields = [];
 
-        if ($fieldHandles !== null) {
-            $fieldHandles = array_flip($fieldHandles);
-        }
-
         foreach ($customFields as $field) {
-            if (! $field->searchable || $field->layoutElement === null) {
-                continue;
-            }
-
-            if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
+            if ($updateFieldIds === null || isset($updateFieldIds[$field->id])) {
                 $updateFields[$field->layoutElement->uid] = $field;
             } else {
                 $ignoreFields[$field->layoutElement->uid] = $field->id;
             }
         }
 
-        // Rows indexed before keywords were split by layout element have no UID. Keep
-        // them for fields that only have instances being left alone, until they're reindexed.
-        $ignoreLegacyFieldIds = array_diff(
-            array_unique($ignoreFields),
-            array_map(fn (FieldInterface $field) => $field->id, $updateFields),
-        );
+        $ignoreFieldIds = array_values(array_unique($ignoreFields));
 
         DB::table(Table::SEARCHINDEX)
             ->where('elementId', $element->id)
@@ -119,10 +127,10 @@ class Search
                 fn (Builder $query) => $query->whereNotIn('layoutElementUid', array_keys($ignoreFields)),
             )
             ->unless(
-                empty($ignoreLegacyFieldIds),
+                empty($ignoreFieldIds),
                 fn (Builder $query) => $query->whereNot(fn (Builder $query) => $query
                     ->where('layoutElementUid', '0')
-                    ->whereIn('fieldId', array_map(fn (int $fieldId) => (string) $fieldId, $ignoreLegacyFieldIds))),
+                    ->whereIn('fieldId', array_map(fn (int $fieldId) => (string) $fieldId, $ignoreFieldIds))),
             )
             ->delete();
 

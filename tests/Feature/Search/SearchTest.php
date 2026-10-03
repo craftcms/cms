@@ -60,6 +60,33 @@ function createEntriesWithMultiInstanceField(): array
     ]);
 }
 
+function replaceWithLegacySearchIndexRow(Entry $entry, string $keywords): void
+{
+    DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->where('attribute', 'field')
+        ->delete();
+    DB::table(Table::SEARCHINDEX)->insert([
+        'elementId' => $entry->id,
+        'attribute' => 'field',
+        'fieldId' => (string) $entry->getFieldLayout()->getCustomFields()[0]->id,
+        'layoutElementUid' => '0',
+        'siteId' => $entry->siteId,
+        'keywords' => " $keywords ",
+    ]);
+}
+
+/** @return array<string, string> */
+function indexedFieldKeywords(Entry $entry): array
+{
+    return DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->where('attribute', 'field')
+        ->pluck('keywords', 'layoutElementUid')
+        ->map(fn (string $keywords) => trim($keywords))
+        ->all();
+}
+
 describe('indexElementAttributes', function () {
     test('indexes element title in the search index', function () {
         $entry = createIndexedEntry('Hello World');
@@ -98,19 +125,32 @@ describe('indexElementAttributes', function () {
         ]);
     });
 
-    test('leaves other instances of a field alone when reindexing one instance', function () {
+    test('reindexes every instance of a field when one instance is reindexed', function () {
         [$entry] = createEntriesWithMultiInstanceField();
         $entry->setFieldValues(['summary' => 'plum', 'teaser' => 'fig']);
 
         Search::indexElementAttributes($entry, ['summary']);
 
-        $keywords = DB::table(Table::SEARCHINDEX)
-            ->where('elementId', $entry->id)
-            ->where('attribute', 'field')
-            ->pluck('keywords')
-            ->map(fn (string $keywords) => trim($keywords));
+        expect(array_values(indexedFieldKeywords($entry)))->toEqualCanonicalizing(['plum', 'fig']);
+    });
 
-        expect($keywords->all())->toEqualCanonicalizing(['plum', 'pear']);
+    test('keeps legacy keywords for fields that aren’t being reindexed', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        replaceWithLegacySearchIndexRow($entry, 'apple pear');
+
+        Search::indexElementAttributes($entry, []);
+
+        expect(indexedFieldKeywords($entry))->toBe(['0' => 'apple pear']);
+    });
+
+    test('replaces legacy keywords when their field is reindexed', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        replaceWithLegacySearchIndexRow($entry, 'apple pear');
+
+        Search::indexElementAttributes($entry, ['summary']);
+
+        expect(indexedFieldKeywords($entry))->not->toHaveKey('0')
+            ->and(array_values(indexedFieldKeywords($entry)))->toEqualCanonicalizing(['apple', 'pear']);
     });
 
     test('replaces existing index data on re-index', function () {
@@ -199,18 +239,7 @@ describe('searchElements', function () {
 
     test('matches keywords indexed before instances were indexed separately', function () {
         [, $entry2] = createEntriesWithMultiInstanceField();
-        DB::table(Table::SEARCHINDEX)
-            ->where('elementId', $entry2->id)
-            ->where('attribute', 'field')
-            ->delete();
-        DB::table(Table::SEARCHINDEX)->insert([
-            'elementId' => $entry2->id,
-            'attribute' => 'field',
-            'fieldId' => (string) $entry2->getFieldLayout()->getCustomFields()[0]->id,
-            'layoutElementUid' => '0',
-            'siteId' => $entry2->siteId,
-            'keywords' => ' pear apple ',
-        ]);
+        replaceWithLegacySearchIndexRow($entry2, 'pear apple');
 
         expect(entryQuery()->search('teaser:apple')->ids())->toBe([$entry2->id]);
     });
