@@ -48,6 +48,8 @@ it('renders a craft-field in fieldset mode with asField()', function () {
         locationGroup()
             ->asField()
             ->instructions('The location where assets can be selected from.')
+            ->instructionsPosition('after')
+            ->layoutUid('layout-element-uid')
             ->width(FieldWidth::Half),
     );
     $field = $crawler->filter('craft-field[fieldset]');
@@ -55,6 +57,8 @@ it('renders a craft-field in fieldset mode with asField()', function () {
     expect($field)->toHaveCount(1)
         ->and($field->attr('label'))->toBe('Asset Location')
         ->and($field->attr('class'))->toContain('width-50')
+        ->and($field->attr('instructions-position'))->toBe('after')
+        ->and($field->attr('data-layout-element'))->toBe('layout-element-uid')
         ->and($crawler->filter('legend'))->toHaveCount(0)
         ->and($field->filter('craft-field.width-33'))->toHaveCount(1)
         ->and($field->filter('craft-field.width-66'))->toHaveCount(1);
