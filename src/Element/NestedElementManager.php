@@ -9,12 +9,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\ChangeSortOrder;
-use CraftCms\Cms\Element\Actions\MoveDown;
-use CraftCms\Cms\Element\Actions\MoveUp;
 use CraftCms\Cms\Element\Concerns\LegacyNestedElementManager;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -35,13 +30,10 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Drafts as DraftsFacade;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Workflows as WorkflowsFacade;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Generator;
@@ -292,21 +284,17 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Returns the settings/data payload for a card grid of the nested
-     * elements — the same settings `getCardsHtml()` encodes into its
-     * `<craft-nested-element-manager settings>` attribute, plus an
-     * `elements` list of per-element card data in the shape the Vue element
-     * cards consume (`id`, `cardAttributes`, and the
+     * Returns the settings/data payload for a card grid of nested elements,
+     * including per-element card data in the shape the Vue cards consume
+     * (`id`, `cardAttributes`, and the
      * `cardHeaderHtml`/`cardContentHtml`/`cardFooterHtml` parts) — so a
      * front-end (e.g. a Vue page) can render the cards itself instead of
      * consuming server-rendered markup.
      *
-     * Returns `null` when the owner hasn't been saved yet (the HTML method
-     * renders its "can only be created after the owner has been saved"
-     * message for that case).
+     * Returns `null` when the owner hasn't been saved yet.
      *
      * Grants the session authorization the nested-element endpoints require,
-     * same as the HTML path. Namespace-derived values (`baseInputName`)
+     * when the control is editable. Namespace-derived values (`baseInputName`)
      * reflect the calling namespace context.
      *
      * @param  array<string, mixed>  $config
@@ -330,9 +318,6 @@ class NestedElementManager extends Component
         $settings = $this->viewSettings($owner, $config, self::VIEW_MODE_CARDS, $attribute)
             + $this->cardsSettings($config);
 
-        // The HTML views pass the nested element type as an attribute on
-        // `<craft-nested-element-manager>`; the data path carries it in the
-        // payload (e.g. for `elements/create` requests).
         $settings['elementType'] = $this->elementType;
 
         $elementHtml = app(ElementHtml::class);
@@ -406,53 +391,8 @@ class NestedElementManager extends Component
         ], fn (mixed $value): bool => $value !== null));
     }
 
-    /** @param array<string,mixed> $config */
-    public function getCardsHtml(?ElementInterface $owner, array $config = []): string
-    {
-        $config = $this->normalizeCardsConfig($config);
-
-        return $this->createView(
-            $owner,
-            $config,
-            self::VIEW_MODE_CARDS,
-            function (string $id, array $config, $attribute, &$settings) use ($owner) {
-                $settings += $this->cardsSettings($config);
-
-                $html = Html::beginTag('div', options: [
-                    'id' => $id,
-                    'class' => 'nested-element-cards grid gap-2',
-                ]);
-
-                $elements = $this->cardElements($owner);
-
-                if (! empty($elements)) {
-                    $html .= Html::ul()->items(...array_map(
-                        fn (ElementInterface $element) => Html::li(app(ElementHtml::class)->elementCardHtml(
-                            $element,
-                            $this->cardConfig($config, $element),
-                        ))->encode(false),
-                        $elements,
-                    ))->class(
-                        'elements',
-                        $config['showInGrid'] ? 'card-grid' : 'cards',
-                        $config['prevalidate'] ? 'prevalidate' : ''
-                    )->render();
-                }
-
-                $html .= Html::tag('craft-empty', t('Nothing yet.'), [
-                    'class' => array_keys(array_filter([
-                        'hidden' => ! empty($elements),
-                    ])),
-                ]);
-
-                return $html.Html::endTag('div');
-            },
-        );
-    }
-
     /**
-     * Applies the cards-view config defaults (shared by `getCardsHtml()` and
-     * `getCardsData()`).
+     * Applies the cards-view config defaults.
      *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
@@ -554,9 +494,7 @@ class NestedElementManager extends Component
      * Returns the settings/data payload for a client-rendered embedded index
      * of the nested elements.
      *
-     * Returns `null` when the owner hasn't been saved yet (the HTML method
-     * renders its "can only be created after the owner has been saved"
-     * message for that case).
+     * Returns `null` when the owner hasn't been saved yet.
      *
      * Grants the session authorization the nested-element endpoints require
      * when the control is editable. Legacy-only index settings are omitted.
@@ -578,47 +516,18 @@ class NestedElementManager extends Component
 
         $settings = $this->viewSettings($owner, $config, self::VIEW_MODE_INDEX, $attribute);
         $settings['elementType'] = $this->elementType;
-        $settings['indexSettings'] = $this->indexSettings($owner, $config, $attribute, false);
-        unset(
-            $settings['ownerIdParam'],
-            $settings['indexSettings']['namespace'],
-            $settings['indexSettings']['criteria'],
-            $settings['indexSettings']['batchSize'],
-            $settings['indexSettings']['actions'],
-            $settings['indexSettings']['allowedViewModes'],
-            $settings['indexSettings']['canHaveDrafts'],
-        );
+        $settings['indexSettings'] = [
+            'showHeaderColumn' => $config['showHeaderColumn'],
+            'storageKey' => $config['storageKey'],
+            'static' => $config['static'],
+        ];
+        unset($settings['ownerIdParam']);
+
+        if (! $config['static'] && $config['sortable']) {
+            $this->authorizeNestedElementReordering($owner, $attribute);
+        }
 
         return $settings;
-    }
-
-    /** @param array<string,mixed> $config */
-    public function getIndexHtml(?ElementInterface $owner, array $config = []): string
-    {
-        $config = $this->getIndexConfig($owner, $config);
-
-        return $this->createView(
-            $owner,
-            $config,
-            self::VIEW_MODE_INDEX,
-            function (string $id, array $config, string $attribute, array &$settings) use ($owner): string {
-                $settings['indexSettings'] = $this->indexSettings($owner, $config, $attribute);
-
-                return app(ElementIndexHtml::class)->html($this->elementType, [
-                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
-                    'context' => 'embedded-index',
-                    'defaultSort' => $config['defaultSort'],
-                    'defaultTableColumns' => $config['defaultTableColumns'],
-                    'defaultViewMode' => $config['defaultViewMode'],
-                    'fieldLayouts' => $config['fieldLayouts'],
-                    'id' => $id,
-                    'prevalidate' => $config['prevalidate'] ?? false,
-                    'registerJs' => false,
-                    'showSiteMenu' => false,
-                    'sources' => false,
-                ]);
-            },
-        );
     }
 
     /**
@@ -662,10 +571,6 @@ class NestedElementManager extends Component
 
             if ($data === null) {
                 return $control;
-            }
-
-            if ($config['static']) {
-                $control->indexHtml($this->getIndexHtml($owner, $config));
             }
 
             return $control
@@ -730,8 +635,7 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Applies the index-view config defaults (shared by `getIndexHtml()` and
-     * `getIndexData()`).
+     * Applies the index-view config defaults.
      *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
@@ -742,128 +646,8 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Builds the `indexSettings` portion of the view settings: the owner
-     * criteria, view-mode/pagination options, and (when sortable) the
-     * reorder action configs.
-     *
-     * @param  array<string, mixed>  $config
-     * @return array<string, mixed>
-     */
-    private function indexSettings(
-        ElementInterface $owner,
-        array $config,
-        string $attribute,
-        bool $includeActions = true,
-    ): array {
-        $criteria = [
-            $this->ownerIdParam => $owner->id,
-        ];
-
-        if ($owner->getIsRevision()) {
-            $criteria['revisions'] = null;
-            $criteria['trashed'] = null;
-            $criteria['drafts'] = false;
-        }
-
-        $indexSettings = [
-            'namespace' => InputNamespace::get(),
-            'allowedViewModes' => $config['allowedViewModes']
-                ? array_map(fn ($mode) => Str::toString($mode), $config['allowedViewModes'])
-                : null,
-            'showHeaderColumn' => $config['showHeaderColumn'],
-            'criteria' => array_merge($criteria, $this->criteria),
-            'batchSize' => $config['pageSize'],
-            'actions' => [],
-            'canHaveDrafts' => $config['canHaveDrafts'] ?? $this->elementType::hasDrafts(),
-            'storageKey' => $config['storageKey'],
-            'static' => $config['static'],
-        ];
-
-        if (! $config['static'] && ($config['sortable'] ?? false)) {
-            $this->authorizeNestedElementReordering($owner, $attribute);
-
-            if ($includeActions) {
-                foreach ([
-                    new ChangeSortOrder($owner, $attribute),
-                    new MoveUp($owner, $attribute),
-                    new MoveDown($owner, $attribute),
-                ] as $action) {
-                    HtmlStack::startJsBuffer();
-                    $actionConfig = ElementHelper::actionConfig($action);
-                    $actionConfig['bodyHtml'] = HtmlStack::clearJsBuffer();
-                    $indexSettings['actions'][] = $actionConfig;
-                }
-            }
-        }
-
-        return $indexSettings;
-    }
-
-    /**
-     * Adapts manager settings for `<craft-nested-element-manager>`, which
-     * expects a lone create option as its attributes and icons as SVG markup.
-     *
-     * @param  array<string, mixed>  $settings
-     * @return array<string, mixed>
-     */
-    public static function htmlManagerSettings(array $settings): array
-    {
-        if (empty($settings['createAttributes']) || ! array_is_list($settings['createAttributes'])) {
-            return $settings;
-        }
-
-        if (count($settings['createAttributes']) === 1) {
-            $settings['createAttributes'] = array_first($settings['createAttributes'])['attributes'];
-
-            return $settings;
-        }
-
-        $settings['createAttributes'] = array_map(function (array $attributes): array {
-            if (isset($attributes['icon'])) {
-                $attributes['icon'] = Icons::svg($attributes['icon']);
-            }
-
-            return $attributes;
-        }, $settings['createAttributes']);
-
-        return $settings;
-    }
-
-    /** @param array<string,mixed> $config */
-    private function createView(?ElementInterface $owner, array $config, string $mode, callable $renderHtml): string
-    {
-        if (! $owner?->id) {
-            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => $this->elementType::pluralDisplayName(),
-                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
-            ]);
-
-            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
-        }
-
-        $config = $this->normalizeViewConfig($config);
-        $attribute = $this->viewAttribute();
-        if (! $config['static']) {
-            $this->authorizeNestedElementManagement($owner, $attribute);
-        }
-
-        return InputNamespace::namespaceInputs(function () use ($mode, $attribute, $owner, $config, $renderHtml) {
-            $id = sprintf('element-index-%s', mt_rand());
-
-            $settings = self::htmlManagerSettings($this->viewSettings($owner, $config, $mode, $attribute));
-
-            $html = $renderHtml($id, $config, $attribute, $settings);
-
-            return Html::tag('craft-nested-element-manager', $html, [
-                'element-type' => $this->elementType,
-                'settings' => Json::encode($settings),
-            ]);
-        }, Html::id($this->field->handle ?? $attribute));
-    }
-
-    /**
      * Applies the shared view config defaults (create/paste/limit options)
-     * used by both the HTML and data paths.
+     * used by cards and indexes.
      *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
@@ -941,9 +725,7 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Builds the manager settings payload shared by the HTML views (encoded
-     * into `<craft-nested-element-manager settings>`) and the data path
-     * ({@see getIndexData()}).
+     * Builds the manager settings payload shared by cards and indexes.
      *
      * @param array{
      *     sortable: bool,
@@ -968,6 +750,7 @@ class NestedElementManager extends Component
             'ownerIsDerivative' => $owner->getIsDerivative(),
             'ownerIsInDerivativeTree' => ElementHelper::isDraftOrRevision($owner),
             'ownerIsUnpublishedDraft' => $owner->getIsUnpublishedDraft(),
+            'ownerHasDrafts' => $owner->getRootOwner()::hasDrafts(),
             'attribute' => $attribute,
             'sortable' => $config['sortable'],
             'canCreate' => $config['canCreate'],

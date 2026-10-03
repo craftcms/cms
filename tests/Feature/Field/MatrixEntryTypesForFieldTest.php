@@ -6,9 +6,14 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
+
+beforeEach(function () {
+    $this->actingAs(User::findOne());
+});
 
 /**
  * @return array{0: Matrix, 1: Entry, 2: EntryTypeModel, 3: EntryTypeModel}
@@ -29,16 +34,6 @@ function createMatrixEntryTypesForFieldSetup(string $viewMode): array
     $field = $result->element->getFieldLayout()->getFieldByHandle('matrixField');
 
     return [$field, $result->element, $allowedEntryType, $excludedEntryType];
-}
-
-/**
- * @return array<string, mixed>
- */
-function nestedElementManagerSettings(string $html): array
-{
-    preg_match('/<craft-nested-element-manager[^>]*\ssettings="([^"]*)"/', $html, $matches);
-
-    return Json::decode(html_entity_decode($matches[1] ?? '{}'));
 }
 
 dataset('nested element manager view modes', [
@@ -71,11 +66,11 @@ test('nested element manager view modes use entry types defined by listeners', f
         ));
     });
 
-    $settings = nestedElementManagerSettings($field->getInlineInputHtml($value, $owner));
+    $settings = $field->formControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
 
     expect($eventCount)->toBe(1)
         ->and($settings['pasteableData']['values'])->toBe([$allowedEntryType->id])
-        ->and($settings['createAttributes'])->toBe(['typeId' => $allowedEntryType->id]);
+        ->and(array_column(array_column($settings['createAttributes'], 'attributes'), 'typeId'))->toBe([$allowedEntryType->id]);
 })->with('nested element manager view modes');
 
 test('nested element manager view modes use all entry types without listeners', function (string $viewMode) {
@@ -84,7 +79,7 @@ test('nested element manager view modes use all entry types without listeners', 
     $value = Entry::find();
     $value->setResultOverride([]);
 
-    $settings = nestedElementManagerSettings($field->getInlineInputHtml($value, $owner));
+    $settings = $field->formControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
 
     expect($settings['pasteableData']['values'])->toBe([$allowedEntryType->id, $excludedEntryType->id])
         ->and(array_column(array_column($settings['createAttributes'], 'attributes'), 'typeId'))->toBe([$allowedEntryType->id, $excludedEntryType->id]);
