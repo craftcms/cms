@@ -14,6 +14,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import type {ColumnDef} from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import ElementBulkActionsBar from '@/modules/elements/index/components/ElementBulkActionsBar.vue';
   import {saveInlineElements} from '@/modules/elements/index/save-inline-elements';
@@ -116,7 +117,7 @@
               ]),
             ]
           : []),
-      ]) as ComputedRef<Array<ColumnDef<ElementIndexRow>>>,
+      ]) as ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>,
   });
 
   const {
@@ -421,7 +422,7 @@
         >
           <label
             v-if="canReorder && pagination.last_page > 1"
-            class="flex items-center gap-2"
+            class="flex items-center gap-md"
           >
             {{ t('Move to page') }}
             <select v-model.number="movePage" class="text small">

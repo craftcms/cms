@@ -118,7 +118,7 @@
         </craft-button>
       </template>
     </ActionMenu>
-    <div v-else ref="addButtons" class="flex w-max gap-1 items-center">
+    <div v-else ref="addButtons" class="flex w-max gap-sm items-center">
       <craft-button
         v-for="(choice, index) in choices"
         :key="index"

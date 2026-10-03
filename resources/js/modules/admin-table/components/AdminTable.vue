@@ -1,5 +1,6 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import type {Table} from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import type {BulkAction} from '@/modules/elements/types/actions';
   import AdminTableBulkActionsBar from './AdminTableBulkActionsBar.vue';
   import DataTable from '@/common/components/DataTable.vue';
@@ -10,7 +11,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
@@ -117,13 +118,13 @@
       />
       <PaginationControls
         v-else
-        :page-index="table.getState().pagination.pageIndex"
-        :page-size="table.getState().pagination.pageSize"
+        :page-index="table.atoms.pagination.get().pageIndex"
+        :page-size="table.atoms.pagination.get().pageSize"
         :page-count="table.getPageCount()"
         :paginated="
           Boolean(
             table.options.manualPagination ||
-            table.options.getPaginationRowModel
+            'paginatedRowModel' in table.options.features
           )
         "
         :from="from"

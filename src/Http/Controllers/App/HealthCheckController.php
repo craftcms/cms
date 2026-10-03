@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\App;
 
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
+use ReflectionClass;
 use Throwable;
 
 /**
@@ -32,7 +34,9 @@ class HealthCheckController
             $exception = $e->getMessage();
         }
 
-        return response(View::file(base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/health-up.blade.php'), [
+        $view = dirname((string) new ReflectionClass(Application::class)->getFileName()).'/resources/health-up.blade.php';
+
+        return response(View::file($view, [
             'exception' => $exception,
         ]), status: $exception ? 500 : 200);
     }

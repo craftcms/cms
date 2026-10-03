@@ -3,7 +3,7 @@
   import {h} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {
     create,
     destroy,
@@ -21,7 +21,7 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<UserGroup>();
-  const table = useVueTable({
+  const table = useCraftTable({
     get columns() {
       return [
         columnHelper.link('name', {
@@ -50,7 +50,6 @@
     get data() {
       return props.groups;
     },
-    getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
 </script>
 

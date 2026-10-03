@@ -1,9 +1,8 @@
+import type {ColumnDef, RowSelectionState} from '@tanstack/vue-table';
 import {
-  getCoreRowModel,
-  useVueTable,
-  type ColumnDef,
-} from '@tanstack/vue-table';
-import type {RowSelectionState} from '@tanstack/table-core';
+  type CraftTableFeatures,
+  useCraftTable,
+} from '@/modules/admin-table/craftTable';
 import {
   computed,
   shallowRef,
@@ -72,9 +71,9 @@ interface UseElementIndexOptions {
     elementIndex: ReturnType<typeof useContentIndexData>
   ) => ElementIndexRow[];
   columns?: (
-    columns: ComputedRef<Array<ColumnDef<ElementIndexRow>>>,
+    columns: ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>,
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
-  ) => ComputedRef<Array<ColumnDef<ElementIndexRow>>>;
+  ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
   refresh: () => Promise<boolean>;
@@ -195,7 +194,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     structureView.toggle(id);
   }
 
-  const table = useVueTable<ElementIndexRow>({
+  const table = useCraftTable<ElementIndexRow>({
     get data() {
       return data.value;
     },
@@ -227,7 +226,6 @@ export function useElementIndex(options: UseElementIndexOptions) {
           ? cascadeStructureSelection(rowSelection.value, next, data.value)
           : next;
     },
-    getCoreRowModel: getCoreRowModel<ElementIndexRow>(),
     ...sortingConfig,
     ...paginationConfig,
     enableMultiSort: false,

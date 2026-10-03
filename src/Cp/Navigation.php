@@ -533,8 +533,8 @@ readonly class Navigation
     }
 
     /**
-     * Gives an item its id and an absolute URL, and does the same for anything
-     * beneath it.
+     * Gives an item its id and an absolute URL, renders an icon it can't name,
+     * and does the same for anything beneath it.
      */
     private function normalize(NavItem $item): NavItem
     {
@@ -544,6 +544,8 @@ readonly class Navigation
             $item->href = Url::url($item->href);
         }
 
+        $this->resolveIcon($item);
+
         if (is_array($item->subnav)) {
             $item->subnav = array_map(
                 $this->normalize(...),
@@ -552,6 +554,46 @@ readonly class Navigation
         }
 
         return $item;
+    }
+
+    /**
+     * Renders an icon the control panel can't look up by name.
+     *
+     * The nav draws a named icon through `craft-nav-item`'s `icon` attribute
+     * and anything else as inline markup, so those are the only two shapes it
+     * understands. A plugin supplies neither: `cpNavIconPath()` returns the
+     * path to its own `icon-mask.svg`, which went into `icon` and was then
+     * looked up as though it were a system icon's name — so no plugin's icon
+     * ever appeared.
+     *
+     * Rendering it here covers plugins written for Craft 6 and those coming
+     * through the Yii adapter alike, since both arrive as a path in the same
+     * field, and neither has to change.
+     *
+     * Deliberately narrow: only a value naming an SVG file is rendered, so the
+     * named icons the rest of the nav uses stay names. Inlining every icon
+     * would weigh down a tree that is cached and shared across every control
+     * panel page.
+     */
+    private function resolveIcon(NavItem $item): void
+    {
+        if ($item->iconSvg !== null || $item->icon === null) {
+            return;
+        }
+
+        if (! str_ends_with(strtolower($item->icon), '.svg')) {
+            return;
+        }
+
+        $svg = Icons::svg($item->icon);
+
+        // `Icons::svg()` logs and returns an empty string for anything it
+        // can't read, so a missing or unreadable file leaves the item as it
+        // was rather than giving it a blank icon.
+        if ($svg !== null && $svg !== '') {
+            $item->iconSvg = $svg;
+            $item->icon = null;
+        }
     }
 
     /** The stable id an item is known by, in the tree and in the badge map. */

@@ -1514,7 +1514,7 @@
       >
         <template #label="{id: uid}">
           <div
-            class="flex flex-nowrap gap-1 items-center"
+            class="flex flex-nowrap gap-sm items-center"
             data-matrix-block-titlebar
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
@@ -1581,7 +1581,7 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="mt-3">
+      <div v-if="canAdd" class="mt-md">
         <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
@@ -1594,7 +1594,7 @@
           type="button"
           variant="dashed"
           icon="duplicate"
-          class="mt-1"
+          class="mt-sm"
           :loading="pasting"
           :disabled="busy"
           @click.stop.prevent="pasteBlocks()"

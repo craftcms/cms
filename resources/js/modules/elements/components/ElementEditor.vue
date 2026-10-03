@@ -380,7 +380,7 @@
     </div>
   </LayoutSlot>
 
-  <div ref="content" class="py-3">
+  <div ref="content" class="py-lg">
     <CpContainer>
       <component
         :is="formWrapper ?? 'div'"

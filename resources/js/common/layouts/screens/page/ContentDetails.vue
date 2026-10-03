@@ -30,6 +30,7 @@
       :controls="detailsId"
     />
     <div :id="detailsId" class="cp-details sticky top-0">
+      <h2 class="sr-only">{{ t('Details') }}</h2>
       <LayoutSlotOutlet name="content-details">
         <slot name="content-details"></slot>
       </LayoutSlotOutlet>

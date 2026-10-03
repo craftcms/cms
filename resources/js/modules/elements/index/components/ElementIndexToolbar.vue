@@ -80,6 +80,18 @@
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
 
+  /**
+   * Clears the search and returns focus to the input, since the clear button
+   * unmounts once the search is empty. This applies on mobile too, so screen
+   * reader users there aren't left without focus.
+   */
+  function clearSearch(): void {
+    search.value = '';
+    filterAnchor.value
+      ?.querySelector<HTMLElement>('craft-input[name="search"]')
+      ?.focus();
+  }
+
   function onSearchEnter(event: KeyboardEvent): void {
     if (props.asForm !== false) {
       return;
@@ -146,12 +158,12 @@
       <div ref="filterAnchor" class="element-toolbar__filter">
         <CraftInput
           name="search"
-          :label="t('Search term')"
+          :label="t('Search')"
           v-model="search"
           label-sr-only
-          :disabled="processing"
           @keydown.enter="onSearchEnter"
         >
+          <craft-icon name="search" slot="prefix"></craft-icon>
           <div slot="suffix" class="flex">
             <craft-button
               type="button"
@@ -160,7 +172,7 @@
               variant="plain"
               v-if="search"
               .disabled="processing"
-              @click="search = ''"
+              @click="clearSearch"
             >
               <craft-icon
                 name="xmark-large"

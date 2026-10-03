@@ -3,13 +3,13 @@
   import {router} from '@inertiajs/vue3';
   import {
     type ColumnDef,
-    getCoreRowModel,
-    getSortedRowModel,
+    createSortedRowModel,
     type Row,
     type RowSelectionState,
     type SortingState,
+    tableFeatures,
     type Updater,
-    useVueTable,
+    useTable,
   } from '@tanstack/vue-table';
   import {StorageSerializers, watchDebounced} from '@vueuse/core';
   import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
@@ -39,6 +39,10 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {
+    craftTableFeatures,
+    type CraftTableFeatures,
+  } from '@/modules/admin-table/craftTable';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import type {FormNodePayload, FormValues} from './types';
 
@@ -284,7 +288,10 @@
   }
 
   function compareRows(key: string) {
-    return (a: Row<TableRow>, b: Row<TableRow>): number => {
+    return (
+      a: Row<CraftTableFeatures, TableRow>,
+      b: Row<CraftTableFeatures, TableRow>
+    ): number => {
       const left = sortValue(a.original, key);
       const right = sortValue(b.original, key);
 
@@ -590,12 +597,12 @@
   }
 
   const columns = computed(() => {
-    const cols: ColumnDef<TableRow, any>[] = props.node.props.columns.map(
-      (column, columnIndex) =>
+    const cols: ColumnDef<CraftTableFeatures, TableRow, any>[] =
+      props.node.props.columns.map((column, columnIndex) =>
         columnHelper.accessor(column.key, {
           header: column.label,
           enableSorting: !!column.sortable,
-          sortingFn: compareRows(column.key),
+          sortFn: compareRows(column.key),
           cell: ({getValue, row}) => {
             const value = getValue();
             let rendered;
@@ -628,7 +635,7 @@
             return rendered;
           },
         })
-    );
+      );
 
     if (props.node.props.deleteUrl) {
       cols.push(
@@ -703,7 +710,13 @@
     fetchPage(next.pageIndex + 1);
   }
 
-  const table = useVueTable({
+  const features = tableFeatures({
+    ...craftTableFeatures,
+    sortedRowModel: createSortedRowModel(),
+  });
+
+  const table = useTable<CraftTableFeatures, TableRow>({
+    features,
     get data() {
       return displayedRows.value;
     },
@@ -749,8 +762,6 @@
       return isEndpointMode.value;
     },
     onSortingChange,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     get manualPagination() {
       return isEndpointMode.value;
     },
