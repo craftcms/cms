@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
-use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-
-use function CraftCms\Cms\t;
 
 /**
  * A nested element manager whose elements are managed outside the owner form,
@@ -37,8 +34,6 @@ class NestedElements extends Control
     /** @var array<string, mixed>|null */
     private ?array $index = null;
 
-    private ?string $indexHtml = null;
-
     private ?string $unavailableMessage = null;
 
     public function component(): string
@@ -51,63 +46,19 @@ class NestedElements extends Control
         return true;
     }
 
-    /**
-     * Renders the existing nested element manager markup for server-rendered forms.
-     */
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        if (($control->props['viewMode'] ?? null) === 'index' && isset($control->props['indexHtml'])) {
-            return $control->props['indexHtml'];
-        }
-
-        $manager = $control->props['manager'] ?? null;
-        $unavailableMessage = $control->props['unavailableMessage'] ?? null;
-
-        if (is_string($unavailableMessage) || ! is_array($manager)) {
-            return Html::tag('div', Html::encode((string) $unavailableMessage), [
-                'class' => 'pane no-border zilch small',
-            ]);
-        }
-
-        /** @var list<array<string, mixed>> $cards */
-        $cards = $control->props['cards'] ?? [];
-        $elementHtml = app(ElementHtml::class);
-        $html = '';
-
-        if ($cards !== []) {
-            $html .= Html::ul()->items(...array_map(
-                fn (array $card) => Html::li($elementHtml->composeElementCardHtml(
-                    $card['cardAttributes'],
-                    $card['cardHeaderHtml'],
-                    $card['cardActionsHtml'],
-                    $card['cardContentHtml'],
-                    $card['cardFooterHtml'],
-                    $card['cardThumbHtml'],
-                    $card['thumbAlignment'],
-                    (bool) ($manager['selectable'] ?? false),
-                ))->encode(false),
-                $cards,
-            ))->class(
-                'elements',
-                ($manager['showInGrid'] ?? false) ? 'card-grid' : 'cards',
-                ($manager['prevalidate'] ?? false) ? 'prevalidate' : '',
-            )->render();
-        }
-
-        $html .= Html::tag('craft-empty', t('Nothing yet.'), [
-            'class' => $cards === [] ? [] : ['hidden'],
+        $input = $attributes['name'] === null ? '' : Html::hiddenInput($attributes['name'], '*', [
+            'disabled' => true,
+            'data-nested-modified' => true,
         ]);
 
-        return Html::tag('craft-nested-element-manager', Html::tag('div', $html, [
-            'id' => $attributes['id'],
-            'class' => 'nested-element-cards grid gap-2',
+        return Html::tag('craft-nested-elements-control', $input.Html::tag('div', '', [
+            'data-nested-mount' => true,
         ]), [
-            'element-type' => $manager['elementType'],
-            // The legacy manager marks the field modified through this input name.
-            'settings' => Json::encode(NestedElementManager::htmlManagerSettings([
-                ...$manager,
-                'baseInputName' => $attributes['name'],
-            ])),
+            'id' => $attributes['id'],
+            'data-control' => Json::encode($control, JSON_HEX_AMP | JSON_THROW_ON_ERROR),
+            'data-scope' => Json::encode($renderer->scope()),
         ]);
     }
 
@@ -142,13 +93,6 @@ class NestedElements extends Control
         return $this;
     }
 
-    public function indexHtml(?string $html): static
-    {
-        $this->indexHtml = $html;
-
-        return $this;
-    }
-
     public function unavailableMessage(?string $message): static
     {
         $this->unavailableMessage = $message;
@@ -166,7 +110,6 @@ class NestedElements extends Control
                 $this->cards,
             ),
             ...($this->index === null ? [] : ['index' => $this->index]),
-            ...($this->indexHtml === null ? [] : ['indexHtml' => $this->indexHtml]),
             'unavailableMessage' => $this->unavailableMessage,
         ];
     }
