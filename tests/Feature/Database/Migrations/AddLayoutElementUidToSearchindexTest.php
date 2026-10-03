@@ -25,6 +25,7 @@ it('adds the layoutElementUid column to the search index primary key', function 
         'fieldId' => 1,
         'siteId' => 1,
         'keywords' => ' apple ',
+        ...(DB::isPgsql() ? ['keywords_vector' => ' apple '] : []),
     ]);
 
     runAddLayoutElementUidToSearchindexMigration();
@@ -32,7 +33,7 @@ it('adds the layoutElementUid column to the search index primary key', function 
     $primaryKey = collect(Schema::getIndexes(Table::SEARCHINDEX))->firstWhere('primary', true);
 
     expect($primaryKey['columns'])->toEqualCanonicalizing(['elementId', 'attribute', 'fieldId', 'layoutElementUid', 'siteId'])
-        ->and(DB::table(Table::SEARCHINDEX)->where('elementId', 1)->value('layoutElementUid'))->toBe('0');
+        ->and(trim(DB::table(Table::SEARCHINDEX)->where('elementId', 1)->value('layoutElementUid')))->toBe('0');
 });
 
 it('leaves up-to-date installs alone', function () {

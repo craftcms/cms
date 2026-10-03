@@ -73,6 +73,7 @@ function replaceWithLegacySearchIndexRow(Entry $entry, string $keywords): void
         'layoutElementUid' => '0',
         'siteId' => $entry->siteId,
         'keywords' => " $keywords ",
+        ...(DB::isPgsql() ? ['keywords_vector' => " $keywords "] : []),
     ]);
 }
 
@@ -82,8 +83,8 @@ function indexedFieldKeywords(Entry $entry): array
     return DB::table(Table::SEARCHINDEX)
         ->where('elementId', $entry->id)
         ->where('attribute', 'field')
-        ->pluck('keywords', 'layoutElementUid')
-        ->map(fn (string $keywords) => trim($keywords))
+        ->get(['layoutElementUid', 'keywords'])
+        ->mapWithKeys(fn (object $row) => [trim($row->layoutElementUid) => trim($row->keywords)])
         ->all();
 }
 
