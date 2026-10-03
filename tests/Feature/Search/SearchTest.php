@@ -5,6 +5,11 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Events\SearchResultsResolving;
@@ -33,6 +38,56 @@ function createIndexedEntry(string $title, ?string $slug = null): EntryModel
     return $factory->create();
 }
 
+/** @return array{0: Entry, 1: Entry} */
+function createEntriesWithMultiInstanceField(): array
+{
+    $field = Field::factory()->create(['type' => PlainText::class, 'handle' => 'body', 'searchable' => true]);
+    $fieldLayout = FieldLayout::factory()->withContentTab([
+        new CustomField(config: ['fieldUid' => $field->uid, 'handle' => 'summary']),
+        new CustomField(config: ['fieldUid' => $field->uid, 'handle' => 'teaser']),
+    ]);
+
+    return array_map(function (array $values) use ($fieldLayout) {
+        $entry = EntryModel::factory()->withFieldLayout($fieldLayout)->createElement();
+        $entry->setFieldValues($values);
+        Elements::saveElement($entry);
+        Search::indexElementAttributes($entry);
+
+        return $entry;
+    }, [
+        ['summary' => 'apple', 'teaser' => 'pear'],
+        ['summary' => 'pear', 'teaser' => 'apple'],
+    ]);
+}
+
+function replaceWithLegacySearchIndexRow(Entry $entry, string $keywords): void
+{
+    DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->where('attribute', 'field')
+        ->delete();
+    DB::table(Table::SEARCHINDEX)->insert([
+        'elementId' => $entry->id,
+        'attribute' => 'field',
+        'fieldId' => (string) $entry->getFieldLayout()->getCustomFields()[0]->id,
+        'layoutElementUid' => '0',
+        'siteId' => $entry->siteId,
+        'keywords' => " $keywords ",
+        ...(DB::isPgsql() ? ['keywords_vector' => " $keywords "] : []),
+    ]);
+}
+
+/** @return array<string, string> */
+function indexedFieldKeywords(Entry $entry): array
+{
+    return DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->where('attribute', 'field')
+        ->get(['layoutElementUid', 'keywords'])
+        ->mapWithKeys(fn (object $row) => [trim($row->layoutElementUid) => trim($row->keywords)])
+        ->all();
+}
+
 describe('indexElementAttributes', function () {
     test('indexes element title in the search index', function () {
         $entry = createIndexedEntry('Hello World');
@@ -52,6 +107,51 @@ describe('indexElementAttributes', function () {
             ->where('attribute', 'slug')
             ->exists()
         )->toBeTrue();
+    });
+
+    test('indexes each instance of a multi-instance field separately', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        $layoutElements = collect($entry->getFieldLayout()->getCustomFields())
+            ->mapWithKeys(fn (FieldInterface $field) => [$field->handle => $field->layoutElement->uid]);
+
+        $keywords = DB::table(Table::SEARCHINDEX)
+            ->where('elementId', $entry->id)
+            ->where('attribute', 'field')
+            ->pluck('keywords', 'layoutElementUid')
+            ->map(fn (string $keywords) => trim($keywords));
+
+        expect($keywords->all())->toEqualCanonicalizing([
+            $layoutElements['summary'] => 'apple',
+            $layoutElements['teaser'] => 'pear',
+        ]);
+    });
+
+    test('reindexes every instance of a field when one instance is reindexed', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        $entry->setFieldValues(['summary' => 'plum', 'teaser' => 'fig']);
+
+        Search::indexElementAttributes($entry, ['summary']);
+
+        expect(array_values(indexedFieldKeywords($entry)))->toEqualCanonicalizing(['plum', 'fig']);
+    });
+
+    test('keeps legacy keywords for fields that aren’t being reindexed', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        replaceWithLegacySearchIndexRow($entry, 'apple pear');
+
+        Search::indexElementAttributes($entry, []);
+
+        expect(indexedFieldKeywords($entry))->toBe(['0' => 'apple pear']);
+    });
+
+    test('replaces legacy keywords when their field is reindexed', function () {
+        [$entry] = createEntriesWithMultiInstanceField();
+        replaceWithLegacySearchIndexRow($entry, 'apple pear');
+
+        Search::indexElementAttributes($entry, ['summary']);
+
+        expect(indexedFieldKeywords($entry))->not->toHaveKey('0')
+            ->and(array_values(indexedFieldKeywords($entry)))->toEqualCanonicalizing(['apple', 'pear']);
     });
 
     test('replaces existing index data on re-index', function () {
@@ -130,6 +230,19 @@ describe('searchElements', function () {
 
         expect($query->count())->toBe(1);
         expect($query->one()->id)->toBe($entry1->id);
+    });
+
+    test('finds elements by a multi-instance field instance’s handle', function () {
+        [, $entry2] = createEntriesWithMultiInstanceField();
+
+        expect(entryQuery()->search('teaser:apple')->ids())->toBe([$entry2->id]);
+    });
+
+    test('matches keywords indexed before instances were indexed separately', function () {
+        [, $entry2] = createEntriesWithMultiInstanceField();
+        replaceWithLegacySearchIndexRow($entry2, 'pear apple');
+
+        expect(entryQuery()->search('teaser:apple')->ids())->toBe([$entry2->id]);
     });
 
     test('returns empty results for non-matching query', function () {
