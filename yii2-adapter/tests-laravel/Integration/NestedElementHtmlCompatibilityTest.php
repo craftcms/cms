@@ -121,9 +121,10 @@ it('renders an attribute-backed legacy index on a plugin manager subclass with o
 
 it('adapts creation choices to the legacy HTML manager protocol', function(bool $multiple) {
     $owner = User::findOne();
-    $choices = [['label' => 'First', 'attributes' => ['typeId' => 17], 'icon' => 'plus']];
+    $icon = __DIR__ . '/../../tests/_data/assets/files/craft-logo.svg';
+    $choices = [['label' => 'First', 'attributes' => ['typeId' => 17], 'icon' => $icon]];
     if ($multiple) {
-        $choices[] = ['label' => 'Second', 'attributes' => ['typeId' => 23], 'icon' => 'plus'];
+        $choices[] = ['label' => 'Second', 'attributes' => ['typeId' => 23], 'icon' => $icon];
     }
 
     $html = $owner->getAddressManager()->getCardsHtml($owner, ['canCreate' => true, 'createAttributes' => $choices]);
