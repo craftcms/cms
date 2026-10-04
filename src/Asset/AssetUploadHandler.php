@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -124,6 +125,12 @@ readonly class AssetUploadHandler
 
     private function performIngest(AssetIngest $ingest): AssetIngestResult
     {
+        $asset = $ingest->asset ?? new Asset;
+
+        if ($asset->id !== null) {
+            throw new InvalidArgumentException('Asset ingest requires an unsaved asset.');
+        }
+
         $folder = $ingest->folder;
         $validTarget = false;
 
@@ -148,7 +155,6 @@ readonly class AssetUploadHandler
             }
         }
 
-        $asset = new Asset;
         $asset->uploadSource = $ingest->source;
         $asset->uploadColors = $ingest->colors;
         $asset->sanitizeOnUpload = $ingest->sanitizeOnUpload;
@@ -159,7 +165,7 @@ readonly class AssetUploadHandler
         $asset->uploaderId = $ingest->uploaderId;
         $asset->avoidFilenameConflicts = true;
 
-        if ($moveAfterSelection) {
+        if ($moveAfterSelection && ! $asset->title) {
             $asset->title = AssetsHelper::filename2Title(pathinfo($destinationFilename, PATHINFO_FILENAME));
         }
 
