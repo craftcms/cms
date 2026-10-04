@@ -34,6 +34,7 @@
 - Fixed a bug where plugins’ control panel nav items weren’t showing their icons. ([#19794](https://github.com/craftcms/cms/pull/19794))
 - Fixed a bug where `craft:up` could fail on installs that didn’t have a migrations table yet. ([#19796](https://github.com/craftcms/cms/pull/19796))
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
+- Fixed an error when plugins using the Yii2 adapter returned settings models extending `craft\base\Model`. ([#19813](https://github.com/craftcms/cms/pull/19813))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 
