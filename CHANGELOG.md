@@ -36,8 +36,10 @@
 - Fixed a bug where `craft:up` could fail on installs that didn’t have a migrations table yet. ([#19796](https://github.com/craftcms/cms/pull/19796))
 - Fixed a bug where subsequent embedded index requests lost configuration supplied by non-Matrix nested element managers. ([#19788](https://github.com/craftcms/cms/pull/19788))
 - Fixed a bug where long Tip labels overflowed their tabs in the field layout designer. ([#19814](https://github.com/craftcms/cms/pull/19814))
+- Fixed an error when plugins using the Yii2 adapter returned settings models extending `craft\base\Model`. ([#19813](https://github.com/craftcms/cms/pull/19813))
 - Fixed a bug where element selector fields in server-rendered control panel forms and slideouts only displayed their labels and instructions. ([#19812](https://github.com/craftcms/cms/pull/19812))
 - Fixed a bug where Link fields displayed the Label input even when `showLabelField` was disabled. ([#19811](https://github.com/craftcms/cms/pull/19811))
+- Fixed an error when Form API table controls needed to add rows to meet their `minRows` setting before becoming visible. ([#19815](https://github.com/craftcms/cms/pull/19815))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 
