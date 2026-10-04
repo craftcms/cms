@@ -10,6 +10,7 @@
   import '@craftcms/ui/components/spinner/spinner';
   import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
+  import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import {
     computed,
     inject,
@@ -98,6 +99,7 @@
       fieldId: number;
       ownerId: number;
       ownerElementType: string;
+      ownerHasDrafts?: boolean;
       siteId: number;
       entryTypeIds: Record<string, number>;
     } | null;
@@ -143,6 +145,7 @@
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();
+  const owner = inject(NestedOwnerEditorKey, null);
   const matrixId = useId();
   /**
    * Forms for blocks the server minted since the last full payload. They're
@@ -606,8 +609,13 @@
     adding.value = entryType;
 
     try {
-      const duplicate =
+      const ownerId = await prepareOwner();
+      const sourceId =
         duplicateUid === undefined ? undefined : elementId(duplicateUid);
+      const duplicate =
+        sourceId === undefined
+          ? undefined
+          : (owner?.resolveElementId?.(Number(sourceId)) ?? sourceId);
       if (duplicateUid !== undefined && duplicate === undefined) {
         throw new Error(t('Couldn’t duplicate {type}.', {type: t('entry')}));
       }
@@ -621,7 +629,7 @@
               ? create.entryTypeIds[entryType]
               : (block(duplicateUid)?.data?.['type-id'] ??
                 create.entryTypeIds[entryType]),
-          ownerId: create.ownerId,
+          ownerId,
           ownerElementType: create.ownerElementType,
           siteId: create.siteId,
           path: props.control.path,
@@ -640,6 +648,38 @@
     } finally {
       adding.value = null;
     }
+  }
+
+  async function prepareOwner(): Promise<number> {
+    const create = props.control.props.create!;
+    await nextTick();
+
+    if (!props.editable || !matrixHost.value?.isConnected) {
+      throw new Error(t('This field cannot be edited here.'));
+    }
+
+    if (!owner && create.ownerHasDrafts !== true) {
+      return create.ownerId;
+    }
+
+    const context = await owner?.prepare(props.control.path);
+    await nextTick();
+
+    if (
+      !props.editable ||
+      !matrixHost.value?.isConnected ||
+      !context ||
+      (context.requiresDerivative &&
+        !context.ownerIsUnpublishedDraft &&
+        !context.ownerIsDerivative &&
+        !context.ownerIsInDerivativeTree)
+    ) {
+      throw new Error(
+        t('Could not prepare the owner draft. No nested elements were changed.')
+      );
+    }
+
+    return context.ownerId;
   }
 
   /**
@@ -717,9 +757,10 @@
     pasting.value = true;
 
     try {
+      const ownerId = await prepareOwner();
       const pasted = await craft().cp.pasteElements({
-        primaryOwnerId: create.ownerId,
-        ownerId: create.ownerId,
+        primaryOwnerId: ownerId,
+        ownerId,
         fieldId: create.fieldId,
         siteId: create.siteId,
       });

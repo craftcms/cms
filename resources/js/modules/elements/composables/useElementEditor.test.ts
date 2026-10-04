@@ -227,6 +227,170 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
+  it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
+    vi.stubGlobal('Craft', {
+      systemUid: 'test',
+      cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+    });
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+    const outer = ['fields', 'outer'];
+    const scope = [...outer, 'entries', 'owner-block'];
+    const inner = [...scope, 'fields', 'inner'];
+    const text = (
+      path: string[],
+      mode: 'editable' | 'readOnly' | 'disabled' = 'editable'
+    ) => ({
+      type: 'Field',
+      component: 'craft:field',
+      props: {label: path.at(-1)!},
+      control: {
+        type: 'Text',
+        component: 'craft:text',
+        props: {},
+        path,
+        mode,
+        deltaGroup: outer,
+        reactive: false,
+      },
+    });
+    const form: FormPayload = {
+      scope: [],
+      refreshable: true,
+      errors: [],
+      globalErrors: [],
+      values: {
+        fields: {
+          unrelated: 'Unchanged unrelated value',
+          outer: {
+            entries: {
+              'owner-block': {
+                type: 'text',
+                title: 'Unchanged block title',
+                fields: {
+                  protected: 'Read-only value',
+                  disabled: 'Disabled value',
+                  inner: {entries: {}, sortOrder: []},
+                },
+              },
+            },
+            sortOrder: ['owner-block'],
+          },
+        },
+      },
+      nodes: [
+        {
+          type: 'Field',
+          component: 'craft:field',
+          props: {label: 'Outer'},
+          control: {
+            type: 'NestedElementBlocks',
+            component: 'craft:nested-element-blocks',
+            mode: 'editable',
+            path: outer,
+            deltaGroup: outer,
+            nestsForms: true,
+            props: {
+              entryTypes: [{value: 'text', label: 'Text'}],
+              addLabel: 'Add',
+              minEntries: 0,
+            },
+            forms: [
+              {
+                scope,
+                refreshable: true,
+                nodes: [
+                  text([...scope, 'title']),
+                  text([...scope, 'fields', 'protected'], 'readOnly'),
+                  text([...scope, 'fields', 'disabled'], 'disabled'),
+                  {
+                    type: 'Field',
+                    component: 'craft:field',
+                    props: {label: 'Inner'},
+                    control: {
+                      type: 'NestedElementBlocks',
+                      component: 'craft:nested-element-blocks',
+                      mode: 'editable',
+                      path: inner,
+                      deltaGroup: outer,
+                      nestsForms: true,
+                      props: {
+                        entryTypes: [{value: 'text', label: 'Text'}],
+                        addLabel: 'Add',
+                        minEntries: 0,
+                        create: {
+                          fieldId: 9,
+                          ownerId: 73,
+                          ownerElementType: 'Entry',
+                          ownerHasDrafts: true,
+                          siteId: 1,
+                          entryTypeIds: {text: 4},
+                        },
+                      },
+                      forms: [],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: 'Field',
+          component: 'craft:field',
+          props: {label: 'Unrelated'},
+          control: {
+            type: 'Text',
+            component: 'craft:text',
+            props: {},
+            path: ['fields', 'unrelated'],
+            deltaGroup: ['fields', 'unrelated'],
+            mode: 'editable',
+            reactive: false,
+          },
+        },
+      ],
+    };
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, draftElementIds: {73: 173, 12: 112}},
+    });
+    const {editor, page} = mount(payload({canAutosave: true, form}));
+    await nextTick();
+    const prepared = await editor.nestedOwnerEditor.prepare(inner);
+
+    const submitted = postSpy.mock.calls[0]![1];
+    expect(submitted.fields).toEqual({
+      outer: {
+        entries: {
+          'owner-block': {
+            type: 'text',
+            title: 'Unchanged block title',
+            fields: {inner: {entries: {}, sortOrder: []}},
+          },
+        },
+        sortOrder: ['owner-block'],
+      },
+    });
+    expect(editor.renderer.value!.currentValues()).toEqual(form.values);
+    expect(editor.form.isDirty).toBe(false);
+    expect(prepared).toMatchObject({
+      ownerId: 173,
+      ownerIsDerivative: true,
+      ownerIsInDerivativeTree: true,
+    });
+
+    postSpy.mockResolvedValueOnce({data: {draftId: 7}});
+    expect(await editor.nestedOwnerEditor.prepare(inner)).toMatchObject({
+      ownerId: 173,
+    });
+    expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(112);
+
+    page.props = payload({canAutosave: true, form});
+    await nextTick();
+    expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(12);
+  });
+
   it('updates the editor payload from a details tab', () => {
     const {editor} = mount(payload({title: 'Original title'}));
 

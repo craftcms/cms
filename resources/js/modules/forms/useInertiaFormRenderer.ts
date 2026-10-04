@@ -13,6 +13,7 @@ import {pathsMatch, visitControls} from './runtime';
 interface FormRendererInstance {
   advanceBaseline(): void;
   currentValues(): FormPayload['values'];
+  mutation(includeGroups?: string[][]): FormPayload['values'];
   resetValues(): void;
   setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
 }

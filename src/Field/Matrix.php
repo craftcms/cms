@@ -747,6 +747,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'fieldId' => $this->id,
             'ownerId' => $element->id,
             'ownerElementType' => $element::class,
+            'ownerIsDerivative' => $element->getIsDerivative(),
+            'ownerIsInDerivativeTree' => ElementHelper::isDraftOrRevision($element),
+            'ownerIsUnpublishedDraft' => $element->getIsUnpublishedDraft(),
+            'ownerHasDrafts' => $element->getRootOwner()::hasDrafts(),
             'siteId' => $element->siteId,
             'entryTypeIds' => collect($creationTypes)
                 ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->id])
