@@ -167,6 +167,7 @@ body:not(.dragging) .fld-tab .tab.draggable {
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 0;
   padding: var(--c-spacing-sm);
   gap: var(--c-spacing-sm);
   box-shadow: inset 0 0 0 1px var(--c-color-neutral-border-quiet);
