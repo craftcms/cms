@@ -80,6 +80,7 @@
   };
   type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
+    createEntryTypes?: string[] | null;
     addLabel: string;
     minEntries?: number | null;
     maxEntries?: number | null;
@@ -261,15 +262,24 @@
 
     return fits ? elements : [];
   });
+  const creationTypes = computed(() => {
+    const catalog = props.control.props.entryTypes ?? [];
+    const handles = props.control.props.createEntryTypes;
+    return handles
+      ? handles.flatMap((handle) =>
+          catalog.filter((type) => type.value === handle)
+        )
+      : catalog;
+  });
   const entryTypes = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type, index) => ({
+    creationTypes.value.map((type, index) => ({
       id: index + 1,
       handle: type.value,
       name: type.label,
     }))
   );
   const createChoices = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type) => ({
+    creationTypes.value.map((type) => ({
       ...type,
       icon: type.icon?.name,
     }))
@@ -563,9 +573,16 @@
   async function addBlock(
     entryType: string,
     beforeUid?: string,
-    duplicate?: number | string
+    duplicateUid?: string
   ): Promise<void> {
     if (!canAdd.value || busy.value) {
+      return;
+    }
+
+    if (
+      duplicateUid === undefined &&
+      !creationTypes.value.some((type) => type.value === entryType)
+    ) {
       return;
     }
 
@@ -589,11 +606,21 @@
     adding.value = entryType;
 
     try {
+      const duplicate =
+        duplicateUid === undefined ? undefined : elementId(duplicateUid);
+      if (duplicateUid !== undefined && duplicate === undefined) {
+        throw new Error(t('Couldn’t duplicate {type}.', {type: t('entry')}));
+      }
+
       const {data} = await actionClient.post<CreatedBlock>(
         'matrix/create-entry',
         {
           fieldId: create.fieldId,
-          entryTypeId: create.entryTypeIds[entryType],
+          entryTypeId:
+            duplicateUid === undefined
+              ? create.entryTypeIds[entryType]
+              : (block(duplicateUid)?.data?.['type-id'] ??
+                create.entryTypeIds[entryType]),
           ownerId: create.ownerId,
           ownerElementType: create.ownerElementType,
           siteId: create.siteId,
@@ -605,7 +632,7 @@
       await insertBlocks([data], index);
     } catch (error) {
       messages.error(
-        duplicate === undefined
+        duplicateUid === undefined
           ? t('Couldn’t create {type}.', {type: t('entry')})
           : t('Couldn’t duplicate {type}.', {type: t('entry')})
       );
@@ -630,7 +657,7 @@
 
       const order = props.value.sortOrder;
       const after = order[order.indexOf(target) + 1];
-      await addBlock(type, after, id);
+      await addBlock(type, after, target);
     }
   }
 
@@ -1028,7 +1055,7 @@
         action: blockEvent(uid, 'delete'),
       },
       {type: 'hr'},
-      ...(props.control.props.entryTypes ?? []).map((type) => ({
+      ...creationTypes.value.map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
         hidden: !canAdd.value,

@@ -53,6 +53,9 @@ class NestedElementBlocks extends Control
     /** @var array<string, EntryTypeDescriptor> */
     private array $entryTypes = [];
 
+    /** @var list<string>|null */
+    private ?array $createEntryTypes = null;
+
     /** @var array<string, Form> */
     private array $forms = [];
 
@@ -81,6 +84,13 @@ class NestedElementBlocks extends Control
         $entryTypes = self::resolvedEntryTypes($control->props['entryTypes'] ?? null);
         $blocks = is_array($control->props['blocks'] ?? null) ? $control->props['blocks'] : [];
         $types = collect($entryTypes)->keyBy('value');
+        $creationHandles = $control->props['createEntryTypes'] ?? null;
+        $creationTypes = is_array($creationHandles)
+            ? array_values(array_filter(array_map(
+                fn (string $handle): ?array => $types->get($handle),
+                $creationHandles,
+            )))
+            : $entryTypes;
         $items = '';
 
         foreach ($order as $index => $uid) {
@@ -198,9 +208,9 @@ class NestedElementBlocks extends Control
         $buttons = '';
 
         if ($editable) {
-            foreach ($entryTypes as $type) {
+            foreach ($creationTypes as $type) {
                 $buttons .= Button::make()
-                    ->label(count($entryTypes) === 1
+                    ->label(count($creationTypes) === 1
                         ? $control->props['addLabel']
                         : t('Add {type}', ['type' => $type['label']]))
                     ->icon($type['icon']['name'] ?? 'plus')
@@ -234,8 +244,8 @@ class NestedElementBlocks extends Control
                 'handle' => $type['value'],
                 'name' => $type['label'],
             ],
-            $entryTypes,
-            array_keys($entryTypes),
+            $creationTypes,
+            array_keys($creationTypes),
         );
 
         return Html::tag('craft-matrix-input', $clear.$matrix, [
@@ -302,6 +312,14 @@ class NestedElementBlocks extends Control
         }
 
         $this->entryTypes = $resolved;
+
+        return $this;
+    }
+
+    /** @param list<string> $handles */
+    public function createEntryTypes(array $handles): static
+    {
+        $this->createEntryTypes = $handles;
 
         return $this;
     }
@@ -430,6 +448,7 @@ class NestedElementBlocks extends Control
                 ->map(fn (array $entryType, string $value): array => ['value' => $value] + $entryType)
                 ->values()
                 ->all(),
+            'createEntryTypes' => $this->createEntryTypes,
             'addLabel' => $this->addLabel ?? t('Add an entry'),
             'minEntries' => $this->minEntries,
             'maxEntries' => $this->maxEntries,
