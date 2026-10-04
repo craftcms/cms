@@ -27,7 +27,6 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Workflow\Models\Workflow;
-use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -441,26 +440,23 @@ it('returns JSON response', function () {
         ]);
 });
 
-it('throws exception when entry is locked', function () {
+it('does not save while the same element is being saved elsewhere', function () {
     $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
-    // Mock Cache::lock to return false (lock acquired by someone else)
-    Cache::shouldReceive('lock')
-        ->with("entry:{$entryModel->id}", 15)
-        ->andReturn(
-            Mockery::mock(Lock::class)
-                ->shouldReceive('get')
-                ->andReturn(false)
-                ->getMock()
-        );
+    $lock = Cache::lock("element:{$entryModel->id}", 15);
+    expect($lock->get())->toBeTrue();
 
-    $this->withoutExceptionHandling();
-    $this->expectException(LockTimeoutException::class);
+    try {
+        $this->withoutExceptionHandling();
+        $this->expectException(LockTimeoutException::class);
 
-    post(action(StoreEntryController::class), [
-        'entryId' => $entryModel->id,
-        'title' => 'Locked Entry Update',
-    ]);
+        post(action(StoreEntryController::class), [
+            'entryId' => $entryModel->id,
+            'title' => 'Locked Entry Update',
+        ]);
+    } finally {
+        $lock->release();
+    }
 });
 
 it('handles 404 for missing entry', function () {
