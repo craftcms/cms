@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
@@ -17,6 +19,7 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 
 /** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
 function cpSettings(): Settings
@@ -174,6 +177,42 @@ it('rebuilds after the cache is flushed', function () {
     $navigation->getTree();
 
     expect($builds)->toBe(2);
+});
+
+it('keeps cp destinations when a site request warms the navigation cache', function () {
+    Cms::config()->cpTrigger('control')->baseCpUrl('https://cp.example.test');
+    swapUrlRequest('https://site.example.test/');
+
+    $builds = 0;
+    Event::listen(CpNavItemsResolving::class, function (CpNavItemsResolving $event) {
+        $event->navItems[] = new NavItem()
+            ->label('Plugin')
+            ->href('my-plugin')
+            ->subnav([
+                new NavItem()->label('Reports')->href('my-plugin/reports?range=week'),
+                new NavItem()->label('Docs')->href('https://docs.example.test/plugin'),
+                new NavItem()->label('Root')->href('/custom/path'),
+            ]);
+    });
+
+    $onBuild = function () use (&$builds) {
+        $builds++;
+    };
+
+    expect(request()->isCpRequest())->toBeFalse();
+    navigationCountingBuilds(request(), $onBuild)->getTree();
+
+    swapUrlRequest('https://cp.example.test/control/my-plugin/reports?range=week');
+    $items = collect(navigationCountingBuilds(request(), $onBuild)->getItems());
+    $plugin = $items->firstWhere('label', 'Plugin');
+
+    expect($builds)->toBe(1)
+        ->and($items->firstWhere('label', 'Dashboard')->href)->toBe('https://cp.example.test/control/dashboard')
+        ->and($plugin->href)->toBe('https://cp.example.test/control/my-plugin')
+        ->and($plugin->subnav[0]->href)->toBe('https://cp.example.test/control/my-plugin/reports?range=week')
+        ->and($plugin->subnav[0]->linkAttributes['aria']['current'])->toBe('page')
+        ->and($plugin->subnav[1]->href)->toBe('https://docs.example.test/plugin')
+        ->and($plugin->subnav[2]->href)->toBe('/custom/path');
 });
 
 it('keeps selection out of the cached tree', function () {
@@ -456,6 +495,8 @@ it('leaves a source addressed by query to requests that ask for it', function (s
 
 it('links a source the way the nav does, on whichever page it lives', function () {
     $this->totalEditableSections = 1;
+    Cms::config()->baseCpUrl('https://cp.example.test');
+    swapUrlRequest('https://site.example.test/');
 
     $sources = Mockery::mock(ElementSources::class);
     $sources->shouldReceive('getPages')->andReturn(collect(['Entries', 'Blog Posts']));
@@ -487,7 +528,9 @@ it('links a source the way the nav does, on whichever page it lives', function (
         cpSettings(),
     );
 
-    expect($navigation->sourceUrl(Entry::class, 'section:abc'))->toEndWith('/content/blog-posts/posts')
-        ->and($navigation->sourceUrl(Entry::class, 'custom:1'))->toEndWith('/content/blog-posts?source=custom%3A1')
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    expect($navigation->sourceUrl(Entry::class, 'section:abc'))->toBe("https://cp.example.test/$cpTrigger/content/blog-posts/posts")
+        ->and($navigation->sourceUrl(Entry::class, 'custom:1'))->toBe("https://cp.example.test/$cpTrigger/content/blog-posts?source=custom%3A1")
         ->and($navigation->sourceUrl(Entry::class, 'nope'))->toBeNull();
 });
