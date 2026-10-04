@@ -3,8 +3,52 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {EditableTable, Row} from './editable-table';
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   document.body.replaceChildren();
+});
+
+it.each([1, 3])('populates a hidden table with %i minimum rows', (minRows) => {
+  vi.useFakeTimers();
+  vi.stubGlobal('$', $);
+  vi.stubGlobal('Garnish', {});
+  vi.stubGlobal('Craft', {
+    hasMousePointerEvents: () => false,
+    inArray: <T>(value: T, values: T[]) => values.includes(value),
+  });
+
+  document.body.innerHTML = `
+    <div class="input" style="display: none">
+      <table id="things"><tbody></tbody></table>
+      <button type="button" command="--add-row">Add a row</button>
+    </div>
+  `;
+
+  const table = new EditableTable(
+    'things',
+    'settings[things]',
+    {label: {type: 'singleline', heading: 'Label'}},
+    {allowAdd: true, minRows, maxRows: minRows, defaultValues: {label: 'Thing'}}
+  );
+
+  expect(document.querySelectorAll('tbody tr')).toHaveLength(minRows);
+  const values = Array.from(document.querySelectorAll('textarea')).map(
+    (input) => [input.name, input.value]
+  );
+  expect(values).toEqual(
+    Array.from({length: minRows}, (_, index) => [
+      `settings[things][${index}][label]`,
+      'Thing',
+    ])
+  );
+  expect(document.querySelector('button')?.getAttribute('aria-disabled')).toBe(
+    'true'
+  );
+
+  table.initialize();
+  expect(document.querySelectorAll('tbody tr')).toHaveLength(minRows);
+  table.destroy();
+  vi.clearAllTimers();
 });
 
 it('initializes text cells without the legacy NiceText behavior', () => {

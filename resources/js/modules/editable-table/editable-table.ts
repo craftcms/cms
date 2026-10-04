@@ -132,6 +132,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     this.$tbody = this.$table.children('tbody');
     this.$tableParent = this.$table.parent();
     this.$statusMessage = this.$tableParent.find('[data-status-message]');
+    this.$addRowBtn = this.$table
+      .closest('.input, craft-field')
+      .find('[command="--add-row"]');
     const $rows = this.$tbody.children();
     this.rowCount = $rows.length;
 
@@ -200,7 +203,6 @@ export class EditableTable extends Base<EditableTableSettings> {
       $container.css('overflow-x', 'auto');
     }
 
-    this.$addRowBtn = $container.find('[command="--add-row"]');
     this.updateAddRowButton();
 
     // If there's only one row, disable the action button
