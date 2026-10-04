@@ -14,7 +14,7 @@ export default css`
 
   .thumbnail {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: var(--_size);

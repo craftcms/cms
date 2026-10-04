@@ -426,10 +426,7 @@ export class CpScreenSlideout extends Slideout {
 
       this.unmountInertiaApp();
       this.$content.html(data.content);
-      if (this.$actionBtn) {
-        this.$actionBtn.data('disclosureMenu')?.destroy();
-        this.$actionBtn.remove();
-      }
+      this.$actionBtn?.remove();
 
       if (data.submitButtonLabel) {
         this.$saveBtn.find('.label').text(data.submitButtonLabel);
@@ -450,27 +447,10 @@ export class CpScreenSlideout extends Slideout {
         this.hasCpLink = false;
       }
 
-      if (data.actionMenu) {
-        const labelId = Craft.namespaceId('action-menu-label', this.namespace);
-        const menuId = Craft.namespaceId('action-menu', this.namespace);
-        $('<label/>', {
-          id: labelId,
-          class: 'visually-hidden',
-          text: Craft.t('app', 'Actions'),
-        }).insertBefore(this.$editLink);
-        this.$actionBtn = $('<button/>', {
-          class: 'btn action-btn header-btn',
-          type: 'button',
-          title: Craft.t('app', 'Actions'),
-          'aria-controls': menuId,
-          'aria-describedby': labelId,
-          'data-disclosure-trigger': 'true',
-        }).insertBefore(this.$editLink);
-        $(data.actionMenu).insertBefore(this.$editLink);
-        this.$actionBtn.disclosureMenu();
-      } else {
-        this.$actionBtn = null;
-      }
+      // A `<craft-action-menu>`, which brings its own invoker
+      this.$actionBtn = data.actionMenu
+        ? $(data.actionMenu).insertBefore(this.$editLink)
+        : null;
 
       if (data.sidebar) {
         this.$sidebarBtn.removeClass('hidden');

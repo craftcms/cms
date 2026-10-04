@@ -586,6 +586,10 @@ class Db
                     $val = (int)$val;
                 }
 
+                if ($caseInsensitive && is_string($val)) {
+                    $val = mb_strtolower($val);
+                }
+
                 if ($like) {
                     if ($caseInsensitive && !$isMysql) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
@@ -599,10 +603,6 @@ class Db
                         $condition[] = [$operator, $column, static::escapeForLike($val), false];
                     }
                     continue;
-                }
-
-                if ($caseInsensitive) {
-                    $val = mb_strtolower($val);
                 }
             }
 
