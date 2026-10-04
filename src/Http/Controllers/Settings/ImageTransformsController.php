@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Form\FormResolver;
@@ -20,9 +19,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -101,59 +98,9 @@ class ImageTransformsController extends BaseAssetSettingsController
             : null;
         $transform->upscale = $request->boolean('upscale', $transform->upscale);
 
-        $parameterBuckets = [];
+        $transform->setParameters($request->array('parameters'));
 
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
-            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
-                $existing = $transform->getParametersForTransformer($assetTransformer->uid);
-
-                if ($existing !== []) {
-                    $parameterBuckets[$assetTransformer->uid] = $existing;
-                }
-
-                continue;
-            }
-
-            try {
-                $parameters = $this->assetTransformers->validateParameters(
-                    $assetTransformer,
-                    $request->array("parameters.{$assetTransformer->uid}"),
-                );
-            } catch (InvalidAssetTransformException $exception) {
-                throw ValidationException::withMessages([
-                    "parameters.{$assetTransformer->uid}" => $exception->getMessage(),
-                ]);
-            }
-
-            $parameterRules = $this->assetTransformDrivers
-                ->driver($assetTransformer->driver)
-                ->definition()
-                ->parameterRules;
-            $parameters = Arr::only($parameters, array_keys($parameterRules));
-
-            if ($parameters !== []) {
-                $parameterBuckets[$assetTransformer->uid] = $parameters;
-            }
-        }
-
-        $transform->setParameters($parameterBuckets);
-
-        if ($transform->format === '') {
-            $transform->format = null;
-        }
-
-        if ($transform->mode === 'letterbox') {
-            $transform->fill = $transform->fill ? ColorRule::normalizeColor($transform->fill) : 'transparent';
-        }
-
-        $isValid = $transform->validate();
-
-        if (empty($transform->width) && empty($transform->height)) {
-            $transform->errors()->add('width', t('You must set at least one of the dimensions.'));
-            $isValid = false;
-        }
-
-        if (! $isValid || ! $imageTransforms->saveTransform($transform, runValidation: false)) {
+        if (! $imageTransforms->saveTransform($transform)) {
             throw ValidationException::withMessages($transform->errors()->getMessages());
         }
 
