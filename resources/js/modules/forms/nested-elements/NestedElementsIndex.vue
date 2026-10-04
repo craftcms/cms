@@ -476,6 +476,10 @@
     position: static;
   }
 
+  .nested-index :deep(craft-card::part(body)) {
+    padding: var(--c-spacing-md);
+  }
+
   .nested-index :deep(.card-grid:not(.card-grid--single)) {
     grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
   }
