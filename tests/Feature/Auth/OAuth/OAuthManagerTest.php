@@ -42,15 +42,15 @@ describe('provider configuration', function () {
     test('provider groups accept ids uids and handles', function () {
         UserGroups::saveGroup($groupById = new UserGroup([
             'name' => 'ID Group',
-            'handle' => 'id-group',
+            'handle' => 'idGroup',
         ]));
         UserGroups::saveGroup($groupByUid = new UserGroup([
             'name' => 'UID Group',
-            'handle' => 'uid-group',
+            'handle' => 'uidGroup',
         ]));
         UserGroups::saveGroup($groupByHandle = new UserGroup([
             'name' => 'Handle Group',
-            'handle' => 'handle-group',
+            'handle' => 'handleGroup',
         ]));
 
         configureOAuthManagerProvider([
@@ -74,7 +74,7 @@ describe('provider configuration', function () {
     test('provider groups accept a single configured value', function () {
         UserGroups::saveGroup($group = new UserGroup([
             'name' => 'Single Group',
-            'handle' => 'single-group',
+            'handle' => 'singleGroup',
         ]));
 
         configureOAuthManagerProvider([
@@ -206,15 +206,15 @@ describe('button rendering', function () {
     test('custom group resolvers may return ids uids and handles', function () {
         UserGroups::saveGroup($groupById = new UserGroup([
             'name' => 'ID Group',
-            'handle' => 'id-group-runtime',
+            'handle' => 'idGroupRuntime',
         ]));
         UserGroups::saveGroup($groupByUid = new UserGroup([
             'name' => 'UID Group',
-            'handle' => 'uid-group-runtime',
+            'handle' => 'uidGroupRuntime',
         ]));
         UserGroups::saveGroup($groupByHandle = new UserGroup([
             'name' => 'Handle Group',
-            'handle' => 'handle-group-runtime',
+            'handle' => 'handleGroupRuntime',
         ]));
 
         CustomUserGroupResolver::$groups = [
