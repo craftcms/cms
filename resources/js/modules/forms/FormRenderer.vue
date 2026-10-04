@@ -347,7 +347,8 @@
     emitMutation();
   }
 
-  function mutation(): FormPayload['values'] {
+  function mutation(includeGroups: string[][] = []): FormPayload['values'] {
+    const included = new Set(includeGroups.map((path) => JSON.stringify(path)));
     const groups = new Map<string, string[]>();
     const editablePaths = new Set<string>();
 
@@ -364,7 +365,10 @@
       const current = groupValue(values, path, editablePaths);
       const original = groupValue(baseline, path, editablePaths);
 
-      if (canonical(current) !== canonical(original)) {
+      if (
+        included.has(JSON.stringify(path)) ||
+        canonical(current) !== canonical(original)
+      ) {
         if (path.length === 0 && isRecord(current)) {
           Object.assign(result, current);
 
@@ -431,6 +435,7 @@
   defineExpose({
     advanceBaseline,
     currentValues,
+    mutation,
     resetValues,
     setValue,
     canSubmit: () => !renderError.value,
