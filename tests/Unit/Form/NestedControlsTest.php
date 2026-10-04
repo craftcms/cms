@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -233,4 +235,38 @@ it('uses explicit empty canonical values', function () {
         'matrix' => ['entries' => [], 'sortOrder' => []],
         'content' => null,
     ]]);
+});
+
+it('renders creation choices in their requested order while retaining existing block types', function () {
+    $control = new ControlPayload(
+        type: NestedElementBlocks::class,
+        component: 'craft:nested-element-blocks',
+        props: [
+            'entryTypes' => [
+                ['value' => 'text', 'label' => 'Existing Text'],
+                ['value' => 'first', 'label' => 'First'],
+                ['value' => 'second', 'label' => 'Second'],
+            ],
+            'createEntryTypes' => ['second', 'first'],
+            'addLabel' => 'Add an entry',
+            'minEntries' => null,
+            'maxEntries' => null,
+            'siteName' => null,
+        ],
+        path: ['settings', 'matrix'],
+        mode: ControlMode::Editable,
+        deltaGroup: ['settings', 'matrix'],
+    );
+    $html = NestedElementBlocks::renderHtml(
+        $control,
+        ['entries' => ['existing' => ['type' => 'text']], 'sortOrder' => ['existing']],
+        ['id' => 'matrix', 'name' => 'settings[matrix]'],
+        app(FormHtmlRenderer::class),
+    );
+    $crawler = new Crawler($html);
+
+    expect($crawler->filter('[data-form-matrix-add]')->each(fn (Crawler $button): string => $button->text()))
+        ->toBe(['Add Second', 'Add First'])
+        ->and($crawler->filter('[data-matrix-block][data-id="existing"]')->text())->toContain('Existing Text')
+        ->and($crawler->filter('input[name="settings[matrix][entries][existing][type]"]')->attr('value'))->toBe('text');
 });

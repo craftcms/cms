@@ -44,6 +44,7 @@
 - Fixed a bug where Link fields displayed the Label input even when `showLabelField` was disabled. ([#19811](https://github.com/craftcms/cms/pull/19811))
 - Fixed a bug where nested HTML forms hid all their tabs and reused tab panel IDs across instances. ([#19816](https://github.com/craftcms/cms/pull/19816))
 - Fixed an error when Form API table controls needed to add rows to meet their `minRows` setting before becoming visible. ([#19815](https://github.com/craftcms/cms/pull/19815))
+- Fixed inconsistent handling of owner-specific Matrix entry types when creating, rendering, and duplicating entries. ([#19819](https://github.com/craftcms/cms/pull/19819))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 

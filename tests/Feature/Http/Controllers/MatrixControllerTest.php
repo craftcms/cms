@@ -12,8 +12,11 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes as EntryTypesService;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -32,6 +35,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -667,4 +671,126 @@ it('badges a block’s own field when that block was edited through a draft', fu
         ->and($keys[0])->toBe("fields.{$handle}")
         ->and($keys[1])->toMatch("/^fields\\.{$handle}\\.entries\\.[-a-f0-9]+\\.fields\\.innerText$/")
         ->and(array_values($statuses))->toBe(['modified', 'modified']);
+});
+
+it('only creates event-added types for eligible authorized owners', function () {
+    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+        'title' => 'Existing disabled block',
+        'innerText' => 'Existing text',
+        'enabled' => false,
+    ]]);
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $existing = matrixControllerNestedEntries($this->fixture)->sole();
+    $extra = EntryType::factory()->withField($this->fixture['innerField'])->create([
+        'name' => 'Plugin type',
+        'handle' => 'pluginType',
+    ]);
+    EntryTypesFacade::refreshEntryTypes();
+    $extraType = EntryTypesFacade::getEntryTypeById($extra->id);
+    $ownerId = $this->fixture['owner']->id;
+    $fieldId = $this->fixture['field']->id;
+
+    Event::listen(function (EntryTypesForFieldResolving $event) use ($ownerId, $fieldId, $existing, $extraType): void {
+        if ($event->field->id === $fieldId && $event->element?->id === $ownerId &&
+            in_array($existing->id, array_column($event->value, 'id'), true)) {
+            $event->entryTypes[] = $extraType;
+        }
+    });
+
+    $otherOwner = EntryModel::factory()
+        ->forSection($this->fixture['section'])
+        ->forEntryType($this->fixture['ownerType'])
+        ->createElement();
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'ownerId' => $otherOwner->id,
+        'entryTypeId' => $extra->id,
+        'path' => ['fields', 'matrixField'],
+    ]))->assertBadRequest()
+        ->assertJsonPath('message', "Entry type {$extra->id} is not available to Matrix field {$fieldId}.");
+
+    $payload = createMatrixControllerPayload($this->fixture, ['entryTypeId' => $extra->id, 'path' => ['fields', 'matrixField']]);
+    $response = postJson(action([MatrixController::class, 'createEntry']), $payload)
+        ->assertOk()->assertJsonPath('type', 'pluginType');
+    $created = matrixControllerNestedEntries($this->fixture)->firstWhere('uid', $response->json('uid'));
+    expect($created->typeId)->toBe($extra->id)
+        ->and($created->getOwnerId())->toBe($ownerId);
+
+    $this->fixture['field']->viewMode = Matrix::VIEW_MODE_BLOCKS;
+    $control = $this->fixture['field']->formControl(new FieldContext(
+        path: ['fields', 'matrixField'],
+        value: $this->fixture['owner']->getFieldValue('matrixField'),
+        element: $this->fixture['owner'],
+    ));
+    $props = $control->props($control->getValue());
+    expect($props['createEntryTypes'])->toContain('pluginType')
+        ->and($props['create']['entryTypeIds']['pluginType'] ?? null)->toBe($extra->id);
+
+    $legacy = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'entryTypeId' => $extra->id,
+    ]))->assertOk();
+    expect($legacy->json('blockHtml'))->toContain('Add Plugin type above');
+
+    Gate::before(fn ($user, string $ability): ?bool => $ability === 'save' ? false : null);
+    postJson(action([MatrixController::class, 'createEntry']), $payload)->assertForbidden();
+    expect(matrixControllerNestedEntries($this->fixture))->toHaveCount(3);
+});
+
+it('renders and duplicates event-added entry types absent from creation choices', function () {
+    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+        'title' => 'Existing block',
+        'innerText' => 'Retained content',
+        'enabled' => false,
+    ]]);
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $extra = EntryType::factory()->withField($this->fixture['innerField'])->create([
+        'name' => 'Plugin type',
+        'handle' => 'pluginType',
+    ]);
+    EntryTypesFacade::refreshEntryTypes();
+    $extraType = EntryTypesFacade::getEntryTypeById($extra->id);
+    $fieldId = $this->fixture['field']->id;
+    Event::listen(function (EntryTypesResolving $event) use ($fieldId, $extraType): void {
+        if ($event->entry->fieldId === $fieldId) {
+            $event->entryTypes[] = $extraType;
+        }
+    });
+    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+    $entry->setTypeId($extra->id);
+    $entry->setFieldValue('innerText', 'Retained content');
+    expect(ElementsFacade::saveElement($entry))->toBeTrue();
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+
+    postJson(action([MatrixController::class, 'renderBlocks']), [
+        'entryIds' => [$entry->id],
+        'siteId' => $this->fixture['siteId'],
+        'path' => ['fields', 'matrixField'],
+    ])->assertOk()
+        ->assertJsonPath('blocks.0.type', 'pluginType')
+        ->assertJsonPath("blocks.0.values.fields.matrixField.entries.{$entry->uid}.fields.innerText", 'Retained content');
+
+    $this->fixture['field']->viewMode = Matrix::VIEW_MODE_BLOCKS;
+    $control = $this->fixture['field']->formControl(new FieldContext(
+        path: ['fields', 'matrixField'],
+        value: $this->fixture['owner']->getFieldValue('matrixField'),
+        element: $this->fixture['owner'],
+    ));
+    $props = $control->props($control->getValue());
+    expect(collect($props['entryTypes'])->firstWhere('value', 'pluginType')['label'])->toBe('Plugin type')
+        ->and($props['createEntryTypes'])->not->toContain('pluginType')
+        ->and($control->getValue()['entries'][$entry->uid]['enabled'])->toBeFalse();
+
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'entryTypeId' => $extra->id,
+        'path' => ['fields', 'matrixField'],
+    ]))->assertBadRequest()
+        ->assertJsonPath('message', "Entry type {$extra->id} is not available to Matrix field {$fieldId}.");
+
+    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'duplicate' => $entry->id,
+        'entryTypeId' => $extra->id,
+        'path' => ['fields', 'matrixField'],
+    ]))->assertOk()->assertJsonPath('type', 'pluginType');
+    $duplicate = matrixControllerNestedEntries($this->fixture)->firstWhere('uid', $response->json('uid'));
+    expect($duplicate->id)->not->toBe($entry->id)
+        ->and($duplicate->getFieldValue('innerText'))->toBe('Retained content');
 });

@@ -193,6 +193,41 @@ describe('NestedElementBlocksControl', () => {
     );
   }
 
+  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
+    const state = mount(
+      {
+        entries: {existing: {type: 'existingType', collapsed: true}},
+        sortOrder: ['existing'],
+      },
+      {
+        entryTypes: [
+          {value: 'existingType', label: 'Existing Type'},
+          {value: 'first', label: 'First'},
+          {value: 'second', label: 'Second'},
+        ],
+        createEntryTypes: ['second', 'first'],
+        blocks: {existing: {label: 'Existing content'}},
+      }
+    );
+    await nextTick();
+    const buttons = [
+      ...container!.querySelectorAll<HTMLElement>('[data-form-matrix-add]'),
+    ];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Add Second',
+      'Add First',
+    ]);
+    expect(container!.textContent).toContain('Existing content');
+    invoke('existing', 'Add Second above');
+    await nextTick();
+    const value = state.value as {
+      entries: Record<string, {type: string}>;
+      sortOrder: string[];
+    };
+    expect(value.sortOrder.at(-1)).toBe('existing');
+    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
+  });
+
   it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested Form to
@@ -748,7 +783,26 @@ describe('NestedElementBlocksControl', () => {
             values: {},
           },
         });
-        mountWithMenu();
+        mountWithMenu({
+          createEntryTypes: ['otherType'],
+          entryTypes: [
+            {value: 'newType', label: 'New Type'},
+            {value: 'otherType', label: 'Other Type'},
+          ],
+          create: {
+            fieldId: 3,
+            ownerId: 7,
+            ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            siteId: 1,
+            entryTypeIds: {otherType: 10},
+          },
+          blocks: {
+            'block-a': {
+              actions: serverActions('block-a'),
+              data: {'element-id': 12, 'type-id': 9},
+            },
+          },
+        });
         await nextTick();
 
         invoke('block-a', 'Duplicate');

@@ -81,6 +81,7 @@
   };
   type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
+    createEntryTypes?: string[] | null;
     addLabel: string;
     minEntries?: number | null;
     maxEntries?: number | null;
@@ -264,15 +265,24 @@
 
     return fits ? elements : [];
   });
+  const creationTypes = computed(() => {
+    const catalog = props.control.props.entryTypes ?? [];
+    const handles = props.control.props.createEntryTypes;
+    return handles
+      ? handles.flatMap((handle) =>
+          catalog.filter((type) => type.value === handle)
+        )
+      : catalog;
+  });
   const entryTypes = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type, index) => ({
+    creationTypes.value.map((type, index) => ({
       id: index + 1,
       handle: type.value,
       name: type.label,
     }))
   );
   const createChoices = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type) => ({
+    creationTypes.value.map((type) => ({
       ...type,
       icon: type.icon?.name,
     }))
@@ -572,6 +582,13 @@
       return;
     }
 
+    if (
+      duplicateUid === undefined &&
+      !creationTypes.value.some((type) => type.value === entryType)
+    ) {
+      return;
+    }
+
     const create = props.control.props.create;
     const index = insertionIndex(beforeUid);
 
@@ -607,7 +624,11 @@
         'matrix/create-entry',
         {
           fieldId: create.fieldId,
-          entryTypeId: create.entryTypeIds[entryType],
+          entryTypeId:
+            duplicateUid === undefined
+              ? create.entryTypeIds[entryType]
+              : (block(duplicateUid)?.data?.['type-id'] ??
+                create.entryTypeIds[entryType]),
           ownerId,
           ownerElementType: create.ownerElementType,
           siteId: create.siteId,
@@ -1075,7 +1096,7 @@
         action: blockEvent(uid, 'delete'),
       },
       {type: 'hr'},
-      ...(props.control.props.entryTypes ?? []).map((type) => ({
+      ...creationTypes.value.map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
         hidden: !canAdd.value,

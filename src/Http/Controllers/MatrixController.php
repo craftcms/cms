@@ -6,11 +6,9 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -102,15 +100,6 @@ readonly class MatrixController
 
         abort_if(is_null($entryType), 400, "Invalid entry type ID: $validated[entryTypeId]");
 
-        // Any entry type would save, and then the field couldn't render what it
-        // got back — `Form\Controls\NestedElementBlocks` rejects a block whose type it doesn't
-        // offer, which takes the whole edit screen down with it.
-        abort_if(
-            ! in_array($entryType->id, array_column($field->getEntryTypes(), 'id'), true),
-            400,
-            "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
-        );
-
         $site = $this->sites->getSiteById($validated['siteId'], true);
 
         abort_if(is_null($site), 400, "Invalid site ID: $validated[siteId]");
@@ -161,6 +150,12 @@ readonly class MatrixController
                 ]));
             }
         } else {
+            abort_if(
+                ! $field->isEntryTypeAvailableForOwner($entryType->id, $owner),
+                400,
+                "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
+            );
+
             $entry = new Entry([
                 ...$attributes,
             ]);
@@ -176,19 +171,13 @@ readonly class MatrixController
             }
         }
 
-        /** @var EntryQuery<Entry>|ElementCollection<array-key, Entry> $value */
-        $value = $owner->getFieldValue($field->handle);
-
-        /** @var Entry[] $entries */
-        $entries = $value->all();
-
         if (isset($validated['path'])) {
             return new JsonResponse($this->blockFormResponse($entry, $validated['path'], $field));
         }
 
         $html = InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
             'name' => $field->handle,
-            'entryTypes' => $field->getEntryTypesForField($entries, $owner),
+            'entryTypes' => $field->getEntryTypesForOwner($owner),
             'entry' => $entry,
             'isFresh' => true,
             'staticEntries' => $validated['staticEntries'] ?? false,
@@ -276,7 +265,6 @@ readonly class MatrixController
         }
 
         $field = null;
-        $entryTypes = null;
         $html = '';
 
         $blocks = [];
@@ -290,17 +278,6 @@ readonly class MatrixController
                 'Entry must belong to a Matrix field.',
             );
 
-            // An entry of a type the field doesn't offer would render here and
-            // then take the edit screen down on the next load, where the Matrix
-            // Control rejects it. Same guard `createEntry()` applies.
-            abort_if(
-                ! in_array($entry->getType()->id, array_column($field->getEntryTypes(), 'id'), true),
-                400,
-                "Entry type {$entry->getType()->id} is not available to Matrix field {$field->id}.",
-            );
-
-            $entryTypes ??= $field->getEntryTypesForField($entries, $entry->getOwner());
-
             Gate::authorize('view', $entry);
 
             if (isset($validated['path'])) {
@@ -311,7 +288,7 @@ readonly class MatrixController
 
             $html .= InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
                 'name' => $field->handle,
-                'entryTypes' => $entryTypes,
+                'entryTypes' => $field->getEntryTypesForOwner($entry->getOwner()),
                 'entry' => $entry,
                 ...$field->blockFormVariables($entry, false),
             ]), $validated['namespace']);
