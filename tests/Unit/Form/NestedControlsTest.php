@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Tab;
 use Symfony\Component\DomCrawler\Crawler;
 
 function nestedControlsForm(): Form
@@ -94,6 +95,54 @@ it('renders nested Controls with Craft web components and no nested forms', func
         ->and($crawler->filter('input[name="settings[matrix][entries][block-a][heading]"][value="Welcome"]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[matrix][entries][block-a][content][body]"][value="Nested body"]'))->toHaveCount(1)
         ->and($crawler->text())->toContain('Body is invalid.');
+});
+
+function nestedTabsCrawler(): Crawler
+{
+    $nested = Form::make([
+        Tab::make('content', 'Content', [Field::make('Body', Text::make('body'))]),
+        Tab::make('details', 'Details', [Field::make('Summary', Text::make('summary'))]),
+    ]);
+    $form = Form::make([
+        Tab::make('content', 'Content', [
+            Field::make('Hero', ContentBlock::make('hero')->form($nested)),
+            Field::make('Footer', ContentBlock::make('footer')->form($nested)),
+        ]),
+        Tab::make('settings', 'Settings', [Field::make('Title', Text::make('title'))]),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+        namespace: 'settings',
+        values: ['settings' => [
+            'hero' => ['body' => 'Hero body', 'summary' => 'Hero summary'],
+            'footer' => ['body' => 'Footer body', 'summary' => 'Footer summary'],
+            'title' => 'Page title',
+        ]],
+    ));
+
+    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+}
+
+it('shows the first tab in each nested HTML form independently of its parent', function () {
+    $crawler = nestedTabsCrawler();
+
+    expect($crawler->filter('craft-content-block-input section[data-form-tab="content"]:not(.hidden)'))->toHaveCount(2)
+        ->and($crawler->filter('craft-content-block-input section[data-form-tab="details"].hidden'))->toHaveCount(2)
+        ->and($crawler->filter('section[data-form-tab="content"]:not(.hidden) input[name="settings[hero][body]"][value="Hero body"]'))->toHaveCount(1)
+        ->and($crawler->filter('section[data-form-tab="content"]:not(.hidden) input[name="settings[footer][body]"][value="Footer body"]'))->toHaveCount(1)
+        ->and($crawler->filter('section#settings-form-tab-content:not(.hidden)'))->toHaveCount(1)
+        ->and($crawler->filter('section#settings-form-tab-settings.hidden input[value="Page title"]'))->toHaveCount(1);
+});
+
+it('gives nested HTML tab panels distinct IDs across instances and their parent', function () {
+    $crawler = nestedTabsCrawler();
+    $ids = $crawler->filter('section[data-form-tab]')->extract(['id']);
+
+    expect($ids)->toHaveCount(6)
+        ->and(array_unique($ids))->toHaveCount(6)
+        ->and($crawler->filter('section#settings-hero-form-tab-content[aria-label="Content"]'))->toHaveCount(1)
+        ->and($crawler->filter('section#settings-footer-form-tab-content[aria-label="Content"]'))->toHaveCount(1)
+        ->and($crawler->filter('section#settings-hero-form-tab-details[aria-label="Details"]'))->toHaveCount(1)
+        ->and($crawler->filter('section#settings-footer-form-tab-details[aria-label="Details"]'))->toHaveCount(1);
 });
 
 it('frames server-rendered Matrix blocks the same way the browser control does', function () {

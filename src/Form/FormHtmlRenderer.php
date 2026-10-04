@@ -118,7 +118,7 @@ class FormHtmlRenderer
             throw new RuntimeException('Nested Forms can only be rendered within a Form payload.');
         }
 
-        return $this->renderNodes($form->nodes, $this->payload);
+        return $this->renderNodes($form->nodes, $this->payload->forScope($form->scope));
     }
 
     private function renderNode(NodePayload $node, FormPayload $payload): string
