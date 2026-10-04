@@ -1,3 +1,8 @@
+import {isRecord, pathsMatch, visitControls} from '@/modules/forms/runtime';
+import {
+  nestedOwnerContext,
+  type NestedOwnerEditor,
+} from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
@@ -295,6 +300,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     };
   }
 
+  const preparingOwnerGroups = new Map<symbol, string[]>();
+  const draftElementIds = new Map<number, number>();
+
   const autosave = useElementAutosave(form, {
     url: props.autosaveUrl,
     params: contextParams,
@@ -304,12 +312,30 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
-    transform: requestValues,
+    transform: (data) =>
+      requestValues(
+        preparingOwnerGroups.size
+          ? {
+              ...data,
+              ...renderer.value?.mutation([...preparingOwnerGroups.values()]),
+            }
+          : data
+      ),
     // Autosave moves the draft's `dateUpdated` without a visit, so the poller
     // has to re-baseline against what the save just wrote — otherwise it reads
     // our own keystrokes back as an edit from elsewhere. `activity` is
     // initialized just below; this only ever runs after a save settles.
     onSaved: (timestamps, response) => {
+      if (isRecord(response.draftElementIds)) {
+        for (const [canonicalId, draftId] of Object.entries(
+          response.draftElementIds
+        )) {
+          if (typeof draftId === 'number') {
+            draftElementIds.set(Number(canonicalId), draftId);
+          }
+        }
+      }
+
       activity.rebase(timestamps);
       // The draft is what an opener shows until the element is saved, so it
       // hears about each one — debounced on its side.
@@ -435,6 +461,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     () => pageProps(),
     () => {
       invalidateFormRefreshes();
+      draftElementIds.clear();
       savedForm.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
@@ -468,6 +495,67 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       autosave.schedule(kind);
     }
   }
+
+  function resolveNestedElementId(id: number): number {
+    return draftElementIds.get(id) ?? id;
+  }
+
+  const nestedOwnerEditor: NestedOwnerEditor = {
+    async prepare(path) {
+      if (
+        props.readOnly ||
+        workflowReviewLocked.value ||
+        !nestedOwnerContext(formPayload.value, path)
+      ) {
+        return null;
+      }
+
+      const preparation = Symbol();
+
+      try {
+        if (props.canAutosave) {
+          visitControls(formPayload.value?.nodes ?? [], (control) => {
+            if (
+              control.mode === 'editable' &&
+              pathsMatch(control.path, path) &&
+              !pathsMatch(control.deltaGroup, path)
+            ) {
+              preparingOwnerGroups.set(preparation, control.deltaGroup);
+            }
+          });
+
+          await autosave.save();
+          if (autosave.status.value !== 'saved') {
+            return null;
+          }
+          await nextTick();
+        }
+
+        const context = nestedOwnerContext(formPayload.value, path);
+        if (!context) {
+          return null;
+        }
+
+        const ownerId = resolveNestedElementId(context.ownerId);
+        return {
+          ...context,
+          ownerId,
+          ownerIsDerivative:
+            ownerId !== context.ownerId || context.ownerIsDerivative,
+          ownerIsInDerivativeTree:
+            ownerId !== context.ownerId || context.ownerIsInDerivativeTree,
+          requiresDerivative: Boolean(props.canAutosave),
+          canonicalId: props.canonicalId,
+          draftId: props.draftId,
+          isProvisionalDraft: props.isProvisionalDraft,
+        };
+      } finally {
+        preparingOwnerGroups.delete(preparation);
+      }
+    },
+    resolveElementId: resolveNestedElementId,
+    refresh: refreshAfterNestedChange,
+  };
 
   function requestValues(data: object): FormValues {
     return transform?.(data) ?? ({...data} as FormValues);
@@ -668,6 +756,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         autosave.cancel();
       },
       onSuccess: (data) => {
+        draftElementIds.clear();
         if (slideout) {
           announceSaved(data);
         }
@@ -729,6 +818,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * explicitly.
    */
   async function revertToLoadedPayload(): Promise<void> {
+    draftElementIds.clear();
     reverting++;
 
     try {
@@ -930,6 +1020,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     props,
     renderer,
     refreshAfterNestedChange,
+    nestedOwnerEditor,
     refreshForm,
     refreshLayout,
     save,

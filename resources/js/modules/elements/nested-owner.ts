@@ -5,6 +5,7 @@ import type {FormPayload} from '@/modules/forms/types';
 /** The editor that owns a nested field, including when it lives in a slideout. */
 export interface NestedOwnerEditor {
   prepare(path: string[]): Promise<NestedOwnerContext | null>;
+  resolveElementId?(id: number): number;
   refresh?(): Promise<void>;
 }
 
@@ -30,13 +31,19 @@ export function nestedOwnerContext(
   let context: NestedOwnerContext | null = null;
   visitControls(form.nodes, (control) => {
     if (
-      control.component !== 'craft:nested-elements' ||
+      !['craft:nested-elements', 'craft:nested-element-blocks'].includes(
+        control.component
+      ) ||
+      control.mode !== 'editable' ||
       !pathsMatch(control.path, path)
     ) {
       return;
     }
 
-    const manager = control.props.manager;
+    const manager =
+      control.component === 'craft:nested-element-blocks'
+        ? control.props.create
+        : control.props.manager;
     if (
       manager &&
       typeof manager === 'object' &&
