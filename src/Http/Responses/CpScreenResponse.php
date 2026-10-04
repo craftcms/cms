@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -853,9 +854,7 @@ class CpScreenResponse implements Responsable
                 : $this->inertiaProps,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'actionMenu' => $this->actionMenu(withDestructive: false, config: [
-                'withButton' => false,
-            ], namespace: $namespace),
+            'actionMenu' => $this->actionMenu(withDestructive: false, namespace: $namespace),
         ];
     }
 
@@ -1082,8 +1081,13 @@ class CpScreenResponse implements Responsable
         ], $namespace);
     }
 
-    /** @param array<string, mixed> $config */
-    private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
+    /**
+     * Renders the slideout's action menu as a `<craft-action-menu>`.
+     *
+     * Item collection happens inside the namespace closure, along with rendering, so JS that items register against
+     * their IDs gets the same namespaced IDs as the rendered markup.
+     */
+    private function actionMenu(bool $withDestructive = true, ?string $namespace = null): ?string
     {
         $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
 
@@ -1091,9 +1095,24 @@ class CpScreenResponse implements Responsable
             return null;
         }
 
-        return $this->menu($itemsFactory, $config + [
-            'id' => 'action-menu',
-        ], $namespace);
+        $render = function () use ($itemsFactory): ?string {
+            $items = $this->menuItems($itemsFactory);
+
+            if (empty($items)) {
+                return null;
+            }
+
+            return ActionMenu::make()
+                ->menuItems($items, normalize: false)
+                ->label(t('Actions'))
+                ->toHtml();
+        };
+
+        if ($namespace) {
+            return InputNamespace::namespaceInputs($render, $namespace);
+        }
+
+        return $render();
     }
 
     /** @return list<array<string, mixed>>|null */

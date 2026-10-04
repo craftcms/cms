@@ -96,8 +96,9 @@
    * <img> this preview used before craft-thumbnail was sized.
    */
   .asset-preview :deep(.preview-thumb craft-thumbnail::part(thumbnail)) {
-    width: auto;
+    width: fit-content;
     height: auto;
+    margin-inline: auto;
     max-width: 100%;
     max-height: 190px;
     box-shadow: var(--c-shadow-2xl);

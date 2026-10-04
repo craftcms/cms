@@ -95,11 +95,16 @@ export default css`
     color: var(--c-chip-text, var(--c-text-default));
   }
 
-  /* Layout side of plain: no chrome, so no padding or shadow either. */
+  /* Layout side of plain: no chrome, so no padding, border, or shadow either. */
   .cp-chip--plain {
     padding-block: 0;
     padding-inline: 0;
+    border-width: 0;
     box-shadow: none;
+    /* The border's stand-in, drawn inside the edge so it takes no space.
+       Invisible, except in forced colors, where it gives the chip an edge. */
+    outline: 1px solid transparent;
+    outline-offset: -1px;
   }
 
   .cp-chip--small {
@@ -127,6 +132,11 @@ export default css`
   :host([selected]) .cp-chip {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-quiet);
+  }
+
+  /* A plain chip has no border to color, so its outline takes the color. */
+  :host([selected]) .cp-chip--plain {
+    outline-color: var(--c-color-accent-border-quiet);
   }
 
   .cp-chip__prefix,
@@ -229,5 +239,11 @@ export default css`
   .cp-chip--plain.cp-chip--leads-with-status .cp-chip__status,
   .cp-chip--plain.cp-chip--leads-with-body .cp-chip__body {
     padding-inline-start: 0;
+  }
+
+  .cp-chip--plain .cp-chip__thumbnail,
+  .cp-chip--plain .cp-chip__body,
+  .cp-chip--plain .cp-chip__suffix {
+    padding-block: 0;
   }
 `;
