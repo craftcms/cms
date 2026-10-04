@@ -388,6 +388,51 @@ describe('useElementEditor', () => {
     await nextTick();
   }
 
+  it('does not write a pending draft after the editor is removed', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+
+    await typeTitle('Unsaved edit');
+    app!.unmount();
+    app = undefined;
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('aborts an in-flight draft request when the editor is removed', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      }
+    );
+    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+
+    await typeTitle('Unsaved edit');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(requestSignal?.aborted).toBe(false);
+
+    app!.unmount();
+    app = undefined;
+    await nextTick();
+
+    expect(requestSignal?.aborted).toBe(true);
+  });
+
   it('generates an empty entry slug from its title until the slug is edited', async () => {
     vi.stubGlobal('Craft', {
       ...(globalThis as any).Craft,

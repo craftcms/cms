@@ -914,6 +914,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   onBeforeUnmount(invalidateFormRefreshes);
+  onBeforeUnmount(autosave.cancel);
 
   return {
     activity,
