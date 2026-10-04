@@ -6,6 +6,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
@@ -118,6 +119,28 @@ it('still returns the legacy flat payload when the client is not Inertia', funct
         'deltaNames',
         'initialDeltaValues',
     ]);
+});
+
+it('renders the legacy slideout action menu as a craft-action-menu', function () {
+    $screen = new CpScreenResponse;
+    $screen->actionMenuItems(function () {
+        $id = InputNamespace::namespaceId('action-test');
+        HtmlStack::js("document.getElementById('$id').onclick = () => {};");
+
+        return [['id' => 'action-test', 'label' => 'Test action']];
+    });
+    $request = Request::create('/', server: [
+        'HTTP_ACCEPT' => 'application/json',
+        'HTTP_X_CRAFT_CONTAINER_ID' => 'slideout-1',
+    ]);
+
+    $data = $screen->toResponse($request)->getData(true);
+    $id = "{$data['namespace']}-action-test";
+
+    expect($data['actionMenu'])->toStartWith('<craft-action-menu')
+        ->not->toContain('menu--disclosure')
+        ->toContain('id="'.$id.'"')
+        ->and($data['bodyHtml'])->toContain($id);
 });
 
 it('gives each slideout its own input namespace', function () {
