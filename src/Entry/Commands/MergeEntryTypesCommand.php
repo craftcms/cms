@@ -211,7 +211,11 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
                 }
             );
 
-            $entryTypes->saveEntryType($persistingEntryType);
+            if (! $entryTypes->saveEntryType($persistingEntryType)) {
+                $this->components->error("Unable to save entry type: {$persistingEntryType->handle}");
+
+                return self::FAILURE;
+            }
         }
 
         $this->components->task(

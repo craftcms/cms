@@ -441,11 +441,11 @@ describe('customization', function () {
     test('custom identity resolver, user populator, and group resolver are used for new users', function () {
         UserGroups::saveGroup($groupByUid = new UserGroup([
             'name' => 'Custom UID Group',
-            'handle' => 'custom-uid-group',
+            'handle' => 'customUidGroup',
         ]));
         UserGroups::saveGroup($groupByHandle = new UserGroup([
             'name' => 'Custom Handle Group',
-            'handle' => 'custom-handle-group',
+            'handle' => 'customHandleGroup',
         ]));
 
         CustomUserGroupResolver::$groups = [$groupByUid->uid, $groupByHandle->handle];

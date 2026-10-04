@@ -8,12 +8,10 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
-use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Revisions;
@@ -448,7 +446,7 @@ describe('store', function () {
             );
     });
 
-    it('saves canonical elements, tracks save activity, deletes provisional drafts, and cross-site validates for multisite requests', function () {
+    it('maps multisite full-page saves to cross-site validation', function () {
         Site::factory()->create(['handle' => 'secondary']);
 
         $entry = EntryModel::factory()
@@ -458,7 +456,6 @@ describe('store', function () {
                 'title' => 'Canonical Title',
                 'slug' => 'canonical-title',
             ]);
-        app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
         actingAs(UserModel::findOrFail(auth()->id()));
 
         $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
@@ -509,22 +506,7 @@ describe('store', function () {
             );
 
         expect($elements->capturedCrossSiteValidate)->toBeTrue()
-            ->and(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Updated Title')
-            ->and(
-                Entry::find()
-                    ->drafts()
-                    ->provisionalDrafts()
-                    ->draftOf($entry->id)
-                    ->draftCreator(auth()->id())
-                    ->status(null)
-                    ->count()
-            )->toBe(0)
-            ->and(DB::table(Table::ELEMENTACTIVITY)
-                ->where('elementId', $entry->id)
-                ->where('userId', auth()->id())
-                ->where('type', ElementActivityType::Save->value)
-                ->exists())
-            ->toBeTrue();
+            ->and(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Updated Title');
     });
 
     /**
@@ -612,52 +594,6 @@ describe('store', function () {
 
         // Laravel's ConvertEmptyStringsToNull middleware turns the posted '' into null before it reaches the element.
         expect(Asset::find()->id($asset->id)->one()->alt)->toBeNull();
-    });
-
-    it('marks nested elements to update their owner search index before saving', function () {
-        $fixture = createSaveElementMatrixFixture();
-
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
-        {
-            public bool $capturedNestedOwnerIndexFlag = false;
-
-            public function saveElement(
-                ElementInterface $element,
-                bool $runValidation = true,
-                bool $propagate = true,
-                ?bool $updateSearchIndex = null,
-                bool $forceTouch = false,
-                ?bool $crossSiteValidate = false,
-                bool $saveContent = false,
-            ): bool {
-                if ($element instanceof NestedElementInterface) {
-                    $this->capturedNestedOwnerIndexFlag = $element->updateSearchIndexForOwner;
-                }
-
-                return parent::saveElement(
-                    $element,
-                    $runValidation,
-                    $propagate,
-                    $updateSearchIndex,
-                    $forceTouch,
-                    $crossSiteValidate,
-                    $saveContent,
-                );
-            }
-        };
-
-        app()->instance(ElementsService::class, $elements);
-
-        postJson(action([SaveElementController::class, 'store']), [
-            'elementType' => Entry::class,
-            'elementId' => $fixture['canonicalBlock']->id,
-            'siteId' => $fixture['canonicalBlock']->siteId,
-            'ownerId' => $fixture['owner']->id,
-            'fieldId' => $fixture['field']->id,
-            'title' => 'Updated Block Title',
-        ])->assertOk();
-
-        expect($elements->capturedNestedOwnerIndexFlag)->toBeTrue();
     });
 
     it('redirects to a new draft when add another is requested', function () {

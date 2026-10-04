@@ -570,6 +570,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $this->_entryTypes;
     }
 
+    /**
+     * Whether a type is configured on this field or supplied by its owner's creation choices.
+     */
+    public function isEntryTypeAvailableForOwner(int $entryTypeId, ElementInterface $owner): bool
+    {
+        if (in_array($entryTypeId, array_column($this->getEntryTypes(), 'id'), true)) {
+            return true;
+        }
+
+        return in_array($entryTypeId, array_column($this->getEntryTypesForOwner($owner), 'id'), true);
+    }
+
+    /** @return list<EntryType> */
+    public function getEntryTypesForOwner(ElementInterface $owner): array
+    {
+        return $this->getEntryTypesForField(
+            $this->entriesForForm($owner->getFieldValue($this->handle)),
+            $owner,
+        );
+    }
+
     #[Override]
     public function formControl(FieldContext $context): Control
     {
@@ -577,35 +598,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $this->nestedEntriesControl($context);
         }
 
-        $entryTypes = collect($this->getEntryTypes())
+        $entries = $this->entriesForForm($context->value);
+        $creationTypes = $this->getEntryTypesForField($entries, $context->element);
+        $entryTypes = collect([
+            ...array_map(fn (Entry $entry): EntryType => $entry->getType(), $entries),
+            ...$this->getEntryTypes(),
+            ...$creationTypes,
+        ])
             ->mapWithKeys(fn (EntryType $type): array => [$type->handle => [
                 'label' => t($type->name, category: 'site'),
                 'icon' => $type->icon !== null ? Icons::resolveIconData($type->icon) : null,
                 'color' => $type->color?->value,
                 'group' => $type->group,
             ]])
-            ->all() ?: ['entry' => Entry::displayName()];
-        // Disabled blocks still have to reach the editor, or disabling one makes it
-        // disappear from the Form. Matches how `blockInputHtml()` resolves the value.
-        $entries = array_values(match (true) {
-            $context->value instanceof ElementCollection => $context->value->all(),
-            $context->value instanceof EntryQuery => $context->value->getResultOverride()
-                ?? (clone $context->value)
-                    ->drafts(null)
-                    ->canonicalsOnly()
-                    ->status(null)
-                    ->limit(null)
-                    ->all(),
-            default => [],
-        });
+            ->all();
         $values = $forms = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
-            if (! $entry instanceof Entry) {
-                throw new LogicException('Matrix Controls require Entry values.');
-            }
-
             $uid = $identities[$index];
             $values[$uid] = [
                 'type' => $entry->getType()->handle,
@@ -613,7 +623,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
             ];
-            $blocks[$uid] = $this->blockPresentation($entry, $uid);
+            $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
@@ -624,14 +634,40 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return NestedElementBlocks::make($context->path)
             ->entryTypes($entryTypes)
+            ->createEntryTypes(array_map(fn (EntryType $type): string => $type->handle, $creationTypes))
             ->elementType(Entry::class)
             ->blocks($blocks)
-            ->create($this->createConfig($context->element))
+            ->create($this->createConfig($context->element, $creationTypes))
             ->forms($forms)
             ->siteName($this->localizedSiteName($context->element))
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /** @return list<Entry> */
+    private function entriesForForm(mixed $value): array
+    {
+        // Include disabled entries and in-memory values retained after validation.
+        $entries = array_values(match (true) {
+            $value instanceof ElementCollection => $value->all(),
+            $value instanceof EntryQuery => $value->getResultOverride()
+                ?? (clone $value)
+                    ->drafts(null)
+                    ->canonicalsOnly()
+                    ->status(null)
+                    ->limit(null)
+                    ->all(),
+            default => [],
+        });
+
+        foreach ($entries as $entry) {
+            if (! $entry instanceof Entry) {
+                throw new LogicException('Matrix Controls require Entry values.');
+            }
+        }
+
+        return $entries;
     }
 
     /**
@@ -642,9 +678,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * the same shape back for a block it has just minted, so a new block looks
      * like its neighbours right away rather than waiting for the next save.
      *
+     * @param  list<EntryType>|null  $creationTypes
      * @return array<string, mixed>
      */
-    public function blockPresentation(Entry $entry, string $uid): array
+    public function blockPresentation(Entry $entry, string $uid, ?array $creationTypes = null): array
     {
         $entryType = $entry->getType();
 
@@ -658,7 +695,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // turn into the whole `--c-color-*` alias set — so the card and
             // everything in it takes the entry type's color for free.
             'color' => $entryType->color?->value,
-            'actions' => $this->blockActions($entry, $uid),
+            'actions' => $this->blockActions($entry, $uid, $creationTypes),
             'data' => $this->blockData($entry, $entryType),
             // Folded up, a block hides the fields its errors are attached
             // to, so the header says there are some. Craft 5 put an alert
@@ -697,9 +734,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * block. Null until the owner has an ID to hang one off — a nested block
      * inside an unsaved block, say, which has nothing to own it yet.
      *
+     * @param  list<EntryType>  $creationTypes
      * @return array<string, mixed>|null
      */
-    private function createConfig(?ElementInterface $element): ?array
+    private function createConfig(?ElementInterface $element, array $creationTypes): ?array
     {
         if ($element?->id === null || $this->id === null) {
             return null;
@@ -709,8 +747,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'fieldId' => $this->id,
             'ownerId' => $element->id,
             'ownerElementType' => $element::class,
+            'ownerIsDerivative' => $element->getIsDerivative(),
+            'ownerIsInDerivativeTree' => ElementHelper::isDraftOrRevision($element),
+            'ownerIsUnpublishedDraft' => $element->getIsUnpublishedDraft(),
+            'ownerHasDrafts' => $element->getRootOwner()::hasDrafts(),
             'siteId' => $element->siteId,
-            'entryTypeIds' => collect($this->getEntryTypes())
+            'entryTypeIds' => collect($creationTypes)
                 ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->id])
                 ->all(),
         ];
@@ -725,9 +767,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
      * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
      *
+     * @param  list<EntryType>|null  $creationTypes
      * @return list<array<string, mixed>>
      */
-    private function blockActions(Entry $entry, string $uid): array
+    private function blockActions(Entry $entry, string $uid, ?array $creationTypes = null): array
     {
         $blockAction = fn (string $action, array $detail = []): array => [
             'type' => 'event',
@@ -750,7 +793,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ],
         ];
 
-        $siteName = $this->localizedSiteName($entry->getOwner());
+        $owner = $entry->getOwner();
+        $siteName = $this->localizedSiteName($owner);
 
         if ($siteName === null) {
             $items[] = [
@@ -853,7 +897,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
         $items[] = ['hr' => true];
 
-        foreach ($this->getEntryTypes() as $entryType) {
+        $creationTypes ??= $this->getEntryTypesForOwner($owner);
+        foreach ($creationTypes as $entryType) {
             $items[] = [
                 'icon' => $entryType->icon ?? 'plus',
                 'color' => $entryType->color,

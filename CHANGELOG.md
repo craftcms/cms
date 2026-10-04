@@ -9,12 +9,15 @@
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Added `CraftCms\Cms\Asset\AssetUploadHandler::ingest()`, allowing non-HTTP adapters to reuse Craft’s asset creation workflow. ([#19823](https://github.com/craftcms/cms/pull/19823))
+- Added `CraftCms\Cms\Element\UserInitiatedElementSave` and `CraftCms\Cms\Element\Data\UserInitiatedElementSaveResult`, providing a shared workflow for user-initiated element saves. ([#19822](https://github.com/craftcms/cms/pull/19822))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
+- Updated `CraftCms\Cms\Entry\EntryTypes::saveEntryType()` to validate entry types and their field layouts by default, with a `$runValidation` argument for bypassing validation. ([#19821](https://github.com/craftcms/cms/pull/19821))
 - `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use Axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
 - Removed `Cp.$axios`.
+- Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
 - Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types. ([#19792](https://github.com/craftcms/cms/pull/19792))
@@ -23,6 +26,7 @@
 - The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Fixed a bug where element autosaves could continue after the editor was closed. ([#19817](https://github.com/craftcms/cms/pull/19817))
+- Fixed a bug where creating, duplicating, or pasting Matrix blocks could modify their canonical owner instead of its draft. ([#19818](https://github.com/craftcms/cms/pull/19818))
 - Fixed a bug where searching or clearing a search on element indexes moved keyboard focus away from the search input. ([#19785](https://github.com/craftcms/cms/pull/19785))
 - Fixed an accessibility issue where `craft-button` links couldn’t be reached with the <kbd>Tab</kbd> key. ([#19785](https://github.com/craftcms/cms/pull/19785))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
@@ -43,6 +47,7 @@
 - Fixed a bug where Link fields displayed the Label input even when `showLabelField` was disabled. ([#19811](https://github.com/craftcms/cms/pull/19811))
 - Fixed a bug where nested HTML forms hid all their tabs and reused tab panel IDs across instances. ([#19816](https://github.com/craftcms/cms/pull/19816))
 - Fixed an error when Form API table controls needed to add rows to meet their `minRows` setting before becoming visible. ([#19815](https://github.com/craftcms/cms/pull/19815))
+- Fixed inconsistent handling of owner-specific Matrix entry types when creating, rendering, and duplicating entries. ([#19819](https://github.com/craftcms/cms/pull/19819))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 

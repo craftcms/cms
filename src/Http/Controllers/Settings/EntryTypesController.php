@@ -246,17 +246,13 @@ class EntryTypesController
 
         $entryType->setFieldLayout($this->fieldLayout);
 
-        $entryType->validate(throw: true);
-
-        if (! $this->fieldLayout->validate()) {
-            throw ValidationException::withMessages($this->fieldLayout->errors()->getMessages());
-        }
-
         if ($saveAsNew) {
             $this->fieldLayout->resetUids();
         }
 
-        $this->entryTypes->saveEntryType($entryType);
+        if (! $this->entryTypes->saveEntryType($entryType)) {
+            throw ValidationException::withMessages($entryType->errors()->getMessages());
+        }
 
         return $this->asModelSuccess(
             $entryType,

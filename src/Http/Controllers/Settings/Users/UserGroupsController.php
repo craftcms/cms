@@ -138,8 +138,6 @@ class UserGroupsController extends BaseUserSettingsController
         $userGroupData->description = $request->input('description');
         $userGroupData->uid = $request->input('uid');
 
-        $userGroupData->validate(throw: true);
-
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
             $userGroupData->name = $group->name;

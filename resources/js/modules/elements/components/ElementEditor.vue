@@ -6,13 +6,7 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {
-    computed,
-    nextTick,
-    provide,
-    useTemplateRef,
-    type Component,
-  } from 'vue';
+  import {computed, provide, useTemplateRef, type Component} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
@@ -35,10 +29,7 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
-  import {
-    NestedOwnerEditorKey,
-    nestedOwnerContext,
-  } from '@/modules/elements/nested-owner';
+  import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
 
   const contentEl = useTemplateRef<HTMLElement>('content');
   const slideout = useSlideout();
@@ -72,7 +63,6 @@
     onSidebarMutation,
     props: payload,
     renderer,
-    refreshAfterNestedChange,
     refreshForm,
     refreshLayout,
     save,
@@ -85,35 +75,7 @@
     workflowReviewLocked,
   } = editor;
 
-  provide(NestedOwnerEditorKey, {
-    async prepare(path) {
-      if (payload.readOnly) {
-        return null;
-      }
-
-      if (payload.canAutosave) {
-        await autosave.save();
-        if (autosave.status.value !== 'saved') {
-          return null;
-        }
-        await nextTick();
-      }
-
-      const context = nestedOwnerContext(formPayload.value, path);
-      return context
-        ? {
-            ...context,
-            requiresDerivative: Boolean(payload.canAutosave),
-            canonicalId: payload.canonicalId,
-            draftId: payload.draftId,
-            isProvisionalDraft: payload.isProvisionalDraft,
-          }
-        : null;
-    },
-    async refresh() {
-      await refreshAfterNestedChange();
-    },
-  });
+  provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
 
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
