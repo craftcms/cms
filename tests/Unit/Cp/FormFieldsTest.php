@@ -7,11 +7,13 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use Symfony\Component\DomCrawler\Crawler;
 use Twig\Markup;
 
 #[Ruleset(AddressRules::class)]
@@ -89,6 +91,26 @@ describe('fieldHtml', function () {
         expect(fn () => FormFields::fieldHtml('template:invalid/template.twig', []))
             ->toThrow(TemplateLoaderException::class);
     });
+});
+
+describe('elementSelectFieldHtml', function () {
+    it('projects the selector and preserves the empty submission value', function (bool $useCustomElement) {
+        $html = FormFields::elementSelectFieldHtml([
+            'id' => 'featured-entries',
+            'name' => 'featuredEntryIds',
+            'elementType' => Entry::class,
+            'label' => 'Featured entries',
+            'selectionLabel' => 'Add an entry',
+            'registerJs' => false,
+            'useCustomElement' => $useCustomElement,
+        ]);
+
+        $crawler = new Crawler($html);
+        $input = $crawler->filter('craft-field > [slot="input"]');
+
+        expect($input->filter('button')->text())->toBe('Add an entry')
+            ->and($input->filter('input[type="hidden"][name="featuredEntryIds"][value=""]'))->toHaveCount(1);
+    })->with([false, true]);
 });
 
 describe('checkboxFieldHtml', function () {
