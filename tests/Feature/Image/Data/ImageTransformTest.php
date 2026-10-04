@@ -23,6 +23,7 @@ describe('validation', function () {
     test('fails without name', function () {
         $transform = new ImageTransform([
             'handle' => 'thumb',
+            'width' => 100,
         ]);
 
         expect($transform->validate())->toBeFalse()
@@ -32,6 +33,7 @@ describe('validation', function () {
     test('fails without handle', function () {
         $transform = new ImageTransform([
             'name' => 'Thumb',
+            'width' => 100,
         ]);
 
         expect($transform->validate())->toBeFalse()
@@ -42,6 +44,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => $handle,
+            'width' => 100,
         ]);
 
         expect($transform->validate())->toBe($expected);
@@ -76,6 +79,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'mode' => 'invalid',
         ]);
 
@@ -87,6 +91,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'position' => 'invalid',
         ]);
 
@@ -98,6 +103,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'interlace' => 'invalid',
         ]);
 
@@ -109,6 +115,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'quality' => $quality,
         ]);
 
@@ -124,6 +131,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'quality' => $quality,
         ]);
 
@@ -138,6 +146,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'format' => 'pdf',
         ]);
 
@@ -149,6 +158,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'format' => $format,
         ]);
 
@@ -171,6 +181,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'format' => null,
         ]);
 
@@ -188,10 +199,21 @@ describe('validation', function () {
             ->and($transform->errors()->has('width'))->toBeTrue();
     });
 
+    test('fails without width or height', function () {
+        $transform = new ImageTransform([
+            'name' => 'Test',
+            'handle' => 'test',
+        ]);
+
+        expect($transform->validate())->toBeFalse()
+            ->and($transform->errors()->has('width'))->toBeTrue();
+    });
+
     test('accepts valid positions', function (string $position) {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
             'position' => $position,
         ]);
 
