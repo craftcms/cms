@@ -225,11 +225,15 @@ class DatabaseSeeder extends Seeder
 
         $pageType = null;
         $this->components->task('Page entry type', function () use ($fieldLayout, &$pageType) {
-            EntryTypes::saveEntryType($pageType = new EntryType([
+            $pageType = new EntryType([
                 'fieldLayoutId' => $fieldLayout->id,
                 'name' => 'Page',
                 'handle' => 'page',
-            ]));
+            ]);
+
+            if (! EntryTypes::saveEntryType($pageType)) {
+                throw new RuntimeException('Failed to create the Page entry type.');
+            }
         });
 
         $this->createSection($site, 'Home', SectionType::Single, '__HOME__', [$pageType]);
