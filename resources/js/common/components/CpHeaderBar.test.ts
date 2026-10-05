@@ -94,7 +94,7 @@ async function mountTopBar(large: boolean) {
 }
 
 function sectionClasses(container: HTMLElement) {
-  return [...container.querySelectorAll('.cp-top-bar > *')].map(
+  return [...container.querySelectorAll('.cp-header-bar > *')].map(
     (el) => el.className
   );
 }
