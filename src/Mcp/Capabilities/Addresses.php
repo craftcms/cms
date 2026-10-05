@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Mcp\CustomFieldSchema;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
@@ -77,12 +78,13 @@ readonly class Addresses
 
     private const array FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle.',
+        'description' => 'Custom field values keyed by field handle. Use addresses.field-schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
     public function __construct(
         private McpActor $actor,
+        private CustomFieldSchema $customFieldSchema,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private UserInitiatedElementSave $userInitiatedElementSave,
@@ -144,11 +146,57 @@ readonly class Addresses
     }
 
     /**
+     * Returns the writable custom-field schema for an existing address or a new address owned by the requested element.
+     *
+     * @return array{schema: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'addresses.field-schema',
+        description: 'Gets the writable custom-field JSON Schema for an existing address or an address owner.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function fieldSchema(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        ?int $ownerId = null,
+    ): array {
+        $existingAddress = $id !== null || $uid !== null;
+
+        if (! $existingAddress && $ownerId === null) {
+            throw new ToolCallException('Provide an address ID or UID, or provide ownerId for a new address.');
+        }
+
+        $address = $existingAddress
+            ? $this->find($id, $uid, $siteId)
+            : new Address(['ownerId' => $ownerId]);
+
+        if (! $address) {
+            throw new ToolCallException('Address not found.');
+        }
+
+        $actor = $this->actor->user();
+
+        if ($existingAddress) {
+            $this->authorizeSave($actor, $address);
+
+            if ($ownerId !== null) {
+                $address->ownerId = $ownerId;
+            }
+        }
+
+        $this->authorizeSave($actor, $address);
+
+        return ['schema' => $this->customFieldSchema->forElement($address)];
+    }
+
+    /**
      * @param  array<string, mixed>  $attributes  Built-in address attributes.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
      * @return array{address: array<string, mixed>}
      */
-    #[McpTool(name: 'addresses.create', description: 'Creates a Craft CMS address.')]
+    #[McpTool(name: 'addresses.create', description: 'Creates a Craft CMS address. Use addresses.field-schema to discover custom fields.')]
     public function create(
         #[Schema(definition: self::AttributesSchema)]
         array $attributes = [],
@@ -174,7 +222,7 @@ readonly class Addresses
      */
     #[McpTool(
         name: 'addresses.update',
-        description: 'Updates a Craft CMS address.',
+        description: 'Updates a Craft CMS address. Use addresses.field-schema to discover custom fields.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(

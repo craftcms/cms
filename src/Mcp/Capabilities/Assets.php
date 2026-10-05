@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
+use CraftCms\Cms\Mcp\CustomFieldSchema;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
@@ -78,7 +79,7 @@ readonly class Assets
 
     private const array FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle.',
+        'description' => 'Custom field values keyed by field handle. Use assets.field-schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
@@ -86,6 +87,7 @@ readonly class Assets
         private McpActor $actor,
         private AssetService $assets,
         private AssetUploadHandler $assetUploads,
+        private CustomFieldSchema $customFieldSchema,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private Folders $folders,
@@ -149,6 +151,73 @@ readonly class Assets
         return ['asset' => $this->serialize($asset)];
     }
 
+    /**
+     * Returns the writable custom-field schema for an existing asset or an asset in the requested folder or volume.
+     *
+     * @return array{schema: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'assets.field-schema',
+        description: 'Gets the writable custom-field JSON Schema for an existing asset or an asset volume.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function fieldSchema(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        ?int $folderId = null,
+        ?int $volumeId = null,
+    ): array {
+        $existingAsset = $id !== null || $uid !== null;
+
+        if (! $existingAsset && $folderId === null && $volumeId === null) {
+            throw new ToolCallException('Provide an asset ID or UID, or provide folderId or volumeId for a new asset.');
+        }
+
+        if ($existingAsset && $volumeId !== null) {
+            throw new ToolCallException('Use folderId to select a destination when requesting an existing asset schema.');
+        }
+
+        $actor = $this->actor->user();
+
+        if ($existingAsset) {
+            $asset = $this->find($id, $uid, $siteId);
+
+            if (! $asset) {
+                throw new ToolCallException('Asset not found.');
+            }
+
+            $this->authorizeSave($actor, $asset);
+
+            if ($folderId !== null) {
+                $folder = $this->folders->getFolderById($folderId);
+
+                if (! $folder || ! Gate::forUser($actor)->allows('moveFile', [$asset, $folder])) {
+                    throw new ToolCallException('You are not authorized to move this asset file.');
+                }
+
+                $asset->newFolderId = $folder->id;
+                $asset->setVolumeId($folder->volumeId);
+            }
+        } else {
+            $folder = $this->targetFolder($folderId, $volumeId);
+
+            if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
+                throw new ToolCallException('You are not authorized to upload assets to this folder.');
+            }
+
+            $asset = new Asset;
+            $asset->newFolderId = $folder->id;
+            $asset->setVolumeId($folder->volumeId);
+            $asset->uploaderId = $actor->getCraftUserId();
+        }
+
+        $this->authorizeSave($actor, $asset);
+
+        return ['schema' => $this->customFieldSchema->forElement($asset)];
+    }
+
     /** @return array{upload: array<string, mixed>} */
     #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable upload for assets.create.')]
     public function prepareUpload(
@@ -193,7 +262,7 @@ readonly class Assets
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
      * @return array{asset: array<string, mixed>}
      */
-    #[McpTool(name: 'assets.create', description: 'Creates a Craft CMS asset from a completed assets.upload.prepare upload.')]
+    #[McpTool(name: 'assets.create', description: 'Creates a Craft CMS asset from a completed assets.upload.prepare upload. Use assets.field-schema to discover custom fields.')]
     public function create(
         #[Schema(format: 'uuid')]
         string $uploadId,
@@ -263,7 +332,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets.update',
-        description: 'Updates a Craft CMS asset.',
+        description: 'Updates a Craft CMS asset. Use assets.field-schema to discover custom fields.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(

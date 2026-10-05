@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
+use CraftCms\Cms\Mcp\CustomFieldSchema;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
@@ -96,12 +97,13 @@ readonly class Users
 
     private const array FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle.',
+        'description' => 'Custom field values keyed by field handle. Use users.field-schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
     public function __construct(
         private McpActor $actor,
+        private CustomFieldSchema $customFieldSchema,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private UserInitiatedElementSave $userInitiatedElementSave,
@@ -168,11 +170,39 @@ readonly class Users
     }
 
     /**
+     * Returns the writable custom-field schema for an existing user or a new user when no identifier is provided.
+     *
+     * @return array{schema: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'users.field-schema',
+        description: 'Gets the writable custom-field JSON Schema for an existing or new user.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function fieldSchema(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+    ): array {
+        $user = $id !== null || $uid !== null
+            ? $this->find($id, $uid)
+            : new User;
+
+        if (! $user) {
+            throw new ToolCallException('User not found.');
+        }
+
+        $this->authorizeSave($this->actor->user(), $user);
+
+        return ['schema' => $this->customFieldSchema->forElement($user)];
+    }
+
+    /**
      * @param  array<string, mixed>  $attributes  Built-in user attributes.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
      * @return array{user: array<string, mixed>}
      */
-    #[McpTool(name: 'users.create', description: 'Creates a Craft CMS user.')]
+    #[McpTool(name: 'users.create', description: 'Creates a Craft CMS user. Use users.field-schema to discover custom fields.')]
     #[RequiresPermission('registerUsers')]
     public function create(
         #[Schema(definition: self::CreateAttributesSchema)]
@@ -200,7 +230,7 @@ readonly class Users
      */
     #[McpTool(
         name: 'users.update',
-        description: 'Updates a Craft CMS user.',
+        description: 'Updates a Craft CMS user. Use users.field-schema to discover custom fields.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresPermission('editUsers')]
