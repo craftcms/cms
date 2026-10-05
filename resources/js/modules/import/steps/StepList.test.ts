@@ -12,13 +12,6 @@ vi.mock('./step-slideout', () => ({
   openStepSlideout: state.openStepSlideout,
 }));
 
-const urls = {
-  settingsUrl: '/actions/import/step-settings',
-  validateUrl: '/actions/import/validate-step',
-  mappingUrl: '/actions/import/step-mapping',
-  nestedColsUrl: '/actions/import/nested-mapping-cols',
-};
-
 const importerTypes = [
   {value: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter', label: 'Entries'},
   {value: 'CraftCms\\Cms\\Asset\\Import\\AssetImporter', label: 'Assets'},
@@ -49,10 +42,9 @@ function mount(
   app = createApp({
     components: {StepList},
     template:
-      '<StepList v-model="steps" :urls="urls" :editable="editable" :importer-types="importerTypes" :errors="errors" />',
+      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" />',
     setup: () => ({
       steps,
-      urls,
       importerTypes,
       editable: props.editable ?? true,
       errors: props.errors ?? {},
@@ -115,7 +107,6 @@ it('opens the slideout for a step read out of its reactive model', async () => {
 
   expect(state.openStepSlideout).toHaveBeenCalledOnce();
   expect(state.openStepSlideout.mock.calls[0]![0]).toMatchObject({
-    urls,
     editable: true,
   });
   expect(state.openStepSlideout.mock.calls[0]![0].step.uid).toBe('step-1');

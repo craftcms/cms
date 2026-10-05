@@ -244,7 +244,7 @@ readonly class Navigation
         if (Gate::check('viewImportPlans')) {
             $navItems->add(new NavItem()
                 ->label(t('Import'))
-                ->url('import')
+                ->href('import')
                 ->icon('arrow-up-to-bracket'));
         }
 

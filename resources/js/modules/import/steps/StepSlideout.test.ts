@@ -82,13 +82,6 @@ const step: StepPayload = {
   settings: {},
 };
 
-const urls = {
-  settingsUrl: '/actions/import/step-settings',
-  validateUrl: '/actions/import/validate-step',
-  mappingUrl: '/actions/import/step-mapping',
-  nestedColsUrl: '/actions/import/nested-mapping-cols',
-};
-
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
@@ -103,7 +96,6 @@ function mount(
     payload: payload(),
     canMap,
     sourceError: null,
-    urls,
     editable: true,
     apply: vi.fn(),
   };
@@ -329,7 +321,7 @@ it('checks whether the step can be mapped once the data source field loses focus
   await nextTick();
 
   expect(state.fetchStepForm).toHaveBeenCalledOnce();
-  expect(state.fetchStepForm.mock.calls[0]![1]).toMatchObject({
+  expect(state.fetchStepForm.mock.calls[0]![0]).toMatchObject({
     source: 'other.csv',
   });
   expect(mappingButton().loading).toBe(true);

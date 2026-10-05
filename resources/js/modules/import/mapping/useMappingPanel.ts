@@ -28,8 +28,6 @@ export interface UseMappingPanelOptions {
   editable: boolean;
   /** The draft step being mapped, so a nested panel opened from here can post it. */
   step: StepPayload;
-  /** Endpoint returning a container column's own destination columns. */
-  nestedColsUrl: string;
   apply(values: MappingValues): void;
 }
 
@@ -73,7 +71,6 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
       void openNestedMapping({
         col,
         step: options.step,
-        colsUrl: options.nestedColsUrl,
         values,
         editable: options.editable,
         opener,

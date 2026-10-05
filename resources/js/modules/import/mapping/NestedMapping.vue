@@ -30,7 +30,6 @@
     sourceDataCols: context.sourceDataCols,
     editable: context.editable,
     step: context.step,
-    nestedColsUrl: context.colsUrl,
     apply: context.apply,
   });
 

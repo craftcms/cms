@@ -77,13 +77,6 @@ const step: StepPayload = {
   settings: {},
 };
 
-const urls = {
-  settingsUrl: '/actions/import/step-settings',
-  validateUrl: '/actions/import/validate-step',
-  mappingUrl: '/actions/import/step-mapping',
-  nestedColsUrl: '/actions/import/nested-mapping-cols',
-};
-
 function emptyValues(): MappingValues {
   return {
     map: {},
@@ -112,7 +105,6 @@ function mount(
     suggestedMap,
     editable: true,
     step,
-    urls,
     apply: (next: MappingValues) => (applied = next),
   };
 
@@ -333,7 +325,6 @@ it('opens a container column’s nested mapping against the draft step', () => {
   expect(state.openNested.mock.calls[0]![0]).toMatchObject({
     col: outerMatrix,
     step,
-    colsUrl: urls.nestedColsUrl,
     editable: true,
   });
 });

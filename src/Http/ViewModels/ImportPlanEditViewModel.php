@@ -87,24 +87,4 @@ class ImportPlanEditViewModel extends ViewModel
             'url' => action([ImportPlansController::class, 'store']),
         ];
     }
-
-    public function stepSettingsUrl(): string
-    {
-        return action([ImportPlansController::class, 'stepSettings']);
-    }
-
-    public function validateStepUrl(): ?string
-    {
-        return $this->canSave ? action([ImportPlansController::class, 'validateStep']) : null;
-    }
-
-    public function stepMappingUrl(): string
-    {
-        return action([ImportPlansController::class, 'stepMapping']);
-    }
-
-    public function nestedColsUrl(): string
-    {
-        return action([ImportPlansController::class, 'nestedMappingCols']);
-    }
 }

@@ -12,6 +12,7 @@
  * panel as it does on the page, and nesting works to any depth without rebasing paths.
  */
 import {actionClient} from '@craftcms/ui';
+import {nestedMappingCols} from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {
   createContextRegistry,
@@ -38,7 +39,6 @@ export interface NestedMappingContext {
   editable: boolean;
   /** Carried through so a container inside the panel can open a panel of its own. */
   step: StepPayload;
-  colsUrl: string;
   apply(values: MappingValues): void;
 }
 
@@ -46,8 +46,6 @@ export interface OpenNestedMappingOptions {
   col: MappingCol;
   /** The draft step being mapped. Posted so the server can build its importer. */
   step: StepPayload;
-  /** Endpoint returning the container's destination columns. */
-  colsUrl: string;
   values: MappingValues;
   editable: boolean;
   opener: HTMLElement | null;
@@ -73,7 +71,7 @@ export async function openNestedMapping(
 ): Promise<boolean> {
   const {col} = options;
 
-  const {data} = await actionClient.post(options.colsUrl, {
+  const {data} = await actionClient.post(nestedMappingCols().url, {
     step: options.step,
     fieldUid: col.fieldUid ?? '',
     fieldHandle: col.prefixedHandle,
@@ -103,7 +101,6 @@ export async function openNestedMapping(
       suggestedMap,
       editable: options.editable,
       step: options.step,
-      colsUrl: options.colsUrl,
       apply: options.apply,
     },
     data.title,

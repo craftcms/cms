@@ -202,7 +202,6 @@
       await openStepMapping(
         {
           step: step.value,
-          urls: context.urls,
           editable: context.editable,
           opener: mappingButton.value,
           apply: (applied) => {
@@ -256,7 +255,6 @@
 
     try {
       const response = await fetchStepForm(
-        context.urls.settingsUrl,
         stepForRequest((values.settings ?? {}) as Record<string, unknown>)
       );
 
@@ -310,7 +308,6 @@
 
     try {
       const response = await fetchStepForm(
-        context.urls.settingsUrl,
         stepForRequest(step.value.settings ?? {})
       );
 
@@ -338,9 +335,9 @@
     syncFromForm();
     errors.value = [];
 
-    if (context.urls.validateUrl) {
+    if (context.editable) {
       try {
-        await validateStep(context.urls.validateUrl, step.value);
+        await validateStep(step.value);
       } catch (error: any) {
         const responseErrors = error?.response?.data?.errors;
 

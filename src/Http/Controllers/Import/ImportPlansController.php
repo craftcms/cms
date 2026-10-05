@@ -87,7 +87,7 @@ class ImportPlansController
                 $this->stepTypeLabel(...),
                 $importPlan->steps ?? [],
             ),
-            'editUrl' => $editable ? Url::cpUrl('import/'.$importPlan->handle) : null,
+            'editable' => $editable,
         ];
     }
 

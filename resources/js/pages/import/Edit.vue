@@ -14,23 +14,12 @@
   import {cloneSteps} from '@/modules/import/mapping/paths';
   import StepList from '@/modules/import/steps/StepList.vue';
 
-  const props = defineProps<{
+  defineProps<{
     form: FormPayload;
     submit: UrlMethodPair;
     importerTypes: Array<{value: string; label: string}>;
-    stepSettingsUrl: string;
-    validateStepUrl: string | null;
-    stepMappingUrl: string;
-    nestedColsUrl: string;
     formActions?: FormAction[];
   }>();
-
-  const urls = {
-    settingsUrl: props.stepSettingsUrl,
-    validateUrl: props.validateStepUrl,
-    mappingUrl: props.stepMappingUrl,
-    nestedColsUrl: props.nestedColsUrl,
-  };
 
   function asSteps(value: FormValue): StepPayload[] {
     return Array.isArray(value) ? (value as unknown as StepPayload[]) : [];
@@ -54,7 +43,6 @@
     <template #steps="{value, setValue, editable, errors}">
       <StepList
         :model-value="asSteps(value)"
-        :urls="urls"
         :editable="editable"
         :importer-types="importerTypes"
         :errors="stepErrors(errors)"

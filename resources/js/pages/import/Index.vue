@@ -13,6 +13,7 @@
     create,
     destroy,
     duplicate,
+    edit,
     reorder,
     run,
   } from '@actions/Import/ImportPlansController';
@@ -25,7 +26,7 @@
     description: string | null;
     stepCount: number;
     stepLabels: string[];
-    editUrl: string | null;
+    editable: boolean;
   }
 
   const props = defineProps<{
@@ -35,6 +36,10 @@
     editableImportPlans: Array<ImportRow>;
     nonEditableImportPlans: Array<ImportRow>;
   }>();
+
+  function editUrl(row: ImportRow): string {
+    return row.editable ? edit({handle: row.handle}).url : '';
+  }
 
   function stepsCell(row: ImportRow) {
     if (row.stepCount === 0) {
@@ -61,7 +66,7 @@
       columnHelper.link('name', {
         header: t('Name'),
         props: ({row}) => ({
-          href: row.original.editUrl ?? '',
+          href: editUrl(row.original),
           inertia: false,
         }),
       }),
@@ -75,7 +80,7 @@
           {
             type: 'link',
             label: t('Edit'),
-            href: row.original.editUrl ?? '',
+            href: editUrl(row.original),
           },
         ];
 

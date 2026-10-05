@@ -24,13 +24,6 @@ const step: StepPayload = {
   settings: {},
 };
 
-const urls = {
-  settingsUrl: '/actions/import/step-settings',
-  validateUrl: '/actions/import/validate-step',
-  mappingUrl: '/actions/import/step-mapping',
-  nestedColsUrl: '/actions/import/nested-mapping-cols',
-};
-
 async function contextFor(data: Record<string, unknown>) {
   let contextId: string | undefined;
   state.openSlideoutWith.mockReset();
@@ -42,7 +35,7 @@ async function contextFor(data: Record<string, unknown>) {
   vi.spyOn(actionClient, 'post').mockResolvedValue({data} as never);
 
   await openStepMapping(
-    {step, urls, editable: true, opener: null, apply: () => {}},
+    {step, editable: true, opener: null, apply: () => {}},
     'Edit mapping'
   );
 
@@ -118,7 +111,7 @@ it('throws with the server’s reason and attribute when the step can’t be map
   } as never);
 
   const opening = openStepMapping(
-    {step, urls, editable: true, opener: null, apply: () => {}},
+    {step, editable: true, opener: null, apply: () => {}},
     'Edit mapping'
   );
 

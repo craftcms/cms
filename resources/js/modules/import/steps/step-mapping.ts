@@ -8,6 +8,7 @@
  * them back on Apply.
  */
 import {actionClient} from '@craftcms/ui';
+import {stepMapping} from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {
   createContextRegistry,
@@ -25,7 +26,6 @@ import type {
   StepPayload,
   SuggestedMap,
 } from '@/modules/import/mapping/types';
-import type {StepUrls} from './step-slideout';
 
 export interface StepMappingContext {
   destinationCols: MappingColEntry[];
@@ -34,13 +34,11 @@ export interface StepMappingContext {
   suggestedMap: SuggestedMap;
   editable: boolean;
   step: StepPayload;
-  urls: StepUrls;
   apply(values: MappingValues): void;
 }
 
 export interface OpenStepMappingOptions {
   step: StepPayload;
-  urls: StepUrls;
   editable: boolean;
   opener: HTMLElement | null;
   apply(values: MappingValues): void;
@@ -78,10 +76,9 @@ export class StepMappingUnavailableError extends Error {
 
 /** Asks the server for a draft step's mapping structure. */
 export async function fetchStepMapping(
-  mappingUrl: string,
   step: StepPayload
 ): Promise<StepMappingStructure> {
-  const {data} = await actionClient.post(mappingUrl, {step});
+  const {data} = await actionClient.post(stepMapping().url, {step});
 
   return data as StepMappingStructure;
 }
@@ -95,7 +92,7 @@ export async function openStepMapping(
   options: OpenStepMappingOptions,
   title: string
 ): Promise<boolean> {
-  const data = await fetchStepMapping(options.urls.mappingUrl, options.step);
+  const data = await fetchStepMapping(options.step);
 
   if (!data.available) {
     throw new StepMappingUnavailableError(
@@ -133,7 +130,6 @@ export async function openStepMapping(
       suggestedMap,
       editable: options.editable,
       step: options.step,
-      urls: options.urls,
       apply: options.apply,
     },
     title,

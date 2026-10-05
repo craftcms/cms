@@ -8,6 +8,10 @@
  * database until the import itself is saved.
  */
 import {actionClient} from '@craftcms/ui';
+import {
+  stepSettings,
+  validateStep as validateStepAction,
+} from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {
   createContextRegistry,
@@ -16,13 +20,6 @@ import {
 import {cloneStep} from '@/modules/import/mapping/paths';
 import type {FormPayload} from '@/modules/forms/types';
 import type {StepPayload} from '@/modules/import/mapping/types';
-
-export interface StepUrls {
-  settingsUrl: string;
-  validateUrl: string | null;
-  mappingUrl: string;
-  nestedColsUrl: string;
-}
 
 export interface StepFormResponse {
   form: FormPayload;
@@ -40,14 +37,12 @@ export interface StepSlideoutContext {
   payload: FormPayload;
   canMap: boolean;
   sourceError: string | null;
-  urls: StepUrls;
   editable: boolean;
   apply(step: StepPayload): void;
 }
 
 export interface OpenStepSlideoutOptions {
   step: StepPayload;
-  urls: StepUrls;
   editable: boolean;
   opener: HTMLElement | null;
   apply(step: StepPayload): void;
@@ -63,10 +58,9 @@ export function takeStepSlideoutContext(
 
 /** Fetches the form for a draft step, and whether that step can be mapped yet. */
 export async function fetchStepForm(
-  settingsUrl: string,
   step: StepPayload
 ): Promise<StepFormResponse> {
-  const {data} = await actionClient.post(settingsUrl, {step});
+  const {data} = await actionClient.post(stepSettings().url, {step});
 
   if (!data.form) {
     throw new Error('The import step did not return a Form payload.');
@@ -83,11 +77,8 @@ export async function fetchStepForm(
  * Validates a draft step against its importer type's rules. Rejects with the axios error
  * (carrying `response.data.errors`) when the step is invalid.
  */
-export async function validateStep(
-  validateUrl: string,
-  step: StepPayload
-): Promise<void> {
-  await actionClient.post(validateUrl, {step});
+export async function validateStep(step: StepPayload): Promise<void> {
+  await actionClient.post(validateStepAction().url, {step});
 }
 
 /**
@@ -99,10 +90,7 @@ export async function openStepSlideout(
   title: string
 ): Promise<boolean> {
   const step = cloneStep(options.step);
-  const {form, canMap, sourceError} = await fetchStepForm(
-    options.urls.settingsUrl,
-    step
-  );
+  const {form, canMap, sourceError} = await fetchStepForm(step);
 
   return openContextSlideout(
     registry,
@@ -115,7 +103,6 @@ export async function openStepSlideout(
       payload: form,
       canMap,
       sourceError,
-      urls: options.urls,
       editable: options.editable,
       apply: options.apply,
     },

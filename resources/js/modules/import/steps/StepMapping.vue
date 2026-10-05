@@ -26,7 +26,6 @@
     sourceDataCols: context.sourceDataCols,
     editable: context.editable,
     step: context.step,
-    nestedColsUrl: context.urls.nestedColsUrl,
     apply: context.apply,
   });
 </script>

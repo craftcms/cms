@@ -13,10 +13,9 @@
   import {t} from '@craftcms/ui';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {StepPayload} from '@/modules/import/mapping/types';
-  import {openStepSlideout, type StepUrls} from './step-slideout';
+  import {openStepSlideout} from './step-slideout';
 
   const props = defineProps<{
-    urls: StepUrls;
     editable: boolean;
     /** Every importer type a step can be, for labelling the summary rows. */
     importerTypes: Array<{value: string; label: string}>;
@@ -156,7 +155,6 @@
       'new',
       {
         step,
-        urls: props.urls,
         editable: props.editable,
         opener: addButton.value,
         apply: (applied) => {
@@ -172,7 +170,6 @@
       step.uid,
       {
         step,
-        urls: props.urls,
         editable: props.editable,
         opener: itemButtons.value[step.uid] ?? null,
         apply: (applied) => replace(step.uid, applied),
