@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Drafts as DraftService;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Revisions as RevisionService;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
 use CraftCms\Cms\Mcp\McpActor;
@@ -22,22 +22,14 @@ use Mcp\Schema\ToolAnnotations;
 /**
  * @since 6.0.0
  */
-readonly class Drafts
+readonly class Revisions
 {
     private const array CriteriaSchema = [
         'type' => 'object',
         'properties' => [
-            'draftCreator' => [
-                ...ElementQueryCriteria::IntegerOrIntegersSchema,
-                'description' => 'Draft creator user ID or IDs.',
-            ],
-            'provisionalDrafts' => [
-                'type' => ['boolean', 'null'],
-                'description' => 'Whether to return provisional drafts, saved drafts, or both when null.',
-            ],
-            'savedDraftsOnly' => [
-                'type' => 'boolean',
-                'description' => 'Whether to return only saved unpublished drafts.',
+            'revisionCreator' => [
+                'type' => 'integer',
+                'description' => 'Revision creator user ID.',
             ],
             'orderBy' => ElementQueryCriteria::SchemaProperties['orderBy'],
             'offset' => ElementQueryCriteria::SchemaProperties['offset'],
@@ -47,7 +39,7 @@ readonly class Drafts
     ];
 
     public function __construct(
-        private DraftService $drafts,
+        private RevisionService $revisions,
         private ElementQueryFactory $elementQueries,
         private ElementQueryCriteria $elementQueryCriteria,
         private McpActor $actor,
@@ -55,11 +47,11 @@ readonly class Drafts
 
     /**
      * @param  array<string, mixed>  $criteria
-     * @return array{count: int, limit: int, offset: int, drafts: list<array<string, mixed>>}
+     * @return array{count: int, limit: int, offset: int, revisions: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'drafts.list',
-        description: 'Lists Craft CMS drafts for a supported element type.',
+        name: 'revisions.list',
+        description: 'Lists Craft CMS revisions for a registered element type.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
@@ -74,9 +66,7 @@ readonly class Drafts
     ): array {
         $actor = $this->actor->user();
         $query = $this->elementQueries->make($type)
-            ->drafts()
-            ->provisionalDrafts(null)
-            ->draftOf('*')
+            ->revisions()
             ->status(null)
             ->orderBy('elements.id');
 
@@ -87,64 +77,52 @@ readonly class Drafts
                 throw new ToolCallException('Canonical element not found.');
             }
 
-            $query->draftOf($canonical);
+            $query->revisionOf($canonical);
         } elseif ($siteId !== null) {
             $query->siteId($siteId);
         }
 
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
-        $drafts = collect($query->all())
-            ->filter(static fn (ElementInterface $draft): bool => Gate::forUser($actor)->allows('view', $draft))
+        $revisions = collect($query->all())
+            ->filter(static fn (ElementInterface $revision): bool => Gate::forUser($actor)->allows('view', $revision))
             ->map($this->serialize(...))
             ->values();
 
         return [
-            'count' => $drafts->count(),
+            'count' => $revisions->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'drafts' => $drafts->all(),
+            'revisions' => $revisions->all(),
         ];
     }
 
-    /** @return array{draft: array<string, mixed>} */
-    #[McpTool(name: 'drafts.create', description: 'Creates a draft of a Craft CMS element.')]
-    public function create(
+    /** @return array{revision: array<string, mixed>} */
+    #[McpTool(
+        name: 'revisions.get',
+        description: 'Gets a Craft CMS revision by ID or UID.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function get(
         #[Schema(description: 'Registered element type reference handle or class name.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
-        ?string $name = null,
-        ?string $notes = null,
-        bool $provisional = false,
     ): array {
-        $canonical = $this->findCanonical($type, $id, $uid, $siteId);
-        $actor = $this->actor->user();
+        $revision = $this->findRevision($type, $id, $uid, $siteId);
 
-        if (
-            ! $canonical
-            || ! Gate::forUser($actor)->allows('view', $canonical)
-            || ! Gate::forUser($actor)->allows('createDrafts', $canonical)
-        ) {
-            throw new ToolCallException('Canonical element not found.');
+        if (! $revision || ! Gate::forUser($this->actor->user())->allows('view', $revision)) {
+            throw new ToolCallException('Revision not found.');
         }
 
-        $draft = $this->drafts->createDraft(
-            canonical: $canonical,
-            creatorId: $actor->getCraftUserId(),
-            name: $name,
-            notes: $notes,
-            provisional: $provisional,
-        );
-
-        return ['draft' => $this->serialize($draft)];
+        return ['revision' => $this->serialize($revision)];
     }
 
     /** @return array{element: array<string, mixed>} */
     #[McpTool(
-        name: 'drafts.apply',
-        description: 'Applies a Craft CMS draft to its canonical element.',
+        name: 'revisions.apply',
+        description: 'Applies a Craft CMS revision to its canonical element.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
@@ -155,54 +133,29 @@ readonly class Drafts
         ?string $uid = null,
         ?int $siteId = null,
     ): array {
-        $draft = $this->findDraft($type, $id, $uid, $siteId);
+        $revision = $this->findRevision($type, $id, $uid, $siteId);
         $actor = $this->actor->user();
 
-        if (
-            ! $draft
-            || ! Gate::forUser($actor)->allows('save', $draft)
-            || ! Gate::forUser($actor)->allows('saveCanonical', $draft)
-        ) {
-            throw new ToolCallException('Draft not found.');
+        if (! $revision || ! Gate::forUser($actor)->allows('saveCanonical', $revision)) {
+            throw new ToolCallException('Revision not found.');
+        }
+
+        $creatorId = $actor->getCraftUserId();
+
+        if ($creatorId === null) {
+            throw new ToolCallException('Could not determine the revision creator.');
         }
 
         try {
-            $element = $this->drafts->applyDraft($draft);
+            $element = $this->revisions->revertToRevision($revision, $creatorId);
         } catch (InvalidElementException $exception) {
             throw new ToolCallException(
-                implode("\n", $exception->element->errors()->all()) ?: 'Draft could not be applied.',
+                implode("\n", $exception->element->errors()->all()) ?: 'Revision could not be applied.',
                 previous: $exception,
             );
         }
 
         return ['element' => $this->serialize($element)];
-    }
-
-    /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'drafts.delete',
-        description: 'Deletes a Craft CMS draft.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
-    public function delete(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
-        string $type,
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-    ): array {
-        $draft = $this->findDraft($type, $id, $uid, $siteId);
-
-        if (! $draft || ! Gate::forUser($this->actor->user())->allows('delete', $draft)) {
-            throw new ToolCallException('Draft not found.');
-        }
-
-        if (! $this->drafts->discardDraft($draft)) {
-            throw new ToolCallException('Draft could not be deleted.');
-        }
-
-        return ['deleted' => true];
     }
 
     private function findCanonical(
@@ -228,7 +181,7 @@ readonly class Drafts
         return $element instanceof Element ? $element : null;
     }
 
-    private function findDraft(
+    private function findRevision(
         string $type,
         ?int $id = null,
         ?string $uid = null,
@@ -239,8 +192,7 @@ readonly class Drafts
         }
 
         $query = $this->elementQueries->make($type)
-            ->drafts()
-            ->provisionalDrafts(null)
+            ->revisions()
             ->status(null);
 
         Typecast::configure($query, Arr::whereNotNull([
@@ -251,7 +203,7 @@ readonly class Drafts
 
         $element = $query->one();
 
-        return $element instanceof Element && $element->getIsDraft() ? $element : null;
+        return $element instanceof Element && $element->getIsRevision() ? $element : null;
     }
 
     /** @return array<string, mixed> */
