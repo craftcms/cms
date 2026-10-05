@@ -61,7 +61,7 @@
 </script>
 
 <template>
-  <header class="cp-top-bar" data-theme="dark">
+  <header class="cp-top-bar">
     <template v-for="section in sectionOrder" :key="section">
       <div class="cp-top-bar__start" v-if="section === 'start'">
         <craft-button
@@ -138,6 +138,7 @@
 
 <style scoped>
   .cp-top-bar {
+    --badge-border-color: var(--cp-shell-bg);
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);
@@ -149,6 +150,10 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
+    border-block-end: 1px solid var(--c-color-border-quiet);
+    box-shadow: var(--shadow-xs);
+    position: relative;
+    z-index: calc(var(--z-index-sidebar) + 1);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);

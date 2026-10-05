@@ -429,9 +429,6 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: var(--c-radius-xl);
-    border-start-end-radius: var(--c-radius-xl);
-    overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -445,10 +442,6 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
-  }
-
-  .page-screen {
-    background-color: var(--c-surface-header);
   }
 
   /* The top bar keeps its height and the shell takes the rest. */
