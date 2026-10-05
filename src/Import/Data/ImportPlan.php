@@ -16,12 +16,12 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -323,7 +323,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
      */
     public function getCpEditUrl(): ?string
     {
-        if (! $this->handle || ! Auth::user()?->isAdmin()) {
+        if (! $this->handle || ! craftAuth()::user()?->isAdmin()) {
             return null;
         }
 

@@ -236,9 +236,11 @@ class ImportHelper
             return $value;
         }
 
-        $decoded = json_decode($value, true);
+        if (! Str::isJson($value)) {
+            return $value;
+        }
 
-        return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
+        return Json::decode($value);
     }
 
     /**

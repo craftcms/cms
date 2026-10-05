@@ -72,7 +72,7 @@ class Xml implements DataTypeInterface
             throw new InvalidArgumentException('The data must be an XML document.');
         }
 
-        $array = JsonHelper::decode(json_encode($xmlObj));
+        $array = JsonHelper::decode(JsonHelper::encode($xmlObj));
 
         // an empty root element has no rows to unwrap
         if (! is_array($array) || $array === []) {

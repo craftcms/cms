@@ -7,6 +7,10 @@ use CraftCms\Cms\Import\ImportServiceProvider;
 use Illuminate\Support\Facades\Log;
 
 it('registers the import log channel without any app-level config', function () {
+    // those 2 lines are needed so that the tests can run in parallel "mode"
+    config()->set('logging.channels.import');
+    app()->register(ImportServiceProvider::class, force: true);
+
     expect(config('logging.channels.import'))->toMatchArray([
         'driver' => 'daily',
         'path' => storage_path('logs/import.log'),

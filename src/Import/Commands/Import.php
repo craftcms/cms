@@ -124,7 +124,7 @@ abstract class Import extends Command implements PromptsForMissingInput
             "Import Type: `{$importer::targetClass()}`",
             "Source: `$importer->source`",
             'Transformer: '.($importer->transformer ? "`{$importer->transformerAsString()}`" : 'NULL'),
-            'Match Criteria: '.($importer->matchCriteria ? json_encode($importer->matchCriteria) : 'NULL'),
+            'Match Criteria: '.($importer->matchCriteria ? Json::encode($importer->matchCriteria) : 'NULL'),
         ];
         $this->components->bulletList($list);
 
