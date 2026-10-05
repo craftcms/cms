@@ -25,7 +25,7 @@ CP Styles
   --cp-footer-height: calc(54rem / 16);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
-  --cp-shell-bg: color-mix(
+  --cp-header-bg: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-blue-50), white 50%),
     black 4%
@@ -78,7 +78,6 @@ CP Styles
 html,
 body {
   height: 100%;
-  background-color: var(--cp-shell-bg);
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The

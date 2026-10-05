@@ -138,7 +138,8 @@
 
 <style scoped>
   .cp-top-bar {
-    --badge-border-color: var(--cp-shell-bg);
+    --badge-border-color: var(--cp-header-bg);
+    background-color: var(--cp-header-bg);
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);
