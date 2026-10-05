@@ -4,6 +4,7 @@ import {
   type HTMLAttributes,
   normalizeClass,
   shallowRef,
+  type VNode,
 } from 'vue';
 import {
   type CellContext,
@@ -20,6 +21,11 @@ import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';
 import useCraftData from '@/common/composables/useCraftData';
+
+/** A Lion form control, which labels its inner control through `addToAriaLabelledBy()`. */
+type LabelledFormControl = HTMLElement & {
+  addToAriaLabelledBy(element: HTMLElement, config?: {reorder?: boolean}): void;
+};
 
 type MaybeGetter<T> = T | (() => T);
 
@@ -242,8 +248,18 @@ export function useEditableTable<T extends object>(
           'cp-table-input cp-table-input--switch',
           cellOptions?.class,
         ]),
-        'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
         disabled: resolveDisabled(cellOptions?.disabled, row),
+        onVnodeMounted: ({el}: VNode) => {
+          const switchEl = el as LabelledFormControl;
+          const labelEl = (
+            switchEl.getRootNode() as Document | ShadowRoot
+          ).getElementById(
+            cellOptions?.ariaLabelledBy ?? `header-${column.id}`
+          );
+          if (labelEl) {
+            switchEl.addToAriaLabelledBy(labelEl, {reorder: false});
+          }
+        },
         'onUpdate:modelValue': (value: boolean | undefined) => {
           cellOptions?.onUpdate?.(value);
           handleChange(row, column.id, value ?? false);
