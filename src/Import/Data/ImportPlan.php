@@ -21,7 +21,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
 
-use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -323,7 +323,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
      */
     public function getCpEditUrl(): ?string
     {
-        if (! $this->handle || ! craftAuth()::user()?->isAdmin()) {
+        if (! $this->handle || ! currentUser()?->isAdmin()) {
             return null;
         }
 
