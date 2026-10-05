@@ -12,7 +12,7 @@
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/select/select';
-  import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
+  import '@craftcms/ui/components/select-rich/select-rich';
   import {computed, inject, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
@@ -168,17 +168,23 @@
       >
         {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
       </craft-button>
-      <CraftCombobox
+      <craft-select-rich
         v-else
-        :model-value="mapValue"
-        :options="context.sourceDataCols"
-        :disabled="!context.editable"
+        .modelValue="mapValue"
+        .disabled="!context.editable"
         :label="col.label"
         label-sr-only
-        require-option-match
-        show-all-on-empty
         @model-value-changed="onMapChanged"
-      />
+      >
+        <craft-option
+          v-for="option in context.sourceDataCols"
+          :key="option.value"
+          .choiceValue="option.value"
+          .hint="option.data?.hint ?? null"
+        >
+          {{ option.label }}
+        </craft-option>
+      </craft-select-rich>
       <div v-if="importSettings.length" class="import-settings">
         <craft-select
           v-for="setting in importSettings"
