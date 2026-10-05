@@ -26,6 +26,7 @@ import {installMessages} from './modules/messages';
 import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineFieldSettingsFormHost} from './modules/forms/field-settings-form-host';
 import {defineTableFormHost} from './modules/forms/table-form-host';
 import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
@@ -88,6 +89,7 @@ defineEntryFieldLayoutFormHost(Cp.$components);
 defineConditionBuilderHost(Cp.$components);
 defineInlineAttributeFormHost(Cp.$components);
 defineTableFormHost(Cp.$components);
+defineFieldSettingsFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);
 
 mountElevatedSessionHost();
