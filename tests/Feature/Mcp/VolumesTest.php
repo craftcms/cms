@@ -21,18 +21,25 @@ beforeEach(function () {
 
 it('manages volumes through MCP', function () {
     $volumes = app(Volumes::class);
-    $created = $volumes->create('Documents', 'documents', 'mcp-volumes')['volume'];
+    $created = $volumes->create(
+        'Documents',
+        'documents',
+        'mcp-volumes',
+        fieldLayout: ['tabs' => [['name' => 'Asset content', 'elements' => []]]],
+    )['volume'];
     $listed = $volumes->list();
     $request = new CallToolRequest('volumes.update', [
         'id' => $created['id'],
         'name' => 'Files',
         'hasUrls' => true,
+        'fieldLayout' => ['tabs' => [['name' => 'File content', 'elements' => []]]],
     ]);
     $updated = $volumes->update(
         new RequestContext(new Session(new InMemorySessionStore), $request),
         id: $created['id'],
         name: 'Files',
         hasUrls: true,
+        fieldLayout: ['tabs' => [['name' => 'File content', 'elements' => []]]],
     )['volume'];
     $fetched = $volumes->get(uid: $created['uid'])['volume'];
 
@@ -46,8 +53,10 @@ it('manages volumes through MCP', function () {
             'handle' => 'documents',
             'fsHandle' => 'mcp-volumes',
         ])
+        ->and($created['fieldLayout']['config']['tabs'][0]['name'])->toBe('Asset content')
         ->and($updated['name'])->toBe('Files')
         ->and($updated['hasUrls'])->toBeTrue()
+        ->and($updated['fieldLayout']['config']['tabs'][0]['name'])->toBe('File content')
         ->and($fetched)->toBe($updated)
         ->and($deleted)->toBe(['deleted' => true])
         ->and(Volume::query()->find($created['id']))->toBeNull();

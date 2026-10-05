@@ -6,10 +6,14 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Field\Fields as FieldService;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
-use CraftCms\Cms\Mcp\CustomFieldSchema;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
+use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
@@ -106,6 +110,8 @@ readonly class Users
         private CustomFieldSchema $customFieldSchema,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private FieldLayoutConfig $fieldLayouts,
+        private FieldService $fields,
         private UserInitiatedElementSave $userInitiatedElementSave,
         private UserService $users,
     ) {}
@@ -195,6 +201,48 @@ readonly class Users
         $this->authorizeSave($this->actor->user(), $user);
 
         return ['schema' => $this->customFieldSchema->forElement($user)];
+    }
+
+    /** @return array{fieldLayout: array<string, mixed>} */
+    #[McpTool(
+        name: 'users.field-layout.get',
+        description: 'Gets the Craft CMS user field layout.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    #[RequiresAdmin]
+    public function getFieldLayout(): array
+    {
+        $fieldLayout = $this->fields->getLayoutByType(User::class);
+
+        if (! $fieldLayout) {
+            throw new ToolCallException('User field layout not found.');
+        }
+
+        return ['fieldLayout' => $this->fieldLayouts->serialize($fieldLayout)];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config. Pass null to clear the layout.
+     * @return array{fieldLayout: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'users.field-layout.update',
+        description: 'Updates the Craft CMS user field layout.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresAdminChanges]
+    public function updateFieldLayout(
+        #[Schema(definition: FieldLayoutConfig::NullableSchema)]
+        ?array $fieldLayout,
+    ): array {
+        $existing = $this->fields->getLayoutByType(User::class);
+        $fieldLayout = $this->fieldLayouts->make($fieldLayout ?? [], User::class, $existing);
+
+        if (! $this->users->saveLayout($fieldLayout)) {
+            throw new ToolCallException(implode("\n", $fieldLayout->errors()->all()) ?: 'User field layout could not be saved.');
+        }
+
+        return $this->getFieldLayout();
     }
 
     /**

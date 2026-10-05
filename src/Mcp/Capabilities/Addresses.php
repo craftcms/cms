@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Address\Addresses as AddressService;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
-use CraftCms\Cms\Mcp\CustomFieldSchema;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
+use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -83,10 +87,12 @@ readonly class Addresses
     ];
 
     public function __construct(
+        private AddressService $addresses,
         private McpActor $actor,
         private CustomFieldSchema $customFieldSchema,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private FieldLayoutConfig $fieldLayouts,
         private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
 
@@ -189,6 +195,45 @@ readonly class Addresses
         $this->authorizeSave($actor, $address);
 
         return ['schema' => $this->customFieldSchema->forElement($address)];
+    }
+
+    /** @return array{fieldLayout: array<string, mixed>} */
+    #[McpTool(
+        name: 'addresses.field-layout.get',
+        description: 'Gets the Craft CMS address field layout.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    #[RequiresAdmin]
+    public function getFieldLayout(): array
+    {
+        return ['fieldLayout' => $this->fieldLayouts->serialize($this->addresses->getFieldLayout())];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config. Pass null to clear the layout.
+     * @return array{fieldLayout: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'addresses.field-layout.update',
+        description: 'Updates the Craft CMS address field layout.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresAdminChanges]
+    public function updateFieldLayout(
+        #[Schema(definition: FieldLayoutConfig::NullableSchema)]
+        ?array $fieldLayout,
+    ): array {
+        $fieldLayout = $this->fieldLayouts->make(
+            $fieldLayout ?? [],
+            Address::class,
+            $this->addresses->getFieldLayout(),
+        );
+
+        if (! $this->addresses->saveFieldLayout($fieldLayout)) {
+            throw new ToolCallException(implode("\n", $fieldLayout->errors()->all()) ?: 'Address field layout could not be saved.');
+        }
+
+        return $this->getFieldLayout();
     }
 
     /**

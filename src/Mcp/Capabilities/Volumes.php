@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes as VolumeService;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpTool;
@@ -23,7 +25,10 @@ use Mcp\Server\RequestContext;
  */
 readonly class Volumes
 {
-    public function __construct(private VolumeService $volumes) {}
+    public function __construct(
+        private FieldLayoutConfig $fieldLayouts,
+        private VolumeService $volumes,
+    ) {}
 
     /** @return array{count: int, volumes: list<array<string, mixed>>} */
     #[McpTool(
@@ -83,6 +88,7 @@ readonly class Volumes
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
      * @param  string|null  $altTranslationKeyFormat  Custom asset alternative-text translation key format.
      * @param  bool  $hasUrls  Whether assets in the volume have public URLs.
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{volume: array<string, mixed>}
      */
     #[McpTool(name: 'volumes.create', description: 'Creates a Craft CMS asset volume.')]
@@ -98,6 +104,8 @@ readonly class Volumes
         TranslationMethod $altTranslationMethod = TranslationMethod::None,
         ?string $altTranslationKeyFormat = null,
         bool $hasUrls = false,
+        #[Schema(definition: FieldLayoutConfig::Schema)]
+        ?array $fieldLayout = null,
     ): array {
         $volume = new Volume([
             'name' => $name,
@@ -112,11 +120,15 @@ readonly class Volumes
             'hasUrls' => $hasUrls,
         ]);
 
+        if ($fieldLayout !== null) {
+            $volume->setFieldLayout($this->fieldLayouts->make($fieldLayout, Asset::class));
+        }
+
         if (! $this->volumes->saveVolume($volume)) {
             throw new ToolCallException($this->validationErrors($volume));
         }
 
-        return ['volume' => $this->serialize($volume)];
+        return ['volume' => $this->serialize($this->saved($volume))];
     }
 
     /**
@@ -133,6 +145,7 @@ readonly class Volumes
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
      * @param  string|null  $altTranslationKeyFormat  Custom asset alternative-text translation key format.
      * @param  bool  $hasUrls  Whether assets in the volume have public URLs.
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{volume: array<string, mixed>}
      */
     #[McpTool(
@@ -157,6 +170,8 @@ readonly class Volumes
         TranslationMethod $altTranslationMethod = TranslationMethod::None,
         ?string $altTranslationKeyFormat = null,
         bool $hasUrls = false,
+        #[Schema(definition: FieldLayoutConfig::NullableSchema)]
+        ?array $fieldLayout = null,
     ): array {
         $volume = $this->find($id, $uid, $currentHandle);
 
@@ -180,11 +195,19 @@ readonly class Volumes
             'hasUrls' => $hasUrls,
         ], $request->arguments));
 
+        if (array_key_exists('fieldLayout', $request->arguments)) {
+            $volume->setFieldLayout($this->fieldLayouts->make(
+                $fieldLayout ?? [],
+                Asset::class,
+                $volume->getFieldLayout(),
+            ));
+        }
+
         if (! $this->volumes->saveVolume($volume)) {
             throw new ToolCallException($this->validationErrors($volume));
         }
 
-        return ['volume' => $this->serialize($volume)];
+        return ['volume' => $this->serialize($this->saved($volume))];
     }
 
     /**
@@ -257,11 +280,23 @@ readonly class Volumes
             'altTranslationKeyFormat' => $volume->altTranslationKeyFormat,
             'hasUrls' => $volume->hasUrls,
             'sortOrder' => $volume->sortOrder,
+            'fieldLayout' => $this->fieldLayouts->serialize($volume->getFieldLayout()),
         ];
     }
 
     private function validationErrors(Volume $volume): string
     {
         return implode("\n", $volume->errors()->all()) ?: 'Volume could not be saved.';
+    }
+
+    private function saved(Volume $volume): Volume
+    {
+        $saved = $volume->id ? $this->volumes->getVolumeById($volume->id) : null;
+
+        if (! $saved) {
+            throw new ToolCallException('Saved volume could not be loaded.');
+        }
+
+        return $saved;
     }
 }

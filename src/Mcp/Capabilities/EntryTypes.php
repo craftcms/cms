@@ -8,10 +8,9 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes as EntryTypeService;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -33,7 +32,7 @@ readonly class EntryTypes
 {
     public function __construct(
         private EntryTypeService $entryTypes,
-        private Fields $fields,
+        private FieldLayoutConfig $fieldLayouts,
     ) {}
 
     /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
@@ -110,11 +109,7 @@ readonly class EntryTypes
         bool $showStatusField = true,
         bool $showPostDateField = true,
         bool $showExpiryDateField = true,
-        #[Schema(definition: [
-            'type' => ['object', 'null'],
-            'description' => 'Craft field layout config. Create fields before referencing their UIDs.',
-            'additionalProperties' => true,
-        ])]
+        #[Schema(definition: FieldLayoutConfig::Schema)]
         ?array $fieldLayout = null,
     ): array {
         $entryType = new EntryType([
@@ -137,7 +132,7 @@ readonly class EntryTypes
         ]);
 
         if ($fieldLayout !== null) {
-            $entryType->setFieldLayout($this->fieldLayout($fieldLayout));
+            $entryType->setFieldLayout($this->fieldLayouts->make($fieldLayout, Entry::class));
         }
 
         if (! $this->entryTypes->saveEntryType($entryType)) {
@@ -182,11 +177,7 @@ readonly class EntryTypes
         bool $showStatusField = true,
         bool $showPostDateField = true,
         bool $showExpiryDateField = true,
-        #[Schema(definition: [
-            'type' => ['object', 'null'],
-            'description' => 'Craft field layout config. Pass null to clear the layout.',
-            'additionalProperties' => true,
-        ])]
+        #[Schema(definition: FieldLayoutConfig::NullableSchema)]
         ?array $fieldLayout = null,
     ): array {
         $entryType = $this->find($id, $uid, $currentHandle);
@@ -218,7 +209,11 @@ readonly class EntryTypes
         ], $request->arguments));
 
         if (array_key_exists('fieldLayout', $request->arguments)) {
-            $entryType->setFieldLayout($this->fieldLayout($fieldLayout ?? []));
+            $entryType->setFieldLayout($this->fieldLayouts->make(
+                $fieldLayout ?? [],
+                Entry::class,
+                $entryType->getFieldLayout(),
+            ));
         }
 
         if (! $this->entryTypes->saveEntryType($entryType)) {
@@ -307,15 +302,6 @@ readonly class EntryTypes
         };
     }
 
-    /** @param array<string, mixed> $config */
-    private function fieldLayout(array $config): FieldLayout
-    {
-        $layout = $this->fields->createLayout($config);
-        $layout->type ??= Entry::class;
-
-        return $layout;
-    }
-
     /** @return array<string, mixed> */
     private function serialize(EntryType $entryType): array
     {
@@ -329,12 +315,7 @@ readonly class EntryTypes
             'id' => $entryType->id,
             'uid' => $entryType->uid,
             ...$config,
-            'fieldLayout' => [
-                'id' => $layout->id,
-                'uid' => $layout->uid,
-                'type' => $layout->type,
-                'config' => $layout->getConfig() ?? ['tabs' => []],
-            ],
+            'fieldLayout' => $this->fieldLayouts->serialize($layout),
         ];
     }
 
