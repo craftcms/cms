@@ -59,6 +59,7 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Updated editable tables to use Form API controls, with cell validation messages and keyboard row actions.
 - Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Control panel success, notice, and error messages now go through a single message system instead of several different ones, and are no longer shown twice or lost between pages.
@@ -142,6 +143,8 @@
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 
 ### Fields
+- Added configurable Table cell types through `CraftCms\Cms\Field\Contracts\TableCellInterface` and `CraftCms\Cms\Field\TableCellTypes`.
+- Replaced Table column options JSON inputs with cell settings forms, and preserved Table data when a cell type is unavailable.
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
 - Restored Matrix fields’ configured Cards and Cards Grid view modes in element forms.
