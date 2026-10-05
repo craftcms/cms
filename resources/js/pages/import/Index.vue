@@ -59,7 +59,6 @@
         header: t('Name'),
         props: ({row}) => ({
           href: editUrl(row.original),
-          inertia: false,
         }),
       }),
       columnHelper.handle('handle'),
@@ -206,12 +205,7 @@
 
 <template>
   <LayoutSlot v-if="canSave" name="content-actions">
-    <CpButtonLink
-      variant="primary"
-      icon="plus"
-      :href="create().url"
-      :inertia="false"
-    >
+    <CpButtonLink variant="primary" icon="plus" :href="create()">
       {{ t('New import plan') }}
     </CpButtonLink>
   </LayoutSlot>
