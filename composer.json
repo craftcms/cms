@@ -50,6 +50,7 @@
     "inertiajs/inertia-laravel": "^3.0",
     "intervention/image": "^4.2",
     "laravel/framework": "^13.17",
+    "laravel/passport": "^13.0",
     "laravel/wayfinder": "^0.1.12",
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
