@@ -24,6 +24,12 @@ class FormHtmlRenderer
         private readonly FormControlTypes $controlTypes,
     ) {}
 
+    /** @return list<string> */
+    public function scope(): array
+    {
+        return $this->payload->scope ?? [];
+    }
+
     public function render(FormPayload $payload): string
     {
         $this->payload = $payload;

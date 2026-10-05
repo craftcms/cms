@@ -144,5 +144,5 @@ jobs:
           - name: Run @craftcms/ui tests
             run: vp run test:ui
 
-          - name: Run element index tests
-            run: vp test run resources/js/modules/elements
+          - name: Run element index and nested element tests
+            run: vp test run resources/js/modules/elements resources/js/modules/forms/nested-elements resources/js/modules/forms/entry-field-layout-form-host.test.ts
