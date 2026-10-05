@@ -15,6 +15,7 @@ import {
 } from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
+  tableHeaderId,
   useCraftTable,
 } from '@/modules/admin-table/craftTable';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
@@ -196,7 +197,7 @@ export function useEditableTable<T extends object>(
   ): (
     ctx: CellContext<CraftTableFeatures, T, unknown>
   ) => ReturnType<typeof h> {
-    return ({row, column}) =>
+    return ({row, column, table}) =>
       h('textarea', {
         rows: 1,
         type: inputType,
@@ -216,7 +217,7 @@ export function useEditableTable<T extends object>(
           : options.name
             ? `${options.name}[${String(Object.getOwnPropertyDescriptor(row.original, key)?.value)}][${column.id}]`
             : undefined,
-        'aria-labelledby': `header-${column.id}`,
+        'aria-labelledby': tableHeaderId(table, column.id),
         onInput: (event: Event) => {
           cellOptions?.onInput?.(event);
         },
@@ -236,7 +237,7 @@ export function useEditableTable<T extends object>(
   ): (
     ctx: CellContext<CraftTableFeatures, T, unknown>
   ) => ReturnType<typeof h> {
-    return ({row, column}) =>
+    return ({row, column, table}) =>
       h(CraftSwitch, {
         modelValue: Boolean(
           Object.getOwnPropertyDescriptor(row.original, column.id)?.value
@@ -254,7 +255,7 @@ export function useEditableTable<T extends object>(
           const labelEl = (
             switchEl.getRootNode() as Document | ShadowRoot
           ).getElementById(
-            cellOptions?.ariaLabelledBy ?? `header-${column.id}`
+            cellOptions?.ariaLabelledBy ?? tableHeaderId(table, column.id)
           );
           if (labelEl) {
             switchEl.addToAriaLabelledBy(labelEl, {reorder: false});
@@ -272,7 +273,7 @@ export function useEditableTable<T extends object>(
   ): (
     ctx: CellContext<CraftTableFeatures, T, unknown>
   ) => ReturnType<typeof h> {
-    return ({row, column}) => {
+    return ({row, column, table}) => {
       return h('input', {
         type: 'checkbox',
         checked: Boolean(
@@ -282,7 +283,8 @@ export function useEditableTable<T extends object>(
           'cp-table-input cp-table-input--switch',
           cellOptions?.class,
         ]),
-        'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
+        'aria-labelledby':
+          cellOptions?.ariaLabelledBy ?? tableHeaderId(table, column.id),
         disabled: resolveDisabled(cellOptions?.disabled, row),
         onChange: (event: Event) => {
           if (!(event.target instanceof HTMLInputElement)) {
