@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
@@ -39,28 +40,7 @@ readonly class Users
         'type' => 'object',
         'properties' => [
             ...ElementQueryCriteria::SchemaProperties,
-            'group' => [
-                ...ElementQueryCriteria::StringOrStringsSchema,
-                'description' => 'User group handle or handles.',
-            ],
-            'groupId' => [
-                ...ElementQueryCriteria::IntegerOrIntegersSchema,
-                'description' => 'User group ID or IDs.',
-            ],
-            'username' => [
-                ...ElementQueryCriteria::StringOrStringsSchema,
-                'description' => 'Username criteria.',
-            ],
-            'email' => [
-                ...ElementQueryCriteria::StringOrStringsSchema,
-                'description' => 'User email criteria.',
-            ],
-            'firstName' => ['type' => 'string', 'description' => 'First name criteria.'],
-            'lastName' => ['type' => 'string', 'description' => 'Last name criteria.'],
-            'fullName' => ['type' => 'string', 'description' => 'Full name criteria.'],
-            'admin' => ['type' => 'boolean', 'description' => 'Whether to return admin users.'],
-            'hasPhoto' => ['type' => 'boolean', 'description' => 'Whether to return users with a photo.'],
-            'lastLoginDate' => ['type' => 'string', 'description' => 'Last login date criteria.'],
+            ...ElementQueryCriteria::UserSchemaProperties,
         ],
         'additionalProperties' => true,
     ];
@@ -108,6 +88,7 @@ readonly class Users
     public function __construct(
         private McpActor $actor,
         private CustomFieldSchema $customFieldSchema,
+        private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private FieldLayoutConfig $fieldLayouts,
@@ -450,6 +431,12 @@ readonly class Users
     /** @return array<string, mixed> */
     private function serializeSummary(User $user): array
     {
+        return $this->elementSerializer->serialize($user, $this->summaryData($user), filterNulls: false);
+    }
+
+    /** @return array<string, mixed> */
+    private function summaryData(User $user): array
+    {
         return [
             'id' => $user->id,
             'uid' => $user->uid,
@@ -469,18 +456,22 @@ readonly class Users
     /** @return array<string, mixed> */
     private function serialize(User $user): array
     {
-        return [
-            ...$this->serializeSummary($user),
-            'firstName' => $user->firstName,
-            'lastName' => $user->lastName,
-            'photoId' => $user->photoId,
-            'affiliatedSiteId' => $user->affiliatedSiteId,
-            'hasDashboard' => $user->hasDashboard,
-            'lastLoginDate' => $this->date($user->lastLoginDate),
-            'dateCreated' => $this->date($user->dateCreated),
-            'dateUpdated' => $this->date($user->dateUpdated),
-            'groups' => array_map($this->serializeGroup(...), $user->getGroups()),
-        ];
+        return $this->elementSerializer->serialize(
+            $user,
+            [
+                ...$this->summaryData($user),
+                'firstName' => $user->firstName,
+                'lastName' => $user->lastName,
+                'photoId' => $user->photoId,
+                'affiliatedSiteId' => $user->affiliatedSiteId,
+                'hasDashboard' => $user->hasDashboard,
+                'lastLoginDate' => $this->date($user->lastLoginDate),
+                'dateCreated' => $this->date($user->dateCreated),
+                'dateUpdated' => $this->date($user->dateUpdated),
+                'groups' => array_map($this->serializeGroup(...), $user->getGroups()),
+            ],
+            filterNulls: false,
+        );
     }
 
     /** @return array<string, mixed> */

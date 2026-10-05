@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Revisions as RevisionService;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -42,6 +43,7 @@ readonly class Revisions
         private RevisionService $revisions,
         private ElementQueryFactory $elementQueries,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementSerializer $elementSerializer,
         private McpActor $actor,
     ) {}
 
@@ -85,7 +87,7 @@ readonly class Revisions
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
         $revisions = collect($query->all())
             ->filter(static fn (ElementInterface $revision): bool => Gate::forUser($actor)->allows('view', $revision))
-            ->map($this->serialize(...))
+            ->map(fn (ElementInterface $revision): array => $this->elementSerializer->serialize($revision))
             ->values();
 
         return [
@@ -116,7 +118,7 @@ readonly class Revisions
             throw new ToolCallException('Revision not found.');
         }
 
-        return ['revision' => $this->serialize($revision)];
+        return ['revision' => $this->elementSerializer->serialize($revision)];
     }
 
     /** @return array{element: array<string, mixed>} */
@@ -155,7 +157,7 @@ readonly class Revisions
             );
         }
 
-        return ['element' => $this->serialize($element)];
+        return ['element' => $this->elementSerializer->serialize($element)];
     }
 
     private function findCanonical(
@@ -204,14 +206,5 @@ readonly class Revisions
         $element = $query->one();
 
         return $element instanceof Element && $element->getIsRevision() ? $element : null;
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(ElementInterface $element): array
-    {
-        return Arr::whereNotNull([
-            'type' => $element::class,
-            ...$element->toArray(),
-        ]);
     }
 }

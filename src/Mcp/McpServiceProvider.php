@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
@@ -13,6 +14,7 @@ use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\UseDebugMcpUser;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -36,6 +38,10 @@ class McpServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->scoped(Settings::class, fn (): Settings => new Settings(
+            $this->app->make(ProjectConfig::class)->get('mcp') ?? [],
+        ));
+
         if ($this->app->bound(AuthorizationViewResponse::class)) {
             return;
         }
@@ -46,6 +52,8 @@ class McpServiceProvider extends ServiceProvider
     }
 
     public function boot(
+        CpSettings $cpSettings,
+        PublicRouteRegistrar $publicRoutes,
         UserPermissions $userPermissions,
         Router $router,
         Routes $routes,
@@ -69,8 +77,17 @@ class McpServiceProvider extends ServiceProvider
             ]),
         ));
 
+        $settings = static fn (): array => [
+            'label' => t('MCP'),
+            'url' => route('craft.cp.settings.mcp.index'),
+            'iconName' => 'light/robot',
+        ];
+        $cpSettings->registerSetting('System', 'mcp', $settings);
+        $cpSettings->registerReadOnlySetting('System', 'mcp', $settings);
+
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes($router, $routes);
+            $publicRoutes->register();
         }
     }
 

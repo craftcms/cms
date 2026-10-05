@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
@@ -14,6 +15,7 @@ use Mcp\Capability\Discovery\Discoverer;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
 use Mcp\Capability\Registry\ElementReference;
+use ReflectionFunction;
 use ReflectionMethod;
 
 /**
@@ -39,12 +41,45 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     ): DiscoveryState {
         $discovered = $this->discoverer->discover($basePath, $directories, $excludeDirs, $namePatterns);
 
-        return new DiscoveryState(
-            tools: array_filter($discovered->getTools(), $this->allows(...)),
-            resources: array_filter($discovered->getResources(), $this->allows(...)),
-            prompts: array_filter($discovered->getPrompts(), $this->allows(...)),
-            resourceTemplates: array_filter($discovered->getResourceTemplates(), $this->allows(...)),
+        return $this->filter(
+            $discovered,
+            fn (ElementReference $reference): bool => ! $this->isPublic($reference) && $this->allows($reference),
         );
+    }
+
+    /**
+     * @param  list<string>  $directories
+     * @param  list<string>  $excludeDirs
+     * @param  list<string>  $namePatterns
+     */
+    public function discoverPublic(
+        string $basePath,
+        array $directories,
+        array $excludeDirs = [],
+        array $namePatterns = self::DEFAULT_NAME_PATERNS,
+    ): DiscoveryState {
+        $discovered = $this->discoverer->discover($basePath, $directories, $excludeDirs, $namePatterns);
+
+        return $this->filter(
+            $discovered,
+            fn (ElementReference $reference): bool => $this->isPublic($reference) && $this->allows($reference),
+        );
+    }
+
+    /** @param Closure(ElementReference): bool $allows */
+    private function filter(DiscoveryState $discovered, Closure $allows): DiscoveryState
+    {
+        return new DiscoveryState(
+            tools: array_filter($discovered->getTools(), $allows),
+            resources: array_filter($discovered->getResources(), $allows),
+            prompts: array_filter($discovered->getPrompts(), $allows),
+            resourceTemplates: array_filter($discovered->getResourceTemplates(), $allows),
+        );
+    }
+
+    private function isPublic(ElementReference $reference): bool
+    {
+        return ($this->reflection($reference->handler)?->getAttributes(PublicMcp::class) ?? []) !== [];
     }
 
     private function allows(ElementReference $reference): bool
@@ -80,7 +115,16 @@ readonly class CapabilityDiscovery implements DiscovererInterface
      */
     private function reflection(Closure|array|string $handler): ?ReflectionMethod
     {
-        if (! is_array($handler)) {
+        if ($handler instanceof Closure) {
+            $function = new ReflectionFunction($handler);
+            $scope = $function->getClosureScopeClass();
+
+            return $scope?->hasMethod($function->getName())
+                ? $scope->getMethod($function->getName())
+                : null;
+        }
+
+        if (is_string($handler)) {
             return null;
         }
 

@@ -280,6 +280,10 @@ readonly class ElementEagerLoader
                         } else {
                             $query->whereIn('elements.id', array_keys($uniqueTargetElementIds));
                         }
+
+                        if ($plan->configureQuery !== null) {
+                            ($plan->configureQuery)($query);
+                        }
                     }
 
                     // Do we just need the count?
@@ -382,7 +386,7 @@ readonly class ElementEagerLoader
                         }
 
                         if (! empty($targetElementsForSource)) {
-                            if (! empty($criteria['withProvisionalDrafts'])) {
+                            if ($query->withProvisionalDrafts) {
                                 $targetElementsForSource = $this->drafts->withProvisionalDrafts($targetElementsForSource);
                             }
 

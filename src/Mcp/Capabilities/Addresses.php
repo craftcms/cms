@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
@@ -90,6 +91,7 @@ readonly class Addresses
         private AddressService $addresses,
         private McpActor $actor,
         private CustomFieldSchema $customFieldSchema,
+        private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private FieldLayoutConfig $fieldLayouts,
@@ -121,7 +123,7 @@ readonly class Addresses
             'count' => $addresses->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'addresses' => $addresses->map($this->serialize(...))->all(),
+            'addresses' => $addresses->map(fn (Address $address): array => $this->elementSerializer->serialize($address))->all(),
         ];
     }
 
@@ -148,7 +150,7 @@ readonly class Addresses
             throw new ToolCallException('Address not found.');
         }
 
-        return ['address' => $this->serialize($address)];
+        return ['address' => $this->elementSerializer->serialize($address)];
     }
 
     /**
@@ -342,7 +344,7 @@ readonly class Addresses
             throw new ResourceReadException('Address not found.');
         }
 
-        return ['address' => $this->serialize($address)];
+        return ['address' => $this->elementSerializer->serialize($address)];
     }
 
     private function find(?int $id = null, ?string $uid = null, ?int $siteId = null): ?Address
@@ -388,15 +390,6 @@ readonly class Addresses
             throw new ToolCallException(implode("\n", $result->element->errors()->all()) ?: 'Address could not be saved.');
         }
 
-        return $this->serialize($result->element);
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(Address $address): array
-    {
-        return Arr::whereNotNull([
-            'type' => $address::class,
-            ...$address->toArray(),
-        ]);
+        return $this->elementSerializer->serialize($result->element);
     }
 }

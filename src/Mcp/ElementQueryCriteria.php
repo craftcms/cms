@@ -92,6 +92,52 @@ class ElementQueryCriteria
         ],
     ];
 
+    public const array EntrySchemaProperties = [
+        'slug' => [...self::StringOrStringsSchema, 'description' => 'Entry slug criteria.'],
+        'section' => [...self::StringOrStringsSchema, 'description' => 'Section handle or handles.'],
+        'sectionId' => [...self::IntegerOrIntegersSchema, 'description' => 'Section ID or IDs.'],
+        'type' => [...self::StringOrStringsSchema, 'description' => 'Entry type handle or handles.'],
+        'typeId' => [...self::IntegerOrIntegersSchema, 'description' => 'Entry type ID or IDs.'],
+        'authorId' => [...self::IntegerOrIntegersSchema, 'description' => 'Author user ID or IDs.'],
+    ];
+
+    public const array AssetSchemaProperties = [
+        'volume' => [...self::StringOrStringsSchema, 'description' => 'Asset volume handle or handles.'],
+        'volumeId' => [...self::IntegerOrIntegersSchema, 'description' => 'Asset volume ID or IDs.'],
+        'folderId' => [...self::IntegerOrIntegersSchema, 'description' => 'Asset folder ID or IDs.'],
+        'filename' => [...self::StringOrStringsSchema, 'description' => 'Asset filename criteria.'],
+        'kind' => [...self::StringOrStringsSchema, 'description' => 'Asset file-kind criteria.'],
+    ];
+
+    public const array UserSchemaProperties = [
+        'group' => [...self::StringOrStringsSchema, 'description' => 'User group handle or handles.'],
+        'groupId' => [...self::IntegerOrIntegersSchema, 'description' => 'User group ID or IDs.'],
+        'username' => [...self::StringOrStringsSchema, 'description' => 'Username criteria.'],
+        'email' => [...self::StringOrStringsSchema, 'description' => 'User email criteria.'],
+        'firstName' => ['type' => 'string', 'description' => 'First name criteria.'],
+        'lastName' => ['type' => 'string', 'description' => 'Last name criteria.'],
+        'fullName' => ['type' => 'string', 'description' => 'Full name criteria.'],
+        'admin' => ['type' => 'boolean', 'description' => 'Whether to return admin users.'],
+        'hasPhoto' => ['type' => 'boolean', 'description' => 'Whether to return users with a photo.'],
+        'lastLoginDate' => ['type' => 'string', 'description' => 'Last login date criteria.'],
+    ];
+
+    /**
+     * @param  array<string, array<string, mixed>>  $properties
+     * @return list<array{name: string, type: string, description: string}>
+     */
+    public function describe(array $properties): array
+    {
+        return collect($properties)
+            ->map(fn (array $schema, string $name): array => [
+                'name' => $name,
+                'type' => $this->type($schema),
+                'description' => $schema['description'] ?? '',
+            ])
+            ->values()
+            ->all();
+    }
+
     /**
      * @param  array<string, mixed>  $criteria
      * @return array<string, mixed> Normalized criteria applied to the query.
@@ -122,5 +168,27 @@ class ElementQueryCriteria
         }
 
         return max(0, $offset);
+    }
+
+    /** @param array<string, mixed> $schema */
+    private function type(array $schema): string
+    {
+        if (isset($schema['anyOf']) && is_array($schema['anyOf'])) {
+            return collect($schema['anyOf'])
+                ->map(fn (array $option): string => $this->type($option))
+                ->implode('|');
+        }
+
+        $type = $schema['type'] ?? 'mixed';
+
+        if (is_array($type)) {
+            return implode('|', $type);
+        }
+
+        if ($type === 'array' && isset($schema['items']) && is_array($schema['items'])) {
+            return $this->type($schema['items']).'[]';
+        }
+
+        return is_string($type) ? $type : 'mixed';
     }
 }

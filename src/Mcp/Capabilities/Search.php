@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpTool;
@@ -52,6 +52,7 @@ readonly class Search
     public function __construct(
         private ElementQueryFactory $elementQueries,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementSerializer $elementSerializer,
         private McpActor $actor,
     ) {}
 
@@ -120,7 +121,7 @@ readonly class Search
             foreach ($elements as $element) {
                 $results[] = [
                     'elementType' => $typeName,
-                    'element' => $this->serialize($element),
+                    'element' => $this->elementSerializer->serialize($element),
                 ];
             }
         }
@@ -170,14 +171,5 @@ readonly class Search
         }
 
         return $criteria;
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(ElementInterface $element): array
-    {
-        return Arr::whereNotNull([
-            'type' => $element::class,
-            ...$element->toArray(),
-        ]);
     }
 }

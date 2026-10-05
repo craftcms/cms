@@ -18,6 +18,7 @@ use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Support\Arr;
@@ -44,11 +45,7 @@ readonly class Assets
         'type' => 'object',
         'properties' => [
             ...ElementQueryCriteria::SchemaProperties,
-            'volume' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Asset volume handle or handles.'],
-            'volumeId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Asset volume ID or IDs.'],
-            'folderId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Asset folder ID or IDs.'],
-            'filename' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Asset filename criteria.'],
-            'kind' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Asset file-kind criteria.'],
+            ...ElementQueryCriteria::AssetSchemaProperties,
         ],
         'additionalProperties' => true,
     ];
@@ -88,6 +85,7 @@ readonly class Assets
         private AssetService $assets,
         private AssetUploadHandler $assetUploads,
         private CustomFieldSchema $customFieldSchema,
+        private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private Folders $folders,
@@ -121,7 +119,7 @@ readonly class Assets
             'count' => $assets->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'assets' => $assets->map($this->serialize(...))->all(),
+            'assets' => $assets->map(fn (Asset $asset): array => $this->elementSerializer->serialize($asset))->all(),
         ];
     }
 
@@ -148,7 +146,7 @@ readonly class Assets
             throw new ToolCallException('Asset not found.');
         }
 
-        return ['asset' => $this->serialize($asset)];
+        return ['asset' => $this->elementSerializer->serialize($asset)];
     }
 
     /**
@@ -309,7 +307,7 @@ readonly class Assets
                         );
                     }
 
-                    return ['asset' => $this->serialize($result->asset)];
+                    return ['asset' => $this->elementSerializer->serialize($result->asset)];
                 },
             );
         } catch (ModelNotFoundException) {
@@ -364,7 +362,7 @@ readonly class Assets
                 throw new ToolCallException($this->validationErrors($asset));
             }
 
-            return ['asset' => $this->serialize($asset)];
+            return ['asset' => $this->elementSerializer->serialize($asset)];
         }
 
         return ['asset' => $this->save($asset, $actor)];
@@ -417,7 +415,7 @@ readonly class Assets
             throw new ResourceReadException('Asset not found.');
         }
 
-        return ['asset' => $this->serialize($asset)];
+        return ['asset' => $this->elementSerializer->serialize($asset)];
     }
 
     private function find(?int $id = null, ?string $uid = null, ?int $siteId = null): ?Asset
@@ -492,16 +490,7 @@ readonly class Assets
             throw new ToolCallException($this->validationErrors($result->element));
         }
 
-        return $this->serialize($result->element);
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(Asset $asset): array
-    {
-        return Arr::whereNotNull([
-            'type' => $asset::class,
-            ...$asset->toArray(),
-        ]);
+        return $this->elementSerializer->serialize($result->element);
     }
 
     private function validationErrors(object $model): string

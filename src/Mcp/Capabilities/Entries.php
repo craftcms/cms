@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Site\Sites;
@@ -33,12 +34,7 @@ readonly class Entries
         'type' => 'object',
         'properties' => [
             ...ElementQueryCriteria::SchemaProperties,
-            'slug' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Entry slug criteria.'],
-            'section' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Section handle or handles.'],
-            'sectionId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Section ID or IDs.'],
-            'type' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Entry type handle or handles.'],
-            'typeId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Entry type ID or IDs.'],
-            'authorId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Author user ID or IDs.'],
+            ...ElementQueryCriteria::EntrySchemaProperties,
         ],
         'additionalProperties' => true,
     ];
@@ -87,6 +83,7 @@ readonly class Entries
     public function __construct(
         private McpActor $actor,
         private CustomFieldSchema $customFieldSchema,
+        private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private Sites $sites,
@@ -118,7 +115,7 @@ readonly class Entries
             'count' => $entries->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'entries' => $entries->map($this->serialize(...))->all(),
+            'entries' => $entries->map(fn (Entry $entry): array => $this->elementSerializer->serialize($entry))->all(),
         ];
     }
 
@@ -145,7 +142,7 @@ readonly class Entries
             throw new ToolCallException('Entry not found.');
         }
 
-        return ['entry' => $this->serialize($entry)];
+        return ['entry' => $this->elementSerializer->serialize($entry)];
     }
 
     /**
@@ -317,7 +314,7 @@ readonly class Entries
             throw new ResourceReadException('Entry not found.');
         }
 
-        return ['entry' => $this->serialize($entry)];
+        return ['entry' => $this->elementSerializer->serialize($entry)];
     }
 
     private function find(?int $id = null, ?string $uid = null, ?int $siteId = null): ?Entry
@@ -402,15 +399,6 @@ readonly class Entries
             throw new ToolCallException(implode("\n", $result->element->errors()->all()) ?: 'Entry could not be saved.');
         }
 
-        return $this->serialize($result->element);
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(Entry $entry): array
-    {
-        return Arr::whereNotNull([
-            'type' => $entry::class,
-            ...$entry->toArray(),
-        ]);
+        return $this->elementSerializer->serialize($result->element);
     }
 }

@@ -25,6 +25,10 @@ readonly class ElementQueryFactory
     /** @return class-string<ElementInterface> */
     public function resolve(string $type): string
     {
+        if (in_array($type, $this->elements->getAllElementTypes(), true)) {
+            return $type;
+        }
+
         $elementType = $this->elements->getElementTypeByRefHandle($type)
             ?? $this->elements->getElementTypeByRefHandle(Str::singular($type));
 

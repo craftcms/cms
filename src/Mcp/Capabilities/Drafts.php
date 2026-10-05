@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -50,6 +51,7 @@ readonly class Drafts
         private DraftService $drafts,
         private ElementQueryFactory $elementQueries,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementSerializer $elementSerializer,
         private McpActor $actor,
     ) {}
 
@@ -95,7 +97,7 @@ readonly class Drafts
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
         $drafts = collect($query->all())
             ->filter(static fn (ElementInterface $draft): bool => Gate::forUser($actor)->allows('view', $draft))
-            ->map($this->serialize(...))
+            ->map(fn (ElementInterface $draft): array => $this->elementSerializer->serialize($draft))
             ->values();
 
         return [
@@ -138,7 +140,7 @@ readonly class Drafts
             provisional: $provisional,
         );
 
-        return ['draft' => $this->serialize($draft)];
+        return ['draft' => $this->elementSerializer->serialize($draft)];
     }
 
     /** @return array{element: array<string, mixed>} */
@@ -175,7 +177,7 @@ readonly class Drafts
             );
         }
 
-        return ['element' => $this->serialize($element)];
+        return ['element' => $this->elementSerializer->serialize($element)];
     }
 
     /** @return array{deleted: true} */
@@ -252,14 +254,5 @@ readonly class Drafts
         $element = $query->one();
 
         return $element instanceof Element && $element->getIsDraft() ? $element : null;
-    }
-
-    /** @return array<string, mixed> */
-    private function serialize(ElementInterface $element): array
-    {
-        return Arr::whereNotNull([
-            'type' => $element::class,
-            ...$element->toArray(),
-        ]);
     }
 }

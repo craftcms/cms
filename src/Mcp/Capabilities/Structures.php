@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement;
@@ -28,6 +29,7 @@ readonly class Structures
     public function __construct(
         private Elements $elements,
         private ElementQueryFactory $elementQueries,
+        private ElementSerializer $elementSerializer,
         private McpActor $actor,
         private StructureService $structures,
     ) {}
@@ -102,10 +104,7 @@ readonly class Structures
             'moved' => true,
             'operation' => $operation,
             'structureId' => $structureId,
-            'element' => Arr::whereNotNull([
-                'type' => $element::class,
-                ...$element->toArray(),
-            ]),
+            'element' => $this->elementSerializer->serialize($element),
         ];
     }
 
