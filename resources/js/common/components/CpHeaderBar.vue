@@ -141,7 +141,7 @@
 
 <style scoped>
   .cp-header-bar {
-    --badge-border-color: var(--cp-header-bg);
+    --badge-border-color: var(--c-surface-sunken);
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);
