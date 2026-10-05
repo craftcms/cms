@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'בטל את כל הבחירות',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'שולחן עבודה',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'קובע מאיזה אתר המשתמש יקבל הדעות דוא"ל, שנשלחות דרך לוח הבקרה.',
     'Developer Response' => 'תגובת המפתח',
     'Development Settings' => 'הגדרות פיתוח',

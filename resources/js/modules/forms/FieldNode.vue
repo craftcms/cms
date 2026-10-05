@@ -181,15 +181,22 @@
     );
   }
 
-  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
+  function setValue(
+    value: FormValue,
+    kind: FormChangeKind = 'discrete',
+    change?: FormChange
+  ): void {
     setPathValue(props.values, control.value.path, value);
 
-    emit('change', {
-      kind,
-      path: control.value.path,
-      scope: props.scope,
-      refreshable: refreshable.value,
-    });
+    emit(
+      'change',
+      change ?? {
+        kind,
+        path: control.value.path,
+        scope: props.scope,
+        refreshable: refreshable.value,
+      }
+    );
   }
 
   function renderOverride() {

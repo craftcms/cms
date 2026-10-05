@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Отменить выбор всего',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Настольный компьютер',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Определяет, с какого сайта пользователь будет получать электронные сообщения, отправленные с панели управления.',
     'Developer Response' => 'Ответ разработчика',
     'Development Settings' => 'Настройки разработки',
