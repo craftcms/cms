@@ -96,7 +96,7 @@
       </div>
 
       <div class="cp-top-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-md items-center">
           <craft-button
             icon
             :variant="ButtonVariant.Plain"
@@ -116,10 +116,10 @@
         class="cp-top-bar__breadcrumbs"
         v-else-if="section === 'breadcrumbs'"
       >
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-md items-center">
           <SystemInfo v-if="isLarge" />
           <div
-            class="flex flex-nowrap items-center gap-2"
+            class="flex flex-nowrap items-center gap-md"
             v-show="crumbs || hasContextMenu"
           >
             <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
@@ -138,7 +138,8 @@
 
 <style scoped>
   .cp-top-bar {
-    --badge-border-color: var(--cp-shell-bg);
+    --badge-border-color: var(--cp-header-bg);
+    background-color: var(--cp-header-bg);
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);

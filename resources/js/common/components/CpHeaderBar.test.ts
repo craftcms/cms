@@ -83,7 +83,7 @@ async function mountTopBar(large: boolean) {
     },
   });
 
-  const {default: CpTopBar} = await import('./CpTopBar.vue');
+  const {default: CpTopBar} = await import('./CpHeaderBar.vue');
   const container = appendElement(document.createElement('div'));
   app = createApp(CpTopBar);
 

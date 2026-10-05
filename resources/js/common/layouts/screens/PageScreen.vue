@@ -20,7 +20,7 @@
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
-  import CpTopBar from '@/common/components/CpTopBar.vue';
+  import CpTopBar from '@/common/components/CpHeaderBar.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
