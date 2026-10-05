@@ -233,7 +233,12 @@ class Asset extends ElementMutationResolver
             }
 
             $tempPath = AssetsHelper::tempFilePath($extension);
-            AssetsHelper::downloadUrl(self::urlValidator(), $url, $tempPath);
+
+            try {
+                AssetsHelper::downloadUrl($this->urlValidator(), $url, $tempPath);
+            } catch (InvalidArgumentException $e) {
+                throw new UserError($e->getMessage(), previous: $e);
+            }
         }
 
         if (! $tempPath || ! $filename) {

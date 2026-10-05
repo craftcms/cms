@@ -137,7 +137,9 @@ it('does not create any addresses when the addresses key is absent', function ()
 });
 
 it('returns address elements from the imported user', function () {
-    $user = $this->importer->importItem(($this->userData)([$this->address]));
+    $this->import->importItem($this->importer, ($this->userData)([$this->address]));
+
+    $user = UserElement::find()->username('importeduser')->one();
 
     expect($user->getAddresses()->all())->toHaveCount(1)
         ->each->toBeInstanceOf(Address::class);

@@ -119,9 +119,7 @@ use function CraftCms\Cms\template;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
-    use ImportableElementContainerField {
-        validateMapping as traitValidateMapping;
-    }
+    use ImportableElementContainerField;
 
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -2361,16 +2359,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
         $allowedEntryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
 
-        if (array_key_exists('entries', $value)) {
-            $entries = $value['entries'];
-        } else {
-            $entries = $value;
-        }
-
+        $delta = ElementHelper::nestedElementDelta($value);
+        $entries = $delta['entries'];
         $arrayIsList = array_is_list($entries);
+        $keyMap = [];
         $i = 0;
 
-        foreach ($entries as $entry) {
+        foreach ($entries as $originalKey => $entry) {
             if (! is_array($entry)) {
                 continue;
             }
@@ -2426,16 +2421,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
+            $keyMap[$originalKey] = $newKey;
             $normalizedValue['sortOrder'][] = $newKey;
             $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement, $importSettings[$entryType->handle]['fields'] ?? []);
         }
 
-        // if we have a predefined sort order and entries were not a list - use that predefined sortOrder
-        if (! empty($value['sortOrder']) && ! $arrayIsList) {
-            $normalizedValue['sortOrder'] = $value['sortOrder'];
-            // todo (iwona): this doesn't seem needed;
-            // if we were to use it we should also array_intersect($normalizedValue['sortOrder'], $normalizedValue['entries']) or something like that
-            // $normalizedValue['entries'] = array_replace(array_flip($normalizedValue['sortOrder']), $value['entries']);
+        // if we have a predefined sort order and entries were not a list - use that predefined sortOrder,
+        // translated to the keys the entries were re-keyed to
+        if (! empty($delta['sortOrder']) && ! $arrayIsList) {
+            $normalizedValue['sortOrder'] = [];
+
+            foreach ($delta['sortOrder'] as $key) {
+                if (isset($keyMap[$key])) {
+                    $normalizedValue['sortOrder'][] = $keyMap[$key];
+                }
+            }
         }
 
         return $normalizedValue;
@@ -2481,12 +2481,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
 
             return false;
-        }
-
-        // todo (iwona): validate that the fields in each provider are allowed
-        foreach ($providers as $provider) {
-            $fieldLayout = $provider->getFieldLayout();
-            // self::traitValidateMapping($value,  $attribute,  $fail,  $validator, $params);
         }
 
         return true;

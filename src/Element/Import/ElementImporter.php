@@ -300,24 +300,13 @@ abstract class ElementImporter extends BaseImporter
         }
 
         // has to exist (never create a layout as a side effect of validation)
-        $fieldLayout = self::normalizeFieldLayout($value, true);
-        if ($fieldLayout === null) {
+        if (self::normalizeFieldLayout($value) === null) {
             $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
                 'fieldLayout' => $value,
             ]));
 
             return false;
         }
-
-        //        // has to belong to the element type if we know it
-        //        $className = Arr::get($validator->getData(), 'settings.className');
-        //        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
-        //            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
-        //                'elementType' => $className,
-        //            ]));
-        //
-        //            return false;
-        //        }
 
         return true;
     }

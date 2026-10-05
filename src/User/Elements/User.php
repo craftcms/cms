@@ -26,7 +26,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -87,7 +86,6 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
@@ -328,13 +326,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[Importable('addresses', 'Addresses', false, true, false)]
     private ElementCollection $_addresses;
-
-    /**
-     * @var array<int|string, array<string, mixed>>|null Normalized address data from an import, saved once the user is.
-     *
-     * @see importIntoContainerAttribute()
-     */
-    private ?array $importedAddressData = null;
 
     /**
      * @see getAddressManager()
@@ -2381,7 +2372,6 @@ JS, [
     /**
      * Special method that can be used to import data into a container-type attribute.
      * It handles normalizing value for import and saving the data.
-     * It returns indication of whether it changed any pre-existing data.
      *
      * @param  array<string, mixed>  $attribute
      * @param  array<string, mixed>  $item
@@ -2393,14 +2383,19 @@ JS, [
         // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
         if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
             $addressesField = new Addresses;
-            $this->importedAddressData = $addressesField->normalizeValueForImport($item['addresses'], $importer, $this);
+            $addressData = $addressesField->normalizeValueForImport($item['addresses'], $importer, $this);
 
-            Event::listen(function (ElementSaved $event) use ($addressesField) {
-                if ($event->element === $this && ! empty($this->importedAddressData)) {
-                    $addresses = $addressesField->createAddressesFromSerializedData($this->importedAddressData, $event->element, true);
-                    foreach ($addresses as $address) {
-                        Elements::saveElement($address);
-                    }
+            if (empty($addressData)) {
+                return;
+            }
+
+            $importer->afterItemImported(function (mixed $user) use ($addressesField, $addressData) {
+                if (! $user instanceof self) {
+                    return;
+                }
+
+                foreach ($addressesField->createAddressesFromSerializedData($addressData, $user, true) as $address) {
+                    Elements::saveElement($address);
                 }
             });
         }

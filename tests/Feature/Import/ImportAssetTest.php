@@ -128,6 +128,25 @@ it('uses an explicitly provided valid folder ID', function () {
     expect($asset->folderId)->toBe($folder->id);
 });
 
+it('uses a folder ID provided as a numeric string', function () {
+    $folder = VolumeFolder::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->rootFolder->id,
+        'name' => 'Sub',
+        'path' => 'sub/',
+    ]);
+    $tempFilePath = ($this->makeTempFile)('txt');
+
+    $this->import->importItem($this->importer, [
+        'tempFilePath' => $tempFilePath,
+        'folderId' => (string) $folder->id,
+    ]);
+
+    $asset = Asset::find()->volumeId($this->volume->id)->one();
+
+    expect($asset->folderId)->toBe($folder->id);
+});
+
 it('resolves a folder provided by name', function () {
     $folder = VolumeFolder::factory()->create([
         'volumeId' => $this->volume->id,

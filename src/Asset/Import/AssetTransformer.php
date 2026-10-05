@@ -29,12 +29,13 @@ class AssetTransformer extends ElementTransformer
         /** @var Asset $element */
         $volume = $element->getVolume();
 
-        if (is_int($value) || is_numeric($value)) {
+        if (is_numeric($value)) {
             $folder = Folders::getFolderById((int) $value);
         }
 
-        if (is_string($value)) {
-            $folder = Folders::findFolder(['name' => $value]);
+        // a numeric string that isn't a folder ID in this volume could still be a folder name
+        if ((! $folder || $folder->volumeId !== $volume->id) && is_string($value)) {
+            $folder = Folders::findFolder(['name' => $value, 'volumeId' => $volume->id]);
         }
 
         // check that it belongs to the volume that was selected

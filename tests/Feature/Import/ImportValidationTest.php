@@ -77,6 +77,15 @@ it('validateFieldLayout passes when the layout matches the element type', functi
     expect($errors)->not->toHaveKey('settings.fieldLayout');
 });
 
+it('validateFieldLayout fails for a field layout that does not exist', function () {
+    $errors = Validator::make([
+        'uid' => 'step-uid',
+        'settings' => ['fieldLayout' => 'not-a-field-layout'],
+    ], ['settings.fieldLayout' => ElementImporter::getSettingsRules()['settings.fieldLayout']])->errors();
+
+    expect($errors)->toHaveKey('settings.fieldLayout');
+});
+
 it('validateFieldLayout still passes the existence check when className is missing', function () {
     $fieldLayout = FieldLayout::factory()->create(['type' => EntryElement::class]);
     Fields::refreshFields();
@@ -88,17 +97,19 @@ it('validateFieldLayout still passes the existence check when className is missi
     expect($errors)->not->toHaveKey('settings.fieldLayout');
 });
 
-it('validateTransformer still passes for a valid class, arrow function, and empty value, and fails for garbage', function () {
+it('validateTransformer passes for a transformer class and an empty value, and fails for anything else', function () {
     $rule = ElementImporter::getRules()['transformer'];
 
     $passing = Validator::make(['transformer' => null], ['transformer' => $rule])->errors();
     $passingClass = Validator::make(['transformer' => ElementTransformer::class], ['transformer' => $rule])->errors();
-    $passingArrowFn = Validator::make(['transformer' => 'fn ($element) => $element'], ['transformer' => $rule])->errors();
+    $failingArrowFn = Validator::make(['transformer' => 'fn ($element) => $element'], ['transformer' => $rule])->errors();
+    $failingClass = Validator::make(['transformer' => stdClass::class], ['transformer' => $rule])->errors();
     $failing = Validator::make(['transformer' => 'NotARealClass'], ['transformer' => $rule])->errors();
 
     expect($passing)->not->toHaveKey('transformer')
         ->and($passingClass)->not->toHaveKey('transformer')
-        ->and($passingArrowFn)->not->toHaveKey('transformer')
+        ->and($failingArrowFn)->toHaveKey('transformer')
+        ->and($failingClass)->toHaveKey('transformer')
         ->and($failing)->toHaveKey('transformer');
 });
 

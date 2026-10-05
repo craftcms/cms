@@ -58,7 +58,7 @@
           t('Keep existing nested elements missing from the imported data.')
         "
         .checked="keepMissingChecked"
-        :disabled="!context.editable"
+        .disabled="!context.editable"
         @model-value-changed="onKeepMissingChanged"
       ></craft-checkbox>
 

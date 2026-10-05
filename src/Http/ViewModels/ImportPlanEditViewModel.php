@@ -31,13 +31,12 @@ class ImportPlanEditViewModel extends ViewModel
         private readonly ImportPlanData $importPlan,
         private readonly Import $importService,
         private readonly FormResolver $formResolver,
-        private readonly bool $readOnly = false,
         private readonly bool $canSave = true,
     ) {}
 
     public function form(): FormPayload
     {
-        $mode = $this->readOnly || ! $this->canSave ? ControlMode::ReadOnly : ControlMode::Editable;
+        $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
 
         $handle = Handle::make('handle');
         if (! $this->importPlan->uid) {
@@ -89,14 +88,14 @@ class ImportPlanEditViewModel extends ViewModel
         ];
     }
 
-    public function stepSettingsUrl(): ?string
+    public function stepSettingsUrl(): string
     {
-        return $this->readOnly ? null : action([ImportPlansController::class, 'stepSettings']);
+        return action([ImportPlansController::class, 'stepSettings']);
     }
 
     public function validateStepUrl(): ?string
     {
-        return $this->readOnly ? null : action([ImportPlansController::class, 'validateStep']);
+        return $this->canSave ? action([ImportPlansController::class, 'validateStep']) : null;
     }
 
     public function stepMappingUrl(): string

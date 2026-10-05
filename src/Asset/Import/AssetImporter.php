@@ -20,7 +20,6 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
-use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
@@ -273,23 +272,28 @@ class AssetImporter extends ElementImporter
                 // make sure the file exists and is within a known temp path, the project root, or storage/ folder
                 $value = AssetsHelper::resolveImportFilePath($attributes['tempFilePath']);
 
-                // now let's copy it to a temp file path so that Asset::_relocateFile() doesn't delete it from the original location
-                try {
-                    copy($value, $tempPath);
-                    $attributes['tempFilePath'] = $tempPath;
-                } catch (Exception $e) {
-                    // log error
-                    ImportLog::warning("Couldn't copy a file while importing an asset: ".$e->getMessage());
+                // copy it to a temp file path so that Asset::_relocateFile() doesn't delete it from the original location;
+                // carrying on with the original path would hand the source file itself over to be moved
+                if (! @copy($value, $tempPath)) {
+                    throw new AssetException(t('Couldn’t copy “{file}” to a temp location.', [
+                        'file' => $value,
+                    ]));
                 }
+
+                $attributes['tempFilePath'] = $tempPath;
             } else {
                 // if it's an absolute URL, we need to download the file to a temp location
                 try {
                     AssetsHelper::downloadUrl(static::urlValidator(), $attributes['tempFilePath'], $tempPath);
-                    $attributes['tempFilePath'] = $tempPath;
                 } catch (Exception $e) {
-                    // log error
-                    ImportLog::warning("Couldn't download a file while importing an asset: ".$e->getMessage());
+                    @unlink($tempPath);
+
+                    throw new AssetException(t('Couldn’t download “{url}”.', [
+                        'url' => $attributes['tempFilePath'],
+                    ]), previous: $e);
                 }
+
+                $attributes['tempFilePath'] = $tempPath;
             }
         }
 

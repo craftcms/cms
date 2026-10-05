@@ -328,14 +328,16 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         // Import
+        Route::middleware('can:viewImportPlans')->group(function () {
+            Route::post('import/step-settings', [ImportPlansController::class, 'stepSettings']);
+            Route::post('import/step-mapping', [ImportPlansController::class, 'stepMapping']);
+            Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
+        });
         Route::middleware('can:saveImportPlans')->group(function () {
             Route::post('import/save', [ImportPlansController::class, 'store']);
             Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
             Route::post('import/reorder', [ImportPlansController::class, 'reorder']);
-            Route::post('import/step-settings', [ImportPlansController::class, 'stepSettings']);
             Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
-            Route::post('import/step-mapping', [ImportPlansController::class, 'stepMapping']);
-            Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
         });
         Route::middleware('can:deleteImportPlans')->delete('import/delete', [ImportPlansController::class, 'destroy']);
         Route::middleware('can:triggerImportPlans')->post('import/run', [ImportPlansController::class, 'run']);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -45,17 +44,12 @@ class ImportPlansController
 {
     use RespondsWithFlash;
 
-    private bool $readOnly;
-
     public function __construct(
         private Request $request,
-        GeneralConfig $generalConfig,
         private readonly Import $importService,
         private readonly ImportPlan $importsService,
         private readonly Fields $fieldsService,
-    ) {
-        $this->readOnly = ! $generalConfig->allowAdminChanges;
-    }
+    ) {}
 
     public function index(): InertiaResponse
     {
@@ -66,9 +60,8 @@ class ImportPlansController
             'crumbs' => [
                 ['label' => t('Import')],
             ],
-            'readOnly' => $this->readOnly,
-            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImportPlans'),
-            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImportPlans'),
+            'canSave' => (bool) $currentUser?->can('saveImportPlans'),
+            'canDelete' => (bool) $currentUser?->can('deleteImportPlans'),
             'canTrigger' => (bool) $currentUser?->can('triggerImportPlans'),
             'editableImportPlans' => $this->importsService->getEditableImportPlans()
                 ->map(fn (ImportPlanData $importPlan) => $this->importRow($importPlan, true))
@@ -176,7 +169,6 @@ class ImportPlansController
                 $importer,
                 $this->importService,
                 app(FormResolver::class),
-                $this->readOnly,
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
                 $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
             )->form(),
@@ -473,21 +465,24 @@ class ImportPlansController
         abort_if(is_null($importPlan), 400, 'Import plan not found.');
 
         try {
-            $this->importService->dispatchImport($importPlan);
+            $dispatched = $this->importService->dispatchImport($importPlan);
         } catch (Throwable $e) {
             ImportLog::warning("Import failed: {$e->getMessage()}");
 
+            $dispatched = false;
+        }
+
+        if (! $dispatched) {
             return $this->asFailure(t('Import could not be started.'));
         }
 
-        return $this->asSuccess(t('Import started'));
+        return $this->asSuccess(t('Import started.'));
     }
 
     private function cpScreenResponse(ImportPlanData $importPlan): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
         $canSave = (bool) $currentUser?->can('saveImportPlans');
-        $editable = ! $this->readOnly && $canSave;
 
         return new CpScreenResponse()
             ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
@@ -497,11 +492,10 @@ class ImportPlansController
                 $importPlan,
                 $this->importService,
                 app(FormResolver::class),
-                $this->readOnly,
                 $canSave,
             ))
             ->when(
-                $editable,
+                $canSave,
                 callback: function (CpScreenResponse $response) use ($importPlan, $currentUser) {
                     $response
                         ->action('import/save')

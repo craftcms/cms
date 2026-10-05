@@ -18,7 +18,7 @@
     form: FormPayload;
     submit: UrlMethodPair;
     importerTypes: Array<{value: string; label: string}>;
-    stepSettingsUrl: string | null;
+    stepSettingsUrl: string;
     validateStepUrl: string | null;
     stepMappingUrl: string;
     nestedColsUrl: string;
@@ -26,7 +26,7 @@
   }>();
 
   const urls = {
-    settingsUrl: props.stepSettingsUrl ?? props.stepMappingUrl,
+    settingsUrl: props.stepSettingsUrl,
     validateUrl: props.validateStepUrl,
     mappingUrl: props.stepMappingUrl,
     nestedColsUrl: props.nestedColsUrl,

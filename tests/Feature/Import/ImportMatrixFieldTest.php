@@ -581,6 +581,23 @@ it('accepts the sortOrder/entries keyed input format', function () {
     expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
 });
 
+it('orders keyed entries by the given sortOrder', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'sortOrder' => ['b', 'a'],
+        'entries' => [
+            'a' => ['type' => 'secondEt', 'title' => 'block a', 'fields' => ['plainText' => 'foo']],
+            'b' => ['type' => 'firstEt', 'title' => 'block b', 'fields' => ['plainText' => 'bar']],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myMatrix')->all())->sequence(
+        fn ($block) => $block->title->toBe('block b'),
+        fn ($block) => $block->title->toBe('block a'),
+    );
+});
+
 describe('raw grouped/flat data through the full pipeline', function () {
     it('imports raw data end-to-end, matching and clearing correctly', function (array $map, callable $makeRawData) {
         $importer = (clone $this->importer)

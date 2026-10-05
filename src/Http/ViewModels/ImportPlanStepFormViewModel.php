@@ -33,7 +33,6 @@ class ImportPlanStepFormViewModel extends ViewModel
         private readonly ?BaseImporter $importer,
         private readonly Import $importService,
         private readonly FormResolver $formResolver,
-        private readonly bool $readOnly = false,
         private readonly bool $canSave = true,
         private readonly ?int $batchSize = null,
     ) {}
@@ -41,8 +40,8 @@ class ImportPlanStepFormViewModel extends ViewModel
     public function form(): FormPayload
     {
         $hasType = $this->importer !== null;
-        $mode = $this->readOnly || ! $this->canSave ? ControlMode::ReadOnly : ControlMode::Editable;
-        $refreshable = ! $this->readOnly;
+        $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
+        $refreshable = $this->canSave;
 
         $form = $this->formResolver->resolve(Form::make([
             HiddenField::make('uid'),

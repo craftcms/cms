@@ -163,7 +163,7 @@
         ref="nestedTrigger"
         type="button"
         :variant="ButtonVariant.Dashed"
-        :disabled="!context.editable"
+        .disabled="!context.editable"
         @click="openNested"
       >
         {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
@@ -223,7 +223,7 @@
         v-if="canMatch"
         label-sr-only
         .checked="matchCriteriaChecked"
-        :disabled="!context.editable"
+        .disabled="!context.editable"
         @model-value-changed="onMatchCriteriaChanged"
       >
         <label slot="label">{{
@@ -237,7 +237,7 @@
         v-if="canClear"
         label-sr-only
         .checked="clearChecked"
-        :disabled="!context.editable"
+        .disabled="!context.editable"
         @model-value-changed="onClearChanged"
       >
         <label slot="label">{{

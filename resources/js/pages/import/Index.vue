@@ -29,7 +29,6 @@
   }
 
   const props = defineProps<{
-    readOnly: boolean;
     canSave: boolean;
     canDelete: boolean;
     canTrigger: boolean;

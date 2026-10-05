@@ -89,6 +89,16 @@ it('imports postDate and expiryDate', function () {
         ->and($inAppTimeZone($entry->expiryDate))->toBe('2030-05-07 13:14:15');
 });
 
+it('imports a date whose key only auto-matches the property', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'Expiry Date' => '2030-05-07 13:14:15',
+    ]));
+
+    $expiryDate = ($this->importedEntry)()->expiryDate;
+
+    expect($expiryDate?->copy()->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s'))->toBe('2030-05-07 13:14:15');
+});
+
 it('leaves an entry live when its post date has passed and its expiry date has not', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'postDate' => now()->subDay()->format('Y-m-d H:i:s'),

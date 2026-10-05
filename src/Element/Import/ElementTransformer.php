@@ -65,10 +65,10 @@ class ElementTransformer extends BaseTransformer
             // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
             // use it and remove it from a list of keys we can mess with in the next step
             if (array_key_exists((string) $prop['name'], $item)) {
-                $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
+                $array[$prop['name']] = $this->normalizePropertyValue($item[$prop['name']], $prop, $element);
                 unset($incomingKeys[$prop['name']]);
                 // otherwise attempt to match auto-magically
-            } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $prop['name']), $incomingKeys)) {
+            } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $prop['name']), $incomingKeys, true)) !== false) {
                 $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element);
             }
         }
@@ -103,7 +103,7 @@ class ElementTransformer extends BaseTransformer
                     $array[$fieldHandle] = $item[$fieldHandle];
                     unset($incomingKeys[$fieldHandle]);
                     // otherwise attempt to match auto-magically
-                } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $fieldHandle), $incomingKeys)) {
+                } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $fieldHandle), $incomingKeys, true)) !== false) {
                     $array[$fieldHandle] = $item[$key];
                 }
             }
@@ -113,14 +113,12 @@ class ElementTransformer extends BaseTransformer
     }
 
     /**
-     * Looks up a raw property value from the item and calls a `normalize{PropName}()` method if defined on the transformer, else returns the raw or default value.
+     * Calls a `normalize{PropName}()` method on a raw property value if one is defined on the transformer, else returns the raw or default value.
      *
      * @param  array<string, mixed>  $prop
      */
-    private function normalizePropertyValue(mixed $item, array $prop, ElementInterface $element): mixed
+    private function normalizePropertyValue(mixed $rawValue, array $prop, ElementInterface $element): mixed
     {
-        $rawValue = $item[$prop['name']] ?? null;
-
         if ($rawValue !== null) {
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
                 return $this::{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);

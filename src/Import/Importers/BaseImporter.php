@@ -594,7 +594,7 @@ abstract class BaseImporter
         }
 
         if (self::normalizeTransformer($value) === null) {
-            $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
+            $fail($attribute, t('Transformer has to be empty or a valid transformer class.'));
 
             return false;
         }
@@ -712,48 +712,22 @@ abstract class BaseImporter
     }
 
     /**
-     * Normalizes a transformer input into a valid BaseTransformer instance, a Closure, or null.
+     * Normalizes a transformer input into a BaseTransformer instance, or null.
      *
-     * This method processes various forms of input for transformers, including:
-     * - Instances of BaseTransformer: These are returned as-is.
-     * - Strings: These are evaluated to determine if they refer to a callable function,
-     *   a PHP closure pattern, or a valid BaseTransformer class.
-     * - Null values: These are handled gracefully by returning null.
-     *
-     * If the input defines a callable closure pattern using the `fn` syntax, it generates a Closure
-     * that can evaluate the provided logic against an `ElementInterface` instance. Additionally,
-     * transformer class strings are validated to ensure they refer to a valid BaseTransformer class.
-     *
-     * @param  string|BaseTransformer|null  $transformer  Input transformer to normalize.
+     * A string is only accepted as the name of a BaseTransformer subclass, which is checked
+     * before the class is instantiated.
      */
-    private static function normalizeTransformer(string|null|BaseTransformer $transformer): BaseTransformer|Closure|null
+    private static function normalizeTransformer(string|null|BaseTransformer $transformer): ?BaseTransformer
     {
         if ($transformer instanceof BaseTransformer) {
             return $transformer;
         }
 
-        if (empty($transformer)) {
+        if (empty($transformer) || ! is_subclass_of($transformer, BaseTransformer::class)) {
             return null;
         }
 
-        if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', $transformer, $match)) {
-            $var = $match[1];
-            $php = sprintf('return %s;', Str::chopStart(rtrim($match[2], ';'), 'return '));
-
-            return function (ElementInterface $element) use ($var, $php) {
-                if ($var) {
-                    ${$var} = $element;
-                }
-
-                return eval($php);
-            };
-        }
-
-        if (class_exists($transformer) && (new $transformer) instanceof BaseTransformer) {
-            return new $transformer;
-        }
-
-        return null;
+        return new $transformer;
     }
 
     /**

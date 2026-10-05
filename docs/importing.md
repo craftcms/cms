@@ -499,7 +499,7 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
   (see §3).
 - Transformers: extend `ElementTransformer` (or the per-type one) and override
   `transform()`; or implement `additionalMatchCriteria()`. Transformers can also be
-  given as a class string or an `fn($element) => ...` closure string.
+  given as a class string.
   `ElementTransformer` also supports convention-based `normalize{PropName}()` methods, and
   auto-matches incoming keys that don't match exactly (`ImportHelper::prepKeyForAutoMatching()`,
   e.g. `Plain Text` / `plain_text` → `plainText`).

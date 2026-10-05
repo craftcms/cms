@@ -21,7 +21,6 @@ class ImportPlanMapViewModel extends ViewModel
 
     public function __construct(
         private readonly BaseImporter $importer,
-        private readonly bool $readOnly = false,
         private readonly bool $canSave = true,
     ) {}
 
@@ -82,11 +81,6 @@ class ImportPlanMapViewModel extends ViewModel
             $this->sourceDataCols(),
             $this->importer->map,
         );
-    }
-
-    public function readOnly(): bool
-    {
-        return $this->readOnly;
     }
 
     public function canSave(): bool
