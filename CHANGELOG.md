@@ -11,9 +11,9 @@
 ## 4.18.8 - 2026-09-01
 
 - Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-xmwr-88vw-5ghh)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j697-8x93-7mp2)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-w643-x88w-6wcm)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-xmwr-88vw-5ghh](https://github.com/craftcms/cms/security/advisories/GHSA-xmwr-88vw-5ghh))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-j697-8x93-7mp2](https://github.com/craftcms/cms/security/advisories/GHSA-j697-8x93-7mp2))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-w643-x88w-6wcm](https://github.com/craftcms/cms/security/advisories/GHSA-w643-x88w-6wcm))
 
 ## 4.18.7 - 2026-08-18
 
