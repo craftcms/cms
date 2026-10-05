@@ -642,7 +642,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** @return list<Entry> */
-    private function entriesForForm(mixed $value): array
+    protected function entriesForForm(mixed $value): array
     {
         // Include disabled entries and in-memory values retained after validation.
         $entries = array_values(match (true) {

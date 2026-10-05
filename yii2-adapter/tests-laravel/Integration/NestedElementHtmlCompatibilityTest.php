@@ -17,6 +17,9 @@ use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -36,10 +39,13 @@ beforeEach(function() {
     $this->actingAs(User::findOne());
 });
 
-it('renders legacy nested field inputs with their owner scope and content', function(string $fieldType, string $viewMode, bool $inline = false, string $mode = 'editable') {
+it('renders legacy nested field inputs with their owner scope and content', function(string $fieldType, string $viewMode, bool $inline = false, string $mode = 'editable', bool $invalid = false) {
     $isMatrix = is_a($fieldType, LegacyMatrix::class, true);
     $entryType = $isMatrix
-        ? EntryTypeModel::factory()->withField(Field::factory()->create(['handle' => 'body', 'type' => PlainText::class]))
+        ? EntryTypeModel::factory()->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new EntryTitleField(),
+            new CustomField(config: ['fieldUid' => Field::factory()->create(['handle' => 'body', 'type' => PlainText::class])->uid]),
+        ]))
             ->create(['name' => 'Card', 'handle' => 'card', 'hasTitleField' => true])
         : null;
     $fixture = EntryModel::factory()
@@ -58,6 +64,11 @@ it('renders legacy nested field inputs with their owner scope and content', func
     $field = $owner->getFieldLayout()->getFieldByHandle('nested');
     $value = $owner->getFieldValue('nested');
     $nested = $value->one();
+    if ($invalid) {
+        $nested->addError('title', 'Please provide a valid title.');
+        $nested->addError('body', 'Please provide valid body content.');
+        $value->setResultOverride([$nested]);
+    }
     if (in_array($mode, ['readOnly', 'disabled', 'form'])) {
         $context = new FormContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
         $control = $field->formControl(new FieldContext(
@@ -78,15 +89,32 @@ it('renders legacy nested field inputs with their owner scope and content', func
     }
     $crawler = new Crawler($html);
 
-    if ($inline) {
-        expect($crawler->filter('[data-plugin-field-input]')->attr('data-plugin-field-input'))->toBe('inline');
+    if (in_array($fieldType, [PluginMatrixHtmlField::class, PluginAddressesHtmlField::class])) {
+        expect($crawler->filter('[data-plugin-field-input]')->attr('data-plugin-field-input'))->toBe($inline ? 'inline' : 'input');
     }
 
     if ($viewMode === LegacyMatrix::VIEW_MODE_BLOCKS) {
         $host = $crawler->filter('craft-entry-field-layout-form[data-payload]');
+        $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $control = $form['nodes'][0]['control'];
         expect($host)->toHaveCount(1)
-            ->and(json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['values']['fields']['nested']['entries']["uid:{$nested->uid}"]['fields']['body'])->toBe('Block body')
-            ->and($crawler->filter('input[name="fields[nested][sortOrder][]"]')->attr('value'))->toBe($nested->uid);
+            ->and($form['values']['fields']['nested']['entries'][$nested->uid]['fields']['body'])->toBe('Block body')
+            ->and($form['values']['fields']['nested']['sortOrder'])->toBe([$nested->uid])
+            ->and($control['props']['create'])->toMatchArray([
+                'fieldId' => $field->id,
+                'ownerId' => $owner->id,
+                'siteId' => $owner->siteId,
+            ])
+            ->and($control['mode'])->toBe(in_array($mode, ['editable', 'form']) ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
+            ->and($host->filter('input[data-form-field-name]')->attr('name'))->toBe('fields[nested]')
+            ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
+
+        if ($invalid) {
+            expect($form['errors'])->toContain(
+                ['path' => ['fields', 'nested', 'entries', $nested->uid, 'title'], 'messages' => ['Please provide a valid title.']],
+                ['path' => ['fields', 'nested', 'entries', $nested->uid, 'fields', 'body'], 'messages' => ['Please provide valid body content.']],
+            );
+        }
 
         return;
     }
@@ -136,6 +164,8 @@ it('renders legacy nested field inputs with their owner scope and content', func
     'Matrix cards grid' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_CARDS_GRID],
     'Matrix index' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_INDEX],
     'Matrix blocks' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_BLOCKS],
+    'invalid Matrix blocks' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'editable', true],
+    'invalid plugin Matrix form blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'form', true],
     'Addresses cards' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_CARDS],
     'Addresses index' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_INDEX],
     'plugin Matrix inline blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, true],
@@ -143,6 +173,9 @@ it('renders legacy nested field inputs with their owner scope and content', func
     'plugin Matrix inline index' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_INDEX, true],
     'plugin Addresses inline cards' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_CARDS, true],
     'plugin Addresses inline index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, true],
+    'plugin Matrix form blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'form'],
+    'plugin Matrix static blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'static'],
+    'plugin Matrix disabled blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'disabled'],
     'plugin Matrix form cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'form'],
     'plugin Addresses form index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'form'],
     'plugin Matrix static cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'static'],

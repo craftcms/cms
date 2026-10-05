@@ -278,7 +278,7 @@ it('submits Entry Form values and preserves refresh context', async () => {
       canCreateDrafts: true,
       updateTabs: vi.fn(),
     },
-    saveDraft: vi.fn(async () => {
+    setFormValue: vi.fn(async () => {
       editor.settings.draftId = 4;
     }),
     getDraftElementId: vi.fn((id: number) => (id === 42 ? 91 : id)),
@@ -300,7 +300,10 @@ it('submits Entry Form values and preserves refresh context', async () => {
     ownerIsInDerivativeTree: true,
     requiresDerivative: true,
   });
-  expect(editor.saveDraft).toHaveBeenCalledOnce();
+  expect(editor.setFormValue).toHaveBeenCalledExactlyOnceWith(
+    'editor[cards]',
+    '*'
+  );
 
   expect(craftUi.serializeFormInputsAsObject(form)).toEqual({
     'editor[title]': 'Original',
@@ -358,6 +361,16 @@ it('submits Entry Form values and preserves refresh context', async () => {
 
   const refreshedPayload = (title: string): FormPayload => ({
     ...basePayload,
+    nodes: [
+      {
+        ...basePayload.nodes[0]!,
+        children: basePayload.nodes[0]!.children!.map((node) =>
+          node.control?.path.at(-1) === 'title'
+            ? {...node, props: {...node.props, label: title}}
+            : node
+        ),
+      },
+    ],
     values: {
       editor: {
         title,
@@ -385,7 +398,10 @@ it('submits Entry Form values and preserves refresh context', async () => {
   firstRefresh.resolve(refreshResponse('Stale'));
   await firstRefreshPromise;
 
-  expect(host.payload?.values).toMatchObject({editor: {title: 'Latest'}});
+  expect(host.textContent).toContain('Latest');
+  expect(craftUi.serializeFormInputsAsObject(form)).toEqual({
+    'editor[title]': 'Edited',
+  });
 
   const staleRefresh = deferred<ReturnType<typeof refreshResponse>>();
   actionRequest.mockImplementationOnce(() => staleRefresh.promise);
@@ -394,8 +410,9 @@ it('submits Entry Form values and preserves refresh context', async () => {
   staleRefresh.resolve(refreshResponse('Obsolete'));
   await staleRefreshPromise;
 
-  expect(host.payload?.values).toMatchObject({
-    editor: {title: 'Authoritative'},
+  expect(host.textContent).toContain('Authoritative');
+  expect(craftUi.serializeFormInputsAsObject(form)).toEqual({
+    'editor[title]': 'Edited',
   });
 
   const firstScope = deferred<ReturnType<typeof refreshResponse>>();

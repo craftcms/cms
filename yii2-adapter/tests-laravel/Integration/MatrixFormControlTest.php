@@ -27,6 +27,37 @@ beforeEach(function() {
     $this->actingAs(User::factory()->admin()->create());
 });
 
+it('preserves owner-specific Matrix creation choices while rendering existing excluded types', function() {
+    $types = EntryTypeModel::factory()->withFieldLayout()->count(3)->sequence(
+        ['name' => 'Existing', 'handle' => 'existing', 'hasTitleField' => true],
+        ['name' => 'First choice', 'handle' => 'firstChoice'],
+        ['name' => 'Second choice', 'handle' => 'secondChoice'],
+    )->create();
+    $fieldModel = Field::factory()->create([
+        'name' => 'Blocks', 'handle' => 'blocks', 'type' => LegacyMatrix::class,
+        'settings' => ['entryTypes' => $types->modelKeys(), 'viewMode' => LegacyMatrix::VIEW_MODE_BLOCKS],
+    ]);
+    $model = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($fieldModel))->create();
+    $owner = Entry::find()->id($model->id)->one();
+    $owner->setFieldValue('blocks', ['new1' => ['type' => 'existing', 'title' => 'Existing content']]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $owner = Entry::find()->id($model->id)->one();
+    $field = Fields::getFieldByHandle('blocks');
+    \Illuminate\Support\Facades\Event::listen(\CraftCms\Cms\Field\Events\EntryTypesForFieldResolving::class, function($event) use ($owner) {
+        if ($event->element?->id === $owner->id) {
+            $event->entryTypes = [$event->entryTypes[2], $event->entryTypes[1]];
+        }
+    });
+    $html = $field->getInputHtml($owner->getFieldValue('blocks'), $owner);
+    $form = json_decode(new Crawler($html)->filter('craft-entry-field-layout-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $control = $form['nodes'][0]['control'];
+
+    expect(array_keys($control['props']['create']['entryTypeIds']))->toBe(['secondChoice', 'firstChoice'])
+        ->and($control['props']['createEntryTypes'] ?? null)->toBe(['secondChoice', 'firstChoice'])
+        ->and($form['values']['fields']['blocks']['entries'])->toHaveCount(1)
+        ->and($html)->toContain('Existing content');
+});
+
 it('renders legacy Matrix content read-only without granting editing permissions', function(string $viewMode) {
     $entryType = EntryTypeModel::factory()->create([
         'name' => 'Card',
@@ -137,19 +168,28 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         ? ['fields', 'blocks', 'entries', $owner->uid, 'fields', 'cards']
         : ['fields', 'cards'];
     $html = FieldLayoutForm::fromLayout($global->getFieldLayout(), $global)->render();
-    $host = new Crawler($html)->filter('craft-nested-elements-control');
-    $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+    if ($insideBlock) {
+        $blocksForm = json_decode(new Crawler($html)->filter('craft-entry-field-layout-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($blocksForm['nodes']), RecursiveIteratorIterator::SELF_FIRST);
+        $control = collect(iterator_to_array($nodes, false))->first(
+            fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
+        );
+        $scope = ['fields', 'blocks', 'entries', $owner->uid];
+        if ($plugin) {
+            $host = new Crawler($control['props']['fragment']['html'])->filter('craft-nested-elements-control');
+            $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+        }
+    } else {
+        $host = new Crawler($html)->filter('craft-nested-elements-control');
+        $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+        $scope = json_decode($host->attr('data-scope'), true, flags: JSON_THROW_ON_ERROR);
+    }
     $items = $viewMode === LegacyMatrix::VIEW_MODE_INDEX ? $control['props']['index']['initial']['data'] : $control['props']['cards'];
     expect($items)->toHaveCount(1)
         ->and($items[0]['id'])->toBe($card->id)
         ->and($control['props']['manager']['ownerHasDrafts'])->toBeFalse();
 
     expect(Elements::deleteElement($card))->toBeTrue();
-    $scope = json_decode($host->attr('data-scope'), true, flags: JSON_THROW_ON_ERROR);
-    if ($plugin) {
-        expect($host->filter('input[data-nested-modified]')->attr('name'))
-            ->toBe('fields[blocks][entries][' . $owner->uid . '][fields][cards]');
-    }
     $body = [];
     foreach ([
         'elementType' => $owner::class,

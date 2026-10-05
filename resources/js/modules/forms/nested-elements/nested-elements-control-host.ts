@@ -3,11 +3,12 @@ import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers
 import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
 import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
 import {prepareHtmlNestedOwner} from '@/modules/elements/html-nested-owner';
-import type {
-  NestedOwnerContext,
-  NestedOwnerEditor,
+import {
+  requestNestedOwnerEditor,
+  type NestedOwnerContext,
+  type NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
-import {inputName, isRecord, pathsMatch, visitControls} from '../runtime';
+import {inputName, pathsMatch, visitControls} from '../runtime';
 import type {FormControlPayload, FormPayload} from '../types';
 import NestedElements from './NestedElements.vue';
 import type {NestedElementsProps} from './nested-elements';
@@ -29,6 +30,16 @@ export function defineNestedElementsControlHost(
       #scope: string[] = [];
       readonly #control =
         shallowRef<FormControlPayload<NestedElementsProps> | null>(null);
+
+      set control(control: FormControlPayload<NestedElementsProps>) {
+        this.#epoch++;
+        this.#control.value = {
+          ...control,
+          path: this.#control.value?.path ?? control.path,
+          deltaGroup: this.#control.value?.deltaGroup ?? control.deltaGroup,
+        };
+        this.dataset.control = JSON.stringify(control);
+      }
 
       connectedCallback(): void {
         if (this.#app) {
@@ -52,24 +63,35 @@ export function defineNestedElementsControlHost(
         }
         this.#control.value = control;
 
+        let nativeOwner: NestedOwnerEditor | null = null;
         const owner: NestedOwnerEditor = {
           prepare: async () => {
             const form = this.closest('form');
             const manager = this.#control.value?.props.manager;
-            if (!form || !manager || this.#control.value?.mode !== 'editable') {
+            if (!manager || this.#control.value?.mode !== 'editable') {
               return null;
             }
 
-            this.#preparedOwner = await prepareHtmlNestedOwner(form, {
+            const context: NestedOwnerContext = {
               ownerId: manager.ownerId,
               ownerIsDerivative: manager.ownerIsDerivative === true,
               ownerIsInDerivativeTree: manager.ownerIsInDerivativeTree === true,
               ownerIsUnpublishedDraft: manager.ownerIsUnpublishedDraft === true,
               requiresDerivative: manager.ownerHasDrafts !== false,
-            });
-            return this.#preparedOwner;
+            };
+            nativeOwner = requestNestedOwnerEditor(this);
+            this.#preparedOwner = nativeOwner
+              ? await nativeOwner.prepare(this.#control.value.path, context)
+              : form
+                ? await prepareHtmlNestedOwner(
+                    form,
+                    context,
+                    inputName(this.#control.value.path)
+                  )
+                : null;
+            return this.isConnected ? this.#preparedOwner : null;
           },
-          refresh: () => this.#refresh(),
+          refresh: () => nativeOwner?.refresh?.() ?? this.#refresh(),
         };
         this.#app = createApp(
           defineComponent({
@@ -131,6 +153,7 @@ export function defineNestedElementsControlHost(
               ? inputName(this.#scope)
               : undefined,
             'X-Craft-Form-Root-Scope': JSON.stringify(this.#scope),
+            'X-Craft-Native-Field-Path': JSON.stringify(control.path),
           },
         });
         if (epoch !== this.#epoch) {
@@ -139,34 +162,11 @@ export function defineNestedElementsControlHost(
 
         let refreshed: FormControlPayload<NestedElementsProps> | null = null;
         visitControls(response.form.nodes, (candidate) => {
-          if (!pathsMatch(candidate.path, control.path)) {
-            return;
-          }
-          if (candidate.component === 'craft:nested-elements') {
-            refreshed = candidate as FormControlPayload<NestedElementsProps>;
-            return;
-          }
-          const fragment = candidate.props.fragment;
           if (
-            candidate.component === 'craft-legacy:html' &&
-            isRecord(fragment) &&
-            typeof fragment.html === 'string'
+            candidate.component === 'craft:nested-elements' &&
+            pathsMatch(candidate.path, control.path)
           ) {
-            const template = document.createElement('template');
-            template.innerHTML = fragment.html;
-            const data = template.content.querySelector<HTMLElement>(
-              'craft-nested-elements-control[data-control]'
-            )?.dataset.control;
-            if (data) {
-              const nested: FormControlPayload<NestedElementsProps> =
-                JSON.parse(data);
-              refreshed = {
-                ...nested,
-                path: candidate.path,
-                deltaGroup: candidate.deltaGroup,
-                mode: candidate.mode,
-              };
-            }
+            refreshed = candidate as FormControlPayload<NestedElementsProps>;
           }
         });
         if (!refreshed) {

@@ -31,7 +31,7 @@ type JsonValue =
 
 /**
  * A part of a block, whether it sits directly under the block or inside the
- * `craft-card` frame both Matrix renderers now wrap their blocks in. Scoped to
+ * `craft-card` frame supplied by a compatibility caller. Scoped to
  * that one level either way, so a nested Matrix inside the block keeps its own
  * titlebar, fields and inputs to itself.
  */
@@ -330,7 +330,7 @@ export class MatrixEntry extends Base {
     }
 
     this.container.setAttribute('data-collapsed', '');
-    this.toggleLegacyClass('collapsed', true);
+    this.container.classList.add('collapsed');
 
     if (this.previewContainer) {
       this.previewContainer.innerHTML = this.previewHtml();
@@ -365,13 +365,13 @@ export class MatrixEntry extends Base {
     }
 
     // Remember that?
-    if (!this.matrix.settings!.formControl && !this.isNew) {
+    if (!this.isNew) {
       MatrixInput.rememberCollapsedEntryId(this.id!);
     }
 
     this.setCollapsedInput('1');
     this.collapsed = true;
-    this.syncFieldMenu();
+    this.matrix.syncFieldMenu();
   }
 
   previewHtml(): string {
@@ -394,7 +394,7 @@ export class MatrixEntry extends Base {
     }
 
     this.container.removeAttribute('data-collapsed');
-    this.toggleLegacyClass('collapsed', false);
+    this.container.classList.remove('collapsed');
 
     const fields = this.fieldsContainer;
 
@@ -430,45 +430,21 @@ export class MatrixEntry extends Base {
     heightAnimation.finished.then(finishExpand).catch(() => {});
 
     // Remember that?
-    if (!this.matrix.settings!.formControl && !this.isNew) {
+    if (!this.isNew) {
       MatrixInput.forgetCollapsedEntryId(this.id!);
     }
 
     this.setCollapsedInput('');
     this.collapsed = false;
-    this.syncFieldMenu();
-  }
-
-  /**
-   * The field's "⋮" menu offers "Expand/Collapse all blocks" only when there's
-   * something to expand or collapse. The Vue control keeps its own menu.
-   */
-  private syncFieldMenu(): void {
-    if (!this.matrix.settings!.formControl) {
-      this.matrix.syncFieldMenu();
-    }
-  }
-
-  /**
-   * Twig-rendered blocks still carry Craft 5's state classes, which the legacy
-   * stylesheet styles them by. Card-framed blocks don't — those same styles would
-   * restyle the card — so they get only the data attributes, which is what the
-   * Matrix code reads either way.
-   */
-  private toggleLegacyClass(name: string, on: boolean): void {
-    if (!this.matrix.settings!.formControl) {
-      this.container.classList.toggle(name, on);
-    }
+    this.matrix.syncFieldMenu();
   }
 
   /**
    * Posts the collapsed state, so a block folded up before saving comes back
    * folded up.
    *
-   * The Form Control renderers write the input themselves, so this only updates
-   * what it finds. The legacy Twig stack writes one for a saved block but not for
-   * a new one — whose id isn't stable enough to remember in storage — so that one
-   * is created on demand, the way Craft 5 did it.
+   * Saved blocks can use localStorage; new blocks need an input until they have
+   * a stable ID.
    */
   private setCollapsedInput(value: string): void {
     this.collapsedInput ??= blockPart<HTMLInputElement>(
@@ -477,14 +453,10 @@ export class MatrixEntry extends Base {
     );
 
     if (!this.collapsedInput) {
-      if (!this.matrix.settings!.formControl) {
-        this.collapsedInput = document.createElement('input');
-        this.collapsedInput.type = 'hidden';
-        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
-        this.container.append(this.collapsedInput);
-      } else {
-        return;
-      }
+      this.collapsedInput = document.createElement('input');
+      this.collapsedInput.type = 'hidden';
+      this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
+      this.container.append(this.collapsedInput);
     }
 
     this.collapsedInput.value = value;
@@ -542,7 +514,7 @@ export class MatrixEntry extends Base {
       this.container.hasAttribute('data-disabled-global') ||
       this.container.hasAttribute('data-disabled-site');
     this.container.toggleAttribute('data-disabled', disabled);
-    this.toggleLegacyClass('disabled-entry', disabled);
+    this.container.classList.toggle('disabled-entry', disabled);
 
     const status = blockPart<HTMLElement>(
       this.container,
@@ -777,14 +749,6 @@ export class MatrixEntry extends Base {
 
   selfDestruct(): void {
     this.destroy();
-
-    if (this.matrix.settings!.formControl) {
-      this.container.remove();
-      this.matrix.updateAddEntryBtn();
-      this.matrix.trigger('entryDeleted', {$entry: this.container});
-
-      return;
-    }
 
     // Remove any inputs from the form data
     for (const el of this.container.querySelectorAll('[name]')) {

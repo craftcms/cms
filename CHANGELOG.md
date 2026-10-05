@@ -6,6 +6,7 @@
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
 - Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
 - Updated nested element fields in HTML forms, including Global Set content editors, to use the shared cards and element index controls. ([#19804](https://github.com/craftcms/cms/pull/19804))
+- Updated Matrix fields using the Blocks view mode in HTML forms to use the shared Vue control.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))

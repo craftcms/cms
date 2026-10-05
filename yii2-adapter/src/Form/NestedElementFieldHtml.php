@@ -25,18 +25,21 @@ class NestedElementFieldHtml
     ) {
     }
 
-    public function render(Control $control, string $inputId, string $inputName, ControlMode $mode): string
+    /** @param array<string, list<string>> $errors */
+    public function render(Control $control, string $inputId, string $inputName, ControlMode $mode, array $errors = []): string
     {
         $payload = $this->resolver->resolve(
             Form::make([Field::make()->control($control)]),
-            new FormContext(mode: $mode),
+            new FormContext(mode: $mode, errors: $errors),
         );
         $control = $payload->nodes[0]->control;
 
-        return $control->type::renderHtml($control, null, [
+        $html = $this->rebase($this->renderer->render($payload), $control, [
             'id' => $inputId,
-            'name' => $control->mode === ControlMode::Editable ? $inputName : null,
+            'name' => $inputName,
         ], $this->renderer);
+
+        return new Crawler($html)->filter('craft-entry-field-layout-form[data-field-path], craft-nested-elements-control')->first()->outerHtml();
     }
 
     /**
@@ -46,7 +49,7 @@ class NestedElementFieldHtml
      */
     public function rebase(string $html, ControlPayload $control, array $attributes, FormHtmlRenderer $renderer): string
     {
-        if (!str_contains($html, '<craft-nested-elements-control')) {
+        if (!str_contains($html, '<craft-nested-elements-control') && !str_contains($html, 'data-field-path')) {
             return $html;
         }
 
@@ -66,6 +69,21 @@ class NestedElementFieldHtml
             foreach (new Crawler($host)->filter('input[data-nested-modified]') as $input) {
                 if ($input instanceof DOMElement && $attributes['name'] !== null) {
                     $input->setAttribute('name', $attributes['name']);
+                }
+            }
+        }
+
+        foreach ($crawler->filter('craft-entry-field-layout-form[data-field-path]') as $host) {
+            if (!$host instanceof DOMElement) {
+                continue;
+            }
+
+            $host->setAttribute('id', $attributes['id']);
+            $path = $control->path;
+            $name = $attributes['name'] ?? array_shift($path) . implode('', array_map(fn(string $segment): string => "[{$segment}]", $path));
+            foreach (new Crawler($host)->filter('input[data-form-field-name]') as $input) {
+                if ($input instanceof DOMElement) {
+                    $input->setAttribute('name', $name);
                 }
             }
         }

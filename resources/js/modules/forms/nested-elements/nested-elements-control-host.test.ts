@@ -1,6 +1,13 @@
 import {nextTick} from 'vue';
 import jquery from 'jquery';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import {defineNestedElementsControlHost} from './nested-elements-control-host';
 import type {FormControlPayload} from '../types';
@@ -15,16 +22,19 @@ import {
   stubElementInternals,
 } from './nested-index.fixture';
 
-const requests = vi.hoisted(() => ({post: vi.fn()}));
+import {actionClient, ConfigService} from '@craftcms/ui';
+import '../../../../../yii2-adapter/resources/js/native-field-refresh';
+let requests: {post: MockInstance<typeof actionClient.post>};
 const actions = vi.hoisted(() => ({run: vi.fn()}));
-vi.mock('@craftcms/ui', async (original) => ({
-  ...(await original<Record<string, unknown>>()),
-  actionClient: requests,
-}));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 
 let restoreInternals = () => {};
 beforeEach(() => {
+  requests = {post: vi.spyOn(actionClient, 'post')};
+  vi.stubGlobal('Cp', {registeredAssetBundles: [], registeredJsFiles: []});
+  ConfigService.getInstance().initialize({
+    actionUrl: 'http://localhost/admin/actions',
+  });
   restoreInternals = stubElementInternals();
   vi.stubGlobal('$', jquery);
   vi.stubGlobal('Craft', {
@@ -168,32 +178,40 @@ it.each([
       ...refreshed,
       path: ['fields', 'cards'],
     });
-    requests.post.mockResolvedValue({
-      data: {
-        form: {
-          nodes: [
-            {
-              type: 'Field',
-              component: 'craft:field',
-              props: {},
-              control: legacy
-                ? {
-                    ...refreshed,
-                    component: 'craft-legacy:html',
-                    props: {
-                      fragment: {
-                        html: fragment.outerHTML,
-                        headHtml: '',
-                        bodyHtml: '',
-                      },
-                    },
-                  }
-                : refreshed,
+    vi.mocked(fetch).mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            form: {
+              scope: [],
+              values: {},
+              errors: [],
+              globalErrors: [],
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'Field',
+                  component: 'craft:field',
+                  props: {},
+                  control: legacy
+                    ? {
+                        ...refreshed,
+                        component: 'craft-legacy:html',
+                        props: {
+                          fragment: {
+                            html: fragment.outerHTML,
+                            headHtml: '',
+                            bodyHtml: '',
+                          },
+                        },
+                      }
+                    : refreshed,
+                },
+              ],
             },
-          ],
-        },
-      },
-    });
+          })
+        )
+    );
     expect(new FormData(form).has(fieldName)).toBe(false);
     expect(host.textContent).toContain('Entry 81');
 
@@ -203,7 +221,7 @@ it.each([
     expect(host.querySelector('[role="alert"]')).toBeNull();
     expect(new FormData(form).get(fieldName)).toBe('*');
     expect(text.value).toBe('Unsaved edit');
-    const body = new URLSearchParams(requests.post.mock.calls[0]![1]);
+    const body = new URLSearchParams(String(requests.post.mock.calls[0]![1]));
     expect(body.get(fieldName)).toBe('*');
     expect(body.get(namespace ? `${namespace}[elementId]` : 'elementId')).toBe(
       insideBlock ? '92' : '73'
@@ -218,7 +236,7 @@ it.each([
         'Unsaved block title'
       );
     }
-    expect(requests.post.mock.calls[0]![2].headers).toMatchObject({
+    expect(requests.post.mock.calls[0]![2]?.headers).toMatchObject({
       'X-Craft-Namespace': namespace || undefined,
       'X-Craft-Form-Root-Scope': relative
         ? '[]'
@@ -249,7 +267,7 @@ it('prepares the owner draft before changing its nested elements', async () => {
   });
   const editor = {
     settings: {canCreateDrafts: true, draftId: null as number | null},
-    saveDraft: vi.fn(async () => {
+    setFormValue: vi.fn(async () => {
       await draftSaved;
       editor.settings.draftId = 44;
     }),
@@ -258,7 +276,12 @@ it('prepares the owner draft before changing its nested elements', async () => {
   $(form).data('elementEditor', editor);
   requests.post.mockRejectedValue(new Error('Offline'));
   await deleteCard(host);
-  await vi.waitFor(() => expect(editor.saveDraft).toHaveBeenCalledOnce());
+  await vi.waitFor(() =>
+    expect(editor.setFormValue).toHaveBeenCalledExactlyOnceWith(
+      'slideout[fields][cards]',
+      '*'
+    )
+  );
   expect(actions.run).not.toHaveBeenCalled();
   expect(new FormData(form).get('slideout[fields][cards]')).toBe('*');
   finishDraft();

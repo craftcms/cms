@@ -66,7 +66,6 @@ export interface MatrixInputSettings extends GarnishBaseSettings {
    * the auto-added entries still register as changes).
    */
   addDefaultEntries: {type: string; count: number} | null;
-  formControl: boolean;
 }
 
 /** The jQuery `'fast'` duration the legacy velocity calls used. */
@@ -88,10 +87,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     siteId: null,
     staticEntries: false,
     addDefaultEntries: null,
-    formControl: false,
   };
-
-  entryFactory: ((type: string) => HTMLElement) | null = null;
 
   // The legacy statics PHP-emitted flash JS still calls. The storage itself
   // lives in ./collapsed-blocks, shared with the Form control.
@@ -174,15 +170,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     const entries = this.entryElements();
-    const collapsedEntries = this.settings!.formControl
-      ? []
-      : MatrixInput.getCollapsedEntryIds();
+    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    // In form-control mode the Vue control owns drag-sort through
-    // `useReorderableItems`, over blocks it renders and re-renders. A second
-    // engine mutating the same nodes just fights it.
-    if (!this.settings!.formControl && craft().hasMousePointerEvents()) {
+    if (craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
@@ -222,41 +213,37 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     // `Garnish.Select` has no modern port yet — see ./interop.
-    if (!this.settings!.formControl) {
-      if (!this.entriesContainer) {
-        throw new Error('Matrix input requires a blocks container.');
+    if (!this.entriesContainer) {
+      throw new Error('Matrix input requires a blocks container.');
+    }
+    this.entrySelect = new (legacyGarnish().Select)(
+      this.entriesContainer,
+      entries,
+      {
+        multi: true,
+        vertical: true,
+        handle:
+          '> [data-matrix-block-actions] > [data-matrix-block-checkbox], > [data-matrix-block-titlebar]',
+        filter: (target: HTMLElement) => !target.closest('.tab-label'),
+        checkboxMode: true,
+        // The field's menu offers what can be done to the selection.
+        onSelectionChange: () => {
+          this.syncSelectedAttributes();
+          this.syncFieldMenu();
+        },
       }
-      this.entrySelect = new (legacyGarnish().Select)(
-        this.entriesContainer,
-        entries,
-        {
-          multi: true,
-          vertical: true,
-          handle:
-            '> [data-matrix-block-actions] > [data-matrix-block-checkbox], > [data-matrix-block-titlebar]',
-          filter: (target: HTMLElement) => !target.closest('.tab-label'),
-          checkboxMode: true,
-          // The field's menu offers what can be done to the selection.
-          onSelectionChange: () => {
-            this.syncSelectedAttributes();
-            this.syncFieldMenu();
-          },
-        }
-      );
+    );
+
+    for (const container of entries) {
+      const entry = new MatrixEntry(this, container);
+      if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
+        entry.collapse();
+      }
     }
 
-    if (!this.settings!.formControl) {
-      for (const container of entries) {
-        const entry = new MatrixEntry(this, container);
-        if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
-          entry.collapse();
-        }
-      }
+    this.syncFieldMenu();
 
-      this.syncFieldMenu();
-    }
-
-    if (this.addEntryBtn && !this.settings!.formControl) {
+    if (this.addEntryBtn) {
       this.addListener(this.addEntryBtn, 'activate', async () => {
         const btn = this.addEntryBtn!;
         if (btn.classList.contains('loading')) {
@@ -272,7 +259,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    for (const btn of this.settings!.formControl ? [] : this.addEntryMenuBtns) {
+    for (const btn of this.addEntryMenuBtns) {
       // The disclosure menu is initialized by the legacy bundle and stored in
       // jQuery data; its container holds the per-type buttons.
       const menu = jqData(btn, 'disclosureMenu');
@@ -353,17 +340,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    if (!this.settings!.formControl) {
-      craft().cp.onCopyElements((elementInfo, buttonLabel) => {
-        this.updatePasteBtn(elementInfo);
-        if (this.pasteBtn && buttonLabel) {
-          const label = this.pasteBtn.querySelector('.label');
-          if (label) {
-            label.textContent = buttonLabel;
-          }
+    craft().cp.onCopyElements((elementInfo, buttonLabel) => {
+      this.updatePasteBtn(elementInfo);
+      if (this.pasteBtn && buttonLabel) {
+        const label = this.pasteBtn.querySelector('.label');
+        if (label) {
+          label.textContent = buttonLabel;
         }
-      });
-    }
+      }
+    });
   }
 
   /**
@@ -418,10 +403,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   canPaste(elementInfo: CopiedElementInfo[]): boolean {
-    if (this.settings!.formControl) {
-      return false;
-    }
-
     if (!this.canAddMoreEntries(elementInfo.length)) {
       return false;
     }
@@ -548,10 +529,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   updatePasteBtn(elementInfo: CopiedElementInfo[] | null = null): void {
-    if (this.settings!.formControl) {
-      return;
-    }
-
     elementInfo = elementInfo || craft().cp.getCopiedElements();
     if (this.canPaste(elementInfo)) {
       if (!this.pasteBtn) {
@@ -594,20 +571,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   ): Promise<void> {
     if (!this.canAddMoreEntries()) {
       this.updateStatusMessage();
-      return;
-    }
-
-    if (this.entryFactory) {
-      const entry = this.entryFactory(type);
-
-      this.placeEntry(entry, insertBefore);
-
-      new MatrixEntry(this, entry);
-      this.entrySort?.addItems(entry);
-      this.entrySelect?.addItems(entry);
-      this.updateAddEntryBtn();
-      this.trigger('entryAdded', {$entry: entry});
-
       return;
     }
 

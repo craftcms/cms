@@ -4,6 +4,7 @@ import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {MatrixEntry} from '@/modules/matrix/matrix-entry';
 import {
   MATRIX_SELECTION_ACTION,
+  matrixField,
   syncSelectionMenu,
 } from '@/modules/matrix/selection-menu';
 
@@ -125,7 +126,7 @@ function fieldFor(trigger: unknown): HTMLElement | null {
  */
 function ownElements(field: HTMLElement, selector: string): HTMLElement[] {
   return [...field.querySelectorAll<HTMLElement>(selector)].filter(
-    (el) => el.closest('craft-field') === field
+    (el) => matrixField(el) === field
   );
 }
 

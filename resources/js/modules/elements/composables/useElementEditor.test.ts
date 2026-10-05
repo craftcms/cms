@@ -7,6 +7,8 @@ import {
   shallowReactive,
 } from 'vue';
 import {router} from '@inertiajs/vue3';
+import jquery from 'jquery';
+import {defineEntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {HttpError, http} from '@craftcms/ui/utilities/api/http';
 import {
   afterEach,
@@ -164,7 +166,8 @@ describe('useElementEditor', () => {
   function mount(
     screenProps: Partial<ElementEditPayload>,
     slideout: ReturnType<typeof slideoutController> | null = null,
-    options: Parameters<typeof useElementEditor>[0] = {}
+    options: Parameters<typeof useElementEditor>[0] = {},
+    components = createCpComponentRegistry()
   ) {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
     // `props` as a computed, and the slideout store's panels are `reactive()`.
@@ -176,10 +179,10 @@ describe('useElementEditor', () => {
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
-        editor = useElementEditor(options);
+        editor = useElementEditor({root: () => container, ...options});
 
         return () =>
-          h('div', [
+          h('form', [
             editor.formPayload.value
               ? h(FormRenderer, {
                   ref: editor.renderer as any,
@@ -219,7 +222,6 @@ describe('useElementEditor', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(Shell);
-    const components = createCpComponentRegistry();
     registerFormComponents(components);
     components.install(app);
     app.mount(container);
@@ -390,6 +392,218 @@ describe('useElementEditor', () => {
     await nextTick();
     expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(12);
   });
+
+  it.each([false, true])(
+    'creates and discards plugin blocks through the native editor while retaining the wrapper, flat=%s',
+    async (flat) => {
+      vi.stubGlobal('$', jquery);
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+      vi.stubGlobal('Craft', {
+        systemUid: 'test',
+        cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+      });
+      const components = createCpComponentRegistry();
+      registerFormComponents(components);
+      defineEntryFieldLayoutFormHost(components);
+      vi.stubGlobal('Cp', {$components: components});
+      vi.resetModules();
+      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      onTestFinished(() => {
+        vi.unstubAllGlobals();
+      });
+      const path = ['fields', 'blocks'];
+      const native: FormPayload = {
+        scope: [],
+        refreshable: true,
+        errors: [],
+        globalErrors: [],
+        values: {fields: {blocks: {entries: {}, sortOrder: []}}},
+        nodes: [
+          {
+            type: 'Field',
+            component: 'craft:field',
+            props: {label: 'Blocks'},
+            control: {
+              type: 'NestedElementBlocks',
+              component: 'craft:nested-element-blocks',
+              path,
+              deltaGroup: path,
+              mode: 'editable',
+              nestsForms: true,
+              forms: [],
+              props: {
+                entryTypes: [{value: 'text', label: 'Text'}],
+                addLabel: 'Add',
+                minEntries: 0,
+                create: {
+                  fieldId: 9,
+                  ownerId: 73,
+                  ownerElementType: 'Entry',
+                  ownerHasDrafts: true,
+                  siteId: 1,
+                  entryTypeIds: {text: 4},
+                },
+              },
+            },
+          },
+        ],
+      };
+      const captured = (ownerId: number): FormPayload => {
+        const inner = structuredClone(native);
+        Object.assign(inner.nodes[0]!.control!.props.create!, {
+          ownerId,
+          ownerIsDerivative: ownerId !== 73,
+        });
+        const host = document.createElement('craft-entry-field-layout-form');
+        host.dataset.fieldPath = JSON.stringify(path);
+        host.dataset.payload = JSON.stringify(inner);
+        host.innerHTML =
+          '<input type="hidden" name="fields[blocks]" disabled data-form-field-name>';
+        return {
+          ...inner,
+          values: {
+            fields: {
+              blocks: flat
+                ? {'fields[blocks]': '', 'fields[blocks][extra]': 'Initial'}
+                : {entries: {}, sortOrder: [], extra: 'Initial'},
+            },
+          },
+          nodes: [
+            {
+              type: 'Field',
+              component: 'craft:field',
+              props: {label: 'Plugin'},
+              control: {
+                type: 'LegacyHtmlControl',
+                component: 'craft-legacy:html',
+                mode: 'editable',
+                path,
+                deltaGroup: path,
+                props: {
+                  expandValues: true,
+                  fragment: {
+                    html:
+                      '<button type="button" data-plugin>Plugin command</button><input name="fields[blocks][extra]" value="Initial">' +
+                      host.outerHTML,
+                    headHtml: '',
+                    bodyHtml: '',
+                  },
+                },
+              },
+            },
+          ],
+        };
+      };
+      const {editor} = mount(
+        payload({canAutosave: true, form: captured(73)}),
+        null,
+        {},
+        components
+      );
+      const legacy = container!.querySelector(
+        'craft-legacy-html-control'
+      ) as HTMLElement & {ready: Promise<void>};
+      await legacy.ready;
+      await nextTick();
+      const host = container!.querySelector('craft-entry-field-layout-form')!;
+      const input = container!.querySelector<HTMLInputElement>(
+        'input[name="fields[blocks][extra]"]'
+      )!;
+      input.value = 'Unsaved plugin value';
+      input.dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+      postSpy.mockImplementation(async (url: string) =>
+        url.includes('save-draft')
+          ? {
+              data: {
+                draftId: 7,
+                draftElementIds: {73: 173},
+                form: captured(173),
+                screen: {draftId: 7},
+              },
+            }
+          : {
+              data: {
+                uid: 'created',
+                type: 'text',
+                block: {actions: []},
+                values: {
+                  fields: {
+                    blocks: {entries: {created: {title: 'Server default'}}},
+                  },
+                },
+                form: {
+                  scope: [...path, 'entries', 'created'],
+                  refreshable: true,
+                  nodes: [
+                    {
+                      type: 'Field',
+                      component: 'craft:field',
+                      props: {label: 'Title'},
+                      control: {
+                        type: 'Text',
+                        component: 'craft:text',
+                        props: {},
+                        mode: 'editable',
+                        path: [...path, 'entries', 'created', 'title'],
+                        deltaGroup: path,
+                        reactive: false,
+                      },
+                    },
+                  ],
+                },
+              },
+            }
+      );
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {
+            action: 'add',
+            entryType: 'text',
+            trigger: host.querySelector('[data-matrix-field]'),
+          },
+        })
+      );
+      await vi.waitFor(() =>
+        expect(container!.querySelectorAll('[data-matrix-block]')).toHaveLength(
+          1
+        )
+      );
+      expect(
+        postSpy.mock.calls.find(([url]) => !url.includes('save-draft'))![1]
+      ).toMatchObject({ownerId: 173});
+      expect(container!.querySelector('[data-plugin]')?.textContent).toBe(
+        'Plugin command'
+      );
+      expect(
+        container!.querySelector<HTMLInputElement>(
+          'input[name="fields[blocks][extra]"]'
+        )!.value
+      ).toBe('Unsaved plugin value');
+      await nextTick();
+      await nextTick();
+      expect(editor.renderer.value!.currentValues().fields).toMatchObject({
+        blocks: {
+          extra: 'Unsaved plugin value',
+          entries: {created: {title: 'Server default'}},
+        },
+      });
+      const reload = vi.spyOn(router, 'reload').mockImplementation(() => {});
+      postSpy.mockResolvedValue({data: {}});
+      await editor.discardDraft();
+      await nextTick();
+      expect(container!.querySelectorAll('[data-matrix-block]')).toHaveLength(
+        0
+      );
+      expect(
+        container!.querySelector<HTMLInputElement>(
+          'input[name="fields[blocks][extra]"]'
+        )!.value
+      ).toBe('Initial');
+      expect(editor.form.isDirty).toBe(false);
+      reload.mockRestore();
+    }
+  );
 
   it('updates the editor payload from a details tab', () => {
     const {editor} = mount(payload({title: 'Original title'}));
@@ -723,7 +937,7 @@ describe('useElementEditor', () => {
 
     // Saving a nested element into the element bumps its `dateUpdated`.
     serverStamp = 2;
-    await editor.refreshAfterNestedChange();
+    await editor.nestedOwnerEditor.refresh!();
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(false);

@@ -245,8 +245,10 @@ describe('field input action listeners', () => {
     ]);
   });
 
-  it('copies a Matrix block by its element id, not its UID', () => {
-    document.body.innerHTML = `
+  it.each([false, true])(
+    'copies saved Matrix blocks to the clipboard, native HTML host=%s',
+    (nativeHost) => {
+      document.body.innerHTML = `
       <craft-field>
         <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
         <div data-matrix-block data-id="uid-a" data-element-id="12" data-owner-id="9" data-site-id="1"></div>
@@ -254,31 +256,42 @@ describe('field input action listeners', () => {
       </craft-field>
     `;
 
-    window.dispatchEvent(
-      new CustomEvent('craft:copy-nested-elements', {
-        detail: {
-          selector: '[data-matrix-block]',
-          elementType: 'craft\\elements\\Entry',
-          fieldId: 4,
-          trigger: document.querySelector('#trigger'),
-        },
-      })
-    );
+      if (nativeHost) {
+        const field = document.querySelector('craft-field')!;
+        const host = document.createElement('craft-entry-field-layout-form');
+        host.dataset.fieldPath = JSON.stringify(['fields', 'blocks']);
+        const inputField = document.createElement('craft-field');
+        inputField.append(...field.querySelectorAll('[data-matrix-block]'));
+        host.append(inputField);
+        field.append(host);
+      }
 
-    // The second block was minted in the browser and has no element behind it
-    // yet, so there is nothing for the clipboard to point at.
-    expect(copyElements).toHaveBeenCalledWith([
-      {
-        type: 'craft\\elements\\Entry',
-        fieldId: 4,
-        id: '12',
-        draftId: null,
-        revisionId: null,
-        ownerId: 9,
-        siteId: 1,
-      },
-    ]);
-  });
+      window.dispatchEvent(
+        new CustomEvent('craft:copy-nested-elements', {
+          detail: {
+            selector: '[data-matrix-block]',
+            elementType: 'craft\\elements\\Entry',
+            fieldId: 4,
+            trigger: document.querySelector('#trigger'),
+          },
+        })
+      );
+
+      // The second block was minted in the browser and has no element behind it
+      // yet, so there is nothing for the clipboard to point at.
+      expect(copyElements).toHaveBeenCalledWith([
+        {
+          type: 'craft\\elements\\Entry',
+          fieldId: 4,
+          id: '12',
+          draftId: null,
+          revisionId: null,
+          ownerId: 9,
+          siteId: 1,
+        },
+      ]);
+    }
+  );
 
   it('applies a selection item to the field’s selected blocks only', () => {
     document.body.innerHTML = `
