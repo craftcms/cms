@@ -13,7 +13,6 @@ use craft\controllers\UsersController;
 use craft\db\Connection;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\NestedElementManager;
 use craft\events\EditionChangeEvent;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
@@ -73,7 +72,7 @@ readonly class EventCompatibility
         Element::registerEvents();
         Asset::registerEvents();
         Entry::registerEvents();
-        NestedElementManager::registerEvents();
+        new NestedElementManagerEventCompatibility()->boot();
         \craft\elements\User::registerEvents();
 
         /**

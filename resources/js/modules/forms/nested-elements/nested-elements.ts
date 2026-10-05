@@ -35,6 +35,7 @@ export type NestedElementsManager = {
   ownerIsDerivative?: boolean;
   ownerIsInDerivativeTree?: boolean;
   ownerIsUnpublishedDraft?: boolean;
+  ownerHasDrafts?: boolean;
   ownerSiteId: number;
   attribute: string;
   fieldId: number;

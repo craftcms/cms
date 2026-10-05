@@ -91,6 +91,7 @@ export default css`
   ::slotted([slot='actions']) {
     position: relative;
     z-index: 1;
+    font-size: 1em;
   }
 
   .nav-item--prefixed {

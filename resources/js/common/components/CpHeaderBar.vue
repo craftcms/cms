@@ -61,9 +61,9 @@
 </script>
 
 <template>
-  <header class="cp-top-bar" data-theme="dark">
+  <header class="cp-header-bar" data-theme="dark">
     <template v-for="section in sectionOrder" :key="section">
-      <div class="cp-top-bar__start" v-if="section === 'start'">
+      <div class="cp-header-bar__start" v-if="section === 'start'">
         <craft-button
           :ref="registerToggle"
           id="sidebar-toggle"
@@ -77,7 +77,10 @@
         </craft-button>
       </div>
 
-      <div class="cp-top-bar__indicators" v-else-if="section === 'indicators'">
+      <div
+        class="cp-header-bar__indicators"
+        v-else-if="section === 'indicators'"
+      >
         <template v-if="devMode">
           <craft-badge fill="warning">
             <craft-icon name="code" slot="prefix"></craft-icon>
@@ -95,8 +98,8 @@
         </template>
       </div>
 
-      <div class="cp-top-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-2 items-center">
+      <div class="cp-header-bar__end" v-else-if="section === 'end'">
+        <div class="flex gap-md items-center">
           <craft-button
             icon
             :variant="ButtonVariant.Plain"
@@ -113,13 +116,13 @@
       </div>
 
       <div
-        class="cp-top-bar__breadcrumbs"
+        class="cp-header-bar__breadcrumbs"
         v-else-if="section === 'breadcrumbs'"
       >
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-md items-center">
           <SystemInfo v-if="isLarge" />
           <div
-            class="flex flex-nowrap items-center gap-2"
+            class="flex flex-nowrap items-center gap-md"
             v-show="crumbs || hasContextMenu"
           >
             <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
@@ -137,8 +140,10 @@
 </template>
 
 <style scoped>
-  .cp-top-bar {
-    padding-block: var(--c-spacing-sm);
+  .cp-header-bar {
+    --badge-border-color: var(--c-surface-sunken);
+    padding-block-start: calc(var(--c-spacing-sm) - 1px);
+    padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);
     display: grid;
@@ -149,6 +154,10 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
+    border-block-start: 1px solid rgba(0 0 0 / 0.25);
+    box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
+    position: relative;
+    z-index: var(--c-layer-overlay);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
@@ -159,22 +168,22 @@
     }
   }
 
-  .cp-top-bar__start {
+  .cp-header-bar__start {
     display: flex;
     justify-content: center;
     grid-area: start;
     margin-inline-start: calc(var(--spacing) * -2);
   }
 
-  .cp-top-bar__end {
+  .cp-header-bar__end {
     grid-area: end;
   }
 
-  .cp-top-bar__indicators {
+  .cp-header-bar__indicators {
     grid-area: indicators;
   }
 
-  .cp-top-bar__breadcrumbs {
+  .cp-header-bar__breadcrumbs {
     grid-area: breadcrumbs;
     overflow: auto;
   }

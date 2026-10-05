@@ -28,6 +28,7 @@ import {defineConditionBuilderHost} from './modules/conditions/condition-builder
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
 import {defineFieldSettingsFormHost} from './modules/forms/field-settings-form-host';
 import {defineTableFormHost} from './modules/forms/table-form-host';
+import {defineNestedElementsControlHost} from './modules/forms/nested-elements/nested-elements-control-host';
 import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 
@@ -86,6 +87,7 @@ installMessages();
 
 defineDashboardWidgetSettingsFormHost(Cp.$components);
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineNestedElementsControlHost(Cp.$components);
 defineConditionBuilderHost(Cp.$components);
 defineInlineAttributeFormHost(Cp.$components);
 defineTableFormHost(Cp.$components);
