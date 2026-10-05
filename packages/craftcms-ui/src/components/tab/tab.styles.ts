@@ -3,6 +3,7 @@ import {css} from 'lit';
 export default css`
   :host {
     display: inline-flex;
+    padding-inline: var(--c-tab-spacing-inline, 0);
     padding-block: var(--c-tab-spacing-block, 0.5em);
     position: relative;
     cursor: pointer;
