@@ -532,7 +532,9 @@ export class MatrixEntry extends Base {
               })
             : t('Disabled');
       status.title = label;
-      const accessibleLabel = status.querySelector('.visually-hidden');
+      const accessibleLabel = status.querySelector(
+        '.sr-only, .visually-hidden'
+      );
       if (accessibleLabel) {
         accessibleLabel.textContent = label;
       }

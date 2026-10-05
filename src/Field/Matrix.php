@@ -67,7 +67,6 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -524,7 +523,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         );
     }
 
-    protected function entryManager(): NestedElementManager
+    private function entryManager(): NestedElementManager
     {
         if (! isset($this->_entryManager)) {
             $this->_entryManager = new NestedElementManager(
@@ -1330,7 +1329,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $items;
     }
 
-    protected function localizedSiteName(?ElementInterface $owner): ?string
+    private function localizedSiteName(?ElementInterface $owner): ?string
     {
         if ($owner === null) {
             return null;
@@ -1394,26 +1393,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
-    public function blockFormVariables(Entry $entry, bool $static): array
-    {
-        $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
-        $payload = app(FieldLayoutCompiler::class)->compile(
-            $entry->getFieldLayout(),
-            $entry,
-            new FormContext(
-                namespace: explode('[', str_replace(']', '', $namespace)),
-                errors: $entry->errors()->getMessages(),
-                mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
-            ),
-        );
-
-        return [
-            'formPayload' => $payload->jsonSerialize(),
-            'siteName' => $this->localizedSiteName($entry->getOwner()),
-        ];
-    }
-
     /** The Cards, Cards Grid, and Index view modes manage their entries outside the owner form. */
     private function nestedEntriesControl(FieldContext $context): NestedElements
     {
@@ -1434,7 +1413,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * @param  EntryQuery<Entry>|ElementCollection<int,Entry>|null  $value
      * @return array<string, mixed>
      */
-    protected function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
+    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
     {
         if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
             if ($owner?->hasEagerLoadedElements($this->handle)) {
@@ -1519,7 +1498,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    protected function createButtonLabel(): string
+    private function createButtonLabel(): string
     {
         if (isset($this->createButtonLabel)) {
             return t($this->createButtonLabel, category: 'site');
