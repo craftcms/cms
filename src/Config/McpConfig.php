@@ -13,6 +13,8 @@ use InvalidArgumentException;
  */
 class McpConfig extends BaseConfig
 {
+    public string $endpoint = 'mcp';
+
     /** @var list<string> */
     public array $passportMiddleware = ['auth:api'];
 
@@ -36,6 +38,13 @@ class McpConfig extends BaseConfig
         }
 
         return $config;
+    }
+
+    public function endpoint(string $value): self
+    {
+        $this->endpoint = $value;
+
+        return $this;
     }
 
     /** @param list<string> $value */
