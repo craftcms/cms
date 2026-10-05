@@ -8,6 +8,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups as SiteGroupService;
+use CraftCms\Cms\Support\Arr;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
@@ -54,7 +55,7 @@ readonly class SiteGroups
         #[Schema(format: 'uuid')]
         ?string $uid = null,
     ): array {
-        if (count(array_filter([$id, $uid], static fn (mixed $value): bool => $value !== null)) !== 1) {
+        if (count(Arr::whereNotNull([$id, $uid])) !== 1) {
             throw new ToolCallException('Provide exactly one of: id, uid.');
         }
 

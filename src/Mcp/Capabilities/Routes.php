@@ -70,7 +70,7 @@ readonly class Routes
         ?string $uid = null,
         ?string $uri = null,
     ): array {
-        if (count(array_filter([$uid, $uri], static fn (mixed $value): bool => $value !== null)) !== 1) {
+        if (count(Arr::whereNotNull([$uid, $uri])) !== 1) {
             throw new ToolCallException('Provide exactly one of: uid, uri.');
         }
 

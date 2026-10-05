@@ -12,6 +12,7 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections as SectionService;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
@@ -99,7 +100,7 @@ readonly class Sections
         ?string $uid = null,
         ?string $handle = null,
     ): array {
-        if (count(array_filter([$id, $uid, $handle], static fn (mixed $value): bool => $value !== null)) !== 1) {
+        if (count(Arr::whereNotNull([$id, $uid, $handle])) !== 1) {
             throw new ToolCallException('Provide exactly one of: id, uid, handle.');
         }
 

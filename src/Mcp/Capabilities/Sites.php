@@ -8,6 +8,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteService;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
@@ -73,7 +74,7 @@ readonly class Sites
         ?string $uid = null,
         ?string $handle = null,
     ): array {
-        if (count(array_filter([$id, $uid, $handle], static fn (mixed $value): bool => $value !== null)) !== 1) {
+        if (count(Arr::whereNotNull([$id, $uid, $handle])) !== 1) {
             throw new ToolCallException('Provide exactly one of: id, uid, handle.');
         }
 

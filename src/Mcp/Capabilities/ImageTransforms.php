@@ -12,6 +12,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformService;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
@@ -63,7 +64,7 @@ readonly class ImageTransforms
         ?string $uid = null,
         ?string $handle = null,
     ): array {
-        if (count(array_filter([$id, $uid, $handle], static fn (mixed $value): bool => $value !== null)) !== 1) {
+        if (count(Arr::whereNotNull([$id, $uid, $handle])) !== 1) {
             throw new ToolCallException('Provide exactly one of: id, uid, handle.');
         }
 
