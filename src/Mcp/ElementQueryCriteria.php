@@ -40,6 +40,14 @@ class ElementQueryCriteria
             ...self::StringOrStringsSchema,
             'description' => 'Element UID or UIDs.',
         ],
+        'site' => [
+            ...self::StringOrStringsSchema,
+            'description' => 'Site handle or handles.',
+        ],
+        'siteId' => [
+            ...self::IntegerOrIntegersSchema,
+            'description' => 'Site ID or IDs.',
+        ],
         'status' => [
             'anyOf' => [
                 ['type' => 'string'],
@@ -51,6 +59,15 @@ class ElementQueryCriteria
         'search' => [
             'type' => 'string',
             'description' => 'Native Craft element search query.',
+        ],
+        'relatedTo' => [
+            'type' => 'array',
+            'description' => 'Native Craft relation criteria, such as related element IDs.',
+        ],
+        'with' => [
+            'type' => 'array',
+            'items' => ['type' => 'string'],
+            'description' => 'Eager-loading handles or paths.',
         ],
         'archived' => [
             'type' => 'boolean',
