@@ -23,6 +23,7 @@
 - `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
+- Fixed a bug where control panel pages that legacy URL rules routed to Craft 6 actions changed the browser’s URL to an `actions/…` URL. ([#19837](https://github.com/craftcms/cms/pull/19837))
 - Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
 - Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and Asset Transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
 - Fixed bugs that could allow sites saved outside the control panel to reference invalid groups, retain inconsistent primary or URL settings, or use invalid content transfer targets. ([#19825](https://github.com/craftcms/cms/pull/19825))
