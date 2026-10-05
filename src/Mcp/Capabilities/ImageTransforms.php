@@ -28,7 +28,7 @@ readonly class ImageTransforms
 {
     public function __construct(private ImageTransformService $imageTransforms) {}
 
-    /** @return array{transforms: list<array<string, mixed>>} */
+    /** @return array{count: int, transforms: list<array<string, mixed>>} */
     #[McpTool(
         name: 'image-transforms.list',
         description: 'Lists Craft CMS image transforms.',
@@ -37,12 +37,14 @@ readonly class ImageTransforms
     #[RequiresAdmin]
     public function list(): array
     {
+        $transforms = $this->imageTransforms
+            ->getAllTransforms()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'transforms' => $this->imageTransforms
-                ->getAllTransforms()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $transforms->count(),
+            'transforms' => $transforms->all(),
         ];
     }
 

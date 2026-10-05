@@ -21,7 +21,7 @@ readonly class SiteGroups
 {
     public function __construct(private SiteGroupService $siteGroups) {}
 
-    /** @return array{groups: list<array<string, mixed>>} */
+    /** @return array{count: int, groups: list<array<string, mixed>>} */
     #[McpTool(
         name: 'site-groups.list',
         description: 'Lists Craft CMS site groups.',
@@ -30,12 +30,14 @@ readonly class SiteGroups
     #[RequiresAdmin]
     public function list(): array
     {
+        $groups = $this->siteGroups
+            ->getAllGroups()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'groups' => $this->siteGroups
-                ->getAllGroups()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $groups->count(),
+            'groups' => $groups->all(),
         ];
     }
 

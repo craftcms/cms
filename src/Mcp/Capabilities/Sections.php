@@ -64,7 +64,7 @@ readonly class Sections
 
     public function __construct(private SectionService $sections) {}
 
-    /** @return array{sections: list<array<string, mixed>>} */
+    /** @return array{count: int, sections: list<array<string, mixed>>} */
     #[McpTool(
         name: 'sections.list',
         description: 'Lists Craft CMS sections.',
@@ -73,12 +73,14 @@ readonly class Sections
     #[RequiresAdmin]
     public function list(): array
     {
+        $sections = $this->sections
+            ->getAllSections()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'sections' => $this->sections
-                ->getAllSections()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $sections->count(),
+            'sections' => $sections->all(),
         ];
     }
 
@@ -265,7 +267,7 @@ readonly class Sections
         return ['deleted' => true];
     }
 
-    /** @return array{sections: list<array<string, mixed>>} */
+    /** @return array{count: int, sections: list<array<string, mixed>>} */
     #[McpResource(
         uri: 'craft://sections',
         name: 'craft-sections',

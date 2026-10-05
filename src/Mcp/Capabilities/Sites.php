@@ -38,7 +38,7 @@ readonly class Sites
 
     public function __construct(private SiteService $sites) {}
 
-    /** @return array{sites: list<array<string, mixed>>} */
+    /** @return array{count: int, sites: list<array<string, mixed>>} */
     #[McpTool(
         name: 'sites.list',
         description: 'Lists Craft CMS sites.',
@@ -47,12 +47,14 @@ readonly class Sites
     #[RequiresAdmin]
     public function list(): array
     {
+        $sites = $this->sites
+            ->getAllSites()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'sites' => $this->sites
-                ->getAllSites()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $sites->count(),
+            'sites' => $sites->all(),
         ];
     }
 
@@ -183,7 +185,7 @@ readonly class Sites
         return ['deleted' => true];
     }
 
-    /** @return array{sites: list<array<string, mixed>>} */
+    /** @return array{count: int, sites: list<array<string, mixed>>} */
     #[McpResource(
         uri: 'craft://sites',
         name: 'craft-sites',

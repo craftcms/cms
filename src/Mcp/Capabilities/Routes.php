@@ -36,7 +36,7 @@ readonly class Routes
 
     public function __construct(private RouteService $routes) {}
 
-    /** @return array{routes: list<array<string, mixed>>} */
+    /** @return array{count: int, routes: list<array<string, mixed>>} */
     #[McpTool(
         name: 'routes.list',
         description: 'Lists Craft CMS routes available to the current site.',
@@ -45,12 +45,14 @@ readonly class Routes
     #[RequiresAdmin]
     public function list(): array
     {
+        $routes = $this->routes
+            ->getProjectConfigRoutes()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'routes' => $this->routes
-                ->getProjectConfigRoutes()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $routes->count(),
+            'routes' => $routes->all(),
         ];
     }
 

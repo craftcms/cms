@@ -34,7 +34,7 @@ readonly class UserPermissions
         private UserGroups $userGroups,
     ) {}
 
-    /** @return array{groups: list<array<string, mixed>>} */
+    /** @return array{count: int, groups: list<array<string, mixed>>} */
     #[McpTool(
         name: 'user-permissions.list',
         description: 'Lists known Craft CMS user permissions grouped by category.',
@@ -43,12 +43,14 @@ readonly class UserPermissions
     #[RequiresPermission('assignUserPermissions')]
     public function list(): array
     {
+        $groups = $this->permissions
+            ->getAllPermissions()
+            ->map($this->serializePermissionGroup(...))
+            ->values();
+
         return [
-            'groups' => $this->permissions
-                ->getAllPermissions()
-                ->map($this->serializePermissionGroup(...))
-                ->values()
-                ->all(),
+            'count' => $groups->count(),
+            'groups' => $groups->all(),
         ];
     }
 
@@ -185,7 +187,7 @@ readonly class UserPermissions
         return $this->groupPermissions($group->id);
     }
 
-    /** @return array{groups: list<array<string, mixed>>} */
+    /** @return array{count: int, groups: list<array<string, mixed>>} */
     #[McpResource(
         uri: 'craft://user-permissions',
         name: 'craft-user-permissions',

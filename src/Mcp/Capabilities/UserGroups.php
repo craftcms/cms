@@ -28,7 +28,7 @@ readonly class UserGroups
 {
     public function __construct(private UserGroupService $userGroups) {}
 
-    /** @return array{groups: list<array<string, mixed>>} */
+    /** @return array{count: int, groups: list<array<string, mixed>>} */
     #[McpTool(
         name: 'user-groups.list',
         description: 'Lists Craft CMS user groups.',
@@ -37,12 +37,14 @@ readonly class UserGroups
     #[RequiresAdmin]
     public function list(): array
     {
+        $groups = $this->userGroups
+            ->getAllGroups()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'groups' => $this->userGroups
-                ->getAllGroups()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $groups->count(),
+            'groups' => $groups->all(),
         ];
     }
 
@@ -176,7 +178,7 @@ readonly class UserGroups
         return ['deleted' => true];
     }
 
-    /** @return array{groups: list<array<string, mixed>>} */
+    /** @return array{count: int, groups: list<array<string, mixed>>} */
     #[McpResource(
         uri: 'craft://user-groups',
         name: 'craft-user-groups',

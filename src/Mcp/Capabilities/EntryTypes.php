@@ -36,7 +36,7 @@ readonly class EntryTypes
         private Fields $fields,
     ) {}
 
-    /** @return array{entryTypes: list<array<string, mixed>>} */
+    /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
     #[McpTool(
         name: 'entry-types.list',
         description: 'Lists Craft CMS entry types.',
@@ -45,12 +45,14 @@ readonly class EntryTypes
     #[RequiresAdmin]
     public function list(): array
     {
+        $entryTypes = $this->entryTypes
+            ->getAllEntryTypes()
+            ->map($this->serialize(...))
+            ->values();
+
         return [
-            'entryTypes' => $this->entryTypes
-                ->getAllEntryTypes()
-                ->map($this->serialize(...))
-                ->values()
-                ->all(),
+            'count' => $entryTypes->count(),
+            'entryTypes' => $entryTypes->all(),
         ];
     }
 
@@ -257,7 +259,7 @@ readonly class EntryTypes
         return ['deleted' => true];
     }
 
-    /** @return array{entryTypes: list<array<string, mixed>>} */
+    /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
     #[McpResource(
         uri: 'craft://entry-types',
         name: 'craft-entry-types',
