@@ -49,6 +49,41 @@ import type {
   FormValues,
 } from './types';
 
+function tableCellForms(
+  control: FormControlPayload,
+  tablePath: string[],
+  rowKeys: string[],
+  cells: Array<{
+    key: string;
+    type: string;
+    component: string;
+    props?: FormProperties;
+  }>
+): void {
+  function rowForm(scope: string[]) {
+    return {
+      scope,
+      refreshable: false,
+      nodes: cells.map((cell) => ({
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: cell.key, labelSrOnly: true},
+        control: {
+          type: cell.type,
+          component: cell.component,
+          props: cell.props ?? {},
+          path: [...scope, cell.key],
+          mode: 'editable' as const,
+          deltaGroup: scope.length ? tablePath : [cell.key],
+        },
+      })),
+    };
+  }
+
+  control.forms = rowKeys.map((key) => rowForm([...tablePath, key]));
+  control.props.rowTemplate = rowForm([]);
+}
+
 interface ElementSelectSettings {
   id: string;
   elementType: string;
@@ -760,6 +795,27 @@ describe('FormRenderer', () => {
       errors: [],
       globalErrors: [],
     };
+    tableCellForms(
+      table.nodes[0]!.control!,
+      ['siteOverrides'],
+      ['site-uid'],
+      [
+        {
+          key: 'fromEmail',
+          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          component: 'craft:text',
+          props: {
+            textExpanderTriggers: [
+              {
+                trigger: '$',
+                boundary: 'start',
+                options: [{label: '$SITE_EMAIL', value: '$SITE_EMAIL'}],
+              },
+            ],
+          },
+        },
+      ]
+    );
     app.unmount();
     await mount(table);
 
@@ -849,11 +905,25 @@ describe('FormRenderer', () => {
       errors: [],
       globalErrors: [],
     };
+    tableCellForms(
+      table.nodes[0]!.control!,
+      ['columns'],
+      ['first', 'second', 'third'],
+      [
+        {
+          key: 'handle',
+          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          component: 'craft:text',
+        },
+      ]
+    );
     app.unmount();
     await mount(table);
 
     const inputs = [
-      ...container.querySelectorAll<HTMLTextAreaElement>('tbody textarea'),
+      ...container.querySelectorAll<HTMLInputElement>(
+        'tbody input[type="text"]'
+      ),
     ];
 
     expect(inputs.map((input) => input.value)).toEqual([
@@ -3207,6 +3277,25 @@ describe('FormRenderer', () => {
         },
       })
     );
+    tableCellForms(
+      controlsPayload.nodes.find(
+        (node) => node.control?.component === 'craft:table'
+      )!.control!,
+      ['settings', 'rows'],
+      ['0'],
+      [
+        {
+          key: 'name',
+          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          component: 'craft:text',
+        },
+        {
+          key: 'enabled',
+          type: 'CraftCms\\Cms\\Form\\Controls\\Checkbox',
+          component: 'craft:checkbox',
+        },
+      ]
+    );
     controlsPayload.values = {
       settings: Object.fromEntries(
         controls.map(([, , path, , value]) => [path, value])
@@ -3264,7 +3353,7 @@ describe('FormRenderer', () => {
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(
       container.querySelector<HTMLInputElement>(
-        'textarea[name="settings[rows][0][name]"]'
+        'input[name="settings[rows][0][name]"]'
       )?.value
     ).toBe('<Row>');
     expect(
@@ -3273,8 +3362,8 @@ describe('FormRenderer', () => {
       )?.checked
     ).toBe(true);
     expect(
-      container.querySelector<HTMLTextAreaElement>(
-        'textarea[name="settings[rows][1][name]"]'
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[rows][1][name]"]'
       )?.value
     ).toBe('<New row>');
     expect(
@@ -3327,7 +3416,7 @@ describe('FormRenderer', () => {
 
     const tableInput = required(
       container.querySelector<HTMLTextAreaElement>(
-        'textarea[name="settings[rows][0][name]"]'
+        'input[name="settings[rows][0][name]"]'
       ),
       'Expected the first table input.'
     );
@@ -3496,7 +3585,8 @@ describe('FormRenderer', () => {
           )?.value
         ).toBe('Refreshed **Markdown**');
         expect(
-          container.querySelector<HTMLTextAreaElement>('tbody textarea')?.value
+          container.querySelector<HTMLInputElement>('tbody input[type="text"]')
+            ?.value
         ).toBe('Refreshed row');
       });
     }

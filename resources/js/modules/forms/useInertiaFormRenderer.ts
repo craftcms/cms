@@ -12,6 +12,7 @@ import {pathsMatch, visitControls} from './runtime';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
+  setSubmitting?(submitting: boolean): void;
   currentValues(): FormPayload['values'];
   mutation(includeGroups?: string[][]): FormPayload['values'];
   resetValues(): void;
@@ -46,6 +47,14 @@ export function useInertiaFormRenderer<
   watch(
     () => toValue(payload),
     (currentPayload) => (values.value = clone(currentPayload?.values ?? {}))
+  );
+
+  watch(
+    () => [form.processing, renderer.value] as const,
+    ([processing]) => {
+      renderer.value?.setSubmitting?.(processing);
+    },
+    {flush: 'sync', immediate: true}
   );
 
   const errors = computed(() =>

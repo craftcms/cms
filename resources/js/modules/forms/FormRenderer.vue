@@ -17,6 +17,11 @@
   import {
     canonical,
     FormFailure,
+    FormControlStructure,
+    FormControlBehaviors,
+    type FormControlBehavior,
+    FormPending,
+    FormErrors,
     FormControlOverrides,
     FormChangedPaths,
     FormModifiedGroups,
@@ -37,6 +42,7 @@
     FormPayload,
     FormValue,
     FormValues,
+    NestedFormPayload,
   } from './types';
 
   const props = defineProps<{
@@ -97,9 +103,41 @@
    * only when the values are thrown away.
    */
   const changedPaths = ref(new Set<string>());
-  const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
+  const controlBehaviors = reactive(
+    new Map<string, {path: string[]; behavior: FormControlBehavior}>()
+  );
+  const nativeSubmitting = ref(false);
+  const submitting = ref(false);
+  const clearedErrorScopes = reactive(new Map<string, string[]>());
+  const effectiveErrors = computed(() =>
+    (props.errors ?? payload.value.errors).filter(
+      (error) =>
+        ![...clearedErrorScopes.values()].some(
+          (scope) =>
+            error.path.length > scope.length && isWithin(error.path, scope)
+        )
+    )
+  );
   rememberControls(props.payload.nodes);
   provide(FormFailure, invalidate);
+  provide(FormControlStructure, synchronizeStructure);
+  provide(FormControlBehaviors, registerControlBehavior);
+  provide(
+    FormPending,
+    computed(() =>
+      Boolean(
+        props.disabled ||
+        nativeSubmitting.value ||
+        submitting.value ||
+        refreshingFields.size
+      )
+    )
+  );
+  provide(FormErrors, {
+    clearChildren: (path) =>
+      clearedErrorScopes.set(JSON.stringify(path), [...path]),
+    childrenCleared: (path) => clearedErrorScopes.has(JSON.stringify(path)),
+  });
   provide(FormControlOverrides, slots);
   provide(
     FormModifiedGroups,
@@ -112,6 +150,10 @@
   );
 
   useEventListener(hostForm, 'submit', (event) => {
+    nativeSubmitting.value = true;
+    queueMicrotask(() => {
+      if (event.defaultPrevented) nativeSubmitting.value = false;
+    });
     if (renderError.value) {
       event.preventDefault();
     }
@@ -126,6 +168,14 @@
   watch(
     () => props.payload,
     (refreshed) => reconcile(refreshed)
+  );
+
+  watch(
+    () => props.errors,
+    () => {
+      clearedErrorScopes.clear();
+    },
+    {flush: 'sync'}
   );
 
   watch(
@@ -193,7 +243,7 @@
     }
 
     const key = JSON.stringify(scope);
-    const serialized = canonical(snapshot);
+    const serialized = groupCanonical(snapshot, scope);
 
     if (serialized === lastRefreshValues.get(key)) {
       return;
@@ -239,6 +289,11 @@
       );
     }
 
+    if (!props.errors) {
+      for (const [key, path] of clearedErrorScopes) {
+        if (isWithin(path, scope)) clearedErrorScopes.delete(key);
+      }
+    }
     renderError.value = undefined;
     const focusedElement =
       document.activeElement instanceof HTMLElement
@@ -329,6 +384,9 @@
       JSON.stringify(source.scope),
       canonical(valueAt(source.values, source.scope))
     );
+    nativeSubmitting.value = false;
+    submitting.value = false;
+    clearedErrorScopes.clear();
     touchedPaths.clear();
     changedPaths.value.clear();
     knownControls.clear();
@@ -367,7 +425,7 @@
 
       if (
         included.has(JSON.stringify(path)) ||
-        canonical(current) !== canonical(original)
+        groupCanonical(current, path) !== groupCanonical(original, path)
       ) {
         if (path.length === 0 && isRecord(current)) {
           Object.assign(result, current);
@@ -434,12 +492,69 @@
 
   defineExpose({
     advanceBaseline,
+    setSubmitting,
     currentValues,
     mutation,
     resetValues,
     setValue,
     canSubmit: () => !renderError.value,
   });
+
+  function registerControlBehavior(
+    path: string[],
+    behavior: FormControlBehavior
+  ): () => void {
+    const key = JSON.stringify(path);
+    controlBehaviors.set(key, {path, behavior});
+    return () => controlBehaviors.delete(key);
+  }
+
+  function setSubmitting(value: boolean): void {
+    submitting.value = value;
+  }
+
+  function synchronizeStructure(
+    control: Pick<FormControlPayload, 'path'>,
+    forms: NestedFormPayload[]
+  ): void {
+    if (
+      canonical(
+        knownControls.get(JSON.stringify(control.path))?.forms ?? []
+      ) === canonical(forms)
+    ) {
+      return;
+    }
+
+    for (const [key, known] of knownControls) {
+      if (
+        known.path.length > control.path.length &&
+        isWithin(known.path, control.path)
+      ) {
+        knownControls.delete(key);
+      }
+    }
+    const current = cloneRaw(payload.value);
+    visitControls(current.nodes, (candidate) => {
+      if (pathsMatch(candidate.path, control.path)) candidate.forms = forms;
+    });
+    payload.value = current;
+    rememberControls(current.nodes);
+  }
+
+  function groupCanonical(value: FormValue, path: string[]): string {
+    const comparisons: FormValue[] = [];
+    for (const {path: controlPath, behavior} of controlBehaviors.values()) {
+      if (behavior.comparisonValue && isWithin(controlPath, path)) {
+        comparisons.push([
+          controlPath,
+          behavior.comparisonValue(
+            valueAt(value, controlPath.slice(path.length))
+          ),
+        ]);
+      }
+    }
+    return canonical([value, comparisons]);
+  }
 
   function rememberControls(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>
