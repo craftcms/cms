@@ -55,7 +55,7 @@ export default css`
   .tabs__tab-group {
     flex: 1;
     min-width: 0;
-    gap: var(--c-tabs-tab-gap, var(--c-spacing-md));
+    gap: var(--c-tabs-tab-gap, var(--c-spacing-lg));
   }
 
   /*

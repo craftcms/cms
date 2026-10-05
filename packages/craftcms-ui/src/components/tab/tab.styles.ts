@@ -3,7 +3,6 @@ import {css} from 'lit';
 export default css`
   :host {
     display: inline-flex;
-    padding-inline: var(--c-tab-spacing-inline, 1em);
     padding-block: var(--c-tab-spacing-block, 0.5em);
     position: relative;
     cursor: pointer;
@@ -41,7 +40,7 @@ export default css`
   :host([selected])::after {
     background-color: var(
       --c-tab-border-active,
-      var(--c-color-accent-border-loud)
+      var(--c-color-accent-fill-loud)
     );
   }
 
