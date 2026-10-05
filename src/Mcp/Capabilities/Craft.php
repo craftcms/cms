@@ -61,6 +61,7 @@ readonly class Craft
     /** @return array<string, mixed> */
     #[McpTool(
         name: 'craft-context-get',
+        title: 'Get the public Craft query context',
         description: 'Returns public Craft MCP query types, criteria, sites, sections, volumes, user groups, and element types.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -96,6 +97,7 @@ readonly class Craft
      */
     #[McpTool(
         name: 'craft-query',
+        title: 'Query approved public Craft content',
         description: 'Queries allowed public Craft element types using ElementQuery criteria.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]

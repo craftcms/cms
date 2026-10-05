@@ -26,6 +26,10 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Support\Collection;
 use LogicException;
+use Mcp\Capability\Registry\ElementReference;
+use Mcp\Capability\Registry\ResourceReference;
+use Mcp\Capability\Registry\ResourceTemplateReference;
+use Mcp\Capability\Registry\ToolReference;
 
 use function CraftCms\Cms\t;
 
@@ -35,6 +39,7 @@ use function CraftCms\Cms\t;
 readonly class SettingsForm
 {
     public function __construct(
+        private CapabilityDiscovery $capabilities,
         private Fields $fields,
         private GeneralConfig $generalConfig,
         private PublicElementTypes $publicElementTypes,
@@ -68,10 +73,7 @@ readonly class SettingsForm
             Separator::make('public-capabilities-separator'),
             Heading::make('public-capabilities-heading', t('Public Capabilities'))
                 ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),
-            $this->permissionTreeField(t('Tools'), 'publicTools', [
-                new Permission('craft-context-get', t('Get the public Craft query context')),
-                new Permission('craft-query', t('Query approved public Craft content')),
-            ]),
+            ...$this->capabilityFields(),
             Separator::make('public-content-separator'),
             Heading::make('public-content-heading', t('Public Content'))
                 ->description(t('Choose the content that approved public capabilities may expose.')),
@@ -87,6 +89,40 @@ readonly class SettingsForm
             $this->booleanField(t('Allow Revisions'), 'publicAllowRevisions', t('Allow public queries to include revisions.')),
             $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
         ]);
+    }
+
+    /** @return list<Field> */
+    private function capabilityFields(): array
+    {
+        $discovered = $this->capabilities->discoverPublic(__DIR__.'/Capabilities', ['.']);
+        $categories = [
+            [t('Tools'), 'publicTools', $discovered->getTools()],
+            [t('Resources'), 'publicResources', $discovered->getResources()],
+            [t('Resource Templates'), 'publicResourceTemplates', $discovered->getResourceTemplates()],
+            [t('Prompts'), 'publicPrompts', $discovered->getPrompts()],
+        ];
+        $fields = [];
+
+        foreach ($categories as [$heading, $attribute, $references]) {
+            if ($references === []) {
+                continue;
+            }
+
+            $permissions = array_map(static function (ElementReference $reference): Permission {
+                [$identity, $definition] = match (true) {
+                    $reference instanceof ToolReference => [$reference->tool->name, $reference->tool],
+                    $reference instanceof ResourceReference => [$reference->resource->uri, $reference->resource],
+                    $reference instanceof ResourceTemplateReference => [$reference->resourceTemplate->uriTemplate, $reference->resourceTemplate],
+                    default => [$reference->prompt->name, $reference->prompt],
+                };
+
+                return new Permission($identity, $definition->title ?? $definition->name, $definition->description);
+            }, $references);
+
+            $fields[] = $this->permissionTreeField($heading, $attribute, array_values($permissions));
+        }
+
+        return $fields;
     }
 
     /** @param list<Permission> $permissions */

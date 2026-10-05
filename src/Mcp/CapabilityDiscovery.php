@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use Illuminate\Http\Request;
+use LogicException;
 use Mcp\Capability\Discovery\Discoverer;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
@@ -28,6 +29,7 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     public function __construct(
         private Request $request,
         private GeneralConfig $config,
+        private CapabilityRegistry $registry,
         ?DiscovererInterface $discoverer = null,
     ) {
         $this->discoverer = $discoverer ?? new Discoverer;
@@ -39,7 +41,7 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         array $excludeDirs = [],
         array $namePatterns = self::DEFAULT_NAME_PATERNS,
     ): DiscoveryState {
-        $discovered = $this->discoverer->discover($basePath, $directories, $excludeDirs, $namePatterns);
+        $discovered = $this->discoverAll($basePath, $directories, $excludeDirs, $namePatterns);
 
         return $this->filter(
             $discovered,
@@ -58,12 +60,49 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         array $excludeDirs = [],
         array $namePatterns = self::DEFAULT_NAME_PATERNS,
     ): DiscoveryState {
-        $discovered = $this->discoverer->discover($basePath, $directories, $excludeDirs, $namePatterns);
+        $discovered = $this->discoverAll($basePath, $directories, $excludeDirs, $namePatterns);
 
         return $this->filter(
             $discovered,
             fn (ElementReference $reference): bool => $this->isPublic($reference) && $this->allows($reference),
         );
+    }
+
+    /**
+     * @param  list<string>  $directories
+     * @param  list<string>  $excludeDirs
+     * @param  list<string>  $namePatterns
+     */
+    private function discoverAll(string $basePath, array $directories, array $excludeDirs, array $namePatterns): DiscoveryState
+    {
+        $discovered = $this->discoverer->discover($basePath, $directories, $excludeDirs, $namePatterns);
+
+        $registered = $this->registry->definitions();
+
+        return new DiscoveryState(
+            tools: $this->merge($discovered->getTools(), $registered->getTools()),
+            resources: $this->merge($discovered->getResources(), $registered->getResources()),
+            prompts: $this->merge($discovered->getPrompts(), $registered->getPrompts()),
+            resourceTemplates: $this->merge($discovered->getResourceTemplates(), $registered->getResourceTemplates()),
+        );
+    }
+
+    /**
+     * @template T of ElementReference
+     *
+     * @param  array<string, T>  $existing
+     * @param  array<string, T>  $additional
+     * @return array<string, T>
+     */
+    private function merge(array $existing, array $additional): array
+    {
+        $duplicates = array_intersect_key($existing, $additional);
+
+        if ($duplicates !== []) {
+            throw new LogicException('Duplicate MCP capability identities: '.implode(', ', array_keys($duplicates)));
+        }
+
+        return $existing + $additional;
     }
 
     /** @param Closure(ElementReference): bool $allows */

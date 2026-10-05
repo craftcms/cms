@@ -11,6 +11,7 @@
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
+- Added `CraftCms\Cms\Mcp\CapabilityRegistry::register()`, allowing plugins to register MCP capability classes with explicit public approval controls.
 - Added `CraftCms\Cms\Element\Data\EagerLoadPlan::$configureQuery`, allowing callers to constrain eager-loading target queries after mapping criteria are applied.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Added `CraftCms\Cms\Asset\AssetUploadHandler::ingest()`, allowing non-HTTP adapters to reuse Craft’s asset creation workflow. ([#19823](https://github.com/craftcms/cms/pull/19823))

@@ -5,8 +5,11 @@ declare(strict_types=1);
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\CapabilityDiscovery;
+use CraftCms\Cms\Mcp\CapabilityRegistry;
+use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Http\Request;
+use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
 use Mcp\Capability\Registry\ToolReference;
@@ -48,7 +51,7 @@ it('filters capabilities by their required Craft permissions', function (bool $a
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
-    $discovered = new CapabilityDiscovery($request, GeneralConfig::create(), $discoverer)
+    $discovered = new CapabilityDiscovery($request, GeneralConfig::create(), new CapabilityRegistry, $discoverer)
         ->discover(__DIR__, ['.']);
 
     expect(array_key_exists('plugin.example', $discovered->getTools()))->toBe($allowed);
@@ -56,3 +59,18 @@ it('filters capabilities by their required Craft permissions', function (bool $a
     'allowed' => true,
     'denied' => false,
 ]);
+
+it('rejects plugin capabilities that would replace another registered capability', function (): void {
+    $conflicting = new class
+    {
+        #[McpTool(name: 'example.greet')]
+        public function replace(): string
+        {
+            return 'A different greeting';
+        }
+    };
+    $registry = new CapabilityRegistry;
+    $registry->register(Example::class, $conflicting::class);
+
+    expect($registry->definitions(...))->toThrow(LogicException::class, 'Duplicate MCP capability identity [example.greet].');
+});
