@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace craft\fields;
 
+use craft\events\BulkElementsEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -19,6 +20,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Field\MatrixEntrySaveCompatibility;
 use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
@@ -30,6 +32,11 @@ use RuntimeException;
 class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
 {
     use LegacyBuiltInField;
+
+    public function afterSaveEntries(BulkElementsEvent $event): void
+    {
+        app(MatrixEntrySaveCompatibility::class)->rememberCollapsedEntries($event->elements);
+    }
 
     /**
      * @throws RuntimeException

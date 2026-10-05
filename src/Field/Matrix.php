@@ -19,7 +19,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -74,9 +73,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
-use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -544,13 +540,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            Event::listen(function (NestedElementsSaved $event) {
-                if ($event->manager !== $this->_entryManager) {
-                    return;
-                }
-
-                $this->afterSaveEntries($event);
-            });
         }
 
         return $this->_entryManager;
@@ -1857,32 +1846,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $this->entryManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
-    }
-
-    /**
-     * Handles nested entry saves.
-     */
-    public function afterSaveEntries(NestedElementsSaved $event): void
-    {
-        if (app()->runningInConsole()) {
-            return;
-        }
-
-        // Tell the browser to collapse any new entry IDs
-        $collapsedIds = Collection::make($event->elements)
-            ->filter(fn (ElementInterface $entry) => $entry instanceof Entry && $entry->collapsed)
-            ->map(fn (ElementInterface $entry) => $entry->id)
-            ->all();
-
-        if (empty($collapsedIds)) {
-            return;
-        }
-
-        app(InternalAssetRegistry::class)->flash(MatrixAsset::class);
-
-        foreach ($collapsedIds as $id) {
-            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($id);", Position::BodyEnd);
-        }
     }
 
     #[Override]

@@ -7,6 +7,7 @@ namespace CraftCms\Yii2Adapter\View\LegacyAssets;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 
@@ -31,7 +32,7 @@ use function CraftCms\Cms\craftAsset;
  */
 class CpCompatAsset implements LegacyAssetInterface
 {
-    public array $depends = [];
+    public array $depends = [CpAsset::class];
 
     public function register(HtmlStack $htmlStack): void
     {
