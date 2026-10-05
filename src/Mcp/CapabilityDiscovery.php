@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use Illuminate\Http\Request;
 use Mcp\Capability\Discovery\Discoverer;
 use Mcp\Capability\Discovery\DiscovererInterface;
@@ -51,15 +52,27 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         $method = $this->reflection($reference->handler);
         $requiresAdminChanges = ($method?->getAttributes(RequiresAdminChanges::class) ?? []) !== [];
         $requiresAdmin = $requiresAdminChanges || ($method?->getAttributes(RequiresAdmin::class) ?? []) !== [];
+        $requiredPermissions = $method?->getAttributes(RequiresPermission::class) ?? [];
 
-        if (! $requiresAdmin) {
+        if (! $requiresAdmin && $requiredPermissions === []) {
             return true;
         }
 
         $user = $this->request->craftUser();
 
-        return $user?->isAdmin() === true
-            && (! $requiresAdminChanges || $this->config->allowAdminChanges);
+        if (! $user) {
+            return false;
+        }
+
+        if ($requiresAdmin && ! $user->isAdmin()) {
+            return false;
+        }
+
+        if ($requiresAdminChanges && ! $this->config->allowAdminChanges) {
+            return false;
+        }
+
+        return array_all($requiredPermissions, fn ($attribute) => $user->can($attribute->newInstance()->permission));
     }
 
     /**
