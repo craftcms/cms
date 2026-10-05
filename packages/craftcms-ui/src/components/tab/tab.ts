@@ -1,6 +1,7 @@
 import type {CSSResultGroup} from 'lit';
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
+import {LightDomController} from '@src/controllers/LightDomController';
 import hostStyles from '@src/styles/host.styles.js';
 import styles from './tab.styles.js';
 
@@ -26,6 +27,8 @@ import styles from './tab.styles.js';
  *   `<craft-tabs size>` resizes its tabs without touching them.
  * @cssproperty --c-tab-border-active - Color of the selected indicator.
  *   Defaults to `--c-color-accent-fill-loud`.
+ * @cssproperty --c-tab-font-weight-active - Label weight while selected.
+ *   Defaults to `--font-weight-semibold`.
  * @cssproperty --c-tab-text-disabled - Label color while disabled. Defaults to
  *   `--c-status-disabled-text`.
  * @cssproperty --c-tab-indicator-inset-block-start - Indicator geometry. Set
@@ -67,8 +70,15 @@ export default class CraftTab extends LitElement {
     return this.hasAttribute('selected');
   }
 
+  /** Keeps `data-text` in sync with the label. */
+  private _lightDom = new LightDomController(this, {characterData: true});
+
   override render() {
-    return html`<slot></slot>`;
+    return html`<span
+      class="tab__label"
+      data-text="${this.textContent?.trim() ?? ''}"
+      ><slot></slot
+    ></span>`;
   }
 }
 
