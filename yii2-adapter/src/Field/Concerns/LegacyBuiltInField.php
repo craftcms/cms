@@ -6,6 +6,7 @@ namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -14,10 +15,13 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
 
 trait LegacyBuiltInField
 {
+    private ControlMode $tableSettingsMode = ControlMode::Editable;
+
     use LegacyFieldControl {
         formControl as private legacyFormControl;
     }
@@ -48,6 +52,10 @@ trait LegacyBuiltInField
 
     public function getSettingsHtml(): ?string
     {
+        if ($this instanceof TableField) {
+            return $this->tableSettingsHtml($this->tableSettingsMode);
+        }
+
         $form = parent::settingsForm();
         if ($form === null) {
             return null;
@@ -60,7 +68,31 @@ trait LegacyBuiltInField
 
     public function getReadOnlySettingsHtml(): ?string
     {
-        return Html::disableInputs(fn() => $this->getSettingsHtml());
+        if (!$this instanceof TableField) {
+            return Html::disableInputs(fn() => $this->getSettingsHtml());
+        }
+
+        $previousMode = $this->tableSettingsMode;
+        $this->tableSettingsMode = ControlMode::ReadOnly;
+
+        try {
+            return Html::disableInputs(fn() => $this->getSettingsHtml());
+        } finally {
+            $this->tableSettingsMode = $previousMode;
+        }
+    }
+
+    private function tableSettingsHtml(ControlMode $mode): string
+    {
+        $context = new FormContext(namespace: 'settings', mode: $mode, refreshable: $mode === ControlMode::Editable);
+        $payload = app(FormResolver::class)->resolve(parent::settingsForm($context), $context);
+
+        return Html::tag('craft-field-settings-form', '', [
+            'name' => '__fieldSettings',
+            'data-payload' => Json::encode($payload),
+            'data-field-type' => TableField::class,
+            'data-field-id' => $this->id,
+        ]);
     }
 
     public function getStaticHtml(mixed $value, ElementInterface $element): string

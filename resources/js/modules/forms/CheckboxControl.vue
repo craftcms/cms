@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import '@craftcms/ui/components/checkbox/checkbox';
+  import CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
   import type {FormControlPayload} from './types';
   import {
     ignoreModelValueInitialization,
@@ -23,11 +23,11 @@
   const emit = defineEmits<{(event: 'update:value', value: boolean): void}>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof HTMLInputElement)) {
+    if (!(event.currentTarget instanceof CraftCheckbox)) {
       throw new TypeError('Expected a checkbox event target.');
     }
 
-    emit('update:value', event.target.checked);
+    emit('update:value', event.currentTarget.checked);
   });
 </script>
 

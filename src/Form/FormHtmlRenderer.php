@@ -224,6 +224,16 @@ class FormHtmlRenderer
         return $values;
     }
 
+    /** @param list<string> $path
+     * @return list<array{path: list<string>, messages: list<string>}>
+     */
+    public function controlErrors(array $path): array
+    {
+        return array_values(array_filter($this->payload->errors ?? [],
+            fn (array $error): bool => array_slice($error['path'], 0, count($path)) === $path,
+        ));
+    }
+
     /**
      * @param  list<array{path: list<string>, messages: list<string>}>  $errors
      * @param  list<string>  $path
