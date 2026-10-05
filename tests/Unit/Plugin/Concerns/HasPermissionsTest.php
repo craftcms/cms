@@ -8,6 +8,7 @@ use CraftCms\Cms\User\PermissionGroupCatalog;
 
 beforeEach(function () {
     app()->forgetInstance(TestPlugin::class);
+    app(PermissionGroupCatalog::class)->remove('mcp');
 });
 
 afterEach(fn () => app()->forgetInstance(TestPlugin::class));
