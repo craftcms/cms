@@ -16,7 +16,7 @@ class McpConfig extends BaseConfig
     public string $endpoint = 'mcp';
 
     /** @var list<string> */
-    public array $passportMiddleware = ['auth:api'];
+    public array $passportMiddleware = ['auth:mcp'];
 
     /** @var list<string> */
     public array $middleware = [];
