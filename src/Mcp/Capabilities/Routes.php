@@ -141,10 +141,7 @@ readonly class Routes
         }
 
         $request = $context->getRequest();
-
-        if (! $request instanceof CallToolRequest) {
-            throw new ToolCallException('Invalid route request.');
-        }
+        assert($request instanceof CallToolRequest);
 
         $route = new Route(
             uriParts: Arr::get($request->arguments, 'uriParts', $route->uriParts),

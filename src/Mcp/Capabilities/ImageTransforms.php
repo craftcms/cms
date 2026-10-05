@@ -193,10 +193,7 @@ readonly class ImageTransforms
         }
 
         $request = $context->getRequest();
-
-        if (! $request instanceof CallToolRequest) {
-            throw new ToolCallException('Invalid image transform request.');
-        }
+        assert($request instanceof CallToolRequest);
 
         Typecast::configure($transform, array_intersect_key([
             'name' => $name,
