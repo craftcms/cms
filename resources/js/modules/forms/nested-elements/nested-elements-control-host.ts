@@ -7,7 +7,7 @@ import type {
   NestedOwnerContext,
   NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
-import {inputName, pathsMatch, visitControls} from '../runtime';
+import {inputName, isRecord, pathsMatch, visitControls} from '../runtime';
 import type {FormControlPayload, FormPayload} from '../types';
 import NestedElements from './NestedElements.vue';
 import type {NestedElementsProps} from './nested-elements';
@@ -44,9 +44,11 @@ export function defineNestedElementsControlHost(
         );
         if (input) {
           const path = input.name.replaceAll(']', '').split('[');
-          const prefix = path.slice(0, path.length - control.path.length);
-          control = {...control, path};
-          this.#scope = [...prefix, ...this.#scope];
+          if (path.length >= control.path.length) {
+            const prefix = path.slice(0, path.length - control.path.length);
+            control = {...control, path};
+            this.#scope = [...prefix, ...this.#scope];
+          }
         }
         this.#control.value = control;
 
@@ -137,11 +139,34 @@ export function defineNestedElementsControlHost(
 
         let refreshed: FormControlPayload<NestedElementsProps> | null = null;
         visitControls(response.form.nodes, (candidate) => {
-          if (
-            candidate.component === 'craft:nested-elements' &&
-            pathsMatch(candidate.path, control.path)
-          ) {
+          if (!pathsMatch(candidate.path, control.path)) {
+            return;
+          }
+          if (candidate.component === 'craft:nested-elements') {
             refreshed = candidate as FormControlPayload<NestedElementsProps>;
+            return;
+          }
+          const fragment = candidate.props.fragment;
+          if (
+            candidate.component === 'craft-legacy:html' &&
+            isRecord(fragment) &&
+            typeof fragment.html === 'string'
+          ) {
+            const template = document.createElement('template');
+            template.innerHTML = fragment.html;
+            const data = template.content.querySelector<HTMLElement>(
+              'craft-nested-elements-control[data-control]'
+            )?.dataset.control;
+            if (data) {
+              const nested: FormControlPayload<NestedElementsProps> =
+                JSON.parse(data);
+              refreshed = {
+                ...nested,
+                path: candidate.path,
+                deltaGroup: candidate.deltaGroup,
+                mode: candidate.mode,
+              };
+            }
           }
         });
         if (!refreshed) {

@@ -54,6 +54,7 @@ function mount({
   mode = 'editable',
   index = false,
   insideBlock = false,
+  relative = false,
 } = {}) {
   const scope = insideBlock ? ['fields', 'blocks', 'entries', 'block-a'] : [];
   const control: FormControlPayload<NestedElementsProps> = {
@@ -99,7 +100,7 @@ function mount({
   host.dataset.scope = JSON.stringify(scope);
   host.innerHTML =
     (mode === 'editable'
-      ? `<input type="hidden" name="${inputName(['slideout', ...control.path])}" value="*" disabled data-nested-modified>`
+      ? `<input type="hidden" name="${relative ? 'cards' : inputName(['slideout', ...control.path])}" value="*" disabled data-nested-modified>`
       : '') + '<div data-nested-mount></div>';
   form.append(host);
   document.body.append(form);
@@ -123,16 +124,50 @@ async function deleteCard(host: HTMLElement) {
 }
 
 it.each([
-  {location: 'direct field', insideBlock: false},
-  {location: 'field inside a Matrix block', insideBlock: true},
+  {
+    location: 'direct field',
+    insideBlock: false,
+    legacy: false,
+    relative: false,
+  },
+  {
+    location: 'field inside a Matrix block',
+    insideBlock: true,
+    legacy: false,
+    relative: false,
+  },
+  {
+    location: 'field with a relative legacy input name',
+    insideBlock: false,
+    legacy: false,
+    relative: true,
+  },
+  {
+    location: 'plugin field inside a Matrix block',
+    insideBlock: true,
+    legacy: true,
+    relative: false,
+  },
 ])(
   'refreshes a $location after deletion without losing unsaved HTML form values',
-  async ({insideBlock}) => {
-    const {form, host, text, control} = mount({insideBlock});
-    const namespace = insideBlock
-      ? 'slideout[fields][blocks][entries][block-a]'
-      : 'slideout';
-    const fieldName = `${namespace}[fields][cards]`;
+  async ({insideBlock, legacy, relative}) => {
+    const {form, host, text, control} = mount({insideBlock, relative});
+    const namespace = relative
+      ? ''
+      : insideBlock
+        ? 'slideout[fields][blocks][entries][block-a]'
+        : 'slideout';
+    const fieldName = relative ? 'cards' : `${namespace}[fields][cards]`;
+    const refreshed = {
+      ...control,
+      path: relative ? control.path : ['slideout', ...control.path],
+      props: {...control.props, cards: []},
+    };
+    const fragment = document.createElement('craft-nested-elements-control');
+    fragment.dataset.control = JSON.stringify({
+      ...refreshed,
+      path: ['fields', 'cards'],
+    });
     requests.post.mockResolvedValue({
       data: {
         form: {
@@ -141,11 +176,19 @@ it.each([
               type: 'Field',
               component: 'craft:field',
               props: {},
-              control: {
-                ...control,
-                path: ['slideout', ...control.path],
-                props: {...control.props, cards: []},
-              },
+              control: legacy
+                ? {
+                    ...refreshed,
+                    component: 'craft-legacy:html',
+                    props: {
+                      fragment: {
+                        html: fragment.outerHTML,
+                        headHtml: '',
+                        bodyHtml: '',
+                      },
+                    },
+                  }
+                : refreshed,
             },
           ],
         },
@@ -162,10 +205,12 @@ it.each([
     expect(text.value).toBe('Unsaved edit');
     const body = new URLSearchParams(requests.post.mock.calls[0]![1]);
     expect(body.get(fieldName)).toBe('*');
-    expect(body.get(`${namespace}[elementId]`)).toBe(insideBlock ? '92' : '73');
-    expect(body.get(`${namespace}[elementType]`)).toBe(
-      insideBlock ? 'Entry' : 'GlobalSet'
+    expect(body.get(namespace ? `${namespace}[elementId]` : 'elementId')).toBe(
+      insideBlock ? '92' : '73'
     );
+    expect(
+      body.get(namespace ? `${namespace}[elementType]` : 'elementType')
+    ).toBe(insideBlock ? 'Entry' : 'GlobalSet');
     expect(body.get('slideout[fields][text]')).toBe('Unsaved edit');
     if (insideBlock) {
       expect(body.get(`${namespace}[title]`)).toBe('Unsaved block title');
@@ -174,10 +219,12 @@ it.each([
       );
     }
     expect(requests.post.mock.calls[0]![2].headers).toMatchObject({
-      'X-Craft-Namespace': namespace,
-      'X-Craft-Form-Root-Scope': insideBlock
-        ? '["slideout","fields","blocks","entries","block-a"]'
-        : '["slideout"]',
+      'X-Craft-Namespace': namespace || undefined,
+      'X-Craft-Form-Root-Scope': relative
+        ? '[]'
+        : insideBlock
+          ? '["slideout","fields","blocks","entries","block-a"]'
+          : '["slideout"]',
     });
   }
 );

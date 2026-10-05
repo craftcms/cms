@@ -83,7 +83,7 @@ it('renders legacy Matrix content read-only without granting editing permissions
     'index' => LegacyMatrix::VIEW_MODE_INDEX,
 ]);
 
-it('refreshes native Matrix controls after deletion in Global Set content forms', function(bool $insideBlock, string $viewMode) {
+it('refreshes native Matrix controls after deletion in Global Set content forms', function(bool $insideBlock, string $viewMode, bool $plugin = false) {
     $this->artisan('craft:add-global-sets-support', ['--no-interaction' => true])->assertSuccessful();
     $entryType = EntryTypeModel::factory()->withFieldLayout()->create([
         'name' => 'Card',
@@ -93,7 +93,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     $field = Field::factory()->create([
         'name' => 'Cards',
         'handle' => 'cards',
-        'type' => LegacyMatrix::class,
+        'type' => $plugin ? PluginMatrixFormField::class : LegacyMatrix::class,
         'settings' => ['entryTypes' => [$entryType->id], 'viewMode' => $viewMode],
     ]);
     $rootField = $field;
@@ -146,6 +146,10 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
 
     expect(Elements::deleteElement($card))->toBeTrue();
     $scope = json_decode($host->attr('data-scope'), true, flags: JSON_THROW_ON_ERROR);
+    if ($plugin) {
+        expect($host->filter('input[data-nested-modified]')->attr('name'))
+            ->toBe('fields[blocks][entries][' . $owner->uid . '][fields][cards]');
+    }
     $body = [];
     foreach ([
         'elementType' => $owner::class,
@@ -164,9 +168,16 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     $response->assertSuccessful();
     $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($response->json('form.nodes')), RecursiveIteratorIterator::SELF_FIRST);
     $refreshed = collect(iterator_to_array($nodes, false))->first(
-        fn(mixed $node): bool => is_array($node) && ($node['component'] ?? null) === 'craft:nested-elements' && ($node['path'] ?? null) === $expectedPath,
+        fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
     );
     expect($refreshed)->not->toBeNull();
+    if ($plugin) {
+        $refreshed = json_decode(
+            new Crawler($refreshed['props']['fragment']['html'])->filter('craft-nested-elements-control')->attr('data-control'),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+    }
     $items = $viewMode === LegacyMatrix::VIEW_MODE_INDEX ? $refreshed['props']['index']['initial']['data'] : $refreshed['props']['cards'];
     expect($items)->toBeEmpty();
 })->with([
@@ -174,4 +185,10 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     'direct index' => [false, LegacyMatrix::VIEW_MODE_INDEX],
     'cards inside blocks' => [true, LegacyMatrix::VIEW_MODE_CARDS],
     'index inside blocks' => [true, LegacyMatrix::VIEW_MODE_INDEX],
+    'plugin cards inside blocks' => [true, LegacyMatrix::VIEW_MODE_CARDS, true],
+    'plugin index inside blocks' => [true, LegacyMatrix::VIEW_MODE_INDEX, true],
 ]);
+
+class PluginMatrixFormField extends LegacyMatrix
+{
+}

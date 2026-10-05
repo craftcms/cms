@@ -16,12 +16,14 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
 use function CraftCms\Cms\t;
@@ -41,17 +43,19 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->inputHtmlInternal($value, $element, false);
-    }
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            return $this->blockInputHtml($value, $element, false);
+        }
 
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        return match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
-            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
-                'id' => $this->getInputId(),
-            ]),
-        };
+        $control = parent::formControl(new FieldContext(
+            path: ['fields', $this->handle],
+            value: $value,
+            element: $element,
+            mode: $this->legacyInputMode,
+            inline: $inline,
+        ));
+
+        return app(NestedElementFieldHtml::class)->render($control, $this->getInputId(), $this->handle, $this->legacyInputMode);
     }
 
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
@@ -160,15 +164,5 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
             'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
             'settings' => Json::encode($settings),
         ]);
-    }
-
-    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
-    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
-    {
-        $config = $this->nestedElementManagerConfig($value, $owner, $static);
-
-        return $this->viewMode === self::VIEW_MODE_INDEX
-            ? $this->entryManager()->getIndexHtml($owner, $config)
-            : $this->entryManager()->getCardsHtml($owner, $config);
     }
 }

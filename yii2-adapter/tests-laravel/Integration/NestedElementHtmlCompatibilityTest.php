@@ -14,9 +14,17 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -28,7 +36,7 @@ beforeEach(function() {
     $this->actingAs(User::findOne());
 });
 
-it('renders legacy nested field inputs with their owner scope and content', function(string $fieldType, string $viewMode, bool $inline = false) {
+it('renders legacy nested field inputs with their owner scope and content', function(string $fieldType, string $viewMode, bool $inline = false, string $mode = 'editable') {
     $isMatrix = is_a($fieldType, LegacyMatrix::class, true);
     $entryType = $isMatrix
         ? EntryTypeModel::factory()->withField(Field::factory()->create(['handle' => 'body', 'type' => PlainText::class]))
@@ -50,9 +58,25 @@ it('renders legacy nested field inputs with their owner scope and content', func
     $field = $owner->getFieldLayout()->getFieldByHandle('nested');
     $value = $owner->getFieldValue('nested');
     $nested = $value->one();
-    $crawler = new Crawler($inline
-        ? $field->getInlineInputHtml($value, $owner)
-        : $field->getInputHtml($value, $owner));
+    if (in_array($mode, ['readOnly', 'disabled', 'form'])) {
+        $context = new FormContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
+        $control = $field->formControl(new FieldContext(
+            path: ['fields', 'nested'],
+            value: $value,
+            element: $owner,
+            form: $context,
+            inline: $inline,
+        ));
+        $payload = app(FormResolver::class)->resolve(Form::make([FormField::make()->control($control)]), $context);
+        $html = app(FormHtmlRenderer::class)->render($payload);
+    } else {
+        $html = InputNamespace::namespaceInputs(fn(): string => match (true) {
+            $mode === 'static' => $field->getStaticHtml($value, $owner),
+            $inline => $field->getInlineInputHtml($value, $owner),
+            default => $field->getInputHtml($value, $owner),
+        }, 'fields');
+    }
+    $crawler = new Crawler($html);
 
     if ($inline) {
         expect($crawler->filter('[data-plugin-field-input]')->attr('data-plugin-field-input'))->toBe('inline');
@@ -61,34 +85,51 @@ it('renders legacy nested field inputs with their owner scope and content', func
     if ($viewMode === LegacyMatrix::VIEW_MODE_BLOCKS) {
         $host = $crawler->filter('craft-entry-field-layout-form[data-payload]');
         expect($host)->toHaveCount(1)
-            ->and(json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['values']['nested']['entries']["uid:{$nested->uid}"]['fields']['body'])->toBe('Block body')
-            ->and($crawler->filter('input[name="nested[sortOrder][]"]')->attr('value'))->toBe($nested->uid);
+            ->and(json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['values']['fields']['nested']['entries']["uid:{$nested->uid}"]['fields']['body'])->toBe('Block body')
+            ->and($crawler->filter('input[name="fields[nested][sortOrder][]"]')->attr('value'))->toBe($nested->uid);
 
         return;
     }
 
-    $settings = json_decode($crawler->filter('craft-nested-element-manager')->attr('settings'), true, flags: JSON_THROW_ON_ERROR);
+    $host = $crawler->filter('craft-nested-elements-control');
+    $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+    $settings = $control['props']['manager'];
+    $editable = in_array($mode, ['editable', 'form']);
     expect($settings)->toMatchArray([
         'ownerId' => $owner->id,
         'ownerSiteId' => $owner->siteId,
         'fieldId' => $field->id,
         'attribute' => 'field:nested',
-        'canCreate' => true,
-    ])->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:nested"))->toBeTrue();
+        'canCreate' => $editable,
+    ])->and($control['path'])->toBe(['fields', 'nested'])
+        ->and($control['mode'])->toBe($editable ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
+        ->and(json_decode($host->attr('data-scope'), true, flags: JSON_THROW_ON_ERROR))->toBe([])
+        ->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:nested"))->toBe($editable);
+
+    if ($editable) {
+        $marker = $crawler->filter('input[data-nested-modified]');
+        expect($marker->attr('name'))->toBe('fields[nested]')
+            ->and($marker->attr('value'))->toBe('*')
+            ->and($marker->attr('disabled'))->not->toBeNull();
+    } else {
+        expect($settings)->toMatchArray(['sortable' => false, 'canPaste' => false])
+            ->and($crawler->filter('input[name]:not([disabled])'))->toHaveCount(0);
+    }
 
     if ($viewMode === LegacyMatrix::VIEW_MODE_INDEX) {
-        expect($settings['indexSettings']['criteria'])->toMatchArray(['ownerId' => $owner->id, 'fieldId' => $field->id])
-            ->and(array_column($settings['indexSettings']['actions'], 'type'))->toBe([
-                ChangeSortOrder::class,
-                MoveUp::class,
-                MoveDown::class,
-            ])
-            ->and(SessionAuth::checkAuthorization("reorderNestedElements::{$owner->id}::field:nested"))->toBeTrue();
+        $index = $control['props']['index'];
+        expect($index['initial']['data'][0]['id'])->toBe($nested->id)
+            ->and(SessionAuth::checkAuthorization("reorderNestedElements::{$owner->id}::field:nested"))->toBe($editable);
     } else {
-        expect($crawler->filter("craft-card[data-id=\"{$nested->id}\"]"))->toHaveCount(1)
-            ->and($crawler->text())->toContain($isMatrix ? 'Nested content' : '123 Legacy Street')
-            ->and($crawler->filter('[data-delete-action]'))->toHaveCount(1)
-            ->and($crawler->filter('[data-duplicate-action]'))->toHaveCount(1);
+        expect($control['props']['cards'][0]['id'])->toBe($nested->id)
+            ->and($html)->toContain($isMatrix ? 'Nested content' : '123 Legacy Street');
+    }
+
+    if (!$editable) {
+        $html = $field->getInputHtml($value, $owner);
+        $control = json_decode(new Crawler($html)->filter('craft-nested-elements-control')->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+        expect($control['mode'])->toBe('editable')
+            ->and($control['props']['manager']['canCreate'])->toBeTrue();
     }
 })->with([
     'Matrix cards' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_CARDS],
@@ -98,7 +139,16 @@ it('renders legacy nested field inputs with their owner scope and content', func
     'Addresses cards' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_CARDS],
     'Addresses index' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_INDEX],
     'plugin Matrix inline blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, true],
+    'plugin Matrix inline cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, true],
+    'plugin Matrix inline index' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_INDEX, true],
+    'plugin Addresses inline cards' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_CARDS, true],
     'plugin Addresses inline index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, true],
+    'plugin Matrix form cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'form'],
+    'plugin Addresses form index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'form'],
+    'plugin Matrix static cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'static'],
+    'plugin Addresses static index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'static'],
+    'plugin Matrix read-only index' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_INDEX, false, 'readOnly'],
+    'plugin Addresses disabled cards' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_CARDS, false, 'disabled'],
 ]);
 
 it('renders an attribute-backed legacy index on a plugin manager subclass with owner-scoped reorder actions', function() {
