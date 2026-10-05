@@ -1256,6 +1256,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return;
         }
 
+        $this->warnAboutLegacyBeforePrepare();
+
         $this->applySelectParams();
 
         // If the query isn't sourced from a concrete element table, explicitly filter by element type.
@@ -1281,6 +1283,36 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->elementQueryBeforeQueryCalled = true;
+    }
+
+    /**
+     * Warns when a subclass still defines Craft 5's `beforePrepare()` hook.
+     *
+     * Nothing calls that hook any more — this method is where the query gets
+     * assembled — so a query which staged its joins and conditions there loses
+     * them silently. Worse, the loss surfaces nowhere near the cause: what fails
+     * is whatever still references the tables `beforePrepare()` was supposed to
+     * have joined, typically a `$defaultOrderBy` pointing at one of them, and it
+     * fails as a bare SQL error (`Unknown column …`) from deep inside whatever
+     * ran the query. Saying so here names the problem at prepare time instead.
+     *
+     * Deliberately only a warning: the hook can't be called on the query's
+     * behalf, because its body is written against the Craft 5 two-query
+     * architecture (`$subQuery`) that no longer exists.
+     */
+    private function warnAboutLegacyBeforePrepare(): void
+    {
+        if (! method_exists($this, 'beforePrepare')) {
+            return;
+        }
+
+        Deprecator::log(
+            static::class.'::beforePrepare',
+            sprintf(
+                '%1$s::beforePrepare() is no longer called as of 6.0.0, so anything it sets up is being ignored. Override %1$s::elementQueryBeforeQuery() instead, declare the element’s own table with the `$table` property rather than joinElementTable(), and apply joins and conditions to `$query` — `$subQuery` no longer exists.',
+                static::class,
+            ),
+        );
     }
 
     /**
