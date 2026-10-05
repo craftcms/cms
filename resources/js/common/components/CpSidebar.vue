@@ -109,6 +109,7 @@
   }
 
   .cp-sidebar[data-mode='docked'] {
+    --badge-border-color: var(--c-surface-sunken);
     height: calc(
       100dvh - var(--cp-top-bar-visible-height, 0px) - var(
           --cp-debug-bar-height,

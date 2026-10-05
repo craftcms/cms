@@ -186,16 +186,26 @@
   function setValue(
     value: FormValue,
     kind: FormChangeKind = 'discrete',
-    definition?: FormControlPayload<object>
+    /**
+     * Either an updated control definition (nested Blocks controls) or a
+     * fully formed change (editable table rows bound to their own paths).
+     */
+    detail?: FormControlPayload<object> | FormChange
   ): void {
     setPathValue(props.values, control.value.path, value);
+
+    if (detail && !('component' in detail)) {
+      emit('change', detail);
+
+      return;
+    }
 
     emit('change', {
       kind,
       path: control.value.path,
       scope: props.scope,
       refreshable: refreshable.value,
-      control: definition,
+      control: detail,
     });
   }
 

@@ -1,5 +1,11 @@
 import {describe, expect, it} from 'vitest';
-import {formChangeFromEvent, ignoreModelValueInitialization} from './runtime';
+import {
+  formChangeFromEvent,
+  ignoreModelValueInitialization,
+  valueAt,
+  setValue,
+  unsetValue,
+} from './runtime';
 import type {FormChange} from './types';
 
 describe('ignoreModelValueInitialization', () => {
@@ -53,5 +59,19 @@ describe('formChangeFromEvent', () => {
     expect(
       formChangeFromEvent(conditionConfig as unknown as FormChange)
     ).toBeNull();
+  });
+});
+
+describe('list row paths', () => {
+  it('edits a cell without converting its list into an object or touching siblings', () => {
+    const values = {rows: [{name: 'Ada', enabled: true}, {name: 'Grace'}]};
+    setValue(values, ['rows', '1', 'name'], 'Katherine');
+    expect(values.rows).toEqual([
+      {name: 'Ada', enabled: true},
+      {name: 'Katherine'},
+    ]);
+    expect(valueAt(values, ['rows', '1', 'name'])).toBe('Katherine');
+    unsetValue(values, ['rows', '0', 'enabled']);
+    expect(values.rows).toEqual([{name: 'Ada'}, {name: 'Katherine'}]);
   });
 });

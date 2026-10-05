@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'همه را از انتخاب خارج کن',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'رایانه رومیزی',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'هنگام ارسال از طریق کنترل پنل، سایتی را که کاربر از آن ایمیل دریافت خواهد کرد، تعیین می‌کند.',
     'Developer Response' => 'پاسخ توسعه‌دهنده',
     'Development Settings' => 'تنظیمات توسعه',

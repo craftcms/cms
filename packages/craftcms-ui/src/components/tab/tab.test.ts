@@ -29,6 +29,22 @@ describe('craft-tab', () => {
     expect(element.textContent).toBe('Content');
   });
 
+  it('mirrors its label text for the width reservation', async () => {
+    const element = await createTab();
+    const label = () =>
+      element
+        .shadowRoot!.querySelector('.tab__label')!
+        .getAttribute('data-text');
+
+    expect(label()).toBe('Content');
+
+    element.firstChild!.textContent = 'Settings';
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(label()).toBe('Settings');
+  });
+
   /**
    * The strip reads these off the host, and the stylesheet keys off them, so
    * all three have to reflect rather than stay properties.
