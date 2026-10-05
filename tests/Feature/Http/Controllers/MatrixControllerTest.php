@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Workflow\Workflows;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 
