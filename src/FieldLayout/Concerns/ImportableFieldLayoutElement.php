@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\ImportHelper;
 
+/**
+ * Provides a base implementation for {@see ImportableFieldLayoutElementInterface}.
+ *
+ * @since 6.0.0
+ */
 trait ImportableFieldLayoutElement
 {
     /**

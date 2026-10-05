@@ -7,11 +7,8 @@ import type {
 } from './types';
 
 /**
- * Reads a column's value out of one of the mapping trees.
- *
- * Replaces the Twig screen's `prefixedHandleAsArray|reduce(...)`: a missing branch
- * reads as `null` rather than throwing, since the trees only hold what has been
- * mapped so far.
+ * Reads a column's value out of one of the mapping trees. A missing branch reads as
+ * `null` rather than throwing, since the trees only hold what has been mapped so far.
  */
 export function getAt(
   tree: Record<string, unknown> | null | undefined,
@@ -69,8 +66,7 @@ export function isChecked(value: unknown): boolean {
 
 /**
  * The value a `craft-checkbox` should write into one of the trees: `1` and `''`
- * rather than booleans, which is what the Twig checkboxes posted and what
- * `validateMap()` and the importer already read back.
+ * rather than booleans, which is what `validateMap()` and the importer read back.
  *
  * Read off `currentTarget` — the `craft-checkbox` the listener is bound to, which
  * mirrors its slotted input's state. `target` is the host for an event Lion raises

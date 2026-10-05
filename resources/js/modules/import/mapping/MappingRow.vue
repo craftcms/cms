@@ -217,11 +217,7 @@
       </div>
     </td>
 
-    <!-- The column header names these; the row is named by its `th`. An empty
-         cell means the option can never apply to this field, which is why it isn't
-         a disabled checkbox. `label-sr-only` + a slotted label is the only way to
-         name a `craft-checkbox` — Lion overwrites `aria-labelledby` on the inner
-         input with its own generated label. -->
+    <!-- A slotted label is the only way to name a `craft-checkbox`: Lion overwrites `aria-labelledby`. -->
     <td>
       <craft-checkbox
         v-if="canMatch"

@@ -13,6 +13,8 @@ use Illuminate\Validation\Validator;
 /**
  * ImportableElementContainerFieldInterface defines the common interface to be implemented by field classes
  * that contain nested elements and wish to support importing content via the import mechanism.
+ *
+ * @since 6.0.0
  */
 interface ImportableElementContainerFieldInterface extends ElementContainerFieldInterface
 {

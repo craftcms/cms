@@ -14,7 +14,9 @@ use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Validation\Validator;
 
 /**
- * ImportableElementContainerFieldTrait provides a base implementation for {@see ImportableElementContainerFieldInterface}.
+ * Provides a base implementation for {@see ImportableElementContainerFieldInterface}.
+ *
+ * @since 6.0.0
  */
 trait ImportableElementContainerField
 {

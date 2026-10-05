@@ -17,9 +17,7 @@
 
 <template>
   <div class="mapping-table">
-    <!-- `cp-table--auto` matters: plain `cp-table` goes `table-layout: fixed`
-         with zero-width cells above 840px, which would split the four columns
-         evenly instead of letting the first two take the room they need. -->
+    <!-- `cp-table--auto`: plain `cp-table` is `table-layout: fixed` above 840px. -->
     <table class="cp-table cp-table--auto cp-table--padded">
       <thead>
         <tr>

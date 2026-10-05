@@ -230,7 +230,7 @@
         <craft-button
           :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
           type="button"
-          :loading="openingStep === step.uid"
+          .loading="openingStep === step.uid"
           :aria-label="
             t(editable ? 'Edit {type}' : 'View {type}', {
               type: stepLabel(step, index),
@@ -260,7 +260,7 @@
       ref="addButton"
       type="button"
       icon="plus"
-      :loading="openingStep === 'new'"
+      .loading="openingStep === 'new'"
       @click="add"
     >
       {{ t('Add a step') }}

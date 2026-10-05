@@ -1007,6 +1007,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $items;
     }
 
+    #[Override]
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
     {
         try {
@@ -1038,6 +1039,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         );
     }
 
+    #[Override]
     public function canBeMatchCriteria(): bool
     {
         try {
@@ -1063,6 +1065,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return true;
     }
 
+    #[Override]
     public function canBeCleared(): bool
     {
         try {

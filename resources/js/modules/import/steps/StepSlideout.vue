@@ -375,7 +375,7 @@
         <craft-button
           ref="mappingButton"
           .disabled="!canMap"
-          :loading="openingMapping || checkingMap"
+          .loading="openingMapping || checkingMap"
           @click="editMapping"
         >
           {{ context.editable ? t('Edit mapping') : t('View mapping') }}

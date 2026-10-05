@@ -2100,6 +2100,7 @@ return [
     'Unable to fetch upgrade info at this time.' => 'Unable to fetch upgrade info at this time.',
     'Unable to find the template “{template}”.' => 'Unable to find the template “{template}”.',
     'Unable to initiate an auth request.' => 'Unable to initiate an auth request.',
+    'Unable to parse data.' => 'Unable to parse data.',
     'Unable to save the user.' => 'Unable to save the user.',
     'Unauthorized' => 'Unauthorized',
     'Uncheck for {offLabel}.' => 'Uncheck for {offLabel}.',

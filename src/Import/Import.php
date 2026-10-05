@@ -512,7 +512,7 @@ class Import
         }
 
         if (! $rawData) {
-            throw new Exception('Unable to parse data.');
+            throw new Exception(t('Unable to parse data.'));
         }
 
         return $rawData;
@@ -533,7 +533,7 @@ class Import
         $data = $this->formatData($filePath, $rawData);
 
         if ($data === null || $data['success'] === false) {
-            throw new Exception($data['error'] ?? 'Unable to parse data.');
+            throw new Exception($data['error'] ?? t('Unable to parse data.'));
         }
 
         return $data['data'];

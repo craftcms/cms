@@ -10,6 +10,11 @@ use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
 
+/**
+ * Implemented by field layout elements whose values can be mapped and imported.
+ *
+ * @since 6.0.0
+ */
 interface ImportableFieldLayoutElementInterface
 {
     /**
