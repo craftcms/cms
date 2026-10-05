@@ -196,7 +196,7 @@
 
     <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
 
-    <ol v-else class="m-0 p-0 list-none space-y-2">
+    <ol v-else class="m-0 p-0 list-none space-y-2" role="list">
       <li
         v-for="(step, index) in steps"
         :key="step.uid"
@@ -218,7 +218,11 @@
 
         <span class="flex-1">
           <span class="font-bold">{{ stepLabel(step, index) }}</span>
-          <span v-if="errorsByStep[step.uid]" class="error block">
+          <span
+            v-if="errorsByStep[step.uid]"
+            :id="`step-error-${step.uid}`"
+            class="error block"
+          >
             {{
               t('The step “{step}” is invalid. Edit it to fix the problem.', {
                 step: summary(step),
@@ -231,6 +235,9 @@
           :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
           type="button"
           .loading="openingStep === step.uid"
+          :aria-describedby="
+            errorsByStep[step.uid] ? `step-error-${step.uid}` : undefined
+          "
           :aria-label="
             t(editable ? 'Edit {type}' : 'View {type}', {
               type: stepLabel(step, index),

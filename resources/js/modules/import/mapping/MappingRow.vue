@@ -184,9 +184,14 @@
           >
             {{ option.label }}
           </craft-option>
+          <span v-if="isBestGuess" slot="help-text" class="sr-only">{{
+            t('Suggested')
+          }}</span>
         </craft-select-rich>
         <div v-if="isBestGuess" class="suggested">
-          <craft-badge fill="blue">{{ t('Suggested') }}</craft-badge>
+          <craft-badge fill="blue" aria-hidden="true">{{
+            t('Suggested')
+          }}</craft-badge>
         </div>
       </template>
       <div v-if="importSettings.length" class="import-settings">
@@ -227,7 +232,7 @@
         @model-value-changed="onMatchCriteriaChanged"
       >
         <label slot="label">{{
-          t('Use this field’s value to match against an existing element.')
+          t('Match on {field}', {field: col.label})
         }}</label>
       </craft-checkbox>
     </td>
@@ -240,11 +245,7 @@
         .disabled="!context.editable"
         @model-value-changed="onClearChanged"
       >
-        <label slot="label">{{
-          t(
-            'Clear existing value if no data provided or provided value is empty.'
-          )
-        }}</label>
+        <label slot="label">{{ t('Clear {field}', {field: col.label}) }}</label>
       </craft-checkbox>
     </td>
   </tr>

@@ -224,6 +224,20 @@ it('shows a server error on the step it belongs to', () => {
   );
 });
 
+it('describes an invalid step’s edit button with its error', () => {
+  mount([step(), step({uid: 'step-2'})], {
+    errors: {'steps.step-2.source': ['File does not exist.']},
+  });
+
+  const describedBy = rowButtons(1)[0]!.getAttribute('aria-describedby');
+
+  expect(rowButtons(0)[0]!.hasAttribute('aria-describedby')).toBe(false);
+  expect(describedBy).not.toBeNull();
+  expect(container.querySelector(`#${describedBy}`)!.textContent).toContain(
+    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
+  );
+});
+
 it('reports a slideout that fails to open instead of doing nothing', async () => {
   state.openStepSlideout.mockRejectedValue(new Error('Request failed.'));
   mount([]);
