@@ -1,6 +1,6 @@
 html,
 body {
-  background-color: var(--c-surface-default);
+  background-color: var(--c-surface-sunken);
 }
 
 body {
@@ -14,7 +14,7 @@ body {
 }
 
 [data-theme] {
-  background-color: var(--c-surface-default);
+  background-color: var(--c-surface-sunken);
   color: var(--c-text-default);
 }
 
