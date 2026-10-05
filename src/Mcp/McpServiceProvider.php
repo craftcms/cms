@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
@@ -85,23 +86,40 @@ class McpServiceProvider extends ServiceProvider
             ResolveSite::class,
             UseWriteConnection::class,
         ];
+        $authenticatedMiddleware = [
+            ...$middleware,
+            ...$authentication,
+            'can:accessCp',
+            'can:useCraftMcp',
+            ...$config->middleware,
+        ];
 
         $router
             ->prefix($routes->cpTriggerRoutePrefix())
             ->name('craft.cp.')
-            ->group(function (Router $router) use ($authentication, $config, $middleware): void {
+            ->group(function (Router $router) use ($authenticatedMiddleware, $config, $middleware): void {
                 $router->options($config->endpoint, [McpController::class, 'admin'])
                     ->middleware($middleware);
 
                 $router->post($config->endpoint, [McpController::class, 'admin'])
-                    ->middleware([
-                        ...$middleware,
-                        ...$authentication,
-                        'can:accessCp',
-                        'can:useCraftMcp',
-                        ...$config->middleware,
-                    ])
+                    ->middleware($authenticatedMiddleware)
                     ->name('mcp.server');
+
+                $router
+                    ->prefix("$config->endpoint/uploads")
+                    ->name('mcp.uploads.')
+                    ->middleware($authenticatedMiddleware)
+                    ->group(function (Router $router): void {
+                        $router->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
+                            ->whereUuid('upload')
+                            ->name('transfer');
+                        $router->get('{upload}', [UploadSessionController::class, 'status'])
+                            ->whereUuid('upload')
+                            ->name('status');
+                        $router->delete('{upload}', [UploadSessionController::class, 'destroy'])
+                            ->whereUuid('upload')
+                            ->name('destroy');
+                    });
             });
     }
 }

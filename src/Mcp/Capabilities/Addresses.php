@@ -25,38 +25,28 @@ use Mcp\Schema\ToolAnnotations;
  */
 readonly class Addresses
 {
-    private const array StringOrStringsSchema = [
-        'anyOf' => [
-            ['type' => 'string'],
-            ['type' => 'array', 'items' => ['type' => 'string']],
-        ],
-    ];
-
     private const array CriteriaSchema = [
         'type' => 'object',
         'properties' => [
             ...ElementQueryCriteria::SchemaProperties,
             'ownerId' => [
-                'anyOf' => [
-                    ['type' => 'integer'],
-                    ['type' => 'array', 'items' => ['type' => 'integer']],
-                ],
+                ...ElementQueryCriteria::IntegerOrIntegersSchema,
                 'description' => 'Owner element ID or IDs.',
             ],
-            'countryCode' => [...self::StringOrStringsSchema, 'description' => 'Country code criteria.'],
-            'administrativeArea' => [...self::StringOrStringsSchema, 'description' => 'Administrative area criteria.'],
-            'locality' => [...self::StringOrStringsSchema, 'description' => 'Locality criteria.'],
-            'dependentLocality' => [...self::StringOrStringsSchema, 'description' => 'Dependent locality criteria.'],
-            'postalCode' => [...self::StringOrStringsSchema, 'description' => 'Postal code criteria.'],
-            'sortingCode' => [...self::StringOrStringsSchema, 'description' => 'Sorting code criteria.'],
-            'organization' => [...self::StringOrStringsSchema, 'description' => 'Organization criteria.'],
-            'organizationTaxId' => [...self::StringOrStringsSchema, 'description' => 'Organization tax ID criteria.'],
-            'addressLine1' => [...self::StringOrStringsSchema, 'description' => 'First address line criteria.'],
-            'addressLine2' => [...self::StringOrStringsSchema, 'description' => 'Second address line criteria.'],
-            'addressLine3' => [...self::StringOrStringsSchema, 'description' => 'Third address line criteria.'],
-            'firstName' => [...self::StringOrStringsSchema, 'description' => 'First name criteria.'],
-            'lastName' => [...self::StringOrStringsSchema, 'description' => 'Last name criteria.'],
-            'fullName' => [...self::StringOrStringsSchema, 'description' => 'Full name criteria.'],
+            'countryCode' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Country code criteria.'],
+            'administrativeArea' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Administrative area criteria.'],
+            'locality' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Locality criteria.'],
+            'dependentLocality' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Dependent locality criteria.'],
+            'postalCode' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Postal code criteria.'],
+            'sortingCode' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Sorting code criteria.'],
+            'organization' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Organization criteria.'],
+            'organizationTaxId' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Organization tax ID criteria.'],
+            'addressLine1' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'First address line criteria.'],
+            'addressLine2' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Second address line criteria.'],
+            'addressLine3' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Third address line criteria.'],
+            'firstName' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'First name criteria.'],
+            'lastName' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Last name criteria.'],
+            'fullName' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Full name criteria.'],
         ],
         'additionalProperties' => true,
     ];

@@ -35,31 +35,19 @@ readonly class Users
         'properties' => [
             ...ElementQueryCriteria::SchemaProperties,
             'group' => [
-                'anyOf' => [
-                    ['type' => 'string'],
-                    ['type' => 'array', 'items' => ['type' => 'string']],
-                ],
+                ...ElementQueryCriteria::StringOrStringsSchema,
                 'description' => 'User group handle or handles.',
             ],
             'groupId' => [
-                'anyOf' => [
-                    ['type' => 'integer'],
-                    ['type' => 'array', 'items' => ['type' => 'integer']],
-                ],
+                ...ElementQueryCriteria::IntegerOrIntegersSchema,
                 'description' => 'User group ID or IDs.',
             ],
             'username' => [
-                'anyOf' => [
-                    ['type' => 'string'],
-                    ['type' => 'array', 'items' => ['type' => 'string']],
-                ],
+                ...ElementQueryCriteria::StringOrStringsSchema,
                 'description' => 'Username criteria.',
             ],
             'email' => [
-                'anyOf' => [
-                    ['type' => 'string'],
-                    ['type' => 'array', 'items' => ['type' => 'string']],
-                ],
+                ...ElementQueryCriteria::StringOrStringsSchema,
                 'description' => 'User email criteria.',
             ],
             'firstName' => ['type' => 'string', 'description' => 'First name criteria.'],

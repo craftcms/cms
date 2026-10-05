@@ -17,14 +17,14 @@ class ElementQueryCriteria
 
     public const int MaxLimit = 500;
 
-    private const array IntegerOrIntegersSchema = [
+    public const array IntegerOrIntegersSchema = [
         'anyOf' => [
             ['type' => 'integer'],
             ['type' => 'array', 'items' => ['type' => 'integer']],
         ],
     ];
 
-    private const array StringOrStringsSchema = [
+    public const array StringOrStringsSchema = [
         'anyOf' => [
             ['type' => 'string'],
             ['type' => 'array', 'items' => ['type' => 'string']],
