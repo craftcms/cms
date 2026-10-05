@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -17,7 +19,6 @@ use CraftCms\Cms\Support\Facades\Import;
 
 /**
  * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed}
- * @phpstan-type PrefixedHandles array{string, string, string, string, list<string>, string, string}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -165,7 +166,7 @@ class ImportHelper
     /**
      * Returns the mapping columns for each importable element in the given field layout.
      *
-     * @return list<array<mixed>>
+     * @return list<MappingColumn|CompoundMappingColumn>
      */
     public static function getDestinationColsForFieldLayout(
         ?FieldLayout $fieldLayout,
@@ -173,46 +174,19 @@ class ImportHelper
         mixed $provider = null,
         ?string $prefix = null
     ): array {
-        $cols = [];
-        if ($fieldLayout) {
-            $allElements = $fieldLayout->getAllElements();
-
-            foreach ($allElements as $fieldLayoutElement) {
-                if ($fieldLayoutElement instanceof ImportableFieldLayoutElementInterface) {
-                    // get element's fields for mapping; for example,
-                    // lat/long has two fields;
-                    // addresses field has (by default) label, country code and address field which then contains a bunch of other fields;
-                    // and custom fields have yet another way of getting this
-                    $cols[] = $fieldLayoutElement->getFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
-                }
-            }
+        if (! $fieldLayout) {
+            return [];
         }
 
-        return $cols;
-    }
-
-    /**
-     * Returns the mapping columns for each importable element in a property’s field layout.
-     *
-     * @return list<array<mixed>>
-     */
-    public static function getDestinationColsForProperty(
-        BaseImporter $importer,
-        string $property,
-        ?FieldLayout $fieldLayout,
-        ?string $prefix = null
-    ): array {
         $cols = [];
-        if ($fieldLayout) {
-            $allElements = $fieldLayout->getAllElements();
 
-            foreach ($allElements as $fieldLayoutElement) {
-                if ($fieldLayoutElement instanceof ImportableFieldLayoutElementInterface) {
-                    // get element's fields for mapping; for example,
-                    // lat/long has two fields;
-                    // addresses field has (by default) label, country code and address field which then contains a bunch of other fields;
-                    // and custom fields have yet another way of getting this
-                    $cols[] = $fieldLayoutElement->getFieldsForMapping($fieldLayout, null, null, $prefix);
+        foreach ($fieldLayout->getAllElements() as $fieldLayoutElement) {
+            // e.g. lat/long offers two columns, a custom field one, and a missing custom field none
+            if ($fieldLayoutElement instanceof ImportableFieldLayoutElementInterface) {
+                $col = $fieldLayoutElement->getFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
+
+                if ($col !== null) {
+                    $cols[] = $col;
                 }
             }
         }
@@ -267,38 +241,26 @@ class ImportHelper
     }
 
     /**
-     * Returns the input names and handle variants a mapping column uses: for the map, match criteria,
-     * clearable items, the plain handle, the handle as an array, and the keep-missing-nested-elements inputs.
-     *
-     * @return PrefixedHandles
+     * Returns the prefixed handle a mapping column is addressed by, accounting for the container field
+     * (and its field layout provider) the column sits in, if any.
      */
-    public static function getPrefixedHandlesForMapping(
+    public static function prefixedHandleForMapping(
         string $attribute,
         ?FieldInterface $ownerField,
         mixed $field,
         ?FieldLayout $fieldLayout,
         mixed $provider,
         ?string $prefix = null,
-    ): array {
+    ): string {
         if ($ownerField instanceof ImportableElementContainerFieldInterface) {
             $namePrefix = $ownerField->getMappingUiPrefix($fieldLayout, $provider, $prefix);
-            if ($field instanceof FieldInterface) {
-                $prefixedHandle = $namePrefix."[fields][$attribute]";
-            } else {
-                $prefixedHandle = $namePrefix."[$attribute]";
-            }
-        } else {
-            $prefixedHandle = ! empty($prefix) ? $prefix."[$attribute]" : $attribute;
+
+            return $field instanceof FieldInterface
+                ? $namePrefix."[fields][$attribute]"
+                : $namePrefix."[$attribute]";
         }
 
-        $prefixedHandleForMap = Html::namespaceInputName($prefixedHandle, 'map');
-        $prefixedHandleForMatchCriteria = Html::namespaceInputName($prefixedHandle, 'matchCriteria');
-        $prefixedHandleForClear = Html::namespaceInputName($prefixedHandle, 'clearableItems');
-        $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
-        $prefixedHandleForKeep = Html::namespaceInputName($prefixedHandle, 'keepMissingNestedElements');
-        $prefixedHandleForKeepFlag = Html::namespaceInputName($prefixedHandle.'[__keep__]', 'keepMissingNestedElements');
-
-        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray, $prefixedHandleForKeep, $prefixedHandleForKeepFlag];
+        return ! empty($prefix) ? $prefix."[$attribute]" : $attribute;
     }
 
     /**
@@ -725,8 +687,8 @@ class ImportHelper
      * still fall back to a heading that names less of its path, but a heading claimed by a
      * full-path match is never offered as a fallback.
      *
-     * @param  array<mixed>  $destinationCols  Same shape sent to the mapping screen: a list of column arrays, `MappingColSet` arrays (`subfields`), or gaps.
-     * @param  list<array{label: string, value: string}>  $sourceDataCols  List of `{label, value}` arrays.
+     * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
+     * @param  list<SourceColumn>  $sourceDataCols
      * @param  array<mixed>  $map  The current (possibly partially saved) map tree.
      * @return array<mixed>
      */
@@ -734,17 +696,17 @@ class ImportHelper
     {
         $incomingCols = [];
         foreach ($sourceDataCols as $sourceCol) {
-            if (($sourceCol['value'] ?? '') === '') {
+            if ($sourceCol->value === '') {
                 continue;
             }
 
-            $segments = self::matchSegments((string) $sourceCol['value']);
+            $segments = self::matchSegments($sourceCol->value);
 
             if ($segments === []) {
                 continue;
             }
 
-            $incomingCols[implode('.', $segments)] = ['segments' => $segments, 'value' => $sourceCol['value']];
+            $incomingCols[implode('.', $segments)] = ['segments' => $segments, 'value' => $sourceCol->value];
         }
 
         $leaves = [];
@@ -815,24 +777,24 @@ class ImportHelper
      * Collects every destination leaf that still needs a value, keeping each one's map path
      * alongside the normalized segments it should be matched on.
      *
-     * @param  array<mixed>  $destinationCols
+     * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
      * @param  array<mixed>  $map
      * @param  list<MappableLeaf>  $leaves
      */
     private static function collectMappableLeaves(array $destinationCols, array $map, array &$leaves): void
     {
         foreach ($destinationCols as $col) {
-            if (isset($col['subfields']) && is_array($col['subfields'])) {
-                self::collectMappableLeaves($col['subfields'], $map, $leaves);
+            if ($col instanceof CompoundMappingColumn) {
+                self::collectMappableLeaves($col->subfields, $map, $leaves);
 
                 continue;
             }
 
-            if (empty($col['prefixedHandleAsArray']) || ! empty($col['isContainer'])) {
+            if ($col->prefixedHandleAsArray === [] || $col->isContainer) {
                 continue;
             }
 
-            $path = implode('.', $col['prefixedHandleAsArray']);
+            $path = implode('.', $col->prefixedHandleAsArray);
 
             if (Arr::get($map, $path, '') !== '') {
                 continue;
@@ -840,7 +802,7 @@ class ImportHelper
 
             $leaves[] = [
                 'path' => $path,
-                'segments' => self::matchSegments($col['prefixedHandleAsArray']),
+                'segments' => self::matchSegments($col->prefixedHandleAsArray),
             ];
         }
     }

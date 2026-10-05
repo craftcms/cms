@@ -2,10 +2,10 @@ import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {applySuggestions, cloneValues} from '@/modules/import/mapping/paths';
 import type {
-  MappingCol,
-  MappingColEntry,
+  MappingColumn,
+  MappingColumnEntry,
   MappingValues,
-  StepPayload,
+  ImportStep,
   SuggestedMap,
 } from '@/modules/import/mapping/types';
 import StepMapping from './StepMapping.vue';
@@ -35,8 +35,8 @@ vi.mock('./step-mapping', () => ({
 }));
 
 function col(
-  overrides: Partial<MappingCol> & {prefixedHandle: string}
-): MappingCol {
+  overrides: Partial<MappingColumn> & {prefixedHandle: string}
+): MappingColumn {
   return {
     handle: overrides.prefixedHandle,
     label: overrides.prefixedHandle,
@@ -68,7 +68,7 @@ const outerMatrix = col({
   canBeCleared: true,
 });
 
-const step: StepPayload = {
+const step: ImportStep = {
   uid: 'step-uid',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
   source: 'people.csv',
@@ -90,7 +90,7 @@ function emptyValues(): MappingValues {
 let applied: MappingValues | null;
 
 function mount(
-  destinationCols: MappingColEntry[],
+  destinationCols: MappingColumnEntry[],
   values: MappingValues = emptyValues(),
   suggestedMap: SuggestedMap = {}
 ) {

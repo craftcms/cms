@@ -7,11 +7,11 @@
   import '@craftcms/ui/components/info-icon/info-icon';
   import {t} from '@craftcms/ui';
   import MappingRow from './MappingRow.vue';
-  import {isCol, isColSet} from './paths';
-  import type {MappingColEntry} from './types';
+  import {isMappingColumn, isCompoundMappingColumn} from './paths';
+  import type {MappingColumnEntry} from './types';
 
   defineProps<{
-    cols: MappingColEntry[];
+    cols: MappingColumnEntry[];
   }>();
 </script>
 
@@ -44,7 +44,7 @@
         </tr>
       </thead>
       <tbody v-for="(entry, index) in cols" :key="index">
-        <template v-if="isColSet(entry)">
+        <template v-if="isCompoundMappingColumn(entry)">
           <tr>
             <th colspan="4" scope="colgroup">
               <strong>{{ entry.heading }}</strong>
@@ -56,7 +56,7 @@
             :col="subfield"
           />
         </template>
-        <MappingRow v-else-if="isCol(entry)" :col="entry" />
+        <MappingRow v-else-if="isMappingColumn(entry)" :col="entry" />
       </tbody>
     </table>
   </div>

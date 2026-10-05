@@ -36,8 +36,8 @@ it('marks non-container fields as not a container', function () {
     $col = collect($cols)->firstWhere('handle', 'plainText');
 
     expect($col)->not()->toBeNull();
-    expect($col['isContainer'])->toBeFalse();
-    expect($col)->not()->toHaveKey('fieldUid');
+    expect($col->isContainer)->toBeFalse();
+    expect($col->fieldUid)->toBeNull();
 });
 
 it('marks ImportableElementContainerFieldInterface fields as containers with a fieldUid', function () {
@@ -64,11 +64,11 @@ it('marks ImportableElementContainerFieldInterface fields as containers with a f
     $col = collect($cols)->firstWhere('handle', 'myMatrix');
 
     expect($col)->not()->toBeNull();
-    expect($col['isContainer'])->toBeTrue();
-    expect($col['fieldUid'])->toBe($matrixFieldModel->uid);
+    expect($col->isContainer)->toBeTrue();
+    expect($col->fieldUid)->toBe($matrixFieldModel->uid);
 
-    expect($col['canBeMatchCriteria'])->toBeFalse();
-    expect($col['canBeCleared'])->toBeFalse();
+    expect($col->canBeMatchCriteria)->toBeFalse();
+    expect($col->canBeCleared)->toBeFalse();
 });
 
 it('offers match criteria and clearing on an ordinary field', function () {
@@ -89,8 +89,8 @@ it('offers match criteria and clearing on an ordinary field', function () {
     $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     $col = collect($cols)->firstWhere('handle', 'plainText');
 
-    expect($col['canBeMatchCriteria'])->toBeTrue();
-    expect($col['canBeCleared'])->toBeTrue();
+    expect($col->canBeMatchCriteria)->toBeTrue();
+    expect($col->canBeCleared)->toBeTrue();
 });
 
 it('offers match criteria and clearing on a relation field', function () {
@@ -111,8 +111,8 @@ it('offers match criteria and clearing on a relation field', function () {
     $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     $col = collect($cols)->firstWhere('handle', 'myEntries');
 
-    expect($col['isContainer'])->toBeFalse()
-        ->and($col['canBeCleared'])->toBeTrue();
+    expect($col->isContainer)->toBeFalse()
+        ->and($col->canBeCleared)->toBeTrue();
 });
 
 it('uses map[attr] as the prefixedHandleForMap for top-level fields without an owner field', function () {
@@ -133,10 +133,10 @@ it('uses map[attr] as the prefixedHandleForMap for top-level fields without an o
     $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     $col = collect($cols)->firstWhere('handle', 'plainText');
 
-    expect($col['prefixedHandleForMap'])->toBe('map[plainText]');
-    expect($col['prefixedHandleForMatchCriteria'])->toBe('matchCriteria[plainText]');
-    expect($col['prefixedHandle'])->toBe('plainText');
-    expect($col['prefixedHandleAsArray'])->toBe(['plainText']);
+    expect($col->prefixedHandleForMap)->toBe('map[plainText]');
+    expect($col->prefixedHandleForMatchCriteria)->toBe('matchCriteria[plainText]');
+    expect($col->prefixedHandle)->toBe('plainText');
+    expect($col->prefixedHandleAsArray)->toBe(['plainText']);
 });
 
 // A content block is its own layout provider, so its handle appears once.
@@ -169,7 +169,7 @@ it('names the keep flag for a container field inside a content block without rep
     $cols = ImportHelper::getDestinationColsForFieldLayout($provider->getFieldLayout(), $field, $provider, 'myContentBlock');
     $col = collect($cols)->firstWhere('handle', 'cbMatrix');
 
-    expect($col['prefixedHandle'])->toBe('myContentBlock[fields][cbMatrix]')
-        ->and($col['prefixedHandleForKeepFlag'])->toBe('keepMissingNestedElements[myContentBlock][fields][cbMatrix][__keep__]')
-        ->and($col['prefixedHandleAsArray'])->toBe(['myContentBlock', 'fields', 'cbMatrix']);
+    expect($col->prefixedHandle)->toBe('myContentBlock[fields][cbMatrix]')
+        ->and($col->prefixedHandleForKeepFlag)->toBe('keepMissingNestedElements[myContentBlock][fields][cbMatrix][__keep__]')
+        ->and($col->prefixedHandleAsArray)->toBe(['myContentBlock', 'fields', 'cbMatrix']);
 });

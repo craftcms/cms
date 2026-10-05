@@ -12,6 +12,10 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\ImportStep;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
@@ -303,6 +307,23 @@ abstract class BaseImporter
             'settings.matchCriteria' => ['nullable', 'array'],
             'settings.clearableItems' => ['nullable', 'array'],
         ];
+    }
+
+    /**
+     * Returns the importer's current state as a step, the shape the import plan edit screen holds.
+     */
+    public function toImportStep(): ImportStep
+    {
+        $data = $this->toArrayData();
+
+        return new ImportStep(
+            uid: $data['uid'],
+            type: $data['type'],
+            source: $data['source'],
+            transformer: $data['transformer'],
+            batchSize: $data['batchSize'],
+            settings: $data['settings'],
+        );
     }
 
     /**
@@ -618,9 +639,9 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns the names of the columns/properties/fields that we're importing into.
+     * Returns the columns/properties/fields that we're importing into.
      *
-     * @return array<int|string, array<string, mixed>>
+     * @return list<MappingColumn|CompoundMappingColumn>
      */
     public function getDestinationCols(): array
     {
@@ -631,7 +652,7 @@ abstract class BaseImporter
      * Returns the names of the columns/properties that we're importing from (the ones from the data source),
      * or null if the data couldn't be parsed.
      *
-     * @return list<array{label: string, value: string}>|null
+     * @return list<SourceColumn>|null
      */
     public function getSourceDataCols(): ?array
     {

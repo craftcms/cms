@@ -1,9 +1,9 @@
 import type {
-  MappingCol,
-  MappingColEntry,
-  MappingColSet,
+  MappingColumn,
+  MappingColumnEntry,
+  CompoundMappingColumn,
   MappingValues,
-  StepPayload,
+  ImportStep,
 } from './types';
 
 /**
@@ -52,7 +52,7 @@ export function setAt(
  * A container's own keep-missing decision lives under a reserved `__keep__` leaf,
  * because the container's handle also has to hold its nested containers' decisions.
  */
-export function keepFlagPath(col: MappingCol): string[] {
+export function keepFlagPath(col: MappingColumn): string[] {
   return [...col.prefixedHandleAsArray, '__keep__'];
 }
 
@@ -82,16 +82,18 @@ export function checkedValue(event: Event): string {
   return checkbox?.checked ? '1' : '';
 }
 
-/** Whether a `destinationCols` entry is a labelled run of subfields rather than one column. */
-export function isColSet(entry: MappingColEntry): entry is MappingColSet {
-  return (
-    !Array.isArray(entry) && 'multiple' in entry && entry.multiple === true
-  );
+/** Whether a `destinationCols` entry is a compound column, mapped through several subfields. */
+export function isCompoundMappingColumn(
+  entry: MappingColumnEntry
+): entry is CompoundMappingColumn {
+  return 'subfields' in entry;
 }
 
-/** Whether a `destinationCols` entry is a column at all — `[]` means "skip me". */
-export function isCol(entry: MappingColEntry): entry is MappingCol {
-  return !Array.isArray(entry) && !isColSet(entry);
+/** Whether a `destinationCols` entry is a single column rather than a compound one. */
+export function isMappingColumn(
+  entry: MappingColumnEntry
+): entry is MappingColumn {
+  return !isCompoundMappingColumn(entry);
 }
 
 /**
@@ -134,13 +136,13 @@ export function cloneValues(values: MappingValues): MappingValues {
  * Round-tripped through JSON rather than `structuredClone()`, which can't clone the
  * reactive proxies the screens hold these in.
  */
-export function cloneStep(step: StepPayload): StepPayload {
-  return JSON.parse(JSON.stringify(step)) as StepPayload;
+export function cloneStep(step: ImportStep): ImportStep {
+  return JSON.parse(JSON.stringify(step)) as ImportStep;
 }
 
 /** A structural copy of a list of steps, as {@link cloneStep} copies one. */
-export function cloneSteps(steps: StepPayload[]): StepPayload[] {
-  return JSON.parse(JSON.stringify(steps)) as StepPayload[];
+export function cloneSteps(steps: ImportStep[]): ImportStep[] {
+  return JSON.parse(JSON.stringify(steps)) as ImportStep[];
 }
 
 /**

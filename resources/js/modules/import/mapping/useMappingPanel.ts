@@ -12,11 +12,11 @@ import {useSlideout} from '@/common/slideouts';
 import {openNestedMapping} from './nested-mapping';
 import {dirtyState} from './paths';
 import {
-  type MappingCol,
+  type MappingColumn,
   MappingContextKey,
   type MappingValues,
-  type SourceDataCol,
-  type StepPayload,
+  type SourceColumn,
+  type ImportStep,
   type SuggestedMap,
 } from './types';
 
@@ -24,10 +24,10 @@ export interface UseMappingPanelOptions {
   title: string;
   values: MappingValues;
   suggestedMap: SuggestedMap;
-  sourceDataCols: SourceDataCol[];
+  sourceDataCols: SourceColumn[];
   editable: boolean;
   /** The draft step being mapped, so a nested panel opened from here can post it. */
-  step: StepPayload;
+  step: ImportStep;
   apply(values: MappingValues): void;
 }
 
@@ -67,7 +67,7 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
     suggestedMap,
     sourceDataCols: options.sourceDataCols,
     editable: options.editable,
-    openNested(col: MappingCol, opener: HTMLElement | null): void {
+    openNested(col: MappingColumn, opener: HTMLElement | null): void {
       void openNestedMapping({
         col,
         step: options.step,

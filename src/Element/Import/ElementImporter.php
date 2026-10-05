@@ -15,6 +15,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -22,7 +23,6 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\Validator;
@@ -337,20 +337,15 @@ abstract class ElementImporter extends BaseImporter
         $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
 
         if (! empty($props)) {
-            $propertyCols = array_map(fn ($prop) => [
-                'handle' => $prop['name'],
-                'label' => $prop['label'],
-                'prefixedHandleForMap' => Html::namespaceInputName($prop['name'], 'map'),
-                'prefixedHandleForMatchCriteria' => Html::namespaceInputName($prop['name'], 'matchCriteria'),
-                'prefixedHandleForClear' => Html::namespaceInputName($prop['name'], 'clearableItems'),
-                'prefixedHandle' => $prop['name'],
-                'prefixedHandleAsArray' => Arr::bracketsToArray($prop['name']),
-                'isContainer' => $prop['isContainer'] ?? false,
-                'canBeMatchCriteria' => $prop['canBeMatchCriteria'] ?? true,
-                'canBeCleared' => $prop['canBeCleared'] ?? true,
-                'canBeSet' => $prop['canBeSet'] ?? true,
-                'isProperty' => true,
-            ], $props);
+            $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
+                handle: $prop['name'],
+                label: $prop['label'],
+                isContainer: $prop['isContainer'],
+                canBeMatchCriteria: $prop['canBeMatchCriteria'],
+                canBeCleared: $prop['canBeCleared'],
+                canBeSet: $prop['canBeSet'],
+                isProperty: true,
+            ), $props));
         }
 
         if ($this->fieldLayout === null) {
@@ -593,7 +588,7 @@ abstract class ElementImporter extends BaseImporter
             // The keep tree is keyed by the names the mapping screen generates, so ask the same
             // helper the UI does rather than assuming a [handle][providerHandle][fields] shape -
             // a content block is its own layout provider, which that assumption would spell twice.
-            [, , , $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping(
+            $prefixedHandle = ImportHelper::prefixedHandleForMapping(
                 $field->handle,
                 $ownerField,
                 $field,
@@ -601,6 +596,7 @@ abstract class ElementImporter extends BaseImporter
                 $provider,
                 $prefix,
             );
+            $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
 
             if ($field->canKeepMissingNestedElements()) {
                 // loose cast: a real checkbox submission survives as int 1/0 (or even the

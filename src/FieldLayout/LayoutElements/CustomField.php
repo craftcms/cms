@@ -30,6 +30,8 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -1005,14 +1007,14 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $items;
     }
 
-    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
     {
         try {
             // getField() needs to be called before label() or we won't always get the label.
             $field = $this->getField();
         } catch (FieldNotFoundException) {
             // skip silently
-            return [];
+            return null;
         }
 
         if (method_exists($field, 'getFieldsForImportMapping')) {
@@ -1020,38 +1022,20 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         $attribute = $this->attribute();
-        [
-            $prefixedHandleForMap,
-            $prefixedHandleForMatchCriteria,
-            $prefixedHandleForClear,
-            $prefixedHandle,
-            $prefixedHandleAsArray,
-            $prefixedHandleForKeep,
-            $prefixedHandleForKeepFlag,
-        ] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+        $isContainer = $field instanceof ImportableElementContainerFieldInterface;
 
-        $content = [
-            'handle' => $attribute,
-            'label' => $this->label(),
-            'prefixedHandleForMap' => $prefixedHandleForMap,
-            'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
-            'prefixedHandleForClear' => $prefixedHandleForClear,
-            'prefixedHandle' => $prefixedHandle,
-            'prefixedHandleAsArray' => $prefixedHandleAsArray,
-            'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
-            'canBeMatchCriteria' => $this->canBeMatchCriteria(),
-            'canBeCleared' => $this->canBeCleared(),
-            'canKeepMissingNestedElements' => $this->canKeepMissingNestedElements(),
-            'importSettings' => $this->getImportMappingExtraSettings($field),
-        ];
-
-        if ($content['isContainer']) {
-            $content['fieldUid'] = $field->uid;
-            $content['prefixedHandleForKeep'] = $prefixedHandleForKeep;
-            $content['prefixedHandleForKeepFlag'] = $prefixedHandleForKeepFlag;
-        }
-
-        return $content;
+        return MappingColumn::make(
+            handle: $attribute,
+            label: (string) $this->label(),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            isContainer: $isContainer,
+            canBeMatchCriteria: $this->canBeMatchCriteria(),
+            canBeCleared: $this->canBeCleared(),
+            canKeepMissingNestedElements: $this->canKeepMissingNestedElements(),
+            fieldUid: $isContainer ? $field->uid : null,
+            importSettings: $this->getImportMappingExtraSettings($field),
+            withKeepInputs: $isContainer,
+        );
     }
 
     public function canBeMatchCriteria(): bool

@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\DataTypes\Json;
@@ -562,7 +563,7 @@ class Import
      * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
-     * @return list<array{label: string, value: string}>|null
+     * @return list<SourceColumn>|null
      */
     public function getDataHeadings(string $filePath): ?array
     {
@@ -584,7 +585,14 @@ class Import
             return null;
         }
 
-        return array_merge([['label' => t('Please select'), 'value' => '']], $headings);
+        return [
+            new SourceColumn(t('Please select'), ''),
+            ...array_map(fn (array $heading): SourceColumn => new SourceColumn(
+                (string) $heading['label'],
+                (string) $heading['value'],
+                $heading['data']['hint'] ?? null,
+            ), $headings),
+        ];
     }
 
     /**

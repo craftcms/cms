@@ -1,6 +1,6 @@
 import {expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
-import type {StepPayload} from '@/modules/import/mapping/types';
+import type {ImportStep} from '@/modules/import/mapping/types';
 import {
   openStepMapping,
   StepMappingUnavailableError,
@@ -15,7 +15,7 @@ vi.mock('@/common/slideouts', () => ({
   openSlideoutWith: state.openSlideoutWith,
 }));
 
-const step: StepPayload = {
+const step: ImportStep = {
   uid: 'step-1',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
   source: 'people.csv',

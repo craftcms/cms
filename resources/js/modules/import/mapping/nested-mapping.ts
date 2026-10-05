@@ -20,32 +20,32 @@ import {
 } from '@/modules/import/context-slideout';
 import {applySuggestions, cloneValues, toObjectTree} from './paths';
 import type {
-  MappingCol,
-  MappingGroup,
+  MappingColumn,
+  MappingColumnGroup,
   MappingValues,
-  SourceDataCol,
-  StepPayload,
+  SourceColumn,
+  ImportStep,
   SuggestedMap,
 } from './types';
 
 export interface NestedMappingContext {
-  col: MappingCol;
+  col: MappingColumn;
   fieldName: string;
-  groups: MappingGroup[];
-  sourceDataCols: SourceDataCol[];
+  groups: MappingColumnGroup[];
+  sourceDataCols: SourceColumn[];
   values: MappingValues;
   /** Which of this panel's own `values.map` leaves hold a guessed value. */
   suggestedMap: SuggestedMap;
   editable: boolean;
   /** Carried through so a container inside the panel can open a panel of its own. */
-  step: StepPayload;
+  step: ImportStep;
   apply(values: MappingValues): void;
 }
 
 export interface OpenNestedMappingOptions {
-  col: MappingCol;
+  col: MappingColumn;
   /** The draft step being mapped. Posted so the server can build its importer. */
-  step: StepPayload;
+  step: ImportStep;
   values: MappingValues;
   editable: boolean;
   opener: HTMLElement | null;
@@ -71,12 +71,16 @@ export async function openNestedMapping(
 ): Promise<boolean> {
   const {col} = options;
 
-  const {data} = await actionClient.post(nestedMappingCols().url, {
-    step: options.step,
-    fieldUid: col.fieldUid ?? '',
-    fieldHandle: col.prefixedHandle,
-    fieldIsProperty: col.isProperty ? 1 : 0,
-  });
+  const {data} =
+    await actionClient.post<CraftCms.Cms.Import.Data.NestedMappingPayload>(
+      nestedMappingCols().url,
+      {
+        step: options.step,
+        fieldUid: col.fieldUid ?? '',
+        fieldHandle: col.prefixedHandle,
+        fieldIsProperty: col.isProperty ? 1 : 0,
+      }
+    );
 
   const values = cloneValues(options.values);
   const suggestedMap: SuggestedMap = {};

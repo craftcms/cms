@@ -12,7 +12,7 @@
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/ui';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
-  import type {StepPayload} from '@/modules/import/mapping/types';
+  import type {ImportStep} from '@/modules/import/mapping/types';
   import {openStepSlideout} from './step-slideout';
 
   const props = defineProps<{
@@ -23,7 +23,7 @@
     errors?: Record<string, string[]>;
   }>();
 
-  const steps = defineModel<StepPayload[]>({required: true});
+  const steps = defineModel<ImportStep[]>({required: true});
 
   const addButton = ref<HTMLElement | null>(null);
   const itemButtons = ref<Record<string, HTMLElement | null>>({});
@@ -62,7 +62,7 @@
     requestError.value ? [requestError.value] : []
   );
 
-  function newStep(): StepPayload {
+  function newStep(): ImportStep {
     return {
       // a plain UUID: the server caps a step's uid at 36 characters
       uid: crypto.randomUUID(),
@@ -80,7 +80,7 @@
     )
   );
 
-  function summary(step: StepPayload): string {
+  function summary(step: ImportStep): string {
     const label = step.type
       ? (typeLabels.value[step.type] ?? step.type)
       : t('Choose an importer');
@@ -88,7 +88,7 @@
     return [label, step.source].filter(Boolean).join(' — ');
   }
 
-  function stepLabel(step: StepPayload, index: number): string {
+  function stepLabel(step: ImportStep, index: number): string {
     return `${index + 1}. ${summary(step)}`;
   }
 
@@ -108,13 +108,13 @@
     steps.value = next;
   }
 
-  function replace(uid: string, step: StepPayload): void {
+  function replace(uid: string, step: ImportStep): void {
     steps.value = steps.value.map((existing) =>
       existing.uid === uid ? {...step, uid} : existing
     );
   }
 
-  function remove(step: StepPayload): void {
+  function remove(step: ImportStep): void {
     if (
       !window.confirm(t('Are you sure you want to delete this import step?'))
     ) {
@@ -169,7 +169,7 @@
     );
   }
 
-  async function edit(step: StepPayload): Promise<void> {
+  async function edit(step: ImportStep): Promise<void> {
     await openStep(
       step.uid,
       {

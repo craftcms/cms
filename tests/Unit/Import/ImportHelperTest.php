@@ -2,7 +2,24 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Support\ImportHelper;
+
+/** @param list<string> $path */
+function mappingColumn(array $path, bool $isContainer = false): MappingColumn
+{
+    $prefixedHandle = array_shift($path).implode('', array_map(fn (string $segment) => "[$segment]", $path));
+
+    return MappingColumn::make(handle: end($path) ?: $prefixedHandle, label: $prefixedHandle, prefixedHandle: $prefixedHandle, isContainer: $isContainer);
+}
+
+/** @return list<SourceColumn> */
+function sourceColumns(string ...$values): array
+{
+    return array_map(fn (string $value) => new SourceColumn($value, $value), $values);
+}
 
 it('returns an empty array when the field layout is null', function () {
     $result = ImportHelper::getDestinationColsForFieldLayout(null);
@@ -26,10 +43,13 @@ it('unpacks a JSON-encoded falsy value instead of leaving it as a string', funct
     expect(ImportHelper::decodeRecursive(['flag' => 'false', 'count' => '0']))->toBe(['flag' => false, 'count' => 0]);
 });
 
-it('returns the handle split into path-part segments as the fifth return value', function () {
-    [,,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null);
+it('derives a column\'s path and input names from its prefixed handle', function () {
+    $col = MappingColumn::make('title', 'Title', 'outer[fields][title]');
 
-    expect($parts)->toBe(['title']);
+    expect($col->prefixedHandleAsArray)->toBe(['outer', 'fields', 'title'])
+        ->and($col->prefixedHandleForMap)->toBe('map[outer][fields][title]')
+        ->and($col->prefixedHandleForMatchCriteria)->toBe('matchCriteria[outer][fields][title]')
+        ->and($col->prefixedHandleForClear)->toBe('clearableItems[outer][fields][title]');
 });
 
 it('renames a top-level key', function () {
@@ -296,8 +316,8 @@ it('still flattens a grouped-by-type nested container inside a block\'s fields',
 });
 
 it('suggests a source column that exactly matches the destination handle', function () {
-    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
-    $sourceDataCols = [['label' => 'Please select', 'value' => ''], ['label' => 'myContent', 'value' => 'myContent']];
+    $destinationCols = [mappingColumn(['myContent'])];
+    $sourceDataCols = [new SourceColumn('Please select', ''), ...sourceColumns('myContent')];
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -305,8 +325,8 @@ it('suggests a source column that exactly matches the destination handle', funct
 });
 
 it('suggests a source column whose normalized handle matches, even when spelled differently', function () {
-    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
-    $sourceDataCols = [['label' => 'My Content', 'value' => 'My Content']];
+    $destinationCols = [mappingColumn(['myContent'])];
+    $sourceDataCols = sourceColumns('My Content');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -314,8 +334,8 @@ it('suggests a source column whose normalized handle matches, even when spelled 
 });
 
 it('leaves a destination column unmapped when no source column matches', function () {
-    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
-    $sourceDataCols = [['label' => 'unrelated', 'value' => 'unrelated']];
+    $destinationCols = [mappingColumn(['myContent'])];
+    $sourceDataCols = sourceColumns('unrelated');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -323,8 +343,8 @@ it('leaves a destination column unmapped when no source column matches', functio
 });
 
 it('suggests nothing for a destination the map already has a value for', function () {
-    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
-    $sourceDataCols = [['label' => 'myContent', 'value' => 'myContent']];
+    $destinationCols = [mappingColumn(['myContent'])];
+    $sourceDataCols = sourceColumns('myContent');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, ['myContent' => 'alreadyMapped']);
 
@@ -332,25 +352,22 @@ it('suggests nothing for a destination the map already has a value for', functio
 });
 
 it('skips container columns since they have no value of their own', function () {
-    $destinationCols = [['handle' => 'matrixField', 'prefixedHandleAsArray' => ['matrixField'], 'isContainer' => true]];
-    $sourceDataCols = [['label' => 'matrixField', 'value' => 'matrixField']];
+    $destinationCols = [mappingColumn(['matrixField'], true)];
+    $sourceDataCols = sourceColumns('matrixField');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
     expect($result)->toBe([]);
 });
 
-it('recurses into a MappingColSet\'s subfields', function () {
+it('recurses into a compound column\'s subfields', function () {
     $destinationCols = [
-        [
-            'multiple' => true,
-            'subfields' => [
-                ['handle' => 'lat', 'prefixedHandleAsArray' => ['location', 'lat']],
-                ['handle' => 'lng', 'prefixedHandleAsArray' => ['location', 'lng']],
-            ],
-        ],
+        new CompoundMappingColumn(null, [
+            mappingColumn(['location', 'lat']),
+            mappingColumn(['location', 'lng']),
+        ]),
     ];
-    $sourceDataCols = [['label' => 'lat', 'value' => 'lat'], ['label' => 'lng', 'value' => 'lng']];
+    $sourceDataCols = sourceColumns('lat', 'lng');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -358,8 +375,8 @@ it('recurses into a MappingColSet\'s subfields', function () {
 });
 
 it('suggests a nested leaf without repeating a sibling the map already has', function () {
-    $destinationCols = [['handle' => 'city', 'prefixedHandleAsArray' => ['address', 'city']]];
-    $sourceDataCols = [['label' => 'city', 'value' => 'city']];
+    $destinationCols = [mappingColumn(['address', 'city'])];
+    $sourceDataCols = sourceColumns('city');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, ['address' => ['street' => 'streetCol']]);
 
@@ -368,13 +385,10 @@ it('suggests a nested leaf without repeating a sibling the map already has', fun
 
 it('prefers the source column that matches the destination\'s whole path over a bare handle match', function () {
     $destinationCols = [
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+        mappingColumn(['title']),
+        mappingColumn(['outerMatrix', 'withText', 'title']),
     ];
-    $sourceDataCols = [
-        ['label' => 'title', 'value' => 'title'],
-        ['label' => 'outerMatrix.withText.title', 'value' => 'outerMatrix.withText.title'],
-    ];
+    $sourceDataCols = sourceColumns('title', 'outerMatrix.withText.title');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -387,10 +401,10 @@ it('prefers the source column that matches the destination\'s whole path over a 
 
 it('gives a source column that matches a destination\'s whole path to that destination alone', function () {
     $destinationCols = [
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+        mappingColumn(['title']),
+        mappingColumn(['outerMatrix', 'withText', 'title']),
     ];
-    $sourceDataCols = [['label' => 'title', 'value' => 'title']];
+    $sourceDataCols = sourceColumns('title');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -399,10 +413,10 @@ it('gives a source column that matches a destination\'s whole path to that desti
 
 it('falls back to a source column that only matches the tail of a nested destination\'s path', function () {
     $destinationCols = [
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+        mappingColumn(['title']),
+        mappingColumn(['outerMatrix', 'withText', 'title']),
     ];
-    $sourceDataCols = [['label' => 'withText.title', 'value' => 'withText.title']];
+    $sourceDataCols = sourceColumns('withText.title');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -413,10 +427,10 @@ it('falls back to a source column that only matches the tail of a nested destina
 
 it('reuses a partially matched source column across every entry type that wants it', function () {
     $destinationCols = [
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withImage', 'title']],
+        mappingColumn(['outerMatrix', 'withText', 'title']),
+        mappingColumn(['outerMatrix', 'withImage', 'title']),
     ];
-    $sourceDataCols = [['label' => 'title', 'value' => 'title']];
+    $sourceDataCols = sourceColumns('title');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -430,9 +444,9 @@ it('reuses a partially matched source column across every entry type that wants 
 
 it('matches a source column that names only some of the destination\'s path segments', function () {
     $destinationCols = [
-        ['handle' => 'plainText', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'fields', 'plainText']],
+        mappingColumn(['outerMatrix', 'withText', 'fields', 'plainText']),
     ];
-    $sourceDataCols = [['label' => 'outerMatrix.plainText', 'value' => 'outerMatrix.plainText']];
+    $sourceDataCols = sourceColumns('outerMatrix.plainText');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -443,12 +457,9 @@ it('matches a source column that names only some of the destination\'s path segm
 
 it('does not match a source column whose last segment isn\'t the destination\'s own handle', function () {
     $destinationCols = [
-        ['handle' => 'plainText', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'fields', 'plainText']],
+        mappingColumn(['outerMatrix', 'withText', 'fields', 'plainText']),
     ];
-    $sourceDataCols = [
-        ['label' => 'outerMatrix.fields', 'value' => 'outerMatrix.fields'],
-        ['label' => 'outerMatrix.fields.plainText2', 'value' => 'outerMatrix.fields.plainText2'],
-    ];
+    $sourceDataCols = sourceColumns('outerMatrix.fields', 'outerMatrix.fields.plainText2');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 
@@ -457,12 +468,9 @@ it('does not match a source column whose last segment isn\'t the destination\'s 
 
 it('never suggests a match criteria column, which belongs to a different tree', function () {
     $destinationCols = [
-        ['handle' => 'title', 'prefixedHandleAsArray' => ['matrixOuter', 'withMatrix', 'title']],
+        mappingColumn(['matrixOuter', 'withMatrix', 'title']),
     ];
-    $sourceDataCols = [[
-        'label' => 'matrixOuter.matchCriteria.title',
-        'value' => 'matrixOuter.matchCriteria.title',
-    ]];
+    $sourceDataCols = sourceColumns('matrixOuter.matchCriteria.title');
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
 

@@ -17,6 +17,11 @@ use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanMapViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanStepFormViewModel;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\ImportPlanIndexData;
+use CraftCms\Cms\Import\Data\MappingColumnGroup;
+use CraftCms\Cms\Import\Data\NestedMappingPayload;
+use CraftCms\Cms\Import\Data\StepFormPayload;
+use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportPlan;
@@ -74,21 +79,20 @@ class ImportPlansController
         ]);
     }
 
-    /** @return array<string, mixed> */
-    private function importRow(ImportPlanData $importPlan, bool $editable): array
+    private function importRow(ImportPlanData $importPlan, bool $editable): ImportPlanIndexData
     {
-        return [
-            'uid' => $importPlan->uid,
-            'name' => $importPlan->name,
-            'handle' => $importPlan->handle,
-            'description' => $importPlan->description,
-            'stepCount' => count($importPlan->steps ?? []),
-            'stepLabels' => array_map(
+        return new ImportPlanIndexData(
+            uid: $importPlan->uid,
+            name: (string) $importPlan->name,
+            handle: (string) $importPlan->handle,
+            description: $importPlan->description,
+            stepCount: count($importPlan->steps ?? []),
+            stepLabels: array_values(array_map(
                 $this->stepTypeLabel(...),
                 $importPlan->steps ?? [],
-            ),
-            'editable' => $editable,
-        ];
+            )),
+            editable: $editable,
+        );
     }
 
     private function stepTypeLabel(BaseImporter $step): string
@@ -164,18 +168,18 @@ class ImportPlansController
         $batchSize = $this->request->input('step.batchSize');
         $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
 
-        return new JsonResponse([
-            'form' => new ImportPlanStepFormViewModel(
+        return new JsonResponse(new StepFormPayload(
+            form: new ImportPlanStepFormViewModel(
                 $importer,
                 $this->importService,
                 app(FormResolver::class),
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
                 $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
             )->form(),
-            'canMap' => $this->hasDestination($importer) && $sourceError === null,
+            canMap: $this->hasDestination($importer) && $sourceError === null,
             // shown under the source field; a step whose source is yet to be entered isn't flagged
-            'sourceError' => ! empty($importer->source) ? $sourceError : null,
-        ]);
+            sourceError: ! empty($importer->source) ? $sourceError : null,
+        ));
     }
 
     /**
@@ -250,13 +254,13 @@ class ImportPlansController
 
         $destinationCols = $importer->getDestinationCols();
 
-        return $this->asJsonSuccess(null, [
-            'available' => true,
-            'destinationCols' => $destinationCols,
-            'sourceDataCols' => $sourceDataCols,
-            'values' => new ImportPlanMapViewModel($importer)->values(),
-            'suggestions' => ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
-        ]);
+        return $this->asJsonSuccess(null, new StepMappingPayload(
+            available: true,
+            destinationCols: $destinationCols,
+            sourceDataCols: $sourceDataCols,
+            values: new ImportPlanMapViewModel($importer)->values(),
+            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
+        )->jsonSerialize());
     }
 
     /**
@@ -265,11 +269,11 @@ class ImportPlansController
      */
     private function mappingUnavailable(string $message, ?string $attribute = null): JsonResponse
     {
-        return $this->asJsonSuccess(null, array_filter([
-            'available' => false,
-            'message' => $message,
-            'attribute' => $attribute,
-        ], fn ($value) => $value !== null));
+        return $this->asJsonSuccess(null, new StepMappingPayload(
+            available: false,
+            message: $message,
+            attribute: $attribute,
+        )->jsonSerialize());
     }
 
     /**
@@ -294,15 +298,15 @@ class ImportPlansController
 
         if ($field instanceof ImportableElementContainerFieldInterface) {
             foreach ($field->getFieldLayoutProviders() as $provider) {
-                $groups[] = [
-                    'providerName' => $provider instanceof Chippable ? $provider->getUiLabel() : $provider->getHandle(),
-                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout(
+                $groups[] = new MappingColumnGroup(
+                    providerName: $provider instanceof Chippable ? $provider->getUiLabel() : $provider->getHandle(),
+                    destinationCols: ImportHelper::getDestinationColsForFieldLayout(
                         $provider->getFieldLayout(),
                         $field,
                         $provider,
                         $fieldHandle,
                     ),
-                ];
+                );
             }
         }
 
@@ -310,10 +314,10 @@ class ImportPlansController
         // importing into that property, use that method
         $targetClass = $importer::targetClass();
         if (! $field && $fieldIsProperty && method_exists($targetClass, 'getDestinationColsForProperty')) {
-            $groups[] = [
-                'providerName' => null,
-                'destinationCols' => $targetClass::getDestinationColsForProperty($importer, $fieldHandle),
-            ];
+            $groups[] = new MappingColumnGroup(
+                providerName: null,
+                destinationCols: $targetClass::getDestinationColsForProperty($importer, $fieldHandle) ?? [],
+            );
         }
 
         // the source columns only feed the suggestions, so there are none if the file can't be read
@@ -323,7 +327,7 @@ class ImportPlansController
             $sourceDataCols = [];
         }
 
-        $allDestinationCols = array_merge(...array_column($groups, 'destinationCols'));
+        $allDestinationCols = array_merge(...array_map(fn (MappingColumnGroup $group) => $group->destinationCols, $groups));
 
         // the top-level columns are thrown in so a heading that exactly matches one of them
         // isn't also guessed at in here, then the guesses are narrowed back down to this panel
@@ -334,13 +338,13 @@ class ImportPlansController
         );
         $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
 
-        return $this->asJsonSuccess(null, [
-            'title' => t('Edit map for {fieldName}', ['fieldName' => $fieldName]),
-            'fieldName' => $fieldName,
-            'groups' => $groups,
-            'sourceDataCols' => $sourceDataCols,
-            'suggestions' => self::subtree($suggestions, $rootPath),
-        ]);
+        return $this->asJsonSuccess(null, new NestedMappingPayload(
+            title: t('Edit map for {fieldName}', ['fieldName' => $fieldName]),
+            fieldName: $fieldName,
+            groups: $groups,
+            sourceDataCols: $sourceDataCols,
+            suggestions: self::subtree($suggestions, $rootPath),
+        )->jsonSerialize());
     }
 
     /**

@@ -1,7 +1,7 @@
 import {createApp, nextTick, reactive, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {cloneStep, cloneSteps} from '@/modules/import/mapping/paths';
-import type {StepPayload} from '@/modules/import/mapping/types';
+import type {ImportStep} from '@/modules/import/mapping/types';
 import StepList from './StepList.vue';
 
 const state = vi.hoisted(() => ({
@@ -17,7 +17,7 @@ const importerTypes = [
   {value: 'CraftCms\\Cms\\Asset\\Import\\AssetImporter', label: 'Assets'},
 ];
 
-function step(overrides: Partial<StepPayload> = {}): StepPayload {
+function step(overrides: Partial<ImportStep> = {}): ImportStep {
   return {
     uid: 'step-1',
     type: importerTypes[0]!.value,
@@ -31,13 +31,13 @@ function step(overrides: Partial<StepPayload> = {}): StepPayload {
 
 let app: ReturnType<typeof createApp> | null;
 let container: HTMLElement;
-let steps: ReturnType<typeof ref<StepPayload[]>>;
+let steps: ReturnType<typeof ref<ImportStep[]>>;
 
 function mount(
-  initial: StepPayload[] = [step()],
+  initial: ImportStep[] = [step()],
   props: {editable?: boolean; errors?: Record<string, string[]>} = {}
 ) {
-  steps = ref<StepPayload[]>(initial);
+  steps = ref<ImportStep[]>(initial);
 
   app = createApp({
     components: {StepList},

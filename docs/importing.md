@@ -281,7 +281,10 @@ Both `name` and `label` are **required** positionally. Examples: `id`/`uid` are
 ### Field layout elements
 
 `ImportableFieldLayoutElementInterface` — `getFieldsForMapping()`,
-`canBeMatchCriteria()`, `canBeCleared()`. The default trait returns `false` for both,
+`canBeMatchCriteria()`, `canBeCleared()`. `getFieldsForMapping()` returns an
+`Import\Data\MappingColumn`, a `CompoundMappingColumn` (several columns under one heading,
+e.g. lat/long), or `null` to offer no column; `MappingColumn::make()` derives a column's path
+and input names from its prefixed handle. The default trait returns `false` for both,
 so this is opt-in per layout element — the opposite default to the attribute.
 Implementors: `TitleField`, `CustomField`, `FullNameField`, `UsernameField`,
 `EmailField`, `AffiliatedSiteField`, `AltField`, and the Address layout elements.
@@ -305,7 +308,7 @@ values and other fields only for non-null ones, so nothing nested gets cleared b
 `$importSettings` is the field's branch of the importer's `fieldSettings` tree, which mirrors
 `map`'s shape (`['myMatrix' => ['someEntryType' => ['fields' => ['photos' => [...]]]]]`). A field
 type offers settings in the mapping UI through its import handler's `mappingSettings()` (see
-below), which returns `[{name, label, options, default}]`; `CustomField::getFieldsForMapping()`
+below), which returns a list of `Import\Data\FieldMappingSetting`; `CustomField::getFieldsForMapping()`
 passes them on as the column's `importSettings`.
 
 ### Field import handlers
@@ -313,8 +316,8 @@ passes them on as the column's `importSettings`.
 Import-specific work for a field type can live outside the field, in a class implementing
 `Import\FieldHandlers\FieldImportHandlerInterface`. The field needs no import code at all.
 - `normalizeValue()` runs after the field's own `normalizeValueForImport()`.
-- `mappingSettings()` returns extra per-field settings for the mapping UI, as
-  `[{name, label, options, default, instructions?}]`; `instructions` show in an info tooltip beside the label.
+- `mappingSettings()` returns extra per-field settings for the mapping UI, as a list of
+  `Import\Data\FieldMappingSetting`; a setting's `instructions` show in an info tooltip beside its label.
 
 A handler does its work immediately, as the value is normalized: `normalizeValue()` gets the
 importer, the owner (the existing element or nested entry, or `null`/a new element) and the field's

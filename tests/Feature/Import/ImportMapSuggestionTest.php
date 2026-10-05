@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
@@ -52,14 +53,14 @@ function nestedMatrixDestinationCols(): array
     $top = ImportHelper::getDestinationColsForFieldLayout($fieldsService->getLayoutByUid($layoutModel->uid));
     $level1 = $colsFor('matrixOuter', 'matrixOuter');
     $innerCol = collect($level1)->firstWhere('handle', 'matrixInner');
-    $level2 = $colsFor('matrixInner', $innerCol['prefixedHandle']);
+    $level2 = $colsFor('matrixInner', $innerCol->prefixedHandle);
 
     return [...$top, ...$level1, ...$level2];
 }
 
 function nestedMatrixSourceCols(): array
 {
-    return array_map(fn (string $value) => ['label' => $value, 'value' => $value], [
+    return array_map(fn (string $value) => new SourceColumn($value, $value), [
         '',
         'authorIds',
         'matrixOuter',
@@ -108,7 +109,7 @@ it('suggests a column for every level of a real nested matrix', function () {
 });
 
 it('suggests the same columns however their handles are spelled', function () {
-    $sourceCols = array_map(fn (string $value) => ['label' => $value, 'value' => $value], [
+    $sourceCols = array_map(fn (string $value) => new SourceColumn($value, $value), [
         'matrixouter.fields.matrix-inner.fields.plain-text',
         'MATRIXOUTER.fields.matrix inner.fields.Plain Text 2',
     ]);

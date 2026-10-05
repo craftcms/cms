@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {FormPayload} from '@/modules/forms/types';
-import type {StepPayload} from '@/modules/import/mapping/types';
+import type {ImportStep} from '@/modules/import/mapping/types';
 import {StepMappingUnavailableError} from './step-mapping';
 import StepSlideout from './StepSlideout.vue';
 
@@ -73,7 +73,7 @@ function payload(): FormPayload {
   } as unknown as FormPayload;
 }
 
-const step: StepPayload = {
+const step: ImportStep = {
   uid: 'step-1',
   type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
   source: 'people.csv',

@@ -19,33 +19,29 @@ import {
 } from '@/modules/import/context-slideout';
 import {cloneStep} from '@/modules/import/mapping/paths';
 import type {FormPayload} from '@/modules/forms/types';
-import type {StepPayload} from '@/modules/import/mapping/types';
+import type {ImportStep} from '@/modules/import/mapping/types';
 
-export interface StepFormResponse {
+export type StepFormPayload = Omit<
+  CraftCms.Cms.Import.Data.StepFormPayload,
+  'form'
+> & {
   form: FormPayload;
-  /**
-   * Whether the step has settled enough to be mapped. An element importer has no
-   * destination columns until its field layout resolves, which only the server can tell.
-   */
-  canMap: boolean;
-  /** Why the step's data source can't be used, shown under its field. */
-  sourceError: string | null;
-}
+};
 
 export interface StepSlideoutContext {
-  step: StepPayload;
+  step: ImportStep;
   payload: FormPayload;
   canMap: boolean;
   sourceError: string | null;
   editable: boolean;
-  apply(step: StepPayload): void;
+  apply(step: ImportStep): void;
 }
 
 export interface OpenStepSlideoutOptions {
-  step: StepPayload;
+  step: ImportStep;
   editable: boolean;
   opener: HTMLElement | null;
-  apply(step: StepPayload): void;
+  apply(step: ImportStep): void;
 }
 
 const registry = createContextRegistry<StepSlideoutContext>('import-step');
@@ -58,8 +54,8 @@ export function takeStepSlideoutContext(
 
 /** Fetches the form for a draft step, and whether that step can be mapped yet. */
 export async function fetchStepForm(
-  step: StepPayload
-): Promise<StepFormResponse> {
+  step: ImportStep
+): Promise<StepFormPayload> {
   const {data} = await actionClient.post(stepSettings().url, {step});
 
   if (!data.form) {
@@ -77,7 +73,7 @@ export async function fetchStepForm(
  * Validates a draft step against its importer type's rules. Rejects with the axios error
  * (carrying `response.data.errors`) when the step is invalid.
  */
-export async function validateStep(step: StepPayload): Promise<void> {
+export async function validateStep(step: ImportStep): Promise<void> {
   await actionClient.post(validateStepAction().url, {step});
 }
 

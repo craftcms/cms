@@ -1,97 +1,33 @@
 import type {InjectionKey} from 'vue';
-import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 
 /** One `sourceDataCols` entry — a heading in the imported file. */
-export interface SourceDataCol {
-  label: string;
-  value: string;
-  /** `hint` is the incoming file's first-row value for this column, if any. */
-  data?: ComboboxOptionData | null;
-}
+export type SourceColumn = CraftCms.Cms.Import.Data.SourceColumn;
 
-/**
- * A destination column, as built by `ImportHelper::getPrefixedHandlesForMapping()`
- * and the `getFieldsForMapping()` implementations in `src/FieldLayout`.
- *
- * `prefixedHandleAsArray` is the column's path from the root of the mapping trees,
- * and is how every value below is addressed. The `prefixedHandleFor*` strings are the
- * bracket-named form inputs the Twig screen posted; they survive as stable keys but
- * the Vue screen posts real nested objects instead.
- */
-export interface MappingCol {
-  handle: string;
-  label: string;
-  prefixedHandle: string;
-  prefixedHandleAsArray: string[];
-  prefixedHandleForMap: string;
-  prefixedHandleForMatchCriteria: string;
-  prefixedHandleForClear: string;
-  isContainer: boolean;
-  canBeMatchCriteria: boolean;
-  canBeCleared: boolean;
-  canBeSet?: boolean;
-  canKeepMissingNestedElements?: boolean;
-  isProperty?: boolean;
-  /** Containers only — the global field UID, for fetching the nested columns. */
-  fieldUid?: string | null;
-  prefixedHandleForKeep?: string;
-  prefixedHandleForKeepFlag?: string;
-  /** Extra per-field choices, stored under the column's path in `fieldSettings`. */
-  importSettings?: ImportSettingDef[];
-}
+/** A destination column. */
+export type MappingColumn = CraftCms.Cms.Import.Data.MappingColumn;
 
 /** One per-field import setting a field type offers, e.g. what to do with a conflicting file. */
-export interface ImportSettingDef {
-  name: string;
-  label: string;
-  options: {value: string; label: string}[];
-  default: string;
-  /** Shown in an info tooltip beside the setting's label. */
-  instructions?: string;
-}
+export type FieldMappingSetting = CraftCms.Cms.Import.Data.FieldMappingSetting;
 
-/** A labelled run of columns rendered under one heading, e.g. lat/long. */
-export interface MappingColSet {
-  multiple: true;
-  heading?: string;
-  subfields: MappingCol[];
-}
+/** A destination that maps through several subfield columns under one heading, e.g. lat/long. */
+export type CompoundMappingColumn =
+  CraftCms.Cms.Import.Data.CompoundMappingColumn;
 
-/**
- * `getFieldsForMapping()` returns `[]` for a column it wants skipped, which arrives
- * as an empty array rather than an object.
- */
-export type MappingColEntry = MappingCol | MappingColSet | [];
+export type MappingColumnEntry = MappingColumn | CompoundMappingColumn;
 
 /** One field-layout provider's columns, in the nested panel. */
-export interface MappingGroup {
-  providerName: string | null;
-  destinationCols: MappingColEntry[];
-}
+export type MappingColumnGroup = CraftCms.Cms.Import.Data.MappingColumnGroup;
 
 /**
  * One import step, as the edit screen holds it and as it's posted to the server.
- *
- * A step is only ever persisted as part of its import, so the mapping endpoints are
- * handed the draft step itself rather than a UID to look up.
+ * A draft step is given its uid client-side, so it always has one.
  */
-export interface StepPayload {
+export type ImportStep = Omit<CraftCms.Cms.Import.Data.ImportStep, 'uid'> & {
   uid: string;
-  type: string | null;
-  source: string | null;
-  transformer: string | null;
-  batchSize: number | null;
-  settings: Record<string, unknown>;
-}
+};
 
 /** The parallel trees the mapping screen edits, all keyed alike. */
-export interface MappingValues {
-  map: Record<string, unknown>;
-  matchCriteria: Record<string, unknown>;
-  clearableItems: Record<string, unknown>;
-  keepMissingNestedElements: Record<string, unknown>;
-  fieldSettings: Record<string, unknown>;
-}
+export type MappingValues = CraftCms.Cms.Import.Data.MappingValues;
 
 export type MappingValueTree = keyof MappingValues;
 
@@ -114,10 +50,10 @@ export interface MappingContext {
    * form.
    */
   suggestedMap: SuggestedMap;
-  sourceDataCols: SourceDataCol[];
+  sourceDataCols: SourceColumn[];
   editable: boolean;
   /** Opens a container column's own mapping in a nested panel. */
-  openNested(col: MappingCol, opener: HTMLElement | null): void;
+  openNested(col: MappingColumn, opener: HTMLElement | null): void;
 }
 
 export const MappingContextKey: InjectionKey<MappingContext> = Symbol(

@@ -177,7 +177,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return null;
         }
 
-        return array_map(fn (array|BaseImporter $importer) => is_array($importer) ? $importer : $importer->toArrayData(), $this->steps);
+        return array_map(fn (array|BaseImporter $importer) => is_array($importer) ? $importer : $importer->toImportStep()->jsonSerialize(), $this->steps);
     }
 
     /**

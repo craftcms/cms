@@ -16,6 +16,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
@@ -97,13 +98,13 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
     public function mappingSettings(FieldInterface $field): array
     {
         return [
-            [
-                'name' => 'fileConflict',
-                'label' => t('What should happen when an incoming file matches an existing one?'),
-                'instructions' => t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to.'),
-                'options' => ImportFileConflict::asOptions(),
-                'default' => ImportFileConflict::UseExisting->value,
-            ],
+            new FieldMappingSetting(
+                name: 'fileConflict',
+                label: t('What should happen when an incoming file matches an existing one?'),
+                options: ImportFileConflict::asOptions(),
+                default: ImportFileConflict::UseExisting->value,
+                instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to.'),
+            ),
         ];
     }
 

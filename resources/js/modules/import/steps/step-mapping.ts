@@ -20,25 +20,25 @@ import {
   toObjectTree,
 } from '@/modules/import/mapping/paths';
 import type {
-  MappingColEntry,
+  MappingColumnEntry,
   MappingValues,
-  SourceDataCol,
-  StepPayload,
+  SourceColumn,
+  ImportStep,
   SuggestedMap,
 } from '@/modules/import/mapping/types';
 
 export interface StepMappingContext {
-  destinationCols: MappingColEntry[];
-  sourceDataCols: SourceDataCol[];
+  destinationCols: MappingColumnEntry[];
+  sourceDataCols: SourceColumn[];
   values: MappingValues;
   suggestedMap: SuggestedMap;
   editable: boolean;
-  step: StepPayload;
+  step: ImportStep;
   apply(values: MappingValues): void;
 }
 
 export interface OpenStepMappingOptions {
-  step: StepPayload;
+  step: ImportStep;
   editable: boolean;
   opener: HTMLElement | null;
   apply(values: MappingValues): void;
@@ -52,16 +52,7 @@ export function takeStepMappingContext(contextId: string): StepMappingContext {
   return registry.take(contextId);
 }
 
-export interface StepMappingStructure {
-  available: boolean;
-  message?: string;
-  /** The step attribute an unavailable step's message is about, e.g. `source`. */
-  attribute?: string;
-  destinationCols?: MappingColEntry[];
-  sourceDataCols?: SourceDataCol[];
-  values?: MappingValues;
-  suggestions?: SuggestedMap;
-}
+export type StepMappingPayload = CraftCms.Cms.Import.Data.StepMappingPayload;
 
 /** Thrown when a step can't be mapped yet, carrying the step attribute that's in the way, if any. */
 export class StepMappingUnavailableError extends Error {
@@ -76,11 +67,11 @@ export class StepMappingUnavailableError extends Error {
 
 /** Asks the server for a draft step's mapping structure. */
 export async function fetchStepMapping(
-  step: StepPayload
-): Promise<StepMappingStructure> {
+  step: ImportStep
+): Promise<StepMappingPayload> {
   const {data} = await actionClient.post(stepMapping().url, {step});
 
-  return data as StepMappingStructure;
+  return data as StepMappingPayload;
 }
 
 /**

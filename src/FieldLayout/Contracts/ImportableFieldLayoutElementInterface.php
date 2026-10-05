@@ -6,11 +6,14 @@ namespace CraftCms\Cms\FieldLayout\Contracts;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
+use CraftCms\Cms\Import\Data\MappingColumn;
 
 interface ImportableFieldLayoutElementInterface
 {
     /**
-     * Returns an array of fields that can be used for mapping.
+     * Returns the destination column(s) this element offers for mapping, or null to offer none.
      *
      * Most native fields are single input text fields, so their column mapping is a single field.
      * Other fields, such as AddressField are more complex and they have their own implementation of this method.
@@ -18,10 +21,8 @@ interface ImportableFieldLayoutElementInterface
      *
      * Additionally, for the CustomField instances,
      * the underlying Field can implement the getFieldsForImportMapping() method to further customise this.
-     *
-     * @return array<mixed>
      */
-    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array;
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null;
 
     /**
      * Returns whether the element can be used as a match criteria.
@@ -44,7 +45,7 @@ interface ImportableFieldLayoutElementInterface
     /**
      * Returns the settings that can be set for this field when it’s mapped in an import.
      *
-     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}>
+     * @return list<FieldMappingSetting>
      */
     public function getImportMappingExtraSettings(): array;
 }

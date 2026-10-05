@@ -19,15 +19,7 @@
   } from '@actions/Import/ImportPlansController';
   import CpContainer from '@/common/components/CpContainer.vue';
 
-  interface ImportRow {
-    uid: string | null;
-    name: string;
-    handle: string;
-    description: string | null;
-    stepCount: number;
-    stepLabels: string[];
-    editable: boolean;
-  }
+  type ImportRow = CraftCms.Cms.Import.Data.ImportPlanIndexData;
 
   const props = defineProps<{
     canSave: boolean;

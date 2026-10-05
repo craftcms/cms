@@ -35,6 +35,8 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -2357,7 +2359,7 @@ JS, [
     /**
      * Returns the mapping columns for an importable container property, or null if it isn't one.
      *
-     * @return list<array<mixed>>|null
+     * @return list<MappingColumn|CompoundMappingColumn>|null
      */
     public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
     {

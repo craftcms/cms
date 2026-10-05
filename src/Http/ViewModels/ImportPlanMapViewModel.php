@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\MappingValues;
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\ImportHelper;
 
@@ -13,10 +17,10 @@ use CraftCms\Cms\Support\ImportHelper;
  */
 class ImportPlanMapViewModel extends ViewModel
 {
-    /** @var array<int|string, array<string, mixed>>|null */
+    /** @var list<MappingColumn|CompoundMappingColumn>|null */
     private ?array $destinationCols = null;
 
-    /** @var list<array{label: string, value: string}>|null */
+    /** @var list<SourceColumn>|null */
     private ?array $sourceDataCols = null;
 
     public function __construct(
@@ -33,13 +37,13 @@ class ImportPlanMapViewModel extends ViewModel
         ];
     }
 
-    /** @return array<int|string, array<string, mixed>> */
+    /** @return list<MappingColumn|CompoundMappingColumn> */
     public function destinationCols(): array
     {
         return $this->destinationCols ??= $this->importer->getDestinationCols();
     }
 
-    /** @return list<array{label: string, value: string}> */
+    /** @return list<SourceColumn> */
     public function sourceDataCols(): array
     {
         // memoized alongside destinationCols(): both are asked for twice per page — once for
@@ -50,22 +54,20 @@ class ImportPlanMapViewModel extends ViewModel
     /**
      * The mapping state the page edits, as nested objects keyed the same way as each
      * column's `prefixedHandleAsArray`.
-     *
-     * @return array<string, array<array-key, mixed>>
      */
-    public function values(): array
+    public function values(): MappingValues
     {
-        return [
-            'map' => $this->importer->map,
-            'matchCriteria' => $this->importer->matchCriteria ?? [],
-            'clearableItems' => $this->importer->clearableItems ?? [],
-            'keepMissingNestedElements' => $this->importer instanceof ElementImporter
+        return new MappingValues(
+            map: $this->importer->map,
+            matchCriteria: $this->importer->matchCriteria ?? [],
+            clearableItems: $this->importer->clearableItems ?? [],
+            keepMissingNestedElements: $this->importer instanceof ElementImporter
                 ? $this->importer->keepMissingNestedElements ?? []
                 : [],
-            'fieldSettings' => $this->importer instanceof ElementImporter
+            fieldSettings: $this->importer instanceof ElementImporter
                 ? $this->importer->fieldSettings ?? []
                 : [],
-        ];
+        );
     }
 
     /**

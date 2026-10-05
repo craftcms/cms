@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
@@ -38,6 +39,17 @@ use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
+use CraftCms\Cms\Import\Data\ImportPlanIndexData;
+use CraftCms\Cms\Import\Data\ImportStep;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumnGroup;
+use CraftCms\Cms\Import\Data\MappingValues;
+use CraftCms\Cms\Import\Data\NestedMappingPayload;
+use CraftCms\Cms\Import\Data\SourceColumn;
+use CraftCms\Cms\Import\Data\StepFormPayload;
+use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Data\Updates;
@@ -74,6 +86,17 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,
+                    ImportPlanIndexData::class,
+                    FieldMappingSetting::class,
+                    MappingColumn::class,
+                    CompoundMappingColumn::class,
+                    MappingColumnGroup::class,
+                    MappingValues::class,
+                    NestedMappingPayload::class,
+                    SourceColumn::class,
+                    ImportStep::class,
+                    StepFormPayload::class,
+                    StepMappingPayload::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
                     NestedElementCard::class,
@@ -101,6 +124,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ContentIndexViewModel::class,
                     EntryIndexViewModel::class,
                     FieldEditViewModel::class,
+                    ImportPlanEditViewModel::class,
                     UserAddressesViewModel::class,
                     UserIndexViewModel::class,
                     UserPasskeysViewModel::class,

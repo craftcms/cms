@@ -18,13 +18,13 @@
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
   import {checkedValue, getAt, isChecked, setAt} from './paths';
   import {
-    type ImportSettingDef,
-    type MappingCol,
+    type FieldMappingSetting,
+    type MappingColumn,
     MappingContextKey,
   } from './types';
 
   const props = defineProps<{
-    col: MappingCol;
+    col: MappingColumn;
   }>();
 
   const context = inject(MappingContextKey);
@@ -93,13 +93,13 @@
   });
 
   /** The field type's own per-field choices, shown once the column is mapped. */
-  const importSettings = computed<ImportSettingDef[]>(() =>
+  const importSettings = computed<FieldMappingSetting[]>(() =>
     !props.col.isContainer && mapValue.value !== ''
       ? (props.col.importSettings ?? [])
       : []
   );
 
-  function importSettingValue(setting: ImportSettingDef): string {
+  function importSettingValue(setting: FieldMappingSetting): string {
     const value = getAt(context!.values.fieldSettings, [
       ...path.value,
       setting.name,
@@ -111,7 +111,7 @@
   }
 
   function onImportSettingChanged(
-    setting: ImportSettingDef,
+    setting: FieldMappingSetting,
     event: Event
   ): void {
     ignoreModelValueInitialization(() => {
@@ -180,7 +180,7 @@
             v-for="option in context.sourceDataCols"
             :key="option.value"
             .choiceValue="option.value"
-            .hint="option.data?.hint ?? null"
+            .hint="option.hint ?? null"
           >
             {{ option.label }}
           </craft-option>

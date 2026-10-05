@@ -10,19 +10,22 @@
   import type {FormAction} from '@/common/types';
   import FormPage from '@/pages/Form.vue';
   import type {FormPayload, FormValue} from '@/modules/forms/types';
-  import type {StepPayload} from '@/modules/import/mapping/types';
+  import type {ImportStep} from '@/modules/import/mapping/types';
   import {cloneSteps} from '@/modules/import/mapping/paths';
   import StepList from '@/modules/import/steps/StepList.vue';
+
+  type ImporterType =
+    CraftCms.Cms.Http.ViewModels.ImportPlanEditViewModel['importerTypes'][number];
 
   defineProps<{
     form: FormPayload;
     submit: UrlMethodPair;
-    importerTypes: Array<{value: string; label: string}>;
+    importerTypes: ImporterType[];
     formActions?: FormAction[];
   }>();
 
-  function asSteps(value: FormValue): StepPayload[] {
-    return Array.isArray(value) ? (value as unknown as StepPayload[]) : [];
+  function asSteps(value: FormValue): ImportStep[] {
+    return Array.isArray(value) ? (value as unknown as ImportStep[]) : [];
   }
 
   /**

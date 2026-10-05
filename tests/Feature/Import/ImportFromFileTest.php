@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Import;
 
 beforeEach(function () {
@@ -67,6 +68,6 @@ it('reports an unsupported file extension when reading headings too', function (
 it('returns the source headings with a "Please select" option prepended', function () {
     $headings = $this->import->getDataHeadings(($this->fixturePath)('entries-plain-text.json'));
 
-    expect($headings[0])->toBe(['label' => 'Please select', 'value' => ''])
+    expect($headings[0])->toEqual(new SourceColumn('Please select', ''))
         ->and(array_column($headings, 'value'))->toContain('title', 'plainText', 'slug');
 });

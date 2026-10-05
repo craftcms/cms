@@ -17,6 +17,8 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
@@ -185,39 +187,22 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
     }
 
     #[Override]
-    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
     {
-        $cols = [
-            'multiple' => true,
-            'heading' => $this->label(),
-        ];
-
-        $subfields = [];
-
         $parts = [
             ['attribute' => 'latitude', 'label' => t('Latitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
             ['attribute' => 'longitude', 'label' => t('Longitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
         ];
 
-        foreach ($parts as $part) {
-            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
-
-            $subfields[] = [
-                'handle' => $part['attribute'],
-                'label' => $part['label'],
-                'prefixedHandleForMap' => $prefixedHandleForMap,
-                'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
-                'prefixedHandleForClear' => $prefixedHandleForClear,
-                'prefixedHandle' => $prefixedHandle,
-                'prefixedHandleAsArray' => $prefixedHandleAsArray,
-                'isContainer' => false,
-                'canBeMatchCriteria' => $part['canBeMatchCriteria'],
-                'canBeCleared' => $part['canBeCleared'],
-            ];
-        }
-
-        $cols['subfields'] = $subfields;
-
-        return $cols;
+        return new CompoundMappingColumn(
+            heading: $this->label(),
+            subfields: array_map(fn (array $part): MappingColumn => MappingColumn::make(
+                handle: $part['attribute'],
+                label: $part['label'],
+                prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
+                canBeMatchCriteria: $part['canBeMatchCriteria'],
+                canBeCleared: $part['canBeCleared'],
+            ), $parts),
+        );
     }
 }

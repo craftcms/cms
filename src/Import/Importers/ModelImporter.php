@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Shared\BaseModel;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Eloquent\Model;
@@ -82,19 +81,12 @@ abstract class ModelImporter extends BaseImporter
     {
         $columns = Schema::getColumns((new (static::targetClass()))->getTable());
 
-        return array_map(fn ($col) => [
-            'handle' => $col['name'],
-            'label' => $col['name'],
-            'prefixedHandleForMap' => Html::namespaceInputName($col['name'], 'map'),
-            'prefixedHandleForMatchCriteria' => Html::namespaceInputName($col['name'], 'matchCriteria'),
-            'prefixedHandleForClear' => Html::namespaceInputName($col['name'], 'clearableItems'),
-            'prefixedHandle' => $col['name'],
-            'prefixedHandleAsArray' => Arr::bracketsToArray($col['name']),
-            'isContainer' => false,
-            'canBeMatchCriteria' => $this->isTypeMatchable($col['type_name']),
-            'canBeCleared' => $col['nullable'],
-            // 'isProperty' => true,
-        ], $columns);
+        return array_map(fn ($col) => MappingColumn::make(
+            handle: $col['name'],
+            label: $col['name'],
+            canBeMatchCriteria: $this->isTypeMatchable($col['type_name']),
+            canBeCleared: $col['nullable'],
+        ), $columns);
     }
 
     #[Override]

@@ -17,10 +17,7 @@
   import {useSlideout} from '@/common/slideouts';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
-  import type {
-    MappingValues,
-    StepPayload,
-  } from '@/modules/import/mapping/types';
+  import type {MappingValues, ImportStep} from '@/modules/import/mapping/types';
   import {dirtyState} from '@/modules/import/mapping/paths';
   import {
     fetchStepForm,
@@ -43,7 +40,7 @@
   } | null>(null);
 
   /** The step as it currently stands, including mapping the form doesn't render. */
-  const step = ref<StepPayload>(context.step);
+  const step = ref<ImportStep>(context.step);
   const mappingButton = ref<HTMLElement | null>(null);
   const mappingMessage = ref<string | null>(null);
   const openingMapping = ref(false);
@@ -237,7 +234,7 @@
   }
 
   /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
-  function stepForRequest(settings: Record<string, unknown>): StepPayload {
+  function stepForRequest(settings: Record<string, unknown>): ImportStep {
     return {...step.value, settings: {...settings, ...mappingValues()}};
   }
 
@@ -349,7 +346,7 @@
       }
     }
 
-    context.apply(JSON.parse(JSON.stringify(step.value)) as StepPayload);
+    context.apply(JSON.parse(JSON.stringify(step.value)) as ImportStep);
 
     // Before close(): closing drops the panel from the store, and its handler with it.
     slideout?.saved();

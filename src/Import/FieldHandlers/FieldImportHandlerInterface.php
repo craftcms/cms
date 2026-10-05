@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\FieldHandlers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Events\RegisterFieldImportHandlers;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 
@@ -31,7 +32,7 @@ interface FieldImportHandlerInterface
      * Returns the extra settings that can be set for the field when it’s mapped in an import.
      * A setting’s optional `instructions` are shown in an info tooltip beside its label.
      *
-     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}>
+     * @return list<FieldMappingSetting>
      */
     public function mappingSettings(FieldInterface $field): array;
 }
