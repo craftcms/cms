@@ -18,8 +18,6 @@ use CraftCms\Cms\User\Models\User;
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    // these entry types get their own sections below, so ImportFixtures::seedEntry() (which always
-    // creates a section and a seed entry) isn't a fit — only the entry type part is shared
     $this->typeA = ImportFixtures::entryTypeWithTitle(attrs: ['name' => 'Type A', 'handle' => 'typeA']);
     $this->typeB = ImportFixtures::entryTypeWithTitle(attrs: ['name' => 'Type B', 'handle' => 'typeB']);
 
@@ -42,7 +40,6 @@ beforeEach(function () {
 });
 
 it('uses the entry type selected via the field layout provider, ignoring a typeId in the incoming data', function () {
-    // typeId passed as an already-resolved int, to avoid the separate bug documented below.
     $importerWithUid = clone ($this->importer, [
         'uid' => 'i-have-a-uid',
     ]);

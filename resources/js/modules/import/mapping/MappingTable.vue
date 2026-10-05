@@ -63,7 +63,6 @@
 </template>
 
 <style scoped>
-  /* The table can outgrow a slideout panel; scroll it rather than the page. */
   .mapping-table {
     overflow-x: auto;
   }

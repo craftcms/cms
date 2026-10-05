@@ -138,7 +138,6 @@ abstract class ModelImporter extends BaseImporter
                 $attributes[$attributeHandle] = $item[$key];
             }
         }
-        // $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
 
         $model->fill($attributes);
 

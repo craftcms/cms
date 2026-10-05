@@ -69,7 +69,6 @@ class Csv implements DataTypeInterface
         $reader = new CsvReader;
         $reader->setDelimiter(',');
         $reader->setReadDataOnly(true);
-        // $reader->setSheetIndex(0);
 
         $spreadsheet = $reader->loadSpreadsheetFromString($data);
         $sheet = $spreadsheet->getSheet(0);

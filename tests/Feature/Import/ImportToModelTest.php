@@ -13,7 +13,6 @@ beforeEach(function () {
 
     $this->importer = SystemMessageImporter::create();
 
-    // as the CLI command and the Import job do, resolve the importer's own match criteria once
     $this->matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($this->importer);
 
     $this->modelData = [

@@ -62,7 +62,6 @@ beforeEach(function () {
 it('imports an entries field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    // assert the whole list, so an extra or reordered relation can't slip through
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
@@ -114,7 +113,6 @@ it('imports an entries field value using a transformer with element lookup', fun
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
-// the manual fixture lists ids in a deliberately non-ascending order ("image": [141, 140])
 it('preserves the order of related element ids', function () {
     $second = Entry::factory()
         ->forSection($this->section)
@@ -142,8 +140,6 @@ it('leaves existing relations alone when the field is absent from a later import
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
-// an empty value only clears a field that's marked clearable - the same rule ImportClearableItemsTest
-// covers for plain text, here for relations
 it('leaves existing relations alone when an empty list is provided and the field is not clearable', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
 
@@ -155,8 +151,7 @@ it('leaves existing relations alone when an empty list is provided and the field
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
-// applyClearableItems() turns the empty list into null, and BaseRelationField::normalizeValueForImport()
-// turns that into an empty list again - which is the value that actually clears relations.
+// An empty list becomes null, then an empty list again, which clears relations.
 it('clears existing relations when an empty list is provided for a clearable field', function () {
     $importer = (clone $this->importer)
         ->matchCriteria(['title' => 'title'])
@@ -170,7 +165,6 @@ it('clears existing relations when an empty list is provided for a clearable fie
     expect($entry->getFieldValue('myEntries')->ids())->toBe([]);
 });
 
-// the other trigger in applyClearableItems(): the handle is absent altogether
 it('clears existing relations when a clearable field is absent from a later import', function () {
     $importer = (clone $this->importer)
         ->matchCriteria(['title' => 'title'])
@@ -184,7 +178,6 @@ it('clears existing relations when a clearable field is absent from a later impo
     expect($entry->getFieldValue('myEntries')->ids())->toBe([]);
 });
 
-// the fix lives on BaseRelationField, so it covers every relation field type, not just entries
 it('clears an assets field marked clearable', function () {
     $importer = (clone $this->importer)
         ->matchCriteria(['title' => 'title'])

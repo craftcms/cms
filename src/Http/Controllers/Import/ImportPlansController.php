@@ -346,8 +346,6 @@ class ImportPlansController
     /**
      * Builds a transient importer from the posted draft step. Nothing is looked up in the
      * database, so this works for a step that has never been saved.
-     *
-     * @param  bool  $requireType  Whether the step must name an importer type.
      */
     private function draftImporter(bool $requireType = true): ?BaseImporter
     {

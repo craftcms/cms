@@ -24,7 +24,6 @@ beforeEach(function () {
         ['name' => 'Shared Type', 'handle' => 'sharedType'],
     );
 
-    // only allowed in the second section, like withPlainText2 is only in one of the manual sections
     $this->secondSectionOnlyType = ImportFixtures::entryTypeWithTitle(
         [CustomField::make($plainTextField->handle)],
         ['name' => 'Second Section Only', 'handle' => 'secondSectionOnlyType'],
@@ -46,8 +45,6 @@ beforeEach(function () {
         ->transformer(null)
         ->matchCriteria(['title' => 'title']);
 
-    // a single payload spanning both sections and both entry types, as the manual
-    // "different sections and ets" fixture does
     $this->rows = [
         [
             'title' => 'row in the first section',
@@ -103,9 +100,6 @@ it('re-imports the same payload without duplicating any row', function () {
     expect(EntryElement::find()->status(null)->ids())->toBe($ids);
 });
 
-// Each row carries its own typeId and the importer has no field layout provider, so the row wins -
-// the opposite of ImportEntryTest's "uses the entry type selected via the field layout provider",
-// where the importer is editable and its provider takes over.
 it('uses each row’s own entry type when the importer has no field layout provider', function () {
     ($this->importRows)([$this->rows[2]]);
 
@@ -113,8 +107,6 @@ it('uses each row’s own entry type when the importer has no field layout provi
         ->toBe('secondSectionOnlyType');
 });
 
-// Validation rejects the entry, so the row is skipped (logged as a warning) rather than imported
-// under a type its section doesn't allow.
 it('skips a row whose entry type is not allowed in its section', function () {
     expect(fn () => ($this->importRows)([[
         'title' => 'row with a disallowed type',

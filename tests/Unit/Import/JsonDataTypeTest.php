@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Import\DataTypes\Json;
 
-// format()
-
 it('formats a JSON list into rows', function () {
     $result = Json::format('[{"title": "one"}, {"title": "two"}]');
 
@@ -39,8 +37,6 @@ it('reports JSON that isn’t an array or object', function () {
     expect($result['success'])->toBeFalse()
         ->and($result['error'])->toStartWith('Invalid JSON:');
 });
-
-// getHeadings()
 
 it('returns top-level keys for a flat JSON array', function () {
     $result = Json::getHeadings('[{"name": "Alice", "age": 30}]');

@@ -59,6 +59,7 @@ class AssetImporter extends ElementImporter
         return t('Assets');
     }
 
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return AssetTransformer::class;

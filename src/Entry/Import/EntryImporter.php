@@ -52,6 +52,7 @@ class EntryImporter extends ElementImporter
         return t('Entries');
     }
 
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return EntryTransformer::class;

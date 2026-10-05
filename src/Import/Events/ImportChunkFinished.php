@@ -12,7 +12,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
  *
  * @since 6.0.0
  */
-final readonly class ImportChunkFinished
+readonly class ImportChunkFinished
 {
     /**
      * Carries the import plan, the step, the run ID, the chunk’s offset, how many items it processed and whether any failed.

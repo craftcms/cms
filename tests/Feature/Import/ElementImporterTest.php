@@ -79,9 +79,7 @@ it('throws when fieldLayout() is given a nonexistent numeric ID', function () {
 })->throws(InvalidArgumentException::class, 'No field layout found with ID: 999999');
 
 it('resolves fieldLayout() with an arbitrary string to a new unsaved layout for that type', function () {
-    // `Fields::getLayoutByType()` defaults to creating an in-memory (unsaved) layout for
-    // any type string that doesn't already have one — a string can never be "not found"
-    // via this path, only a numeric ID can throw.
+    // getLayoutByType() makes an unsaved layout for any unknown string, so only a numeric id throws.
     $importer = EntryImporter::create()->fieldLayout('not-a-real-uid-and-not-a-class-string');
 
     expect($importer->fieldLayout)->toBe('not-a-real-uid-and-not-a-class-string');

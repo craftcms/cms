@@ -12,7 +12,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
  *
  * @since 6.0.0
  */
-final readonly class ImportStepStarted
+readonly class ImportStepStarted
 {
     /**
      * Carries the import plan (if any), the step and the run ID, fired before the step’s first item is imported.

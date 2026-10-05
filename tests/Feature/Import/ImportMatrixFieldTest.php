@@ -24,7 +24,6 @@ beforeEach(function () {
 
     $nestedMatrixField = ImportFixtures::matrixField('myNestedMatrix', [$firstEntryTypeForMatrix, $secondEntryTypeForMatrix], 'My Nested Matrix');
 
-    // thirdEt has its own title field element (unlike the other block types, which rely on hasTitleField alone).
     $thirdEntryTypeForMatrix = EntryType::factory()
         ->withFieldLayout(
             FieldLayout::factory()
@@ -55,9 +54,6 @@ beforeEach(function () {
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 
-    // An importer's own matchCriteria only reaches the pipeline when it's resolved and passed into
-    // importItem() - which is what the import job and craft:import:element both do.
-    // Calling importItem() without it means config-level criteria is silently ignored.
     $this->importWithConfigCriteria = fn ($importer, array $data) => ImportFixtures::importWithConfigCriteria($this->import, $importer, $data);
 
     $this->importerMatchingSecondEtBlocks = fn () => (clone $this->importer)->matchCriteria([
@@ -100,7 +96,6 @@ it('imports multiple blocks of different entry types', function () {
     $entry = EntryElement::find()->title('imported entry')->one();
     $blocks = $entry->getFieldValue('myMatrix')->all();
 
-    // assert the types too, so this can't pass with both blocks coming out as the same type
     expect($blocks)->toHaveCount(2)
         ->and(array_map(fn ($block) => $block->title, $blocks))->toBe(['block 1', 'block 2'])
         ->and(array_map(fn ($block) => $block->getType()->handle, $blocks))->toBe(['secondEt', 'firstEt']);
@@ -146,10 +141,7 @@ it('updates an existing block when match criteria matches', function () {
     $entry = EntryElement::find()->title('imported entry')->one();
     $block = $entry->getFieldValue('myMatrix')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
-    // The importer's own matchCriteria config has no entry for the myMatrix container field at all,
-    // so this relies entirely on the block's inline matchCriteria being resolved. If it isn't, the
-    // block never actually matches and a new one gets created (with the old one discarded) instead
-    // of the same block being updated in place, which the id check below would catch.
+    // No config criteria for myMatrix, so only the block's inline matchCriteria can match it.
     expect($block->id)->toBe($blockId);
     expect($block->getFieldValue('plainText'))->toBe('updated foo');
 });
@@ -172,8 +164,6 @@ it('resolves match criteria for nested blocks from the importer config, without 
     $entry = EntryElement::find()->title('imported entry')->one();
     $block = $entry->getFieldValue('myMatrix')->one();
 
-    // the id check is what separates matching from the block being recreated - without it this
-    // test passes even when the config criteria never reaches the pipeline at all
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1)
         ->and($block->id)->toBe($blockId)
         ->and($block->getFieldValue('plainText'))->toBe('updated foo');
@@ -223,9 +213,6 @@ it('resolves inline pointer-style match criteria against the block\'s own field 
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
     $blockId = $entry->getFieldValue('myMatrix')->one()->id;
 
-    // The block's title changes but its plainText value (the inline match criteria) stays the
-    // same, so if the pointer resolved correctly this should update the existing block rather
-    // than create a new one.
     $this->import->importItem($importer, ($this->entryData)([
         [
             'type' => 'secondEt',
@@ -239,7 +226,6 @@ it('resolves inline pointer-style match criteria against the block\'s own field 
     $block = $entry->getFieldValue('myMatrix')->one();
 
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1)
-        // without the id check, a discarded-and-recreated block passes this too
         ->and($block->id)->toBe($blockId)
         ->and($block->title)->toBe('different title');
 });
@@ -278,7 +264,6 @@ it('creates a new block when match criteria does not match any existing block', 
     $entry = EntryElement::find()->title('imported entry')->one();
     $blocks = $entry->getFieldValue('myMatrix')->all();
 
-    // only the second row is new; the first keeps the block it matched
     expect($blocks)->toHaveCount(2)
         ->and(array_map(fn ($block) => $block->title, $blocks))->toBe(['block 1', 'block 2'])
         ->and($blocks[0]->id)->toBe($blockId);
@@ -371,10 +356,7 @@ describe('nested matrix', function () {
         $entry = EntryElement::find()->title('imported entry')->one();
         $outerBlockAfter = $entry->getFieldValue('myMatrix')->one();
         $innerBlocks = $outerBlockAfter->getFieldValue('myNestedMatrix');
-        // Neither level has an importer-config matchCriteria entry (only inline matchCriteria is
-        // provided), so this only stays as the same rows if both levels' inline matchCriteria
-        // actually got resolved and used for matching, rather than a fresh outer/inner block pair
-        // being created and the old ones discarded.
+        // Only inline matchCriteria at both levels, no importer-config entries.
         expect($outerBlockAfter->id)->toBe($outerBlockId);
         expect($innerBlocks->count())->toBe(1)
             ->and($innerBlocks->one()->id)->toBe($innerBlockId)
@@ -443,8 +425,7 @@ describe('nested matrix', function () {
         $outerBlock = [
             'type' => 'thirdEt',
             'title' => 'outer block 1',
-            // the outer block needs criteria of its own too: if it isn't matched, its nested
-            // blocks belong to a freshly created owner and can't survive either
+            // The outer block must match too, or its nested blocks get a new owner.
             'matchCriteria' => ['title' => 'title'],
             'fields' => [
                 'plainText' => 'outer text',
@@ -466,8 +447,6 @@ describe('nested matrix', function () {
         expect($innerBlocks->count())->toBe(1);
         $innerBlockId = $innerBlocks->one()->id;
 
-        // Title changes but the inline-matched plainText value stays the same, so the existing
-        // inner block should be updated (not duplicated) if the pointer resolved correctly.
         $outerBlock['fields']['myNestedMatrix'][0]['title'] = 'renamed inner block';
 
         $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
@@ -535,7 +514,6 @@ describe('nested matrix', function () {
         $entry = EntryElement::find()->title('imported entry')->one();
         $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->all();
 
-        // only the second inner row is new; the first keeps the block it matched
         expect($innerBlocks)->toHaveCount(2)
             ->and(array_map(fn ($block) => $block->title, $innerBlocks))->toBe(['inner block 1', 'inner block 2'])
             ->and(array_map(fn ($block) => $block->getType()->handle, $innerBlocks))->toBe(['firstEt', 'secondEt'])
@@ -620,8 +598,6 @@ describe('raw grouped/flat data through the full pipeline', function () {
         $this->import->importItem(
             $importer,
             ImportHelper::remapData($map, $rawData),
-            // we must pass the importer's matchCriteria as this way because it only depends on the importer config,
-            // so it's done once per config rather than for each root item that is being imported
             ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer),
         );
 
@@ -632,9 +608,6 @@ describe('raw grouped/flat data through the full pipeline', function () {
         $block1Id = $block1->id;
         expect($block1->getFieldValue('plainText'))->toBe('foo');
 
-        // Re-import block 1 with plainText omitted from the source entirely - since it's marked
-        // clearable, it should be cleared to null on the SAME block (matched by title), not left
-        // untouched on a freshly created duplicate.
         $rawData = $makeRawData($this->section->handle, $this->entryType->handle, null);
 
         $this->import->importItem(

@@ -12,7 +12,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
  *
  * @since 6.0.0
  */
-final readonly class ImportChunkStarted
+readonly class ImportChunkStarted
 {
     /**
      * Carries the import plan, the step, the run ID and the chunk’s offset and limit, fired before the chunk’s first item is imported.

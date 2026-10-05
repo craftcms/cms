@@ -9,6 +9,7 @@ use CraftCms\Cms\Import\Events\ImportChunkStarted;
 use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ImportPlan;
@@ -53,7 +54,7 @@ class Import extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t('Importing data (import job)');
+        return I18N::prep('Importing data (import job)');
     }
 
     /**

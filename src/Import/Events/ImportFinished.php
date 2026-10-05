@@ -12,7 +12,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
  *
  * @since 6.0.0
  */
-final readonly class ImportFinished
+readonly class ImportFinished
 {
     /**
      * Carries the import plan (if any), the steps that were run, the run ID and whether anything failed, fired once the import has finished.

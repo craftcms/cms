@@ -67,8 +67,6 @@ it('marks ImportableElementContainerFieldInterface fields as containers with a f
     expect($col['isContainer'])->toBeTrue();
     expect($col['fieldUid'])->toBe($matrixFieldModel->uid);
 
-    // a container holds nested elements rather than a value of its own, so neither
-    // option applies to it — each of its nested columns carries its own decision
     expect($col['canBeMatchCriteria'])->toBeFalse();
     expect($col['canBeCleared'])->toBeFalse();
 });
@@ -95,8 +93,6 @@ it('offers match criteria and clearing on an ordinary field', function () {
     expect($col['canBeCleared'])->toBeTrue();
 });
 
-// a relation field holds a value of its own (a list of ids), so unlike a container field it can be
-// both matched on and cleared
 it('offers match criteria and clearing on a relation field', function () {
     $entriesField = Field::factory()->create([
         'name' => 'My Entries',
@@ -143,9 +139,7 @@ it('uses map[attr] as the prefixedHandleForMap for top-level fields without an o
     expect($col['prefixedHandleAsArray'])->toBe(['plainText']);
 });
 
-// The importer derives its keepMissingNestedElements lookups from these same handles
-// (ElementImporter::collectAndEnableKeepFields()), so the shape is a contract between the two.
-// A content block is its own layout provider, so its handle must appear once, not twice.
+// A content block is its own layout provider, so its handle appears once.
 it('names the keep flag for a container field inside a content block without repeating the block handle', function () {
     $blockTextField = ImportFixtures::plainTextField('blockText', 'Block Text');
     $blockEntryType = ImportFixtures::blockEntryType('cbBlockEt', [$blockTextField], 'CB Block ET');
@@ -171,7 +165,6 @@ it('names the keep flag for a container field inside a content block without rep
 
     $field = app(FieldsService::class)->getFieldByHandle('myContentBlock');
 
-    // as ImportPlansController::nestedMappingCols() does for a container column
     $provider = $field->getFieldLayoutProviders()[0];
     $cols = ImportHelper::getDestinationColsForFieldLayout($provider->getFieldLayout(), $field, $provider, 'myContentBlock');
     $col = collect($cols)->firstWhere('handle', 'cbMatrix');

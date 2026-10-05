@@ -39,9 +39,7 @@ vi.mock('./step-slideout', () => ({
   validateStep: state.validateStep,
 }));
 
-// Stubbed so the test can invoke the refresh callback the panel hands it, which is what
-// carries an updated `canMap` back from the server, emit changes, and control the values
-// it reports.
+// Stubbed so the test can drive the panel's refresh callback and reported values.
 vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   default: {
     name: 'FormRenderer',
@@ -116,7 +114,6 @@ function mount(
   app.mount(container);
 }
 
-/** The Mapping section only exists once the form for an importer type has loaded. */
 function mappingSection(): HTMLElement | null {
   return container.querySelector('section');
 }
@@ -198,8 +195,6 @@ it('enables the mapping button once the step can be mapped', () => {
 });
 
 it('enables the mapping button when a refresh reports the step as mappable', async () => {
-  // An element importer only resolves its field layout once an entry type is chosen, which
-  // reaches the panel as a refresh — the button has to enable without reopening.
   mount(false);
   state.fetchStepForm.mockResolvedValue({form: payload(), canMap: true});
 
@@ -544,9 +539,7 @@ it('is dirty once a setting really changes', async () => {
 });
 
 it('isn’t dirty after opening the mapping and cancelling it', async () => {
-  // Cancelling the mapping panel never calls `apply`.
   state.openStepMapping.mockResolvedValue(true);
-  // The form reports a default the stored step doesn't have yet.
   mount(true, step.type, {entryType: 'blog'});
 
   mappingButton().dispatchEvent(new Event('click'));

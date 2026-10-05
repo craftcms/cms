@@ -1009,17 +1009,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         parent::afterElementPropagate($element, $isNew);
     }
 
-    /**
-     * @see ImportableElementContainerFieldInterface::canKeepMissingNestedElements()
-     */
+    #[Override]
     public function canKeepMissingNestedElements(): bool
     {
         return true;
     }
 
-    /**
-     * @see ImportableElementContainerFieldInterface::setKeepMissingNestedElements()
-     */
+    #[Override]
     public function setKeepMissingNestedElements(bool $keep): void
     {
         $this->addressManager()->keepOtherNestedElements = $keep;

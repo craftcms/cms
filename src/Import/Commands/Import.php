@@ -21,6 +21,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Override;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -39,6 +40,7 @@ abstract class Import extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[Override]
     protected function configure(): void
     {
         $this->addArgument('source', InputArgument::REQUIRED, 'The aliased or @root-relative path to a file or a URL containing the data you want to import.');
@@ -179,11 +181,8 @@ abstract class Import extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
-    /**
-     * Prompt for missing input arguments using the returned questions.
-     *
-     * @return array<string, Closure>
-     */
+    /** @return array<string, Closure> */
+    #[Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         return [

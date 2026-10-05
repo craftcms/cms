@@ -39,8 +39,6 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    // the seeded entry is both the element the imports below match against, and the element the
-    // relation field points at
     $this->relatedEntry = $seed->entry;
 
     $this->importer = EntryImporter::create()
@@ -56,7 +54,6 @@ beforeEach(function () {
         'matchCriteria' => ['title' => 'title'],
     ], $fieldValues);
 
-    // establish the initial field value through the importer itself, so re-imports below can compare against it
     $this->import->importItem($this->importer, ($this->entryData)());
 
     // count ElementSaving occurrences from here on, so the seeding save above isn't counted
@@ -112,8 +109,6 @@ it('always saves a brand-new element even when mapped values match field default
     expect($entry)->not->toBeNull();
 });
 
-// The fix for "a container field the element has nothing for yet" must not turn into "always save
-// when container data is present" - a matrix whose blocks are unchanged still diffs correctly.
 it('does not save when re-importing a row whose matrix blocks are unchanged', function () {
     $blocks = [
         [
@@ -124,7 +119,6 @@ it('does not save when re-importing a row whose matrix blocks are unchanged', fu
         ],
     ];
 
-    // the seed import in beforeEach had no matrix data, so this one creates the blocks
     $this->import->importItem($this->importer, ($this->entryData)(['myMatrix' => $blocks]));
     expect($this->saveCount)->toBeGreaterThan(0);
 

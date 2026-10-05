@@ -22,7 +22,6 @@ use CraftCms\Cms\Tests\Support\ImportFixtures;
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    // Fields inside the content block
     $cbTextField = Field::factory()->create([
         'name' => 'CB Text',
         'handle' => 'cbText',
@@ -194,8 +193,6 @@ it('updates values at all levels on reimport', function () {
     expect(Address::find()->ownerId($contentBlock->id)->one()->addressLine1)->toBe('456 Updated Ave');
 });
 
-// Identity through the whole chain: every level is matched in place rather than recreated, which
-// needs the content block element to be handed down as the owner for its nested fields.
 it('keeps every element in the chain on reimport when match criteria are set at each level', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
 

@@ -58,8 +58,7 @@ const body = col({
   canBeCleared: true,
 });
 const relation = col({prefixedHandle: 'author'});
-// The server reports both flags as true for a container — `CustomField` tests `$this`
-// where it means `$field` — so the fixture mirrors that rather than the ideal.
+// Mirrors the server, which flags a container as both matchable and clearable.
 const outerMatrix = col({
   prefixedHandle: 'outerMatrix',
   isContainer: true,
@@ -122,25 +121,17 @@ function mount(
   app.mount(container);
 }
 
-/** What the panel would hand back to the step right now. */
 function apply(): MappingValues {
   state.layout.mock.calls.at(-1)![0].onSave();
 
   return applied!;
 }
 
-/** The `td`s of the first body row, in column order. */
 function cells(): HTMLTableCellElement[] {
   return [...container.querySelectorAll<HTMLTableCellElement>('tbody td')];
 }
 
-/**
- * Toggles the checkbox in the named column of the first row, the way
- * `craft-checkbox` reports one: the host carries the state, and
- * `model-value-changed` announces it.
- */
 function toggleCheckbox(column: 'match' | 'clear', checked = true): void {
-  // Destination is a `th`, so the `td`s are Incoming data, Match, Clear.
   const cell = cells()[column === 'match' ? 1 : 2]!;
   const checkbox = cell.querySelector<HTMLElement & {checked: boolean}>(
     'craft-checkbox'
@@ -152,23 +143,17 @@ function toggleCheckbox(column: 'match' | 'clear', checked = true): void {
   );
 }
 
-/**
- * `craft-combobox` rejects a value that doesn't match one of its options, and it only
- * renders those an animation frame or so after mounting, so the tests below have to
- * let it settle before reading or writing its value.
- */
+// craft-combobox renders options a frame after mount and rejects values it doesn't list.
 function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 50));
 }
 
-/** The combobox in the first row's Incoming data cell. */
 function combobox(): HTMLElement & {modelValue?: string} {
   return cells()[0]!.querySelector(
     'craft-combobox'
   ) as unknown as HTMLElement & {modelValue?: string};
 }
 
-/** Picks a source column the way `craft-combobox` reports one. */
 function chooseSource(value: string): void {
   const host = combobox();
   host.modelValue = value;
@@ -223,7 +208,6 @@ it('keeps the Match and Clear columns on their own trees', () => {
 });
 
 it('offers no Match or Clear on a container row', () => {
-  // The container's nested columns each carry their own decision, in the panel.
   mount([outerMatrix]);
 
   const [incoming, match, clear] = cells();
@@ -373,9 +357,6 @@ it('clears the best-guess flag once the user chooses a column themselves', async
 });
 
 it('keeps a freshly guessed column flagged once the combobox settles', async () => {
-  // The context the way `step-mapping.ts` builds it: an empty map from the server,
-  // filled by the real `applySuggestions`. The other best-guess tests hand the flags
-  // in ready-made, which skips this — and it's where the flag was being lost.
   const values = cloneValues(emptyValues());
   const suggestedMap: SuggestedMap = {};
   applySuggestions(values.map, {title: 'name'}, suggestedMap);

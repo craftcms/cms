@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Import\DataTypes\Xml;
 
-/** getData() unwraps the root element, so <entries><entry>… becomes a list of entry rows. */
 const XML = <<<'XMLDATA'
 <?xml version="1.0" encoding="UTF-8"?>
 <entries>
@@ -18,8 +17,6 @@ const XML = <<<'XMLDATA'
     </entry>
 </entries>
 XMLDATA;
-
-// format()
 
 it('formats XML into rows, unwrapping the root element', function () {
     $result = Xml::format(XML);
@@ -42,9 +39,7 @@ it('keeps nested elements as nested arrays', function () {
     expect($result['data'][0]['fields'])->toBe(['text' => 'x']);
 });
 
-// getData() unwraps the root's first key, which is the row list only when there are 2+ rows: with a
-// single <entry> the unwrapped value is that row itself, so the result is one row rather than a
-// list of one. The import job and commands foreach whatever comes back, so this shape matters.
+// A single <entry> unwraps to the row itself, not a list of one.
 it('formats a single-row XML document into one row rather than a list of one', function () {
     $result = Xml::format('<entries><entry><title>only one</title></entry></entries>');
 
@@ -68,8 +63,6 @@ it('formats an empty root element into no rows', function () {
     expect(Xml::format('<entries/>'))->toBe(['success' => true, 'data' => []])
         ->and(Xml::getHeadings('<entries/>'))->toBe([]);
 });
-
-// getHeadings()
 
 it('returns dot-notation headings for XML elements', function () {
     $result = Xml::getHeadings(XML);

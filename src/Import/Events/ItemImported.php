@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @since 6.0.0
  */
-final readonly class ItemImported
+readonly class ItemImported
 {
     /**
      * Promotes the importer config, imported data, import run ID and the imported element or model into a readonly event payload fired after import.

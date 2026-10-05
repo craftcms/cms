@@ -31,7 +31,6 @@ const urls = {
   nestedColsUrl: '/actions/import/nested-mapping-cols',
 };
 
-/** The context the panel would be handed, for a given server response. */
 async function contextFor(data: Record<string, unknown>) {
   let contextId: string | undefined;
   state.openSlideoutWith.mockReset();

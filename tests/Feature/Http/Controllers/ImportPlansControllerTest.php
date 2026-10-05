@@ -30,8 +30,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::find()->one());
 
-    // BaseImporter::resolvedSourcePath() resolves everything against @root, which points at the
-    // Testbench skeleton during tests - point it at the package so the fixtures are reachable
+    // resolvedSourcePath() resolves against @root (the Testbench skeleton), so point it at the package.
     $this->originalRoot = Aliases::get('@root');
     Aliases::set('@root', dirname(__DIR__, 4));
     $this->source = 'tests/Fixtures/Import/entries-plain-text.json';
@@ -164,8 +163,6 @@ it('reports a step’s own validation errors against that step', function () {
 
     $response = ($this->saveImportPlan)([$step])->assertStatus(400);
 
-    // the key is a flat dotted string, which is how the step list on the edit screen
-    // matches an error back to the row that caused it
     expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.source");
 
     expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
@@ -202,8 +199,6 @@ it('returns a container field’s destination columns for an unsaved step', func
     expect($response->json('fieldName'))->toBe('Outer Matrix');
     expect($response->json('groups.0.providerName'))->toBe('Outer ET');
 
-    // The columns are addressed from the root of the mapping trees, prefixed with the
-    // container's own handle — that's what lets the panel edit the step's state in place.
     $handles = array_column($response->json('groups.0.destinationCols'), 'prefixedHandle');
     expect($handles)->toContain('outerMatrix[outerEt][fields][innerMatrix]');
 });
@@ -218,7 +213,6 @@ it('returns a step’s mapping structure without the import being saved', functi
         ->and($response->json('destinationCols'))->not->toBeEmpty()
         ->and($response->json('sourceDataCols'))->not->toBeEmpty()
         ->and($response->json('values.map'))->toBe([])
-        // the guesses the mapping panel fills in and highlights as best guesses
         ->and($response->json('suggestions'))->not->toBeEmpty()
         ->and($response->json('suggestions.title'))->toBe('title');
 
@@ -244,8 +238,6 @@ it('reports a step with a resolved field layout as mappable', function () {
 });
 
 it('reports a step whose field layout hasn’t resolved as not mappable', function () {
-    // An element importer's destination columns come from the field layout its entry type
-    // resolves, so there is nothing to map onto until one is chosen.
     $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(['entryType' => null]),
     ]);
@@ -263,8 +255,6 @@ it('reports a step with no source as not mappable', function () {
 });
 
 it('reports an unsaved users step as mappable', function () {
-    // Users have one layout for the element type rather than one per setting, so it has to
-    // resolve while the step is being built — not only when the import is saved.
     $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => [
             'uid' => Str::uuid7()->toString(),
@@ -322,8 +312,6 @@ it('reports a step with an undefined alias as not mappable instead of failing', 
 });
 
 it('persists both levels’ keepMissingNestedElements decisions with the step', function () {
-    // The mapping panel writes into the step client-side, so the whole nested shape
-    // arrives in the one save — there's no per-container round trip.
     ($this->saveImportPlan)([
         ($this->entryStep)([
             'map' => ['outerMatrix' => ['outerEt' => []]],
@@ -370,8 +358,6 @@ it('persists match criteria and clearable items alongside the map', function () 
 });
 
 it('still decodes JSON-encoded container branches on save', function () {
-    // File-based configs and plugins can still post the shape the Twig screen's hidden
-    // inputs produced.
     ($this->saveImportPlan)([
         ($this->entryStep)([
             'map' => ['outerMatrix' => json_encode(['outerEt' => ['title' => 'Title']])],
@@ -386,8 +372,6 @@ it('still decodes JSON-encoded container branches on save', function () {
 });
 
 it('saves and maps a model importer step', function () {
-    // ModelImporter has no site, fieldLayout or keepMissingNestedElements, so this is the
-    // path that has to stay clear of the ElementImporter-only properties
     ($this->saveImportPlan)([
         [
             'uid' => Str::uuid7()->toString(),

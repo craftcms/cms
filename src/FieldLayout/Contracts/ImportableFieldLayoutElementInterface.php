@@ -44,7 +44,7 @@ interface ImportableFieldLayoutElementInterface
     /**
      * Returns the settings that can be set for this field when it’s mapped in an import.
      *
-     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}> $settings
+     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}>
      */
     public function getImportMappingExtraSettings(): array;
 }

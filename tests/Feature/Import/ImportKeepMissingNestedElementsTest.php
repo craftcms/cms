@@ -44,7 +44,6 @@ describe('nested matrix pruning', function () {
             'myMatrix' => $blocks,
         ];
 
-        // seed two blocks
         $this->import->importItem($this->matrixImporter, ($this->matrixEntryData)([
             [
                 'type' => 'blockEt',
@@ -80,7 +79,6 @@ describe('nested matrix pruning', function () {
         $blocks = $entry->getFieldValue('myMatrix')->all();
         expect($blocks)->toHaveCount(1);
         expect($blocks[0]->title)->toBe('block 1');
-        // the surviving block is matched and updated in place, not recreated
         expect($blocks[0]->id)->toBe($this->seededBlockIds[0]);
     });
 
@@ -135,7 +133,6 @@ describe('matrix in matrix pruning', function () {
             'outerMatrix' => $outerBlocks,
         ];
 
-        // seed two outer blocks, each with one inner block
         $this->import->importItem($this->matrixInMatrixImporter, ($this->matrixInMatrixEntryData)([
             [
                 'type' => 'outerEt',
@@ -179,7 +176,6 @@ describe('matrix in matrix pruning', function () {
         $importer = (clone $this->matrixInMatrixImporter)
             ->keepMissingNestedElements(['outerMatrix' => ['__keep__' => true]]);
 
-        // omit "outer 2" entirely, and omit "outer 1"'s inner block
         $this->import->importItem($importer, ($this->matrixInMatrixEntryData)([
             [
                 'type' => 'outerEt',
@@ -212,7 +208,6 @@ describe('matrix in matrix pruning', function () {
                 ],
             ]);
 
-        // omit "outer 2" entirely, and omit "outer 1"'s inner block
         $this->import->importItem($importer, ($this->matrixInMatrixEntryData)([
             [
                 'type' => 'outerEt',
@@ -235,8 +230,6 @@ describe('matrix in matrix pruning', function () {
     });
 });
 
-// Addresses::canKeepMissingNestedElements() is true (asserted in the unit test), but only matrix
-// fields exercised it until now.
 describe('addresses pruning', function () {
     beforeEach(function () {
         $this->import = app(Import::class);
@@ -281,7 +274,6 @@ describe('addresses pruning', function () {
             'myAddresses' => $addresses,
         ];
 
-        // seed two addresses
         $this->import->importItem($this->importer, ($this->entryData)([
             ($this->address)('address 1', '1 First St'),
             ($this->address)('address 2', '2 Second St'),
@@ -337,9 +329,6 @@ describe('addresses pruning', function () {
     });
 });
 
-// A matrix nested inside a content block: the container that opts in to keeping missing elements is
-// the matrix, but it's reached through the content block, so the keepMissingNestedElements key has
-// to line up with the path ElementImporter::collectAndEnableKeepFields() walks.
 describe('matrix inside a content block pruning', function () {
     beforeEach(function () {
         $this->import = app(Import::class);
@@ -403,7 +392,6 @@ describe('matrix inside a content block pruning', function () {
             'myContentBlock' => ['fields' => ['cbMatrix' => $blocks]],
         ];
 
-        // seed two blocks inside the content block's matrix
         $this->import->importItem($this->importer, ($this->entryData)([
             ($this->block)('block 1', 'one'),
             ($this->block)('block 2', 'two'),
@@ -425,8 +413,7 @@ describe('matrix inside a content block pruning', function () {
         expect(($this->nestedBlocks)()->ids())->toBe([$this->seededBlockIds[0]]);
     });
 
-    // The mapping UI names this input keepMissingNestedElements[myContentBlock][fields][cbMatrix][__keep__],
-    // so that's the shape a saved config carries.
+    // The key shape the mapping UI posts.
     it('keeps a nested block missing from a later import when the nested matrix opts in', function () {
         $importer = (clone $this->importer)->keepMissingNestedElements([
             'myContentBlock' => ['fields' => ['cbMatrix' => ['__keep__' => true]]],

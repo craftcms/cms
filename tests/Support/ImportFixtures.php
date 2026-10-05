@@ -20,7 +20,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 
-final class ImportFixtures
+class ImportFixtures
 {
     /**
      * Builds a field layout (title + given layout elements), an EntryType wrapping it, a

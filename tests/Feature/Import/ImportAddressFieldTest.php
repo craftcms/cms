@@ -111,7 +111,6 @@ it('updates an existing address when match criteria matches', function () {
     $address = Address::find()->ownerId($entry->id)->one();
 
     expect(Address::find()->ownerId($entry->id)->count())->toBe(1)
-        // without the id check this passes whether the address is matched or recreated
         ->and($address->id)->toBe($addressId)
         ->and($address->addressLine1)->toBe($addressLine1Updated);
 });
@@ -128,7 +127,6 @@ it('creates a new address when match criteria does not match any existing addres
     $entry = EntryElement::find()->title('imported entry')->one();
     expect(Address::find()->ownerId($entry->id)->count())->toBe(1);
 
-    // second import: different address title, so matchCriteria finds no match → creates new address
     $newAddress = array_merge($this->address, [
         'title' => 'address 2',
         'addressLine1' => '456 Elm St',
@@ -139,7 +137,6 @@ it('creates a new address when match criteria does not match any existing addres
     expect(Address::find()->ownerId($entry->id)->count())->toBe(2);
 });
 
-// the manual fixture supplies latitude/longitude as strings inside a nested latLong object
 it('imports latLong given as a nested object of strings', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         [...$this->address, 'latLong' => ['latitude' => '37.7749', 'longitude' => '-122.4194']],
@@ -152,8 +149,6 @@ it('imports latLong given as a nested object of strings', function () {
         ->and($address->longitude)->toEqual('-122.4194');
 });
 
-// the manual fixture sends "country", while the element exposes countryCode - this pins which one
-// the Import actually reads
 it('reads the country code from countryCode, not from a country key', function () {
     $address = $this->address;
     unset($address['countryCode']);
@@ -167,8 +162,6 @@ it('reads the country code from countryCode, not from a country key', function (
         ->and($imported->countryCode)->not->toBe('GB');
 });
 
-// Nested criteria supplied by the importer config rather than inlined in each row: the config's
-// criteria for the container is what a type-less row resolves against.
 it('matches an address using nested match criteria from the importer config', function () {
     $importer = (clone $this->importer)->matchCriteria([
         'title' => 'title',
@@ -191,7 +184,6 @@ it('matches an address using nested match criteria from the importer config', fu
         ->and($address->addressLine1)->toBe('999 Updated Ave');
 });
 
-// clearableItems declared under an addresses field has to reach the type-less rows too
 it('clears a native address field marked clearable when it is missing from a later import', function () {
     $importer = (clone $this->importer)
         ->matchCriteria(['title' => 'title'])
@@ -217,7 +209,6 @@ it('clears a native address field marked clearable when it is missing from a lat
         ->and($address->addressLine2)->toBeNull();
 });
 
-// a row that only says how to match, with no address content, isn't an address at all
 it('creates no address for a row that carries only match criteria', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         ['matchCriteria' => ['title' => 'title']],
@@ -243,8 +234,6 @@ it('ignores a criteria-only row while importing the real ones', function () {
         ->and($addresses[0]->addressLine1)->toBe($this->address['addressLine1']);
 });
 
-// the canonical shape: the CP control posts latitude & longitude as flat inputs, and the mapping UI
-// offers them as two separate columns
 it('imports flat latitude and longitude', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         [...$this->address, 'latitude' => '37.7749', 'longitude' => '-122.4194'],
@@ -257,7 +246,7 @@ it('imports flat latitude and longitude', function () {
         ->and($address->longitude)->toEqual('-122.4194');
 });
 
-// $addressData += $addressData['latLong'] keeps keys that are already set, so a flat value wins
+// += keeps existing keys, so flat latitude/longitude win over latLong.
 it('prefers a flat latitude over a nested one', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         [

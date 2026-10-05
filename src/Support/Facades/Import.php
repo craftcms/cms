@@ -9,6 +9,7 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Facades\Facade;
+use Override;
 
 /**
  * @method static array getAllDataTypes()
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class Import extends Facade
 {
+    #[Override]
     protected static function getFacadeAccessor(): string
     {
         return \CraftCms\Cms\Import\Import::class;

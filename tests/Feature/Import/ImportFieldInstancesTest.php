@@ -20,8 +20,6 @@ beforeEach(function () {
     $blockEntryType = ImportFixtures::blockEntryType('blockEt', [$plainTextField], 'Block ET');
     $matrixField = ImportFixtures::matrixField('notInThisLayoutEither', [$blockEntryType], 'Not In This Layout Either');
 
-    // two instances of the same field in one layout, the second one re-handled - the shape the
-    // manual fixtures use for plainText/plainText2
     $this->twoInstancesType = ImportFixtures::entryTypeWithTitle(
         [
             CustomField::make($plainTextField->handle),
@@ -30,7 +28,6 @@ beforeEach(function () {
         ['name' => 'Two Instances', 'handle' => 'twoInstances'],
     );
 
-    // the same two instances in the opposite layout order
     $this->reversedInstancesType = ImportFixtures::entryTypeWithTitle(
         [
             CustomField::make($plainTextField->handle)->handle('plainText2')->label('Plain Text 2'),
@@ -99,8 +96,6 @@ it('imports one instance without touching the other', function () {
         ->and($entry->getFieldValue('plainText'))->toBeNull();
 });
 
-// the manual fixtures rely on this: rows carry a plainText value for entry types whose layout has
-// no plain text field at all ("this value should be ignored")
 it('ignores a value for a field that is not in the entry type’s layout', function () {
     $this->import->importItem($this->importer, ($this->entryData)('twoInstances', [
         'plainText' => 'kept',

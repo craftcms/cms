@@ -102,8 +102,6 @@ it('creates a new address when match criteria does not match any existing addres
     $user = UserElement::find()->username('importeduser')->one();
     expect(Address::find()->ownerId($user->id)->count())->toBe(1);
 
-    // re-importing the same address (matched by title) alongside a second, unmatched one
-    // should reuse the first and create only one new address
     $newAddress = array_merge($this->address, [
         'title' => 'address 2',
         'addressLine1' => '456 Elm St',

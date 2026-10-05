@@ -516,7 +516,6 @@ class Assets extends BaseRelationField
      *
      * @param  ElementInterface|null  $element  The element the upload location is resolved for.
      * @param  bool  $createDynamicFolders  Whether missing folders should be created in the process.
-     * @return int $folderId
      */
     public function resolveDynamicPathToFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
@@ -526,7 +525,7 @@ class Assets extends BaseRelationField
     /**
      * Returns the file extensions allowed by the field’s file type restrictions, or an empty array if there aren’t any.
      *
-     * @return string[] $extensions
+     * @return string[]
      */
     public function getAllowedExtensions(): array
     {

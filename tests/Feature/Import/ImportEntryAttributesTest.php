@@ -29,12 +29,10 @@ beforeEach(function () {
         ['name' => 'With Plain Text', 'handle' => 'withPlainText'],
     );
 
-    // maxAuthors 3 so the multi-author row is valid; minAuthors 0 so rows may omit authors
     $this->section = Section::factory()
         ->withEntryTypes($this->entryType)
         ->create(['minAuthors' => 0, 'maxAuthors' => 3]);
 
-    // the author default only kicks in when exactly one author is required
     $this->sectionRequiringAnAuthor = Section::factory()
         ->withEntryTypes($this->entryType)
         ->create(['minAuthors' => 1, 'maxAuthors' => 3]);
@@ -57,8 +55,6 @@ beforeEach(function () {
     $this->importedEntry = fn () => EntryElement::find()->title('imported entry')->status(null)->one();
 });
 
-// slugs
-
 it('imports a supplied slug', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['slug' => 'a-supplied-slug']));
 
@@ -71,8 +67,6 @@ it('generates a slug from the title when none is supplied', function () {
     expect(($this->importedEntry)()->slug)->toBe('imported-entry');
 });
 
-// post/expiry dates and the statuses they produce
-
 it('imports postDate and expiryDate', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'postDate' => '2023-05-07 13:14:15',
@@ -81,8 +75,7 @@ it('imports postDate and expiryDate', function () {
 
     $entry = ($this->importedEntry)();
 
-    // a date string without an offset is read in the app timezone and handed back in the system's
-    // display timezone, so compare in the timezone it came in as
+    // Offset-less dates come back in the display timezone, so compare in that.
     $inAppTimeZone = fn ($date) => $date->copy()->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s');
 
     expect($inAppTimeZone($entry->postDate))->toBe('2023-05-07 13:14:15')
@@ -134,10 +127,8 @@ it('imports an entry as disabled when enabled is false', function () {
         ->and($entry->getStatus())->toBe(EntryElement::STATUS_DISABLED);
 });
 
-// authors
-
 it('imports multiple authorIds in the order given', function () {
-    // once a section sets maxAuthors, EntryRules checks each author's 'author' permission
+    // With maxAuthors set, EntryRules checks each author's permission.
     $first = User::factory()->admin()->create();
     $second = User::factory()->admin()->create();
 
@@ -148,8 +139,6 @@ it('imports multiple authorIds in the order given', function () {
     expect(($this->importedEntry)()->getAuthorIds())->toBe([$second->id, $first->id]);
 });
 
-// Entry::maybeSetDefaultAttributes() defaults the author to the current user when the section
-// requires exactly one author, so this only works with somebody logged in.
 it('defaults the author to the logged-in user when authorIds is absent', function () {
     $user = User::factory()->admin()->create();
     actingAs($user);
@@ -161,8 +150,6 @@ it('defaults the author to the logged-in user when authorIds is absent', functio
     expect(($this->importedEntry)()->getAuthorIds())->toBe([$user->id]);
 });
 
-// the CLI case: no authenticated user, so there's nothing to default from and the entry fails the
-// section's author requirement
 it('skips an entry that omits authorIds in a section requiring an author when nobody is logged in', function () {
     Event::fake([ItemImported::class]);
 
@@ -185,8 +172,6 @@ it('passes the newly saved entry to the item imported event', function () {
         && $event->importedItem->id === $entryId);
 });
 
-// section/type references
-
 it('resolves sectionId and typeId given as numeric IDs', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'sectionId' => $this->section->id,
@@ -199,7 +184,6 @@ it('resolves sectionId and typeId given as numeric IDs', function () {
         ->and($entry->getTypeId())->toBe($this->entryType->id);
 });
 
-// the manual fixtures send IDs as strings ("typeId": "1"), so both forms have to resolve
 it('resolves sectionId and typeId given as numeric strings', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'sectionId' => (string) $this->section->id,
@@ -221,6 +205,4 @@ it('resolves sectionId and typeId given as handles', function () {
         ->and($entry->getTypeId())->toBe($this->entryType->id);
 });
 
-it('imports an entry under a parent in a structure section', function () {
-    // pending entry parent support - see the todo in ImportHelper::getImportableProperties()
-})->todo();
+it('imports an entry under a parent in a structure section', function () {})->todo();

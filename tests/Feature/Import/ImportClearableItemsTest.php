@@ -44,8 +44,7 @@ beforeEach(function () {
         'matchCriteria' => ['title' => 'title'],
     ], $fieldValues);
 
-    // seed the field value through the same import pipeline, since the entry factory can't
-    // write directly to a custom field's content column
+    // The entry factory can't write custom field content, so seed through the importer.
     $this->import->importItem($this->importer, ($this->entryData)(['myPlainText' => 'original value']));
 });
 

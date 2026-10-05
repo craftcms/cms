@@ -26,9 +26,7 @@ beforeEach(function () {
         'root' => $this->diskRoot,
     ]);
 
-    // Volume::factory() doesn't assign a fieldLayoutId by default, which leaves getFieldLayout()
-    // returning an unsaved, id-less layout that ElementImporter::fieldLayout() can't resolve back
-    // to the volume via its uid — so a real, persisted FieldLayout has to be attached explicitly.
+    // Volume::factory() has no persisted field layout, which ElementImporter can't resolve.
     $this->volume = Volume::factory()->create([
         'name' => 'Imports',
         'handle' => 'imports',
@@ -64,7 +62,6 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    // a successful import moves the temp file into the volume, so only the leftovers need deleting
     foreach ($this->tempFilePaths ?? [] as $path) {
         if (File::exists($path)) {
             File::delete($path);
@@ -200,8 +197,7 @@ it('ignores an explicit volumeId in the incoming data in favor of the field layo
 });
 
 it('throws for a local temp file path that resolves outside of all allowed roots', function () {
-    // A real, existing file outside every allowed temp root — e.g. one under tests/, which
-    // Path::system() excludes.
+    // Path::system() excludes tests/, so this file is outside every temp root.
     $outsidePath = base_path('tests/fixtures-import-asset-'.bin2hex(random_bytes(4)).'.txt');
     file_put_contents($outsidePath, 'not allowed');
 

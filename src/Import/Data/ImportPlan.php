@@ -181,8 +181,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Defines validation rules for the import plan itself. Each step is validated separately,
-     * against its own importer's rules, in `afterValidate()`.
+     * Each step is validated separately, against its own importer's rules, in `afterValidate()`.
      */
     #[Override]
     public function getRules(): array
@@ -213,9 +212,6 @@ class ImportPlan extends Component implements CpEditable, Validatable
         ];
     }
 
-    /**
-     * Defines custom validation messages for the import plan.
-     */
     #[Override]
     public function getMessages(): array
     {
@@ -318,9 +314,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
         return $this->editable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getCpEditUrl(): ?string
     {
         if (! $this->handle || ! currentUser()?->isAdmin()) {

@@ -28,7 +28,6 @@ beforeEach(function () {
     $blockTextField = ImportFixtures::plainTextField('blockText', 'Block Text');
     $blockEntryType = ImportFixtures::blockEntryType('cbBlockEt', [$blockTextField], 'CB Block ET');
 
-    // one matrix inside the content block, one alongside it on the entry
     $cbMatrixField = ImportFixtures::matrixField('cbMatrix', [$blockEntryType], 'CB Matrix');
     $entryMatrixField = ImportFixtures::matrixField('myMatrix', [$blockEntryType], 'My Matrix');
 
@@ -100,7 +99,6 @@ beforeEach(function () {
         'matchCriteria' => ['title' => 'title'],
     ];
 
-    // for rows that set more than just the content block
     $this->entryDataWith = fn (array $values) => array_merge([
         'title' => 'imported entry',
         'sectionId' => $this->section->handle,
@@ -157,8 +155,6 @@ it('updates content block field values on re-import', function () {
     expect($entry->getFieldValue('myContentBlock')->getFieldValue('cbText'))->toBe('updated text');
 });
 
-// The manual fixtures nest a matrix inside a content block (myCb.fields.matrixInner); only the
-// reverse (a content block inside a matrix) was covered before.
 it('imports a matrix nested inside a content block', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'fields' => [
@@ -179,7 +175,6 @@ it('imports a matrix nested inside a content block', function () {
         ->and($blocks[0]->getFieldValue('blockText'))->toBe('one');
 });
 
-/** A block for the matrix inside the content block, matched on its own title. */
 function cbNestedBlock(string $text): array
 {
     return [
@@ -209,10 +204,6 @@ it('updates the value of a matrix block nested inside a content block on re-impo
         ->and($blocks->one()->getFieldValue('blockText'))->toBe('updated one');
 });
 
-// The entry and the content block element both keep their ids across the re-import, but the block
-// inside the content block doesn't - the same inline matchCriteria one level up (on a matrix
-// directly on the entry) does match in place, see ImportMatrixFieldTest's "updates an existing
-// block when match criteria matches".
 it('updates the same matrix block nested inside a content block in place', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
     $block = cbNestedBlock(...);
@@ -233,7 +224,6 @@ it('updates the same matrix block nested inside a content block in place', funct
     expect($entry->getFieldValue('myContentBlock')->getFieldValue('cbMatrix')->one()->id)->toBe($blockId);
 });
 
-// fixture row 5: a matrix, a content block and an addresses field all set on the same entry
 it('imports a matrix, a content block and addresses on one entry', function () {
     $this->import->importItem($this->importer, ($this->entryDataWith)([
         'myMatrix' => [
@@ -261,8 +251,6 @@ it('imports a matrix, a content block and addresses on one entry', function () {
         ->and($entry->getFieldValue('myAddresses')->one()->addressLine1)->toBe('123 Main St');
 });
 
-// the other shape normalizeValueForImport() documents: field values straight in the top-level array
-// rather than wrapped in `fields`
 it('imports a content block whose values are given without a fields wrapper', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'cbText' => 'foo',
@@ -287,12 +275,9 @@ it('still honours a fields wrapper when one is given', function () {
         ->toBe('foo');
 });
 
-// A content block only comes into existence when its owner saves, so importing one into an element
-// that's already saved and has no block yet depends on change detection noticing it.
 it('creates a content block on an element that has none yet', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
 
-    // the seeded entry exists already and has no content block
     $this->import->importItem($importer, [
         'title' => 'seed entry',
         'sectionId' => $this->section->handle,

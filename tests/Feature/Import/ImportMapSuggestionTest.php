@@ -8,11 +8,6 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
-/**
- * Builds matrixOuter > withMatrix > matrixInner > withPlainText, and collects its destination
- * columns the way the mapping screen and ImportPlansController::nestedMappingCols() do — one
- * level per request, each nested level prefixed with its container's prefixedHandle.
- */
 function nestedMatrixDestinationCols(): array
 {
     $plainText = ImportFixtures::plainTextField('plainText', 'Plain Text');
@@ -62,7 +57,6 @@ function nestedMatrixDestinationCols(): array
     return [...$top, ...$level1, ...$level2];
 }
 
-/** The column list a nested-matrix export produces: it carries `fields`, never an entry type. */
 function nestedMatrixSourceCols(): array
 {
     return array_map(fn (string $value) => ['label' => $value, 'value' => $value], [

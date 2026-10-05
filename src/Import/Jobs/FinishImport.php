@@ -7,12 +7,11 @@ namespace CraftCms\Cms\Import\Jobs;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Override;
-
-use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -78,6 +77,6 @@ class FinishImport extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t('Finishing “{name}” import', ['name' => $this->importPlan->name]);
+        return I18N::prep('Finishing “{name}” import', ['name' => $this->importPlan->name]);
     }
 }

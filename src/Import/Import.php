@@ -42,6 +42,8 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
+use function CraftCms\Cms\t;
+
 /**
  * @since 6.0.0
  */
@@ -93,7 +95,7 @@ class Import
         $dataType = $this->getDataTypeFromExtension($filePath);
 
         if ($dataType === null) {
-            throw new Exception('Unsupported data type: '.File::extension($filePath));
+            throw new Exception(t('Unsupported data type: {type}', ['type' => File::extension($filePath)]));
         }
 
         return $this->getAllDataTypes()[$dataType];
@@ -127,7 +129,7 @@ class Import
      * Returns the available field import handler classes, indexed by the field class they handle.
      * The list includes the built-in handlers, extended via `RegisterFieldImportHandlers` event.
      *
-     * @return array<class-string<FieldInterface>, class-string<FieldImportHandlerInterface>> $handlers
+     * @return array<class-string<FieldInterface>, class-string<FieldImportHandlerInterface>>
      */
     public function getAllFieldImportHandlers(): array
     {
@@ -149,7 +151,6 @@ class Import
      * that has one, or null if there isn’t any.
      *
      * @param  FieldInterface  $field  The field.
-     * @return FieldImportHandlerInterface|null $handler
      */
     public function getFieldImportHandlerFor(FieldInterface $field): ?FieldImportHandlerInterface
     {
@@ -495,7 +496,6 @@ class Import
         return false;
     }
 
-    // //////////// data //////////////
     /**
      * Returns a file's raw contents, throwing if the read fails or the file is empty.
      *
@@ -584,7 +584,7 @@ class Import
             return null;
         }
 
-        return array_merge([['label' => 'Please select', 'value' => '']], $headings);
+        return array_merge([['label' => t('Please select'), 'value' => '']], $headings);
     }
 
     /**
@@ -604,10 +604,6 @@ class Import
         // Load Fractal
         $fractalManager = new Manager;
         $fractalManager->setSerializer(new DataArraySerializer);
-
-        //        // Parse includes/excludes
-        //        $fractalManager->parseIncludes($includes);
-        //        $fractalManager->parseExcludes($excludes);
 
         $fractalData = $fractalManager->createData($resource);
 

@@ -148,7 +148,6 @@ class ImportHelper
      * Normalizes an incoming value for a field: first by the field itself, then by its registered import handler, if any.
      *
      * @param  array<string, mixed>  $importSettings  the field's settings from the importer's `fieldSettings` tree
-     * @return mixed $value
      */
     public static function normalizeFieldValueForImport(
         FieldInterface $field,
@@ -204,7 +203,6 @@ class ImportHelper
         ?string $prefix = null
     ): array {
         $cols = [];
-        // $fieldLayout = Fields::getLayoutByType(Address::class);
         if ($fieldLayout) {
             $allElements = $fieldLayout->getAllElements();
 
@@ -716,7 +714,6 @@ class ImportHelper
         return $basePath === null || $basePath === '' ? $key : $basePath.'.'.$key;
     }
 
-    // ------------- best guess UI mapping ----------------- //
     /**
      * Returns a best-guess incoming column for each of `$map`'s unmapped leaves, as a tree keyed
      * the same way as the map itself. It uses the same normalized-handle matching as the

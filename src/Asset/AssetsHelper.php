@@ -587,7 +587,6 @@ class AssetsHelper
      * Resolves a local file path given in import data, making sure it points to a file
      * within a known temp path, the project root, or the storage folder.
      *
-     * @return string $resolvedPath
      *
      * @throws FileException if the file doesn’t exist or is in a disallowed location
      */
@@ -626,7 +625,7 @@ class AssetsHelper
         try {
             $ips = $urlValidator->validate($url);
         } catch (UrlValidationException $e) {
-            throw new InvalidArgumentException("$url is invalid.", previous: $e);
+            throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]), previous: $e);
         }
 
         $host = parse_url($url, PHP_URL_HOST);
@@ -645,14 +644,17 @@ class AssetsHelper
                 // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
                 $ip = $stats->getHandlerStat('primary_ip');
                 if ($ip && ! $urlValidator->validateIp($ip)) {
-                    throw new InvalidArgumentException("$url is invalid.");
+                    throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]));
                 }
             },
         ])->get($url)->throw();
 
         // redirects aren’t followed, so a redirect’s body would otherwise be taken for the file
         if (! $response->successful()) {
-            throw new InvalidArgumentException("$url returned a {$response->status()} response.");
+            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
+                'url' => $url,
+                'status' => $response->status(),
+            ]));
         }
 
         return $response;

@@ -10,7 +10,7 @@ use Attribute;
  * @since 6.0.0
  */
 #[Attribute]
-final readonly class Importable
+readonly class Importable
 {
     public function __construct(
         public string $name,

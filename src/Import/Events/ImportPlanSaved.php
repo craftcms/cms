@@ -11,7 +11,7 @@ use CraftCms\Cms\Import\Data\ImportPlan;
  *
  * @since 6.0.0
  */
-final readonly class ImportPlanSaved
+readonly class ImportPlanSaved
 {
     /**
      * Carries the saved import plan and isNew flag, fired after save.

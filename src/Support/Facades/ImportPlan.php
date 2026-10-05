@@ -8,6 +8,7 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Facade;
+use Override;
 
 /**
  * @method static BaseImporter createImporter(array $step)
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class ImportPlan extends Facade
 {
+    #[Override]
     protected static function getFacadeAccessor(): string
     {
         return \CraftCms\Cms\Import\ImportPlan::class;

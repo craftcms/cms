@@ -24,7 +24,6 @@ interface FieldImportHandlerInterface
      * Normalizes an incoming value further, after the field’s own `normalizeValueForImport()` has run.
      *
      * @param  array<string, mixed>  $importSettings  the field's settings from the importer's `fieldSettings` tree
-     * @return mixed $value
      */
     public function normalizeValue(FieldInterface $field, mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed;
 
@@ -32,7 +31,7 @@ interface FieldImportHandlerInterface
      * Returns the extra settings that can be set for the field when it’s mapped in an import.
      * A setting’s optional `instructions` are shown in an info tooltip beside its label.
      *
-     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}> $settings
+     * @return list<array{name: string, label: string, options: list<array{value: string|int, label: string}>, default: string, instructions?: string}>
      */
     public function mappingSettings(FieldInterface $field): array;
 }

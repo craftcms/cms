@@ -116,7 +116,6 @@ abstract class ElementImporter extends BaseImporter
     public function storeSettings(array $settings): void
     {
         $this->site($settings['site']);
-        // $this->fieldLayout($settings['fieldLayout']);
     }
 
     #[Override]
@@ -218,7 +217,6 @@ abstract class ElementImporter extends BaseImporter
      * Sets the per-field import settings, and returns the current instance.
      *
      * @param  array<string, mixed>|null  $fieldSettings
-     * @return self $this
      */
     public function fieldSettings(?array $fieldSettings = null): self
     {
@@ -573,9 +571,6 @@ abstract class ElementImporter extends BaseImporter
      * lookup like `Fields::getFieldById()`), so the instance mutated here is the exact same one
      * the real, recursive `Elements::saveElement()` cascade will encounter later.
      *
-     * @param  FieldInterface|null  $ownerField  The container field $fieldLayout belongs to, if any.
-     * @param  mixed  $provider  The field layout provider $fieldLayout came from, if any.
-     * @param  string|null  $prefix  $ownerField's own prefixed handle, as the mapping screen names it.
      * @return ImportableElementContainerFieldInterface[]
      */
     private function collectAndEnableKeepFields(

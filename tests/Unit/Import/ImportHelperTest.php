@@ -10,8 +10,6 @@ it('returns an empty array when the field layout is null', function () {
     expect($result)->toBe([]);
 });
 
-// decodeRecursive
-
 it('decodes a JSON-encoded string into an array', function () {
     expect(ImportHelper::decodeRecursive('["a","b"]'))->toBe(['a', 'b']);
 });
@@ -28,15 +26,11 @@ it('unpacks a JSON-encoded falsy value instead of leaving it as a string', funct
     expect(ImportHelper::decodeRecursive(['flag' => 'false', 'count' => '0']))->toBe(['flag' => false, 'count' => 0]);
 });
 
-// getPrefixedHandlesForMapping – fifth return value
-
 it('returns the handle split into path-part segments as the fifth return value', function () {
     [,,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null);
 
     expect($parts)->toBe(['title']);
 });
-
-// remapData – scalar rules
 
 it('renames a top-level key', function () {
     $result = ImportHelper::remapData(['b' => 'a'], ['a' => 1]);
@@ -70,8 +64,6 @@ it('maps a missing source path to null', function () {
     expect($result['a'])->toBe(1);
 });
 
-// remapData – nested objects
-
 it('maps a nested sub-object when leaves share a common path prefix', function () {
     $data = ['address' => ['street' => '123 Main St', 'city' => 'Boston']];
     $map = ['location' => ['street' => 'address.street', 'city' => 'address.city']];
@@ -90,8 +82,6 @@ it('keeps unused keys inside a mapped nested object', function () {
 
     expect($result['location']['zip'])->toBe('02101');
 });
-
-// remapData – list of rows
 
 it('applies the map to each row when the source resolves to a list', function () {
     $data = ['items' => [['name' => 'Alice', 'age' => 30], ['name' => 'Bob', 'age' => 25]]];
@@ -113,8 +103,6 @@ it('passes non-array rows inside a list through unchanged', function () {
 
     expect($result['keywords'])->toBe(['php', 'laravel']);
 });
-
-// remapData – block-type containers
 
 it('flattens a block-type container into a flat list with a type key on each row', function () {
     $data = [
@@ -307,8 +295,6 @@ it('still flattens a grouped-by-type nested container inside a block\'s fields',
     ]);
 });
 
-// suggestMapValues
-
 it('suggests a source column that exactly matches the destination handle', function () {
     $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
     $sourceDataCols = [['label' => 'Please select', 'value' => ''], ['label' => 'myContent', 'value' => 'myContent']];
@@ -446,7 +432,6 @@ it('matches a source column that names only some of the destination\'s path segm
     $destinationCols = [
         ['handle' => 'plainText', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'fields', 'plainText']],
     ];
-    // no `fields`, no entry type — the segments just have to line up in order
     $sourceDataCols = [['label' => 'outerMatrix.plainText', 'value' => 'outerMatrix.plainText']];
 
     $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
@@ -483,8 +468,6 @@ it('never suggests a match criteria column, which belongs to a different tree', 
 
     expect($result)->toBe([]);
 });
-
-// remapData – path resolution
 
 it('resolves a rule path relative to the current base path', function () {
     $data = [

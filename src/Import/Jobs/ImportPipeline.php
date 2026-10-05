@@ -8,6 +8,7 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportStarted;
 use CraftCms\Cms\Import\Events\ImportStepFinished;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
@@ -56,7 +57,6 @@ class ImportPipeline extends Job
             // each batch should `allowFailures()`
             // so that we don't cancel the batch when one job failed
             // https://laravel.com/docs/13.x/queues#allowing-failures
-            // todo (iwona): maybe this should be customisable?
             $steps[] = Bus::batch([$step['job']])
                 ->name($step['name'] ?? 'Importing step data')
                 ->allowFailures()
@@ -83,7 +83,7 @@ class ImportPipeline extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t('Importing “{name}” data', [
+        return I18N::prep('Importing “{name}” data', [
             'name' => $this->importPlan->name,
         ]);
     }

@@ -44,8 +44,6 @@ function mount(
   initial: StepPayload[] = [step()],
   props: {editable?: boolean; errors?: Record<string, string[]>} = {}
 ) {
-  // a ref, as the edit screen holds these — reading an element back out of it hands
-  // the list a reactive proxy, which is the case that used to break cloning
   steps = ref<StepPayload[]>(initial);
 
   app = createApp({
@@ -64,7 +62,6 @@ function mount(
   app.mount(container);
 }
 
-/** The rows' buttons, in DOM order: [Edit, Delete] per row. */
 function rowButtons(index = 0): HTMLElement[] {
   const row = [...container.querySelectorAll('li')][index]!;
 
@@ -102,8 +99,7 @@ afterEach(() => {
 });
 
 it('clones a step held in reactive state', () => {
-  // `structuredClone` throws `DataCloneError` on a Proxy, which is what a step read
-  // back out of the list's model always is.
+  // structuredClone throws on a Proxy, which is what the list hands back.
   const proxied = reactive(step());
 
   expect(() => cloneStep(proxied)).not.toThrow();
