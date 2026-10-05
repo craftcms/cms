@@ -346,6 +346,7 @@ export default defineConfig(({mode}) => {
             laravel({
               input: [
                 'resources/js/cp.ts',
+                'yii2-adapter/resources/js/element-editor.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/css/cp.css',

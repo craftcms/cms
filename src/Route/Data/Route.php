@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route\Data;
 
+use CraftCms\Cms\Route\Exceptions\InvalidRouteException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -26,10 +27,7 @@ class Route implements ProvidesInertiaProperty
          * @var list<string|array{0: string, 1: string}> $uriParts The URI as defined by the user. This is an array where each element is either a
          *                                               string or an array containing the name of a subpattern and the subpattern
          */
-        public array $uriParts {
-            get => array_filter($this->uriParts);
-            set(array $value) => $this->uriParts = $value;
-        },
+        public array $uriParts,
 
         /**
          * @var string $template The template to route matching requests to
@@ -47,7 +45,39 @@ class Route implements ProvidesInertiaProperty
         public ?string $uid = null,
 
         public ?int $sortOrder = null,
-    ) {
+    ) {}
+
+    public function normalize(): void
+    {
+        if (! array_is_list($this->uriParts)) {
+            $this->throwInvalidUriParts();
+        }
+
+        $normalizedParts = [];
+
+        foreach ($this->uriParts as $part) {
+            if (is_string($part)) {
+                if ($part !== '') {
+                    $normalizedParts[] = $part;
+                }
+
+                continue;
+            }
+
+            if (
+                ! is_array($part) ||
+                ! array_is_list($part) ||
+                count($part) !== 2 ||
+                ! is_string($part[0]) ||
+                ! is_string($part[1])
+            ) {
+                $this->throwInvalidUriParts();
+            }
+
+            $normalizedParts[] = [$part[0], $part[1]];
+        }
+
+        $this->uriParts = $normalizedParts;
     }
 
     /**
@@ -119,5 +149,12 @@ class Route implements ProvidesInertiaProperty
             'template' => $this->template,
             'sortOrder' => $this->sortOrder,
         ];
+    }
+
+    private function throwInvalidUriParts(): never
+    {
+        throw new InvalidRouteException($this, [
+            'uriParts' => [t('Invalid route URI.')],
+        ]);
     }
 }

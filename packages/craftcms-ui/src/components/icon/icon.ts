@@ -19,8 +19,10 @@ import {resolveIcon} from '../../utilities/icons.js';
  * fetched.
  *
  * An icon is decorative unless you say otherwise: without a `label` it is
- * `aria-hidden`, and with one it becomes `role="img"` with that name. Icon-only
- * buttons need the label; an icon beside text does not.
+ * `aria-hidden`, and with one it becomes `role="img"` with that name. It needs
+ * the label when it says something no nearby text does: on its own, as in an
+ * icon-only button, or beside text it adds to, like an external-link icon
+ * after "View". Beside text that already says it, leave the label off.
  *
  * @slot - Your own icon markup, used in place of the named one.
  */

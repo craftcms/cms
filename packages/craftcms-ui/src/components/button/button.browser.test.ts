@@ -451,3 +451,23 @@ describe('craft-button link click area', () => {
     ).toBe('24px');
   });
 });
+
+describe('craft-button link keyboard focus', () => {
+  it('is a single tab stop on its anchor', async () => {
+    const {userEvent} = await import('@vitest/browser/context');
+    document.body.innerHTML =
+      '<button>Before</button><craft-button href="/">Go</craft-button><button>After</button>';
+    const [before, after] = document.querySelectorAll('button');
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    before!.focus();
+    await userEvent.tab();
+    expect(button.shadowRoot!.activeElement).toBe(
+      button.shadowRoot!.querySelector('a.link')
+    );
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(after);
+  });
+});

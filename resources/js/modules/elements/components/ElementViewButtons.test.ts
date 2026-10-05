@@ -20,34 +20,58 @@ function mount(targets: Array<ElementPreviewTarget>): HTMLElement[] {
 afterEach(() => {
   app?.unmount();
   container?.remove();
-  vi.restoreAllMocks();
 });
+
+/** The visible label, without the screen-reader-only new window notice. */
+function visibleLabel(link: HTMLElement): string | undefined {
+  return [...link.childNodes]
+    .filter((node) => node.nodeType === Node.TEXT_NODE)
+    .map((node) => node.textContent)
+    .join('')
+    .trim();
+}
 
 describe('ElementViewButtons', () => {
   it('calls a lone target View', () => {
-    const [button] = mount([{label: 'Primary entry page', url: '/a'}]);
+    const [link] = mount([{label: 'Primary entry page', url: '/a'}]);
 
-    expect(button!.textContent?.trim()).toBe('View');
+    expect(visibleLabel(link!)).toBe('View');
   });
 
   it('names each of several targets', () => {
-    const buttons = mount([
+    const links = mount([
       {label: 'Entry page', url: '/a'},
       {label: 'Blog listing', url: '/b'},
     ]);
 
-    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Entry page',
-      'Blog listing',
+    expect(links.map(visibleLabel)).toEqual(['Entry page', 'Blog listing']);
+  });
+
+  it('links each target in a new window', () => {
+    const links = mount([
+      {label: 'Entry page', url: '/a'},
+      {label: 'Blog listing', url: '/b'},
+    ]);
+
+    expect(
+      links.map((link) => [
+        link.getAttribute('href'),
+        link.getAttribute('target'),
+      ])
+    ).toEqual([
+      ['/a', '_blank'],
+      ['/b', '_blank'],
     ]);
   });
 
-  it('opens the target in a new tab', () => {
-    const open = vi.spyOn(window, 'open').mockReturnValue(null);
-    const [button] = mount([{label: 'Entry page', url: '/a'}]);
+  it('tells screen reader users each link opens a new window', () => {
+    const links = mount([
+      {label: 'Entry page', url: '/a'},
+      {label: 'Blog listing', url: '/b'},
+    ]);
 
-    button!.click();
-
-    expect(open).toHaveBeenCalledWith('/a', '_blank', 'noopener');
+    expect(
+      links.map((link) => link.querySelector('.sr-only')?.textContent)
+    ).toEqual(['Opens in a new window', 'Opens in a new window']);
   });
 });

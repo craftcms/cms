@@ -1,11 +1,12 @@
 import type {ComputedRef, InjectionKey} from 'vue';
 import type {SourceItem} from '@/modules/elements/types/sources';
+import type {QueryParams} from '@/common/types/query';
 
 export interface ElementIndexContext {
   elementType: string;
   context: string;
   source: SourceItem;
-  fieldLayouts?: Array<Record<string, string | number | boolean | null>>;
+  fieldLayouts?: QueryParams[];
   extraParams?: Record<string, unknown>;
 }
 

@@ -10,6 +10,7 @@
   import '@craftcms/ui/components/spinner/spinner';
   import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
+  import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import {
     computed,
     inject,
@@ -44,8 +45,8 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from '../FormNodeList.vue';
-  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
-  import {isPasteable} from './nested-entries';
+  import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
+  import {isPasteable} from './nested-elements';
   import type {ActionItems} from '@/common/types';
   import {useMessages} from '@/modules/messages/useMessages';
   import {
@@ -80,6 +81,7 @@
   };
   type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
+    createEntryTypes?: string[] | null;
     addLabel: string;
     minEntries?: number | null;
     maxEntries?: number | null;
@@ -97,6 +99,7 @@
       fieldId: number;
       ownerId: number;
       ownerElementType: string;
+      ownerHasDrafts?: boolean;
       siteId: number;
       entryTypeIds: Record<string, number>;
     } | null;
@@ -142,6 +145,7 @@
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();
+  const owner = inject(NestedOwnerEditorKey, null);
   const matrixId = useId();
   /**
    * Forms for blocks the server minted since the last full payload. They're
@@ -252,22 +256,33 @@
 
     const fits = isPasteable(elements, {
       elementType,
-      entryTypeIds: Object.values(create.entryTypeIds),
+      pasteableData: {
+        attribute: 'entryTypeId',
+        values: Object.values(create.entryTypeIds),
+      },
       room: true,
-      requireEntryTypeId: true,
     });
 
     return fits ? elements : [];
   });
+  const creationTypes = computed(() => {
+    const catalog = props.control.props.entryTypes ?? [];
+    const handles = props.control.props.createEntryTypes;
+    return handles
+      ? handles.flatMap((handle) =>
+          catalog.filter((type) => type.value === handle)
+        )
+      : catalog;
+  });
   const entryTypes = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type, index) => ({
+    creationTypes.value.map((type, index) => ({
       id: index + 1,
       handle: type.value,
       name: type.label,
     }))
   );
   const createChoices = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type) => ({
+    creationTypes.value.map((type) => ({
       ...type,
       icon: type.icon?.name,
     }))
@@ -561,9 +576,16 @@
   async function addBlock(
     entryType: string,
     beforeUid?: string,
-    duplicate?: number | string
+    duplicateUid?: string
   ): Promise<void> {
     if (!canAdd.value || busy.value) {
+      return;
+    }
+
+    if (
+      duplicateUid === undefined &&
+      !creationTypes.value.some((type) => type.value === entryType)
+    ) {
       return;
     }
 
@@ -587,12 +609,27 @@
     adding.value = entryType;
 
     try {
+      const ownerId = await prepareOwner();
+      const sourceId =
+        duplicateUid === undefined ? undefined : elementId(duplicateUid);
+      const duplicate =
+        sourceId === undefined
+          ? undefined
+          : (owner?.resolveElementId?.(Number(sourceId)) ?? sourceId);
+      if (duplicateUid !== undefined && duplicate === undefined) {
+        throw new Error(t('Couldn’t duplicate {type}.', {type: t('entry')}));
+      }
+
       const {data} = await actionClient.post<CreatedBlock>(
         'matrix/create-entry',
         {
           fieldId: create.fieldId,
-          entryTypeId: create.entryTypeIds[entryType],
-          ownerId: create.ownerId,
+          entryTypeId:
+            duplicateUid === undefined
+              ? create.entryTypeIds[entryType]
+              : (block(duplicateUid)?.data?.['type-id'] ??
+                create.entryTypeIds[entryType]),
+          ownerId,
           ownerElementType: create.ownerElementType,
           siteId: create.siteId,
           path: props.control.path,
@@ -603,7 +640,7 @@
       await insertBlocks([data], index);
     } catch (error) {
       messages.error(
-        duplicate === undefined
+        duplicateUid === undefined
           ? t('Couldn’t create {type}.', {type: t('entry')})
           : t('Couldn’t duplicate {type}.', {type: t('entry')})
       );
@@ -611,6 +648,38 @@
     } finally {
       adding.value = null;
     }
+  }
+
+  async function prepareOwner(): Promise<number> {
+    const create = props.control.props.create!;
+    await nextTick();
+
+    if (!props.editable || !matrixHost.value?.isConnected) {
+      throw new Error(t('This field cannot be edited here.'));
+    }
+
+    if (!owner && create.ownerHasDrafts !== true) {
+      return create.ownerId;
+    }
+
+    const context = await owner?.prepare(props.control.path);
+    await nextTick();
+
+    if (
+      !props.editable ||
+      !matrixHost.value?.isConnected ||
+      !context ||
+      (context.requiresDerivative &&
+        !context.ownerIsUnpublishedDraft &&
+        !context.ownerIsDerivative &&
+        !context.ownerIsInDerivativeTree)
+    ) {
+      throw new Error(
+        t('Could not prepare the owner draft. No nested elements were changed.')
+      );
+    }
+
+    return context.ownerId;
   }
 
   /**
@@ -628,7 +697,7 @@
 
       const order = props.value.sortOrder;
       const after = order[order.indexOf(target) + 1];
-      await addBlock(type, after, id);
+      await addBlock(type, after, target);
     }
   }
 
@@ -688,9 +757,10 @@
     pasting.value = true;
 
     try {
+      const ownerId = await prepareOwner();
       const pasted = await craft().cp.pasteElements({
-        primaryOwnerId: create.ownerId,
-        ownerId: create.ownerId,
+        primaryOwnerId: ownerId,
+        ownerId,
         fieldId: create.fieldId,
         siteId: create.siteId,
       });
@@ -1026,7 +1096,7 @@
         action: blockEvent(uid, 'delete'),
       },
       {type: 'hr'},
-      ...(props.control.props.entryTypes ?? []).map((type) => ({
+      ...creationTypes.value.map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
         hidden: !canAdd.value,
@@ -1512,7 +1582,7 @@
       >
         <template #label="{id: uid}">
           <div
-            class="flex flex-nowrap gap-1 items-center"
+            class="flex flex-nowrap gap-sm items-center"
             data-matrix-block-titlebar
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
@@ -1579,8 +1649,8 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="mt-3">
-        <NestedEntriesCreateButton
+      <div v-if="canAdd" class="mt-md">
+        <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
           :adding="adding"
@@ -1592,7 +1662,7 @@
           type="button"
           variant="dashed"
           icon="duplicate"
-          class="mt-1"
+          class="mt-sm"
           :loading="pasting"
           :disabled="busy"
           @click.stop.prevent="pasteBlocks()"

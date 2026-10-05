@@ -1,6 +1,10 @@
 import {createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createTable, getCoreRowModel} from '@tanstack/vue-table';
+import type {Table} from '@tanstack/vue-table';
+import {
+  type CraftTableFeatures,
+  useCraftTable,
+} from '@/modules/admin-table/craftTable';
 import {useElementIndexSelection} from '../composables/useElementIndexSelection';
 import {useNavItemActions} from '@/common/composables/useNavItemActions';
 
@@ -52,7 +56,7 @@ vi.mock('@/modules/elements/index/components/ElementTable.vue', () => ({
   default: {
     name: 'ElementTable',
     props: {table: Object},
-    render(this: {table: ReturnType<typeof createTable>}) {
+    render(this: {table: Table<CraftTableFeatures, Record<string, unknown>>}) {
       const row = this.table.getRowModel().rows[0]?.original as
         | {cpEditUrl?: string | null; label?: string}
         | undefined;
@@ -128,17 +132,14 @@ async function mountPage(
   mode = 'table'
 ) {
   const viewState = reactive({mode});
-  const elementTable = createTable({
+  const elementTable = useCraftTable({
     data,
     columns: [],
-    getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => String(row.id),
     state: {
       rowSelection: {'11': true},
       pagination: {pageIndex: 0, pageSize: 50},
     },
-    onStateChange: () => {},
-    renderFallbackValue: null,
   });
 
   page.elementIndex = {

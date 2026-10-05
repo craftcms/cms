@@ -161,7 +161,7 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        return UserGroupsFacade::saveGroup($group);
+        return UserGroupsFacade::saveGroup($group, $runValidation);
     }
 
     /**

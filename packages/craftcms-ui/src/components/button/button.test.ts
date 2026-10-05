@@ -96,7 +96,7 @@ describe('craft-button link semantics', () => {
   it('is a presentation host and not a tab stop in link mode', async () => {
     const element = await createButton({href: '/x'});
     expect(element.getAttribute('role')).toBe('presentation');
-    expect(element.tabIndex).toBe(-1);
+    expect(element.hasAttribute('tabindex')).toBe(false);
     expect(element.type).toBe('button');
   });
 
@@ -167,7 +167,7 @@ describe('craft-button link semantics', () => {
     await element.updateComplete;
 
     expect(element.getAttribute('role')).toBe('presentation');
-    expect(element.tabIndex).toBe(-1);
+    expect(element.hasAttribute('tabindex')).toBe(false);
   });
 
   it('leaves a disabled non-link button non-focusable (tabIndex -1)', async () => {

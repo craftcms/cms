@@ -54,8 +54,8 @@ it('creates and runs adapter plugins through the shared plugin interface', funct
     })->not()->toThrow(Throwable::class);
 });
 
-it('hydrates validates and saves plugin settings through the legacy service', function(?string $submitted) {
-    $plugin = AdapterSettingsTestPlugin::create([
+it('hydrates validates and saves plugin settings through the legacy service', function(?string $submitted, string $pluginClass) {
+    $plugin = $pluginClass::create([
         'handle' => 'legacy-settings',
         'name' => 'Legacy Settings',
         'basePath' => __DIR__,
@@ -64,8 +64,7 @@ it('hydrates validates and saves plugin settings through the legacy service', fu
     $settings = $plugin->getSettings();
     $plugins = new craft\services\Plugins();
 
-    expect($settings)->toBeInstanceOf(PluginSettings::class)
-        ->toBe($plugin->getSettings())
+    expect($settings)->toBe($plugin->getSettings())
         ->and($settings->foo)->toBe('Stored');
 
     $saved = $plugins->savePluginSettings($plugin, ['foo' => $submitted]);
@@ -78,7 +77,8 @@ it('hydrates validates and saves plugin settings through the legacy service', fu
             'bar' => null,
             'foo' => 'Submitted',
         ]);
-})->with(['invalid' => null, 'valid' => 'Submitted']);
+})->with(['invalid' => null, 'valid' => 'Submitted'])
+    ->with([AdapterSettingsTestPlugin::class, AdapterLegacySettingsTestPlugin::class]);
 
 it('reconciles legacy registrations after legacy and modern plugins register types', function() {
     $plugins = app(Plugins::class);
@@ -122,6 +122,28 @@ class AdapterSettingsTestPlugin extends Plugin
     protected function createSettingsModel(): PluginSettings
     {
         return new TestPluginSettings();
+    }
+}
+
+class AdapterLegacySettingsTestPlugin extends Plugin
+{
+    protected function createSettingsModel(): AdapterLegacySettings
+    {
+        return new AdapterLegacySettings();
+    }
+}
+
+class AdapterLegacySettings extends craft\base\Model
+{
+    public ?string $foo = null;
+
+    public ?string $bar = null;
+
+    protected function defineRules(): array
+    {
+        return [
+            ['foo', 'required'],
+        ];
     }
 }
 

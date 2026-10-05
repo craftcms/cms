@@ -19,6 +19,7 @@ use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
 
 return RectorConfig::configure()
+    ->withParallel(maxNumberOfProcess: 4)
     ->withPaths([
         __DIR__.'/src',
         __DIR__.'/tests',

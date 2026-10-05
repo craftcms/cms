@@ -53,6 +53,7 @@ Setting `label` makes it `role="img"` with that accessible name.
 The rule of thumb is what the icon sits beside:
 
 - **Beside text that already says it** — leave the label off. A trash icon next to the word "Delete" announced as "Delete Delete" is worse than one that is silent.
+- **Beside text that doesn't say what the icon adds** — it needs a label, or hidden `sr-only` text next to it. An external-link icon after "View" means "opens in a new window", and a screen reader user should hear that too.
 - **On its own** — it needs a label, because nothing else names it. This is the usual case inside an icon-only button.
 
 ## Properties

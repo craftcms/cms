@@ -112,6 +112,7 @@ class FieldsController
             ->title(t('Create a new field'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Fields'), 'settings/fields')
+            ->addCrumb(t('Create a new field'))
             ->redirectUrl('settings/fields')
             ->formAttributes(['action' => action([self::class, 'store'])])
             ->inertiaPage('settings/fields/Edit', new FieldEditViewModel(
@@ -148,10 +149,13 @@ class FieldsController
         }
 
         /** @var Field $field */
+        $title = trim((string) $field->name) ?: t('Edit Field');
+
         $response = new CpScreenResponse()
-            ->title(trim((string) $field->name) ?: t('Edit Field'))
+            ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Fields'), 'settings/fields')
+            ->addCrumb($title)
             ->redirectUrl('settings/fields')
             ->editUrl("settings/fields/edit/$field->id")
             ->formAttributes(['action' => action([self::class, 'store'])])

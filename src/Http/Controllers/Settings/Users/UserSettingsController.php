@@ -42,7 +42,7 @@ class UserSettingsController extends BaseUserSettingsController
 
         return new CpScreenResponse()
             ->title(t('User Settings'))
-            ->crumbs($this->crumbs(t('User Settings')))
+            ->crumbs($this->crumbs())
             ->inertiaPage('settings/users/Settings', [
                 'subnav' => $this->subnav(),
                 ...$this->viewModel($settings)->toArray(),

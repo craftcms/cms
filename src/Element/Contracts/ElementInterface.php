@@ -929,12 +929,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function hasRevisions(): bool;
 
     /**
-     * Returns the view model that builds this element type’s edit screen
-     * payload, or null if its editor hasn’t been ported off the legacy screen.
+     * Returns the view model used by the edit screen and autosave responses.
      *
-     * @return class-string<ElementEditViewModel>|null
+     * @return class-string<ElementEditViewModel>
      */
-    public static function editViewModelClass(): ?string;
+    public static function editViewModelClass(): string;
 
     /**
      * Prepares the response for the element’s Edit screen.

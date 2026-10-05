@@ -5,6 +5,14 @@ inputs:
   test-command:
     description: 'The test command to run'
     required: true
+  tia:
+    description: 'Use TIA on pull requests and record fresh baselines on 6.x pushes'
+    required: false
+    default: 'false'
+  tia-environment:
+    description: 'Environment identifier for isolating TIA baselines (e.g. mysql)'
+    required: false
+    default: default
   php-version:
     description: 'PHP version to install'
     required: false
@@ -76,6 +84,24 @@ runs:
       with:
         working-directory: ${{ inputs.working-directory }}
 
+    - name: Restore TIA baseline
+      if: inputs.tia == 'true' && github.event_name == 'pull_request'
+      uses: actions/cache/restore@v4
+      with:
+        path: .phpunit.cache/tia
+        key: pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-${{ github.event.pull_request.base.sha }}
+        restore-keys: |
+          pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-
+
     - name: Run tests
       shell: bash
-      run: ${{ inputs.test-command }}
+      env:
+        CRAFT_TIA_DIRECTORY: ${{ inputs.tia == 'true' && '.phpunit.cache/tia' || '' }}
+      run: ${{ inputs.test-command }} ${{ inputs.tia == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/6.x' && '--tia --fresh' || '' }}
+
+    - name: Save TIA baseline
+      if: inputs.tia == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/6.x'
+      uses: actions/cache/save@v4
+      with:
+        path: .phpunit.cache/tia
+        key: pest-tia-v2-${{ github.ref_name }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-${{ github.sha }}

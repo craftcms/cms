@@ -15,9 +15,15 @@ conform to **WCAG 2.2, Level AA**. This is a hard requirement, not a
 best-effort goal: don't ship a UI change without having actually checked it
 against this, the same way you wouldn't ship one without running its tests.
 
-For the full operational checklist (contrast ratios, forced-colors mode,
-reflow, forms, tables, and more) see `.github/instructions/a11y.instructions.md` —
-maintained for GitHub Copilot's reviews, and equally applicable here.
+## Read the full checklist before planning or editing UI
+
+Before you plan or make any UI change in these paths, open
+`.github/instructions/a11y.instructions.md` and read it in full, then apply
+every section relevant to the change: semantics, keyboard and focus, links
+and buttons, icons, contrast, forced colors, reflow, forms, tables, and the
+final verification checklist. Don't stop at this file or at the sections
+whose titles look relevant. It's maintained for GitHub Copilot's reviews and
+applies equally here.
 
 ## Check the standard itself, don't rely on memory alone
 

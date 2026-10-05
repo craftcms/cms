@@ -629,6 +629,7 @@ return [
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Desktop',
     'Destination' => 'Destination',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Determines which site the user will receive emails from, when sent via the control panel.',
     'Developer Response' => 'Developer Response',
     'Development Settings' => 'Development Settings',

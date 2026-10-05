@@ -87,7 +87,7 @@ it('uses the provided index context and merges detached owner parameters', () =>
     extraParams: {ownerId: 42, attribute: 'field:entries'},
   });
 
-  expect(http.data).toEqual({
+  expect(http.transform.mock.lastCall![0](http.data)).toEqual({
     elementType: 'NestedEntry',
     context: 'embeddedIndex',
     source: {type: 'native', key: '__IMP__', label: 'Entries'},
@@ -95,6 +95,7 @@ it('uses the provided index context and merges detached owner parameters', () =>
     ownerId: 42,
     attribute: 'field:entries',
     id: 'filters',
+    conditionConfig: undefined,
   });
 });
 

@@ -125,8 +125,8 @@ it('submits Entry Form values and preserves refresh context', async () => {
             component: 'test:owner-prepare',
             props: {},
             control: {
-              type: 'NestedEntries',
-              component: 'craft:nested-entries',
+              type: 'NestedElements',
+              component: 'craft:nested-elements',
               mode: 'editable',
               path: ['editor', 'cards'],
               deltaGroup: ['editor', 'cards'],
@@ -438,8 +438,8 @@ it('submits Entry Form values and preserves refresh context', async () => {
             component: 'test:owner-prepare',
             props: {},
             control: {
-              type: 'NestedEntries',
-              component: 'craft:nested-entries',
+              type: 'NestedElements',
+              component: 'craft:nested-elements',
               mode: 'editable',
               path: ['editor', 'matrix', 'entries', 'block-c', 'cards'],
               deltaGroup: ['editor', 'matrix', 'entries', 'block-c', 'cards'],

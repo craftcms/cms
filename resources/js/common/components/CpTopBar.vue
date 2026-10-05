@@ -119,7 +119,7 @@
         <div class="flex gap-2 items-center">
           <SystemInfo v-if="isLarge" />
           <div
-            class="py-1 flex flex-nowrap items-center gap-2"
+            class="flex flex-nowrap items-center gap-2"
             v-show="crumbs || hasContextMenu"
           >
             <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>

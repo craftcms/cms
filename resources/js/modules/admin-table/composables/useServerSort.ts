@@ -75,6 +75,8 @@ export function useServerSort({
   }
 
   const sortingConfig = {
+    // CP tables leave sorting off unless it's wired up like this.
+    enableSorting: true,
     manualSorting: true,
     enableMultiSort: true,
     enableSortingRemoval: false,

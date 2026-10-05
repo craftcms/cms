@@ -1,6 +1,7 @@
 import {serializeFormInputs, t} from '@craftcms/ui';
 import {focusableWithin} from '@craftcms/ui/utilities/focus-trap';
 import type {CellContext} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeFormHost} from '@/modules/forms/inline-attribute-form-host';
@@ -33,7 +34,10 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
   const errors = ref<InlineEditingErrors>({});
   let initialInputs = '';
 
-  function renderCell(context: CellContext<Row, unknown>, showErrors: boolean) {
+  function renderCell(
+    context: CellContext<CraftTableFeatures, Row, unknown>,
+    showErrors: boolean
+  ) {
     const entry = context.row.original;
     const columnId = context.column.id;
     const html = editingIds.value.includes(entry.id)
