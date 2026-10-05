@@ -20,7 +20,7 @@
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
-  import CpTopBar from '@/common/components/CpTopBar.vue';
+  import CpTopBar from '@/common/components/CpHeaderBar.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -429,9 +429,6 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: var(--c-radius-xl);
-    border-start-end-radius: var(--c-radius-xl);
-    overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -445,10 +442,6 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
-  }
-
-  .page-screen {
-    background-color: var(--c-surface-header);
   }
 
   /* The top bar keeps its height and the shell takes the rest. */

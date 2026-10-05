@@ -54,6 +54,10 @@
     aspect-ratio: 1;
   }
 
+  .system-info__name {
+    font-weight: 600;
+  }
+
   :deep(svg) {
     fill: currentColor;
     max-width: 100%;
