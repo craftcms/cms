@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, ref, watch} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -57,65 +57,68 @@
   }
 
   const columnHelper = createCraftColumnHelper<ImportRow>();
-  const editableColumns = ref([
-    columnHelper.link('name', {
-      header: t('Name'),
-      props: ({row}) => ({
-        href: row.original.editUrl ?? '',
-        inertia: false,
-      }),
-    }),
-    columnHelper.handle('handle'),
-    columnHelper.accessor('stepCount', {
-      header: t('Steps'),
-      cell: ({row}) => stepsCell(row.original),
-    }),
-    columnHelper.actions(({row}) => {
-      const actions: ActionItems = [
-        {
-          type: 'link',
-          label: t('Edit'),
+  const editableColumns = ref(
+    columnHelper.columns([
+      columnHelper.link('name', {
+        header: t('Name'),
+        props: ({row}) => ({
           href: row.original.editUrl ?? '',
-        },
-      ];
-
-      if (props.canTrigger) {
-        actions.push(runAction({uid: row.original.uid}));
-      }
-
-      if (props.canSave) {
-        actions.push({
-          type: 'button',
-          label: t('Duplicate'),
-          onClick: () => router.post(duplicate().url, {uid: row.original.uid}),
-        });
-      }
-
-      if (props.canDelete) {
-        actions.push({
-          type: 'button',
-          label: t('Delete'),
-          variant: 'danger',
-          onClick: () => {
-            if (
-              !window.confirm(
-                t('Are you sure you want to delete “{name}”?', {
-                  name: row.original.name,
-                })
-              )
-            ) {
-              return;
-            }
-            router.delete(destroy().url, {
-              data: {uid: row.original.uid},
-            });
+          inertia: false,
+        }),
+      }),
+      columnHelper.handle('handle'),
+      columnHelper.accessor('stepCount', {
+        header: t('Steps'),
+        cell: ({row}) => stepsCell(row.original),
+      }),
+      columnHelper.actions(({row}) => {
+        const actions: ActionItems = [
+          {
+            type: 'link',
+            label: t('Edit'),
+            href: row.original.editUrl ?? '',
           },
-        });
-      }
+        ];
 
-      return [h(ActionMenu, {actions})];
-    }),
-  ]);
+        if (props.canTrigger) {
+          actions.push(runAction({uid: row.original.uid}));
+        }
+
+        if (props.canSave) {
+          actions.push({
+            type: 'button',
+            label: t('Duplicate'),
+            onClick: () =>
+              router.post(duplicate().url, {uid: row.original.uid}),
+          });
+        }
+
+        if (props.canDelete) {
+          actions.push({
+            type: 'button',
+            label: t('Delete'),
+            variant: 'danger',
+            onClick: () => {
+              if (
+                !window.confirm(
+                  t('Are you sure you want to delete “{name}”?', {
+                    name: row.original.name,
+                  })
+                )
+              ) {
+                return;
+              }
+              router.delete(destroy().url, {
+                data: {uid: row.original.uid},
+              });
+            },
+          });
+        }
+
+        return [h(ActionMenu, {actions})];
+      }),
+    ])
+  );
 
   const planUids = ref<string[]>([]);
 
@@ -159,7 +162,7 @@
     );
   }
 
-  const editableTable = useVueTable<ImportRow>({
+  const editableTable = useCraftTable<ImportRow>({
     get data() {
       return editableRows.value;
     },
@@ -167,43 +170,41 @@
       return editableColumns.value;
     },
     getRowId: (row) => row.uid!,
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<ImportRow>(),
   });
 
-  const nonEditableColumns = ref([
-    columnHelper.accessor('name', {
-      header: t('Name'),
-      cell: ({row, getValue}) =>
-        h('div', [h('div', {class: 'font-bold'}, getValue())]),
-    }),
-    columnHelper.handle('handle'),
-    columnHelper.accessor('stepCount', {
-      header: t('Steps'),
-      cell: ({row}) => stepsCell(row.original),
-    }),
-    columnHelper.actions(({row}) => {
-      if (!props.canTrigger) {
-        return [];
-      }
+  const nonEditableColumns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('name', {
+        header: t('Name'),
+        cell: ({row, getValue}) =>
+          h('div', [h('div', {class: 'font-bold'}, getValue())]),
+      }),
+      columnHelper.handle('handle'),
+      columnHelper.accessor('stepCount', {
+        header: t('Steps'),
+        cell: ({row}) => stepsCell(row.original),
+      }),
+      columnHelper.actions(({row}) => {
+        if (!props.canTrigger) {
+          return [];
+        }
 
-      return [
-        h(ActionMenu, {
-          actions: [runAction({handle: row.original.handle})],
-        }),
-      ];
-    }),
-  ]);
+        return [
+          h(ActionMenu, {
+            actions: [runAction({handle: row.original.handle})],
+          }),
+        ];
+      }),
+    ])
+  );
 
-  const nonEditableTable = useVueTable<ImportRow>({
+  const nonEditableTable = useCraftTable<ImportRow>({
     get data() {
       return props.nonEditableImportPlans;
     },
     get columns() {
       return nonEditableColumns.value;
     },
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<ImportRow>(),
   });
 </script>
 
