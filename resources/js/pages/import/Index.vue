@@ -228,7 +228,7 @@
     <div class="grid gap-6">
       <craft-pane>
         <div>
-          <h3>{{ t('Editable Import Plans') }}</h3>
+          <h2>{{ t('Editable Import Plans') }}</h2>
           <p>
             {{ t('Those import plans can be edited in the control panel.') }}
           </p>
@@ -250,7 +250,7 @@
 
       <craft-pane v-if="nonEditableImportPlans.length">
         <div>
-          <h3>{{ t('Non-Editable Import Plans') }}</h3>
+          <h2>{{ t('Non-Editable Import Plans') }}</h2>
           <p>
             {{ t('Those import plans can be edited in the config file.') }}
           </p>

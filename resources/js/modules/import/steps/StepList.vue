@@ -88,6 +88,10 @@
     return [label, step.source].filter(Boolean).join(' — ');
   }
 
+  function stepLabel(step: StepPayload, index: number): string {
+    return `${index + 1}. ${summary(step)}`;
+  }
+
   function reorder(from: number, to: number): void {
     if (to < 0 || to >= steps.value.length) {
       return;
@@ -213,7 +217,7 @@
         ></craft-reorder-button>
 
         <span class="flex-1">
-          <span class="font-bold">{{ index + 1 }}. {{ summary(step) }}</span>
+          <span class="font-bold">{{ stepLabel(step, index) }}</span>
           <span v-if="errorsByStep[step.uid]" class="error block">
             {{
               t('The step “{step}” is invalid. Edit it to fix the problem.', {
@@ -227,6 +231,11 @@
           :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
           type="button"
           :loading="openingStep === step.uid"
+          :aria-label="
+            t(editable ? 'Edit {type}' : 'View {type}', {
+              type: stepLabel(step, index),
+            })
+          "
           @click="edit(step)"
         >
           {{ editable ? t('Edit') : t('View') }}
@@ -235,7 +244,7 @@
         <craft-button
           type="button"
           icon="trash"
-          :aria-label="t('Delete')"
+          :aria-label="t('Delete {type}', {type: stepLabel(step, index)})"
           .disabled="!editable"
           @click="remove(step)"
         ></craft-button>

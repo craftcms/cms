@@ -168,23 +168,27 @@
       >
         {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
       </craft-button>
-      <craft-select-rich
-        v-else
-        .modelValue="mapValue"
-        .disabled="!context.editable"
-        :label="col.label"
-        label-sr-only
-        @model-value-changed="onMapChanged"
-      >
-        <craft-option
-          v-for="option in context.sourceDataCols"
-          :key="option.value"
-          .choiceValue="option.value"
-          .hint="option.data?.hint ?? null"
+      <template v-else>
+        <craft-select-rich
+          .modelValue="mapValue"
+          .disabled="!context.editable"
+          :label="col.label"
+          label-sr-only
+          @model-value-changed="onMapChanged"
         >
-          {{ option.label }}
-        </craft-option>
-      </craft-select-rich>
+          <craft-option
+            v-for="option in context.sourceDataCols"
+            :key="option.value"
+            .choiceValue="option.value"
+            .hint="option.data?.hint ?? null"
+          >
+            {{ option.label }}
+          </craft-option>
+        </craft-select-rich>
+        <div v-if="isBestGuess" class="suggested">
+          <craft-badge fill="blue">{{ t('Suggested') }}</craft-badge>
+        </div>
+      </template>
       <div v-if="importSettings.length" class="import-settings">
         <craft-select
           v-for="setting in importSettings"
@@ -253,6 +257,12 @@
 <style scoped lang="scss">
   .best-guess {
     background: var(--color-blue-100);
+  }
+
+  .suggested {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: var(--c-spacing-sm);
   }
 
   .import-settings {

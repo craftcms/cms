@@ -120,6 +120,22 @@ it('summarizes a step by its importer type and source', () => {
   );
 });
 
+it('names each row’s buttons after its step', () => {
+  mount([step(), step({uid: 'step-2', source: 'people.csv'})]);
+
+  expect(
+    rowButtons(1).map((button) => button.getAttribute('aria-label'))
+  ).toEqual(['Edit 2. Entries — people.csv', 'Delete 2. Entries — people.csv']);
+});
+
+it('names a read-only row’s button for viewing', () => {
+  mount([step()], {editable: false});
+
+  expect(rowButtons()[0]!.getAttribute('aria-label')).toBe(
+    'View 1. Entries — people.csv'
+  );
+});
+
 it('appends a step the add slideout hands back', async () => {
   mount([]);
 

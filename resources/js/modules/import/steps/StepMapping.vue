@@ -36,7 +36,7 @@
       <p>
         {{
           t(
-            'If you see any selections marked in blue, they were auto-selected as closest matches from the incoming data. Change them if they’re not right.'
+            'Selections marked “Suggested” were auto-selected as the closest matches from the incoming data. Change them if they’re not right.'
           )
         }}
       </p>
