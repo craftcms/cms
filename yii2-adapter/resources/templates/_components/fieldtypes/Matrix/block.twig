@@ -1,14 +1,10 @@
 {% from '_includes/forms.twig' import button %}
 
 {% set entryType = entry.getType() %}
-{% set singleType = singleType ?? (entryTypes|length == 1) %}
 {% set entryTypeName = entryType.name|t('site') %}
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
 {% set staticEntries = staticEntries ?? false %}
-
-{% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
-{% set actionMenuId = "matrixblock-action-menu--#{entry.uid}" %}
 
 {% set actionMenuItems = [
   {
@@ -262,7 +258,7 @@
         : 'Disabled'|t('app')) %}
     <div class="status off" title="{{ disabledLabel }}">
       {{ tag('span', {
-        class: 'visually-hidden',
+        class: 'sr-only',
         text: disabledLabel,
       }) }}
     </div>

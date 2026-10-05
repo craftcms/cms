@@ -192,6 +192,16 @@
   }
 
   function recordChange(change: FormChange): void {
+    if (change.control && pathsMatch(change.control.path, change.path)) {
+      visitControls(payload.value.nodes, (control) => {
+        if (pathsMatch(control.path, change.path)) {
+          Object.assign(control, change.control);
+        }
+      });
+      rememberControls(payload.value.nodes);
+      emit('update:payload', payload.value);
+    }
+
     touchedPaths.add(JSON.stringify(change.path));
 
     // A control can report a change that leaves its value where it started —

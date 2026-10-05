@@ -56,7 +56,7 @@
     for (const name of Object.keys(values)) {
       if (
         name
-          .split(/[\[\]]/)
+          .split(/[[\]]/)
           .some((part) =>
             ['__proto__', 'prototype', 'constructor'].includes(part)
           )

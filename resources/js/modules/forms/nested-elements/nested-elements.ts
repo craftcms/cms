@@ -5,7 +5,7 @@ import type {QueryParams} from '@/common/types/query';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
-import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
+import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
 
 export type NestedElement = CraftCms.Cms.Element.Data.NestedElementCard &
   InlineEditableRow &

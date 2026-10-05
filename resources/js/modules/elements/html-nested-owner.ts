@@ -8,14 +8,15 @@ type HtmlElementEditor = {
     canonicalId?: number | null;
     isProvisionalDraft?: boolean;
   };
-  saveDraft?: () => Promise<void>;
+  setFormValue: (name: string, value: string) => Promise<unknown>;
   getDraftElementId?: (id: number) => number;
 };
 
 /** Prepares the owner through the surrounding HTML form's element editor. */
 export async function prepareHtmlNestedOwner(
   form: HTMLFormElement,
-  context: NestedOwnerContext
+  context: NestedOwnerContext,
+  fieldName: string
 ): Promise<NestedOwnerContext | null> {
   const editor = $(form).data('elementEditor') as HtmlElementEditor | undefined;
   if (!editor) {
@@ -26,11 +27,10 @@ export async function prepareHtmlNestedOwner(
     return null;
   }
 
-  if (editor.settings?.canCreateDrafts) {
-    await editor.saveDraft?.();
-    if (!editor.settings.draftId) {
-      return null;
-    }
+  await editor.setFormValue(fieldName, '*');
+
+  if (editor.settings?.canCreateDrafts && !editor.settings.draftId) {
+    return null;
   }
 
   const ownerId =

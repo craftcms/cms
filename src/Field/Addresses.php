@@ -220,7 +220,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $rules;
     }
 
-    protected function addressManager(): NestedElementManager
+    private function addressManager(): NestedElementManager
     {
         $this->_addressManager ??= new NestedElementManager(
             Address::class,
@@ -739,7 +739,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      *
      * @return array<string, mixed>
      */
-    protected function nestedElementManagerConfig(bool $static): array
+    private function nestedElementManagerConfig(bool $static): array
     {
         $config = [
             'showInGrid' => true,

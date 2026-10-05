@@ -1,8 +1,8 @@
 # Matrix input module
 
 Modern TypeScript port of the legacy `Craft.MatrixInput` /
-`Craft.MatrixInput.Entry` (from `packages/craftcms-legacy/matrix/`), following
-the shared module pattern (see `../listbox/README.md`):
+`Craft.MatrixInput.Entry`, following
+the shared controller module pattern:
 
 - `matrix-input.ts` — the `MatrixInput` controller class (on
   `@craftcms/garnish` `Base`): add-entry buttons and XHR block rendering,
@@ -12,14 +12,11 @@ the shared module pattern (see `../listbox/README.md`):
   action menu, enable/disable/move/duplicate/copy/delete, and conditional
   field-layout updates (`elements/update-field-layout`). Form tabs are owned by
   `FormRenderer`.
-- `matrix-input.ce.ts` — the `<craft-matrix-input>` custom element, for
-  markup-driven boots (config via `entry-types` / `input-name-prefix` /
-  `settings` attributes).
 - `support.ts` — `WeakMap` registries replacing the legacy
   `$container.data('matrix')` / `$container.data('entry')`.
-- `index.ts` — registers the element and assigns `window.Craft.MatrixInput`
+- `index.ts` — assigns `window.Craft.MatrixInput`
   (constructor-compatible, statics included, plus `.Entry`) for the
-  PHP-emitted boot script in `Matrix::blockInputHtml()` and flash JS.
+  plugin boot scripts and collapse-state flash JS.
 
 ## Legacy interop (`interop.ts`)
 
@@ -47,7 +44,5 @@ have no jQuery-free ports yet. All of those seams are typed and centralized in
 
 ## Shipping
 
-The module is loaded by both entrypoints (`cp.ts` / `legacy.ts`).
-`MatrixAsset` no longer registers the legacy webpack bundle, whose source
-remains at `packages/craftcms-legacy/matrix/` for reference until the
-remaining interop seams are ported.
+The module is loaded by the adapter’s `cp-compat.ts` Vite entrypoint.
+`MatrixAsset` no longer registers a separate webpack bundle.

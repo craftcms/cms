@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
-use CraftCms\Cms\Cp\Components\ActionMenu;
-use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Form;
@@ -77,208 +75,24 @@ class NestedElementBlocks extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        $entries = is_array($value) && is_array($value['entries'] ?? null) ? $value['entries'] : [];
-        $order = is_array($value) && is_array($value['sortOrder'] ?? null) ? array_values($value['sortOrder']) : [];
-        $editable = $attributes['name'] !== null;
-        $forms = collect($control->forms)->keyBy(fn (NestedFormPayload $form): string => array_last($form->scope));
-        $entryTypes = self::resolvedEntryTypes($control->props['entryTypes'] ?? null);
-        $blocks = is_array($control->props['blocks'] ?? null) ? $control->props['blocks'] : [];
-        $types = collect($entryTypes)->keyBy('value');
-        $creationHandles = $control->props['createEntryTypes'] ?? null;
-        $creationTypes = is_array($creationHandles)
-            ? array_values(array_filter(array_map(
-                fn (string $handle): ?array => $types->get($handle),
-                $creationHandles,
-            )))
-            : $entryTypes;
-        $items = '';
+        $path = $control->path;
+        $name = $attributes['anchorName'] ?? $attributes['name']
+            ?? array_shift($path).implode('', array_map(fn (string $segment): string => "[{$segment}]", $path));
+        $create = $control->props['create'] ?? null;
 
-        foreach ($order as $index => $uid) {
-            $uid = (string) $uid;
-            $entry = is_array($entries[$uid] ?? null) ? $entries[$uid] : [];
-            $type = (string) ($entry['type'] ?? '');
-            $label = (string) ($types[$type]['label'] ?? $type ?: $uid);
-            $form = $forms->get($uid);
-            $collapsed = (bool) ($entry['collapsed'] ?? false);
-            $enabled = (bool) ($entry['enabled'] ?? true);
-            $enabledForSite = (bool) ($entry['enabledForSite'] ?? true);
-            $icon = $blocks[$uid]['icon'] ?? null;
-            $statusLabel = match (true) {
-                ! $enabled && $control->props['siteName'] !== null => t('Disabled globally'),
-                ! $enabledForSite && $control->props['siteName'] !== null => t('Disabled for {site}', [
-                    'site' => $control->props['siteName'],
-                ]),
-                default => t('Disabled'),
-            };
-            $statusId = "{$attributes['id']}-{$index}-status";
-            $actions = $enabled && $enabledForSite ? '' : Html::tag('craft-status', '', [
-                'id' => $statusId,
-                'status' => 'disabled',
-                'label' => $statusLabel,
-            ]).Html::tag('craft-tooltip', Html::encode($statusLabel), [
-                'for' => $statusId,
-            ]);
-
-            if ($editable) {
-                $blockActions = $blocks[$uid]['actions'] ?? [];
-                $actions .= ($blockActions === [] ? '' : ActionMenu::make()
-                    ->items($blockActions)
-                    ->label(t('{type} actions', ['type' => $label]))
-                    ->toHtml()
-                ).Html::tag('span', Html::tag('craft-reorder-button', '', [
-                    'position' => match (true) {
-                        count($order) === 1 => 'first',
-                        $index === 0 => 'first',
-                        $index === array_key_last($order) => 'last',
-                        default => 'middle',
-                    },
-                ]), ['data-drag-handle' => true])
-                    // The browser stack deletes through the menu, which posts the
-                    // change back; without a Vue control listening, this button is
-                    // what `craft-matrix-input` acts on.
-                    .Button::make()
-                        ->icon('trash')
-                        ->accessibleName(t('Remove {type}', ['type' => $label]))
-                        ->attributes(['data-form-matrix-remove' => true])
-                        ->toHtml();
-            }
-
-            // `enabled` and `collapsed` post the way Craft 5's block.twig posted
-            // them. The browser stack carries both in the Control's value instead;
-            // here the form is serialized from the DOM, so they need inputs of
-            // their own or the state is lost on save.
-            $hidden = $editable
-                ? Html::hiddenInput("{$attributes['name']}[sortOrder][]", $uid)
-                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][type]", $type)
-                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][enabled]", $enabled ? '1' : '')
-                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][enabledForSite]", $enabledForSite ? '1' : '')
-                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][collapsed]", $collapsed ? '1' : '')
-                : '';
-            $content = $form instanceof NestedFormPayload
-                ? $renderer->renderNestedForm($form)
-                : Html::tag('craft-spinner', '', ['label' => t('Loading')]);
-            $header = Html::tag('div',
-                Html::tag('div',
-                    Html::tag(
-                        'div',
-                        (is_array($icon) ? Html::tag('craft-icon', '', $icon) : '').Html::encode($label)
-                        .($blocks[$uid]['error'] ?? false
-                            ? Html::tag('craft-icon', '', [
-                                'name' => 'triangle-exclamation',
-                                'aria-label' => t('Error'),
-                            ])
-                            : '')
-                        // Folded up, the block's own fields aren't there to
-                        // identify it, so its UI label stands in for them.
-                        .($collapsed
-                            ? Html::tag('div', Html::encode((string) ($blocks[$uid]['label'] ?? '')), ['data-matrix-block-preview' => true])
-                            : ''),
-                        ['class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center']],
-                    ),
-                    ['class' => ['flex', 'gap-2', 'items-center'], 'data-matrix-block-titlebar' => true],
-                ).Html::tag('div', $actions, ['class' => ['flex', 'gap-1', 'items-center'], 'data-matrix-block-actions' => true]),
-                [
-                    'slot' => 'header',
-                    'class' => ['flex', 'gap-2', 'items-center', 'justify-between', 'w-full'],
-                ],
-            );
-            $items .= Html::tag('div',
-                Html::tag('craft-card',
-                    $header.$hidden.Html::tag('div', $content, ['data-matrix-block-fields' => true]),
-                    ['collapsed' => $collapsed],
-                ), [
-                    // No Craft 5 class names: the legacy stylesheet styles them,
-                    // and would restyle the card. Behavior hangs off data attributes.
-                    'data-matrix-block' => true,
-                    'data-disabled' => $enabled && $enabledForSite ? null : true,
-                    'data-disabled-global' => $enabled ? null : true,
-                    'data-disabled-site' => $enabledForSite ? null : true,
-                    'data-id' => $uid,
-                    'data-type' => $type,
-                    // The CP's generated colorable rules turn this into the whole
-                    // `--c-color-*` alias set, which the card paints from.
-                    'data-color' => $blocks[$uid]['color'] ?? null,
-                    'data-ui-label' => $blocks[$uid]['label'] ?? null,
-                    'data-collapsed' => $collapsed ?: null,
-                    'role' => 'listitem',
-                    ...self::dataAttributes($blocks[$uid]['data'] ?? null),
-                ]);
-        }
-
-        $buttons = '';
-
-        if ($editable) {
-            foreach ($creationTypes as $type) {
-                $buttons .= Button::make()
-                    ->label(count($creationTypes) === 1
-                        ? $control->props['addLabel']
-                        : t('Add {type}', ['type' => $type['label']]))
-                    ->icon($type['icon']['name'] ?? 'plus')
-                    ->attributes([
-                        'class' => ['btn', 'add', 'icon', 'dashed', 'wrap'],
-                        'data-form-matrix-add' => $type['value'],
-                        'data-color' => $type['color'],
-                    ])
-                    ->toHtml();
-            }
-        }
-
-        $clear = $editable ? (string) Html::hiddenInput((string) $attributes['name'], '') : '';
-        $matrix = Html::tag('div',
-            Html::tag('span', '', ['role' => 'status', 'class' => 'sr-only', 'data-status-message' => true])
-            .Html::tag('div', $items, [
-                'class' => ['grid', 'gap-1'],
-                'data-matrix-blocks' => true,
-                'role' => 'list',
-            ])
-            .($buttons === '' ? '' : Html::tag('div', $buttons, [
-                'class' => ['flex', 'flex-wrap', 'gap-1', 'items-center', 'mt-3'],
-                'data-matrix-buttons' => true,
-            ])), [
-                'id' => $attributes['id'],
-                'data-matrix-field' => true,
-            ]);
-        $entryTypes = array_map(
-            fn (array $type, int $index): array => [
-                'id' => $index + 1,
-                'handle' => $type['value'],
-                'name' => $type['label'],
-            ],
-            $creationTypes,
-            array_keys($creationTypes),
-        );
-
-        return Html::tag('craft-matrix-input', $clear.$matrix, [
-            'form-control' => true,
-            'entry-types' => Json::encode($entryTypes),
-            'input-name-prefix' => $attributes['name'],
-            'settings' => Json::encode([
-                'formControl' => true,
-                'maxEntries' => $control->props['maxEntries'],
+        return Html::tag('craft-entry-field-layout-form', Html::hiddenInput($name, '', [
+            'disabled' => true,
+            'data-form-field-name' => true,
+        ]), [
+            'id' => $attributes['id'],
+            'data-payload' => Json::encode($renderer->controlForm($control, $value), JSON_HEX_AMP | JSON_THROW_ON_ERROR),
+            'data-field-path' => Json::encode($control->path),
+            'data-owner' => $create === null ? null : Json::encode([
+                'elementType' => $create['ownerElementType'],
+                'elementId' => $create['ownerId'],
+                'siteId' => $create['siteId'],
             ]),
-            'min-entries' => $control->props['minEntries'],
         ]);
-    }
-
-    /**
-     * The block's identity as `data-*` attributes. See `Field\Matrix::blockData()`.
-     *
-     * @param  array<string, int|string>|null  $data
-     * @return array<string, int|string>
-     */
-    private static function dataAttributes(?array $data): array
-    {
-        if ($data === null) {
-            return [];
-        }
-
-        $attributes = [];
-
-        foreach ($data as $name => $value) {
-            $attributes["data-{$name}"] = $value;
-        }
-
-        return $attributes;
     }
 
     public function component(): string
@@ -500,26 +314,5 @@ class NestedElementBlocks extends Control
         }
 
         return $value;
-    }
-
-    /** @return list<array{value: string, label: string, icon: array<string, string>|null, color: string|null}> */
-    private static function resolvedEntryTypes(mixed $entryTypes): array
-    {
-        if (! is_array($entryTypes)) {
-            throw new InvalidArgumentException('Resolved Matrix entry types must be an array.');
-        }
-
-        return array_map(function (mixed $entryType): array {
-            if (! is_array($entryType) || ! is_string($entryType['value'] ?? null) || ! is_string($entryType['label'] ?? null)) {
-                throw new InvalidArgumentException('Resolved Matrix entry types require string values and labels.');
-            }
-
-            return [
-                'value' => $entryType['value'],
-                'label' => $entryType['label'],
-                'icon' => is_array($entryType['icon'] ?? null) ? $entryType['icon'] : null,
-                'color' => is_string($entryType['color'] ?? null) ? $entryType['color'] : null,
-            ];
-        }, array_values($entryTypes));
     }
 }

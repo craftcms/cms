@@ -11,21 +11,19 @@ declare(strict_types=1);
 
 namespace craft\fields;
 
+use craft\events\BulkElementsEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Entry\Data\EntryType;
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Field\MatrixEntrySaveCompatibility;
+use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
-use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 3.0.0
@@ -35,140 +33,56 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
 {
     use LegacyBuiltInField;
 
+    public function afterSaveEntries(BulkElementsEvent $event): void
+    {
+        app(MatrixEntrySaveCompatibility::class)->rememberCollapsedEntries($event->elements);
+    }
+
     /**
      * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->inputHtmlInternal($value, $element, false);
-    }
+        $entries = $this->viewMode === self::VIEW_MODE_BLOCKS ? $this->entriesForForm($value) : [];
+        $control = parent::formControl(new FieldContext(
+            path: ['fields', $this->handle],
+            value: $this->viewMode === self::VIEW_MODE_BLOCKS ? new ElementCollection($entries) : $value,
+            element: $element,
+            mode: $this->legacyInputMode,
+            inline: $inline,
+        ));
 
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        return match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
-            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
-                'id' => $this->getInputId(),
-            ]),
-        };
-    }
+        $errors = [];
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            $messages = $element?->errors()->get($this->handle) ?? [];
+            if ($messages !== []) {
+                $errors["fields.{$this->handle}"] = $messages;
+            }
 
-    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
-    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
-    {
-        if (!$element?->id) {
-            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => Entry::pluralDisplayName(),
-                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
-            ]);
+            $identities = ElementHelper::nestedElementIdentities($entries);
+            foreach ($entries as $index => $entry) {
+                if ($entry->errors()->isEmpty()) {
+                    continue;
+                }
 
-            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
+                $form = app(FieldLayoutCompiler::class)->compile(
+                    $entry->getFieldLayout(),
+                    $entry,
+                    new FormContext(errors: $entry->errors()->getMessages(), mode: $this->legacyInputMode),
+                );
+                if ($form->globalErrors !== []) {
+                    $path = "fields.{$this->handle}";
+                    $errors[$path] = array_merge($errors[$path] ?? [], $form->globalErrors);
+                }
+
+                foreach ($form->errors as $error) {
+                    $path = ['fields', $this->handle, 'entries', $identities[$index], ...$error['path']];
+                    $errors[implode('.', $path)] = $error['messages'];
+                }
+            }
         }
 
-        if ($element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle)->all();
-        }
-
-        if ($value instanceof EntryQuery) {
-            $value = $value->getResultOverride() ?? (clone $value)
-                ->drafts(null)
-                ->canonicalsOnly()
-                ->status(null)
-                ->limit(null)
-                ->all();
-        }
-
-        if ($static && empty($value)) {
-            return '<p class="light">' . t('No entries.') . '</p>';
-        }
-
-        $id = $this->getInputId();
-        /** @var Entry[] $value */
-        $entryTypes = $this->getEntryTypesForField($value, $element);
-
-        // Get the entry types data
-        $entryTypeInfo = array_map(fn(EntryType $entryType) => [
-            'id' => $entryType->id,
-            'handle' => $entryType->handle,
-            'name' => t($entryType->name, category: 'site'),
-        ], $entryTypes);
-        $createDefaultEntries = (
-            $this->minEntries != 0 &&
-            count($entryTypeInfo) === 1 &&
-            !$element->errors()->has($this->handle)
-        );
-        $staticEntries = (
-            $static ||
-            (
-                $createDefaultEntries &&
-                $this->minEntries === $this->maxEntries &&
-                $this->maxEntries >= count($value)
-            )
-        );
-
-        $settings = [
-            'fieldId' => $this->id,
-            'maxEntries' => $this->maxEntries,
-            'namespace' => InputNamespace::get(),
-            'baseInputName' => InputNamespace::namespaceInputName($this->handle),
-            'ownerElementType' => $element::class,
-            'ownerId' => $element->id,
-            'siteId' => $element->siteId,
-            'static' => $static,
-            'staticEntries' => $staticEntries,
-        ];
-
-        // Safe to create the default entries?
-        if ($createDefaultEntries && count($value) < $this->minEntries) {
-            // @link https://github.com/craftcms/cms/issues/12973
-            // for fields with minEntries set Craft.MatrixInput.addEntry() is called before new Craft.ElementEditor(),
-            // so when we get our initialSerializedValue() for the ElementEditor,
-            // the entry is already there which means the field is reported as not changed since the init
-            // and so not passed to PHP for save
-            DeltaRegistry::setInitialValue($this->handle, null);
-
-            $settings['addDefaultEntries'] = [
-                'type' => $entryTypes[0]->handle,
-                'count' => $this->minEntries - count($value),
-            ];
-        }
-
-        $inputHtml = template('_components/fieldtypes/Matrix/input', [
-            'id' => $id,
-            'field' => $this,
-            'name' => $this->handle,
-            'entryTypes' => $entryTypes,
-            'entries' => $value,
-            'static' => $static,
-            'staticEntries' => $staticEntries,
-            'createButtonLabel' => $this->createButtonLabel(),
-            'labelId' => $this->getLabelId(),
-            'siteName' => $this->localizedSiteName($element),
-            'forms' => collect($value)->mapWithKeys(fn(Entry $entry): array => [
-                $entry->uid => $this->blockFormVariables($entry, $static),
-            ])->all(),
-        ]);
-
-        // The `<craft-matrix-input>` element (resources/js/modules/matrix)
-        // boots the MatrixInput controller from these attributes, replacing the
-        // imperative `new Craft.MatrixInput(...)` boot script. The attribute
-        // values are written fully namespaced, since the outer namespacing pass
-        // only rewrites name/id-style attributes.
-        return Html::tag('craft-matrix-input', $inputHtml, [
-            'entry-types' => Json::encode($entryTypeInfo),
-            'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
-            'settings' => Json::encode($settings),
-        ]);
-    }
-
-    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
-    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
-    {
-        $config = $this->nestedElementManagerConfig($value, $owner, $static);
-
-        return $this->viewMode === self::VIEW_MODE_INDEX
-            ? $this->entryManager()->getIndexHtml($owner, $config)
-            : $this->entryManager()->getCardsHtml($owner, $config);
+        return app(NestedElementFieldHtml::class)->render($control, $this->getInputId(), $this->handle, $this->legacyInputMode, $errors);
     }
 }

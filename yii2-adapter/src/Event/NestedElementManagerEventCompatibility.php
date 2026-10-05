@@ -11,6 +11,7 @@ use craft\events\DuplicateNestedElementsEvent;
 use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
 use CraftCms\Cms\Element\Events\NestedElementsDuplicated as NewDuplicateNestedElementsEvent;
 use CraftCms\Cms\Element\Events\NestedElementsSaved;
+use CraftCms\Yii2Adapter\Field\MatrixEntrySaveCompatibility;
 use Illuminate\Support\Facades\Event;
 
 readonly class NestedElementManagerEventCompatibility
@@ -27,6 +28,8 @@ readonly class NestedElementManagerEventCompatibility
                 'sender' => $event->manager,
             ]));
         });
+
+        Event::listen(NestedElementsSaved::class, MatrixEntrySaveCompatibility::class);
 
         Event::listen(function(NewDuplicateNestedElementsEvent $event) {
             if (!YiiEvent::hasHandlers(NestedElementManager::class, NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {

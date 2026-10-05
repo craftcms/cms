@@ -1,6 +1,13 @@
 import {nextTick} from 'vue';
 import jquery from 'jquery';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import {defineNestedElementsControlHost} from './nested-elements-control-host';
 import type {FormControlPayload} from '../types';
@@ -15,16 +22,19 @@ import {
   stubElementInternals,
 } from './nested-index.fixture';
 
-const requests = vi.hoisted(() => ({post: vi.fn()}));
+import {actionClient, ConfigService} from '@craftcms/ui';
+import '../../../../../yii2-adapter/resources/js/native-field-refresh';
+let requests: {post: MockInstance<typeof actionClient.post>};
 const actions = vi.hoisted(() => ({run: vi.fn()}));
-vi.mock('@craftcms/ui', async (original) => ({
-  ...(await original<Record<string, unknown>>()),
-  actionClient: requests,
-}));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 
 let restoreInternals = () => {};
 beforeEach(() => {
+  requests = {post: vi.spyOn(actionClient, 'post')};
+  vi.stubGlobal('Cp', {registeredAssetBundles: [], registeredJsFiles: []});
+  ConfigService.getInstance().initialize({
+    actionUrl: 'http://localhost/admin/actions',
+  });
   restoreInternals = stubElementInternals();
   vi.stubGlobal('$', jquery);
   vi.stubGlobal('Craft', {
@@ -54,6 +64,7 @@ function mount({
   mode = 'editable',
   index = false,
   insideBlock = false,
+  relative = false,
 } = {}) {
   const scope = insideBlock ? ['fields', 'blocks', 'entries', 'block-a'] : [];
   const control: FormControlPayload<NestedElementsProps> = {
@@ -99,7 +110,7 @@ function mount({
   host.dataset.scope = JSON.stringify(scope);
   host.innerHTML =
     (mode === 'editable'
-      ? `<input type="hidden" name="${inputName(['slideout', ...control.path])}" value="*" disabled data-nested-modified>`
+      ? `<input type="hidden" name="${relative ? 'cards' : inputName(['slideout', ...control.path])}" value="*" disabled data-nested-modified>`
       : '') + '<div data-nested-mount></div>';
   form.append(host);
   document.body.append(form);
@@ -123,34 +134,84 @@ async function deleteCard(host: HTMLElement) {
 }
 
 it.each([
-  {location: 'direct field', insideBlock: false},
-  {location: 'field inside a Matrix block', insideBlock: true},
+  {
+    location: 'direct field',
+    insideBlock: false,
+    legacy: false,
+    relative: false,
+  },
+  {
+    location: 'field inside a Matrix block',
+    insideBlock: true,
+    legacy: false,
+    relative: false,
+  },
+  {
+    location: 'field with a relative legacy input name',
+    insideBlock: false,
+    legacy: false,
+    relative: true,
+  },
+  {
+    location: 'plugin field inside a Matrix block',
+    insideBlock: true,
+    legacy: true,
+    relative: false,
+  },
 ])(
   'refreshes a $location after deletion without losing unsaved HTML form values',
-  async ({insideBlock}) => {
-    const {form, host, text, control} = mount({insideBlock});
-    const namespace = insideBlock
-      ? 'slideout[fields][blocks][entries][block-a]'
-      : 'slideout';
-    const fieldName = `${namespace}[fields][cards]`;
-    requests.post.mockResolvedValue({
-      data: {
-        form: {
-          nodes: [
-            {
-              type: 'Field',
-              component: 'craft:field',
-              props: {},
-              control: {
-                ...control,
-                path: ['slideout', ...control.path],
-                props: {...control.props, cards: []},
-              },
-            },
-          ],
-        },
-      },
+  async ({insideBlock, legacy, relative}) => {
+    const {form, host, text, control} = mount({insideBlock, relative});
+    const namespace = relative
+      ? ''
+      : insideBlock
+        ? 'slideout[fields][blocks][entries][block-a]'
+        : 'slideout';
+    const fieldName = relative ? 'cards' : `${namespace}[fields][cards]`;
+    const refreshed = {
+      ...control,
+      path: relative ? control.path : ['slideout', ...control.path],
+      props: {...control.props, cards: []},
+    };
+    const fragment = document.createElement('craft-nested-elements-control');
+    fragment.dataset.control = JSON.stringify({
+      ...refreshed,
+      path: ['fields', 'cards'],
     });
+    vi.mocked(fetch).mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            form: {
+              scope: [],
+              values: {},
+              errors: [],
+              globalErrors: [],
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'Field',
+                  component: 'craft:field',
+                  props: {},
+                  control: legacy
+                    ? {
+                        ...refreshed,
+                        component: 'craft-legacy:html',
+                        props: {
+                          fragment: {
+                            html: fragment.outerHTML,
+                            headHtml: '',
+                            bodyHtml: '',
+                          },
+                        },
+                      }
+                    : refreshed,
+                },
+              ],
+            },
+          })
+        )
+    );
     expect(new FormData(form).has(fieldName)).toBe(false);
     expect(host.textContent).toContain('Entry 81');
 
@@ -160,12 +221,14 @@ it.each([
     expect(host.querySelector('[role="alert"]')).toBeNull();
     expect(new FormData(form).get(fieldName)).toBe('*');
     expect(text.value).toBe('Unsaved edit');
-    const body = new URLSearchParams(requests.post.mock.calls[0]![1]);
+    const body = new URLSearchParams(String(requests.post.mock.calls[0]![1]));
     expect(body.get(fieldName)).toBe('*');
-    expect(body.get(`${namespace}[elementId]`)).toBe(insideBlock ? '92' : '73');
-    expect(body.get(`${namespace}[elementType]`)).toBe(
-      insideBlock ? 'Entry' : 'GlobalSet'
+    expect(body.get(namespace ? `${namespace}[elementId]` : 'elementId')).toBe(
+      insideBlock ? '92' : '73'
     );
+    expect(
+      body.get(namespace ? `${namespace}[elementType]` : 'elementType')
+    ).toBe(insideBlock ? 'Entry' : 'GlobalSet');
     expect(body.get('slideout[fields][text]')).toBe('Unsaved edit');
     if (insideBlock) {
       expect(body.get(`${namespace}[title]`)).toBe('Unsaved block title');
@@ -173,11 +236,13 @@ it.each([
         'Unsaved block title'
       );
     }
-    expect(requests.post.mock.calls[0]![2].headers).toMatchObject({
-      'X-Craft-Namespace': namespace,
-      'X-Craft-Form-Root-Scope': insideBlock
-        ? '["slideout","fields","blocks","entries","block-a"]'
-        : '["slideout"]',
+    expect(requests.post.mock.calls[0]![2]?.headers).toMatchObject({
+      'X-Craft-Namespace': namespace || undefined,
+      'X-Craft-Form-Root-Scope': relative
+        ? '[]'
+        : insideBlock
+          ? '["slideout","fields","blocks","entries","block-a"]'
+          : '["slideout"]',
     });
   }
 );
@@ -202,7 +267,7 @@ it('prepares the owner draft before changing its nested elements', async () => {
   });
   const editor = {
     settings: {canCreateDrafts: true, draftId: null as number | null},
-    saveDraft: vi.fn(async () => {
+    setFormValue: vi.fn(async () => {
       await draftSaved;
       editor.settings.draftId = 44;
     }),
@@ -211,7 +276,12 @@ it('prepares the owner draft before changing its nested elements', async () => {
   $(form).data('elementEditor', editor);
   requests.post.mockRejectedValue(new Error('Offline'));
   await deleteCard(host);
-  await vi.waitFor(() => expect(editor.saveDraft).toHaveBeenCalledOnce());
+  await vi.waitFor(() =>
+    expect(editor.setFormValue).toHaveBeenCalledExactlyOnceWith(
+      'slideout[fields][cards]',
+      '*'
+    )
+  );
   expect(actions.run).not.toHaveBeenCalled();
   expect(new FormData(form).get('slideout[fields][cards]')).toBe('*');
   finishDraft();

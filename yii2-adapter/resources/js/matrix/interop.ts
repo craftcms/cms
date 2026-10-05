@@ -14,6 +14,9 @@
  */
 
 import {jq} from '@/common/utils/jquery';
+import type {ClipboardRuntime} from '@/modules/matrix/clipboard';
+export type {CopiedElementInfo} from '@/modules/matrix/clipboard';
+type ElementId = string | number | null;
 import type {MatrixEntry} from './matrix-entry';
 import type {MatrixInput} from './matrix-input';
 
@@ -90,19 +93,8 @@ export interface LegacyElementEditor {
  * These members aren't part of the typed `CraftStatic` surface (yet) — narrow
  * them here instead of sprinkling casts around the module.
  */
-export interface LegacyCraftRuntime {
+export interface LegacyCraftRuntime extends ClipboardRuntime {
   queue: {push(job: () => Promise<void>): Promise<void>};
-  cp: {
-    announce(message: string): void;
-    displayError(message?: string): void;
-    copyElements(elementInfo: CopiedElementInfo[]): void;
-    getCopiedElements(): CopiedElementInfo[];
-    onCopyElements(
-      callback: (elementInfo: CopiedElementInfo[], buttonLabel?: string) => void
-    ): void;
-    pasteElements(params: PasteElementParams): Promise<{id: number}[]>;
-  };
-  elementTypeNames: Record<string, string[]>;
   getText(value: string): string;
   filterArray(arr: string[]): string[];
   hasMousePointerEvents(): boolean;
@@ -112,35 +104,6 @@ export interface LegacyCraftRuntime {
   namespaceInputName(name: string, namespace?: string): string;
   namespaceId(id: string, namespace?: string): string;
   systemUid: string;
-}
-
-/** Element info entries produced by the copy/paste clipboard. */
-export interface CopiedElementInfo {
-  type: string;
-  id: ElementId;
-  draftId?: JsonValue;
-  revisionId?: JsonValue;
-  fieldId?: number | null;
-  ownerId?: ElementId;
-  siteId?: number | null;
-  data?: Record<string, JsonValue | undefined> & {entryTypeId?: number};
-}
-
-type ElementId = string | number | null;
-
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | {[key: string]: JsonValue};
-
-interface PasteElementParams {
-  primaryOwnerId: ElementId;
-  ownerId: ElementId;
-  fieldId: number | null;
-  siteId: number | null;
 }
 
 interface LegacySelectSettings {

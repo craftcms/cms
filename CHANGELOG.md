@@ -7,6 +7,7 @@
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
 - Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
 - Updated nested element fields in HTML forms, including Global Set content editors, to use the shared cards and element index controls. ([#19804](https://github.com/craftcms/cms/pull/19804))
+- Updated Matrix fields using the Blocks view mode in HTML forms to use the shared Vue control. ([#19832](https://github.com/craftcms/cms/pull/19832))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
@@ -64,6 +65,7 @@
 - Fixed a bug where Link fields displayed the Label input even when `showLabelField` was disabled. ([#19811](https://github.com/craftcms/cms/pull/19811))
 - Fixed a bug where nested HTML forms hid all their tabs and reused tab panel IDs across instances. ([#19816](https://github.com/craftcms/cms/pull/19816))
 - Fixed an error when Form API table controls needed to add rows to meet their `minRows` setting before becoming visible. ([#19815](https://github.com/craftcms/cms/pull/19815))
+- Fixed a bug where HTML 5 apostrophe entities could be double-encoded in control panel form attributes. ([#19832](https://github.com/craftcms/cms/pull/19832))
 - Fixed inconsistent handling of owner-specific Matrix entry types when creating, rendering, and duplicating entries. ([#19819](https://github.com/craftcms/cms/pull/19819))
 - Fixed a bug where apostrophes in lightswitch labels were displayed as HTML entities. ([#19830](https://github.com/craftcms/cms/pull/19830))
 

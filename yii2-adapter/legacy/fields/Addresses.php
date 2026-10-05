@@ -12,9 +12,10 @@ declare(strict_types=1);
 namespace craft\fields;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
 
@@ -32,19 +33,14 @@ class Addresses extends \CraftCms\Cms\Field\Addresses implements LegacyField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->inputHtmlInternal($element);
-    }
+        $control = parent::formControl(new FieldContext(
+            path: ['fields', $this->handle],
+            value: $value,
+            element: $element,
+            mode: $this->legacyInputMode,
+            inline: $inline,
+        ));
 
-    private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
-    {
-        $config = $this->nestedElementManagerConfig($static);
-
-        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
-            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
-                'id' => $this->getInputId(),
-            ]);
-        }
-
-        return $this->addressManager()->getIndexHtml($owner, $config);
+        return app(NestedElementFieldHtml::class)->render($control, $this->getInputId(), $this->handle, $this->legacyInputMode);
     }
 }

@@ -125,6 +125,8 @@ export type FormChange = {
   path: string[];
   scope?: string[];
   refreshable?: boolean;
+  /** Updated form definitions when a control creates nested fields. */
+  control?: FormControlPayload<object>;
 };
 
 export type FormControlOverrideProps = {

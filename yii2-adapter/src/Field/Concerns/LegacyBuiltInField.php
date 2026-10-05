@@ -32,6 +32,8 @@ trait LegacyBuiltInField
         settingsForm as private legacySettingsForm;
     }
 
+    private ControlMode $legacyInputMode = ControlMode::Editable;
+
     public function settingsForm(FormContext $context = new FormContext()): Form
     {
         if (static::class !== self::class) {
@@ -44,7 +46,14 @@ trait LegacyBuiltInField
     public function formControl(FieldContext $context): Control
     {
         if (static::class !== self::class) {
-            return $this->legacyFormControl($context);
+            $previousMode = $this->legacyInputMode;
+            $this->legacyInputMode = $context->form->mode === ControlMode::Editable ? $context->mode : $context->form->mode;
+
+            try {
+                return $this->legacyFormControl($context);
+            } finally {
+                $this->legacyInputMode = $previousMode;
+            }
         }
 
         return parent::formControl($context);
@@ -98,7 +107,14 @@ trait LegacyBuiltInField
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         if (static::class !== self::class) {
-            return $this->legacyStaticHtml($value, $element);
+            $previousMode = $this->legacyInputMode;
+            $this->legacyInputMode = ControlMode::ReadOnly;
+
+            try {
+                return $this->legacyStaticHtml($value, $element);
+            } finally {
+                $this->legacyInputMode = $previousMode;
+            }
         }
 
         $context = new FormContext(mode: ControlMode::ReadOnly);

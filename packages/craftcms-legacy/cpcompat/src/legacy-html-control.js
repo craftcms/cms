@@ -18,6 +18,62 @@ import {
   const elementName = 'craft-legacy-html-control';
   const componentNames = ['craft-legacy:html-field', 'craft-legacy:html'];
 
+  function refreshNativeHosts(root, previous, next) {
+    if (
+      !previous ||
+      !next ||
+      previous.headHtml !== next.headHtml ||
+      previous.bodyHtml !== next.bodyHtml
+    ) {
+      return false;
+    }
+
+    const selector =
+      'craft-entry-field-layout-form[data-field-path], craft-nested-elements-control[data-control]';
+    const capture = (html) => {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      const hosts = [...template.content.querySelectorAll(selector)];
+      const metadata = hosts.map((host) => ({
+        path:
+          host.dataset.fieldPath ??
+          JSON.stringify(JSON.parse(host.dataset.control).path),
+        payload: host.dataset.payload,
+        control: host.dataset.control,
+        owner: host.dataset.owner,
+      }));
+      hosts.forEach((host, index) => {
+        host.removeAttribute('data-payload');
+        host.removeAttribute('data-control');
+        host.removeAttribute('data-owner');
+        host.setAttribute('data-native-path', metadata[index].path);
+      });
+
+      return {html: template.innerHTML, metadata};
+    };
+    const before = capture(previous.html);
+    const after = capture(next.html);
+    const hosts = [...root.querySelectorAll(selector)].filter(
+      (host) => host.closest('craft-legacy-html-control') === root
+    );
+    if (
+      !hosts.length ||
+      before.html !== after.html ||
+      hosts.length !== after.metadata.length
+    ) {
+      return false;
+    }
+
+    after.metadata.forEach((metadata, index) => {
+      const host = hosts[index];
+      if (metadata.owner !== undefined) host.dataset.owner = metadata.owner;
+      if (metadata.payload) host.payload = JSON.parse(metadata.payload);
+      if (metadata.control) host.control = JSON.parse(metadata.control);
+    });
+
+    return true;
+  }
+
   class LegacyHtmlControl extends HTMLElement {
     _control = null;
     _values = null;
@@ -43,6 +99,18 @@ import {
 
       if (fragmentKey === this._fragmentKey) {
         this._control = control;
+        applyMode(this, control?.mode);
+        this.renderErrors();
+
+        return;
+      }
+
+      if (
+        this.isConnected &&
+        refreshNativeHosts(this, this._control?.props?.fragment, fragment)
+      ) {
+        this._control = control;
+        this._fragmentKey = fragmentKey;
         applyMode(this, control?.mode);
         this.renderErrors();
 
@@ -77,7 +145,32 @@ import {
     }
 
     set value(value) {
+      const previous = this._value;
       this._value = value;
+      if (value === previous) return;
+      if (!this.isConnected || !this._control?.props.expandValues) return;
+      const path = this._control.path;
+      const expanded =
+        value && typeof value === 'object' && !Array.isArray(value.sortOrder)
+          ? valueAt(expandValues(value), path)
+          : value;
+      const nativeValue =
+        expanded === ''
+          ? {entries: {}, sortOrder: []}
+          : expanded && typeof expanded === 'object'
+            ? {
+                entries: expanded.entries ?? {},
+                sortOrder: expanded.sortOrder ?? [],
+              }
+            : null;
+      if (nativeValue && Array.isArray(nativeValue.sortOrder)) {
+        this.querySelectorAll(
+          'craft-entry-field-layout-form[data-field-path]'
+        ).forEach((host) => {
+          host.fieldValue = nativeValue;
+        });
+      }
+      restoreFormInputs(this, value, path);
     }
 
     set scope(scope) {
@@ -172,7 +265,17 @@ import {
           return;
         }
 
-        if (!(await this.append(fragment.html, this, runId))) {
+        if (
+          !(await this.append(
+            nativeFieldHtml(
+              fragment.html,
+              this._control.path,
+              this._control.props.expandValues ? this.currentValue() : null
+            ),
+            this,
+            runId
+          ))
+        ) {
           return;
         }
 
@@ -181,7 +284,11 @@ import {
         }
 
         applyMode(this, this._control?.mode);
-        restoreFormInputs(this, this.currentValue());
+        restoreFormInputs(
+          this,
+          this.currentValue(),
+          this._control.props.expandValues ? this._control.path : null
+        );
         this.renderErrors();
         window.Craft?.initUiElements?.(this);
       } catch (error) {
@@ -231,7 +338,23 @@ import {
       if (this._values && this._control?.path) {
         if (this._control.props?.expandValues) {
           unsetValue(this._values, this._control.path);
-          mergeValues(this._values, expandValues(value));
+          const expanded = expandValues(value);
+          this.querySelectorAll(
+            'craft-entry-field-layout-form[data-field-path]'
+          ).forEach((host) => {
+            const payload = host.payload;
+            const path = payload?.nodes[0]?.control?.path;
+            if (path) {
+              const nativeValue = valueAt(payload.values, path);
+              if (nativeValue !== undefined)
+                setValue(expanded, path, {
+                  ...valueAt(expanded, path),
+                  entries: nativeValue.entries,
+                  sortOrder: nativeValue.sortOrder,
+                });
+            }
+          });
+          mergeValues(this._values, expanded);
         } else {
           setValue(this._values, this._control.path, value);
         }
@@ -302,6 +425,53 @@ import {
     }
   }
 
+  function nativeFieldHtml(html, path, value) {
+    if (
+      !html.includes('data-nested-modified') &&
+      !html.includes('data-form-field-name')
+    ) {
+      return html;
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const name =
+      path[0] +
+      path
+        .slice(1)
+        .map((segment) => `[${segment}]`)
+        .join('');
+    template.content
+      .querySelectorAll(
+        'craft-nested-elements-control > input[data-nested-modified], craft-entry-field-layout-form[data-field-path] > input[data-form-field-name]'
+      )
+      .forEach((input) => {
+        input.name = name;
+      });
+
+    if (
+      value === '' ||
+      (value && typeof value === 'object' && Array.isArray(value.sortOrder))
+    ) {
+      template.content
+        .querySelectorAll(
+          'craft-entry-field-layout-form[data-field-path][data-payload]'
+        )
+        .forEach((host) => {
+          const payload = JSON.parse(host.dataset.payload);
+          const fieldPath = JSON.parse(host.dataset.fieldPath);
+          setValue(
+            payload.values,
+            fieldPath,
+            value === '' ? {entries: {}, sortOrder: []} : value
+          );
+          host.dataset.payload = JSON.stringify(payload);
+        });
+    }
+
+    return template.innerHTML;
+  }
+
   function applyMode(root, mode) {
     if (mode !== 'disabled') {
       return;
@@ -320,7 +490,7 @@ import {
     );
   }
 
-  function restoreFormInputs(container, values) {
+  function restoreFormInputs(container, values, expandedPath = null) {
     if (!values || typeof values !== 'object') {
       return;
     }
@@ -328,11 +498,22 @@ import {
     const indexes = new Map();
 
     for (const control of formControls(container)) {
-      if (control.disabled) {
+      if (
+        control.disabled ||
+        control.closest('craft-entry-field-layout-form[data-field-path]')
+      ) {
         continue;
       }
 
-      const value = values[control.name];
+      const value =
+        control.name in values
+          ? values[control.name]
+          : expandedPath
+            ? valueAt(
+                values,
+                inputPath(control.name).slice(expandedPath.length)
+              )
+            : undefined;
       const expected = Array.isArray(value)
         ? value.map(String)
         : [String(value ?? '')];
@@ -434,7 +615,10 @@ import {
   function expandValues(values) {
     const expanded = Object.create(null);
 
-    for (const [name, value] of Object.entries(values)) {
+    const inputs = Object.entries(values).sort(
+      ([left], [right]) => inputPath(left).length - inputPath(right).length
+    );
+    for (const [name, value] of inputs) {
       const path = inputPath(name);
 
       for (const item of Array.isArray(value) ? value : [value]) {

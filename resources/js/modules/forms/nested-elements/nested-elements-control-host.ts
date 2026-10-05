@@ -3,9 +3,10 @@ import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers
 import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
 import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
 import {prepareHtmlNestedOwner} from '@/modules/elements/html-nested-owner';
-import type {
-  NestedOwnerContext,
-  NestedOwnerEditor,
+import {
+  requestNestedOwnerEditor,
+  type NestedOwnerContext,
+  type NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
 import {inputName, pathsMatch, visitControls} from '../runtime';
 import type {FormControlPayload, FormPayload} from '../types';
@@ -30,6 +31,16 @@ export function defineNestedElementsControlHost(
       readonly #control =
         shallowRef<FormControlPayload<NestedElementsProps> | null>(null);
 
+      set control(control: FormControlPayload<NestedElementsProps>) {
+        this.#epoch++;
+        this.#control.value = {
+          ...control,
+          path: this.#control.value?.path ?? control.path,
+          deltaGroup: this.#control.value?.deltaGroup ?? control.deltaGroup,
+        };
+        this.dataset.control = JSON.stringify(control);
+      }
+
       connectedCallback(): void {
         if (this.#app) {
           return;
@@ -44,30 +55,43 @@ export function defineNestedElementsControlHost(
         );
         if (input) {
           const path = input.name.replaceAll(']', '').split('[');
-          const prefix = path.slice(0, path.length - control.path.length);
-          control = {...control, path};
-          this.#scope = [...prefix, ...this.#scope];
+          if (path.length >= control.path.length) {
+            const prefix = path.slice(0, path.length - control.path.length);
+            control = {...control, path};
+            this.#scope = [...prefix, ...this.#scope];
+          }
         }
         this.#control.value = control;
 
+        let nativeOwner: NestedOwnerEditor | null = null;
         const owner: NestedOwnerEditor = {
           prepare: async () => {
             const form = this.closest('form');
             const manager = this.#control.value?.props.manager;
-            if (!form || !manager || this.#control.value?.mode !== 'editable') {
+            if (!manager || this.#control.value?.mode !== 'editable') {
               return null;
             }
 
-            this.#preparedOwner = await prepareHtmlNestedOwner(form, {
+            const context: NestedOwnerContext = {
               ownerId: manager.ownerId,
               ownerIsDerivative: manager.ownerIsDerivative === true,
               ownerIsInDerivativeTree: manager.ownerIsInDerivativeTree === true,
               ownerIsUnpublishedDraft: manager.ownerIsUnpublishedDraft === true,
               requiresDerivative: manager.ownerHasDrafts !== false,
-            });
-            return this.#preparedOwner;
+            };
+            nativeOwner = requestNestedOwnerEditor(this);
+            this.#preparedOwner = nativeOwner
+              ? await nativeOwner.prepare(this.#control.value.path, context)
+              : form
+                ? await prepareHtmlNestedOwner(
+                    form,
+                    context,
+                    inputName(this.#control.value.path)
+                  )
+                : null;
+            return this.isConnected ? this.#preparedOwner : null;
           },
-          refresh: () => this.#refresh(),
+          refresh: () => nativeOwner?.refresh?.() ?? this.#refresh(),
         };
         this.#app = createApp(
           defineComponent({
@@ -129,6 +153,7 @@ export function defineNestedElementsControlHost(
               ? inputName(this.#scope)
               : undefined,
             'X-Craft-Form-Root-Scope': JSON.stringify(this.#scope),
+            'X-Craft-Native-Field-Path': JSON.stringify(control.path),
           },
         });
         if (epoch !== this.#epoch) {
