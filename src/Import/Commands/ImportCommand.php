@@ -36,7 +36,7 @@ use function Laravel\Prompts\text;
  *
  * @since 6.0.0
  */
-abstract class Import extends Command implements PromptsForMissingInput
+abstract class ImportCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
@@ -50,7 +50,7 @@ abstract class Import extends Command implements PromptsForMissingInput
         }
 
         $this->addOption('transformer', null, InputOption::VALUE_OPTIONAL, 'The fully qualified class name of the transformer you want to use to manipulate the data on import.')
-            ->addOption('matchCriteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.');
+            ->addOption('match-criteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.');
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class Import extends Command implements PromptsForMissingInput
                     'string',
                 ]
             ), 'transformer')
-            ->addIf(! $this->option('matchCriteria'), fn () => text(
+            ->addIf(! $this->option('match-criteria'), fn () => text(
                 label: 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, all items will be imported as new.',
                 validate: [
                     'string',
@@ -85,13 +85,13 @@ abstract class Import extends Command implements PromptsForMissingInput
             ), 'matchCriteria');
 
         foreach ($this->getAdditionalOptions() as $handle => $params) {
-            $options->addIf(! $this->option($handle) && ($params['condition'] ?? true), $params['prompt'], $handle);
+            $options->addIf(! $this->option(Str::kebab($handle)) && ($params['condition'] ?? true), $params['prompt'], $handle);
         }
         $responses = $options->submit();
 
         $matchCriteria = null;
-        if ($this->option('matchCriteria')) {
-            $matchCriteria = self::normalizeMatchCriteria($this->option('matchCriteria'));
+        if ($this->option('match-criteria')) {
+            $matchCriteria = self::normalizeMatchCriteria($this->option('match-criteria'));
         } elseif ($responses['matchCriteria']) {
             if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
                 $responses['matchCriteria'] = '='.$responses['matchCriteria'];
@@ -99,7 +99,9 @@ abstract class Import extends Command implements PromptsForMissingInput
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
         }
 
-        $settings = array_replace($this->options(), array_filter($responses, fn ($value) => $value !== null && $value !== ''));
+        // options are kebab-case, while settings are named after the importer setters they're applied through
+        $options = collect($this->options())->mapWithKeys(fn ($value, $name) => [Str::camel($name) => $value])->all();
+        $settings = array_replace($options, array_filter($responses, fn ($value) => $value !== null && $value !== ''));
         unset($settings['matchCriteria']);
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid

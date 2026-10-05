@@ -58,12 +58,12 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $this->command = fn (string $source, array $options = []) => $this->artisan('craft:import:entry', [
+    $this->command = fn (string $source, array $options = []) => $this->artisan('craft:import:entries', [
         'source' => 'tests/Fixtures/Import/'.$source,
         '--site' => Sites::getPrimarySite()->handle,
         '--transformer' => EntryTransformer::class,
         '--section' => $this->section->uid,
-        '--entryType' => $this->entryType->uid,
+        '--entry-type' => $this->entryType->uid,
         ...$options,
     ]);
 });
@@ -73,7 +73,7 @@ afterEach(function () {
 });
 
 it('imports every row of a JSON file', function () {
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3)
@@ -81,12 +81,12 @@ it('imports every row of a JSON file', function () {
 });
 
 it('updates the same entries on a second run instead of duplicating them', function () {
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     $entryId = EntryElement::find()->title('first file entry')->one()->id;
 
-    ($this->command)('entries-plain-text-updated.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text-updated.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     $entry = EntryElement::find()->title('first file entry')->one();
@@ -109,7 +109,7 @@ it('creates duplicates on a second run when no match criteria is given', functio
 });
 
 it('imports a file’s matrix blocks', function () {
-    ($this->command)('entries-matrix.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-matrix.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     $blocks = EntryElement::find()->title('file entry with matrix')->one()->getFieldValue('myMatrix')->all();
@@ -120,7 +120,7 @@ it('imports a file’s matrix blocks', function () {
 });
 
 it('imports a file’s matrix-in-matrix blocks', function () {
-    ($this->command)('entries-matrix-in-matrix.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-matrix-in-matrix.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     $outerBlock = EntryElement::find()->title('file entry with matrix in matrix')->one()->getFieldValue('myMatrix')->one();
@@ -132,7 +132,7 @@ it('imports a file’s matrix-in-matrix blocks', function () {
 });
 
 it('matches entries and their matrix blocks on a second run', function () {
-    $options = ['--matchCriteria' => '={"title":"title","myMatrix":{"blockEt":{"title":"title"}}}'];
+    $options = ['--match-criteria' => '={"title":"title","myMatrix":{"blockEt":{"title":"title"}}}'];
 
     ($this->command)('entries-matrix.json', $options)->assertSuccessful();
 
@@ -150,7 +150,7 @@ it('matches entries and their matrix blocks on a second run', function () {
 });
 
 it('fails with a validation error when the file does not exist', function () {
-    ($this->command)('does-not-exist.json', ['--transformer' => 'null', '--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('does-not-exist.json', ['--transformer' => 'null', '--match-criteria' => '={"title":"title"}'])
         ->assertFailed();
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(0);
@@ -171,12 +171,12 @@ it('accepts match criteria entered through the prompt with a leading "="', funct
 });
 
 it('prompts for the transformer when the option is omitted, defaulting it when left empty', function () {
-    $this->artisan('craft:import:entry', [
+    $this->artisan('craft:import:entries', [
         'source' => 'tests/Fixtures/Import/entries-plain-text.json',
         '--site' => Sites::getPrimarySite()->handle,
-        '--matchCriteria' => '={"title":"title"}',
+        '--match-criteria' => '={"title":"title"}',
         '--section' => $this->section->uid,
-        '--entryType' => $this->entryType->uid,
+        '--entry-type' => $this->entryType->uid,
     ])
         ->expectsQuestion(TRANSFORMER_QUESTION, '')
         ->assertSuccessful();
@@ -186,14 +186,14 @@ it('prompts for the transformer when the option is omitted, defaulting it when l
 });
 
 it('throws for an unknown site handle', function () {
-    ($this->command)('entries-plain-text.json', ['--site' => 'no-such-site', '--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--site' => 'no-such-site', '--match-criteria' => '={"title":"title"}'])
         ->assertFailed();
 });
 
 it('fires the import finished event once with the importer and the items’ run ID', function () {
     Event::fake([ImportFinished::class, ItemImported::class]);
 
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     Event::assertDispatchedTimes(ImportFinished::class, 1);
@@ -212,7 +212,7 @@ it('flags the import finished event when an item fails to import', function () {
     Event::fake([ImportFinished::class]);
     Event::listen(ItemImporting::class, fn () => throw new Exception('Item failed.'));
 
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures);
@@ -226,7 +226,7 @@ it('fires the import and step lifecycle events in order with the same run ID', f
         });
     }
 
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     expect(array_column($fired, 0))->toBe([ImportStarted::class, ImportStepStarted::class, ImportStepFinished::class, ImportFinished::class])
@@ -239,7 +239,7 @@ it('flags the import finished event when an entry fails to save', function () {
         $event->isValid = false;
     });
 
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
+    ($this->command)('entries-plain-text.json', ['--match-criteria' => '={"title":"title"}'])
         ->assertSuccessful();
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(0);

@@ -459,26 +459,28 @@ defined one.
 
 ## 10. CLI
 
-One command per importer, each extending the abstract `CraftCms\Cms\Import\Commands\Import`:
+One command per importer, each extending the abstract `CraftCms\Cms\Import\Commands\ImportCommand`:
 
 ```
-craft:import:entry {source} [--site=] [--section=] [--entryType=] [--transformer=] [--matchCriteria=]
-craft:import:asset {source} [--site=] [--volume=] [--transformer=] [--matchCriteria=]
-craft:import:user {source} [--site=] [--transformer=] [--matchCriteria=]
-craft:import:system-message {source} [--transformer=] [--matchCriteria=]
+craft:import:entries {source} [--site=] [--section=] [--entry-type=] [--transformer=] [--match-criteria=]
+craft:import:assets {source} [--site=] [--volume=] [--transformer=] [--match-criteria=]
+craft:import:users {source} [--site=] [--transformer=] [--match-criteria=]
+craft:import:system-messages {source} [--transformer=] [--match-criteria=]
 ```
 
-Aliases: `import/entry`, `import/asset`, `import/user`, `import/system-message`. `{source}` is an
+Aliases: `import/entries`, `import/assets`, `import/users`, `import/system-messages`. `{source}` is an
 aliased or `@root`-relative path, or a URL, and is prompted if missing, as are any missing
 options; `--site` is only added for element importers and only prompted on multisite.
-`--matchCriteria` is JSON.
+`--match-criteria` is JSON.
 
 A command builds a one-off importer via `ImportPlan::createImporter()`, validates it (printing
 errors per attribute and failing if it's invalid), reads the data via `withLocalFile()` (so a
 URL is downloaded to a temp file), and imports every item synchronously — it doesn't go through
 a plan or the queue. It fires the run lifecycle events (see §3) without an import plan. To add a
-command for your own importer, extend `Import`, implement `importerClass()`, add any extra
-prompts via `getAdditionalOptions()`, and register it with `$this->commands()`.
+command for your own importer, extend `ImportCommand`, implement `importerClass()`, add any extra
+options in `configure()` and their prompts via `getAdditionalOptions()`, and register it with
+`$this->commands()`. Options are kebab-case and applied through the importer setter of the same
+camel-cased name (`--entry-type` → `entryType()`); `getAdditionalOptions()` is keyed by setter name.
 
 No command takes a `--map`, so CLI mapping is the transformer's job.
 

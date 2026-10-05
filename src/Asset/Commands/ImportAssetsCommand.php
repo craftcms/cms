@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Asset\Commands;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Import\AssetImporter;
-use CraftCms\Cms\Import\Commands\Import;
+use CraftCms\Cms\Import\Commands\ImportCommand;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Override;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,16 +16,16 @@ use function Laravel\Prompts\select;
 /**
  * @since 6.0.0
  */
-class ImportAsset extends Import
+class ImportAssetsCommand extends ImportCommand
 {
     #[Override]
-    protected $name = 'craft:import:asset';
+    protected $name = 'craft:import:assets';
 
     #[Override]
-    protected $description = 'Imports Craft CMS Assets';
+    protected $description = 'Imports assets.';
 
     #[Override]
-    protected $aliases = ['import/asset'];
+    protected $aliases = ['import/assets'];
 
     #[Override]
     protected function configure(): void

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Commands;
 
 use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Import\Commands\Import;
+use CraftCms\Cms\Import\Commands\ImportCommand;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
 use Override;
@@ -16,16 +16,16 @@ use function Laravel\Prompts\select;
 /**
  * @since 6.0.0
  */
-class ImportEntry extends Import
+class ImportEntriesCommand extends ImportCommand
 {
     #[Override]
-    protected $name = 'craft:import:entry';
+    protected $name = 'craft:import:entries';
 
     #[Override]
-    protected $description = 'Imports Craft CMS Entries';
+    protected $description = 'Imports entries.';
 
     #[Override]
-    protected $aliases = ['import/entry'];
+    protected $aliases = ['import/entries'];
 
     #[Override]
     protected function configure(): void
@@ -33,7 +33,7 @@ class ImportEntry extends Import
         parent::configure();
 
         $this->addOption('section', null, InputOption::VALUE_OPTIONAL, 'The section to import into.')
-            ->addOption('entryType', null, InputOption::VALUE_OPTIONAL, 'The entry type to import into.');
+            ->addOption('entry-type', null, InputOption::VALUE_OPTIONAL, 'The entry type to import into.');
     }
 
     #[Override]

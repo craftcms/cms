@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use CraftCms\Cms\Import\Commands\Import;
+use CraftCms\Cms\Import\Commands\ImportCommand;
 use CraftCms\Cms\User\Import\UserImporter;
 use Override;
 
 /**
  * @since 6.0.0
  */
-class ImportUser extends Import
+class ImportUsersCommand extends ImportCommand
 {
     #[Override]
-    protected $name = 'craft:import:user';
+    protected $name = 'craft:import:users';
 
     #[Override]
-    protected $description = 'Imports Craft CMS Users';
+    protected $description = 'Imports users.';
 
     #[Override]
-    protected $aliases = ['import/user'];
+    protected $aliases = ['import/users'];
 
     #[Override]
     public static function importerClass(): string

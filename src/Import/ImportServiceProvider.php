@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
-use CraftCms\Cms\Asset\Commands\ImportAsset;
-use CraftCms\Cms\Entry\Commands\ImportEntry;
-use CraftCms\Cms\SystemMessage\Commands\ImportSystemMessage;
-use CraftCms\Cms\User\Commands\ImportUser;
+use CraftCms\Cms\SystemMessage\Commands\ImportSystemMessagesCommand;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -23,17 +20,13 @@ class ImportServiceProvider extends ServiceProvider
     }
 
     /**
-     * Registers the import-related artisan command.
+     * Registers the system messages import command; the other import commands are registered by their domains.
      */
     public function boot(): void
     {
         $this->commands([
-            ImportAsset::class,
-            ImportEntry::class,
-            ImportUser::class,
-            ImportSystemMessage::class,
+            ImportSystemMessagesCommand::class,
         ]);
-
     }
 
     /**
