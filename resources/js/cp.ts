@@ -16,7 +16,6 @@ import './modules/notifications/components/cp-notification-center.js';
  */
 import './modules/sortable-checkbox-select';
 import './modules/listbox';
-import './modules/matrix';
 import './modules/auth/elevated-session';
 import './modules/field-layout-designer';
 import './modules/editable-table';
@@ -53,7 +52,6 @@ import './modules/preview-file-modal';
 import './modules/asset-select-input';
 import './modules/element-deletion-manager';
 import './modules/uploader';
-import './modules/nested-element-manager';
 import './modules/ui';
 
 window.Cp = Cp;

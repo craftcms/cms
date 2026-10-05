@@ -11,7 +11,7 @@ import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {animationDuration, MatrixInput} from './matrix-input';
-import {blockPreviewParts} from './preview-text';
+import {blockPreviewParts} from '@/modules/matrix/preview-text';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,

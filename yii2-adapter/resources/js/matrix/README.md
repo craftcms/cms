@@ -2,7 +2,7 @@
 
 Modern TypeScript port of the legacy `Craft.MatrixInput` /
 `Craft.MatrixInput.Entry`, following
-the shared module pattern (see `../listbox/README.md`):
+the shared controller module pattern:
 
 - `matrix-input.ts` — the `MatrixInput` controller class (on
   `@craftcms/garnish` `Base`): add-entry buttons and XHR block rendering,
@@ -16,7 +16,7 @@ the shared module pattern (see `../listbox/README.md`):
   `$container.data('matrix')` / `$container.data('entry')`.
 - `index.ts` — assigns `window.Craft.MatrixInput`
   (constructor-compatible, statics included, plus `.Entry`) for the
-  PHP-emitted boot script in `Matrix::blockInputHtml()` and flash JS.
+  plugin boot scripts and collapse-state flash JS.
 
 ## Legacy interop (`interop.ts`)
 
@@ -44,5 +44,5 @@ have no jQuery-free ports yet. All of those seams are typed and centralized in
 
 ## Shipping
 
-The module is loaded by both entrypoints (`cp.ts` / `legacy.ts`).
+The module is loaded by the adapter’s `cp-compat.ts` Vite entrypoint.
 `MatrixAsset` no longer registers a separate webpack bundle.

@@ -31,7 +31,6 @@ import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-fo
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 
 import './modules/listbox/index';
-import './modules/matrix/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
@@ -64,7 +63,6 @@ import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
-import './modules/nested-element-manager/index';
 import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');

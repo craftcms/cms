@@ -1,7 +1,6 @@
 /**
  * MatrixInput — modern TypeScript port of the legacy `Craft.MatrixInput`
- * (packages/craftcms-legacy/matrix/src/MatrixInput.js), following the shared
- * module pattern (see the listbox module).
+ * with the same constructor and static API for plugin callers.
  *
  * The outer controller for a Matrix field in `blocks` view mode: owns the
  * add-entry buttons (max-entries gating, XHR block rendering), block drag-sort
@@ -13,7 +12,7 @@
  * Animations API, honoring reduced-motion.
  */
 
-import {syncSelectionMenu} from './selection-menu';
+import {syncSelectionMenu} from '@/modules/matrix/selection-menu';
 import {
   Base,
   DragSort,
@@ -25,14 +24,14 @@ import {
 } from '@craftcms/garnish';
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
-import {flashNewBlock} from './new-block';
+import {flashNewBlock} from '@/modules/matrix/new-block';
 import {containerMatrixInputs} from './support';
 import {
   collapsedBlockIds,
   forgetCollapsedBlock,
   rememberCollapsedBlock,
   setCollapsedBlockIds,
-} from './collapsed-blocks';
+} from '@/modules/matrix/collapsed-blocks';
 import type {FormValues} from '@/modules/forms/types';
 import {
   type CopiedElementInfo,
