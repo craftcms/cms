@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider;
 use CraftCms\Cms\Gql\GqlServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
+use CraftCms\Cms\Mcp\McpServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
 use CraftCms\Cms\Queue\QueueServiceProvider;
@@ -52,6 +53,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         DeprecatorServiceProvider::class,
         DebugServiceProvider::class,
         LicenseServiceProvider::class,
+        McpServiceProvider::class,
         RouteServiceProvider::class,
         AppServiceProvider::class,
         ConsoleServiceProvider::class,
