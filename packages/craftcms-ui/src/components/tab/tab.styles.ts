@@ -45,6 +45,28 @@ export default css`
     );
   }
 
+  :host([selected]) {
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
+  /* A hidden copy of the label in the selected weight reserves its width,
+     so selecting a tab doesn't shift the strip. */
+  .tab__label {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .tab__label::after {
+    content: attr(data-text);
+    block-size: 0;
+    overflow: hidden;
+    visibility: hidden;
+    user-select: none;
+    pointer-events: none;
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
   /*
    * Out of hit-testing, not just dimmed: <craft-tabs> binds its click handler
    * to every tab, so a disabled tab that still takes pointer events would
