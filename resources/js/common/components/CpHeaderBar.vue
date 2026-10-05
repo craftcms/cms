@@ -142,7 +142,8 @@
 <style scoped>
   .cp-header-bar {
     --badge-border-color: var(--c-surface-sunken);
-    padding-block: var(--c-spacing-sm);
+    padding-block-start: calc(var(--c-spacing-sm) - 1px);
+    padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
     min-height: calc(42rem / 16);
     display: grid;
@@ -153,8 +154,8 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
-    border-block-end: 1px solid var(--c-color-border-quiet);
-    box-shadow: var(--shadow-md);
+    border-block-start: 1px solid rgba(0 0 0 / 0.25);
+    box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
     position: relative;
     z-index: var(--c-layer-overlay);
 
