@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Controls\TableColumns;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -45,6 +46,21 @@ it('applies table modes to concrete cells and reusable row templates', function 
     expect($table->forms[0]->nodes[0]->control->mode)->toBe($mode)
         ->and($table->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe($mode->value);
 })->with([ControlMode::ReadOnly, ControlMode::Disabled]);
+
+it('resolves column controls for an empty editor without adding a column to submitted values', function () {
+    $form = Form::make([
+        Field::make('Columns', TableColumns::make('columns')
+            ->cellTypes([['label' => 'Text', 'value' => 'singleline']])
+            ->value([])->mode(ControlMode::ReadOnly)),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $control = $payload->nodes[0]->control;
+
+    expect($payload->values)->toBe(['settings' => ['columns' => []]])
+        ->and($control->forms)->toBe([])
+        ->and($control->props['rowTemplate']['nodes'][0]['control']['path'])->toBe(['heading'])
+        ->and($control->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe(ControlMode::ReadOnly->value);
+});
 
 it('rejects unregistered controls in an empty table row template', function () {
     $form = Form::make([

@@ -21,7 +21,8 @@ test('table field validates column values', function () {
         ->createElementWithFields(save: false);
     $invalidResult->element->validate();
 
-    expect($invalidResult->element->errors()->has('tableField'))->toBeTrue();
+    expect($invalidResult->element->errors()->has('tableField'))->toBeTrue()
+        ->and($invalidResult->element->errors()->has('tableField.0.col1'))->toBeTrue();
 
     $validResult = EntryModel::factory()
         ->withField('tableFieldValid', Table::class, $settings, value: [['col1' => 'dev@example.com']])
