@@ -198,7 +198,7 @@ it('preserves unavailable cell settings and raw content until its provider retur
     {
         public Table $table;
 
-        protected function fieldByHandle(string $handle): ?FieldInterface
+        protected function fieldByHandle(string $handle): FieldInterface
         {
             return $this->table;
         }

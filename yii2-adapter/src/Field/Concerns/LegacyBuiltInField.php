@@ -32,7 +32,7 @@ trait LegacyBuiltInField
         settingsForm as private legacySettingsForm;
     }
 
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsForm(FormContext $context = new FormContext()): Form
     {
         if (static::class !== self::class) {
             return $this->legacySettingsForm($context) ?? Form::make();
@@ -61,22 +61,22 @@ trait LegacyBuiltInField
             return null;
         }
 
-        $payload = app(FormResolver::class)->resolve($form, new FormContext);
+        $payload = app(FormResolver::class)->resolve($form, new FormContext());
 
         return app(FormHtmlRenderer::class)->render($payload);
     }
 
     public function getReadOnlySettingsHtml(): ?string
     {
-        if (! $this instanceof TableField) {
-            return Html::disableInputs(fn () => $this->getSettingsHtml());
+        if (!$this instanceof TableField) {
+            return Html::disableInputs(fn() => $this->getSettingsHtml());
         }
 
         $previousMode = $this->tableSettingsMode;
         $this->tableSettingsMode = ControlMode::ReadOnly;
 
         try {
-            return Html::disableInputs(fn () => $this->getSettingsHtml());
+            return Html::disableInputs(fn() => $this->getSettingsHtml());
         } finally {
             $this->tableSettingsMode = $previousMode;
         }
@@ -85,7 +85,7 @@ trait LegacyBuiltInField
     private function tableSettingsHtml(ControlMode $mode): string
     {
         $context = new FormContext(namespace: 'settings', mode: $mode, refreshable: $mode === ControlMode::Editable);
-        $payload = app(FormResolver::class)->resolve(parent::settingsForm($context) ?? Form::make(), $context);
+        $payload = app(FormResolver::class)->resolve(parent::settingsForm($context), $context);
 
         return Html::tag('craft-field-settings-form', '', [
             'name' => '__fieldSettings',
