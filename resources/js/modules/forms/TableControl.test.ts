@@ -34,6 +34,7 @@ async function mountTable(
   const mutation = ref<FormValues>({});
   const errors = ref<FormPayload['errors']>([]);
   let inertiaForm!: InertiaForm<TableFormValues>;
+  let advanceBaseline!: () => void;
   const source = {...payload(keyed), refreshable: Boolean(refresh)};
   Object.assign(source.nodes[0]!.control!.props, controlProps);
   if (controlProps.columns?.title?.required) {
@@ -48,6 +49,11 @@ async function mountTable(
     setup() {
       inertiaForm = useForm<TableFormValues>(source.values as TableFormValues);
       const integration = useInertiaFormRenderer(inertiaForm, source);
+      const sidebar = useInertiaFormRenderer(inertiaForm, null);
+      advanceBaseline = () => {
+        integration.advanceBaseline();
+        sidebar.advanceBaseline();
+      };
       return () =>
         h(FormRenderer, {
           ref: integration.renderer,
@@ -66,7 +72,7 @@ async function mountTable(
   registry.install(app);
   app.mount(host);
   await settle();
-  return {mutation, errors, inertiaForm};
+  return {mutation, errors, inertiaForm, advanceBaseline};
 }
 
 async function settle() {
@@ -182,6 +188,41 @@ describe('Vue table rows', () => {
     reorder(2, 'up');
     await settle();
     expect(new FormData(form).get('rows[2][rowId]')).toBe(firstId);
+  });
+
+  it('keeps edits made during submission unsaved until their own save completes', async () => {
+    const {mutation, inertiaForm, advanceBaseline} = await mountTable();
+    const input = form.querySelector<HTMLInputElement>(
+      'input[name="rows[0][title]"]'
+    )!;
+    const field = form.querySelector('craft-field')!;
+    input.value = 'Submitted';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+    expect(field.getAttribute('status')).toBe('modified');
+    inertiaForm.processing = true;
+    input.value = 'Later edit';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+    inertiaForm.processing = false;
+    advanceBaseline();
+    await settle();
+
+    expect(input.value).toBe('Later edit');
+    expect(field.getAttribute('status')).toBe('modified');
+    expect(mutation.value.rows).toEqual([
+      {title: 'Later edit'},
+      {title: 'Beta'},
+    ]);
+    expect(inertiaForm.isDirty).toBe(true);
+
+    inertiaForm.processing = true;
+    inertiaForm.processing = false;
+    advanceBaseline();
+    await settle();
+    expect(field.getAttribute('status')).toBeNull();
+    expect(mutation.value).toEqual({});
+    expect(inertiaForm.isDirty).toBe(false);
   });
 
   it('clears stale cell errors when the row order changes and displays new validation errors', async () => {

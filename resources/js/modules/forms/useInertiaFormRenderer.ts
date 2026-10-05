@@ -110,8 +110,23 @@ export function useInertiaFormRenderer<
   }
 
   function advanceBaseline(): void {
+    if (!toValue(payload)) return;
+
+    if (!renderer.value) {
+      form.defaults();
+      return;
+    }
+
+    if (mutationKey !== undefined) {
+      form.defaults({...form.data(), [mutationKey]: {}});
+    } else {
+      form.defaults(
+        Object.fromEntries(
+          [...rootKeys].map((key) => [key, undefined])
+        ) as Partial<T>
+      );
+    }
     renderer.value?.advanceBaseline();
-    form.defaults();
   }
 
   /**

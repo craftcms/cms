@@ -629,6 +629,17 @@ describe('FormRenderer', () => {
     expect(matrix().getAttribute('status')).toBe('modified');
     expect(heading().getAttribute('status')).toBeNull();
 
+    renderer.advanceBaseline();
+    await nextTick();
+
+    expect(input.value).toBe('Changed');
+    expect(matrix().getAttribute('status')).toBeNull();
+
+    input.value = 'Changed again';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+    expect(matrix().getAttribute('status')).toBe('modified');
+
     // Throwing the values away clears it — even though rewriting the input
     // makes its control report a change that leaves the value where it started.
     renderer.resetValues();

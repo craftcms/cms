@@ -97,10 +97,8 @@
   const knownControls = new Map<string, FormControlPayload>();
   const touchedPaths = new Set<string>();
   /**
-   * Dotted paths of every control changed since the form was last reset.
-   * Reactive, unlike `touchedPaths`, because a field holding nested forms badges
-   * from it. Kept through a save, the way Craft 5's badges stay put, and dropped
-   * only when the values are thrown away.
+   * Dotted paths changed since the last explicit save or reset. Nested fields
+   * use these to mark changes not yet reported by the server.
    */
   const changedPaths = ref(new Set<string>());
   const controlBehaviors = reactive(
@@ -108,6 +106,7 @@
   );
   const nativeSubmitting = ref(false);
   const submitting = ref(false);
+  let submittedValues: FormValues | undefined;
   const clearedErrorScopes = reactive(new Map<string, string[]>());
   const effectiveErrors = computed(() =>
     (props.errors ?? payload.value.errors).filter(
@@ -386,6 +385,7 @@
     );
     nativeSubmitting.value = false;
     submitting.value = false;
+    submittedValues = undefined;
     clearedErrorScopes.clear();
     touchedPaths.clear();
     changedPaths.value.clear();
@@ -449,7 +449,17 @@
   }
 
   function advanceBaseline(): void {
-    baseline = cloneRaw(values);
+    baseline = submittedValues ?? cloneRaw(values);
+    submittedValues = undefined;
+    changedPaths.value = new Set(
+      [...changedPaths.value].filter((path) => {
+        const segments = path.split('.');
+        return (
+          groupCanonical(valueAt(values, segments), segments) !==
+          groupCanonical(valueAt(baseline, segments), segments)
+        );
+      })
+    );
     emitMutation();
   }
 
@@ -510,6 +520,7 @@
   }
 
   function setSubmitting(value: boolean): void {
+    if (value && !submitting.value) submittedValues = cloneRaw(values);
     submitting.value = value;
   }
 
