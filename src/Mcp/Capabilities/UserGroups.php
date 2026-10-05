@@ -80,7 +80,7 @@ readonly class UserGroups
     /** @return array{group: array<string, mixed>} */
     #[McpTool(
         name: 'user-groups.create',
-        description: 'Creates a Craft CMS user group. Assign permissions separately with user-permissions.set.',
+        description: 'Creates a Craft CMS user group. Assign permissions separately with user-permissions.group.set.',
     )]
     #[RequiresAdminChanges]
     public function create(
@@ -109,7 +109,7 @@ readonly class UserGroups
      */
     #[McpTool(
         name: 'user-groups.update',
-        description: 'Updates a Craft CMS user group. Assign permissions separately with user-permissions.set.',
+        description: 'Updates a Craft CMS user group. Assign permissions separately with user-permissions.group.set.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
