@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
@@ -16,7 +17,6 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users as UserService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpResourceTemplate;
 use Mcp\Capability\Attribute\McpTool;
@@ -113,7 +113,7 @@ readonly class Users
     ];
 
     public function __construct(
-        private Request $request,
+        private McpActor $actor,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
         private UserInitiatedElementSave $userInitiatedElementSave,
@@ -192,7 +192,7 @@ readonly class Users
         #[Schema(definition: self::FieldsSchema)]
         array $fields = [],
     ): array {
-        $actor = $this->actor();
+        $actor = $this->actor->user();
         $user = new User;
 
         $this->authorizeSave($actor, $user);
@@ -231,7 +231,7 @@ readonly class Users
             throw new ToolCallException('User not found.');
         }
 
-        $actor = $this->actor();
+        $actor = $this->actor->user();
 
         $this->authorizeSave($actor, $user);
         $this->authorizeAttributes($actor, $attributes);
@@ -264,7 +264,7 @@ readonly class Users
             throw new ToolCallException('User not found.');
         }
 
-        if (! Gate::forUser($this->actor())->allows('delete', $user)) {
+        if (! Gate::forUser($this->actor->user())->allows('delete', $user)) {
             throw new ToolCallException('You are not authorized to delete this user.');
         }
 
@@ -316,17 +316,6 @@ readonly class Users
             $email !== null => $this->users->getUserByUsernameOrEmail($email),
             default => null,
         };
-    }
-
-    private function actor(): CraftUser
-    {
-        $actor = $this->request->craftUser();
-
-        if (! $actor) {
-            throw new ToolCallException('Authentication is required.');
-        }
-
-        return $actor;
     }
 
     private function authorizeSave(CraftUser $actor, User $user): void

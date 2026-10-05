@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
+use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -27,6 +28,7 @@ use Mcp\Schema\ToolAnnotations;
 readonly class UserPermissions
 {
     public function __construct(
+        private McpActor $actor,
         private UserPermissionService $permissions,
         private Users $users,
         private UserGroups $userGroups,
@@ -202,11 +204,13 @@ readonly class UserPermissions
      */
     private function authorizeAssignablePermissions(array $permissions, User|UserGroup $target): void
     {
+        $actor = $this->actor->user();
+
         $unauthorized = array_values(array_filter(
             $permissions,
             static fn (string $permission): bool => $target instanceof User
-                ? ! Gate::check('assignPermission', [$target, $permission])
-                : ! $target->can($permission) && ! Gate::check($permission),
+                ? ! Gate::forUser($actor)->allows('assignPermission', [$target, $permission])
+                : ! $target->can($permission) && ! Gate::forUser($actor)->allows($permission),
         ));
 
         if ($unauthorized !== []) {
