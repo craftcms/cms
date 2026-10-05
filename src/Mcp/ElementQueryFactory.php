@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Str;
@@ -18,6 +19,12 @@ readonly class ElementQueryFactory
 
     public function make(string $type): ElementQueryInterface
     {
+        return $this->elements->createElementQuery($this->resolve($type));
+    }
+
+    /** @return class-string<ElementInterface> */
+    public function resolve(string $type): string
+    {
         $elementType = $this->elements->getElementTypeByRefHandle($type)
             ?? $this->elements->getElementTypeByRefHandle(Str::singular($type));
 
@@ -25,6 +32,12 @@ readonly class ElementQueryFactory
             throw new ToolCallException("Unsupported element type [$type].");
         }
 
-        return $this->elements->createElementQuery($elementType);
+        return $elementType;
+    }
+
+    /** @return list<class-string<ElementInterface>> */
+    public function registeredTypes(): array
+    {
+        return $this->elements->getAllElementTypes();
     }
 }
