@@ -16,7 +16,6 @@ $lightIcons = [
     'envelope',
     'files',
     'folder-open',
-    'gear',
     'globe',
     'image',
     'map-location',

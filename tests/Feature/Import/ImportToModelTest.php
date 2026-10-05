@@ -6,7 +6,6 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
-use CraftCms\Cms\User\Elements\User;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -70,12 +69,4 @@ it('saves when re-importing with a changed attribute', function () {
 
     $message = SystemMessage::where(['key' => 'my_message', 'language' => 'en'])->first();
     expect($message?->getAttribute('body'))->toBe('updated body');
-});
-
-it('resolves the importer registered for a model', function () {
-    expect($this->import->getModelImporterTypeFor(SystemMessage::class))->toBe(SystemMessageImporter::class);
-});
-
-it('returns null for a model with no registered importer', function () {
-    expect($this->import->getModelImporterTypeFor(User::class))->toBeNull();
 });

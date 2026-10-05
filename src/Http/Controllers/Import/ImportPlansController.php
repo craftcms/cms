@@ -14,11 +14,11 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportPlanMapViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanStepFormViewModel;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\ImportPlanIndexData;
 use CraftCms\Cms\Import\Data\MappingColumnGroup;
+use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\StepFormPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
@@ -88,16 +88,11 @@ class ImportPlansController
             description: $importPlan->description,
             stepCount: count($importPlan->steps ?? []),
             stepLabels: array_values(array_map(
-                $this->stepTypeLabel(...),
+                fn (BaseImporter $step): string => $step::displayName(),
                 $importPlan->steps ?? [],
             )),
             editable: $editable,
         );
-    }
-
-    private function stepTypeLabel(BaseImporter $step): string
-    {
-        return $step::displayName();
     }
 
     public function create(): CpScreenResponse
@@ -107,9 +102,9 @@ class ImportPlansController
         return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : new ImportPlanData);
     }
 
-    public function edit(?ImportPlanData $importPlan = null, ?string $handle = null): CpScreenResponse
+    public function edit(?string $handle = null): CpScreenResponse
     {
-        $handle ??= $importPlan->handle ?? $this->request->input('handle');
+        $handle ??= $this->request->input('handle');
 
         if (is_null($handle)) {
             return $this->create();
@@ -119,13 +114,8 @@ class ImportPlansController
         abort_if(! $found->isEditable(), 400, "This import plan is not editable: $found->handle");
 
         $old = $this->request->session()->get('import');
-        if (! empty($old)) {
-            $importPlan = new ImportPlanData($old);
-        }
 
-        $importPlan ??= $found;
-
-        return $this->cpScreenResponse($importPlan);
+        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : $found);
     }
 
     public function store(): Response
@@ -258,7 +248,7 @@ class ImportPlansController
             available: true,
             destinationCols: $destinationCols,
             sourceDataCols: $sourceDataCols,
-            values: new ImportPlanMapViewModel($importer)->values(),
+            values: MappingValues::fromImporter($importer),
             suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
         )->jsonSerialize());
     }

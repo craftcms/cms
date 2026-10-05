@@ -775,15 +775,7 @@ abstract class BaseImporter
      */
     public function transformerAsString(): ?string
     {
-        if ($this->transformer === null) {
-            return $this->transformer;
-        }
-
-        if ($this->transformer instanceof BaseTransformer) {
-            return $this->transformer::class;
-        }
-
-        return null;
+        return $this->transformer instanceof BaseTransformer ? $this->transformer::class : null;
     }
 
     public static function isElementImporter(): bool

@@ -40,20 +40,6 @@ class ImportHelper
     }
 
     /**
-     * Flattens a list of `{label, value}` options into a `value => label` array, skipping empty values.
-     *
-     * @param  array<array{label: string, value: int|string}>  $array
-     * @return array<int|string, string>
-     */
-    public static function flattenLabelValueArray(array $array): array
-    {
-        return collect($array)
-            ->filter(fn ($item) => $item['value'] !== '')
-            ->mapWithKeys(fn ($item) => [$item['value'] => $item['label']])
-            ->all();
-    }
-
-    /**
      * Normalizes match criteria coming from an importer config (UI or file-based)
      * into an array where keys are the fields/attributes/properties to update,
      * and values containing the incoming data keys.

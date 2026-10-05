@@ -8,7 +8,6 @@ use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
@@ -106,11 +105,4 @@ it('lists the concrete element importer subclasses, not a bare ElementImporter, 
         ->and($types)->toContain(EntryImporter::class)
         ->and($types)->toContain(AssetImporter::class)
         ->and($types)->toContain(UserImporter::class);
-});
-
-it('has no registered importer for element types that never exist standalone', function () {
-    $import = app(Import::class);
-
-    expect($import->getElementImporterTypeFor(Address::class))->toBeNull()
-        ->and($import->getElementImporterTypeFor(ContentBlock::class))->toBeNull();
 });

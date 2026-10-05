@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -175,7 +174,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return null;
         }
 
-        return array_map(fn (array|BaseImporter $importer) => is_array($importer) ? $importer : $importer->toImportStep()->jsonSerialize(), $this->steps);
+        return array_map(fn (BaseImporter $importer) => $importer->toImportStep()->jsonSerialize(), $this->steps);
     }
 
     /**
@@ -272,19 +271,6 @@ class ImportPlan extends Component implements CpEditable, Validatable
         $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost));
 
         return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
-    }
-
-    /**
-     * Returns an importer instance per step, skipping any step whose importer can't be built.
-     *
-     * @return Collection<array-key, BaseImporter>
-     */
-    public function getImporters(): Collection
-    {
-        return collect($this->steps ?? [])
-            ->map(fn (array|BaseImporter $step) => $step instanceof BaseImporter ? $step : ImportPlanFacade::createImporter($step))
-            ->filter()
-            ->values();
     }
 
     /**

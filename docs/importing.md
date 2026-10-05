@@ -143,16 +143,13 @@ and its validation.
   adds `volume`, and `UserImporter` resolves its fixed layout via `resolveDefaultFieldLayout()`.
   An element type is importable if and only if an `ElementImporter` subclass is registered for
   it — `Address` has none, so it's never a standalone import target, only reachable as nested
-  content (Addresses field / User addresses container). `Import::getElementImporterTypeFor(string
-  $elementClass): ?string` looks up the registered subclass for a given element FQCN, returning
-  `null` if none is registered.
+  content (Addresses field / User addresses container).
 - **`ModelImporter`** is abstract too, and works exactly the same way: each importable Eloquent
   model is represented by its own concrete subclass. `SystemMessageImporter` is the only
   built-in. A model is importable if and only if a `ModelImporter` subclass is registered for
   it — there's no marker interface. A subclass can set default match criteria in its
   constructor (`SystemMessageImporter` matches on `key` + `language`, since incoming data won't
-  carry Craft's IDs). `Import::getModelImporterTypeFor(string $modelClass): ?string` looks up the
-  registered subclass for a given model FQCN, returning `null` if none is registered.
+  carry Craft's IDs).
 
 No importer sets default match criteria in the base classes — with none set, everything is
 imported as new.

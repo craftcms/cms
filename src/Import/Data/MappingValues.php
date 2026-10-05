@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
@@ -33,6 +35,20 @@ readonly class MappingValues implements JsonSerializable
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $fieldSettings = [],
     ) {}
+
+    /**
+     * Returns the mapping state an importer holds, as the mapping screen edits it.
+     */
+    public static function fromImporter(BaseImporter $importer): self
+    {
+        return new self(
+            map: $importer->map,
+            matchCriteria: $importer->matchCriteria ?? [],
+            clearableItems: $importer->clearableItems ?? [],
+            keepMissingNestedElements: $importer instanceof ElementImporter ? $importer->keepMissingNestedElements ?? [] : [],
+            fieldSettings: $importer instanceof ElementImporter ? $importer->fieldSettings ?? [] : [],
+        );
+    }
 
     /** @return array<string, array<array-key, mixed>> */
     public function jsonSerialize(): array

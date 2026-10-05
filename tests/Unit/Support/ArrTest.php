@@ -218,16 +218,6 @@ test('dotifyKey', function (string|int $expected, string|int $string) {
     [0, 0],
 ]);
 
-test('undotifyKey', function (string|int $expected, string|int $string) {
-    expect(Arr::undotifyKey($string))->toBe($expected);
-})->with([
-    ['foo[bar]', 'foo.bar'],
-    ['sources[custom:5bb5537d][condition]', 'sources.custom:5bb5537d.condition'],
-    ['foo', 'foo'],
-    ['a[b][c][d]', 'a.b.c.d'],
-    [0, 0],
-]);
-
 test('bracketsToArray', function (array $expected, string $string) {
     expect(Arr::bracketsToArray($string))->toBe($expected);
 })->with([

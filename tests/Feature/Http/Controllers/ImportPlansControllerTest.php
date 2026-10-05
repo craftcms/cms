@@ -150,7 +150,7 @@ it('saves an import with several steps of different types in one request', funct
         ->and($saved->steps[0]::class)->toBe(EntryImporter::class)
         ->and($saved->steps[1]::class)->toBe(SystemMessageImporter::class)
         ->and($saved->steps[1]->batchSize)->toBe(25)
-        ->and($saved->getImporters())->toHaveCount(2);
+        ->and($saved->steps)->toHaveCount(2);
 });
 
 it('rejects an import with no steps', function () {
@@ -347,7 +347,7 @@ it('persists both levels’ keepMissingNestedElements decisions with the step', 
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->keepMissingNestedElements)->toBe([
         'outerMatrix' => [
@@ -370,7 +370,7 @@ it('persists match criteria and clearable items alongside the map', function () 
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->matchCriteria)->toBe(['title' => 1])
         ->and($importer->clearableItems)->toBe(['title' => 1]);
@@ -383,7 +383,7 @@ it('still decodes JSON-encoded container branches on save', function () {
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->map)->toBe([
         'outerMatrix' => ['outerEt' => ['title' => 'Title']],
@@ -405,7 +405,7 @@ it('saves and maps a model importer step', function () {
         ],
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->getImporters()->first();
+    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer)->toBeInstanceOf(SystemMessageImporter::class)
         ->and($importer->map)->toBe(['subject' => 'incomingSubject'])

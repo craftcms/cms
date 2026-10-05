@@ -15,7 +15,6 @@ use Override;
  * @method static array getAllDataTypes()
  * @method static ?string getDataTypeFromExtension(string $filePath)
  * @method static array getAllImporterTypes()
- * @method static ?string getElementImporterTypeFor(string $elementClass)
  * @method static array getAllFieldImportHandlers()
  * @method static ?FieldImportHandlerInterface getFieldImportHandlerFor(FieldInterface $field)
  * @method static bool dispatchImport(ImportPlanData $importPlan)

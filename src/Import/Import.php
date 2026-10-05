@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Asset\Import\AssetsFieldImportHandler;
-use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -25,7 +24,6 @@ use CraftCms\Cms\Import\Events\RegisterFieldImportHandlers;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
@@ -160,40 +158,6 @@ class Import
         for ($class = $field::class; $class !== false; $class = get_parent_class($class)) {
             if (isset($handlers[$class])) {
                 return app($handlers[$class]);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the registered `ElementImporter` subclass (core or plugin-registered) whose
-     * `targetClass()` matches the given element type, or null if none is registered for it.
-     *
-     * @param  string  $elementClass  The element type's FQCN.
-     */
-    public function getElementImporterTypeFor(string $elementClass): ?string
-    {
-        foreach ($this->getAllImporterTypes() as $type) {
-            if (is_subclass_of($type, ElementImporter::class) && $type::targetClass() === $elementClass) {
-                return $type;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the registered `ModelImporter` subclass (core or plugin-registered) whose
-     * `targetClass()` matches the given model, or null if none is registered for it.
-     *
-     * @param  string  $modelClass  The model's FQCN.
-     */
-    public function getModelImporterTypeFor(string $modelClass): ?string
-    {
-        foreach ($this->getAllImporterTypes() as $type) {
-            if (is_subclass_of($type, ModelImporter::class) && $type::targetClass() === $modelClass) {
-                return $type;
             }
         }
 

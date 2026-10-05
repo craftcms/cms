@@ -300,7 +300,6 @@ Craft.ui = {
                 typeof option.disabled !== 'undefined'
                   ? option.disabled
                   : false,
-              data: typeof option.data !== 'undefined' ? option.data : null,
             });
           }
         } else {
@@ -324,23 +323,12 @@ Craft.ui = {
           label: option.optgroup,
         }).appendTo($select);
       } else {
-        let optionProps = {
+        const $option = $('<option/>', {
           value: option.value,
           selected: option.value == config.value,
           disabled:
             typeof option.disabled !== 'undefined' ? option.disabled : false,
-        };
-
-        if (typeof option.data !== 'undefined' && option.data) {
-          for (const [key, value] of Object.entries(option.data)) {
-            let dataKey = 'data-' + key;
-            optionProps[dataKey] = value;
-          }
-        }
-
-        const $option = $('<option/>', optionProps).appendTo(
-          $optgroup || $select
-        );
+        }).appendTo($optgroup || $select);
 
         if (option.labelHtml) {
           $option.html(option.labelHtml);

@@ -277,30 +277,12 @@ class Arr extends \Illuminate\Support\Arr
     /**
      * Normalizes the key from bracket notation into dot notation.
      * `foo[bar][baz]` => `foo.bar.baz`
-     * The opposite of `undotifyKey`.
      */
     public static function dotifyKey(int|string $key): string|int
     {
         // Normalize the key into dot notation
         if (is_string($key) && preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
             return rtrim((string) preg_replace('/[\[\]]+/', '.', $key), '.');
-        }
-
-        return $key;
-    }
-
-    /**
-     * Normalizes the key from dot notation into bracket notation.
-     * `foo.bar.baz` => `foo[bar][baz]`
-     * The opposite of `dotifyKey`.
-     */
-    public static function undotifyKey(int|string $key): string|int
-    {
-        if (is_string($key) && str_contains($key, '.')) {
-            $parts = explode('.', $key);
-            $first = array_shift($parts);
-
-            return $first.'['.implode('][', $parts).']';
         }
 
         return $key;
