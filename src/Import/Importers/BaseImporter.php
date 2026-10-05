@@ -109,12 +109,13 @@ abstract class BaseImporter
                 $settings = JsonSupport::decode($settings);
             }
 
+            // only declared settings, each applied through the setter of the same name; the config can
+            // come from a request, so nothing else on the importer may be called this way
+            $settingNames = static::settingNames();
+
             foreach ($settings as $setting => $value) {
-                if (method_exists($this, $setting)) {
-                    $reflection = new \ReflectionMethod($this, $setting);
-                    if ($reflection->isPublic()) {
-                        $this->{$setting}($value);
-                    }
+                if (in_array($setting, $settingNames, true) && method_exists($this, $setting)) {
+                    $this->{$setting}($value);
                 }
             }
 
@@ -292,6 +293,24 @@ abstract class BaseImporter
             ],
             'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ], static::getSettingsRules());
+    }
+
+    /**
+     * Returns the names of the settings the importer can be configured with: the ones its settings rules declare.
+     *
+     * @return list<string>
+     */
+    protected static function settingNames(): array
+    {
+        $names = [];
+
+        foreach (array_keys(static::getSettingsRules()) as $key) {
+            if (str_starts_with($key, 'settings.')) {
+                $names[] = explode('.', substr($key, strlen('settings.')))[0];
+            }
+        }
+
+        return array_values(array_unique($names));
     }
 
     /**

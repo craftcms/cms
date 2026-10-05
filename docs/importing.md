@@ -60,7 +60,8 @@ does that work, which is why one step can span multiple sections and entry types
 `steps` is stored as JSON, one entry per step, built by `BaseImporter::toArrayData()`. On load,
 `ImportPlan::createImporter()` instantiates `$step['type']`, and `BaseImporter::__construct()`
 applies `source`, `transformer` and `batchSize`, then replays each `settings` key through the
-importer's public setter of the same name (keys without a matching setter are ignored). Steps
+importer's setter of the same name. Only settings declared in the importer's `getSettingsRules()`
+(`settings.<name>`) are applied; any other key is ignored, since step config can come from a request. Steps
 whose importer can't be created are left out. The target class is fixed by the importer
 subclass itself, so it isn't stored.
 

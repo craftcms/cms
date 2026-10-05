@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
 use CraftCms\UrlValidator\UrlValidator;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 
@@ -544,13 +543,13 @@ describe('downloadUrl', function () {
         expect(file_get_contents($tempPath))->toBe('hello from the internet');
     });
 
-    test('does not swallow a failed response', function () {
+    test('reports a failed response with its status', function () {
         Http::fake([
             'example.com/*' => Http::response('not found', 404),
         ]);
 
         expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/missing.txt', AssetsHelper::tempFilePath()))
-            ->toThrow(RequestException::class);
+            ->toThrow(InvalidArgumentException::class, 'http://example.com/missing.txt returned a 404 response.');
     });
 });
 

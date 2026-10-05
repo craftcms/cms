@@ -156,14 +156,10 @@ class EntryImporter extends ElementImporter
         return array_merge(parent::getSettingsRules(), [
             'settings.section' => [
                 'required',
-                'string',
-                'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSection($value, $attribute, $fail, $validator),
             ],
             'settings.entryType' => [
                 'required',
-                'string',
-                'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateEntryType($value, $attribute, $fail, $validator),
             ],
         ]);
@@ -179,7 +175,7 @@ class EntryImporter extends ElementImporter
         return $data;
     }
 
-    public static function validateSection(string $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateSection(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         // can't be empty
         if (empty($value)) {
@@ -199,7 +195,7 @@ class EntryImporter extends ElementImporter
         return true;
     }
 
-    public static function validateEntryType(string $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateEntryType(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         // can't be empty
         if (empty($value)) {

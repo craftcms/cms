@@ -232,8 +232,6 @@ abstract class ElementImporter extends BaseImporter
             'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateFieldLayout($value, $attribute, $fail, $validator),
             'settings.site' => [
                 'required',
-                'string',
-                'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSite($value, $attribute, $fail, $validator),
             ],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],

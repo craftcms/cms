@@ -31,6 +31,7 @@ use GuzzleHttp\RequestOptions;
 use GuzzleHttp\TransferStats;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -616,7 +617,7 @@ class AssetsHelper
      * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
      * different (potentially internal) address between validation and download.
      *
-     * @throws InvalidArgumentException if the connection still resolves to a disallowed IP, or the response isn’t successful
+     * @throws InvalidArgumentException if the URL or the IP it resolves to is disallowed, or the response isn’t a 2xx one
      */
     public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath): Response
     {
@@ -632,22 +633,29 @@ class AssetsHelper
         $port = parse_url($url, PHP_URL_PORT)
             ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
 
-        $response = Http::create()->withOptions([
-            RequestOptions::ALLOW_REDIRECTS => false,
-            RequestOptions::SINK => $tempPath,
-            // Pin the connection to the IPs we already validated, so cURL doesn’t
-            // re-resolve the hostname to a different address (DNS rebinding).
-            'curl' => [
-                CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
-            ],
-            RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
-                // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
-                $ip = $stats->getHandlerStat('primary_ip');
-                if ($ip && ! $urlValidator->validateIp($ip)) {
-                    throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]));
-                }
-            },
-        ])->get($url)->throw();
+        try {
+            $response = Http::create()->withOptions([
+                RequestOptions::ALLOW_REDIRECTS => false,
+                RequestOptions::SINK => $tempPath,
+                // Pin the connection to the IPs we already validated, so cURL doesn’t
+                // re-resolve the hostname to a different address (DNS rebinding).
+                'curl' => [
+                    CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
+                ],
+                RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
+                    // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
+                    $ip = $stats->getHandlerStat('primary_ip');
+                    if ($ip && ! $urlValidator->validateIp($ip)) {
+                        throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]));
+                    }
+                },
+            ])->get($url);
+        } catch (RequestException $e) {
+            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
+                'url' => $url,
+                'status' => $e->response->status(),
+            ]), previous: $e);
+        }
 
         // redirects aren’t followed, so a redirect’s body would otherwise be taken for the file
         if (! $response->successful()) {

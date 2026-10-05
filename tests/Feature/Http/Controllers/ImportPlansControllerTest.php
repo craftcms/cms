@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
@@ -229,6 +230,22 @@ it('builds a step’s settings form from the posted draft step', function () {
     $response->assertOk();
     expect($response->json('form.nodes'))->not->toBeEmpty()
         ->and($response->json('form.values.type'))->toBe(EntryImporter::class);
+});
+
+it('applies only declared settings when building a draft step', function () {
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'viewImportPlans'])->createElement());
+
+    $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+        'step' => ($this->entryStep)([
+            'importItem' => [
+                'title' => 'Injected entry',
+                'sectionId' => $this->section->handle,
+                'typeId' => $this->entryType->handle,
+            ],
+        ]),
+    ])->assertOk();
+
+    expect(EntryElement::find()->title('Injected entry')->status(null)->exists())->toBeFalse();
 });
 
 it('reports a step with a resolved field layout as mappable', function () {

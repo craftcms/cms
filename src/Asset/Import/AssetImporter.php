@@ -135,8 +135,6 @@ class AssetImporter extends ElementImporter
         return array_merge(parent::getSettingsRules(), [
             'settings.volume' => [
                 'required',
-                'string',
-                'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateVolume($value, $attribute, $fail, $validator),
             ],
         ]);
@@ -151,7 +149,7 @@ class AssetImporter extends ElementImporter
         return $data;
     }
 
-    public static function validateVolume(string $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateVolume(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         // can't be empty
         if (empty($value)) {
