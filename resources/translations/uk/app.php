@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Скасувати вибір',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Стаціонарний комп\'ютер',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Визначає, з якого сайту користувач отримуватиме електронні листи, надіслані з панелі керування.',
     'Developer Response' => 'Відповідь розробника',
     'Development Settings' => 'Параметри розробки',

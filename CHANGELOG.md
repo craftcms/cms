@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))
 - Brought back users’ gradient-based default avatars.
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
 - Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
+- Updated nested element fields in HTML forms, including Global Set content editors, to use the shared cards and element index controls. ([#19804](https://github.com/craftcms/cms/pull/19804))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
@@ -18,9 +20,17 @@
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
 - Removed `Cp.$axios`.
+- Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed `craft\elements\db\ElementQuery::joinElementTable()`. Element queries should now declare their element table via the `$table` property, which is joined automatically. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
+- Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
+- Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
+- Fixed a bug where control panel pages that legacy URL rules routed to Craft 6 actions changed the browser’s URL to an `actions/…` URL. ([#19837](https://github.com/craftcms/cms/pull/19837))
 - Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
 - Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and Asset Transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
 - Fixed bugs that could allow sites saved outside the control panel to reference invalid groups, retain inconsistent primary or URL settings, or use invalid content transfer targets. ([#19825](https://github.com/craftcms/cms/pull/19825))
+- Moved legacy nested element HTML rendering and Yii event compatibility into `craftcms/yii2-adapter`. ([#19804](https://github.com/craftcms/cms/pull/19804))
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
 - Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types. ([#19792](https://github.com/craftcms/cms/pull/19792))
@@ -60,6 +70,7 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 ### Control Panel UI
+- Updated editable tables to use Form API controls, with cell validation messages and keyboard row actions.
 - Added inline editing to element index tables. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Added exports to element indexes. ([#19759](https://github.com/craftcms/cms/pull/19759))
 - Control panel success, notice, and error messages now go through a single message system instead of several different ones, and are no longer shown twice or lost between pages.
@@ -143,6 +154,8 @@
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 
 ### Fields
+- Added configurable Table cell types through `CraftCms\Cms\Field\Contracts\TableCellInterface` and `CraftCms\Cms\Field\TableCellTypes`.
+- Replaced Table column options JSON inputs with cell settings forms, and preserved Table data when a cell type is unavailable.
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
 - Restored Matrix fields’ configured Cards and Cards Grid view modes in element forms.

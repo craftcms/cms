@@ -1,3 +1,5 @@
+import {focusableWithin} from '@craftcms/ui/utilities/focus-trap';
+
 /**
  * A DOM-ish argument: a CSS selector, an element, or an array-like collection
  * of elements (including a jQuery object). The shape the imperative
@@ -76,4 +78,28 @@ export function isInteractiveClick(
     if (isInteractiveElement(node)) return true;
   }
   return false;
+}
+
+/** Finds the first tab-reachable descendant, including nested open shadow roots. */
+export function firstFocusableWithin(
+  root: HTMLElement
+): HTMLElement | undefined {
+  const focusable = new Set(focusableWithin(root));
+  const children = [...(root.shadowRoot?.children ?? []), ...root.children];
+
+  for (const child of children) {
+    if (
+      !(child instanceof HTMLElement) ||
+      child.hidden ||
+      child.hasAttribute('inert') ||
+      child.hasAttribute('disabled') ||
+      child.getAttribute('aria-hidden') === 'true'
+    )
+      continue;
+
+    if (focusable.has(child)) return child;
+
+    const nested = firstFocusableWithin(child);
+    if (nested) return nested;
+  }
 }

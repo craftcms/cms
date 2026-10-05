@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Zrušiť výber',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Plocha',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Určuje, z ktorého webu bude používateľ dostávať e-maily, keď sa odosielajú prostredníctvom ovládacieho panela.',
     'Developer Response' => 'Reakcia vývojára',
     'Development Settings' => 'Nastavenia vývoja',
