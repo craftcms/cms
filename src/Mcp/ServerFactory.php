@@ -15,7 +15,10 @@ use Mcp\Server\Stateless\StatelessProtocol;
  */
 readonly class ServerFactory
 {
-    public function __construct(private Container $app) {}
+    public function __construct(
+        private Container $app,
+        private CapabilityDiscovery $capabilities,
+    ) {}
 
     public function admin(): StatelessProtocol
     {
@@ -36,6 +39,7 @@ readonly class ServerFactory
         return new Builder()
             ->setServerInfo('Craft CMS', Cms::VERSION, 'Craft CMS MCP server')
             ->setContainer($this->app)
+            ->setDiscoverer($this->capabilities)
             ->setDiscovery(
                 basePath: __DIR__.'/Capabilities',
                 scanDirs: $scanDirectories,
