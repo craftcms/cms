@@ -409,7 +409,9 @@ class ImportPlansController
         abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
         abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be duplicated via the Control Panel: $uid");
 
-        $this->importsService->duplicateImportPlan($importPlan);
+        if (! $this->importsService->duplicateImportPlan($importPlan)) {
+            return $this->asFailure(t('Couldn’t duplicate import plan.'));
+        }
 
         return $this->asSuccess(t('“{name}” duplicated.', [
             'name' => $importPlan->name,

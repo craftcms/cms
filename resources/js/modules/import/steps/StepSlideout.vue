@@ -374,11 +374,11 @@
 
         <craft-button
           ref="mappingButton"
-          .disabled="!context.editable || !canMap"
+          .disabled="!canMap"
           :loading="openingMapping || checkingMap"
           @click="editMapping"
         >
-          {{ t('Edit mapping') }}
+          {{ context.editable ? t('Edit mapping') : t('View mapping') }}
         </craft-button>
 
         <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>

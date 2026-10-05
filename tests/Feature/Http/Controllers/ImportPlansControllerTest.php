@@ -13,6 +13,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -23,6 +24,7 @@ use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -422,6 +424,22 @@ it('adds new and duplicated import plans after the existing ones', function () {
 
     expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
         ->toBe(['zulu', 'alpha', 'zulu2']);
+});
+
+it('saves a duplicated import plan like any other new one, with fresh step uids', function () {
+    ($this->createImportPlan)('Zulu', 'zulu');
+    $original = app(ImportPlan::class)->getImportPlanByHandle('zulu');
+
+    Event::fake([ImportPlanSaved::class]);
+
+    postJson(action([ImportPlansController::class, 'duplicate']), ['uid' => $original->uid])->assertOk();
+
+    Event::assertDispatched(fn (ImportPlanSaved $event) => $event->isNew
+        && $event->importPlan->handle === 'zulu2'
+        && array_intersect(
+            array_map(fn ($step) => $step->uid, $event->importPlan->steps),
+            array_map(fn ($step) => $step->uid, $original->steps),
+        ) === []);
 });
 
 it('rejects reordering an import plan that doesn’t exist', function () {

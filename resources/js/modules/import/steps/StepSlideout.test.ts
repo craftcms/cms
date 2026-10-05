@@ -88,7 +88,8 @@ let container: HTMLElement;
 function mount(
   canMap: boolean,
   type: string | null = step.type,
-  formSettings: Record<string, unknown> = {}
+  formSettings: Record<string, unknown> = {},
+  editable = true
 ) {
   state.values = {type, source: step.source, settings: formSettings};
   state.context = {
@@ -96,7 +97,7 @@ function mount(
     payload: payload(),
     canMap,
     sourceError: null,
-    editable: true,
+    editable,
     apply: vi.fn(),
   };
 
@@ -194,6 +195,13 @@ it('enables the mapping button when a refresh reports the step as mappable', asy
   await nextTick();
 
   expect(mappingButton().disabled).toBe(false);
+});
+
+it('lets a read-only step’s mapping be viewed', () => {
+  mount(true, step.type, {}, false);
+
+  expect(mappingButton().disabled).toBe(false);
+  expect(mappingButton().textContent!.trim()).toBe('View mapping');
 });
 
 it('disables the mapping button again when a refresh reports it unmappable', async () => {

@@ -225,45 +225,48 @@ class ImportPlan
     }
 
     /**
-     * Duplicates an editable import plan, giving the copy a fresh handle and step UIDs.
+     * Duplicates an editable import plan, giving the copy a fresh handle and step UIDs, and saves it
+     * the same way as any other import plan.
      */
-    public function duplicateImportPlan(ImportPlanData $importPlan): void
+    public function duplicateImportPlan(ImportPlanData $importPlan): bool
     {
-        $importRecord = $this->_getImportPlanModel($importPlan->uid);
-
-        // if we couldn't find it - return
-        if (! $importRecord->exists) {
-            return;
+        if (! $importPlan->isEditable() || ! $this->_getImportPlanModel($importPlan->uid)->exists) {
+            return false;
         }
 
-        $newImport = $importRecord->replicate();
-        $newImport->uid = Str::uuid7()->toString();
-        $newImport->sortOrder = $this->nextSortOrder();
-        $newImport->steps = array_map(function (array $step): array {
-            $step['uid'] = Str::uuid7()->toString();
+        $copy = new ImportPlanData([
+            'name' => $importPlan->name,
+            'handle' => $this->uniqueHandle((string) $importPlan->handle),
+            'description' => $importPlan->description,
+            'editable' => true,
+            // dropping the uids gives the copy's steps new ones
+            'steps' => array_map(
+                fn (BaseImporter $step): array => ['uid' => null] + $step->toArrayData(),
+                $importPlan->steps ?? [],
+            ),
+        ]);
 
-            return $step;
-        }, $importRecord->steps ?? []);
+        return $this->saveImportPlan($copy);
+    }
 
-        if (preg_match('/^(.*?)(\d+)$/', (string) $newImport->handle, $match)) {
+    /**
+     * Returns the given handle with an incremented numeric suffix that no other import plan uses.
+     */
+    private function uniqueHandle(string $handle): string
+    {
+        if (preg_match('/^(.*?)(\d+)$/', $handle, $match)) {
             $baseHandle = $match[1];
             $i = (int) $match[2];
         } else {
-            $baseHandle = $newImport->handle;
+            $baseHandle = $handle;
             $i = 1;
         }
+
         do {
             $testHandle = sprintf('%s%s', $baseHandle, ++$i);
-            if (! $this->getImportPlanByHandle($testHandle)) {
-                $newImport->handle = $testHandle;
-                break;
-            }
-        } while (true);
+        } while ($this->getImportPlanByHandle($testHandle));
 
-        $newImport->save();
-
-        // invalidate caches
-        $this->importPlans = null;
+        return $testHandle;
     }
 
     /**

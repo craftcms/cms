@@ -18,7 +18,7 @@ use Override;
  * @method static ?ImportPlanData getImportPlanByHandle(?string $handle, bool $editableOnly = false)
  * @method static ?ImportPlanData getImportPlanByUid(string $uid, bool $editableOnly = false)
  * @method static bool saveImportPlan(ImportPlanData $importPlan)
- * @method static void duplicateImportPlan(ImportPlanData $importPlan)
+ * @method static bool duplicateImportPlan(ImportPlanData $importPlan)
  * @method static void deleteImportPlan(ImportPlanData $importPlan)
  *
  * @see \CraftCms\Cms\Import\ImportPlan

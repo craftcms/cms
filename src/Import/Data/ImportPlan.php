@@ -59,14 +59,12 @@ class ImportPlan extends Component implements CpEditable, Validatable
      */
     public function __construct(array $config = [])
     {
-        $importers = [];
         if (isset($config['steps']) && is_string($config['steps'])) {
-            $steps = Json::decode($config['steps']);
-            foreach ($steps as $step) {
-                $importer = ImportPlanFacade::createImporter($step);
-                $importers[] = $importer;
-            }
-            $config['steps'] = array_filter($importers);
+            $config['steps'] = Json::decode($config['steps']);
+        }
+
+        if (isset($config['steps']) && is_array($config['steps'])) {
+            $config['steps'] = self::normalizeSteps($config['steps']);
         }
 
         parent::__construct($config);
@@ -317,7 +315,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
     #[Override]
     public function getCpEditUrl(): ?string
     {
-        if (! $this->handle || ! currentUser()?->isAdmin()) {
+        if (! $this->handle || ! $this->editable || ! currentUser()?->can('viewImportPlans')) {
             return null;
         }
 

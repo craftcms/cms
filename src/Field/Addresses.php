@@ -1045,9 +1045,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     /**
      * Normalizes value so that it can be imported into an Addresses-type field.
-     * The custom field values must be nested under a "fields" key.
      *
-     * The value has to be an array; each item in the array represents an address.
+     * The value has to be an array of addresses, either as a list or in the nested element
+     * `{entries, sortOrder}` format. An address's custom field values can be given loose or under a "fields" key.
      *
      * @return array<int|string, array<string, mixed>>
      */
@@ -1062,7 +1062,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
         $i = 0;
 
-        foreach ($value as $address) {
+        foreach (ElementHelper::nestedElementDelta($value)['entries'] as $address) {
             if (! is_array($address)) {
                 continue;
             }

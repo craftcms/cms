@@ -262,3 +262,16 @@ it('prefers a flat latitude over a nested one', function () {
     expect($address->latitude)->toEqual('1.1111')
         ->and($address->longitude)->toEqual('-122.4194');
 });
+
+it('imports addresses given in the nested element entries format', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'entries' => ['a' => $this->address],
+        'sortOrder' => ['a'],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $addresses = Address::find()->ownerId($entry->id)->all();
+
+    expect($addresses)->toHaveCount(1)
+        ->and($addresses[0]->addressLine1)->toBe('123 Main St');
+});

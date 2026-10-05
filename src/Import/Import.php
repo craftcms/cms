@@ -212,7 +212,7 @@ class Import
         $steps = [];
 
         // for each step in the $importPlan
-        foreach ($importPlan->steps as $key => $step) {
+        foreach ($importPlan->steps ?? [] as $key => $step) {
             $filePath = BaseImporter::resolvedSourcePath($step->source);
 
             // name for this batch of jobs

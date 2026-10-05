@@ -126,7 +126,7 @@ abstract class ModelImporter extends BaseImporter
                 $attributes[$attributeHandle] = $item[$attributeHandle];
                 unset($incomingKeys[$attributeHandle]);
                 // otherwise attempt to match auto-magically
-            } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $attributeHandle), $incomingKeys)) {
+            } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $attributeHandle), $incomingKeys, true)) !== false) {
                 $attributes[$attributeHandle] = $item[$key];
             }
         }

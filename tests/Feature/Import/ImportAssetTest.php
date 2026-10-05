@@ -220,3 +220,12 @@ it('throws for a local temp file path that does not exist on disk', function () 
         'tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt'),
     ]))->toThrow(FileException::class);
 });
+
+it('takes the field layout from the volume when the settings form refreshes', function () {
+    $importer = AssetImporter::create();
+
+    $importer->refreshSettingsForm(['volume' => $this->volume->uid]);
+
+    expect($importer->volume)->toBe($this->volume->uid)
+        ->and($importer->fieldLayout)->toBe(Volumes::getVolumeById($this->volume->id)->getFieldLayout()->uid);
+});

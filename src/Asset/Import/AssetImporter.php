@@ -91,7 +91,6 @@ class AssetImporter extends ElementImporter
 
         if (array_key_exists('volume', $settings)) {
             $this->volume($settings['volume']);
-            $this->fieldLayout($settings['fieldLayout']);
         }
     }
 
