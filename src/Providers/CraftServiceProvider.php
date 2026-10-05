@@ -33,6 +33,7 @@ use CraftCms\Cms\View\ViewServiceProvider;
 use CraftCms\Cms\Workflow\UserReview\UserReviewServiceProvider;
 use CraftCms\Cms\Workflow\WorkflowServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
+use Laravel\Passport\PassportServiceProvider;
 use Override;
 
 /**
@@ -54,6 +55,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         DebugServiceProvider::class,
         LicenseServiceProvider::class,
         RouteServiceProvider::class,
+        PassportServiceProvider::class,
         McpServiceProvider::class,
         AppServiceProvider::class,
         ConsoleServiceProvider::class,

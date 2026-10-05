@@ -16,9 +16,6 @@ class McpConfig extends BaseConfig
     public string $endpoint = 'mcp';
 
     /** @var list<string> */
-    public array $passportMiddleware = ['auth:mcp'];
-
-    /** @var list<string> */
     public array $middleware = [];
 
     public ?int $debugUserId = null;
@@ -43,14 +40,6 @@ class McpConfig extends BaseConfig
     public function endpoint(string $value): self
     {
         $this->endpoint = $value;
-
-        return $this;
-    }
-
-    /** @param list<string> $value */
-    public function passportMiddleware(array $value): self
-    {
-        $this->passportMiddleware = array_values($value);
 
         return $this;
     }

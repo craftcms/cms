@@ -69,10 +69,10 @@ class AuthServiceProvider extends ServiceProvider
             'provider' => 'craft',
             'remember' => 20160,
         ], $config->get('auth.guards.craft', [])));
-        $config->set('auth.guards.mcp', array_replace([
+        $config->set('auth.guards.craft-mcp', array_replace([
             'driver' => 'passport',
             'provider' => 'craft',
-        ], $config->get('auth.guards.mcp', [])));
+        ], $config->get('auth.guards.craft-mcp', [])));
 
         $this->app->bind(SendQueuedNotifications::class, SendQueuedUserNotifications::class);
 

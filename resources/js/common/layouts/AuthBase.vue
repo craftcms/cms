@@ -19,7 +19,10 @@
 
 <template>
   <Head :title="props.title"></Head>
-  <main class="cp-login">
+  <a class="cp-login__skip-link" href="#cp-login-content">
+    {{ t('Skip to main content') }}
+  </a>
+  <main id="cp-login-content" class="cp-login" tabindex="-1">
     <LiveRegion />
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
@@ -64,6 +67,24 @@
     place-items: center;
     gap: var(--c-spacing-md);
     padding: var(--c-spacing-lg);
+  }
+
+  .cp-login__skip-link {
+    position: fixed;
+    z-index: var(--c-layer-dialog);
+    inset-block-start: var(--c-spacing-md);
+    inset-inline-start: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
+    color: var(--c-text);
+    background-color: var(--c-surface-raised);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-sm);
+    transform: translateY(calc(-100% - var(--c-spacing-md)));
+  }
+
+  .cp-login__skip-link:focus {
+    transform: none;
   }
 
   .cp-login__wrapper {
