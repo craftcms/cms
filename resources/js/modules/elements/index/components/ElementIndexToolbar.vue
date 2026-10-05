@@ -208,7 +208,7 @@
       </div>
 
       <div class="element-toolbar__state">
-        <div class="flex gap-sm justify-end">
+        <div class="flex gap-md justify-end">
           <craft-button-group
             name="viewState[mode]"
             .value="mode"

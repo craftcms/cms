@@ -1,0 +1,98 @@
+<script setup lang="ts">
+  import '@craftcms/ui/components/field/field';
+  import {computed, getCurrentInstance, inject, provide} from 'vue';
+  import {
+    FieldLabelSrOnly,
+    FormFailure,
+    formChangeFromEvent,
+    pathsMatch,
+  } from '../runtime';
+  import type {
+    FormChange,
+    FormChangeKind,
+    FormNodePayload,
+    FormPayload,
+    FormValue,
+  } from '../types';
+
+  const props = defineProps<{
+    node: FormNodePayload;
+    value: FormValue;
+    label: string;
+    editable: boolean;
+    values: FormPayload['values'];
+    errors: FormPayload['errors'];
+    touchedPaths: Set<string>;
+    formScope: string[];
+    formRefreshable: boolean;
+  }>();
+  const emit = defineEmits<{
+    (event: 'update:value', value: FormValue, kind?: FormChangeKind): void;
+    (event: 'change', change: FormChange): void;
+  }>();
+  const components = getCurrentInstance()!.appContext.components;
+  const failure = inject(FormFailure, undefined);
+  provide(
+    FieldLabelSrOnly,
+    computed(() => true)
+  );
+  const control = computed(() => {
+    const control = props.node.control!;
+    return !props.editable && control.mode === 'editable'
+      ? {...control, mode: 'disabled' as const}
+      : control;
+  });
+  const component = computed(() => {
+    const component = components[control.value.component];
+    if (!component)
+      failure?.(`Form Control [${control.value.component}] is not registered.`);
+    return component;
+  });
+  const messages = computed(() =>
+    props.errors.flatMap((error) =>
+      pathsMatch(error.path, control.value.path) ? error.messages : []
+    )
+  );
+
+  function onChange(change: FormChange | Event): void {
+    const formChange = formChangeFromEvent(change);
+    if (formChange) emit('change', formChange);
+  }
+</script>
+
+<template>
+  <craft-field
+    :label="label"
+    .labelSrOnly="true"
+    .required="Boolean(node.props.required)"
+    .hasErrors="messages.length > 0"
+    :data-form-control-path="JSON.stringify(control.path)"
+    :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
+  >
+    <component
+      :is="component"
+      slot="input"
+      v-if="component"
+      :control="control"
+      :value="value"
+      :label="label"
+      :editable="editable && control.mode === 'editable'"
+      :invalid="messages.length > 0"
+      :required="Boolean(node.props.required)"
+      :values="values"
+      :errors="errors"
+      :touched-paths="touchedPaths"
+      :form-scope="formScope"
+      :form-refreshable="formRefreshable"
+      :aria-invalid="messages.length ? 'true' : undefined"
+      @update:value="
+        (value: FormValue, kind?: FormChangeKind) =>
+          emit('update:value', value, kind)
+      "
+      @change="onChange"
+    />
+    <ul v-if="messages.length" slot="feedback" class="error-list">
+      <li v-for="message in messages" :key="message">{{ message }}</li>
+    </ul>
+  </craft-field>
+</template>

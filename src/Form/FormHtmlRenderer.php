@@ -24,6 +24,12 @@ class FormHtmlRenderer
         private readonly FormControlTypes $controlTypes,
     ) {}
 
+    /** @return list<string> */
+    public function scope(): array
+    {
+        return $this->payload->scope ?? [];
+    }
+
     public function render(FormPayload $payload): string
     {
         $this->payload = $payload;
@@ -216,6 +222,16 @@ class FormHtmlRenderer
         }
 
         return $values;
+    }
+
+    /** @param list<string> $path
+     * @return list<array{path: list<string>, messages: list<string>}>
+     */
+    public function controlErrors(array $path): array
+    {
+        return array_values(array_filter($this->payload->errors ?? [],
+            fn (array $error): bool => array_slice($error['path'], 0, count($path)) === $path,
+        ));
     }
 
     /**

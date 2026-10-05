@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'إلغاء تحديد الكل',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'سطح المكتب',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'يُحدِّد الموقع الذي سيتلقَّى المستخدم الرسائل الإلكترونية منه، عند إرسالها من لوحة التحكم.',
     'Developer Response' => 'رد المُطوِّر',
     'Development Settings' => 'إعدادات التطوير',
