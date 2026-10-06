@@ -27,11 +27,11 @@ function makeEditor(width: number, height: number) {
 
 /**
  * Where the cropping rectangle lands, mirroring `useCropper.restoreFromState()`
- * — the image's centre plus the stored offset, scaled to the current zoom.
+ * — the image's center plus the stored offset, scaled to the current zoom.
  */
 function clipperFor(
   cropperState: CropperState,
-  imageCentre: {x: number; y: number},
+  imageCenter: {x: number; y: number},
   scaledWidth: number,
   zoom: number
 ): Rectangle {
@@ -40,8 +40,8 @@ function clipperFor(
   const height = cropperState.height * scale;
 
   return {
-    left: imageCentre.x + cropperState.offsetX * scale - width / 2,
-    top: imageCentre.y + cropperState.offsetY * scale - height / 2,
+    left: imageCenter.x + cropperState.offsetX * scale - width / 2,
+    top: imageCenter.y + cropperState.offsetY * scale - height / 2,
     width,
     height,
   };

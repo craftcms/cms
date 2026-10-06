@@ -267,7 +267,7 @@ describe('craft-nav-item flyout', () => {
     ]);
   });
 
-  it("renders a labelled item's subnav in a flyout on request", async () => {
+  it("renders a labeled item's subnav in a flyout on request", async () => {
     const item = await createFixture({iconOnly: false});
     item.subnavDisplay = 'flyout';
     await item.updateComplete;
@@ -321,7 +321,7 @@ describe('craft-nav-item flyout', () => {
 
     await hover(parent, 'mouseenter');
     // The child's trigger is a descendant of the parent's, so reaching it
-    // means travelling through the parent's flyout. Closing "everything else"
+    // means traveling through the parent's flyout. Closing "everything else"
     // here would take the flyout out from under the pointer.
     await hover(child, 'mouseenter');
 
@@ -643,7 +643,7 @@ describe('craft-nav-item rail stand-ins', () => {
 });
 
 describe('craft-nav-item flyout accessibility', () => {
-  it('tells a screen reader that a labelled item discloses a flyout', async () => {
+  it('tells a screen reader that a labeled item discloses a flyout', async () => {
     const item = await createFixture({iconOnly: false});
     item.subnavDisplay = 'flyout';
     await item.updateComplete;

@@ -76,7 +76,7 @@ export class ElementSelectorController<
     this.options = {
       ...ElementSelectorController.defaults,
       // Resolved here rather than at module scope, where the translation
-      // catalogue may not have loaded yet.
+      // catalog may not have loaded yet.
       modalTitle: t('Select element'),
       selectBtnLabel: t('Select'),
       ...stripUndefined(options),

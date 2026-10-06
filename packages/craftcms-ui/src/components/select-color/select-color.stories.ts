@@ -40,7 +40,7 @@ export default meta;
 type Story = StoryObj<SelectColorArgs>;
 
 /**
- * A colour is selected on load, so the invoker shows its swatch.
+ * A color is selected on load, so the invoker shows its swatch.
  *
  * The assertions live here rather than in a unit test: the component renders a
  * `craft-select-rich`, whose Lion internals need layout that happy-dom does not
@@ -62,7 +62,7 @@ export const Default: Story = {
 };
 
 /**
- * Picking a colour is a commit, so the control emits native `input` and
+ * Picking a color is a commit, so the control emits native `input` and
  * `change` together — the events a consumer should bind, rather than Lion's
  * internal `model-value-changed`.
  *
@@ -108,7 +108,7 @@ export const Preselected: Story = {
 
 /**
  * `allow-transparent` adds a "transparent" option, whose swatch is the
- * chequerboard.
+ * checkerboard.
  */
 export const AllowTransparent: Story = {
   args: {'allow-transparent': true, 'model-value': '__blank__'},

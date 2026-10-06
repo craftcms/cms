@@ -5,7 +5,7 @@ import {animate} from './fabric';
 const settle = () => new Promise((resolve) => setTimeout(resolve, 60));
 
 it("fires fabric's own callbacks once per property", async () => {
-  // fabric's own behaviour, which `animate()` works around.
+  // fabric's own behavior, which `animate()` works around.
   const rect = new Rect({left: 0, top: 0, width: 10, height: 10});
   const onComplete = vi.fn();
 

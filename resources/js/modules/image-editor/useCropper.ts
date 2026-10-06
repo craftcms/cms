@@ -431,7 +431,7 @@ export function useCropper(
   }
 
   /**
-   * Turns the rectangle on its side about its centre, shrinking it to fit if
+   * Turns the rectangle on its side about its center, shrinking it to fit if
    * needed. Returns the new shape, or null if it couldn't turn.
    */
   function transpose(): Rectangle | null {

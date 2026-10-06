@@ -100,7 +100,7 @@ export class ElementLabel extends HTMLElement {
 
     // Put the `.label-link` back into `<craft-element-label>` so that when
     // `connectedCallback()` runs again after an insertBefore/insertAfter move,
-    // everything can re-initialise as expected. `Element.moveBefore`/`moveAfter`
+    // everything can re-initialize as expected. `Element.moveBefore`/`moveAfter`
     // aren't used as they're still experimental (unavailable in Safari & FF).
     const labelLink = this.labelLink;
     if (labelLink) {

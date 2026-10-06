@@ -334,7 +334,7 @@ export function useResizable(options: UseResizableOptions): UseResizableReturn {
       onBeforeDragStart: () => {
         // Sync, unlike onDragStart, so the width we measure is the one that
         // was on screen when the drag threshold was crossed. Remembering the
-        // distance already travelled keeps the column from jumping by it.
+        // distance already traveled keeps the column from jumping by it.
         startWidth = measure();
         startDist = dragger?.mouseDistX ?? 0;
         sign = growSign();

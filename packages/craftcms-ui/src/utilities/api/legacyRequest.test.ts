@@ -24,7 +24,7 @@ afterEach(() => {
 describe('sendLegacyRequest', () => {
   // Plugins still create tokens with the axios global the adapter provides and
   // check failures with axios.isCancel(); both have to keep working.
-  it('aborts when an axios cancel token is cancelled', async () => {
+  it('aborts when an axios cancel token is canceled', async () => {
     const source = axios.CancelToken.source();
     const request = sendLegacyRequest(createHttpClient(), {
       url: '/x',
@@ -39,7 +39,7 @@ describe('sendLegacyRequest', () => {
     expect(axios.isAxiosError(error)).toBe(true);
   });
 
-  it('does not send a request whose token was already cancelled', async () => {
+  it('does not send a request whose token was already canceled', async () => {
     const source = axios.CancelToken.source();
     source.cancel();
 

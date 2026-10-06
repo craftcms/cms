@@ -39,7 +39,7 @@ export default class CraftBadge extends LitElement {
 
   /**
    * Whether the default slot holds a label, as opposed to the badge being a
-   * bare indicator. A labelled badge takes a control's height, so it lines up
+   * bare indicator. A labeled badge takes a control's height, so it lines up
    * with the buttons and inputs it sits beside.
    */
   @state() private hasLabel = false;
@@ -57,7 +57,7 @@ export default class CraftBadge extends LitElement {
 
   /**
    * Read before the first render, so an empty region never renders and a
-   * labelled badge never renders a frame at the wrong height.
+   * labeled badge never renders a frame at the wrong height.
    */
   override connectedCallback(): void {
     super.connectedCallback();
@@ -110,7 +110,7 @@ export default class CraftBadge extends LitElement {
           badge: true,
           'badge--small': this.size === Size.Small,
           'badge--large': this.size === Size.Large,
-          'badge--labelled': this.hasLabel,
+          'badge--labeled': this.hasLabel,
         })}"
       >
         ${this.noPrefix

@@ -46,7 +46,7 @@ async function mountHidden(label: string | null): Promise<{
   return {button, container};
 }
 
-it('does not flag a labelled button that was hidden when it first rendered', async () => {
+it('does not flag a labeled button that was hidden when it first rendered', async () => {
   const {button, container} = await mountHidden('Cropping Rectangle');
 
   expect(isFlagged(button)).toBe(false);
@@ -204,7 +204,7 @@ describe('flush', () => {
 });
 
 describe('icon spacing', () => {
-  async function mountLabelled(
+  async function mountLabeled(
     attrs: Record<string, string>,
     dir: 'ltr' | 'rtl' = 'ltr'
   ): Promise<{icon: DOMRect; label: DOMRect}> {
@@ -233,13 +233,13 @@ describe('icon spacing', () => {
   }
 
   it('leaves a gap after a prefix icon', async () => {
-    const {icon, label} = await mountLabelled({icon: 'pen'});
+    const {icon, label} = await mountLabeled({icon: 'pen'});
 
     expect(label.left - icon.right).toBeCloseTo(6, 0);
   });
 
   it('leaves a gap before a suffix icon', async () => {
-    const {icon, label} = await mountLabelled({
+    const {icon, label} = await mountLabeled({
       icon: 'pen',
       'icon-position': 'suffix',
     });
@@ -248,7 +248,7 @@ describe('icon spacing', () => {
   });
 
   it('keeps the gap between them right to left', async () => {
-    const {icon, label} = await mountLabelled({icon: 'pen'}, 'rtl');
+    const {icon, label} = await mountLabeled({icon: 'pen'}, 'rtl');
 
     expect(icon.left - label.right).toBeCloseTo(6, 0);
   });
@@ -407,7 +407,7 @@ describe('[disabled]', () => {
   });
 
   it('keeps the variant’s own fill rather than repainting it', async () => {
-    // Lion's own disabled rule paints a flat grey; the variants override it, so
+    // Lion's own disabled rule paints a flat gray; the variants override it, so
     // muting is what has to carry the state.
     const {enabled, disabled} = await mountPair('fill');
 

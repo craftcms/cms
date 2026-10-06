@@ -210,7 +210,7 @@ export const AllExtensionPoints: Story = {
 
 /**
  * The same extension points as `AllExtensionPoints`, but furnished as a real
- * screen instead of labelled markers — an entry editor part-way through an
+ * screen instead of labeled markers — an entry editor part-way through an
  * edit, so you can judge spacing, density, and how the regions read together.
  *
  * Three points are deliberately absent, because each one *replaces* a region

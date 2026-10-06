@@ -37,7 +37,7 @@ export interface ScreenProps {
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
   /**
-   * Caps the content column's width and centres it in the space it has, with
+   * Caps the content column's width and centers it in the space it has, with
    * the footer's rule kept to the content: `true` for the default
    * (`--cp-content-max-width`, 960px), or any CSS length. Full pages only; a
    * slideout is narrow already.
