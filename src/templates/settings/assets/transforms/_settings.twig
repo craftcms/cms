@@ -231,6 +231,10 @@
         {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
     {% endif %}
 
+    {% if transform.format == 'jxl' or craft.app.images.supportsJxl %}
+        {% set formatOptions = formatOptions|merge([{label: 'jxl', value: 'jxl'}]) %}
+    {% endif %}
+
     {{ forms.selectField({
         label: "Image Format"|t('app'),
         id: "format",

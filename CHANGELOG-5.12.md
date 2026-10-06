@@ -13,11 +13,16 @@
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveField()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `craft\services\Images::getSupportsBmp()`.
+- Added `craft\services\Images::getSupportsJxl()`.
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 
 ### System
 
+- Added support for JPEG XL (`.jxl`) images, when ImageMagick supports it. JPEG XL images can now be uploaded, transformed, and set as a transform’s output format.
+- BMP images can now be transformed and edited in the Image Editor.
+- Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Axios to 1.20.0. 
 - Updated Twig to 3.30.
