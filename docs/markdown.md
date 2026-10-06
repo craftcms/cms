@@ -172,6 +172,7 @@ $html = Markdown::convert(
         flavor: 'gfm',
         inlineOnly: false,
         allowUnsafeLinks: false,
+        indentedCode: true,
     ),
 );
 ```
@@ -181,6 +182,11 @@ $html = Markdown::convert(
 - `flavor` the registered flavor name
 - `inlineOnly` whether to render only inline elements
 - `allowUnsafeLinks` whether CommonMark should allow unsafe link targets
+- `indentedCode` whether indented lines can start code blocks, enabled by default
+
+All built-in flavors honor `indentedCode` in block rendering. Set it to `false` when indentation formats HTML rather than code. Fenced code blocks are unaffected. Inline-only rendering has no code blocks, so this option has no effect there. Custom flavor callables receive the option and are responsible for honoring it.
+
+Control panel content rendered by `ContentHtml::parseMarkdown()` uses `gfm-comment` by default with indented code disabled.
 
 ## Pre-Encoded Compatibility
 

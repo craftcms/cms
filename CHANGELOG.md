@@ -32,6 +32,7 @@
 - Added `CraftCms\Cms\Element\UserInitiatedElementSave` and `CraftCms\Cms\Element\Data\UserInitiatedElementSaveResult`, providing a shared workflow for user-initiated element saves. ([#19822](https://github.com/craftcms/cms/pull/19822))
 - Added `CraftCms\Cms\Component\TypeRegistry::defer()`, for registering types once the registry is first read rather than at boot. ([#19851](https://github.com/craftcms/cms/pull/19851))
 - Added an `$appearance` argument to `CraftCms\Cms\Cp\Html\StatusHtml::statusIndicatorHtml()` and `componentStatusIndicatorHtml()`. ([#19842](https://github.com/craftcms/cms/pull/19842))
+- Added `CraftCms\Cms\Markdown\MarkdownOptions::$indentedCode`, which determines whether indented lines can start code blocks. ([#19859](https://github.com/craftcms/cms/pull/19859))
 - Added the `craft:layout-slot`, `craft:app-layout`, and `craft:cp-container` global Vue components, which plugins can use to fill control panel screen layout regions on their own Inertia pages. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Added the `primary-action` screen layout slot and `CraftCms\Cms\Http\Responses\CpScreenResponse::primaryAction()`, for replacing the Save button while keeping its action menu. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
@@ -52,6 +53,7 @@
 - Fixed a bug where `craft\base\Plugin::getVersion()` returned `1.0` for Craft 5 plugins, rather than the version from their Composer manifest. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Fixed a bug where Craft 5 plugins’ stored settings that didn’t have a validation rule weren’t loaded, so they reverted to their default values. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Fixed an error that occurred when `Craft::getAlias()` was passed a value that wasn’t an alias, such as `null`. Non-alias values are now returned unchanged, as they were in Craft 5. ([#19853](https://github.com/craftcms/cms/pull/19853))
+- Fixed a bug where indented markup in field instructions and other control panel content could be rendered as code, which could leave tabs after the first one empty. ([#19859](https://github.com/craftcms/cms/pull/19859))
 - Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error where MCP CORS preflight requests collected admin instructions without an authenticated user.
 - Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
