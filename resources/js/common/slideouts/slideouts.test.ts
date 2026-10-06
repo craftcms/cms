@@ -12,6 +12,37 @@ import type {FormPayload} from '@/modules/forms/types';
 
 const fetchSlideoutPage = vi.fn();
 
+// The real save controls are web components the test DOM can't construct.
+// Record what the footer hands them instead.
+const saveMenu = vi.hoisted(() => ({
+  actions: null as null | Array<{label?: string; onClick?: () => void}>,
+}));
+
+vi.mock('@/common/components/FormActions.vue', async () => {
+  const {h} = await import('vue');
+
+  return {
+    default: {
+      name: 'FormActions',
+      props: ['form', 'actionItems'],
+      setup(
+        props: {actionItems: typeof saveMenu.actions},
+        {slots}: {slots: Record<string, () => unknown>}
+      ) {
+        return () => {
+          saveMenu.actions = props.actionItems;
+
+          return h(
+            'div',
+            {class: 'form-actions'},
+            slots['primary-action']?.() as never
+          );
+        };
+      },
+    },
+  };
+});
+
 const {
   closeAllSlideouts,
   closeSlideout,
@@ -877,5 +908,97 @@ describe('SlideoutPanel', () => {
     await nextTick();
 
     expect(onSave).toHaveBeenCalled();
+  });
+
+  describe('primary action', () => {
+    const FormPage = defineComponent({
+      setup() {
+        const form: FormPayload = {
+          scope: [],
+          refreshable: false,
+          nodes: [],
+          values: {},
+          errors: [],
+          globalErrors: [],
+        };
+        useAppLayout({form});
+
+        return () =>
+          h(LayoutSlot, {name: 'primary-action'}, () =>
+            h('button', {class: 'from-page'}, 'Publish')
+          );
+      },
+    });
+
+    const outlet = (root: HTMLElement) =>
+      root.querySelector('[data-layout-slot="primary-action"]');
+
+    it('renders the response’s button in place of Save', async () => {
+      const Page = defineComponent({
+        setup() {
+          useAppLayout({form: {} as FormPayload});
+
+          return () => h('div');
+        },
+      });
+
+      const {root} = await mountPanel(Page, {
+        primaryAction:
+          '<craft-button type="submit" variant="fill">Apply</craft-button>',
+      });
+      await nextTick();
+
+      const button = root.querySelector('.form-actions craft-button');
+
+      expect(button?.textContent).toBe('Apply');
+      expect(button?.getAttribute('variant')).toBe('fill');
+    });
+
+    it('lets the page replace it with a layout slot', async () => {
+      const {root} = await mountPanel(FormPage, {
+        primaryAction: '<craft-button type="submit">Apply</craft-button>',
+      });
+      await nextTick();
+
+      expect(outlet(root)?.querySelector('.from-page')?.textContent).toBe(
+        'Publish'
+      );
+      expect(root.querySelector('.form-actions craft-button')).toBeNull();
+    });
+  });
+
+  it('offers the same Save menu as a full page', async () => {
+    const onSave = vi.fn();
+
+    const Page = defineComponent({
+      setup() {
+        const form: FormPayload = {
+          scope: [],
+          refreshable: false,
+          nodes: [],
+          values: {},
+          errors: [],
+          globalErrors: [],
+        };
+        useAppLayout({form, onSave});
+
+        return () => h('div');
+      },
+    });
+
+    const {instance} = await mountPanel(Page);
+    await nextTick();
+
+    const continueEditing = saveMenu.actions?.find(
+      (action) => action.label === 'Save and continue editing'
+    );
+
+    expect(continueEditing).toBeDefined();
+
+    // Saves without closing: in a slideout, that's what `redirect: false` means.
+    continueEditing!.onClick!();
+
+    expect(onSave).toHaveBeenCalledWith({redirect: false});
+    expect(slideoutPanels().map((panel) => panel.id)).toContain(instance.id);
   });
 });

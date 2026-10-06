@@ -88,19 +88,47 @@ export async function resolveCoreInertiaPage(
   return page;
 }
 
+/**
+ * Where a resolved page came from. Plugin-facing layout components check it
+ * to make sure they're only used on a page the plugin owns.
+ *
+ * Stored on the component rather than in a WeakMap: `createApp()` mounts a
+ * shallow copy of its root component, and a symbol key survives the copy.
+ */
+const PageOrigin = Symbol('inertiaPageOrigin');
+
+type InertiaPageOrigin = 'core' | 'plugin';
+
+function tagPage(page: InertiaPageComponent, origin: InertiaPageOrigin) {
+  (page as unknown as Record<symbol, InertiaPageOrigin>)[PageOrigin] = origin;
+}
+
+export function inertiaPageOrigin(
+  component: unknown
+): InertiaPageOrigin | undefined {
+  return typeof component === 'object' && component !== null
+    ? (component as Record<symbol, InertiaPageOrigin | undefined>)[PageOrigin]
+    : undefined;
+}
+
 export async function resolveInertiaPage(
   name: string,
-  registry: InertiaPageRegistry = inertiaPageRegistry
+  registry: InertiaPageRegistry = inertiaPageRegistry,
+  corePages: InertiaPageGlob = coreInertiaPages
 ): Promise<InertiaPageComponent> {
-  const corePage = await resolveCoreInertiaPage(name);
+  const corePage = await resolveCoreInertiaPage(name, corePages);
 
   if (corePage !== undefined) {
+    tagPage(corePage, 'core');
+
     return corePage;
   }
 
   const registeredPage = await registry.resolve(name);
 
   if (registeredPage !== undefined) {
+    tagPage(registeredPage, 'plugin');
+
     return registeredPage;
   }
 

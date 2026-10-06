@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\ActionMenu;
+use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -217,6 +218,13 @@ class CpScreenResponse implements Responsable
      * @see submitButtonLabel()
      */
     public ?string $submitButtonLabel = null;
+
+    /**
+     * @var Button|null Replaces the Save button, keeping its action menu.
+     *
+     * @see primaryAction()
+     */
+    public ?Button $primaryAction = null;
 
     /**
      * @var string|Stringable|callable|null Additional buttons’ HTML.
@@ -603,6 +611,18 @@ class CpScreenResponse implements Responsable
     }
 
     /**
+     * Replaces the Save button, keeping its action menu. The button always submits the screen's form.
+     *
+     *     ->primaryAction(Button::make()->label(t('Apply'))->variant(ButtonVariant::Fill))
+     */
+    public function primaryAction(?Button $button): self
+    {
+        $this->primaryAction = $button?->type('submit');
+
+        return $this;
+    }
+
+    /**
      * Sets the additional buttons’ HTML.
      *
      * This will only be used by full-page screens.
@@ -920,6 +940,7 @@ class CpScreenResponse implements Responsable
             ->with([
                 'title' => $this->title,
                 'submitButtonLabel' => $this->submitButtonLabel,
+                'primaryAction' => $this->primaryAction?->toHtml(),
                 'actionMenu' => $parts['actionMenu'],
                 'toolbar' => $parts['extraToolbarItems'],
                 // Populated for every screen; `cp/Screen` renders them, and a
@@ -1009,6 +1030,7 @@ class CpScreenResponse implements Responsable
                 ],
             ]) : null,
             'submitButtonLabel' => $this->submitButtonLabel,
+            'primaryAction' => $this->primaryAction?->toHtml(),
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,
             'subnav' => $this->subnav,
