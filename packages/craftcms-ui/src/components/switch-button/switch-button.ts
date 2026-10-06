@@ -95,7 +95,9 @@ export default class CraftSwitchButton extends LionSwitchButton {
 
         :host([checked]) .switch-button__thumb:after {
           --_checkmark-size: calc(var(--c-switch-thumb-height) / 2);
-          --_checkmark-offset: calc((var(--c-switch-thumb-height) - var(--_checkmark-size)) / 2 - 1px);
+          --_checkmark-offset: calc(
+            (var(--c-switch-thumb-height) - var(--_checkmark-size)) / 2 - 1px
+          );
           content: '';
           position: absolute;
           inset-block-start: var(--_checkmark-offset);
