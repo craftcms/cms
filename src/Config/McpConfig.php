@@ -18,6 +18,9 @@ class McpConfig extends BaseConfig
     /** @var list<string> */
     public array $middleware = [];
 
+    /** Additional instructions appended to the authenticated HTTP and stdio servers' core instructions. */
+    public string $instructions = '';
+
     /** @param array<string, mixed>|string $value */
     public static function fromConfig(array|string $value): self
     {
@@ -46,6 +49,13 @@ class McpConfig extends BaseConfig
     public function middleware(array $value): self
     {
         $this->middleware = array_values($value);
+
+        return $this;
+    }
+
+    public function instructions(string $value): self
+    {
+        $this->instructions = $value;
 
         return $this;
     }

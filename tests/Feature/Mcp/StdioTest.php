@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
@@ -39,6 +42,11 @@ beforeEach(function (): void {
 
 it('serves the capabilities the named user may use, except HTTP-only capabilities', function (): void {
     Edition::set(Edition::Pro);
+    Cms::config()->mcp(['instructions' => 'Preserve legal notices.']);
+    Event::listen(CollectingAdminInstructions::class, function (CollectingAdminInstructions $event): void {
+        $event->instructions[] = 'Use reviews.list before changing a product.';
+    });
+
     $editor = User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'editor']);
     $call = static fn (string $tool): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool]];
 
@@ -46,6 +54,8 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
     $editorResponses = ($this->serve)($editor->email, [$call('sections.list')]);
 
     expect($admin['sections.list'])->not->toHaveKey('error')
+        ->and($admin['init']['result']['instructions'])->toContain('hardDelete')
+        ->toEndWith("Preserve legal notices.\n\nUse reviews.list before changing a product.")
         ->and($admin['sections.list']['result']['structuredContent'])->toHaveKey('sections')
         ->and($admin['assets.upload.prepare']['error']['message'])->toBe('Tool not found: "assets.upload.prepare".')
         ->and($editorResponses['sections.list']['error']['message'])->toBe('Tool not found: "sections.list".');

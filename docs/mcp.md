@@ -114,6 +114,7 @@ return GeneralConfig::create()
     ->mcp([
         'endpoint' => 'mcp',
         'middleware' => [MyMcpMiddleware::class],
+        'instructions' => 'Preserve legal notices when editing content.',
     ]);
 ```
 
@@ -121,10 +122,35 @@ return GeneralConfig::create()
 | ------------- | ------------------------------------------------------------------------------------------------- |
 | `endpoint`    | Path below the control panel trigger. Defaults to `mcp`.                                          |
 | `middleware`  | Extra route middleware appended to the authenticated server and its upload routes.                |
+| `instructions` | Additional server instructions for authenticated HTTP and stdio clients. Defaults to an empty string. |
 
 To try capabilities locally without completing an OAuth flow, [run the server over stdio](#running-the-server-over-stdio) instead.
 
 The public server is configured in the control panel. Its settings are stored in project config under `mcp`.
+
+### Server instructions
+
+The authenticated HTTP and stdio servers provide instructions explaining type references, identifiers, sites, field selection, pagination, working sequences, and destructive operations. HTTP clients receive them through `server/discover`; stdio clients receive them during `initialize`.
+
+The `mcp.instructions` general config setting appends site guidance to the core instructions. It accepts a string through the array or JSON configuration above, or through `McpConfig::create()->instructions('…')`.
+
+Plugins can append instructions with a Laravel event listener registered in their service provider:
+
+```php
+use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
+use Illuminate\Support\Facades\Event;
+
+public function boot(): void
+{
+    Event::listen(CollectingAdminInstructions::class, function (CollectingAdminInstructions $event): void {
+        $event->instructions[] = 'Use reviews.list before changing a product.';
+    });
+}
+```
+
+Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
+
+The event runs when the server is built, once per HTTP request or once at the start of a stdio session. Restart stdio clients after changing instructions. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 
 ## Running the server over stdio
 
