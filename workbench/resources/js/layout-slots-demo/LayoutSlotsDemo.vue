@@ -1,23 +1,23 @@
 <script setup lang="ts">
-/**
- * A plugin-owned page. Everything here goes through public API only — the
- * global `craft:layout-slot` component — the way a third-party plugin would.
- *
- * The page owns the screen, so it may replace any slot. The same component
- * on a page the plugin doesn't own renders nothing — see the dashboard widget.
- */
-import { reactive, resolveComponent } from "vue";
+  /**
+   * A plugin-owned page. Everything here goes through public API only — the
+   * global `craft:layout-slot` component — the way a third-party plugin would.
+   *
+   * The page owns the screen, so it may replace any slot. The same component
+   * on a page the plugin doesn't own renders nothing — see the dashboard widget.
+   */
+  import {reactive, resolveComponent} from 'vue';
 
-defineProps<{ owner: string }>();
+  defineProps<{owner: string}>();
 
-const LayoutSlot = resolveComponent("craft:layout-slot");
-const CpContainer = resolveComponent("craft:cp-container");
+  const LayoutSlot = resolveComponent('craft:layout-slot');
+  const CpContainer = resolveComponent('craft:cp-container');
 
-const playground = reactive({
-  sidebar: false,
-  notice: false,
-  unknown: false,
-});
+  const playground = reactive({
+    sidebar: false,
+    notice: false,
+    unknown: false,
+  });
 </script>
 
 <template>
@@ -40,12 +40,16 @@ const playground = reactive({
   <LayoutSlot name="content-details">
     <div class="p-md">
       <h2 class="text-md mb-sm">Details</h2>
-      <p class="text-sm">Filled from the page with <code>name="content-details"</code>.</p>
+      <p class="text-sm">
+        Filled from the page with <code>name="content-details"</code>.
+      </p>
     </div>
   </LayoutSlot>
 
   <LayoutSlot name="page-footer">
-    <p class="text-sm text-(--c-text-quiet) py-md">Page footer from a plugin.</p>
+    <p class="text-sm text-(--c-text-quiet) py-md">
+      Page footer from a plugin.
+    </p>
   </LayoutSlot>
 
   <!-- Content -->
@@ -55,7 +59,8 @@ const playground = reactive({
     <div class="pane mb-xl">
       <h2 class="text-lg mb-sm">Playground</h2>
       <p class="mb-md">
-        Toggle more slots this page fills. Open the browser console to see the dev warnings.
+        Toggle more slots this page fills. Open the browser console to see the
+        dev warnings.
       </p>
 
       <div class="flex flex-col gap-md">
@@ -71,7 +76,8 @@ const playground = reactive({
 
         <label class="flex items-center gap-sm">
           <input v-model="playground.unknown" type="checkbox" />
-          Fill <code>actions</code>, which isn't a slot — nothing renders, and the console warns.
+          Fill <code>actions</code>, which isn't a slot — nothing renders, and
+          the console warns.
         </label>
       </div>
     </div>

@@ -11,9 +11,9 @@
 
 <template>
   <p>
-    This widget tries to put a button next to <strong>New widget</strong> at
-    the top of the Dashboard. It doesn't appear: plugins can only fill layout
-    slots on their own pages. The console says why.
+    This widget tries to put a button next to <strong>New widget</strong> at the
+    top of the Dashboard. It doesn't appear: plugins can only fill layout slots
+    on their own pages. The console says why.
   </p>
 
   <LayoutSlot name="content-actions">
