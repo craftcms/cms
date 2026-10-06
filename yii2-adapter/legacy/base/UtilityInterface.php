@@ -16,7 +16,7 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
  * @since 3.0.0
  * @deprecated in 6.0.0. Utilities should extend [[\CraftCms\Cms\Utility\Utility]] instead.
  */
-interface UtilityInterface extends ComponentInterface, ModelInterface
+interface UtilityInterface extends ComponentInterface
 {
     /**
      * Returns the utility’s unique identifier.
