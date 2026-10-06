@@ -411,6 +411,30 @@ class Cp extends Component
     }
 
     /**
+     * Renders a selectize input's HTML from the legacy selectize variables.
+     *
+     * Emits a `<craft-combobox>`; see {@see FormFields::selectizeFromConfig()}
+     * for how the legacy variables map onto it.
+     */
+    /** @param array<string, mixed> $config */
+    public function selectize(array $config = []): string
+    {
+        return FormFields::selectizeFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a select's HTML from the legacy select variables.
+     *
+     * Emits a `<craft-select>`; see {@see FormFields::selectFromConfig()} for
+     * how the legacy variables map onto it.
+     */
+    /** @param array<string, mixed> $config */
+    public function select(array $config = []): string
+    {
+        return FormFields::selectFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a copy-text input's HTML from the legacy copytext variables.
      */
     /** @param array<string, mixed> $config */

@@ -25,6 +25,7 @@ use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -974,6 +975,197 @@ readonly class FormFields
     public static function copytextHtml(array $config): string
     {
         return self::copytextFromConfig($config)->toHtml();
+    }
+
+    /**
+     * A `<craft-combobox>` built from the legacy selectize variables.
+     *
+     * Selectize rendered its own listbox over a hidden `<select>`; the combobox
+     * is the control that replaces it. The option data it took — `status`,
+     * `icon`, `color`, `hint` — maps onto the combobox's own, with `status`
+     * becoming the indicator's fill, which accepts the same vocabulary.
+     *
+     * `selectizeOptions` and its plugins describe the old library's behaviour
+     * and have no counterpart, so they're ignored.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function selectizeFromConfig(array $config): Combobox
+    {
+        $multi = (bool) ($config['multi'] ?? false);
+
+        $component = Combobox::make()
+            ->id($config['id'] ?? null)
+            ->name(($config['name'] ?? false) ?: null)
+            ->value($config['value'] ?? null)
+            ->options(self::normalizeSelectizeOptions($config['options'] ?? []))
+            ->multiple($multi)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->labelledBy(($config['labelledBy'] ?? false) ?: null)
+            ->showAllOnEmpty();
+
+        /**
+         * Selectize let anything be typed when it was fed environment
+         * variables, since the value is a reference rather than one of the
+         * options.
+         */
+        if ($config['includeEnvVars'] ?? false) {
+            $component = $component->requireOptionMatch(false);
+        }
+
+        return $component;
+    }
+
+    /**
+     * Brings legacy selectize options into the shape `<craft-combobox>` takes.
+     *
+     * An `{optgroup: 'Name'}` marker opens a group that runs until the next
+     * marker; the combobox takes groups as nested lists instead.
+     *
+     * @param  array<array-key, mixed>  $options
+     * @return list<array<string, mixed>>
+     */
+    private static function normalizeSelectizeOptions(array $options): array
+    {
+        $items = [];
+        $groupIndex = null;
+
+        foreach ($options as $key => $option) {
+            if (is_array($option) && isset($option['optgroup'])) {
+                $items[] = ['type' => 'optgroup', 'label' => (string) $option['optgroup'], 'options' => []];
+                $groupIndex = array_key_last($items);
+
+                continue;
+            }
+
+            $normalized = self::normalizeSelectizeOption($option, $key);
+
+            if ($groupIndex === null) {
+                $items[] = $normalized;
+
+                continue;
+            }
+
+            $items[$groupIndex]['options'][] = $normalized;
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function normalizeSelectizeOption(mixed $option, string|int $key): array
+    {
+        if (! is_array($option)) {
+            return ['label' => (string) $option, 'value' => (string) $key];
+        }
+
+        $data = $option['data'] ?? [];
+        $status = $data['status'] ?? $option['status'] ?? null;
+        $icon = $data['icon'] ?? $option['icon'] ?? null;
+        $color = $data['color'] ?? $option['color'] ?? null;
+        $hint = $data['hint'] ?? $option['hint'] ?? null;
+
+        return [
+            'label' => (string) ($option['label'] ?? $option['value'] ?? $key),
+            'value' => (string) ($option['value'] ?? $key),
+            'disabled' => (bool) ($option['disabled'] ?? false),
+            'data' => array_filter([
+                ...$data,
+                'indicator' => $status !== null ? ['fill' => $status] : null,
+                'icon' => $icon,
+                'color' => $color,
+                'hint' => $hint,
+            ], fn (mixed $value) => $value !== null && $value !== ''),
+        ];
+    }
+
+    /**
+     * A `<craft-select>` built from the legacy select variables.
+     *
+     * Legacy options come in three shapes, often mixed in one list: a plain
+     * `value => label` map, a list of `{value, label, …}` arrays, and
+     * `{optgroup: 'Name'}` markers that head the options following them. All
+     * three normalize here, so an existing call keeps working.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function selectFromConfig(array $config): Select
+    {
+        $component = Select::make()
+            ->id($config['id'] ?? null)
+            ->name(($config['name'] ?? false) ?: null)
+            ->value($config['value'] ?? null)
+            ->options(self::normalizeSelectOptions($config['options'] ?? []))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? (($config['labelledBy'] ?? false) ?: null) : null);
+
+        /**
+         * `toggle` marked the select as driving the visibility of other fields,
+         * which legacy JS reads off the class and `data-target-prefix`.
+         */
+        $classes = Html::explodeClass($config['class'] ?? []);
+
+        if ($config['toggle'] ?? false) {
+            $classes[] = 'fieldtoggle';
+        }
+
+        return $component->selectAttributes(Arr::merge(
+            [
+                'class' => $classes,
+                'autocomplete' => ($config['autocomplete'] ?? false) ?: false,
+                'autofocus' => (bool) ($config['autofocus'] ?? false),
+                'data' => [
+                    'target-prefix' => ($config['toggle'] ?? false) ? ($config['targetPrefix'] ?? '#') : false,
+                ],
+            ],
+            $config['inputAttributes'] ?? [],
+        ));
+    }
+
+    /**
+     * Brings legacy select options into the shape `<craft-select>` takes.
+     *
+     * An `{optgroup: 'Name'}` marker opens a group that runs until the next
+     * marker; the component takes that as a `group` on each option instead.
+     *
+     * @param  array<array-key, mixed>  $options
+     * @return list<array<string, mixed>>
+     */
+    private static function normalizeSelectOptions(array $options): array
+    {
+        $normalized = [];
+        $group = null;
+
+        foreach ($options as $key => $option) {
+            if (is_array($option) && isset($option['optgroup'])) {
+                $group = (string) $option['optgroup'];
+
+                continue;
+            }
+
+            if (! is_array($option)) {
+                $normalized[] = ['label' => (string) $option, 'value' => $key, 'group' => $group];
+
+                continue;
+            }
+
+            $normalized[] = [
+                'label' => (string) ($option['label'] ?? $option['value'] ?? $key),
+                'value' => $option['value'] ?? $key,
+                'disabled' => (bool) ($option['disabled'] ?? false),
+                'hidden' => (bool) ($option['hidden'] ?? false),
+                'data' => $option['data'] ?? [],
+                'group' => $group,
+            ];
+        }
+
+        return $normalized;
     }
 
     /**
