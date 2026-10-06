@@ -141,6 +141,8 @@ export default class CraftActionItem extends LitElement {
   @state() private state: AsyncState = AsyncStates.Idle;
   @state() private feedbackMessage: string | null = null;
 
+  private _resetStateTimeout: ReturnType<typeof setTimeout> | null = null;
+
   /**
    * A keyboard shortcut shown at the end of the item. Either a plain string
    * (`"S"`, `"ctrl+k"`) or an object naming the modifiers. Display only — the
@@ -197,6 +199,14 @@ export default class CraftActionItem extends LitElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this);
+    this._clearResetStateTimeout();
+  }
+
+  private _clearResetStateTimeout() {
+    if (this._resetStateTimeout !== null) {
+      clearTimeout(this._resetStateTimeout);
+      this._resetStateTimeout = null;
+    }
   }
 
   /**
@@ -254,7 +264,9 @@ export default class CraftActionItem extends LitElement {
           ...(this.feedback?.error || {}),
         });
       } finally {
-        setTimeout(() => {
+        this._clearResetStateTimeout();
+        this._resetStateTimeout = setTimeout(() => {
+          this._resetStateTimeout = null;
           this.setState(AsyncStates.Idle);
         }, this.feedbackDuration);
       }
