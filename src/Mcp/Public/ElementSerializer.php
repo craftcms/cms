@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Mcp\Public;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Mcp\ElementSerializer as BaseElementSerializer;
+use CraftCms\Cms\Mcp\Serializers\ElementSerializer as BaseElementSerializer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;

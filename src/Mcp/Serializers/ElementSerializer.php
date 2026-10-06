@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp;
+namespace CraftCms\Cms\Mcp\Serializers;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Mcp\Events\ElementSerializing;
+use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Exception\ToolCallException;

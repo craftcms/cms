@@ -10,10 +10,12 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
-use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
@@ -53,6 +55,7 @@ readonly class Drafts
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementSerializer $elementSerializer,
         private McpActor $actor,
+        private Workflows $workflows,
     ) {}
 
     /**
@@ -159,7 +162,15 @@ readonly class Drafts
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
+        #[Schema(minimum: 1, description: 'Expected workflow run ID. Provide together with workflowCurrentStage to reject stale approvals.')]
+        ?int $workflowRunId = null,
+        #[Schema(minimum: 0, description: 'Expected zero-based workflow stage index. Provide together with workflowRunId.')]
+        ?int $workflowCurrentStage = null,
     ): array {
+        if (($workflowRunId === null) !== ($workflowCurrentStage === null)) {
+            throw new ToolCallException('Provide both workflowRunId and workflowCurrentStage, or neither.');
+        }
+
         $draft = $this->findDraft($type, $id, $uid, $siteId);
         $actor = $this->actor->user();
 
@@ -171,8 +182,17 @@ readonly class Drafts
             throw new ToolCallException('Draft not found.');
         }
 
+        if ($workflowRunId !== null && ! $this->workflows->requiresApproval($draft)) {
+            throw new ToolCallException('This draft no longer requires workflow approval. Refresh and try again.');
+        }
+
         try {
-            $element = $this->drafts->applyDraft($draft);
+            $element = $this->drafts->applyDraft($draft, Arr::whereNotNull([
+                'workflowRunId' => $workflowRunId,
+                'workflowCurrentStage' => $workflowCurrentStage,
+            ]));
+        } catch (WorkflowException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
         } catch (InvalidElementException $exception) {
             throw new ToolCallException(
                 implode("\n", $exception->element->errors()->all()) ?: 'Draft could not be applied.',
