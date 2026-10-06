@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Fields as FieldService;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
+use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\McpActor;
@@ -92,6 +93,7 @@ readonly class Users
         private CustomFieldSchema $customFieldSchema,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
+        private ElementLifecycle $lifecycle,
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementResourceLinks $resourceLinks,
         private FieldLayoutConfig $fieldLayouts,
@@ -328,6 +330,58 @@ readonly class Users
         }
 
         return ['deleted' => true];
+    }
+
+    /** @return array{restored: bool} */
+    #[McpTool(
+        name: 'users.restore',
+        description: 'Restores a deleted Craft CMS user across all supported sites. Returns restored: false without changes if already active. List deleted users with criteria {trashed: true, status: null}.',
+        annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
+    )]
+    public function restore(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+    ): array {
+        $user = $this->lifecycle->find(User::class, $id, $uid, includeTrashed: true, ability: 'save');
+
+        return $this->lifecycle->restore($user);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes  Proposed built-in attributes using the update schema.
+     * @param  array<string, mixed>  $fields  Proposed custom field values keyed by field handle.
+     * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
+     */
+    #[McpTool(
+        name: 'users.validate',
+        description: 'Validates an existing Craft CMS user under live rules, optionally applying proposed attributes and fields in memory. Does not save. A valid result does not guarantee a later update succeeds.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function validate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        #[Schema(definition: self::UpdateAttributesSchema)]
+        array $attributes = [],
+        #[Schema(definition: self::FieldsSchema)]
+        array $fields = [],
+    ): array {
+        $user = $this->lifecycle->find(User::class, $id, $uid);
+
+        if ($attributes !== [] || $fields !== []) {
+            $actor = $this->actor->user();
+            $this->authorizeSave($actor, $user);
+            if (! $actor->can('editUsers')) {
+                throw new ToolCallException('You are not authorized to edit users.');
+            }
+
+            $this->authorizeAttributes($actor, $attributes);
+            $this->populate($user, $attributes, $fields);
+            $this->authorizeSave($actor, $user);
+        }
+
+        return $this->lifecycle->validate($user);
     }
 
     /** @return array{user: array<string, mixed>} */

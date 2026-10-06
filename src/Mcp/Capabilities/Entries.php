@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\McpActor;
@@ -87,6 +88,7 @@ readonly class Entries
         private CustomFieldSchema $customFieldSchema,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
+        private ElementLifecycle $lifecycle,
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementResourceLinks $resourceLinks,
         private Sites $sites,
@@ -304,6 +306,78 @@ readonly class Entries
         }
 
         return ['deleted' => true];
+    }
+
+    /** @return array{entry: array<string, mixed>} */
+    #[McpTool(
+        name: 'entries.duplicate',
+        description: 'Duplicates a canonical entry or saved draft as independent content. Defaults to an unpublished draft; canonical mode uses Craft’s normal enabled-state behavior. Revisions and provisional drafts are excluded. Nested entries keep their owner.',
+    )]
+    public function duplicate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        #[Schema(enum: ['unpublished', 'canonical'], description: 'Whether to create independent unpublished content or a canonical copy.')]
+        string $mode = 'unpublished',
+    ): array {
+        if (! in_array($mode, ['unpublished', 'canonical'], true)) {
+            throw new ToolCallException('Duplication mode must be unpublished or canonical.');
+        }
+
+        $entry = $this->lifecycle->find(Entry::class, $id, $uid, $siteId);
+        $duplicate = $this->lifecycle->duplicate($entry, asUnpublishedDraft: $mode === 'unpublished');
+
+        return ['entry' => $this->elementSerializer->serialize($duplicate)];
+    }
+
+    /** @return array{restored: bool} */
+    #[McpTool(
+        name: 'entries.restore',
+        description: 'Restores a deleted Craft CMS entry across all supported sites. Returns restored: false without changes if already active. List deleted entries with criteria {trashed: true, status: null}. siteId selects the loaded variant; it does not limit restoration.',
+        annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
+    )]
+    public function restore(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+    ): array {
+        $entry = $this->lifecycle->find(Entry::class, $id, $uid, $siteId, includeTrashed: true, ability: 'save');
+
+        return $this->lifecycle->restore($entry);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes  Proposed built-in attributes using the update schema.
+     * @param  array<string, mixed>  $fields  Proposed custom field values keyed by field handle.
+     * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
+     */
+    #[McpTool(
+        name: 'entries.validate',
+        description: 'Validates an existing Craft CMS entry or saved draft under live rules, optionally applying proposed attributes and fields in memory. Does not save. A valid result does not guarantee a later update succeeds.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function validate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        #[Schema(definition: self::UpdateAttributesSchema)]
+        array $attributes = [],
+        #[Schema(definition: self::FieldsSchema)]
+        array $fields = [],
+    ): array {
+        $entry = $this->lifecycle->find(Entry::class, $id, $uid, $siteId);
+
+        if ($attributes !== [] || $fields !== []) {
+            $actor = $this->actor->user();
+            $this->authorizeSave($actor, $entry);
+            $this->populate($entry, $attributes, $fields, $actor);
+            $this->authorizeSave($actor, $entry);
+        }
+
+        return $this->lifecycle->validate($entry);
     }
 
     /** @return array{entry: array<string, mixed>} */

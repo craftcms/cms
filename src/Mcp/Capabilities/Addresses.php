@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\McpActor;
@@ -95,6 +96,7 @@ readonly class Addresses
         private CustomFieldSchema $customFieldSchema,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
+        private ElementLifecycle $lifecycle,
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementResourceLinks $resourceLinks,
         private FieldLayoutConfig $fieldLayouts,
@@ -334,6 +336,72 @@ readonly class Addresses
         }
 
         return ['deleted' => true];
+    }
+
+    /** @return array{address: array<string, mixed>} */
+    #[McpTool(
+        name: 'addresses.duplicate',
+        description: 'Duplicates a Craft CMS address while preserving its owner.',
+    )]
+    public function duplicate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+    ): array {
+        $address = $this->lifecycle->find(Address::class, $id, $uid, $siteId);
+        $duplicate = $this->lifecycle->duplicate($address);
+
+        return ['address' => $this->elementSerializer->serialize($duplicate)];
+    }
+
+    /** @return array{restored: bool} */
+    #[McpTool(
+        name: 'addresses.restore',
+        description: 'Restores a deleted Craft CMS address across all supported sites. Returns restored: false without changes if already active. List deleted addresses with criteria {trashed: true, status: null}. siteId selects the loaded variant; it does not limit restoration.',
+        annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
+    )]
+    public function restore(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+    ): array {
+        $address = $this->lifecycle->find(Address::class, $id, $uid, $siteId, includeTrashed: true, ability: 'save');
+
+        return $this->lifecycle->restore($address);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes  Proposed built-in attributes using the update schema.
+     * @param  array<string, mixed>  $fields  Proposed custom field values keyed by field handle.
+     * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
+     */
+    #[McpTool(
+        name: 'addresses.validate',
+        description: 'Validates an existing Craft CMS address under live rules, optionally applying proposed attributes and fields in memory. Does not save. A valid result does not guarantee a later update succeeds.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function validate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        #[Schema(definition: self::AttributesSchema)]
+        array $attributes = [],
+        #[Schema(definition: self::FieldsSchema)]
+        array $fields = [],
+    ): array {
+        $address = $this->lifecycle->find(Address::class, $id, $uid, $siteId);
+
+        if ($attributes !== [] || $fields !== []) {
+            $actor = $this->actor->user();
+            $this->authorizeSave($actor, $address);
+            $this->populate($address, $attributes, $fields);
+            $this->authorizeSave($actor, $address);
+        }
+
+        return $this->lifecycle->validate($address);
     }
 
     /** @return array{address: array<string, mixed>} */

@@ -19,6 +19,7 @@ use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
+use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\McpActor;
@@ -106,6 +107,7 @@ readonly class Assets
         private CustomFieldSchema $customFieldSchema,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
+        private ElementLifecycle $lifecycle,
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementResourceLinks $resourceLinks,
         private Folders $folders,
@@ -626,6 +628,57 @@ readonly class Assets
         }
 
         return ['deleted' => true];
+    }
+
+    /** @return array{restored: bool} */
+    #[McpTool(
+        name: 'assets.restore',
+        description: 'Restores a deleted Craft CMS asset whose file was kept on deletion, across all supported sites. Returns restored: false without changes if already active. List deleted assets with criteria {trashed: true, status: null}. siteId selects the loaded variant; it does not limit restoration.',
+        annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
+    )]
+    public function restore(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+    ): array {
+        $asset = $this->lifecycle->find(Asset::class, $id, $uid, $siteId, includeTrashed: true, ability: 'save');
+
+        return $this->lifecycle->restore($asset);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes  Proposed built-in attributes using the update schema.
+     * @param  array<string, mixed>  $fields  Proposed custom field values keyed by field handle.
+     * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
+     */
+    #[McpTool(
+        name: 'assets.validate',
+        description: 'Validates an existing Craft CMS asset under live rules, optionally applying proposed attributes and fields in memory. Does not save or execute file relocation. A valid result does not guarantee a later update succeeds.',
+        annotations: new ToolAnnotations(readOnlyHint: true),
+    )]
+    public function validate(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        #[Schema(definition: self::UpdateAttributesSchema)]
+        array $attributes = [],
+        #[Schema(definition: self::FieldsSchema)]
+        array $fields = [],
+    ): array {
+        $asset = $this->lifecycle->find(Asset::class, $id, $uid, $siteId);
+
+        if ($attributes !== [] || $fields !== []) {
+            $actor = $this->actor->user();
+            $this->authorizeSave($actor, $asset);
+            $this->relocation($asset, $attributes, $actor);
+            Typecast::configure($asset, $attributes);
+            $asset->setFieldValues($fields);
+            $this->authorizeSave($actor, $asset);
+        }
+
+        return $this->lifecycle->validate($asset);
     }
 
     /** @return array{asset: array<string, mixed>} */

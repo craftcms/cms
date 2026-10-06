@@ -60,6 +60,10 @@ class ElementQueryCriteria
             'type' => 'string',
             'description' => 'Native Craft element search query.',
         ],
+        'trashed' => [
+            'type' => ['boolean', 'null'],
+            'description' => 'true returns deleted elements, false returns active elements, and null includes both. Use status: null when listing deleted elements.',
+        ],
         'relatedTo' => [
             'type' => 'array',
             'description' => 'Native Craft relation criteria, such as related element IDs.',
