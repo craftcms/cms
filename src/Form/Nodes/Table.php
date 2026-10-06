@@ -15,7 +15,11 @@ use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\t;
 
-/** A listing of rows supplied through node props, not form values. */
+/**
+ * A listing of rows supplied through node props, not form values.
+ *
+ * @since 6.0.0
+ */
 class Table implements Node
 {
     use Conditionable;
@@ -144,7 +148,10 @@ class Table implements Node
         return array_map(self::resolveRowStatus(...), $rows);
     }
 
-    /** @param array<string, mixed> $row */
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
     private static function resolveRowStatus(array $row): array
     {
         if (! array_key_exists('_status', $row) || $row['_status'] === null) {
