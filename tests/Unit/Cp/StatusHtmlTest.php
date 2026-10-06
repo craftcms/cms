@@ -20,7 +20,14 @@ describe('statusIndicatorHtml', function () {
         ]);
 
         expect($html)->toContain('fill="teal"')
-            ->and($html)->toContain('label="Status: Enabled"');
+            ->and($html)->toContain('label="Status: Enabled"')
+            ->and($html)->not->toContain('appearance=');
+    });
+
+    it('passes an appearance through to the indicator', function () {
+        $html = app(StatusHtml::class)->statusIndicatorHtml('enabled', appearance: 'solid');
+
+        expect($html)->toContain('appearance="solid"');
     });
 });
 

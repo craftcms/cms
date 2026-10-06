@@ -31,7 +31,12 @@ export default class CraftIndicator extends LitElement {
         width: var(--_size);
         border-radius: var(--c-radius-full);
         background: var(--_fill);
-        border: 1px solid var(--_fill);
+        /* Longhands, so a fill that isn't a colour (a gradient, say) only
+           drops the border's colour rather than the whole border, and the dot
+           keeps its size. */
+        border-width: 1px;
+        border-style: solid;
+        border-color: var(--_fill);
       }
 
       /* Appearances */
@@ -79,12 +84,12 @@ export default class CraftIndicator extends LitElement {
   label: string | null = null;
 
   /**
-   * How the dot is drawn: `outline-fill` is filled with a subtle outline,
-   * `solid` is filled with none, and `outline` is a hollow ring over a
-   * transparent centre.
+   * How the dot is drawn: `solid` (the default) is filled with no outline,
+   * `outline-fill` is filled with a subtle outline, and `outline` is a hollow
+   * ring over a transparent centre.
    */
   @property({reflect: true})
-  appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.OutlineFill;
+  appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.Solid;
 
   protected getFill() {
     // If the fill is known swatch
