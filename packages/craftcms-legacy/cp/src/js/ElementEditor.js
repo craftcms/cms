@@ -1928,7 +1928,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (this.isFullPage && !this.$contentContainer.length) {
-        this.$contentContainer = this.settings.$contentContainer ?? $('#content');
+        this.$contentContainer =
+          this.settings.$contentContainer ?? $('#content');
       }
 
       this.formHost = this.$contentContainer.find(

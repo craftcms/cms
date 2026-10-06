@@ -304,9 +304,8 @@ trait IndexesAssets
 
         $selection = select(
             label: "What is the new location for <fg=cyan>{$path}</>?",
-            options: collect($missingRecords)
-                ->mapWithKeys(fn ($e, int $i) => [(string) ($i + 1) => "{$e->volume->name}/{$e->indexEntry->uri}"])
-                ->prepend('Skip', '')
+            options: ['' => 'Skip'] + collect($missingRecords)
+                ->mapWithKeys(fn ($e, int $i) => [$i + 1 => "{$e->volume->name}/{$e->indexEntry->uri}"])
                 ->all(),
         );
 

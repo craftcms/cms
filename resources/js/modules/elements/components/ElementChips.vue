@@ -188,13 +188,13 @@
           Absent entirely for element types that don't show a status.
         -->
         <div v-if="element.status" slot="status">
-          <span
+          <!-- `scribble` is what `Icons::resolveIconData('draft')` gives the
+            server-rendered chips. -->
+          <craft-icon
             v-if="element.status.draft"
-            class="icon"
-            data-icon="draft"
-            role="img"
-            :aria-label="`${t('Status:')} ${element.status.label}`"
-          ></span>
+            name="scribble"
+            :label="`${t('Status:')} ${element.status.label}`"
+          ></craft-icon>
           <craft-indicator
             v-else
             :fill="element.status.fill"

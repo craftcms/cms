@@ -10,8 +10,9 @@ describe('statusIndicatorHtml', function () {
     it('renders the draft icon for draft status', function () {
         $html = app(StatusHtml::class)->statusIndicatorHtml('draft');
 
-        expect($html)->toContain('data-icon="draft"')
-            ->and($html)->toContain('role="img"');
+        expect($html)->toContain('<craft-icon')
+            ->and($html)->toContain('name="scribble"')
+            ->and($html)->toContain('label="Status: Draft"');
     });
 
     it('renders standard status class and aria label', function () {

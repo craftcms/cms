@@ -766,8 +766,8 @@ class HtmlStack
      *
      * Position-keyed properties (`js`, `scripts`, `jsFiles`, `html`) are merged per-position.
      * Flat-keyed properties (`cssFiles`, `css`, `jsImports`, `metaTags`, `linkTags`) are
-     * merged by key, with overwritten entries moved to the end to reflect the latest
-     * registration order. Icons are deduplicated and appended.
+     * merged by key, with overwritten entries keeping the position of their first
+     * registration. Icons are deduplicated and appended.
      *
      * @param  array<string, mixed>  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
      */
@@ -845,7 +845,8 @@ class HtmlStack
                     Html::script($this->loadJs()),
                 ]),
             )
-            ->map(fn (string|Stringable $part) => (string) $part);
+            ->map(fn (string|Stringable $part) => (string) $part)
+            ->values();
     }
 
     private function dispatchAssetsRenderingEvent(): void
@@ -896,7 +897,7 @@ JS;
     }
 
     /**
-     * Keeps overwritten entries in their latest registration order.
+     * Keeps overwritten entries in the position of their first registration.
      *
      * @param  array<string, Stringable|string>  $entries
      */

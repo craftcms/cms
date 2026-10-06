@@ -524,7 +524,11 @@ export default class CraftActionMenu extends CraftPopover {
         heading.setAttribute('role', 'presentation');
         // Styled like a nav heading.
         Object.assign(heading.style, {
-          padding: 'var(--c-spacing-xs) var(--c-spacing-md)',
+          paddingBlock: 'var(--c-spacing-xs)',
+          // Inline start where the items' labels do: past their 1px border,
+          // inline padding, and the label's own margin.
+          paddingInline:
+            'calc(var(--c-spacing-sm) * 2 + 1px) var(--c-spacing-md)',
           fontSize: 'var(--c-text-sm)',
           fontWeight: 'bold',
         });
@@ -660,6 +664,20 @@ export default class CraftActionMenu extends CraftPopover {
       const node = this._renderItem(action);
       if (node) {
         content.appendChild(node);
+      }
+    }
+
+    // Set headings off from the items above them, as the global nav's group
+    // headings are. Inline, like the rest of their styling, so it's decided
+    // here rather than by a :first-child rule the shadow root can't apply.
+    let followsItem = false;
+    for (const child of content.children) {
+      if (child.classList.contains('action-menu__heading')) {
+        (child as HTMLElement).style.marginBlockStart = followsItem
+          ? 'var(--c-spacing-md)'
+          : '';
+      } else if (child.tagName === 'CRAFT-ACTION-ITEM') {
+        followsItem = true;
       }
     }
 
