@@ -39,6 +39,11 @@ readonly class ServerFactory
         )->buildStateless([ProtocolVersion::V2026_07_28]);
     }
 
+    public function preflight(): StatelessProtocol
+    {
+        return $this->builder($this->capabilities)->buildStateless([ProtocolVersion::V2026_07_28]);
+    }
+
     public function stdio(): Server
     {
         return $this->builder($this->stdioCapabilities, $this->instructions->get())->build();

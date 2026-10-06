@@ -239,20 +239,27 @@ class UserPermissions
             function () use ($userId) {
                 $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-                if (Edition::get()->value >= Edition::Pro->value) {
-                    /** @var string[] $userPermissions */
-                    $userPermissions = $this->createUserPermissionsQuery()
-                        ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
-                        ->where('p_u.userId', $userId)
-                        ->pluck('p.name')
-                        ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
-                } else {
-                    $userPermissions = [];
-                }
-
-                return $groupPermissions->merge($userPermissions)->unique()->values();
+                return $groupPermissions->merge($this->getDirectPermissionsByUserId($userId))->unique()->values();
             },
         );
+    }
+
+    /**
+     * Returns permissions assigned directly to a user, including those also inherited from groups.
+     *
+     * @return Collection<int, string>
+     */
+    public function getDirectPermissionsByUserId(int $userId): Collection
+    {
+        if (Edition::get()->value < Edition::Pro->value) {
+            return collect();
+        }
+
+        return $this->createUserPermissionsQuery()
+            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->where('p_u.userId', $userId)
+            ->pluck('p.name')
+            ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
     }
 
     public function validatePermission(string $permission): bool

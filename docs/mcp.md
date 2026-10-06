@@ -150,7 +150,13 @@ public function boot(): void
 
 Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
 
-The event runs when the server is built, once per HTTP request or once at the start of a stdio session. Restart stdio clients after changing instructions. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+The event runs when the admin server is built, once per authenticated HTTP request or once at the start of a stdio session. Unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instructions. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+
+### Element pagination and permission replacement
+
+`elements.list`, `drafts.list`, and `revisions.list` return normalized `limit`, `offset`, and `nextOffset`. `search.query` returns those values for each element type in `pagination`, keyed by its reference handle or class name. Pass a non-null `nextOffset` as `criteria.offset` with the same filters and a stable ordering, including an ID tie-breaker. For searches, continue each type separately through `types`. A null `nextOffset` marks the end of that query. Permission checks can leave a page empty even when later pages contain visible records; `count` only counts the visible records on the current page.
+
+`user-permissions.user.get` and `user-permissions.user.set` return effective `permissions`, including group grants, and a separate `directPermissions` list. To change direct assignments, read and modify `directPermissions`, then pass the complete new list to `user-permissions.user.set`. An empty list clears direct assignments while retaining group grants. Group permission tools return `permissions`; `user-permissions.group.set` replaces that complete list.
 
 ## Running the server over stdio
 

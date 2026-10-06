@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
+use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\Public\Access;
+use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
@@ -189,16 +195,25 @@ it('returns OAuth errors for malformed registration metadata', function (array $
     'malformed name' => [['client_name' => ['unexpected']], 'invalid_client_metadata'],
 ]);
 
-it('answers CORS preflight requests without authentication', function (): void {
+it('answers CORS preflight requests without authentication or collecting user instructions', function (bool $public): void {
     config()->set('app.url', 'https://craft.test');
+    Event::listen(CollectingAdminInstructions::class, function (): void {
+        app(McpActor::class)->user();
+    });
 
-    $this->call('OPTIONS', route('craft.cp.mcp.server'), server: [
+    if ($public) {
+        app()->instance(Settings::class, new Settings(['publicEnabled' => true, 'publicRoute' => '/_test/public-preflight']));
+        app()->forgetInstance(Access::class);
+        app(PublicRouteRegistrar::class)->register();
+    }
+
+    $this->call('OPTIONS', $public ? '/_test/public-preflight' : route('craft.cp.mcp.server'), server: [
         'HTTP_ORIGIN' => 'https://craft.test',
         'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
     ])
         ->assertNoContent()
         ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test');
-});
+})->with(['admin server' => false, 'public server' => true]);
 
 it('requires both the MCP scope and Craft endpoint permissions', function (array $scopes, array $permissions): void {
     Edition::set(Edition::Pro);

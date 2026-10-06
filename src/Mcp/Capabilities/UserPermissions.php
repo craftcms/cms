@@ -256,12 +256,13 @@ readonly class UserPermissions
         };
     }
 
-    /** @return array{userId: int, permissions: list<string>} */
+    /** @return array{userId: int, permissions: list<string>, directPermissions: list<string>} */
     private function userPermissions(int $userId): array
     {
         return [
             'userId' => $userId,
             'permissions' => $this->permissions->getPermissionsByUserId($userId)->values()->all(),
+            'directPermissions' => $this->permissions->getDirectPermissionsByUserId($userId)->values()->all(),
         ];
     }
 

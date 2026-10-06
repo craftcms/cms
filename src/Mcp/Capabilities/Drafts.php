@@ -61,7 +61,7 @@ readonly class Drafts
     /**
      * @param  array<string, mixed>  $criteria
      * @param  list<string>|null  $fields
-     * @return array{count: int, limit: int, offset: int, drafts: list<array<string, mixed>>}
+     * @return array{count: int, limit: int, offset: int, nextOffset: int|null, drafts: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'drafts.list',
@@ -100,16 +100,17 @@ readonly class Drafts
             $query->siteId($siteId);
         }
 
-        $criteria = $this->elementQueryCriteria->apply($query, $criteria);
-        $drafts = collect($query->all())
+        $page = $this->elementQueryCriteria->page($query, $criteria);
+        $drafts = collect($page['elements'])
             ->filter(static fn (ElementInterface $draft): bool => Gate::forUser($actor)->allows('view', $draft))
             ->map(fn (ElementInterface $draft): array => $this->elementSerializer->serialize($draft, fields: $fields))
             ->values();
 
         return [
             'count' => $drafts->count(),
-            'limit' => $criteria['limit'],
-            'offset' => $criteria['offset'],
+            'limit' => $page['limit'],
+            'offset' => $page['offset'],
+            'nextOffset' => $page['nextOffset'],
             'drafts' => $drafts->all(),
         ];
     }

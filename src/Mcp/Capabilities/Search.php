@@ -103,6 +103,7 @@ readonly class Search
 
         $results = [];
         $counts = [];
+        $pagination = [];
         $typeNames = [];
         $linkedElements = [];
 
@@ -115,9 +116,14 @@ readonly class Search
             $typeCriteria['orderBy'] ??= 'score desc';
 
             $elementQuery = $this->elementQueries->make($type);
-            $this->elementQueryCriteria->apply($elementQuery, $typeCriteria);
+            $page = $this->elementQueryCriteria->page($elementQuery, $typeCriteria);
+            $pagination[$typeName] = [
+                'limit' => $page['limit'],
+                'offset' => $page['offset'],
+                'nextOffset' => $page['nextOffset'],
+            ];
 
-            $elements = collect($elementQuery->all())
+            $elements = collect($page['elements'])
                 ->filter(static fn (mixed $element): bool => $element instanceof ElementInterface
                     && Gate::forUser($actor)->allows('view', $element))
                 ->values();
@@ -138,6 +144,7 @@ readonly class Search
             'types' => $typeNames,
             'count' => count($results),
             'counts' => $counts,
+            'pagination' => $pagination,
             'results' => $results,
         ], $linkedElements);
     }

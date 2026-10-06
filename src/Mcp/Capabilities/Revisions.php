@@ -50,7 +50,7 @@ readonly class Revisions
     /**
      * @param  array<string, mixed>  $criteria
      * @param  list<string>|null  $fields
-     * @return array{count: int, limit: int, offset: int, revisions: list<array<string, mixed>>}
+     * @return array{count: int, limit: int, offset: int, nextOffset: int|null, revisions: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'revisions.list',
@@ -87,16 +87,17 @@ readonly class Revisions
             $query->siteId($siteId);
         }
 
-        $criteria = $this->elementQueryCriteria->apply($query, $criteria);
-        $revisions = collect($query->all())
+        $page = $this->elementQueryCriteria->page($query, $criteria);
+        $revisions = collect($page['elements'])
             ->filter(static fn (ElementInterface $revision): bool => Gate::forUser($actor)->allows('view', $revision))
             ->map(fn (ElementInterface $revision): array => $this->elementSerializer->serialize($revision, fields: $fields))
             ->values();
 
         return [
             'count' => $revisions->count(),
-            'limit' => $criteria['limit'],
-            'offset' => $criteria['offset'],
+            'limit' => $page['limit'],
+            'offset' => $page['offset'],
+            'nextOffset' => $page['nextOffset'],
             'revisions' => $revisions->all(),
         ];
     }

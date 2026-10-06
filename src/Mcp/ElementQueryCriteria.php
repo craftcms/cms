@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Exception\ToolCallException;
@@ -154,6 +155,27 @@ class ElementQueryCriteria
         Typecast::configure($query, $criteria);
 
         return $criteria;
+    }
+
+    /**
+     * Reads a page and determines continuation before callers filter records by permission.
+     *
+     * @param  array<string, mixed>  $criteria
+     * @return array{elements: array<ElementInterface|array<string, mixed>>, limit: int, offset: int, nextOffset: int|null}
+     */
+    public function page(ElementQueryInterface $query, array $criteria): array
+    {
+        $criteria = $this->apply($query, $criteria);
+        $limit = $criteria['limit'];
+        $offset = $criteria['offset'];
+        $elements = $query->limit($limit + 1)->all();
+
+        return [
+            'elements' => array_slice($elements, 0, $limit),
+            'limit' => $limit,
+            'offset' => $offset,
+            'nextOffset' => count($elements) > $limit ? $offset + $limit : null,
+        ];
     }
 
     private function limit(mixed $limit): int

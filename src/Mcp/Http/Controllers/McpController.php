@@ -33,12 +33,12 @@ class McpController
     }
 
     /**
-     * Answers CORS preflight requests for both servers without authentication. The transport responds to them before
-     * dispatching to a server, so the admin server stands in for either.
+     * Answers CORS preflight requests for both servers without authentication or collecting user instructions.
+     * The transport responds before dispatching to the instruction-free protocol.
      */
     public function preflight(): ResponseInterface
     {
-        return $this->handle($this->servers->admin());
+        return $this->handle($this->servers->preflight());
     }
 
     private function handle(StatelessProtocol $protocol): ResponseInterface

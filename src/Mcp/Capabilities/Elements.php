@@ -109,17 +109,18 @@ readonly class Elements
         $this->assertValid($criteria, $adapter->schema()['criteria'], 'criteria', $type);
 
         $query = $adapter->listQuery($actor);
-        $criteria = $this->elementQueryCriteria->apply($query, $criteria);
+        $page = $this->elementQueryCriteria->page($query, $criteria);
 
-        $elements = collect($query->all())
+        $elements = collect($page['elements'])
             ->filter(static fn (mixed $element): bool => $adapter->canView($actor, $element))
             ->values();
 
         return $this->resourceLinks->result([
             'type' => $type,
             'count' => $elements->count(),
-            'limit' => $criteria['limit'],
-            'offset' => $criteria['offset'],
+            'limit' => $page['limit'],
+            'offset' => $page['offset'],
+            'nextOffset' => $page['nextOffset'],
             'elements' => $elements->map(static fn (mixed $element): array => $adapter->serialize($element, $fields, summary: true))->all(),
         ], $elements);
     }
