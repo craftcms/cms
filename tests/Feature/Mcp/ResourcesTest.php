@@ -41,13 +41,13 @@ it('returns readable resource links alongside element list data and checks acces
         : "craft://$plural/$element->id/sites/$element->siteId";
 
     $listed = McpRequest::send($this, 'tools/call', [
-        'name' => "$plural.list",
-        'arguments' => ['criteria' => $criteria],
+        'name' => 'elements.list',
+        'arguments' => ['type' => $plural, 'criteria' => $criteria],
     ])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.count', 1)
-        ->assertJsonPath("result.structuredContent.$plural.0.id", $element->id)
+        ->assertJsonPath('result.structuredContent.elements.0.id', $element->id)
         ->assertJsonPath('result.content.1.type', 'resource_link')
         ->assertJsonPath('result.content.1.uri', $uri)
         ->assertJsonPath('result.content.1.mimeType', 'application/json')
@@ -73,13 +73,16 @@ it('returns readable resource links alongside element list data and checks acces
         ->assertJsonStructure(['error' => ['code', 'message']])
         ->assertJsonMissingPath('result.contents');
 
-    if ($plural !== 'users') {
-        McpRequest::send($this, 'tools/call', [
-            'name' => "$plural.list",
-            'arguments' => ['criteria' => $criteria],
-        ])
-            ->assertOk()
-            ->assertJsonPath('result.structuredContent.count', 0)
+    $relisted = McpRequest::send($this, 'tools/call', [
+        'name' => 'elements.list',
+        'arguments' => ['type' => $plural, 'criteria' => $criteria],
+    ])->assertOk();
+
+    if ($plural === 'users') {
+        $relisted->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.content.0.text', 'You are not authorized to view users.');
+    } else {
+        $relisted->assertJsonPath('result.structuredContent.count', 0)
             ->assertJsonCount(1, 'result.content');
     }
 })->with([

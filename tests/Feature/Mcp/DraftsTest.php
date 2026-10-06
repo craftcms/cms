@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Mcp\Capabilities\Drafts;
-use CraftCms\Cms\Mcp\Capabilities\Entries;
+use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User as UserElement;
@@ -29,11 +29,11 @@ beforeEach(function () {
 });
 
 it('manages entry drafts through MCP', function () {
-    $entry = app(Entries::class)->create([
+    $entry = app(ElementCapabilities::class)->create('entries', [
         'sectionId' => $this->section->id,
         'title' => 'Canonical title',
         'enabled' => true,
-    ])['entry'];
+    ])['element'];
     $drafts = app(Drafts::class);
 
     $created = $drafts->create(

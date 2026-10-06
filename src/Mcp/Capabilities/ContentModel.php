@@ -110,7 +110,7 @@ readonly class ContentModel
                 1. Run `content-model.audit` with {$arguments}.
                 2. Cross-check each finding with detail capabilities such as `fields.get`, `entry-types.get`, and `sections.get`.
                 3. Treat unused and duplicate items as review candidates. Check templates, modules, plugins, and external integrations before recommending removal or merging.
-                4. For images without alt text, inspect their context before recommending an update with `assets.update`.
+                4. For images without alt text, inspect their context before recommending an update with `elements.update`.
                 5. Summarize what needs attention, why it was flagged, and the next non-destructive action.
                 6. Do not call a destructive capability unless the user explicitly confirms each action.
                 MARKDOWN)),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Mcp\Capabilities\Entries;
+use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Mcp\Capabilities\Revisions;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -27,13 +27,13 @@ beforeEach(function () {
 });
 
 it('inspects and applies entry revisions through MCP', function () {
-    $entries = app(Entries::class);
-    $created = $entries->create([
+    $elements = app(ElementCapabilities::class);
+    $created = $elements->create('entries', [
         'sectionId' => $this->section->id,
         'title' => 'Original title',
         'enabled' => true,
-    ])['entry'];
-    $entries->update(id: $created['id'], attributes: ['title' => 'Current title']);
+    ])['element'];
+    $elements->update('entries', id: $created['id'], attributes: ['title' => 'Current title']);
 
     $revisions = app(Revisions::class);
     $listed = $revisions->list(type: 'entries', id: $created['id']);

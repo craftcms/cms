@@ -79,7 +79,7 @@ it('creates editorial comments with authenticated authorship, mentions, and dura
 it('captures provenance for existing mutation tools without leaking it into subsequent editor actions', function (): void {
     Context::addHidden('host.request', 'preserved');
 
-    ($this->callActivity)('entries.update', ['attributes' => ['title' => 'Updated through MCP']])
+    ($this->callActivity)('elements.update', ['attributes' => ['title' => 'Updated through MCP']])
         ->assertOk()->assertJsonPath('result.isError', false);
     $mcpEvent = ActivityEvent::query()->eventTypes(ElementUpdated::class)->firstOrFail();
 

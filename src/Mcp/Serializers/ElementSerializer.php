@@ -23,7 +23,7 @@ class ElementSerializer
     public const array FieldsSchema = [
         'type' => ['array', 'null'],
         'items' => ['type' => 'string'],
-        'description' => 'Custom-field handles to return alongside element metadata. [] returns metadata only; null returns all non-nested custom fields. Explicitly selected nested fields return one level of element records, without further nested fields. At most 100 nested elements may be expanded per record; query larger collections separately. On the admin server, discover handles with entries.field-schema, assets.field-schema, addresses.field-schema or users.field-schema for the matching element type; these require permission to save the element. For drafts and revisions, use the canonical element ID. Admins can read craft://field-layouts/entry-types/{entryType} for an entry layout, using the entry type ID, UID or handle.',
+        'description' => 'Custom-field handles to return alongside element metadata. [] returns metadata only; null returns all non-nested custom fields. Explicitly selected nested fields return one level of element records, without further nested fields. At most 100 nested elements may be expanded per record; query larger collections separately. On the admin server, discover handles with elements.field-schema; it requires permission to save the element. For drafts and revisions, use the canonical element ID. Admins can read craft://field-layouts/entry-types/{entryType} for an entry layout, using the entry type ID, UID or handle.',
     ];
 
     private const int MaxNestedElements = 100;

@@ -6,8 +6,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Mcp\Capabilities\Entries;
-use CraftCms\Cms\Mcp\Capabilities\Users;
+use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Tests\Support\McpRequest;
@@ -33,12 +32,12 @@ it('searches across element types through MCP', function () {
     $query = 'cross type needle';
     $user = User::query()->firstOrFail();
 
-    $entry = app(Entries::class)->create([
+    $entry = app(ElementCapabilities::class)->create('entries', [
         'sectionId' => $this->section->id,
         'title' => $query,
         'enabled' => true,
-    ])['entry'];
-    app(Users::class)->update(id: $user->id, attributes: ['firstName' => $query]);
+    ])['element'];
+    app(ElementCapabilities::class)->update('users', id: $user->id, attributes: ['firstName' => $query]);
 
     app(ElementTypes::class)->register(TestMcpSearchElement::class);
     $pluginElement = new TestMcpSearchElement(['title' => $query]);

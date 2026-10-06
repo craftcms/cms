@@ -6,6 +6,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Mcp\Capabilities\Addresses;
+use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Mcp\Capabilities\Users;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
 use CraftCms\Cms\Mcp\Settings;
@@ -48,11 +49,11 @@ it('selects user custom fields while retaining the public account attribute allo
     $layout = FieldLayout::factory()->forField($field)->create();
     $users = app(Users::class);
     $users->updateFieldLayout($layout->config);
-    $users->update(id: $actor->id, fields: ['profileSummary' => 'A public profile']);
+    app(ElementCapabilities::class)->update('users', id: $actor->id, fields: ['profileSummary' => 'A public profile']);
 
-    expect($users->list(['id' => $actor->id])->structuredContent['users'][0])->not->toHaveKey('profileSummary')
-        ->and($users->list(['id' => $actor->id], fields: ['profileSummary'])->structuredContent['users'][0]['profileSummary'])->toBe('A public profile')
-        ->and($users->get(id: $actor->id)['user']['profileSummary'])->toBe('A public profile');
+    expect(app(ElementCapabilities::class)->list('users', ['id' => $actor->id])->structuredContent['elements'][0])->not->toHaveKey('profileSummary')
+        ->and(app(ElementCapabilities::class)->list('users', ['id' => $actor->id], fields: ['profileSummary'])->structuredContent['elements'][0]['profileSummary'])->toBe('A public profile')
+        ->and(app(ElementCapabilities::class)->get('users', id: $actor->id)['element']['profileSummary'])->toBe('A public profile');
 
     app()->instance(Settings::class, new Settings([
         'publicSiteHandles' => [Sites::getPrimarySite()->handle],

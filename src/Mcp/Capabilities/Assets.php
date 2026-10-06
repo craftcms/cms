@@ -14,22 +14,18 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
 use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
-use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
+use CraftCms\Cms\Mcp\Elements\Adapters\AssetAdapter;
 use CraftCms\Cms\Mcp\McpActor;
-use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -39,25 +35,18 @@ use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
-use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
+ * Asset-specific MCP capabilities: creating assets from files, replacing files, uploads, and transform URLs. Assets
+ * are listed and managed through the `elements.*` tools.
+ *
  * @since 6.0.0
  */
 readonly class Assets
 {
-    private const array CriteriaSchema = [
-        'type' => 'object',
-        'properties' => [
-            ...ElementQueryCriteria::SchemaProperties,
-            ...ElementQueryCriteria::AssetSchemaProperties,
-        ],
-        'additionalProperties' => true,
-    ];
-
     private const array CreateAttributesSchema = [
         'type' => 'object',
         'properties' => [
@@ -69,22 +58,9 @@ readonly class Assets
         'additionalProperties' => false,
     ];
 
-    private const array UpdateAttributesSchema = [
-        'type' => 'object',
-        'properties' => [
-            'title' => ['type' => ['string', 'null'], 'description' => 'Asset title.'],
-            'slug' => ['type' => ['string', 'null'], 'description' => 'Asset slug.'],
-            'alt' => ['type' => ['string', 'null'], 'description' => 'Alternative text.'],
-            'enabled' => ['type' => 'boolean', 'description' => 'Whether the asset is enabled.'],
-            'filename' => ['type' => 'string', 'description' => 'Asset filename.'],
-            'folderId' => ['type' => 'integer', 'description' => 'Asset folder ID.'],
-        ],
-        'additionalProperties' => false,
-    ];
-
     private const array FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Use assets.field-schema for the applicable schema.',
+        'description' => 'Custom field values keyed by field handle. Use elements.field-schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
@@ -103,79 +79,15 @@ readonly class Assets
 
     public function __construct(
         private McpActor $actor,
+        private AssetAdapter $assetAdapter,
         private AssetService $assets,
         private AssetUploadHandler $assetUploads,
-        private CustomFieldSchema $customFieldSchema,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
-        private ElementLifecycle $lifecycle,
-        private ElementQueryCriteria $elementQueryCriteria,
-        private ElementResourceLinks $resourceLinks,
         private Folders $folders,
         private McpAssetUploads $mcpAssetUploads,
         private Request $request,
-        private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
-
-    /**
-     * @param  array<string, mixed>  $criteria  Native Craft AssetQuery criteria. Custom field criteria may be passed by field handle.
-     * @param  list<string>|null  $fields
-     */
-    #[McpTool(
-        name: 'assets.list',
-        description: 'Lists Craft CMS assets.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
-    public function list(
-        #[Schema(definition: self::CriteriaSchema)]
-        array $criteria = [],
-        #[Schema(definition: ElementSerializer::FieldsSchema)]
-        ?array $fields = [],
-    ): CallToolResult {
-        $actor = $this->actor->user();
-        $query = Asset::find()->orderBy('elements.id');
-        $criteria = $this->elementQueryCriteria->apply($query, $criteria);
-
-        $assets = collect($query->all())
-            ->filter(static fn (Asset $asset): bool => Gate::forUser($actor)->allows('view', $asset))
-            ->values();
-
-        return $this->resourceLinks->result([
-            'count' => $assets->count(),
-            'limit' => $criteria['limit'],
-            'offset' => $criteria['offset'],
-            'assets' => $assets->map(fn (Asset $asset): array => $this->elementSerializer->serialize($asset, fields: $fields))->all(),
-        ], $assets);
-    }
-
-    /**
-     * @param  int|null  $id  Asset ID.
-     * @param  string|null  $uid  Asset UID.
-     * @param  int|null  $siteId  Site ID to load the asset in.
-     * @param  list<string>|null  $fields
-     * @return array{asset: array<string, mixed>}
-     */
-    #[McpTool(
-        name: 'assets.get',
-        description: 'Gets a Craft CMS asset by ID or UID.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
-    public function get(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-        #[Schema(definition: ElementSerializer::FieldsSchema)]
-        ?array $fields = null,
-    ): array {
-        $asset = $this->find($id, $uid, $siteId);
-
-        if (! $asset || ! Gate::forUser($this->actor->user())->allows('view', $asset)) {
-            throw new ToolCallException('Asset not found.');
-        }
-
-        return ['asset' => $this->elementSerializer->serialize($asset, fields: $fields)];
-    }
 
     /**
      * @param  array<string, mixed>|string  $transform  Named image transform handle or inline transform parameters.
@@ -204,9 +116,9 @@ readonly class Assets
         ?int $siteId = null,
         ?string $transformer = null,
     ): array {
-        $asset = $this->find($id, $uid, $siteId);
+        $asset = $this->assetAdapter->find($id, $uid, $siteId);
 
-        if (! $asset || ! Gate::forUser($this->actor->user())->allows('view', $asset)) {
+        if (! $asset instanceof Asset || ! $this->assetAdapter->canView($this->actor->user(), $asset)) {
             throw new ToolCallException('Asset not found.');
         }
 
@@ -222,73 +134,6 @@ readonly class Assets
             'width' => $result->width,
             'height' => $result->height,
         ];
-    }
-
-    /**
-     * Returns the writable custom-field schema for an existing asset or an asset in the requested folder or volume.
-     *
-     * @return array{schema: array<string, mixed>}
-     */
-    #[McpTool(
-        name: 'assets.field-schema',
-        description: 'Gets the writable custom-field JSON Schema for an existing asset or an asset volume.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
-    public function fieldSchema(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-        ?int $folderId = null,
-        ?int $volumeId = null,
-    ): array {
-        $existingAsset = $id !== null || $uid !== null;
-
-        if (! $existingAsset && $folderId === null && $volumeId === null) {
-            throw new ToolCallException('Provide an asset ID or UID, or provide folderId or volumeId for a new asset.');
-        }
-
-        if ($existingAsset && $volumeId !== null) {
-            throw new ToolCallException('Use folderId to select a destination when requesting an existing asset schema.');
-        }
-
-        $actor = $this->actor->user();
-
-        if ($existingAsset) {
-            $asset = $this->find($id, $uid, $siteId);
-
-            if (! $asset) {
-                throw new ToolCallException('Asset not found.');
-            }
-
-            $this->authorizeSave($actor, $asset);
-
-            if ($folderId !== null) {
-                $folder = $this->folders->getFolderById($folderId);
-
-                if (! $folder || ! Gate::forUser($actor)->allows('moveFile', [$asset, $folder])) {
-                    throw new ToolCallException('You are not authorized to move this asset file.');
-                }
-
-                $asset->newFolderId = $folder->id;
-                $asset->setVolumeId($folder->volumeId);
-            }
-        } else {
-            $folder = $this->targetFolder($folderId, $volumeId);
-
-            if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
-                throw new ToolCallException('You are not authorized to upload assets to this folder.');
-            }
-
-            $asset = new Asset;
-            $asset->newFolderId = $folder->id;
-            $asset->setVolumeId($folder->volumeId);
-            $asset->uploaderId = $actor->getCraftUserId();
-        }
-
-        $this->authorizeSave($actor, $asset);
-
-        return ['schema' => $this->customFieldSchema->forElement($asset)];
     }
 
     /** @return array{upload: array<string, mixed>} */
@@ -315,7 +160,7 @@ readonly class Assets
 
             $parameters = ['operation' => 'replace', 'assetId' => $assetId];
         } else {
-            $folder = $this->targetFolder($folderId, $volumeId);
+            $folder = $this->assetAdapter->targetFolder($folderId, $volumeId);
 
             if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
                 throw new ToolCallException('You are not authorized to upload assets to this folder.');
@@ -350,7 +195,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets.create',
-        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed assets.upload.prepare uploadId. Use file references when the client cannot perform binary transfers. Use assets.field-schema to discover custom fields.',
+        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed assets.upload.prepare uploadId. Use file references when the client cannot perform binary transfers. Use elements.field-schema to discover custom fields.',
         meta: ['openai/fileParams' => ['file']],
     )]
     public function create(
@@ -379,7 +224,7 @@ readonly class Assets
 
         try {
             if ($file !== null) {
-                $folder = $this->targetFolder($folderId, $volumeId);
+                $folder = $this->assetAdapter->targetFolder($folderId, $volumeId);
 
                 if (! $folder) {
                     throw new ToolCallException('Provide a valid folderId or volumeId for the file reference.');
@@ -524,7 +369,7 @@ readonly class Assets
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $actor->getCraftUserId();
         $asset->setFieldValues($fields);
-        $this->authorizeSave($actor, $asset);
+        $this->assetAdapter->authorizeAssetSave($actor, $asset);
 
         return $asset;
     }
@@ -553,136 +398,6 @@ readonly class Assets
         return ['asset' => $this->elementSerializer->serialize($result->asset)];
     }
 
-    /**
-     * @param  int|null  $id  Asset ID.
-     * @param  string|null  $uid  Asset UID.
-     * @param  int|null  $siteId  Site ID to load the asset in.
-     * @param  array<string, mixed>  $attributes  Built-in asset attributes to update.
-     * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
-     * @return array{asset: array<string, mixed>}
-     */
-    #[McpTool(
-        name: 'assets.update',
-        description: 'Updates a Craft CMS asset. Use assets.field-schema to discover custom fields.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
-    public function update(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-        #[Schema(definition: self::UpdateAttributesSchema)]
-        array $attributes = [],
-        #[Schema(definition: self::FieldsSchema)]
-        array $fields = [],
-    ): array {
-        $asset = $this->find($id, $uid, $siteId);
-
-        if (! $asset) {
-            throw new ToolCallException('Asset not found.');
-        }
-
-        $actor = $this->actor->user();
-        $this->authorizeSave($actor, $asset);
-        $relocation = $this->relocation($asset, $attributes, $actor);
-
-        Typecast::configure($asset, Arr::except($attributes, ['filename', 'folderId']));
-        $asset->setFieldValues($fields);
-        $this->authorizeSave($actor, $asset);
-
-        if ($relocation !== null) {
-            if (! $this->assets->moveAsset($asset, $relocation['folder'], $relocation['filename'])) {
-                throw new ToolCallException($this->validationErrors($asset));
-            }
-
-            return ['asset' => $this->elementSerializer->serialize($asset)];
-        }
-
-        return ['asset' => $this->save($asset, $actor)];
-    }
-
-    /**
-     * @param  int|null  $id  Asset ID.
-     * @param  string|null  $uid  Asset UID.
-     * @param  int|null  $siteId  Site ID to load the asset in.
-     * @return array{deleted: true}
-     */
-    #[McpTool(
-        name: 'assets.delete',
-        description: 'Deletes a Craft CMS asset.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
-    public function delete(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-        bool $hardDelete = false,
-    ): array {
-        $asset = $this->find($id, $uid, $siteId);
-
-        if (! $asset || ! Gate::forUser($this->actor->user())->allows('delete', $asset)) {
-            throw new ToolCallException('Asset not found.');
-        }
-
-        if (! $this->elements->deleteElement($asset, $hardDelete)) {
-            throw new ToolCallException('Asset could not be deleted.');
-        }
-
-        return ['deleted' => true];
-    }
-
-    /** @return array{restored: bool} */
-    #[McpTool(
-        name: 'assets.restore',
-        description: 'Restores a deleted Craft CMS asset whose file was kept on deletion, across all supported sites. Returns restored: false without changes if already active. List deleted assets with criteria {trashed: true, status: null}. siteId selects the loaded variant; it does not limit restoration.',
-        annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
-    )]
-    public function restore(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-    ): array {
-        $asset = $this->lifecycle->find(Asset::class, $id, $uid, $siteId, includeTrashed: true, ability: 'save');
-
-        return $this->lifecycle->restore($asset);
-    }
-
-    /**
-     * @param  array<string, mixed>  $attributes  Proposed built-in attributes using the update schema.
-     * @param  array<string, mixed>  $fields  Proposed custom field values keyed by field handle.
-     * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
-     */
-    #[McpTool(
-        name: 'assets.validate',
-        description: 'Validates an existing Craft CMS asset under live rules, optionally applying proposed attributes and fields in memory. Does not save or execute file relocation. A valid result does not guarantee a later update succeeds.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
-    public function validate(
-        ?int $id = null,
-        #[Schema(format: 'uuid')]
-        ?string $uid = null,
-        ?int $siteId = null,
-        #[Schema(definition: self::UpdateAttributesSchema)]
-        array $attributes = [],
-        #[Schema(definition: self::FieldsSchema)]
-        array $fields = [],
-    ): array {
-        $asset = $this->lifecycle->find(Asset::class, $id, $uid, $siteId);
-
-        if ($attributes !== [] || $fields !== []) {
-            $actor = $this->actor->user();
-            $this->authorizeSave($actor, $asset);
-            $this->relocation($asset, $attributes, $actor);
-            Typecast::configure($asset, $attributes);
-            $asset->setFieldValues($fields);
-            $this->authorizeSave($actor, $asset);
-        }
-
-        return $this->lifecycle->validate($asset);
-    }
-
     /** @return array{asset: array<string, mixed>} */
     #[McpResourceTemplate(
         uriTemplate: ElementResourceLinks::Templates[Asset::class],
@@ -703,88 +418,6 @@ readonly class Assets
         }
 
         return ['asset' => $this->elementSerializer->serialize($asset)];
-    }
-
-    private function find(?int $id = null, ?string $uid = null, ?int $siteId = null): ?Asset
-    {
-        if (count(Arr::whereNotNull([$id, $uid])) !== 1) {
-            throw new ToolCallException('Provide exactly one of: id, uid.');
-        }
-
-        $query = Asset::find();
-        Typecast::configure($query, Arr::whereNotNull([
-            'id' => $id,
-            'uid' => $uid,
-            'siteId' => $siteId,
-        ]));
-
-        return $query->one();
-    }
-
-    private function targetFolder(?int $folderId, ?int $volumeId): ?VolumeFolder
-    {
-        if (($folderId === null) === ($volumeId === null)) {
-            throw new ToolCallException('Provide exactly one of: folderId, volumeId.');
-        }
-
-        return $folderId !== null
-            ? $this->folders->getFolderById($folderId)
-            : $this->folders->getRootFolderByVolumeId($volumeId);
-    }
-
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @return array{folder: VolumeFolder, filename: string}|null
-     */
-    private function relocation(Asset $asset, array $attributes, CraftUser $actor): ?array
-    {
-        if (! array_key_exists('filename', $attributes) && ! array_key_exists('folderId', $attributes)) {
-            return null;
-        }
-
-        $filename = $attributes['filename'] ?? $asset->getFilename();
-        $folderId = $attributes['folderId'] ?? $asset->folderId;
-        $folder = is_int($folderId) ? $this->folders->getFolderById($folderId) : null;
-
-        if (! is_string($filename) || $filename === '' || ! $folder) {
-            throw new ToolCallException('Asset relocation requires a valid filename and folderId.');
-        }
-
-        if ($filename === $asset->getFilename() && $folder->id === $asset->folderId) {
-            return null;
-        }
-
-        if (! Gate::forUser($actor)->allows('moveFile', [$asset, $folder])) {
-            throw new ToolCallException('You are not authorized to move this asset file.');
-        }
-
-        return ['folder' => $folder, 'filename' => $filename];
-    }
-
-    private function authorizeSave(CraftUser $actor, Asset $asset): void
-    {
-        if (! Gate::forUser($actor)->allows('save', $asset)) {
-            throw new ToolCallException('You are not authorized to save this asset.');
-        }
-    }
-
-    /** @return array<string, mixed> */
-    private function save(Asset $asset, CraftUser $actor): array
-    {
-        $result = $this->userInitiatedElementSave->save($asset, $actor);
-
-        if (! $result->successful || ! $result->element instanceof Asset) {
-            throw new ToolCallException($this->validationErrors($result->element));
-        }
-
-        return $this->elementSerializer->serialize($result->element);
-    }
-
-    private function validationErrors(object $model): string
-    {
-        return method_exists($model, 'errors')
-            ? implode("\n", $model->errors()->all()) ?: 'Asset could not be saved.'
-            : 'Asset could not be saved.';
     }
 
     /** @return array<string, mixed> */

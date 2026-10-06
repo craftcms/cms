@@ -58,7 +58,35 @@ An MCP capability is a public method on a class, marked with one of the SDK's at
 
 Identities must be unique across core and every plugin. Craft throws a `LogicException` when two capabilities share an identity, so a plugin cannot replace a core capability.
 
-Core tools use dotted, resource-oriented names, such as `entries.list`, `sections.create`, and `drafts.apply`. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
+Core tools use dotted, resource-oriented names, such as `elements.list`, `sections.create`, and `drafts.apply`. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
+
+### Element tools
+
+One set of tools works with every element type. Each takes a `type`, such as `entries`, `assets`, `users`, or `addresses`:
+
+| Tool                    | Purpose                                                                     |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `elements.schema`       | Describes what the other tools accept for a type                            |
+| `elements.list`         | Queries elements with element query criteria                                |
+| `elements.get`          | Gets an element by ID or UID                                                |
+| `elements.field-schema` | Gets the custom-field JSON Schema for an existing or new element            |
+| `elements.create`       | Creates an element                                                          |
+| `elements.update`       | Updates an element                                                          |
+| `elements.delete`       | Soft-deletes or hard-deletes an element                                     |
+| `elements.restore`      | Restores a soft-deleted element                                             |
+| `elements.validate`     | Validates an element, optionally with proposed changes, without saving it   |
+| `elements.duplicate`    | Duplicates an element, for types that support it                            |
+
+The tools' own input schemas are kept small, because clients load every tool definition into the agent's context. Each type's full schemas live in its description instead, which `elements.schema` returns. The same description is available as the `craft://element-types/{type}` resource, and `craft://element-types` lists the supported types. A description includes:
+
+- `criteria`, the element query criteria `elements.list` accepts;
+- `createAttributes` and `updateAttributes`, the built-in attributes `elements.create`, `elements.update`, and `elements.validate` accept;
+- `fieldSchemaContext`, the `context` that selects a new element's field layout in `elements.field-schema`, such as `{"sectionId": 1}` for entries;
+- `duplicateModes` and `notes`.
+
+Craft validates `criteria`, `attributes`, and `context` against these schemas and returns a tool error naming each invalid property. Attributes a schema doesn't declare are rejected.
+
+Operations that only make sense for one type keep their own tools, such as `assets.create`, which takes the file to upload, and `users.field-layout.update`.
 
 ## Authentication
 
@@ -340,6 +368,81 @@ Prefer composing `CraftCms\Cms\Mcp\Public\ElementQuery`, which backs `craft-quer
 
 ## Extending core capabilities
 
+### Adding an element type to the element tools
+
+To make a plugin's element type available through the `elements.*` tools, extend `BaseElementAdapter` and register the adapter with `ElementAdapterRegistry`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Acme\Shop\Mcp;
+
+use Acme\Shop\Elements\Product;
+use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
+
+class ProductAdapter extends BaseElementAdapter
+{
+    public static function handle(): string
+    {
+        return 'products';
+    }
+
+    public static function elementType(): string
+    {
+        return Product::class;
+    }
+
+    protected function createAttributesSchema(): array
+    {
+        return [
+            ...$this->updateAttributesSchema(),
+            'required' => ['sku'],
+        ];
+    }
+
+    protected function updateAttributesSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'title' => ['type' => 'string', 'description' => 'Product name.'],
+                'sku' => ['type' => 'string', 'description' => 'Stock keeping unit.'],
+                'price' => ['type' => 'number', 'minimum' => 0, 'description' => 'Price in the store currency.'],
+            ],
+            'additionalProperties' => false,
+        ];
+    }
+
+    protected function criteriaProperties(): array
+    {
+        return [
+            'sku' => ['type' => ['string', 'array'], 'description' => 'SKU or SKUs.'],
+        ];
+    }
+}
+```
+
+```php
+use Acme\Shop\Mcp\ProductAdapter;
+use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
+
+public function boot(ElementAdapterRegistry $adapters): void
+{
+    $adapters->register(ProductAdapter::class);
+}
+```
+
+The handle is the `type` clients pass, and it must be unique. `BaseElementAdapter` supplies the rest:
+
+- lookup by ID or UID, and list queries ordered by ID;
+- `view`, `save`, and `delete` checks through Laravel's gate, using the element's own authorization;
+- populating declared attributes and custom field values, then saving the element the same way the control panel does;
+- restoring, validating, and serializing.
+
+Without `createAttributesSchema()`, `elements.create` reports that the type can't be created. Override other methods for type-specific behavior. For example, `fieldSchemaContextSchema()` and `fieldSchemaElement()` select the field layout of a new element, `duplicateModes()` and `duplicate()` add duplication, and `notes()` adds guidance to the type's description. Implement `ElementAdapter` directly only if the base class doesn't fit.
+
 ### Exposing a custom element type publicly
 
 Registered element types appear under **Public Content → Element Types**. When an administrator approves one, `craft-query` can query it by its `refHandle()`, using the common criteria (`id`, `uid`, `site`, `siteId`, `search`, `status`, `limit`, `offset`, and `orderBy`) plus its custom fields. Entries, assets, and users are controlled by sections, volumes, and user groups instead.
@@ -371,7 +474,7 @@ Event::listen(ElementSerializing::class, function (ElementSerializing $event): v
 
 ### Describing a custom field's input
 
-Tools such as `entries.create` and `entries.field-schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `ProvidesInputSchema` on a field type to supply its own:
+Tools such as `elements.create` and `elements.field-schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `ProvidesInputSchema` on a field type to supply its own:
 
 ```php
 use CraftCms\Cms\Field\Field;

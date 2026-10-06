@@ -10,7 +10,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Mcp\Capabilities\Entries;
+use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Section\Models\Section;
@@ -78,23 +78,23 @@ it('reads custom fields on demand and expands only one level of nested content',
     $block = $entry->getFieldValue('blocks')->one();
     expect($block->getFieldValue('innerBlocks')->one()->getFieldValue('leafText'))->toBe('Deeper content');
 
-    $entries = app(Entries::class);
-    $listed = $entries->list(['id' => $entry->id])->structuredContent['entries'][0];
+    $elements = app(ElementCapabilities::class);
+    $listed = $elements->list('entries', ['id' => $entry->id])->structuredContent['elements'][0];
 
     expect($listed)->not->toHaveKeys(['teaser', 'blocks']);
 
-    $detail = $entries->get(id: $entry->id)['entry'];
+    $detail = $elements->get('entries', id: $entry->id)['element'];
     expect($detail['teaser'])->toBe('A short teaser')
         ->and($detail)->not->toHaveKey('blocks')
-        ->and($entries->get(id: $entry->id, fields: [])['entry'])->not->toHaveKeys(['teaser', 'blocks']);
+        ->and($elements->get('entries', id: $entry->id, fields: [])['element'])->not->toHaveKeys(['teaser', 'blocks']);
 
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [
-        'name' => 'entries.list',
-        'arguments' => ['criteria' => ['id' => $entry->id], 'fields' => ['blocks']],
-    ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.entries.0');
+        'name' => 'elements.list',
+        'arguments' => ['type' => 'entries', 'criteria' => ['id' => $entry->id], 'fields' => ['blocks']],
+    ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.elements.0');
 
     expect($selected)->not->toHaveKey('teaser')
         ->and($selected['blocks'])->toHaveCount(1)
@@ -118,25 +118,25 @@ it('reads custom fields on demand and expands only one level of nested content',
 });
 
 it('manages entries through MCP', function () {
-    $entries = app(Entries::class);
-    $fieldSchema = $entries->fieldSchema(sectionId: $this->section->id)['schema'];
-    $createResult = $entries->create([
+    $elements = app(ElementCapabilities::class);
+    $fieldSchema = $elements->fieldSchema('entries', context: ['sectionId' => $this->section->id])['schema'];
+    $createResult = $elements->create('entries', [
         'sectionId' => $this->section->id,
         'title' => 'First title',
         'enabled' => true,
     ], ['summary' => 'Original summary']);
-    $created = $createResult['entry'];
-    $listed = $entries->list([
+    $created = $createResult['element'];
+    $listed = $elements->list('entries', [
         'sectionId' => $this->section->id,
         'status' => null,
     ])->structuredContent;
-    $updated = $entries->update(
+    $updated = $elements->update('entries',
         id: $created['id'],
         attributes: ['title' => 'Updated title'],
         fields: ['summary' => 'Updated summary'],
-    )['entry'];
-    $fetched = $entries->get(uid: $created['uid'])['entry'];
-    $deleted = $entries->delete(id: $created['id'], hardDelete: true);
+    )['element'];
+    $fetched = $elements->get('entries', uid: $created['uid'])['element'];
+    $deleted = $elements->delete('entries', id: $created['id'], hardDelete: true);
 
     expect($fieldSchema)->toMatchArray([
         'type' => 'object',
@@ -149,11 +149,11 @@ it('manages entries through MCP', function () {
         'required' => ['summary'],
         'additionalProperties' => false,
     ])
-        ->and(array_keys($createResult))->toBe(['entry'])
+        ->and(array_keys($createResult))->toBe(['element'])
         ->and($created['authorId'])->toBe(User::query()->firstOrFail()->id)
         ->and($created['summary'])->toBe('Original summary')
-        ->and($listed['entries'])->toHaveCount(1)
-        ->and($listed['entries'][0])->toMatchArray([
+        ->and($listed['elements'])->toHaveCount(1)
+        ->and($listed['elements'][0])->toMatchArray([
             'id' => $created['id'],
             'sectionId' => $this->section->id,
             'title' => 'First title',
@@ -182,22 +182,22 @@ it('requires paginated queries for large nested collections', function (): void 
     $result = EntryModel::factory()
         ->withField('largeBlocks', Matrix::class, ['entryTypes' => [$blockType->id]], value: $blocks)
         ->createElementWithFields();
-    $entries = app(Entries::class);
+    $elements = app(ElementCapabilities::class);
 
-    expect($entries->get(id: $result->element->id)['entry'])->not->toHaveKey('largeBlocks')
-        ->and(fn () => $entries->get(id: $result->element->id, fields: ['largeBlocks']))
+    expect($elements->get('entries', id: $result->element->id)['element'])->not->toHaveKey('largeBlocks')
+        ->and(fn () => $elements->get('entries', id: $result->element->id, fields: ['largeBlocks']))
         ->toThrow(ToolCallException::class, 'Too many nested elements to expand');
 
     $criteria = ['ownerId' => $result->element->id, 'fieldId' => $result->fields['largeBlocks']->id, 'limit' => 100];
 
-    $firstPage = $entries->list($criteria)->structuredContent['entries'];
-    $lastPage = $entries->list([...$criteria, 'offset' => 100])->structuredContent['entries'];
+    $firstPage = $elements->list('entries', $criteria)->structuredContent['elements'];
+    $lastPage = $elements->list('entries', [...$criteria, 'offset' => 100])->structuredContent['elements'];
 
     expect($firstPage)->toHaveCount(100)
         ->and($lastPage)->toHaveCount(1)
         ->and(array_intersect(array_column($firstPage, 'id'), array_column($lastPage, 'id')))->toBe([]);
 
-    $entries->delete(id: $lastPage[0]['id'], hardDelete: true);
+    $elements->delete('entries', id: $lastPage[0]['id'], hardDelete: true);
 
-    expect($entries->get(id: $result->element->id, fields: ['largeBlocks'])['entry']['largeBlocks'])->toHaveCount(100);
+    expect($elements->get('entries', id: $result->element->id, fields: ['largeBlocks'])['element']['largeBlocks'])->toHaveCount(100);
 });

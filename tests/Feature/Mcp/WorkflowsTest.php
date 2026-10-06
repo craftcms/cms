@@ -115,7 +115,7 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         ->assertJsonPath('result.structuredContent.savedAsDraft', true)
         ->assertJsonPath('result.structuredContent.nextToolCall.name', 'workflows.submit')
         ->json('result.structuredContent');
-    $draft = EntryElement::find()->id($saved['entry']['id'])->drafts()->status(null)->one();
+    $draft = EntryElement::find()->id($saved['element']['id'])->drafts()->status(null)->one();
 
     expect($draft)->not->toBeNull()
         ->and($draft->getIsUnpublishedDraft())->toBe($unpublished)
@@ -128,13 +128,13 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.status', 'pending');
 })->with([
-    'new entry' => ['entries.create', fn ($test): array => ['attributes' => [
+    'new entry' => ['elements.create', fn ($test): array => ['type' => 'entries', 'attributes' => [
         'sectionId' => $test->section->id,
         'typeId' => $test->entry->typeId,
         'title' => 'Proposed entry',
         'enabled' => true,
     ]], true],
-    'existing entry' => ['entries.update', fn ($test): array => ['id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
+    'existing entry' => ['elements.update', fn ($test): array => ['type' => 'entries', 'id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
 ]);
 
 it('distinguishes re-review from restarting and rejects obsolete review targets', function (): void {
