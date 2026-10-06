@@ -7,6 +7,7 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
+use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Container\Attributes\Scoped;
 use Throwable;
 
@@ -71,25 +72,33 @@ readonly class PageLifecycle
             $output = (string) ob_get_clean();
 
             /**
-             * Only drain a position this output actually has a placeholder for.
-             * The drain methods clear as they render, so asking for all three
-             * unconditionally consumed them even when there was nowhere to put
-             * them — and a render with no placeholders at all, which is what a
-             * screen collected for the control panel shell produces, threw away
-             * every asset its controller had registered. Whoever does emit a
-             * document later in the request gets them instead.
+             * Fill a position this output has a placeholder for; hand the rest
+             * back. A render with no placeholders at all is what a screen
+             * collected for the control panel shell produces, and the document
+             * that shell builds later in the request is what needs the assets.
              */
-            $replacements = array_filter([
-                self::HEAD_PLACEHOLDER => str_contains($output, self::HEAD_PLACEHOLDER)
-                    ? ($event->headHtml ?? $this->HtmlStack->headHtml())
-                    : null,
-                self::BODY_BEGIN_PLACEHOLDER => str_contains($output, self::BODY_BEGIN_PLACEHOLDER)
-                    ? ($event->bodyBeginHtml ?? $this->HtmlStack->bodyBeginHtml())
-                    : null,
-                self::BODY_END_PLACEHOLDER => str_contains($output, self::BODY_END_PLACEHOLDER)
-                    ? ($event->bodyEndHtml ?? $this->HtmlStack->bodyEndHtml())
-                    : null,
-            ], fn (?string $html) => $html !== null);
+            $replacements = [];
+
+            foreach ([
+                [self::HEAD_PLACEHOLDER, Position::Head, $event->headHtml],
+                [self::BODY_BEGIN_PLACEHOLDER, Position::BodyBegin, $event->bodyBeginHtml],
+                [self::BODY_END_PLACEHOLDER, Position::BodyEnd, $event->bodyEndHtml],
+            ] as [$placeholder, $position, $html]) {
+                if (str_contains($output, $placeholder)) {
+                    $replacements[$placeholder] = $html ?? $this->drain($position);
+
+                    continue;
+                }
+
+                /**
+                 * A listener may render a position's assets to decide what the
+                 * event carries, which takes them off the stack before this
+                 * runs. Leaving it at that loses them, so put them back.
+                 */
+                if ($html !== null && $html !== '') {
+                    $this->HtmlStack->html($html, $position);
+                }
+            }
 
             return $replacements === [] ? $output : strtr($output, $replacements);
         } catch (TemplateExitException) {
@@ -101,5 +110,14 @@ readonly class PageLifecycle
 
             throw $exception;
         }
+    }
+
+    private function drain(Position $position): string
+    {
+        return match ($position) {
+            Position::Head => $this->HtmlStack->headHtml(),
+            Position::BodyBegin => $this->HtmlStack->bodyBeginHtml(),
+            default => $this->HtmlStack->bodyEndHtml(),
+        };
     }
 }
