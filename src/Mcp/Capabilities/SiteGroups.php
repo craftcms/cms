@@ -41,11 +41,7 @@ readonly class SiteGroups
         ];
     }
 
-    /**
-     * @param  int|null  $id  Site group ID.
-     * @param  string|null  $uid  Site group UID.
-     * @return array{group: array<string, mixed>}
-     */
+    /** @return array{group: array<string, mixed>} */
     #[McpTool(
         name: 'site-groups.get',
         description: 'Gets a Craft CMS site group by ID or UID.',
@@ -84,11 +80,7 @@ readonly class SiteGroups
         return ['group' => $this->serialize($group)];
     }
 
-    /**
-     * @param  int|null  $id  Site group ID.
-     * @param  string|null  $uid  Site group UID.
-     * @return array{group: array<string, mixed>}
-     */
+    /** @return array{group: array<string, mixed>} */
     #[McpTool(
         name: 'site-groups.update',
         description: 'Updates a Craft CMS site group.',
@@ -116,11 +108,7 @@ readonly class SiteGroups
         return ['group' => $this->serialize($group)];
     }
 
-    /**
-     * @param  int|null  $id  Site group ID.
-     * @param  string|null  $uid  Site group UID.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'site-groups.delete',
         description: 'Deletes a Craft CMS site group.',

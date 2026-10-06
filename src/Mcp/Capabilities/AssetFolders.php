@@ -25,9 +25,9 @@ readonly class AssetFolders
     private const array CriteriaSchema = [
         'type' => 'object',
         'properties' => [
-            'id' => ['type' => 'integer', 'description' => 'Asset folder ID.'],
-            'uid' => ['type' => 'string', 'format' => 'uuid', 'description' => 'Asset folder UID.'],
-            'volumeId' => ['type' => 'integer', 'description' => 'Volume ID.'],
+            'id' => ['type' => 'integer'],
+            'uid' => ['type' => 'string', 'format' => 'uuid'],
+            'volumeId' => ['type' => 'integer'],
             'parentId' => ['type' => 'integer', 'description' => 'Parent folder ID.'],
             'name' => ['type' => 'string', 'description' => 'Folder name.'],
             'path' => ['type' => 'string', 'description' => 'Folder path.'],
@@ -67,11 +67,7 @@ readonly class AssetFolders
         ];
     }
 
-    /**
-     * @param  int|null  $id  Asset folder ID.
-     * @param  string|null  $uid  Asset folder UID.
-     * @return array{folder: array<string, mixed>}
-     */
+    /** @return array{folder: array<string, mixed>} */
     #[McpTool(
         name: 'asset-folders.get',
         description: 'Gets a Craft CMS asset folder by ID or UID.',
@@ -130,11 +126,7 @@ readonly class AssetFolders
         return ['folder' => $this->serialize($folder)];
     }
 
-    /**
-     * @param  int|null  $id  Asset folder ID.
-     * @param  string|null  $uid  Asset folder UID.
-     * @return array{folder: array<string, mixed>}
-     */
+    /** @return array{folder: array<string, mixed>} */
     #[McpTool(
         name: 'asset-folders.update',
         description: 'Renames a Craft CMS asset folder.',
@@ -172,11 +164,7 @@ readonly class AssetFolders
         return ['folder' => $this->serialize($folder)];
     }
 
-    /**
-     * @param  int|null  $id  Asset folder ID.
-     * @param  string|null  $uid  Asset folder UID.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'asset-folders.delete',
         description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements.restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',

@@ -36,7 +36,7 @@ readonly class Elements
     private const array TypeSchema = [
         'type' => 'string',
         'minLength' => 1,
-        'description' => 'Element type: entries, assets, users, addresses, or a type a plugin adds. Read craft://element-types for every supported type.',
+        'description' => 'Type handle or class from craft://element-types.',
     ];
 
     private const array CriteriaSchema = [
@@ -126,8 +126,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in.
      * @param  list<string>|null  $fields
      * @return array{element: array<string, mixed>}
@@ -231,8 +229,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in.
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
@@ -265,8 +261,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in.
      * @return array{deleted: true}
      */
@@ -299,8 +293,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in. It does not limit restoration.
      * @return array{restored: bool}
      */
@@ -324,8 +316,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in.
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
@@ -361,8 +351,6 @@ readonly class Elements
     }
 
     /**
-     * @param  int|null  $id  Element ID.
-     * @param  string|null  $uid  Element UID.
      * @param  int|null  $siteId  Site ID to load the element in.
      * @param  string|null  $mode  Duplication mode. Call elements.schema for the modes the type supports.
      * @return array{element: array<string, mixed>}

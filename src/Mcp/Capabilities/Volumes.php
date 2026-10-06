@@ -50,12 +50,7 @@ readonly class Volumes
         ];
     }
 
-    /**
-     * @param  int|null  $id  Volume ID.
-     * @param  string|null  $uid  Volume UID.
-     * @param  string|null  $handle  Volume handle.
-     * @return array{volume: array<string, mixed>}
-     */
+    /** @return array{volume: array<string, mixed>} */
     #[McpTool(
         name: 'volumes.get',
         description: 'Gets a Craft CMS asset volume by ID, UID, or handle.',
@@ -79,7 +74,6 @@ readonly class Volumes
 
     /**
      * @param  string  $name  Volume name.
-     * @param  string  $handle  Volume handle.
      * @param  string  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
      * @param  string|null  $assetTransformer  Asset transformer handle. Uses Craft's default when null.
@@ -132,8 +126,6 @@ readonly class Volumes
     }
 
     /**
-     * @param  int|null  $id  Volume ID.
-     * @param  string|null  $uid  Volume UID.
      * @param  string|null  $currentHandle  Existing volume handle.
      * @param  string|null  $name  Volume name.
      * @param  string|null  $handle  New volume handle.
@@ -210,12 +202,7 @@ readonly class Volumes
         return ['volume' => $this->serialize($this->saved($volume))];
     }
 
-    /**
-     * @param  int|null  $id  Volume ID.
-     * @param  string|null  $uid  Volume UID.
-     * @param  string|null  $handle  Volume handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'volumes.delete',
         description: 'Deletes a Craft CMS asset volume.',

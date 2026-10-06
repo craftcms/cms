@@ -23,7 +23,7 @@ class ElementSerializer
     public const array FieldsSchema = [
         'type' => ['array', 'null'],
         'items' => ['type' => 'string'],
-        'description' => 'Custom-field handles to return alongside element metadata. [] returns metadata only; null returns all non-nested custom fields. Explicitly selected nested fields return one level of element records, without further nested fields.',
+        'description' => 'Custom-field handles. [] returns metadata; null returns all non-nested fields.',
     ];
 
     private const int MaxNestedElements = 100;

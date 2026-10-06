@@ -91,8 +91,6 @@ readonly class Assets
 
     /**
      * @param  array<string, mixed>|string  $transform  Named image transform handle or inline transform parameters.
-     * @param  int|null  $id  Asset ID.
-     * @param  string|null  $uid  Asset UID.
      * @param  int|null  $siteId  Site ID to load the asset in.
      * @param  string|null  $transformer  Existing asset transformer handle. Defaults to the volume's transformer, then the configured default.
      * @return array{url: string, mimeType: string, width: int|null, height: int|null}

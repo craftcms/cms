@@ -42,7 +42,7 @@ readonly class Sections
     private const array SiteSettingsSchema = [
         'type' => 'object',
         'properties' => [
-            'siteId' => ['type' => 'integer', 'description' => 'Site ID.'],
+            'siteId' => ['type' => 'integer'],
             'enabledByDefault' => ['type' => 'boolean', 'description' => 'Whether entries are enabled by default.'],
             'hasUrls' => ['type' => 'boolean', 'description' => 'Whether entries have URLs on this site.'],
             'uriFormat' => ['type' => ['string', 'null'], 'description' => 'URI format for entries on this site.'],
@@ -84,12 +84,7 @@ readonly class Sections
         ];
     }
 
-    /**
-     * @param  int|null  $id  Section ID.
-     * @param  string|null  $uid  Section UID.
-     * @param  string|null  $handle  Section handle.
-     * @return array{section: array<string, mixed>}
-     */
+    /** @return array{section: array<string, mixed>} */
     #[McpTool(
         name: 'sections.get',
         description: 'Gets a Craft CMS section by ID, UID, or handle.',
@@ -166,8 +161,6 @@ readonly class Sections
     }
 
     /**
-     * @param  int|null  $id  Section ID.
-     * @param  string|null  $uid  Section UID.
      * @param  string|null  $currentHandle  Existing section handle.
      * @param  list<int|string|array<string, mixed>>  $entryTypes  Existing entry type references or usage configs.
      * @param  list<array<string, mixed>>  $siteSettings  Per-site section settings.
@@ -236,12 +229,7 @@ readonly class Sections
         return ['section' => $this->serialize($section)];
     }
 
-    /**
-     * @param  int|null  $id  Section ID.
-     * @param  string|null  $uid  Section UID.
-     * @param  string|null  $handle  Section handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'sections.delete',
         description: 'Deletes a Craft CMS section.',

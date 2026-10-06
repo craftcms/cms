@@ -55,12 +55,7 @@ readonly class EntryTypes
         ];
     }
 
-    /**
-     * @param  int|null  $id  Entry type ID.
-     * @param  string|null  $uid  Entry type UID.
-     * @param  string|null  $handle  Entry type handle.
-     * @return array{entryType: array<string, mixed>}
-     */
+    /** @return array{entryType: array<string, mixed>} */
     #[McpTool(
         name: 'entry-types.get',
         description: 'Gets a Craft CMS entry type by ID, UID, or handle.',
@@ -143,8 +138,6 @@ readonly class EntryTypes
     }
 
     /**
-     * @param  int|null  $id  Entry type ID.
-     * @param  string|null  $uid  Entry type UID.
      * @param  string|null  $currentHandle  Existing entry type handle.
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{entryType: array<string, mixed>}
@@ -223,12 +216,7 @@ readonly class EntryTypes
         return ['entryType' => $this->serialize($entryType)];
     }
 
-    /**
-     * @param  int|null  $id  Entry type ID.
-     * @param  string|null  $uid  Entry type UID.
-     * @param  string|null  $handle  Entry type handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'entry-types.delete',
         description: 'Deletes a Craft CMS entry type.',

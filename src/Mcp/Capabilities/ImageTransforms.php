@@ -48,12 +48,7 @@ readonly class ImageTransforms
         ];
     }
 
-    /**
-     * @param  int|null  $id  Image transform ID.
-     * @param  string|null  $uid  Image transform UID.
-     * @param  string|null  $handle  Image transform handle.
-     * @return array{transform: array<string, mixed>}
-     */
+    /** @return array{transform: array<string, mixed>} */
     #[McpTool(
         name: 'image-transforms.get',
         description: 'Gets a Craft CMS image transform by ID, UID, or handle.',
@@ -80,8 +75,6 @@ readonly class ImageTransforms
     }
 
     /**
-     * @param  string  $name  Transform name.
-     * @param  string  $handle  Transform handle.
      * @param  int|null  $width  Transform width.
      * @param  int|null  $height  Transform height.
      * @param  ImageTransformFormat|null  $format  Output format.
@@ -140,10 +133,7 @@ readonly class ImageTransforms
     }
 
     /**
-     * @param  int|null  $id  Image transform ID.
-     * @param  string|null  $uid  Image transform UID.
      * @param  string|null  $currentHandle  Existing image transform handle.
-     * @param  string|null  $name  Transform name.
      * @param  string|null  $handle  New transform handle.
      * @param  int|null  $width  Transform width.
      * @param  int|null  $height  Transform height.
@@ -220,12 +210,7 @@ readonly class ImageTransforms
         return ['transform' => $this->serialize($transform)];
     }
 
-    /**
-     * @param  int|null  $id  Image transform ID.
-     * @param  string|null  $uid  Image transform UID.
-     * @param  string|null  $handle  Image transform handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'image-transforms.delete',
         description: 'Deletes a Craft CMS image transform.',

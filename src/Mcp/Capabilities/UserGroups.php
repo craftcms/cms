@@ -48,12 +48,7 @@ readonly class UserGroups
         ];
     }
 
-    /**
-     * @param  int|null  $id  User group ID.
-     * @param  string|null  $uid  User group UID.
-     * @param  string|null  $handle  User group handle.
-     * @return array{group: array<string, mixed>}
-     */
+    /** @return array{group: array<string, mixed>} */
     #[McpTool(
         name: 'user-groups.get',
         description: 'Gets a Craft CMS user group by ID, UID, or handle.',
@@ -104,8 +99,6 @@ readonly class UserGroups
     }
 
     /**
-     * @param  int|null  $id  User group ID.
-     * @param  string|null  $uid  User group UID.
      * @param  string|null  $currentHandle  Existing user group handle.
      * @return array{group: array<string, mixed>}
      */
@@ -147,12 +140,7 @@ readonly class UserGroups
         return ['group' => $this->serialize($group)];
     }
 
-    /**
-     * @param  int|null  $id  User group ID.
-     * @param  string|null  $uid  User group UID.
-     * @param  string|null  $handle  User group handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'user-groups.delete',
         description: 'Deletes a Craft CMS user group.',

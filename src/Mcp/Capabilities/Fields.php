@@ -50,12 +50,7 @@ readonly class Fields
         ];
     }
 
-    /**
-     * @param  int|null  $id  Field ID.
-     * @param  string|null  $uid  Field UID.
-     * @param  string|null  $handle  Field handle.
-     * @return array{field: array<string, mixed>}
-     */
+    /** @return array{field: array<string, mixed>} */
     #[McpTool(
         name: 'fields.get',
         description: 'Gets a Craft CMS field by ID, UID, or handle.',
@@ -114,8 +109,6 @@ readonly class Fields
     }
 
     /**
-     * @param  int|null  $id  Field ID.
-     * @param  string|null  $uid  Field UID.
      * @param  string|null  $currentHandle  Existing field handle.
      * @param  string|null  $name  Field name.
      * @param  string|null  $handle  New field handle.
@@ -174,12 +167,7 @@ readonly class Fields
         return ['field' => $this->save($field)];
     }
 
-    /**
-     * @param  int|null  $id  Field ID.
-     * @param  string|null  $uid  Field UID.
-     * @param  string|null  $handle  Field handle.
-     * @return array{deleted: true}
-     */
+    /** @return array{deleted: true} */
     #[McpTool(
         name: 'fields.delete',
         description: 'Deletes a Craft CMS field.',

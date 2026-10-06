@@ -54,13 +54,7 @@ readonly class UserPermissions
         ];
     }
 
-    /**
-     * @param  int|null  $userId  User ID.
-     * @param  string|null  $userUid  User UID.
-     * @param  string|null  $username  Username.
-     * @param  string|null  $email  User email address.
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     #[McpTool(
         name: 'user-permissions.user.get',
         description: 'Gets a user’s effective permissions, including group grants, and separately returns directPermissions for editing direct assignments.',
@@ -84,12 +78,7 @@ readonly class UserPermissions
         return $this->userPermissions($user->id);
     }
 
-    /**
-     * @param  int|null  $groupId  User group ID.
-     * @param  string|null  $groupUid  User group UID.
-     * @param  string|null  $groupHandle  User group handle.
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     #[McpTool(
         name: 'user-permissions.group.get',
         description: 'Gets assigned Craft CMS permissions for a user group.',
@@ -113,10 +102,6 @@ readonly class UserPermissions
 
     /**
      * @param  list<string>  $permissions  Complete list of direct permission keys to assign.
-     * @param  int|null  $userId  User ID.
-     * @param  string|null  $userUid  User UID.
-     * @param  string|null  $username  Username.
-     * @param  string|null  $email  User email address.
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -152,9 +137,6 @@ readonly class UserPermissions
 
     /**
      * @param  list<string>  $permissions  Complete list of direct permission keys to assign.
-     * @param  int|null  $groupId  User group ID.
-     * @param  string|null  $groupUid  User group UID.
-     * @param  string|null  $groupHandle  User group handle.
      * @return array<string, mixed>
      */
     #[McpTool(

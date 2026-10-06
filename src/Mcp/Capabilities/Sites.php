@@ -26,7 +26,7 @@ readonly class Sites
 {
     private const array AttributesSchema = [
         'name' => ['type' => 'string', 'description' => 'Site name.'],
-        'handle' => ['type' => 'string', 'description' => 'Site handle.'],
+        'handle' => ['type' => 'string'],
         'language' => ['type' => 'string', 'description' => 'Site language, such as en-US.'],
         'baseUrl' => ['type' => ['string', 'null'], 'description' => 'Site base URL or alias.'],
         'groupId' => ['type' => 'integer', 'description' => 'Existing site group ID.'],
@@ -58,12 +58,7 @@ readonly class Sites
         ];
     }
 
-    /**
-     * @param  int|null  $id  Site ID.
-     * @param  string|null  $uid  Site UID.
-     * @param  string|null  $handle  Site handle.
-     * @return array{site: array<string, mixed>}
-     */
+    /** @return array{site: array<string, mixed>} */
     #[McpTool(
         name: 'sites.get',
         description: 'Gets a Craft CMS site by ID, UID, or handle.',
@@ -113,9 +108,6 @@ readonly class Sites
     }
 
     /**
-     * @param  int|null  $id  Site ID.
-     * @param  string|null  $uid  Site UID.
-     * @param  string|null  $handle  Site handle.
      * @param  array<string, mixed>  $attributes  Native Craft site attributes to update.
      * @return array{site: array<string, mixed>}
      */
@@ -153,9 +145,6 @@ readonly class Sites
     }
 
     /**
-     * @param  int|null  $id  Site ID.
-     * @param  string|null  $uid  Site UID.
-     * @param  string|null  $handle  Site handle.
      * @param  int|null  $transferContentTo  Site ID to transfer content to.
      * @return array{deleted: true}
      */
