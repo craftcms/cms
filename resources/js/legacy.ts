@@ -1,5 +1,3 @@
-// import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
-
 /**src
  * Register the full `craft-*` element set, same as `cp.ts` does.
  *
