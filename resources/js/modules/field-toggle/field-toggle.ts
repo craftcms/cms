@@ -135,6 +135,8 @@ export class FieldToggle extends Base {
     }
 
     switch (nodeName) {
+      // A combobox stands in for the select a legacy screen used to render.
+      case 'CRAFT-COMBOBOX':
       case 'SELECT':
         return this.toggle!.hasAttribute('data-boolean-menu')
           ? 'booleanMenu'
@@ -178,11 +180,14 @@ export class FieldToggle extends Base {
       if (attr !== null) {
         return attr === 'true' ? true : attr === 'false' ? false : !!attr;
       }
-      const val =
-        toggle instanceof HTMLInputElement ||
-        toggle instanceof HTMLSelectElement
-          ? toggle.value
-          : '';
+      const option = this.#selectedOption();
+
+      if (typeof option?.data?.boolean === 'string') {
+        return option.data.boolean !== '0';
+      }
+
+      const val = this.#toggleValue() ?? '';
+
       return !!val && val !== '0';
     }
 
@@ -192,10 +197,50 @@ export class FieldToggle extends Base {
       return this.normalizeToggleVal(checked?.value);
     }
 
-    return this.normalizeToggleVal(
-      toggle instanceof HTMLInputElement || toggle instanceof HTMLSelectElement
-        ? toggle.value
-        : null
+    return this.normalizeToggleVal(this.#toggleValue());
+  }
+
+  /**
+   * The toggle's value, whichever control it is.
+   *
+   * A combobox keeps the chosen value on `modelValue`; its `value` is what the
+   * textbox is showing, which is the label.
+   */
+  #toggleValue(): string | null {
+    const toggle = this.toggle;
+
+    if (toggle?.nodeName === 'CRAFT-COMBOBOX') {
+      const model = (toggle as unknown as {modelValue?: unknown}).modelValue;
+
+      return typeof model === 'string' ? model : null;
+    }
+
+    return toggle instanceof HTMLInputElement ||
+      toggle instanceof HTMLSelectElement
+      ? toggle.value
+      : null;
+  }
+
+  /** The combobox option the current value names, if the toggle is one. */
+  #selectedOption(): {data?: Record<string, unknown>} | null {
+    const toggle = this.toggle;
+
+    if (toggle?.nodeName !== 'CRAFT-COMBOBOX') {
+      return null;
+    }
+
+    const value = this.#toggleValue();
+    const items =
+      (toggle as unknown as {options?: unknown[]}).options ?? ([] as unknown[]);
+
+    return (
+      (items as Array<Record<string, unknown>>)
+        .flatMap((item) =>
+          item.type === 'optgroup'
+            ? ((item.options ?? []) as Array<Record<string, unknown>>)
+            : [item]
+        )
+        .find((option) => String(option.value) === value) ?? null
     );
   }
 
