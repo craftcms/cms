@@ -12,9 +12,9 @@ import styles from './avatar.styles.js';
  * the disc falls back to a question mark and is hidden from assistive
  * technology rather than exposed as an unnamed image.
  *
- * @cssproperty [--c-avatar-color-start=red] - The gradient's start colour.
- * @cssproperty [--c-avatar-color-end=blue] - The gradient's end colour.
- * @cssproperty [--c-avatar-color-text=inherit] - The initials' colour.
+ * @cssproperty [--c-avatar-color-start=red] - The gradient's start color.
+ * @cssproperty [--c-avatar-color-end=blue] - The gradient's end color.
+ * @cssproperty [--c-avatar-color-text=inherit] - The initials' color.
  * @cssproperty [--size=calc(30rem / 16)] - The avatar's overall size, 30px by
  * default. Shared with the other square components — spinner, status, indicator —
  * so one declaration can size a row of them together.

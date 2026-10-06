@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
+use Workbench\App\Widgets\LayoutSlotsDemo;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function Orchestra\Testbench\package_path;
@@ -39,6 +40,7 @@ class WorkbenchServiceProvider extends ServiceProvider
 
         if (! $this->app->runningUnitTests()) {
             app(WidgetTypes::class)->register(HtmlExample::class);
+            app(WidgetTypes::class)->register(LayoutSlotsDemo::class);
         }
 
         Event::listen(function (CommandStarting $event): void {
@@ -73,6 +75,11 @@ class WorkbenchServiceProvider extends ServiceProvider
                 ->href('workbench/forms')
                 ->icon('flask')
                 ->subnav($subnav);
+
+            $event->navItems[] = new NavItem()
+                ->label('Layout Slots')
+                ->href('workbench/layout-slots')
+                ->icon('table-layout');
         });
     }
 }

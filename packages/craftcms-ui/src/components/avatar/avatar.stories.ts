@@ -40,7 +40,7 @@ export const NoLabel: Story = {
   args: {label: null},
 };
 
-/** Size and colours are custom properties, so a set can be themed at once. */
+/** Size and colors are custom properties, so a set can be themed at once. */
 export const Themed: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`

@@ -470,13 +470,13 @@ export function resizeRectangle(
 const TRANSPOSE_FIT_STEPS = 24;
 
 /**
- * Stands a centre-origin rectangle the other way up: width and height swap
- * about its centre.
+ * Stands a center-origin rectangle the other way up: width and height swap
+ * about its center.
  *
  * Swapping the two *is* the inverted aspect ratio, so a constrained crop lands
  * on exactly the shape a flipped constraint asks for. A turned rectangle can
  * stick out where the original didn't — a wide crop becomes a tall one — so it
- * shrinks about its centre until it fits.
+ * shrinks about its center until it fits.
  *
  * Returns the shape it settled on as a top-left-origin rectangle.
  */
@@ -503,7 +503,7 @@ export function transposeRectangle(
     return at(1);
   }
 
-  // Shrinking about the centre converges on the centre point, which is inside
+  // Shrinking about the center converges on the center point, which is inside
   // the container, so a fitting scale exists. Bisection finds it to well under
   // a pixel in a handful of steps.
   let tooSmall = 0;

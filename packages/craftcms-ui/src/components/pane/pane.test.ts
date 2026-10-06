@@ -334,7 +334,7 @@ describe('craft-pane keyboard scrolling', () => {
     expect(shadow(element, '.cp-pane')?.getAttribute('tabindex')).toBe('0');
   });
 
-  it('exposes the scroll container as a labelled region', async () => {
+  it('exposes the scroll container as a labeled region', async () => {
     const element = await createPane({variant: 'code'}, '<pre>config</pre>');
     await setOverflow(element, true);
 

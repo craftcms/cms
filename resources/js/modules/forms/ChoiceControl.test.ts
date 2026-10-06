@@ -101,7 +101,7 @@ describe('ChoiceControl', () => {
     );
   }
 
-  it('leads a single select with an unlabelled blank option by default', async () => {
+  it('leads a single select with an unlabeled blank option by default', async () => {
     await mount(
       {multiple: false, presentation: 'select', options: previewModes},
       'full'
@@ -147,7 +147,7 @@ describe('ChoiceControl', () => {
     ]);
   });
 
-  it('renders an icon option as an empty, labelled button', async () => {
+  it('renders an icon option as an empty, labeled button', async () => {
     await mount(
       {
         presentation: 'buttons',

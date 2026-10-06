@@ -6,6 +6,7 @@
    * though the DOM is teleported into the shell.
    */
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+  import {isLayoutSlotName} from '@/common/composables/layoutSlotNames';
   import {useLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 
   const props = defineProps<{
@@ -16,6 +17,12 @@
      */
     scope?: string;
   }>();
+
+  if (import.meta.env.DEV && !isLayoutSlotName(props.name)) {
+    console.warn(
+      `[LayoutSlot] "${props.name}" isn't a known layout slot, so nothing will render it.`
+    );
+  }
 
   const registry = useLayoutSlotRegistry();
   const scope = computed(() => props.scope ?? registry.scope);
@@ -32,11 +39,10 @@
   // Register after mount, not during setup: registration mutates shared
   // reactive state, and doing that mid-render forces the parent shell to
   // re-render while this subtree is still mounting, which races the
-  // deferred Teleport. Outlet targets are always in the DOM (hidden while
-  // unfilled), so the teleport doesn't depend on registration timing.
+  // deferred Teleport. Outlets stay in the DOM while unfilled, so the teleport
+  // doesn't depend on registration timing.
   // A replaced target strands whatever was teleported into it, so remount the
-  // teleport against the new one. The first target to appear isn't a
-  // replacement: the outlet can mount after this does on a page's first render.
+  // teleport against the new one.
   const teleportKey = ref(0);
   watch(
     () => registry.targetRevision(props.name),
@@ -47,12 +53,20 @@
     }
   );
 
+  // Some outlets only render once the page has configured the shell — the
+  // Save button's needs a form — so wait for the outlet rather than mount
+  // against a target that isn't there. An explicit `scope` reaches another
+  // shell's registry, which this one can't see into.
+  const hasTarget = computed(
+    () => props.scope !== undefined || registry.targetRevision(props.name) > 0
+  );
+
   onMounted(() => registry.register(props.name));
   onBeforeUnmount(() => registry.unregister(props.name));
 </script>
 
 <template>
-  <Teleport :key="teleportKey" defer :to="target">
+  <Teleport v-if="hasTarget" :key="teleportKey" defer :to="target">
     <slot></slot>
   </Teleport>
 </template>

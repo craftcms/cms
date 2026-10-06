@@ -5,11 +5,11 @@ import * as InputColorStories from './input-color.stories';
 
 # Input Color
 
-`<craft-input-color>` pairs a hex text field with the browser's own colour swatch.
+`<craft-input-color>` pairs a hex text field with the browser's own color swatch.
 
 <Canvas of={InputColorStories.Default} sourceState="shown" />
 
-Two ways of choosing a colour suit two different tasks: the picker for browsing to something that looks right, the text field for entering a value you already have.
+Two ways of choosing a color suit two different tasks: the picker for browsing to something that looks right, the text field for entering a value you already have.
 Either one updates the other.
 
 ## Values
@@ -19,7 +19,7 @@ The field shows a `#` prefix so the format is obvious without it being part of t
 
 <Canvas of={InputColorStories.Shorthand} sourceState="shown" />
 
-Anything that is not a valid hex colour leaves the swatch alone rather than snapping it to an arbitrary colour:
+Anything that is not a valid hex color leaves the swatch alone rather than snapping it to an arbitrary color:
 
 <Canvas of={InputColorStories.Invalid} sourceState="shown" />
 
@@ -39,11 +39,11 @@ The list is a shortcut, not a constraint — any value can still be typed.
 
 ## Accessibility
 
-Colour is the one thing this control cannot convey on its own.
+Color is the one thing this control cannot convey on its own.
 The text field is what makes the value readable and typable without seeing the swatch, which is why it is the primary control rather than a secondary one.
 
 Presets are offered by value, not by name.
-If a preset means something — a brand colour, a status — say so in the help text, because the swatch alone does not.
+If a preset means something — a brand color, a status — say so in the help text, because the swatch alone does not.
 
 ## Properties
 

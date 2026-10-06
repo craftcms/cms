@@ -736,7 +736,7 @@ class Workflows
         $event = new WorkflowTransitioning($transition, $draft, $actor, $run, $note);
         event($event);
         if ($event->cancel) {
-            throw new WorkflowException('The workflow transition was cancelled.');
+            throw new WorkflowException('The workflow transition was canceled.');
         }
     }
 

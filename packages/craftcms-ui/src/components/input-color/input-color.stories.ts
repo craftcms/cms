@@ -45,7 +45,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<CraftInputColorArgs>;
 
-/** A hex value beside a swatch that opens the browser's colour picker. */
+/** A hex value beside a swatch that opens the browser's color picker. */
 export const Default: Story = {};
 
 /** Three-digit shorthand is accepted and expanded. */
@@ -53,7 +53,7 @@ export const Shorthand: Story = {
   args: {value: 'abc'},
 };
 
-/** A value that is not a colour leaves the swatch empty. */
+/** A value that is not a color leaves the swatch empty. */
 export const Invalid: Story = {
   args: {value: 'not-a-color'},
 };

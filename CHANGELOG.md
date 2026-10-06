@@ -7,6 +7,7 @@
 - Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))
 - Brought back users’ gradient-based default avatars.
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
+- Slideouts with Vue forms now have the same Save menu as full pages, including “Save and continue editing” and any additional actions and buttons. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Refined status badges and status indicators. Labelled badges now match the height of small controls, and their status indicators are vertically centered and no longer outlined. ([#19842](https://github.com/craftcms/cms/pull/19842))
 - Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
 - Updated nested element fields in HTML forms, including Global Set content editors, to use the shared cards and element index controls. ([#19804](https://github.com/craftcms/cms/pull/19804))
@@ -29,19 +30,28 @@
 - Added `CraftCms\Cms\Asset\AssetUploadHandler::ingest()`, allowing non-HTTP adapters to reuse Craft’s asset creation workflow. ([#19823](https://github.com/craftcms/cms/pull/19823))
 - Added support for passing prepared, unsaved assets to `CraftCms\Cms\Asset\Data\AssetIngest`, allowing transport adapters to set metadata and custom field values before validation and persistence. ([#19827](https://github.com/craftcms/cms/pull/19827))
 - Added `CraftCms\Cms\Element\UserInitiatedElementSave` and `CraftCms\Cms\Element\Data\UserInitiatedElementSaveResult`, providing a shared workflow for user-initiated element saves. ([#19822](https://github.com/craftcms/cms/pull/19822))
+- Added `CraftCms\Cms\Component\TypeRegistry::defer()`, for registering types once the registry is first read rather than at boot. ([#19851](https://github.com/craftcms/cms/pull/19851))
 - Added an `$appearance` argument to `CraftCms\Cms\Cp\Html\StatusHtml::statusIndicatorHtml()` and `componentStatusIndicatorHtml()`. ([#19842](https://github.com/craftcms/cms/pull/19842))
+- Added the `craft:layout-slot`, `craft:app-layout`, and `craft:cp-container` global Vue components, which plugins can use to fill control panel screen layout regions on their own Inertia pages. ([#19854](https://github.com/craftcms/cms/pull/19854))
+- Added the `primary-action` screen layout slot and `CraftCms\Cms\Http\Responses\CpScreenResponse::primaryAction()`, for replacing the Save button while keeping its action menu. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Updated `CraftCms\Cms\Entry\EntryTypes::saveEntryType()` to validate entry types and their field layouts by default, with a `$runValidation` argument for bypassing validation. ([#19821](https://github.com/craftcms/cms/pull/19821))
 - `<craft-indicator>` now uses the `solid` appearance by default, rather than `outline-fill`, except for white and black fills, which keep `outline-fill` (with a white outline for black). ([#19842](https://github.com/craftcms/cms/pull/19842))
 - `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use Axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
+- Deprecated `craft\base\Plugin::getVersion()` and `setVersion()`. The `$version` property should be used instead. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
 - Removed `Cp.$axios`.
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::joinElementTable()`. Element queries should now declare their element table via the `$table` property, which is joined automatically. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed the `breadcrumbs` and `submit-button` screen layout slots, which never rendered on full pages. The `crumbs` page prop and the `primary-action` slot should be used instead. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
+- Fixed an error that could occur on the control panel login page when a Craft 5 plugin’s type registration handlers, such as `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES` listeners, relied on the current user. Legacy type registration events are now triggered when the types are first needed rather than on every request, as they were in Craft 5. ([#19851](https://github.com/craftcms/cms/pull/19851))
+- Fixed a bug where `craft\base\Plugin::getVersion()` returned `1.0` for Craft 5 plugins, rather than the version from their Composer manifest. ([#19850](https://github.com/craftcms/cms/pull/19850))
+- Fixed a bug where Craft 5 plugins’ stored settings that didn’t have a validation rule weren’t loaded, so they reverted to their default values. ([#19850](https://github.com/craftcms/cms/pull/19850))
+- Fixed an error that occurred when `Craft::getAlias()` was passed a value that wasn’t an alias, such as `null`. Non-alias values are now returned unchanged, as they were in Craft 5. ([#19853](https://github.com/craftcms/cms/pull/19853))
 - Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error where MCP CORS preflight requests collected admin instructions without an authenticated user.
 - Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
@@ -52,6 +62,7 @@
 - Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
 - Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and Asset Transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
 - Fixed bugs that could allow sites saved outside the control panel to reference invalid groups, retain inconsistent primary or URL settings, or use invalid content transfer targets. ([#19825](https://github.com/craftcms/cms/pull/19825))
+- Fixed a bug where content in `CpContainer`’s `full` slot wasn’t displayed at full width. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Moved legacy nested element HTML rendering and Yii event compatibility into `craftcms/yii2-adapter`. ([#19804](https://github.com/craftcms/cms/pull/19804))
 - Fixed a bug where legacy embedded element indexes were missing actions, exporters, and reorder controls. ([#19789](https://github.com/craftcms/cms/pull/19789))
 - Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))

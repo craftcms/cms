@@ -48,6 +48,7 @@
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
+  import {DEFAULT_FORM_ACTIONS} from './formActionItems';
   import CpContainer from '@/common/components/CpContainer.vue';
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
@@ -58,7 +59,7 @@
 
   const props = withDefaults(defineProps<ScreenProps>(), {
     form: null,
-    defaultFormActions: () => ['saveAndContinueEditing'],
+    defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
     fillViewport: false,
@@ -72,7 +73,7 @@
   const FOOTER_SLOTS = [
     'content-footer',
     'additional-buttons',
-    'submit-button',
+    'primary-action',
   ] as const;
   const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
 
@@ -100,6 +101,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
@@ -374,6 +376,7 @@
                             :form-additional-actions="formAdditionalActions"
                             :form-additional-buttons="formAdditionalButtons"
                             :submit-button-label="submitButtonLabel"
+                            :primary-action-html="page.props.primaryAction"
                             :save-disabled="saveDisabled"
                             :contained="contentConstrained"
                             @save="save"

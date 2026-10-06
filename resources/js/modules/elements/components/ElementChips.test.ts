@@ -77,7 +77,7 @@ describe('ElementChips', () => {
     return event;
   }
 
-  it('draws a chip per element, labelled', async () => {
+  it('draws a chip per element, labeled', async () => {
     const {root} = mount();
 
     expect(chips(root)).toHaveLength(3);

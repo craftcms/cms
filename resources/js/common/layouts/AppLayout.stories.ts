@@ -73,14 +73,14 @@ The Control Panel app shell. Provides the same extension points as Craft 5's
 | Craft 5 \`cp.twig\` block/variable | \`AppLayout\` equivalent |
 | --- | --- |
 | \`block main\` | \`main\` slot (replaces everything inside the main column) |
-| \`crumbs\` | \`crumbs\` page prop / \`breadcrumbs\` slot |
+| \`crumbs\` | \`crumbs\` page prop |
 | \`contextMenu\` | \`context-menu\` slot |
 | \`block header\` | \`header\` slot |
 | \`block pageTitle\` / \`title\` | \`title\` slot / \`title\` prop |
 | \`#revision-indicators\` / \`toolbar\` | \`content-toolbar-meta\` slot |
 | \`additionalButtons\` | \`additional-buttons\` slot |
 | \`actionButton\` | \`content-actions\` slot, beside the title |
-| \`block submitButton\` | \`submit-button\` slot |
+| \`block submitButton\` | \`primary-action\` slot |
 | \`actionMenu\` | \`content-toolbar-actions\` slot, or the \`formAdditionalActions\` prop to keep it beside Save |
 | \`formActions\` | \`formActions\` / \`defaultFormActions\` props |
 | \`contentNotice\` | \`content-notices\` slot |
@@ -210,15 +210,14 @@ export const AllExtensionPoints: Story = {
 
 /**
  * The same extension points as `AllExtensionPoints`, but furnished as a real
- * screen instead of labelled markers — an entry editor part-way through an
+ * screen instead of labeled markers — an entry editor part-way through an
  * edit, so you can judge spacing, density, and how the regions read together.
  *
- * Three points are deliberately absent, because each one *replaces* a region
+ * Two points are deliberately absent, because each one *replaces* a region
  * that the others live in, and using them would empty most of this story:
- * `page-main` (the whole main column), `content-toolbar` (the bar holding
- * `content-toolbar-meta` and `content-toolbar-actions`), and `breadcrumbs`
- * (the bar hosting `context-menu`). `content-header` is left out too, since it would hide the
- * title.
+ * `page-main` (the whole main column) and `content-toolbar` (the bar holding
+ * `content-toolbar-meta` and `content-toolbar-actions`). `content-header` is
+ * left out too, since it would hide the title.
  *
  * The left column comes from the `subnav` page prop rather than the
  * `content-sidebar` slot: `subnav-actions` renders inside the default nav, so a
@@ -273,10 +272,6 @@ export const AllExtensionPointsInContext: Story = {
 
         <template #additional-buttons>
           <craft-button type="button" appearance="outline">Preview</craft-button>
-        </template>
-
-        <template #submit-button>
-          <craft-button type="submit" variant="accent">Publish</craft-button>
         </template>
 
         <template #subnav-actions>
@@ -598,7 +593,7 @@ export const ContextMenuAndToolbar: Story = {
  * Equivalent of overriding `block submitButton` in Craft 5, plus
  * `additionalButtons` before it.
  */
-export const CustomSubmitButton: Story = {
+export const CustomPrimaryAction: Story = {
   render: (args) => ({
     components: {AppLayout},
     setup() {
@@ -611,8 +606,8 @@ export const CustomSubmitButton: Story = {
           <craft-button type="button">Save as draft</craft-button>
         </template>
 
-        <template #submit-button>
-          <craft-button type="submit" variant="accent">Publish</craft-button>
+        <template #primary-action>
+          <craft-button type="submit" variant="fill">Publish</craft-button>
         </template>
 
         ${sampleContent}
@@ -620,7 +615,7 @@ export const CustomSubmitButton: Story = {
     `,
   }),
   args: {
-    title: 'Custom Submit Button',
+    title: 'Custom Primary Action',
   },
 };
 

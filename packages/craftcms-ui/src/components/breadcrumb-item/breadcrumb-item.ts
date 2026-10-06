@@ -46,6 +46,7 @@ export default class CraftBreadcrumbItem extends LitElement {
       align-items: center;
       font-weight: 400;
       color: inherit;
+      text-decoration: none;
     }
 
     /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
@@ -53,12 +54,8 @@ export default class CraftBreadcrumbItem extends LitElement {
       font-weight: var(--font-weight-semibold);
     }
 
-    a.label {
-      text-decoration: underline;
-    }
-
     a.label:hover {
-      text-decoration: none;
+      text-decoration: underline;
     }
 
     slot[name='prefix']::slotted(*) {

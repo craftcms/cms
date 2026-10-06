@@ -5,8 +5,8 @@
    *
    * Implements the same `ScreenSlots`/`ScreenProps` contract as `PageScreen`,
    * so a page component renders in either without knowing which it's in.
-   * Regions a slideout has no room for (breadcrumbs, secondary nav, the global
-   * footer) still get outlets — hidden — so a page written for a full page
+   * Regions a slideout has no room for (the context menu, secondary nav, the
+   * global footer) still get outlets — hidden — so a page written for a full page
    * doesn't lose teleported content here.
    */
   import {t} from '@craftcms/ui/utilities/translate';
@@ -48,6 +48,9 @@
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
   import FormActions from '@/common/components/FormActions.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
+  import {DEFAULT_FORM_ACTIONS, formActionItems} from './formActionItems';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -87,6 +90,8 @@
     title?: string;
     readOnly?: boolean;
     submitButtonLabel?: string | null;
+    /** The response's `primaryAction()` button, rendered server-side. */
+    primaryAction?: string | null;
     screen?: {
       editUrl?: string | null;
       /** Present on screens that submit server-rendered HTML (`cp/Screen`). */
@@ -113,6 +118,19 @@
   const hasTabs = computed(() => regions.has('content-tabs'));
   const hasNotices = computed(() => regions.has('content-notices'));
   const hasDetails = computed(() => regions.has('content-details'));
+
+  // The same Save menu a full page gets. "Save and continue editing" keeps
+  // the panel open: in a slideout that's what `redirect: false` means.
+  const actionItems = computed(() =>
+    formActionItems(
+      props.value.defaultFormActions ?? DEFAULT_FORM_ACTIONS,
+      props.value.formActions,
+      (options) => {
+        emit('save', options);
+        store?.save(options);
+      }
+    )
+  );
 
   const submitLabel = computed(
     () =>
@@ -490,25 +508,45 @@
           {{ cancelLabel }}
         </craft-button>
 
-        <LayoutSlotOutlet name="submit-button">
-          <slot name="submit-button">
-            <FormActions
-              v-if="form && props.formActions?.length"
-              :form="form"
-              :action-items="props.formActions"
-              :submit-label="submitLabel"
-              :read-only="readOnly"
-              :save-disabled="props.saveDisabled"
+        <FormActions
+          v-if="form"
+          :form="form"
+          :action-items="actionItems"
+          :additional-actions="props.formAdditionalActions"
+          :additional-buttons="props.formAdditionalButtons"
+          :submit-label="submitLabel"
+          :read-only="readOnly"
+          :save-disabled="props.saveDisabled"
+        >
+          <template #primary-action>
+            <LayoutSlotOutlet name="primary-action">
+              <slot name="primary-action">
+                <DynamicHtmlRenderer
+                  v-if="chrome.primaryAction"
+                  :html="chrome.primaryAction"
+                />
+                <PrimaryActionButton v-else :form="form" :label="submitLabel" />
+              </slot>
+            </LayoutSlotOutlet>
+          </template>
+        </FormActions>
+        <!-- Server-rendered screens and the element editor have no Vue form
+          for the action menu to drive, so they get a plain Save button. -->
+        <LayoutSlotOutlet
+          v-else-if="canSave && !readOnly && !props.saveDisabled"
+          name="primary-action"
+        >
+          <slot name="primary-action">
+            <DynamicHtmlRenderer
+              v-if="chrome.primaryAction"
+              :html="chrome.primaryAction"
             />
             <craft-button
-              v-else-if="canSave && !readOnly && !props.saveDisabled"
+              v-else
               type="submit"
               :variant="ButtonVariant.Primary"
               :loading="
-                form?.processing ||
-                submittingHtml ||
-                elementEditor.saving.value ||
-                undefined
+                submittingHtml || elementEditor.saving.value || undefined
               "
             >
               {{ submitLabel }}
@@ -521,7 +559,6 @@
     <!-- Regions a slideout has no place for. Kept as hidden outlets so a page
       written for a full page doesn't drop its teleported content here. -->
     <div hidden>
-      <LayoutSlotOutlet name="breadcrumbs" />
       <LayoutSlotOutlet name="context-menu" />
       <LayoutSlotOutlet name="title" />
       <LayoutSlotOutlet name="content-toolbar" />
