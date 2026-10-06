@@ -269,6 +269,26 @@ class UrlManager extends \yii\web\UrlManager
     }
 
     /**
+     * Returns the control panel URL rules registered by
+     * {@see EVENT_REGISTER_CP_URL_RULES} handlers.
+     *
+     * @internal
+     *
+     * @return array<string, mixed>
+     */
+    public function getCpUrlRules(): array
+    {
+        if (!$this->hasEventHandlers(self::EVENT_REGISTER_CP_URL_RULES)) {
+            return [];
+        }
+
+        $event = new RegisterUrlRulesEvent(['rules' => []]);
+        $this->trigger(self::EVENT_REGISTER_CP_URL_RULES, $event);
+
+        return array_filter($event->rules);
+    }
+
+    /**
      * Returns the rules that should be used for the current request.
      *
      * @return array
