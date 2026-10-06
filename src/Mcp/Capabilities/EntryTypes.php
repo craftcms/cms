@@ -279,6 +279,27 @@ readonly class EntryTypes
     #[RequiresAdmin]
     public function resourceByIdentifier(string $entryType): array
     {
+        return ['entryType' => $this->serialize($this->resolveResourceEntryType($entryType))];
+    }
+
+    /** @return array{fieldLayout: array<string, mixed>} */
+    #[McpResourceTemplate(
+        uriTemplate: 'craft://field-layouts/entry-types/{entryType}',
+        name: 'craft-entry-types-field-layout',
+        title: 'Craft Entry Type Field Layout',
+        description: 'A JSON field layout addressed by its owning entry type ID, UID, or handle.',
+        mimeType: 'application/json',
+    )]
+    #[RequiresAdmin]
+    public function fieldLayoutResourceByIdentifier(string $entryType): array
+    {
+        $resolved = $this->resolveResourceEntryType($entryType);
+
+        return ['fieldLayout' => $this->fieldLayouts->serialize($resolved->getFieldLayout())];
+    }
+
+    private function resolveResourceEntryType(string $entryType): EntryType
+    {
         $resolved = match (true) {
             ctype_digit($entryType) => $this->find(id: (int) $entryType),
             Str::isUuid($entryType) => $this->find(uid: $entryType),
@@ -289,7 +310,7 @@ readonly class EntryTypes
             throw new ResourceReadException('Entry type not found.');
         }
 
-        return ['entryType' => $this->serialize($resolved)];
+        return $resolved;
     }
 
     private function find(?int $id = null, ?string $uid = null, ?string $handle = null): ?EntryType

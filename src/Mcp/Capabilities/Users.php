@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
@@ -29,6 +30,7 @@ use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 
 /**
@@ -91,6 +93,7 @@ readonly class Users
         private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementResourceLinks $resourceLinks,
         private FieldLayoutConfig $fieldLayouts,
         private FieldService $fields,
         private UserInitiatedElementSave $userInitiatedElementSave,
@@ -99,7 +102,6 @@ readonly class Users
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft UserQuery criteria. Custom field criteria may be passed by field handle.
-     * @return array{count: int, limit: int, offset: int, users: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'users.list',
@@ -110,7 +112,7 @@ readonly class Users
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
-    ): array {
+    ): CallToolResult {
         $query = User::find()
             ->status(null)
             ->orderBy('elements.id');
@@ -118,12 +120,12 @@ readonly class Users
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
         $users = $query->all();
 
-        return [
+        return $this->resourceLinks->result([
             'count' => count($users),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
             'users' => array_map($this->serializeSummary(...), $users),
-        ];
+        ], $users);
     }
 
     /**
@@ -324,7 +326,7 @@ readonly class Users
 
     /** @return array{user: array<string, mixed>} */
     #[McpResourceTemplate(
-        uriTemplate: 'craft://users/{user}',
+        uriTemplate: ElementResourceLinks::Templates[User::class],
         name: 'craft-users-get',
         title: 'Craft User',
         description: 'A JSON Craft CMS user record addressed by user ID, UID, username, or email.',
@@ -333,9 +335,14 @@ readonly class Users
     #[RequiresPermission('viewUsers')]
     public function resourceByIdentifier(string $user): array
     {
+        $criteria = [
+            'status' => [User::STATUS_ENABLED, User::STATUS_DISABLED, User::STATUS_ARCHIVED],
+            'trashed' => null,
+        ];
+
         $resolved = match (true) {
-            ctype_digit($user) => $this->find(id: (int) $user),
-            Str::isUuid($user) => $this->find(uid: $user),
+            ctype_digit($user) => $this->elements->getElementById((int) $user, User::class, criteria: $criteria),
+            Str::isUuid($user) => $this->elements->getElementByUid($user, User::class, criteria: $criteria),
             default => $this->find(username: $user),
         };
 

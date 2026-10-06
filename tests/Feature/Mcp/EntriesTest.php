@@ -47,7 +47,7 @@ it('manages entries through MCP', function () {
     $listed = $entries->list([
         'sectionId' => $this->section->id,
         'status' => null,
-    ]);
+    ])->structuredContent;
     $updated = $entries->update(
         id: $created['id'],
         attributes: ['title' => 'Updated title'],

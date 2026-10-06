@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
+use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\User\Elements\User;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 
 /**
@@ -53,13 +55,13 @@ readonly class Search
         private ElementQueryFactory $elementQueries,
         private ElementQueryCriteria $elementQueryCriteria,
         private ElementSerializer $elementSerializer,
+        private ElementResourceLinks $resourceLinks,
         private McpActor $actor,
     ) {}
 
     /**
      * @param  list<string>  $types  Registered element type reference handles or class names. Defaults to all registered types.
      * @param  array<string, mixed>  $criteria  Search criteria applied to each compatible element type.
-     * @return array{query: string, types: list<string>, count: int, counts: array<string, int>, results: list<array{elementType: string, element: array<string, mixed>}>}
      */
     #[McpTool(
         name: 'search.query',
@@ -72,7 +74,7 @@ readonly class Search
         array $types = [],
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
-    ): array {
+    ): CallToolResult {
         $query = trim($query);
 
         if ($query === '') {
@@ -99,6 +101,7 @@ readonly class Search
         $results = [];
         $counts = [];
         $typeNames = [];
+        $linkedElements = [];
 
         foreach ($types as $type) {
             $typeName = $type::refHandle() ?? $type;
@@ -119,6 +122,7 @@ readonly class Search
             $counts[$typeName] = $elements->count();
 
             foreach ($elements as $element) {
+                $linkedElements[] = $element;
                 $results[] = [
                     'elementType' => $typeName,
                     'element' => $this->elementSerializer->serialize($element),
@@ -126,13 +130,13 @@ readonly class Search
             }
         }
 
-        return [
+        return $this->resourceLinks->result([
             'query' => $query,
             'types' => $typeNames,
             'count' => count($results),
             'counts' => $counts,
             'results' => $results,
-        ];
+        ], $linkedElements);
     }
 
     /**

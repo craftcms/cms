@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
@@ -24,6 +25,7 @@ use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 
 /**
@@ -94,13 +96,13 @@ readonly class Addresses
         private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementResourceLinks $resourceLinks,
         private FieldLayoutConfig $fieldLayouts,
         private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft AddressQuery criteria. Custom field criteria may be passed by field handle.
-     * @return array{count: int, limit: int, offset: int, addresses: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'addresses.list',
@@ -110,7 +112,7 @@ readonly class Addresses
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
-    ): array {
+    ): CallToolResult {
         $actor = $this->actor->user();
         $query = Address::find()->orderBy('elements.id');
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
@@ -119,12 +121,12 @@ readonly class Addresses
             ->filter(static fn (Address $address): bool => Gate::forUser($actor)->allows('view', $address))
             ->values();
 
-        return [
+        return $this->resourceLinks->result([
             'count' => $addresses->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
             'addresses' => $addresses->map(fn (Address $address): array => $this->elementSerializer->serialize($address))->all(),
-        ];
+        ], $addresses);
     }
 
     /**
@@ -330,7 +332,7 @@ readonly class Addresses
 
     /** @return array{address: array<string, mixed>} */
     #[McpResourceTemplate(
-        uriTemplate: 'craft://addresses/{id}/sites/{siteId}',
+        uriTemplate: ElementResourceLinks::Templates[Address::class],
         name: 'craft-addresses-get',
         title: 'Craft Address',
         description: 'A JSON Craft CMS address record addressed by element ID and site ID.',
@@ -338,7 +340,10 @@ readonly class Addresses
     )]
     public function resourceByIdAndSite(int $id, int $siteId): array
     {
-        $address = $this->find(id: $id, siteId: $siteId);
+        $address = $this->elements->getElementById($id, Address::class, $siteId, [
+            'status' => [Address::STATUS_ENABLED, Address::STATUS_DISABLED, Address::STATUS_ARCHIVED],
+            'trashed' => null,
+        ]);
 
         if (! $address || ! Gate::forUser($this->actor->user())->allows('view', $address)) {
             throw new ResourceReadException('Address not found.');

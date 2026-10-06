@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
@@ -22,6 +23,7 @@ use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 use RuntimeException;
 
@@ -86,13 +88,13 @@ readonly class Entries
         private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementResourceLinks $resourceLinks,
         private Sites $sites,
         private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft EntryQuery criteria. Custom field criteria may be passed by field handle.
-     * @return array{count: int, limit: int, offset: int, entries: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'entries.list',
@@ -102,7 +104,7 @@ readonly class Entries
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
-    ): array {
+    ): CallToolResult {
         $actor = $this->actor->user();
         $query = Entry::find()->orderBy('elements.id');
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
@@ -111,12 +113,12 @@ readonly class Entries
             ->filter(static fn (Entry $entry): bool => Gate::forUser($actor)->allows('view', $entry))
             ->values();
 
-        return [
+        return $this->resourceLinks->result([
             'count' => $entries->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
             'entries' => $entries->map(fn (Entry $entry): array => $this->elementSerializer->serialize($entry))->all(),
-        ];
+        ], $entries);
     }
 
     /**
@@ -300,7 +302,7 @@ readonly class Entries
 
     /** @return array{entry: array<string, mixed>} */
     #[McpResourceTemplate(
-        uriTemplate: 'craft://entries/{id}/sites/{siteId}',
+        uriTemplate: ElementResourceLinks::Templates[Entry::class],
         name: 'craft-entries-get',
         title: 'Craft Entry',
         description: 'A JSON Craft CMS entry record addressed by element ID and site ID.',
@@ -308,7 +310,10 @@ readonly class Entries
     )]
     public function resourceByIdAndSite(int $id, int $siteId): array
     {
-        $entry = $this->find(id: $id, siteId: $siteId);
+        $entry = $this->elements->getElementById($id, Entry::class, $siteId, [
+            'status' => [Entry::STATUS_ENABLED, Entry::STATUS_DISABLED, Entry::STATUS_ARCHIVED],
+            'trashed' => null,
+        ]);
 
         if (! $entry || ! Gate::forUser($this->actor->user())->allows('view', $entry)) {
             throw new ResourceReadException('Entry not found.');

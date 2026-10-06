@@ -4,10 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\Support;
 
+use CraftCms\Cms\Tests\TestCase;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Testing\TestResponse;
 use Mcp\Schema\Wire\McpHeader;
 
 class McpRequest
 {
+    /** @param array<string, mixed> $params */
+    public static function send(TestCase $test, string $method, array $params = []): TestResponse
+    {
+        Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
+
+        return $test->postJson(
+            route('craft.cp.mcp.server'),
+            self::payload($method, $params),
+            self::headers($method, $params['name'] ?? $params['uri'] ?? null),
+        );
+    }
+
     /**
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>

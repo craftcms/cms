@@ -18,6 +18,7 @@ use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
@@ -33,6 +34,7 @@ use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -88,6 +90,7 @@ readonly class Assets
         private ElementSerializer $elementSerializer,
         private Elements $elements,
         private ElementQueryCriteria $elementQueryCriteria,
+        private ElementResourceLinks $resourceLinks,
         private Folders $folders,
         private McpAssetUploads $mcpAssetUploads,
         private Request $request,
@@ -96,7 +99,6 @@ readonly class Assets
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft AssetQuery criteria. Custom field criteria may be passed by field handle.
-     * @return array{count: int, limit: int, offset: int, assets: list<array<string, mixed>>}
      */
     #[McpTool(
         name: 'assets.list',
@@ -106,7 +108,7 @@ readonly class Assets
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
-    ): array {
+    ): CallToolResult {
         $actor = $this->actor->user();
         $query = Asset::find()->orderBy('elements.id');
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
@@ -115,12 +117,12 @@ readonly class Assets
             ->filter(static fn (Asset $asset): bool => Gate::forUser($actor)->allows('view', $asset))
             ->values();
 
-        return [
+        return $this->resourceLinks->result([
             'count' => $assets->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
             'assets' => $assets->map(fn (Asset $asset): array => $this->elementSerializer->serialize($asset))->all(),
-        ];
+        ], $assets);
     }
 
     /**
@@ -401,7 +403,7 @@ readonly class Assets
 
     /** @return array{asset: array<string, mixed>} */
     #[McpResourceTemplate(
-        uriTemplate: 'craft://assets/{id}/sites/{siteId}',
+        uriTemplate: ElementResourceLinks::Templates[Asset::class],
         name: 'craft-assets-get',
         title: 'Craft Asset',
         description: 'A JSON Craft CMS asset record addressed by element ID and site ID.',
@@ -409,7 +411,10 @@ readonly class Assets
     )]
     public function resourceByIdAndSite(int $id, int $siteId): array
     {
-        $asset = $this->find(id: $id, siteId: $siteId);
+        $asset = $this->elements->getElementById($id, Asset::class, $siteId, [
+            'status' => [Asset::STATUS_ENABLED, Asset::STATUS_DISABLED, Asset::STATUS_ARCHIVED],
+            'trashed' => null,
+        ]);
 
         if (! $asset || ! Gate::forUser($this->actor->user())->allows('view', $asset)) {
             throw new ResourceReadException('Asset not found.');

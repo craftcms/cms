@@ -10,6 +10,7 @@
 - Updated Matrix fields using the Blocks view mode in HTML forms to use the shared Vue control. ([#19832](https://github.com/craftcms/cms/pull/19832))
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config.
 - Added OAuth discovery and dynamic client registration for authenticated MCP connections, with S256 PKCE.
+- Added MCP resource links to element list and search results, and an entry-type field-layout resource template.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Mcp\CapabilityRegistry::register()`, allowing plugins to register MCP capability classes with explicit public approval controls.
