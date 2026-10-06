@@ -84,3 +84,25 @@ test('marks its own button as current, not just the host', async () => {
 
   expect(button()?.getAttribute('aria-current')).toBe('true');
 });
+
+test('stops resetting its state once it is removed', async () => {
+  const item = (await mount(
+    html`<craft-action-item
+      .action=${{type: 'event', name: 'action-item-test'}}
+      .feedbackDuration=${10}
+    >
+      Duplicate
+    </craft-action-item>`
+  )) as HTMLElement & {feedbackDuration: number};
+  const states: string[] = [];
+  item.addEventListener('craft-state-change', (event) => {
+    states.push((event as CustomEvent<{state: string}>).detail.state);
+  });
+
+  item.click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  item.remove();
+  await new Promise((resolve) => setTimeout(resolve, item.feedbackDuration * 3));
+
+  expect(states).toEqual(['success']);
+});
