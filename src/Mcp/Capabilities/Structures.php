@@ -35,7 +35,7 @@ readonly class Structures
     ) {}
 
     /**
-     * @param  string  $elementType  Registered element type reference handle or class name.
+     * @param  string  $elementType  Registered element reference handle or PHP class; see craft://element-types and info.get.
      * @param  string  $operation  Move to the start or end of the root, or before or after a target element.
      * @param  int|null  $structureId  Structure ID. It may be inferred when the element belongs to exactly one structure.
      * @param  int|null  $elementId  Element ID.

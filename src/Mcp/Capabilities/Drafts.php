@@ -69,7 +69,7 @@ readonly class Drafts
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -118,7 +118,7 @@ readonly class Drafts
     /** @return array{draft: array<string, mixed>} */
     #[McpTool(name: 'drafts.create', description: 'Creates a draft of a Craft CMS element.')]
     public function create(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -157,7 +157,7 @@ readonly class Drafts
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -211,7 +211,7 @@ readonly class Drafts
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]

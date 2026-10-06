@@ -193,7 +193,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets.create',
-        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed assets.upload.prepare uploadId. Use file references when the client cannot perform binary transfers. Use elements.field-schema to discover custom fields.',
+        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed uploadId from the HTTP-only assets.upload.prepare tool. Stdio clients and clients unable to transfer binary data use file references. Use elements.field-schema to discover custom fields.',
         meta: ['openai/fileParams' => ['file']],
     )]
     public function create(
@@ -276,7 +276,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets.replace',
-        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed assets.upload.prepare uploadId bound to assetId. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
+        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed uploadId bound to assetId from the HTTP-only assets.upload.prepare tool. Stdio clients use file references. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
         annotations: new ToolAnnotations(destructiveHint: true),
         meta: ['openai/fileParams' => ['file']],
     )]

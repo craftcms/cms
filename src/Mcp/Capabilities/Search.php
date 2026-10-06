@@ -60,7 +60,7 @@ readonly class Search
     ) {}
 
     /**
-     * @param  list<string>  $types  Registered element type reference handles or class names. Defaults to all registered types.
+     * @param  list<string>  $types  Registered element reference handles or PHP classes; see craft://element-types and info.get. Defaults to all registered types.
      * @param  array<string, mixed>  $criteria  Search criteria applied to each compatible element type.
      * @param  list<string>|null  $fields
      */

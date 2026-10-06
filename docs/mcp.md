@@ -141,7 +141,7 @@ return GeneralConfig::create()
 | ------------- | ------------------------------------------------------------------------------------------------- |
 | `endpoint`    | Path below the control panel trigger. Defaults to `mcp`.                                          |
 | `middleware`  | Extra route middleware appended to the authenticated server and its upload routes.                |
-| `instructions` | Additional server instructions for authenticated HTTP and stdio clients. Defaults to an empty string. |
+| `instructions` | Additional guidance returned by `info.get` for authenticated HTTP and stdio clients. Defaults to an empty string. |
 
 To try capabilities locally without completing an OAuth flow, [run the server over stdio](#running-the-server-over-stdio) instead.
 
@@ -149,7 +149,9 @@ The public server is configured in the control panel. Its settings are stored in
 
 ### Server instructions
 
-The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. It provides instructions for discovery, identifiers, reading and editing content, pagination, and destructive operations. Task-specific guidance is provided by element schemas and tool descriptions. HTTP clients receive server instructions through `server/discover`; stdio clients receive them during `initialize`.
+The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. These direct clients to call `info.get` before using other Craft capabilities.
+
+The `instructions` field in the `info.get` result contains the full guidance for discovery, identifiers, reading and editing content, pagination, and destructive operations, followed by site and plugin additions. Startup instructions stay below Claude Code's default 2,048-character limit. Task-specific guidance remains in element schemas and tool descriptions.
 
 The `mcp.instructions` general config setting appends site guidance to the core instructions. It accepts a string through the array or JSON configuration above, or through `McpConfig::create()->instructions('…')`.
 
@@ -171,7 +173,7 @@ Craft combines core instructions, site instructions, and plugin contributions in
 
 Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
-The event runs when the admin server is built, once per authenticated HTTP request or once at the start of a stdio session. Unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instructions. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+The event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 
 ### Element pagination and permission replacement
 

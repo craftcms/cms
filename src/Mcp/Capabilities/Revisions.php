@@ -58,7 +58,7 @@ readonly class Revisions
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -112,7 +112,7 @@ readonly class Revisions
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function get(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -137,7 +137,7 @@ readonly class Revisions
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]

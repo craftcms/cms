@@ -56,7 +56,7 @@ readonly class Activity
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -122,7 +122,7 @@ readonly class Activity
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: false),
     )]
     public function createComment(
-        #[Schema(description: 'Registered element type reference handle or class name.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,
         #[Schema(minLength: 1, maxLength: ActivityCommentRequest::MaxLength)]
         string $markdown,

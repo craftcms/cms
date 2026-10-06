@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Mcp\AdminInstructions;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\Public\ElementCriteria;
@@ -38,12 +39,13 @@ readonly class Craft
         private ElementCriteria $criteria,
         private ElementQuery $query,
         private PublicElementTypes $elementTypes,
+        private AdminInstructions $instructions,
     ) {}
 
-    /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int} */
+    /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int, instructions: string} */
     #[McpTool(
         name: 'info.get',
-        description: 'Returns basic information about the running Craft CMS application.',
+        description: 'Returns Craft application information and full admin MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function info(): array
@@ -56,6 +58,7 @@ readonly class Craft
             'name' => Cms::systemName(),
             'isInstalled' => $isInstalled,
             'siteCount' => $isInstalled ? Sites::getTotalSites() : null,
+            'instructions' => $this->instructions->get(),
         ];
     }
 

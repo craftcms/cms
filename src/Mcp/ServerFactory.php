@@ -23,12 +23,11 @@ readonly class ServerFactory
         private LoggerInterface $logger,
         private PublicCapabilityDiscovery $publicCapabilities,
         private StdioCapabilityDiscovery $stdioCapabilities,
-        private AdminInstructions $instructions,
     ) {}
 
     public function admin(): StatelessProtocol
     {
-        return $this->builder($this->capabilities, $this->instructions->get())->buildStateless([ProtocolVersion::V2026_07_28]);
+        return $this->builder($this->capabilities, AdminInstructions::Brief)->buildStateless([ProtocolVersion::V2026_07_28]);
     }
 
     public function public(): StatelessProtocol
@@ -46,7 +45,7 @@ readonly class ServerFactory
 
     public function stdio(): Server
     {
-        return $this->builder($this->stdioCapabilities, $this->instructions->get())->build();
+        return $this->builder($this->stdioCapabilities, AdminInstructions::Brief)->build();
     }
 
     private function builder(DiscovererInterface $discoverer, ?string $instructions = null): Builder
