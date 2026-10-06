@@ -2,7 +2,7 @@
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {computed, shallowRef, toRaw} from 'vue';
+  import {computed, provide, shallowRef, toRaw} from 'vue';
   import type {
     ActionItem,
     FormAction,
@@ -14,6 +14,7 @@
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {FormIsBareTable} from '@/modules/forms/runtime';
   import type {
     FormChange,
     FormChangeKind,
@@ -178,6 +179,8 @@
       node.props.bordered === false
     );
   });
+
+  provide(FormIsBareTable, isBareTable);
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,

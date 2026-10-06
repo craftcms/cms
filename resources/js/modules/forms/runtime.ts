@@ -73,6 +73,13 @@ export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormRefreshingFields');
 
+/**
+ * Whether the form is a lone borderless table rendered without a CpContainer,
+ * so the table must supply its own inline gutter.
+ */
+export const FormIsBareTable: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('FormIsBareTable');
+
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
 

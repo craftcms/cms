@@ -16,6 +16,7 @@
     computed,
     defineComponent,
     h,
+    inject,
     onMounted,
     ref,
     shallowRef,
@@ -55,6 +56,7 @@
   } from '@/modules/admin-table/craftTable';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import FormModal from './FormModal.vue';
+  import {FormIsBareTable} from './runtime';
   import type {FormNodePayload, FormValues} from './types';
 
   interface TableColumn {
@@ -179,6 +181,8 @@
   );
 
   const isEndpointMode = computed(() => !!props.node.props.dataUrl);
+
+  const isBareTable = inject(FormIsBareTable, ref(false));
 
   const pageRows = ref<TableRow[]>([]);
 
@@ -1109,6 +1113,7 @@
       v-bind="node.props.bordered ? {padding: '0', appearance: 'raised'} : {}"
     >
       <AdminTable
+        :class="{'admin-table--padded': isBareTable}"
         :table="table"
         :reorderable="!!node.props.reorderUrl && !orderingDisabled"
         :selectable="hasBulkFooter"
