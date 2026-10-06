@@ -244,6 +244,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.#lastNotifiedValue = this.modelValue;
     this.#committedValue = this.modelValue;
     this.#renderOptions();
+    this.#adoptPendingModelValue();
     if (this.multipleChoice) {
       this.initialValues = [
         ...(Array.isArray(this.pendingModelValue)
@@ -251,6 +252,35 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
           : []),
       ];
     }
+  }
+
+  /**
+   * Re-applies the value the `model-value` attribute asked for.
+   *
+   * Lion adopts a value once an option names it, and on an element upgraded
+   * from server-rendered markup the attribute lands before the options exist,
+   * so the value is dropped. Nothing has been announced yet at this point, so
+   * this is silent.
+   */
+  #adoptPendingModelValue(): void {
+    if (
+      this.pendingModelValue === undefined ||
+      JSON.stringify(this.modelValue) === JSON.stringify(this.pendingModelValue)
+    ) {
+      return;
+    }
+
+    const pending = this.pendingModelValue;
+    this.changingValues = true;
+
+    try {
+      this.modelValue = pending;
+    } finally {
+      this.changingValues = false;
+    }
+
+    this.#lastNotifiedValue = this.modelValue;
+    this.#committedValue = this.modelValue;
   }
 
   /** Emits native `change` when the value has moved since the last commit. */

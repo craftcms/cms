@@ -61,6 +61,24 @@ it('posts a custom value when it does not match an option', async () => {
   expect(control.modelValue).toBe('$SHOPIFY_API_VERSION');
 });
 
+it('posts a value its markup carried, with the options as markup too', async () => {
+  // How a server-rendered page arrives: both `model-value` and `options` are
+  // attributes on the element, and it upgrades with them already set.
+  const options = JSON.stringify([
+    {label: '$SHOPIFY_API_VERSION', value: '$SHOPIFY_API_VERSION'},
+  ]);
+  document.body.innerHTML = `<form><craft-combobox name="folderPath" model-value="@webroot/cache/blitz" allow-custom-choice options='${options}'></craft-combobox></form>`;
+
+  const form = document.querySelector('form')!;
+  const control = document.querySelector('craft-combobox') as CraftCombobox;
+  await control.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await control.updateComplete;
+
+  expect(control.modelValue).toBe('@webroot/cache/blitz');
+  expect(entries(form)).toEqual([['folderPath', '@webroot/cache/blitz']]);
+});
+
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
     c.setAttribute('model-value', '2026-01');
