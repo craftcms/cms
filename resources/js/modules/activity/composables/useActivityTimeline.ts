@@ -37,6 +37,7 @@ export interface ActivityEvent {
   };
   actor: ActivityTarget;
   impersonator: ActivityTarget | null;
+  origin?: string | null;
   source: {label: string};
   description: {text: string | null; html: string | null};
   changes: ActivityChange[];

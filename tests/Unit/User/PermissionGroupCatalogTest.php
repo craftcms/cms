@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\PermissionGroupCatalog;
 
+beforeEach(fn () => app(PermissionGroupCatalog::class)->remove('mcp'));
+
 it('adds permission groups lazily in registration order', function () {
     $registry = app(PermissionGroupCatalog::class);
     $resolved = false;

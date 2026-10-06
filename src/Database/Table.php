@@ -73,6 +73,14 @@ readonly class Table
 
     public const string MIGRATIONS = 'migrations';
 
+    public const string OAUTH_ACCESS_TOKENS = 'oauth_access_tokens';
+
+    public const string OAUTH_AUTH_CODES = 'oauth_auth_codes';
+
+    public const string OAUTH_CLIENTS = 'oauth_clients';
+
+    public const string OAUTH_REFRESH_TOKENS = 'oauth_refresh_tokens';
+
     public const string PASSWORD_RESET_TOKENS = 'password_reset_tokens';
 
     public const string PHPSESSIONS = 'sessions';
