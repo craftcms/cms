@@ -187,6 +187,7 @@ class Images extends Component
      * Returns whether the WebP image format is supported.
      *
      * @return bool
+     * @since 3.5.0
      */
     public function getSupportsWebP(): bool
     {
@@ -198,6 +199,7 @@ class Images extends Component
      * Returns whether the AVIF image format is supported.
      *
      * @return bool
+     * @since 3.7.26
      */
     public function getSupportsAvif(): bool
     {
