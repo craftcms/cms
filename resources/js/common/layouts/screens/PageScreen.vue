@@ -145,6 +145,7 @@
       regions.has('content-toolbar-actions')
   );
   const hasDetails = computed(() => regions.has('content-details'));
+  const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
   // standing empty.
@@ -361,9 +362,22 @@
                           </div>
                         </slot>
 
-                        <LayoutSlotOutlet name="content-tabs">
-                          <slot name="content-tabs"></slot>
-                        </LayoutSlotOutlet>
+                        <!-- Gutters the tab strip like the header and toolbar above
+                          it, so tabs line up with the content below. It belongs here
+                          rather than in the screens that fill the slot: `cp/Screen`
+                          fills it in a slideout too, where `SlideoutScreen` supplies
+                          its own padding and a second gutter would be wrong.
+
+                          The wrapper is the grid item: an outlet's target is
+                          `display: contents`, so without it the tabs land in the
+                          gutter column instead of the content column. -->
+                        <CpContainer v-show="hasTabs">
+                          <div>
+                            <LayoutSlotOutlet name="content-tabs">
+                              <slot name="content-tabs"></slot>
+                            </LayoutSlotOutlet>
+                          </div>
+                        </CpContainer>
                         <!-- `#content` is how the legacy element editor finds its form
                           host: `$('#content').find('craft-entry-field-layout-form')`.
                           Without it `formHost` is undefined and every field-layout
