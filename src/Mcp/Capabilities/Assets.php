@@ -36,6 +36,7 @@ use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -80,6 +81,19 @@ readonly class Assets
         'type' => 'object',
         'description' => 'Custom field values keyed by field handle. Use assets.field-schema for the applicable schema.',
         'additionalProperties' => true,
+    ];
+
+    private const array FileSchema = [
+        'type' => 'object',
+        'description' => 'A downloadable file reference supplied by the client. URLs must be direct, temporary HTTPS URLs. Local paths and base64 are not supported.',
+        'properties' => [
+            'download_url' => ['type' => 'string', 'format' => 'uri'],
+            'file_id' => ['type' => 'string', 'minLength' => 1],
+            'mime_type' => ['type' => 'string'],
+            'file_name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
+        ],
+        'required' => ['download_url', 'file_id'],
+        'additionalProperties' => false,
     ];
 
     public function __construct(
@@ -258,58 +272,76 @@ readonly class Assets
     }
 
     /**
+     * @param  array{download_url: string, file_id: string, mime_type?: string, file_name?: string}|null  $file  File reference. Provide folderId or volumeId when using this input.
      * @param  array<string, mixed>  $attributes  Built-in asset attributes.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
+     * @param  string|null  $filename  Filename override for a file reference. Required if file_name is absent.
      * @return array{asset: array<string, mixed>}
      */
-    #[McpTool(name: 'assets.create', description: 'Creates a Craft CMS asset from a completed assets.upload.prepare upload. Use assets.field-schema to discover custom fields.')]
+    #[McpTool(
+        name: 'assets.create',
+        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed assets.upload.prepare uploadId. Use file references when the client cannot perform binary transfers. Use assets.field-schema to discover custom fields.',
+        meta: ['openai/fileParams' => ['file']],
+    )]
     public function create(
         #[Schema(format: 'uuid')]
-        string $uploadId,
+        ?string $uploadId = null,
         #[Schema(definition: self::CreateAttributesSchema)]
         array $attributes = [],
         #[Schema(definition: self::FieldsSchema)]
         array $fields = [],
+        #[Schema(definition: self::FileSchema)]
+        ?array $file = null,
+        #[Schema(minimum: 1)]
+        ?int $folderId = null,
+        #[Schema(minimum: 1)]
+        ?int $volumeId = null,
+        #[Schema(minLength: 1, maxLength: 255)]
+        ?string $filename = null,
     ): array {
+        if (($uploadId === null) === ($file === null)) {
+            throw new ToolCallException('Provide exactly one of: uploadId, file.');
+        }
+
+        if ($uploadId !== null && ($folderId !== null || $volumeId !== null || $filename !== null)) {
+            throw new ToolCallException('The uploadId already specifies the filename and destination.');
+        }
+
         try {
+            if ($file !== null) {
+                $folder = $this->targetFolder($folderId, $volumeId);
+
+                if (! $folder) {
+                    throw new ToolCallException('Provide a valid folderId or volumeId for the file reference.');
+                }
+
+                $filename ??= $file['file_name'] ?? null;
+
+                if ($filename === null || trim($filename) === '') {
+                    throw new ToolCallException('Provide filename when the file reference does not include file_name.');
+                }
+
+                $this->mcpAssetUploads->authorize($this->request, ['folderId' => $folder->id], $filename, 0);
+                $asset = $this->newAsset($folder, $attributes, $fields);
+
+                return $this->mcpAssetUploads->consumeFile(
+                    $file['download_url'],
+                    $filename,
+                    fn (UploadedFile $source): array => $this->ingestAsset($source, $folder, $asset),
+                );
+            }
+
             return $this->mcpAssetUploads->consume(
                 $this->request,
                 $uploadId,
                 function (UploadedFile $source, array $parameters) use ($attributes, $fields): array {
-                    $actor = $this->actor->user();
                     $folder = $this->folders->getFolderById((int) $parameters['folderId']);
 
                     if (! $folder) {
                         throw new ToolCallException('The upload destination no longer exists.');
                     }
 
-                    $asset = new Asset;
-                    Typecast::configure($asset, $attributes);
-                    $asset->newFolderId = $folder->id;
-                    $asset->setVolumeId($folder->volumeId);
-                    $asset->uploaderId = $actor->getCraftUserId();
-                    $asset->setFieldValues($fields);
-                    $this->authorizeSave($actor, $asset);
-
-                    $result = $this->assetUploads->ingest(new AssetIngest(
-                        source: $source,
-                        filename: $source->filename,
-                        mimeType: $source->mimeType(),
-                        folder: $folder,
-                        sanitizeOnUpload: true,
-                        uploaderId: $actor->getCraftUserId(),
-                        asset: $asset,
-                    ));
-
-                    if ($result->status !== AssetIngestStatus::Saved) {
-                        throw new ToolCallException(
-                            $result->message
-                            ?? implode("\n", $result->asset->errors()->all())
-                            ?: 'Asset could not be created.',
-                        );
-                    }
-
-                    return ['asset' => $this->elementSerializer->serialize($result->asset)];
+                    return $this->ingestAsset($source, $folder, $this->newAsset($folder, $attributes, $fields));
                 },
             );
         } catch (ModelNotFoundException) {
@@ -319,7 +351,51 @@ readonly class Assets
                 $exception->getMessage() ?: 'Upload not found or no longer available.',
                 previous: $exception,
             );
+        } catch (RuntimeException $exception) {
+            throw new ToolCallException($exception->getMessage());
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $fields
+     */
+    private function newAsset(VolumeFolder $folder, array $attributes, array $fields): Asset
+    {
+        $actor = $this->actor->user();
+        $asset = new Asset;
+        Typecast::configure($asset, $attributes);
+        $asset->newFolderId = $folder->id;
+        $asset->setVolumeId($folder->volumeId);
+        $asset->uploaderId = $actor->getCraftUserId();
+        $asset->setFieldValues($fields);
+        $this->authorizeSave($actor, $asset);
+
+        return $asset;
+    }
+
+    /** @return array{asset: array<string, mixed>} */
+    private function ingestAsset(UploadedFile $source, VolumeFolder $folder, Asset $asset): array
+    {
+        $result = $this->assetUploads->ingest(new AssetIngest(
+            source: $source,
+            filename: $source->filename,
+            mimeType: $source->mimeType(),
+            folder: $folder,
+            sanitizeOnUpload: true,
+            uploaderId: $asset->uploaderId,
+            asset: $asset,
+        ));
+
+        if ($result->status !== AssetIngestStatus::Saved) {
+            throw new ToolCallException(
+                $result->message
+                ?? implode("\n", $result->asset->errors()->all())
+                ?: 'Asset could not be created.',
+            );
+        }
+
+        return ['asset' => $this->elementSerializer->serialize($result->asset)];
     }
 
     /**
