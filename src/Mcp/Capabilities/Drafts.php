@@ -163,9 +163,9 @@ readonly class Drafts
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
-        #[Schema(minimum: 1, description: 'Expected workflow run ID. Provide together with workflowCurrentStage to reject stale approvals.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result. Provide together with workflowCurrentStage to reject stale approvals.')]
         ?int $workflowRunId = null,
-        #[Schema(minimum: 0, description: 'Expected zero-based workflow stage index. Provide together with workflowRunId.')]
+        #[Schema(minimum: 0, description: 'Zero-based review.currentStage from the same workflows.review result. Provide together with workflowRunId; this is an index, not review.stage.uid.')]
         ?int $workflowCurrentStage = null,
     ): array {
         if (($workflowRunId === null) !== ($workflowCurrentStage === null)) {

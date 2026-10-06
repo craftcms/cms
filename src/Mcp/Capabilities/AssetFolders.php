@@ -179,13 +179,14 @@ readonly class AssetFolders
      */
     #[McpTool(
         name: 'asset-folders.delete',
-        description: 'Deletes a Craft CMS asset folder.',
+        description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements.restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(
         ?int $id = null,
         #[Schema(format: 'uuid')]
         ?string $uid = null,
+        #[Schema(description: 'Whether to delete the directory and files from the volume filesystem. Defaults to true. Setting false preserves files but still permanently deletes the folder and contained asset records.')]
         bool $deleteDirectory = true,
     ): array {
         $folder = $this->find($id, $uid);

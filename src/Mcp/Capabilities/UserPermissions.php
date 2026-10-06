@@ -63,7 +63,7 @@ readonly class UserPermissions
      */
     #[McpTool(
         name: 'user-permissions.user.get',
-        description: 'Gets assigned Craft CMS permissions for a user.',
+        description: 'Gets a user’s effective permissions, including group grants, and separately returns directPermissions for editing direct assignments.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresPermission('assignUserPermissions')]
@@ -121,7 +121,7 @@ readonly class UserPermissions
      */
     #[McpTool(
         name: 'user-permissions.user.set',
-        description: 'Replaces the directly assigned Craft CMS permissions for a user.',
+        description: 'Replaces the complete directly assigned permission list for a user. Read user-permissions.user.get and retain keys from directPermissions. An empty list clears direct assignments; group grants remain.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresPermission('assignUserPermissions')]
@@ -159,7 +159,7 @@ readonly class UserPermissions
      */
     #[McpTool(
         name: 'user-permissions.group.set',
-        description: 'Replaces the directly assigned Craft CMS permissions for a user group.',
+        description: 'Replaces the complete permission list for a user group. Read user-permissions.group.get and include all permissions to retain. An empty list clears it.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]

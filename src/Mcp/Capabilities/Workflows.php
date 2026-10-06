@@ -77,7 +77,7 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.review', description: 'Inspects a draft’s assigned editorial workflow, review state, history, and actions available to the authenticated user. Approval does not publish.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'workflows.review', description: 'Inspects a draft’s assigned editorial workflow, review state, history, and actions available to the authenticated user. Refresh before each decision or apply. Use review.runId and review.stage.uid for review decisions; use review.runId and review.currentStage as workflowRunId and workflowCurrentStage for drafts.apply. Approval does not publish.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function review(
         #[Schema(description: 'Registered element type reference handle or class name.')]
         string $type,
@@ -111,9 +111,9 @@ readonly class Workflows
     #[McpTool(name: 'workflows.approve', description: 'Records the authenticated reviewer’s approval at a user-review stage. Does not publish the draft.')]
     public function approve(
         string $type,
-        #[Schema(minimum: 1)]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
         string $stageUid,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -129,9 +129,9 @@ readonly class Workflows
     #[McpTool(name: 'workflows.requestChanges', description: 'Requests changes to a draft at its current user-review stage. Requires a message explaining the changes.')]
     public function requestChanges(
         string $type,
-        #[Schema(minimum: 1)]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
         string $stageUid,
         #[Schema(minLength: 1, maxLength: 5000)]
         string $message,
@@ -147,9 +147,9 @@ readonly class Workflows
     #[McpTool(name: 'workflows.requestReview', description: 'Lets the submitting author request another review after changes were requested. Resets decisions at the current user-review stage within the same run.')]
     public function requestReview(
         string $type,
-        #[Schema(minimum: 1)]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
         string $stageUid,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -165,7 +165,7 @@ readonly class Workflows
     #[McpTool(name: 'workflows.restart', description: 'Restarts a pending or approved editorial workflow from the first stage, invalidating the specified run.', annotations: new ToolAnnotations(destructiveHint: true))]
     public function restart(
         string $type,
-        #[Schema(minimum: 1)]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
         int $runId,
         ?int $id = null,
         #[Schema(format: 'uuid')]

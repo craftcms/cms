@@ -130,7 +130,7 @@ The public server is configured in the control panel. Its settings are stored in
 
 ### Server instructions
 
-The authenticated HTTP and stdio servers provide instructions explaining type references, identifiers, sites, field selection, pagination, working sequences, and destructive operations. HTTP clients receive them through `server/discover`; stdio clients receive them during `initialize`.
+The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. It provides instructions for discovery, identifiers, reading and editing content, pagination, and destructive operations. Task-specific guidance is provided by element schemas and tool descriptions. HTTP clients receive server instructions through `server/discover`; stdio clients receive them during `initialize`.
 
 The `mcp.instructions` general config setting appends site guidance to the core instructions. It accepts a string through the array or JSON configuration above, or through `McpConfig::create()->instructions('…')`.
 
@@ -149,6 +149,8 @@ public function boot(): void
 ```
 
 Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
+
+Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
 The event runs when the admin server is built, once per authenticated HTTP request or once at the start of a stdio session. Unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instructions. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 

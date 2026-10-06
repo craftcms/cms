@@ -137,7 +137,7 @@ readonly class Assets
     }
 
     /** @return array{upload: array<string, mixed>} */
-    #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable upload. Provide folderId or volumeId for assets.create, or assetId for assets.replace.')]
+    #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable HTTP upload. Provide folderId or volumeId for assets.create, or assetId for assets.replace. Complete the binary transfer using upload.urls and upload.transport with the MCP bearer token, then pass upload.id as uploadId to create or replace. Stdio clients and clients unable to transfer binary data use the file input on create or replace instead.')]
     #[RequiresHttp]
     public function prepareUpload(
         #[Schema(minLength: 1, maxLength: 255)]

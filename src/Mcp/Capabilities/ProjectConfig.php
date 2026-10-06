@@ -79,7 +79,7 @@ readonly class ProjectConfig
     /** @return array{applied: true, appliedChanges: list<array{added?: array<string, mixed>, removed?: array<string, mixed>, message?: string}>} */
     #[McpTool(
         name: 'project-config.apply',
-        description: 'Applies external Craft CMS project config YAML changes to the loaded project config.',
+        description: 'Applies external YAML to loaded project config and its database configuration. Read project-config.status and project-config.diff first to identify pending changes and schema compatibility. Applying can remove configuration and content; authorization must cover those effects. Inspect appliedChanges and read status again to confirm the requested changes were applied.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -96,7 +96,7 @@ readonly class ProjectConfig
     /** @return array{written: true, forced: bool, hadFileWriteIssues: bool} */
     #[McpTool(
         name: 'project-config.write',
-        description: 'Writes Craft CMS project config YAML files from the loaded project config.',
+        description: 'Writes loaded project config to YAML files, overwriting external configuration. Read project-config.status and project-config.diff first to identify YAML changes that would be overwritten; authorization must cover that effect. Use apply instead when external YAML should update the database. Inspect hadFileWriteIssues and read status again to confirm the write.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]

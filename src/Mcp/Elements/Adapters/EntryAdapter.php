@@ -102,6 +102,8 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'In a section with an approval workflow, saving an enabled entry creates a draft. The result then sets savedAsDraft and suggests the next tool call.',
+            'elements.get/update/field-schema load canonical entries, excluding drafts and revisions. A canonical ID selects the original entry; these tools do not edit existing draft content. To inspect drafts, use drafts.list with the canonical ID and select fields as needed.',
+            'For editorial changes, inspect the saved draft with workflows.review, submit when its actions permit, and follow the returned review state. Use the draft element ID for workflow transitions and drafts.apply. Refresh review state before decisions or applying; the tool schemas identify the run and stage values to send. Approval does not publish; drafts.apply updates the canonical entry separately. Inspect the resulting status to confirm publication.',
             'Duplicating defaults to the unpublished mode, which creates an unpublished draft. The canonical mode uses Craft’s normal enabled-state behavior. Revisions and provisional drafts cannot be duplicated, and nested entries keep their owner.',
         ];
     }
