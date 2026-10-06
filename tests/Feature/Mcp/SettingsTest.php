@@ -12,13 +12,13 @@ use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
+use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\Passport;
-use Mcp\Schema\Wire\McpHeader;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -79,11 +79,10 @@ it('serves only approved tools from the configured public endpoint', function ()
     app()->forgetInstance(PublicMcpAccess::class);
     app(PublicRouteRegistrar::class)->register();
 
-    postJson($route, publicMcpPayload('tools/list'), publicMcpHeaders('tools/list'))
+    postJson($route, McpRequest::payload('tools/list'), McpRequest::headers('tools/list'))
         ->assertOk()
         ->assertJsonCount(1, 'result.tools')
         ->assertJsonPath('result.tools.0.name', 'craft-context-get');
-
 });
 
 it('queries only explicitly exposed public element types', function (): void {
@@ -100,11 +99,11 @@ it('queries only explicitly exposed public element types', function (): void {
 
     postJson(
         $route,
-        publicMcpPayload('tools/call', [
+        McpRequest::payload('tools/call', [
             'name' => 'craft-query',
             'arguments' => ['type' => 'user', 'criteria' => ['limit' => 1]],
         ]),
-        publicMcpHeaders('tools/call', 'craft-query'),
+        McpRequest::headers('tools/call', 'craft-query'),
     )
         ->assertOk()
         ->assertJsonPath('result.isError', false)
@@ -145,7 +144,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
     app()->forgetInstance(Settings::class);
     app(PublicRouteRegistrar::class)->register();
 
-    postJson($settings->publicRoute, publicMcpPayload($method, $params), publicMcpHeaders($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
+    postJson($settings->publicRoute, McpRequest::payload($method, $params), McpRequest::headers($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
     $publicRoute = Route::current();
 
@@ -156,7 +155,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
     app()->forgetInstance(Settings::class);
     $publicRoute->flushController();
 
-    postJson($settings->publicRoute, publicMcpPayload($method, $params), publicMcpHeaders($method, $params['name'] ?? $params['uri'] ?? null))
+    postJson($settings->publicRoute, McpRequest::payload($method, $params), McpRequest::headers($method, $params['name'] ?? $params['uri'] ?? null))
         ->assertOk()
         ->assertJsonMissingPath('error')
         ->assertJsonPath($resultPath, $expected);
@@ -168,7 +167,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
     app()->forgetInstance(Settings::class);
     $publicRoute->flushController();
 
-    postJson($settings->publicRoute, publicMcpPayload($method, $params), publicMcpHeaders($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
+    postJson($settings->publicRoute, McpRequest::payload($method, $params), McpRequest::headers($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 })->with([
     'tool' => ['publicTools', 'example.greet', 'Greet a visitor', 'tools/call', ['name' => 'example.greet', 'arguments' => ['name' => 'Ada']], 'result.structuredContent.greeting', 'Hello, Ada!'],
@@ -182,14 +181,14 @@ it('applies Craft permissions to plugin capabilities on the authenticated server
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::query()->firstOrFail();
-    Passport::actingAs($user, ['craft:mcp'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
 
-    postJson(route('craft.cp.mcp.server'), publicMcpPayload('tools/call', ['name' => 'example.manage']), publicMcpHeaders('tools/call', 'example.manage'))
+    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.manage']), McpRequest::headers('tools/call', 'example.manage'))
         ->assertOk()
         ->assertJsonPath('result.content.0.text', 'Managed example');
 
     Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
-    postJson(route('craft.cp.mcp.server'), publicMcpPayload('tools/call', ['name' => 'example.greet', 'arguments' => ['name' => 'Ada']]), publicMcpHeaders('tools/call', 'example.greet'))->assertBadRequest()
+    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.greet', 'arguments' => ['name' => 'Ada']]), McpRequest::headers('tools/call', 'example.greet'))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 
     Edition::set(Edition::Pro);
@@ -197,33 +196,6 @@ it('applies Craft permissions to plugin capabilities on the authenticated server
     app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
 
     Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
-    postJson(route('craft.cp.mcp.server'), publicMcpPayload('tools/call', ['name' => 'example.manage']), publicMcpHeaders('tools/call', 'example.manage'))->assertBadRequest()
+    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.manage']), McpRequest::headers('tools/call', 'example.manage'))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 });
-
-/** @param array<string, mixed> $params @return array<string, mixed> */
-function publicMcpPayload(string $method, array $params = []): array
-{
-    return [
-        'jsonrpc' => '2.0',
-        'id' => 'public-mcp-test',
-        'method' => $method,
-        'params' => [
-            ...$params,
-            '_meta' => [
-                'io.modelcontextprotocol/protocolVersion' => '2026-07-28',
-                'io.modelcontextprotocol/clientCapabilities' => (object) [],
-            ],
-        ],
-    ];
-}
-
-/** @return array<string, string> */
-function publicMcpHeaders(string $method, ?string $name = null): array
-{
-    return array_filter([
-        McpHeader::PROTOCOL_VERSION => '2026-07-28',
-        McpHeader::METHOD => $method,
-        McpHeader::NAME => $name,
-    ], static fn (?string $value): bool => $value !== null);
-}

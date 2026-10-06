@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Http\Responses;
 
 use CraftCms\Cms\Auth\AuthenticationViews;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Laravel\Passport\Client;
 use Laravel\Passport\Scope;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,15 +41,20 @@ readonly class AuthorizationView
         );
         $authToken = $parameters['authToken'];
         $csrfToken = csrf_token();
-        $approveAction = route('passport.authorizations.approve');
-        $denyAction = route('passport.authorizations.deny');
+        $routePrefix = $request->routeIs('craft.cp.mcp.oauth.*')
+            ? 'craft.cp.mcp.oauth.'
+            : 'passport.authorizations.';
+        $approveAction = route($routePrefix.'approve');
+        $denyAction = route($routePrefix.'deny');
         $viewData = compact('clientName', 'scopes', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
 
-        return $this->views->render(
+        $response = $this->views->render(
             request: $request,
             inertiaComponent: 'auth/McpAuthorization',
             inertiaProps: $viewData,
             templateData: $viewData,
         );
+
+        return Router::toResponse($request, $response);
     }
 }

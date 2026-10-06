@@ -9,19 +9,30 @@ use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
+use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
+use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
+use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
+use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\Mcp\Http\Middleware\UseDebugMcpUser;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
+use CraftCms\Cms\Mcp\OAuth\Metadata;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
+use Laravel\Passport\Http\Controllers\ApproveAuthorizationController;
+use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
 use Laravel\Passport\Http\Middleware\CheckToken;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Scope;
@@ -34,10 +45,12 @@ use function CraftCms\Cms\t;
  */
 class McpServiceProvider extends ServiceProvider
 {
-    private const string SCOPE = 'craft:mcp';
-
     public function register(): void
     {
+        $kernel = $this->app->make(Kernel::class);
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, AddOAuthChallenge::class);
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ReorderJsonAccept::class);
+
         $this->app->scoped(Settings::class, fn (): Settings => new Settings(
             $this->app->make(ProjectConfig::class)->get('mcp') ?? [],
         ));
@@ -57,6 +70,7 @@ class McpServiceProvider extends ServiceProvider
         UserPermissions $userPermissions,
         Router $router,
         Routes $routes,
+        Metadata $metadata,
     ): void {
         $this->app->booted(function (): void {
             $scopes = Passport::scopes()
@@ -65,7 +79,7 @@ class McpServiceProvider extends ServiceProvider
 
             Passport::tokensCan([
                 ...$scopes,
-                self::SCOPE => t('Use Craft MCP'),
+                Metadata::SCOPE => t('Use Craft MCP'),
             ]);
         });
 
@@ -86,17 +100,17 @@ class McpServiceProvider extends ServiceProvider
         $cpSettings->registerReadOnlySetting('System', 'mcp', $settings);
 
         if (! $this->app->routesAreCached()) {
-            $this->registerRoutes($router, $routes);
+            $this->registerRoutes($router, $routes, $metadata);
             $publicRoutes->register();
         }
     }
 
-    private function registerRoutes(Router $router, Routes $routes): void
+    private function registerRoutes(Router $router, Routes $routes, Metadata $metadata): void
     {
         $config = Cms::config()->mcp;
         $authentication = $this->app->hasDebugModeEnabled() && ! is_null($config->debugUserId)
             ? [UseDebugMcpUser::class]
-            : ['auth:craft-mcp', CheckToken::using(self::SCOPE)];
+            : [AddOAuthChallenge::class, ReorderJsonAccept::class, 'auth:craft-mcp', CheckToken::using(Metadata::SCOPE)];
         $middleware = [
             EnsureInstalled::class,
             AddLogContext::class,
@@ -111,10 +125,38 @@ class McpServiceProvider extends ServiceProvider
             ...$config->middleware,
         ];
 
+        $resourcePath = $routes->joinRoutePrefix([
+            trim((string) parse_url($metadata->baseUrl(), PHP_URL_PATH), '/'),
+            $routes->cpTriggerRoutePrefix(),
+            trim($config->endpoint, '/'),
+        ]);
+        $router->get('/.well-known/oauth-protected-resource/'.$resourcePath, [OAuthMetadataController::class, 'resource'])
+            ->middleware(EnsureInstalled::class)
+            ->name('craft.mcp.oauth.resource');
+        $router->get('/.well-known/oauth-authorization-server/'.$resourcePath, [OAuthMetadataController::class, 'authorizationServer'])
+            ->middleware(EnsureInstalled::class)
+            ->name('craft.mcp.oauth.authorization-server');
+
         $router
             ->prefix($routes->cpTriggerRoutePrefix())
             ->name('craft.cp.')
             ->group(function (Router $router) use ($authenticatedMiddleware, $config, $middleware): void {
+                $router->prefix($config->endpoint.'/oauth')->name('mcp.oauth.')->group(function (Router $router): void {
+                    $router->post('register', OAuthRegisterController::class)
+                        ->middleware([EnsureInstalled::class, UseWriteConnection::class, 'throttle:60,1'])
+                        ->name('register');
+
+                    $router->middleware(['web', 'craft', HandleInertiaRequests::class, 'throttle:60,1'])->group(function (Router $router): void {
+                        $router->get('authorize', OAuthAuthorizationController::class)
+                            ->name('authorize');
+
+                        $router->middleware(['auth:'.Cms::config()->getAuthGuard(), 'can:accessCp', 'can:useCraftMcp'])->group(function (Router $router): void {
+                            $router->post('authorize', [ApproveAuthorizationController::class, 'approve'])->name('approve');
+                            $router->delete('authorize', [DenyAuthorizationController::class, 'deny'])->name('deny');
+                        });
+                    });
+                });
+
                 $router->options($config->endpoint, [McpController::class, 'admin'])
                     ->middleware($middleware);
 
