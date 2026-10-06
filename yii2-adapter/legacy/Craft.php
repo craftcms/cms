@@ -85,6 +85,13 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
+        // Yii handed back anything that wasn't an alias untouched — nulls
+        // included — and plugins lean on that. Blitz's file storage driver
+        // passes `Site::getBaseUrl()` straight through, which is nullable.
+        if (!is_string($alias) || !str_starts_with($alias, '@')) {
+            return $alias;
+        }
+
         if (
             $alias === '@icons' ||
             str_starts_with($alias, '@icons/') ||
