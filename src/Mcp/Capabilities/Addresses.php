@@ -103,6 +103,7 @@ readonly class Addresses
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft AddressQuery criteria. Custom field criteria may be passed by field handle.
+     * @param  list<string>|null  $fields
      */
     #[McpTool(
         name: 'addresses.list',
@@ -112,6 +113,8 @@ readonly class Addresses
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): CallToolResult {
         $actor = $this->actor->user();
         $query = Address::find()->orderBy('elements.id');
@@ -125,7 +128,7 @@ readonly class Addresses
             'count' => $addresses->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'addresses' => $addresses->map(fn (Address $address): array => $this->elementSerializer->serialize($address))->all(),
+            'addresses' => $addresses->map(fn (Address $address): array => $this->elementSerializer->serialize($address, fields: $fields))->all(),
         ], $addresses);
     }
 
@@ -133,6 +136,7 @@ readonly class Addresses
      * @param  int|null  $id  Address ID.
      * @param  string|null  $uid  Address UID.
      * @param  int|null  $siteId  Site ID to load the address in.
+     * @param  list<string>|null  $fields
      * @return array{address: array<string, mixed>}
      */
     #[McpTool(
@@ -145,6 +149,8 @@ readonly class Addresses
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = null,
     ): array {
         $address = $this->find($id, $uid, $siteId);
 
@@ -152,7 +158,7 @@ readonly class Addresses
             throw new ToolCallException('Address not found.');
         }
 
-        return ['address' => $this->elementSerializer->serialize($address)];
+        return ['address' => $this->elementSerializer->serialize($address, fields: $fields)];
     }
 
     /**

@@ -62,6 +62,7 @@ readonly class Search
     /**
      * @param  list<string>  $types  Registered element type reference handles or class names. Defaults to all registered types.
      * @param  array<string, mixed>  $criteria  Search criteria applied to each compatible element type.
+     * @param  list<string>|null  $fields
      */
     #[McpTool(
         name: 'search.query',
@@ -74,6 +75,8 @@ readonly class Search
         array $types = [],
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): CallToolResult {
         $query = trim($query);
 
@@ -125,7 +128,7 @@ readonly class Search
                 $linkedElements[] = $element;
                 $results[] = [
                     'elementType' => $typeName,
-                    'element' => $this->elementSerializer->serialize($element),
+                    'element' => $this->elementSerializer->serialize($element, fields: $fields),
                 ];
             }
         }

@@ -49,6 +49,7 @@ readonly class Revisions
 
     /**
      * @param  array<string, mixed>  $criteria
+     * @param  list<string>|null  $fields
      * @return array{count: int, limit: int, offset: int, revisions: list<array<string, mixed>>}
      */
     #[McpTool(
@@ -65,6 +66,8 @@ readonly class Revisions
         ?int $siteId = null,
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): array {
         $actor = $this->actor->user();
         $query = $this->elementQueries->make($type)
@@ -87,7 +90,7 @@ readonly class Revisions
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
         $revisions = collect($query->all())
             ->filter(static fn (ElementInterface $revision): bool => Gate::forUser($actor)->allows('view', $revision))
-            ->map(fn (ElementInterface $revision): array => $this->elementSerializer->serialize($revision))
+            ->map(fn (ElementInterface $revision): array => $this->elementSerializer->serialize($revision, fields: $fields))
             ->values();
 
         return [
@@ -98,7 +101,10 @@ readonly class Revisions
         ];
     }
 
-    /** @return array{revision: array<string, mixed>} */
+    /**
+     * @param  list<string>|null  $fields
+     * @return array{revision: array<string, mixed>}
+     */
     #[McpTool(
         name: 'revisions.get',
         description: 'Gets a Craft CMS revision by ID or UID.',
@@ -111,6 +117,8 @@ readonly class Revisions
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = null,
     ): array {
         $revision = $this->findRevision($type, $id, $uid, $siteId);
 
@@ -118,7 +126,7 @@ readonly class Revisions
             throw new ToolCallException('Revision not found.');
         }
 
-        return ['revision' => $this->elementSerializer->serialize($revision)];
+        return ['revision' => $this->elementSerializer->serialize($revision, fields: $fields)];
     }
 
     /** @return array{element: array<string, mixed>} */

@@ -57,6 +57,7 @@ readonly class Drafts
 
     /**
      * @param  array<string, mixed>  $criteria
+     * @param  list<string>|null  $fields
      * @return array{count: int, limit: int, offset: int, drafts: list<array<string, mixed>>}
      */
     #[McpTool(
@@ -73,6 +74,8 @@ readonly class Drafts
         ?int $siteId = null,
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): array {
         $actor = $this->actor->user();
         $query = $this->elementQueries->make($type)
@@ -97,7 +100,7 @@ readonly class Drafts
         $criteria = $this->elementQueryCriteria->apply($query, $criteria);
         $drafts = collect($query->all())
             ->filter(static fn (ElementInterface $draft): bool => Gate::forUser($actor)->allows('view', $draft))
-            ->map(fn (ElementInterface $draft): array => $this->elementSerializer->serialize($draft))
+            ->map(fn (ElementInterface $draft): array => $this->elementSerializer->serialize($draft, fields: $fields))
             ->values();
 
         return [

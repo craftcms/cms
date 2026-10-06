@@ -122,7 +122,7 @@ describe('public relations', function (): void {
         $result = app(ElementQuery::class)->query('entry', [
             'id' => $this->source->id,
             'with' => ['relatedEntries.relatedEntries'],
-        ]);
+        ], fields: ['relatedEntries']);
 
         expect($result['elements'][0]['relatedEntries'])->toBe([$this->target->id])
             ->and(array_column($loaded, 'id'))->toBe([$this->target->id])
@@ -164,7 +164,7 @@ describe('public relations', function (): void {
         $result = app(ElementQuery::class)->query('entry', [
             'id' => $this->source->id,
             'with' => ['relatedEntries'],
-        ]);
+        ], fields: ['relatedEntries']);
 
         expect($result['elements'][0]['relatedEntries'])->toHaveCount(100);
     });

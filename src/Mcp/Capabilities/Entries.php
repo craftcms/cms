@@ -95,6 +95,7 @@ readonly class Entries
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft EntryQuery criteria. Custom field criteria may be passed by field handle.
+     * @param  list<string>|null  $fields
      */
     #[McpTool(
         name: 'entries.list',
@@ -104,6 +105,8 @@ readonly class Entries
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): CallToolResult {
         $actor = $this->actor->user();
         $query = Entry::find()->orderBy('elements.id');
@@ -117,7 +120,7 @@ readonly class Entries
             'count' => $entries->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'entries' => $entries->map(fn (Entry $entry): array => $this->elementSerializer->serialize($entry))->all(),
+            'entries' => $entries->map(fn (Entry $entry): array => $this->elementSerializer->serialize($entry, fields: $fields))->all(),
         ], $entries);
     }
 
@@ -125,6 +128,7 @@ readonly class Entries
      * @param  int|null  $id  Entry ID.
      * @param  string|null  $uid  Entry UID.
      * @param  int|null  $siteId  Site ID to load the entry in.
+     * @param  list<string>|null  $fields
      * @return array{entry: array<string, mixed>}
      */
     #[McpTool(
@@ -137,6 +141,8 @@ readonly class Entries
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = null,
     ): array {
         $entry = $this->find($id, $uid, $siteId);
 
@@ -144,7 +150,7 @@ readonly class Entries
             throw new ToolCallException('Entry not found.');
         }
 
-        return ['entry' => $this->elementSerializer->serialize($entry)];
+        return ['entry' => $this->elementSerializer->serialize($entry, fields: $fields)];
     }
 
     /**

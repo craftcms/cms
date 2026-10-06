@@ -113,6 +113,7 @@ readonly class Assets
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft AssetQuery criteria. Custom field criteria may be passed by field handle.
+     * @param  list<string>|null  $fields
      */
     #[McpTool(
         name: 'assets.list',
@@ -122,6 +123,8 @@ readonly class Assets
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): CallToolResult {
         $actor = $this->actor->user();
         $query = Asset::find()->orderBy('elements.id');
@@ -135,7 +138,7 @@ readonly class Assets
             'count' => $assets->count(),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'assets' => $assets->map(fn (Asset $asset): array => $this->elementSerializer->serialize($asset))->all(),
+            'assets' => $assets->map(fn (Asset $asset): array => $this->elementSerializer->serialize($asset, fields: $fields))->all(),
         ], $assets);
     }
 
@@ -143,6 +146,7 @@ readonly class Assets
      * @param  int|null  $id  Asset ID.
      * @param  string|null  $uid  Asset UID.
      * @param  int|null  $siteId  Site ID to load the asset in.
+     * @param  list<string>|null  $fields
      * @return array{asset: array<string, mixed>}
      */
     #[McpTool(
@@ -155,6 +159,8 @@ readonly class Assets
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = null,
     ): array {
         $asset = $this->find($id, $uid, $siteId);
 
@@ -162,7 +168,7 @@ readonly class Assets
             throw new ToolCallException('Asset not found.');
         }
 
-        return ['asset' => $this->elementSerializer->serialize($asset)];
+        return ['asset' => $this->elementSerializer->serialize($asset, fields: $fields)];
     }
 
     /**

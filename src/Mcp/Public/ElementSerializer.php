@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Public;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Mcp\ElementSerializer as BaseElementSerializer;
 use CraftCms\Cms\Support\Arr;
@@ -18,14 +19,18 @@ class ElementSerializer
 {
     public function __construct(private readonly BaseElementSerializer $serializer) {}
 
-    /** @return array<string, mixed> */
-    public function serialize(ElementInterface $element): array
+    /**
+     * @param  list<string>|null  $fields
+     * @param  Closure(ElementInterface): ?array<string, mixed>|null  $serializeNested
+     * @return array<string, mixed>
+     */
+    public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null): array
     {
         $data = $element instanceof User
             ? $this->serializeUser($element)
             : null;
 
-        return $this->serializer->serialize($element, $data, public: true);
+        return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested);
     }
 
     /** @return array<string, mixed> */

@@ -33,9 +33,10 @@ readonly class ElementQuery
 
     /**
      * @param  array<string, mixed>  $criteria
+     * @param  list<string>|null  $fields
      * @return array<string, mixed>
      */
-    public function query(string $name, array $criteria): array
+    public function query(string $name, array $criteria, ?array $fields = []): array
     {
         $type = $this->elementTypes->make($name);
 
@@ -53,8 +54,36 @@ readonly class ElementQuery
             'count' => count($elements),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'elements' => array_map($this->serializer->serialize(...), $elements),
+            'elements' => array_map(fn (ElementInterface $element): array => $this->serializer->serialize(
+                $element,
+                fields: $fields,
+                serializeNested: $this->serializeNested(...),
+            ), $elements),
         ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function serializeNested(ElementInterface $element): ?array
+    {
+        $type = $this->elementTypes->find($this->elementTypes->name($element::class));
+
+        if ($type === null || $type->class !== $element::class || $element->getId() === null || ! $this->allows($type)) {
+            return null;
+        }
+
+        $query = $type->query()
+            ->id($element->getId())
+            ->siteId($element->siteId)
+            ->status(null)
+            ->drafts(null)
+            ->revisions(null);
+        $this->constrainToPublicScope($type, $query);
+
+        if (! $query->exists()) {
+            return null;
+        }
+
+        return $this->serializer->serialize($element, fields: null);
     }
 
     public function allows(ElementType $type): bool

@@ -102,6 +102,7 @@ readonly class Users
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft UserQuery criteria. Custom field criteria may be passed by field handle.
+     * @param  list<string>|null  $fields
      */
     #[McpTool(
         name: 'users.list',
@@ -112,6 +113,8 @@ readonly class Users
     public function list(
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): CallToolResult {
         $query = User::find()
             ->status(null)
@@ -124,7 +127,7 @@ readonly class Users
             'count' => count($users),
             'limit' => $criteria['limit'],
             'offset' => $criteria['offset'],
-            'users' => array_map($this->serializeSummary(...), $users),
+            'users' => array_map(fn (User $user): array => $this->serializeSummary($user, $fields), $users),
         ], $users);
     }
 
@@ -133,6 +136,7 @@ readonly class Users
      * @param  string|null  $uid  User UID.
      * @param  string|null  $username  Username.
      * @param  string|null  $email  User email address.
+     * @param  list<string>|null  $fields
      * @return array{user: array<string, mixed>}
      */
     #[McpTool(
@@ -148,6 +152,8 @@ readonly class Users
         ?string $username = null,
         #[Schema(format: 'email')]
         ?string $email = null,
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = null,
     ): array {
         $user = $this->find($id, $uid, $username, $email);
 
@@ -155,7 +161,7 @@ readonly class Users
             throw new ToolCallException('User not found.');
         }
 
-        return ['user' => $this->serialize($user)];
+        return ['user' => $this->serialize($user, $fields)];
     }
 
     /**
@@ -435,10 +441,13 @@ readonly class Users
         return $this->serialize($result->element);
     }
 
-    /** @return array<string, mixed> */
-    private function serializeSummary(User $user): array
+    /**
+     * @param  list<string>|null  $fields
+     * @return array<string, mixed>
+     */
+    private function serializeSummary(User $user, ?array $fields): array
     {
-        return $this->elementSerializer->serialize($user, $this->summaryData($user), filterNulls: false);
+        return $this->elementSerializer->serialize($user, $this->summaryData($user), filterNulls: false, fields: $fields);
     }
 
     /** @return array<string, mixed> */
@@ -460,8 +469,11 @@ readonly class Users
         ];
     }
 
-    /** @return array<string, mixed> */
-    private function serialize(User $user): array
+    /**
+     * @param  list<string>|null  $fields
+     * @return array<string, mixed>
+     */
+    private function serialize(User $user, ?array $fields = null): array
     {
         return $this->elementSerializer->serialize(
             $user,
@@ -478,6 +490,7 @@ readonly class Users
                 'groups' => array_map($this->serializeGroup(...), $user->getGroups()),
             ],
             filterNulls: false,
+            fields: $fields,
         );
     }
 

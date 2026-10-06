@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
+use CraftCms\Cms\Mcp\ElementSerializer;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\Public\ElementCriteria;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
@@ -93,6 +94,7 @@ readonly class Craft
 
     /**
      * @param  array<string, mixed>  $criteria  Native Craft ElementQuery criteria. Use craft-context-get for supported values.
+     * @param  list<string>|null  $fields
      * @return array<string, mixed>
      */
     #[McpTool(
@@ -106,8 +108,10 @@ readonly class Craft
         string $type,
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
+        #[Schema(definition: ElementSerializer::FieldsSchema)]
+        ?array $fields = [],
     ): array {
-        return $this->query->query($type, $criteria);
+        return $this->query->query($type, $criteria, $fields);
     }
 
     /** @return array<string, mixed> */
