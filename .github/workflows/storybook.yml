@@ -68,7 +68,7 @@ jobs:
         run: |
           prefix="storybook-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}-"
           echo "prefix=$prefix" >> "$GITHUB_OUTPUT"
-          echo "value=$prefix${{ github.run_id }}-${{ github.run_attempt }}" >> "$GITHUB_OUTPUT"
+          echo "value=${prefix}${{ github.run_id }}-${{ github.run_attempt }}" >> "$GITHUB_OUTPUT"
 
       # Any earlier run with the same inputs will do; a match skips the
       # install and build steps, and the save at the end.
