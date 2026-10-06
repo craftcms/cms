@@ -29,6 +29,14 @@ class Markdown
 
     public const string FLAVOR_GFM_COMMENT = 'gfm-comment';
 
+    /**
+     * Control panel content: `gfm-comment` without indented code blocks.
+     *
+     * The text here is as often markup as prose — a plugin's field instructions,
+     * say — and an indent in markup is formatting, not a code block.
+     */
+    public const string FLAVOR_CP_CONTENT = 'cp-content';
+
     public const string FLAVOR_EXTRA = 'extra';
 
     /** @var array<string, Closure> */
@@ -43,6 +51,7 @@ class Markdown
         $this->extend(self::FLAVOR_PRE_ENCODED, new CommonMarkFlavor(preEncoded: true));
         $this->extend(self::FLAVOR_GFM, new GfmFlavor);
         $this->extend(self::FLAVOR_GFM_COMMENT, new GfmFlavor("<br>\n"));
+        $this->extend(self::FLAVOR_CP_CONTENT, new GfmFlavor("<br>\n", indentedCode: false));
         $this->extend(self::FLAVOR_EXTRA, new ExtraFlavor);
     }
 
