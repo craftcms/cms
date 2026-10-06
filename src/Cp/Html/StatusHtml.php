@@ -19,8 +19,11 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class StatusHtml
 {
-    /** @param array<string, mixed> $attributes */
-    public function statusIndicatorHtml(string $status, array $attributes = []): ?string
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  string|null  $appearance  The indicator's `appearance` (`solid`, `outline-fill`, or `outline`), or `null` for its default.
+     */
+    public function statusIndicatorHtml(string $status, array $attributes = [], ?string $appearance = null): ?string
     {
         $label = Arr::get($attributes, 'label', ucfirst($status));
 
@@ -45,11 +48,15 @@ readonly class StatusHtml
 
         $attributes['label'] = $label ? sprintf('%s %s', t('Status:'), $label) : null;
         $attributes['fill'] = $color;
+        $attributes['appearance'] = $appearance;
 
         return Html::tag('craft-indicator', '', $attributes);
     }
 
-    public function componentStatusIndicatorHtml(Statusable $component): ?string
+    /**
+     * @param  string|null  $appearance  The indicator's `appearance`, or `null` for its default.
+     */
+    public function componentStatusIndicatorHtml(Statusable $component, ?string $appearance = null): ?string
     {
         $status = $component->getStatus();
 
@@ -64,7 +71,7 @@ readonly class StatusHtml
             $statusDef = ['label' => $statusDef];
         }
 
-        return $this->statusIndicatorHtml($status, $statusDef);
+        return $this->statusIndicatorHtml($status, $statusDef, $appearance);
     }
 
     /** @param array<string, mixed> $config */

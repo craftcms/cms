@@ -34,6 +34,7 @@
         <ActivityTimelineActor
           :actor="event.actor"
           :impersonator="event.impersonator"
+          :origin="event.origin"
         />
 
         <span

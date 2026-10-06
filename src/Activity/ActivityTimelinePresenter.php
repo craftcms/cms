@@ -137,6 +137,17 @@ class ActivityTimelinePresenter
 
         return [
             'id' => (string) $root->id,
+            'type' => $root->eventType,
+            'subject' => $root->subjectId === null ? null : [
+                'type' => $root->subjectType,
+                'uid' => $root->subjectId,
+                'label' => $root->snapshots['subject']['label'] ?? null,
+            ],
+            'site' => $root->siteId === null ? null : [
+                'id' => $root->siteId,
+                'name' => $root->snapshots['site']['name'] ?? null,
+            ],
+            'origin' => ($isComment ? $root : $event)->snapshots['origin'] ?? null,
             'component' => $event->eventType::component(),
             'props' => $event->eventType::props($event),
             'icon' => $this->activities->icon($event),
@@ -148,6 +159,8 @@ class ActivityTimelinePresenter
                 'full' => $formatter->asDateTime($occurredAt, Locale::LENGTH_LONG, true),
             ],
             'actor' => [
+                'type' => $event->actorType,
+                'id' => $event->actorId,
                 'label' => $event->snapshots['actor']['label'],
                 'url' => $actor && Gate::forUser($viewer)->allows('view', $actor) ? $actor->getCpEditUrl() : null,
                 'deleted' => $event->actorType === ActivityActor::TYPE_USER
@@ -155,6 +168,7 @@ class ActivityTimelinePresenter
                     && $actor === null,
             ],
             'impersonator' => $impersonatorSnapshot === null ? null : [
+                'id' => $impersonatorSnapshot['id'],
                 'label' => $impersonatorSnapshot['label'],
                 'url' => $impersonator && Gate::forUser($viewer)->allows('view', $impersonator)
                     ? $impersonator->getCpEditUrl()
@@ -162,6 +176,7 @@ class ActivityTimelinePresenter
                 'deleted' => $impersonator === null,
             ],
             'source' => [
+                'id' => $event->source,
                 'label' => $event->snapshots['source']['label'],
             ],
             'description' => [

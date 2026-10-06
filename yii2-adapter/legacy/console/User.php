@@ -57,6 +57,11 @@ class User extends Component
     /**
      * Sets the user identity object.
      *
+     * A console process has no session to log in to, so this makes the user
+     * the Craft guard's current user without logging them in, the way Craft 5
+     * only set the console identity: no `Login` event, and no login recorded
+     * against the user.
+     *
      * @param UserElement|null $identity The identity object. If null, it
      * means the current user will be a guest without any associated identity.
      */
@@ -68,7 +73,13 @@ class User extends Component
             return;
         }
 
-        craftAuth()->login($identity);
+        // Already the guard's user, which is how setting it on the guard comes
+        // back here, through the adapter's `Authenticated` listener.
+        if (craftAuth()->id() === $identity->getAuthIdentifier()) {
+            return;
+        }
+
+        craftAuth()->setUser($identity);
     }
 
     /**
