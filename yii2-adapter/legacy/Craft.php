@@ -85,6 +85,12 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
+        // Yii handed back anything that wasn't an alias untouched, nulls
+        // included, and callers pass nullable values straight through.
+        if (!is_string($alias) || !str_starts_with($alias, '@')) {
+            return $alias;
+        }
+
         if (
             $alias === '@icons' ||
             str_starts_with($alias, '@icons/') ||
