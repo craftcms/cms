@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Markdown\Flavors;
 
+use CraftCms\Cms\Markdown\CommonMark\Extensions\NoIndentedCodeExtension;
 use CraftCms\Cms\Markdown\CommonMark\Extensions\PreEncodedExtension;
 use CraftCms\Cms\Markdown\MarkdownOptions;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
@@ -28,6 +29,10 @@ class CommonMarkFlavor extends Flavor
             $environment->addExtension(new InlinesOnlyExtension);
         } else {
             $environment->addExtension(new CommonMarkCoreExtension);
+        }
+
+        if (! $options->inlineOnly && ! $options->indentedCode) {
+            $environment->addExtension(new NoIndentedCodeExtension);
         }
 
         if ($this->preEncoded) {

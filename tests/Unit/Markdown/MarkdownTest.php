@@ -57,32 +57,26 @@ describe('Markdown', function () {
             Markdown::FLAVOR_PRE_ENCODED,
             Markdown::FLAVOR_GFM,
             Markdown::FLAVOR_GFM_COMMENT,
-            Markdown::FLAVOR_CP_CONTENT,
             Markdown::FLAVOR_EXTRA,
         );
     });
 
-    it('leaves indented markup alone under the control panel flavor', function () {
+    it('preserves indented markup when indented code is disabled without changing default rendering', function (string $flavor) {
         $markdown = "<div>\n    <div class=\"info\">\n        First paragraph.\n\n        Second paragraph.\n    </div>\n</div>";
 
-        $html = $this->markdown->parse($markdown, Markdown::FLAVOR_CP_CONTENT);
+        $html = $this->markdown->convert($markdown, new MarkdownOptions(flavor: $flavor, indentedCode: false));
 
         expect($html)
-            ->not->toContain('&lt;/div&gt;')
-            ->and(substr_count($html, '</div>'))->toBe(2);
-    });
+            ->not->toContain('<pre><code>')
+            ->and(substr_count($html, '</div>'))->toBe(2)
+            ->and($this->markdown->parse($markdown, $flavor))->toContain('<pre><code>');
+    })->with(['original', 'pre-encoded', 'gfm', 'gfm-comment', 'extra']);
 
-    it('reads indented markup as code under the comment flavor', function () {
-        $markdown = "<div>\n    <div class=\"info\">\n        First paragraph.\n\n        Second paragraph.\n    </div>\n</div>";
+    it('renders fenced code when indented code is disabled', function (string $flavor) {
+        $html = $this->markdown->convert("Text\n\n```\ncode line\n```", new MarkdownOptions(flavor: $flavor, indentedCode: false));
 
-        expect($this->markdown->parse($markdown, Markdown::FLAVOR_GFM_COMMENT))
-            ->toContain('&lt;/div&gt;');
-    });
-
-    it('still renders fenced code under the control panel flavor', function () {
-        expect($this->markdown->parse("Text\n\n```\ncode line\n```", Markdown::FLAVOR_CP_CONTENT))
-            ->toContain('<pre><code>code line');
-    });
+        expect($html)->toContain('<pre><code>code line');
+    })->with(['original', 'pre-encoded', 'gfm', 'gfm-comment', 'extra']);
 
     it('supports extending flavors with lazy callables', function () {
         $calls = 0;
