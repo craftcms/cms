@@ -12,7 +12,15 @@
     useTable,
   } from '@tanstack/vue-table';
   import {StorageSerializers, watchDebounced} from '@vueuse/core';
-  import {computed, defineComponent, h, onMounted, ref, watch} from 'vue';
+  import {
+    computed,
+    defineComponent,
+    h,
+    onMounted,
+    ref,
+    shallowRef,
+    watch,
+  } from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftSelectRich, {
     type SelectRichOption,
@@ -20,6 +28,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import type {
+    ActionItemButton,
     ActionItemLink,
     CheckboxOption,
     PaginationData,
@@ -30,6 +39,7 @@
   } from '@/modules/elements/types/actions';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useLocalStorage} from '@/common/composables/useStorage';
+  import {openSlideout} from '@/common/slideouts';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
@@ -44,6 +54,7 @@
     type CraftTableFeatures,
   } from '@/modules/admin-table/craftTable';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
+  import FormModal from './FormModal.vue';
   import type {FormNodePayload, FormValues} from './types';
 
   interface TableColumn {
@@ -54,12 +65,22 @@
 
   interface TableLink {
     label: string;
-    url: string | null;
+    url?: string | null;
+    /** Opens the URL's screen in a slideout, reloading the table once it's saved. */
+    slideout?: boolean;
+  }
+
+  /** A menu item that opens a server-built form in a modal instead of following a link. */
+  interface TableModalAction {
+    label: string;
+    modalUrl: string;
+    actionUrl: string;
+    params?: FormValues;
   }
 
   interface TableMenu {
     label: string;
-    items: TableLink[];
+    items: Array<TableLink | TableModalAction>;
   }
 
   interface TableIcon {
@@ -559,9 +580,37 @@
   }
 
   function renderLink(link: TableLink) {
-    return link.url
-      ? h(CpLink, {href: link.url, inertia: false}, () => link.label)
-      : link.label;
+    if (!link.url) {
+      return link.label;
+    }
+
+    const url = link.url;
+
+    return h(
+      CpLink,
+      {
+        href: url,
+        inertia: false,
+        // A modified click still follows the link, to open the screen in a tab.
+        onClick: link.slideout
+          ? (event: MouseEvent) => {
+              if (
+                event.altKey ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.button !== 0
+              ) {
+                return;
+              }
+
+              event.preventDefault();
+              void openSlideout(url, {onSaved: refreshTable});
+            }
+          : undefined,
+      },
+      () => link.label
+    );
   }
 
   function renderIcon(icon: TableIcon) {
@@ -572,25 +621,68 @@
     return h('div', {innerHTML: cell.html});
   }
 
+  function isModalAction(
+    item: TableLink | TableModalAction
+  ): item is TableModalAction {
+    return 'modalUrl' in item && 'actionUrl' in item;
+  }
+
+  const menuModal = shallowRef<TableModalAction | null>(null);
+
+  function onMenuModalSubmitted(): void {
+    menuModal.value = null;
+    refreshTable();
+  }
+
   function renderMenu(menu: TableMenu) {
     return h(
       ActionMenu,
       {
         label: menu.label,
-        actions: menu.items.map(
-          (item): ActionItemLink => ({
-            type: 'link',
-            href: item.url ?? '#',
-            label: item.label,
-          })
+        actions: menu.items.map((item): ActionItemButton | ActionItemLink =>
+          isModalAction(item)
+            ? {
+                type: 'button',
+                label: item.label,
+                onClick: () => {
+                  menuModal.value = item;
+                },
+              }
+            : {
+                type: 'link',
+                href: item.url ?? '#',
+                label: item.label,
+              }
         ),
       },
       {
-        invoker: () =>
+        // Without the slot `craft-action-menu` has no invoker, and files the button
+        // away with its content.
+        //
+        // The label reads as plain cell text until its row (`DataTable`'s
+        // `cp-table-row`) is hovered or focused, or its menu is open, so a column of
+        // these doesn't turn into a column of buttons. Where there's no hover to
+        // reveal it, the chevron stays put.
+        invoker: ({attributes}: {attributes: Record<string, string>}) =>
           h(
             'craft-button',
-            {type: 'button', size: 'small', variant: 'outline'},
-            menu.label
+            {
+              ...attributes,
+              type: 'button',
+              size: 'small',
+              variant: 'plain',
+              flush: '',
+              class: 'group',
+            },
+            [
+              menu.label,
+              h('craft-icon', {
+                name: 'chevron-down',
+                slot: 'suffix',
+                class:
+                  'transition-opacity [@media(hover:hover)]:opacity-0 [.cp-table-row:hover_&]:opacity-100 [.cp-table-row:focus-within_&]:opacity-100 group-aria-expanded:opacity-100',
+              }),
+            ]
           ),
       }
     );
@@ -749,7 +841,9 @@
           : [];
       },
     },
-    getRowId: (row) => String(row.id),
+    // Rows only need an `id` to be reordered or deleted, and rows sharing an id
+    // send `DataTable` into a render loop.
+    getRowId: (row, index) => String(row.id ?? `row-${index}`),
     enableRowSelection: (row) =>
       hasBulkFooter.value && row.original._deletable !== false,
     onRowSelectionChange: (updater) => {
@@ -1129,6 +1223,14 @@
       :row-id="deletingRow.id!"
       @close="deletingRow = null"
       @deleted="onModalDeleted"
+    />
+    <FormModal
+      v-if="menuModal"
+      :modal-url="menuModal.modalUrl"
+      :action-url="menuModal.actionUrl"
+      :params="menuModal.params"
+      @close="menuModal = null"
+      @submitted="onMenuModalSubmitted"
     />
   </div>
 </template>
