@@ -39,10 +39,18 @@ class TableRow extends ObjectType
 
         foreach ($columns as $columnKey => $columnDefinition) {
             $cell = app(TableCellTypes::class)->create($columnDefinition);
-            $cellType = $input ? $cell->gqlInputType() : $cell->gqlType();
+            if ($input) {
+                $cellType = $cell->gqlInputType();
 
-            if ($input ? ! $cellType instanceof InputType : ! $cellType instanceof OutputType) {
-                throw new InvalidArgumentException('Table cell types must provide a GraphQL type for the requested direction.');
+                if (! $cellType instanceof InputType) {
+                    throw new InvalidArgumentException('Table cell types must provide a GraphQL type for the requested direction.');
+                }
+            } else {
+                $cellType = $cell->gqlType();
+
+                if (! $cellType instanceof OutputType) {
+                    throw new InvalidArgumentException('Table cell types must provide a GraphQL type for the requested direction.');
+                }
             }
 
             $contentFields[$columnKey] = $cellType;

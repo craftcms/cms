@@ -55,7 +55,7 @@
   }
 
   .system-info__name {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :deep(svg) {
