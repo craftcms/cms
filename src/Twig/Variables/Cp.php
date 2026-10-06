@@ -8,16 +8,17 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Http\Responses\BridgedScreen;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Http\Responses\BridgedScreen;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\LegacyScreenFragments;
 use DateTimeInterface;
 use Deprecated;
@@ -386,6 +387,13 @@ class Cp extends Component
      */
     public function collectScreenFragments(array $fragments): void
     {
+        /**
+         * Registered here rather than with the response: by then the screen's
+         * end-of-body JS has already been rendered, and the point is to hold it
+         * until the shell has mounted the markup it is written against.
+         */
+        LegacyReadyShim::register();
+
         app(LegacyScreenFragments::class)->collect($fragments);
     }
 

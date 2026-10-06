@@ -39,7 +39,7 @@ use CraftCms\Cms\View\Enums\Position;
 final class LegacyReadyShim
 {
     /** The client-side method that releases queued callbacks. */
-    public const FLUSH_METHOD = 'Craft.flushReady';
+    public const string FLUSH_METHOD = 'Craft.flushReady';
 
     /**
      * Registers the shim for the current response.
@@ -50,6 +50,7 @@ final class LegacyReadyShim
     public static function register(): void
     {
         HtmlStack::js(self::js(), Position::Head);
+        HtmlStack::deferInlineJs();
     }
 
     private static function js(): string
