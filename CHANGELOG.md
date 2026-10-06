@@ -18,7 +18,7 @@
 - Added an `$appearance` argument to `CraftCms\Cms\Cp\Html\StatusHtml::statusIndicatorHtml()` and `componentStatusIndicatorHtml()`. ([#19842](https://github.com/craftcms/cms/pull/19842))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Updated `CraftCms\Cms\Entry\EntryTypes::saveEntryType()` to validate entry types and their field layouts by default, with a `$runValidation` argument for bypassing validation. ([#19821](https://github.com/craftcms/cms/pull/19821))
-- `<craft-indicator>` now uses the `solid` appearance by default, rather than `outline-fill`. ([#19842](https://github.com/craftcms/cms/pull/19842))
+- `<craft-indicator>` now uses the `solid` appearance by default, rather than `outline-fill`, except for white and black fills, which keep `outline-fill` (with a white outline for black). ([#19842](https://github.com/craftcms/cms/pull/19842))
 - `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use Axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
