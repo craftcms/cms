@@ -26,8 +26,9 @@
         form: InertiaForm<any> | null;
         defaultFormActions: Array<DefaultFormAction>;
         /**
-         * Keeps the row, rule included, within the content's container, for a
-         * centered column where a full-width rule would overshoot the content.
+         * Keeps the row within the content's column, for a constrained content
+         * view: the footer's rule still spans the pane, but the save controls
+         * line up with the content above them.
          */
         contained?: boolean;
       }
@@ -66,7 +67,12 @@
 </script>
 
 <template>
-  <div class="content-footer">
+  <div
+    :class="{
+      'content-footer': true,
+      'content-footer--contained': contained,
+    }"
+  >
     <div class="flex gap-2 items-center justify-between">
       <FormActions
         v-if="form"
@@ -95,3 +101,17 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  /*
+   * The footer pads itself by the container padding, so the row's share of the
+   * content's max width is that width less the padding on both sides.
+   */
+  .content-footer--contained {
+    inline-size: 100%;
+    max-inline-size: calc(
+      var(--cp-content-max-width) - var(--cp-container-padding) * 2
+    );
+    margin-inline: auto;
+  }
+</style>

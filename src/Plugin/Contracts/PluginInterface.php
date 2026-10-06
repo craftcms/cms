@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -174,11 +175,11 @@ interface PluginInterface
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
      *
-     * @return ?PluginSettings The model that the plugin’s settings should be stored on, if the plugin has settings
+     * @return ?Validatable The model that the plugin’s settings should be stored on, if the plugin has settings
      *
      * @internal
      */
-    public function getSettings(): ?PluginSettings;
+    public function getSettings(): ?Validatable;
 
     /**
      * Returns the request class used when saving plugin settings. Return a

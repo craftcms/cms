@@ -1,5 +1,10 @@
 import {createApp, h, nextTick, reactive, shallowRef, type Ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {
+  NestedOwnerEditorKey,
+  type NestedOwnerEditor,
+  type NestedOwnerContext,
+} from '@/modules/elements/nested-owner';
 import type {ActionItems} from '@/common/types';
 import type {FormControlPayload} from '../types';
 
@@ -11,6 +16,15 @@ const menuStub = vi.hoisted(() => ({
 }));
 
 const action = vi.hoisted(() => ({post: vi.fn()}));
+const clipboard = vi.hoisted(() => ({elements: [] as unknown[]}));
+
+vi.mock('@/modules/matrix/copied-elements', () => ({
+  useCopiedElements: () => ({
+    get value() {
+      return clipboard.elements;
+    },
+  }),
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -57,15 +71,11 @@ describe('NestedElementBlocksControl', () => {
   let container: HTMLElement | undefined;
 
   afterEach(() => {
-    try {
-      app?.unmount();
-    } catch {
-      // `craft-matrix-input` relocates its own light DOM, which trips Vue's
-      // unmount under happy-dom. Not what these tests are about.
-    }
+    app?.unmount();
     container?.remove();
     app = undefined;
     container = undefined;
+    vi.unstubAllGlobals();
   });
 
   const control = (): FormControlPayload =>
@@ -85,6 +95,9 @@ describe('NestedElementBlocksControl', () => {
     }) as unknown as FormControlPayload;
 
   let emitted: Array<Record<string, unknown>>;
+  let owner: NestedOwnerEditor | undefined;
+  let errors: unknown[];
+  let captureErrors: boolean;
   const menus = menuStub.instances;
 
   /** Provided the way FieldNode does, when a test wants the field's menu. */
@@ -93,6 +106,11 @@ describe('NestedElementBlocksControl', () => {
     | undefined;
 
   beforeEach(() => {
+    clipboard.elements = [];
+    owner = undefined;
+    errors = [];
+    captureErrors = false;
+    vi.stubGlobal('Craft', {});
     fieldActions = undefined;
     menus.length = 0;
     localStorage.clear();
@@ -128,6 +146,12 @@ describe('NestedElementBlocksControl', () => {
     });
     if (fieldActions) {
       app.provide(FieldActionItems, fieldActions);
+    }
+    if (owner) {
+      app.provide(NestedOwnerEditorKey, owner);
+    }
+    if (captureErrors) {
+      app.config.errorHandler = (error) => errors.push(error);
     }
     app.mount(container);
 
@@ -166,6 +190,41 @@ describe('NestedElementBlocksControl', () => {
     );
   }
 
+  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
+    const state = mount(
+      {
+        entries: {existing: {type: 'existingType', collapsed: true}},
+        sortOrder: ['existing'],
+      },
+      {
+        entryTypes: [
+          {value: 'existingType', label: 'Existing Type'},
+          {value: 'first', label: 'First'},
+          {value: 'second', label: 'Second'},
+        ],
+        createEntryTypes: ['second', 'first'],
+        blocks: {existing: {label: 'Existing content'}},
+      }
+    );
+    await nextTick();
+    const buttons = [
+      ...container!.querySelectorAll<HTMLElement>('[data-form-matrix-add]'),
+    ];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Add Second',
+      'Add First',
+    ]);
+    expect(container!.textContent).toContain('Existing content');
+    invoke('existing', 'Add Second above');
+    await nextTick();
+    const value = state.value as {
+      entries: Record<string, {type: string}>;
+      sortOrder: string[];
+    };
+    expect(value.sortOrder.at(-1)).toBe('existing');
+    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
+  });
+
   it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested Form to
@@ -197,6 +256,41 @@ describe('NestedElementBlocksControl', () => {
       'Delete',
       'Add New Type above',
     ]);
+  });
+
+  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
+    const state = mount(
+      {
+        entries: {existing: {type: 'existingType', collapsed: true}},
+        sortOrder: ['existing'],
+      },
+      {
+        entryTypes: [
+          {value: 'existingType', label: 'Existing Type'},
+          {value: 'first', label: 'First'},
+          {value: 'second', label: 'Second'},
+        ],
+        createEntryTypes: ['second', 'first'],
+        blocks: {existing: {label: 'Existing content'}},
+      }
+    );
+    await nextTick();
+    const buttons = [
+      ...container!.querySelectorAll<HTMLElement>('[data-form-matrix-add]'),
+    ];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Add Second',
+      'Add First',
+    ]);
+    expect(container!.textContent).toContain('Existing content');
+    invoke('existing', 'Add Second above');
+    await nextTick();
+    const value = state.value as {
+      entries: Record<string, {type: string}>;
+      sortOrder: string[];
+    };
+    expect(value.sortOrder.at(-1)).toBe('existing');
+    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
   });
 
   it('remembers a collapsed block in storage rather than the value', async () => {
@@ -629,11 +723,21 @@ describe('NestedElementBlocksControl', () => {
           blocks: {
             'block-a': {
               actions: serverActions('block-a'),
-              data: {'element-id': 12, 'owner-id': 7, 'site-id': 1},
+              data: {
+                'element-id': 12,
+                'owner-id': 7,
+                'site-id': 1,
+                'type-id': 9,
+              },
             },
             'block-b': {
               actions: serverActions('block-b'),
-              data: {'element-id': 13, 'owner-id': 7, 'site-id': 1},
+              data: {
+                'element-id': 13,
+                'owner-id': 7,
+                'site-id': 1,
+                'type-id': 9,
+              },
             },
           },
           ...props,
@@ -696,30 +800,66 @@ describe('NestedElementBlocksControl', () => {
       expect(item('block-a', 'paste')?.hidden).toBe(true);
     });
 
-    it('duplicates through the create endpoint, naming the source', async () => {
-      action.post.mockResolvedValue({
-        data: {
-          uid: 'block-c',
-          type: 'newType',
-          form: {
-            scope: ['fields', 'pageBuilder', 'entries', 'block-c'],
-            nodes: [],
+    it.each([false, true])(
+      'duplicates through the create endpoint using the current source, prepared=%s',
+      async (prepared) => {
+        if (prepared) {
+          owner = {
+            prepare: async () => ({
+              ownerId: 107,
+              ownerIsDerivative: true,
+              ownerIsInDerivativeTree: true,
+              ownerIsUnpublishedDraft: false,
+            }),
+            resolveElementId: (id) => (id === 12 ? 112 : id),
+          };
+        }
+        action.post.mockResolvedValue({
+          data: {
+            uid: 'block-c',
+            type: 'newType',
+            form: {
+              scope: ['fields', 'pageBuilder', 'entries', 'block-c'],
+              nodes: [],
+            },
+            values: {},
           },
-          values: {},
-        },
-      });
-      mountWithMenu();
-      await nextTick();
+        });
+        mountWithMenu({
+          createEntryTypes: ['otherType'],
+          entryTypes: [
+            {value: 'newType', label: 'New Type'},
+            {value: 'otherType', label: 'Other Type'},
+          ],
+          create: {
+            fieldId: 3,
+            ownerId: 7,
+            ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            siteId: 1,
+            entryTypeIds: {otherType: 10},
+          },
+          blocks: {
+            'block-a': {
+              actions: serverActions('block-a'),
+              data: {'element-id': 12, 'type-id': 9},
+            },
+          },
+        });
+        await nextTick();
 
-      invoke('block-a', 'Duplicate');
-      await nextTick();
-      await nextTick();
+        invoke('block-a', 'Duplicate');
+        await vi.waitFor(() => expect(emitted).toHaveLength(1));
 
-      expect(action.post).toHaveBeenCalledWith(
-        'matrix/create-entry',
-        expect.objectContaining({duplicate: 12, entryTypeId: 9})
-      );
-    });
+        expect(action.post).toHaveBeenCalledWith(
+          expect.stringMatching(/\/matrix\/create-entry$/),
+          expect.objectContaining({
+            duplicate: prepared ? 112 : 12,
+            ownerId: prepared ? 107 : 7,
+            entryTypeId: 9,
+          })
+        );
+      }
+    );
 
     it('hands the block to the CP clipboard by its element id', async () => {
       const copyElements = vi.fn();
@@ -786,9 +926,9 @@ describe('NestedElementBlocksControl', () => {
     container!
       .querySelector<HTMLElement>('[data-form-matrix-add]')!
       .dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    await nextTick();
-    await nextTick();
-    await nextTick();
+    await vi.waitFor(() =>
+      expect(container!.querySelector('[data-matrix-block]')).not.toBeNull()
+    );
 
     const block = container!.querySelector<HTMLElement>('[data-matrix-block]')!;
 
@@ -1516,7 +1656,7 @@ describe('NestedElementBlocksControl', () => {
     });
   });
 
-  it('has the server mint a block when it can, and renders the nodes it returns', async () => {
+  it('mints a block for an always-saved owner without preparation and renders its returned nodes', async () => {
     const uid = '9f1c0a3e-0000-4000-8000-000000000001';
     // Held open on purpose: the busy state only exists while the request is in
     // flight, and an immediately-resolved mock closes that window inside a
@@ -1549,6 +1689,7 @@ describe('NestedElementBlocksControl', () => {
         create: {
           fieldId: 33,
           ownerId: 1568,
+          ownerHasDrafts: false,
           ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           siteId: 1,
           entryTypeIds: {newType: 25},
@@ -1572,14 +1713,17 @@ describe('NestedElementBlocksControl', () => {
     await vi.waitFor(() => expect(emitted).toHaveLength(1));
     await nextTick();
 
-    expect(action.post).toHaveBeenCalledWith('matrix/create-entry', {
-      fieldId: 33,
-      entryTypeId: 25,
-      ownerId: 1568,
-      ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-      siteId: 1,
-      path: ['fields', 'pageBuilder'],
-    });
+    expect(action.post).toHaveBeenCalledWith(
+      expect.stringMatching(/\/matrix\/create-entry$/),
+      {
+        fieldId: 33,
+        entryTypeId: 25,
+        ownerId: 1568,
+        ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        siteId: 1,
+        path: ['fields', 'pageBuilder'],
+      }
+    );
 
     // The server's identity is used as-is — no `uid:` prefix to reconcile later.
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([uid]);
@@ -1607,6 +1751,163 @@ describe('NestedElementBlocksControl', () => {
       ).toBe(false)
     );
   });
+
+  it('pastes onto the prepared owner before rendering the returned blocks', async () => {
+    let settle!: (context: NestedOwnerContext) => void;
+    const prepare = vi.fn(
+      () =>
+        new Promise<NestedOwnerContext>((resolve) => {
+          settle = resolve;
+        })
+    );
+    owner = {prepare};
+    const pasteElements = vi.fn().mockResolvedValue([{id: 201}]);
+    Object.assign(window, {
+      Craft: {...window.Craft, cp: {...window.Craft?.cp, pasteElements}},
+    });
+    clipboard.elements = [{id: 12, type: 'Entry', data: {entryTypeId: 9}}];
+    action.post.mockResolvedValue({
+      data: {
+        blocks: [
+          {
+            uid: 'pasted-block',
+            type: 'newType',
+            form: {
+              scope: ['fields', 'pageBuilder', 'entries', 'pasted-block'],
+              refreshable: true,
+              nodes: [],
+            },
+            values: {},
+          },
+        ],
+      },
+    });
+    mount(
+      {entries: {}, sortOrder: []},
+      {
+        elementType: 'Entry',
+        create: {
+          fieldId: 3,
+          ownerId: 7,
+          ownerHasDrafts: true,
+          ownerElementType: 'Entry',
+          siteId: 1,
+          entryTypeIds: {newType: 9},
+        },
+      }
+    );
+    await nextTick();
+    [...container!.querySelectorAll<HTMLElement>('craft-button')]
+      .find((button) => button.textContent?.includes('Paste'))!
+      .click();
+    await vi.waitFor(() => expect(prepare).toHaveBeenCalled());
+    expect(pasteElements).not.toHaveBeenCalled();
+    settle({
+      ownerId: 107,
+      ownerIsDerivative: true,
+      ownerIsInDerivativeTree: true,
+      ownerIsUnpublishedDraft: false,
+    });
+    await vi.waitFor(() => expect(emitted).toHaveLength(1));
+    expect(pasteElements).toHaveBeenCalledWith({
+      primaryOwnerId: 107,
+      ownerId: 107,
+      fieldId: 3,
+      siteId: 1,
+    });
+    expect(action.post).toHaveBeenCalledWith(
+      expect.stringMatching(/\/matrix\/render-blocks$/),
+      {
+        entryIds: [201],
+        siteId: 1,
+        path: ['fields', 'pageBuilder'],
+      }
+    );
+  });
+
+  it.each([
+    'saved',
+    'failed',
+    'detached',
+    'canonical',
+    'missing-provider',
+  ] as const)(
+    'waits for owner preparation before creating a block, outcome=%s',
+    async (outcome) => {
+      captureErrors = outcome !== 'saved';
+      let settle!: (context: NestedOwnerContext | null) => void;
+      const prepare = vi.fn(
+        () =>
+          new Promise<NestedOwnerContext | null>((resolve) => {
+            settle = resolve;
+          })
+      );
+      owner = outcome === 'missing-provider' ? undefined : {prepare};
+      action.post.mockResolvedValue({
+        data: {
+          uid: 'new-block',
+          type: 'newType',
+          form: {
+            scope: ['fields', 'pageBuilder', 'entries', 'new-block'],
+            refreshable: true,
+            nodes: [],
+          },
+          values: {},
+        },
+      });
+      mount(
+        {entries: {}, sortOrder: []},
+        {
+          create: {
+            fieldId: 3,
+            ownerId: 7,
+            ownerHasDrafts: true,
+            ownerElementType: 'Entry',
+            siteId: 1,
+            entryTypeIds: {newType: 9},
+          },
+        }
+      );
+      await nextTick();
+      container!
+        .querySelector<HTMLElement>('[data-form-matrix-add="newType"]')!
+        .click();
+      if (outcome === 'missing-provider') {
+        await vi.waitFor(() => expect(errors).toHaveLength(1));
+        expect(action.post).not.toHaveBeenCalled();
+        expect(emitted).toHaveLength(0);
+        return;
+      }
+
+      await vi.waitFor(() => expect(prepare).toHaveBeenCalled());
+      expect(action.post).not.toHaveBeenCalled();
+      if (outcome === 'detached') {
+        container!.remove();
+      }
+      settle(
+        outcome === 'failed'
+          ? null
+          : {
+              ownerId: 107,
+              requiresDerivative: true,
+              ownerIsDerivative: outcome !== 'canonical',
+              ownerIsInDerivativeTree: outcome !== 'canonical',
+              ownerIsUnpublishedDraft: false,
+            }
+      );
+      if (outcome === 'saved') {
+        await vi.waitFor(() => expect(emitted).toHaveLength(1));
+        expect(action.post).toHaveBeenCalledWith(
+          expect.stringMatching(/\/matrix\/create-entry$/),
+          expect.objectContaining({ownerId: 107})
+        );
+      } else {
+        await vi.waitFor(() => expect(errors).toHaveLength(1));
+        expect(action.post).not.toHaveBeenCalled();
+        expect(emitted).toHaveLength(0);
+      }
+    }
+  );
 
   it('mints the block itself when the server offers no create config', async () => {
     mount({entries: {}, sortOrder: []});

@@ -902,10 +902,21 @@ JS;
      */
     private function registerEntry(array &$entries, string $key, Stringable|string $value): void
     {
-        if (array_key_exists($key, $entries)) {
-            unset($entries[$key]);
-        }
-
+        /**
+         * Assigned without unsetting first, so a re-registration keeps the slot
+         * the key already holds. PHP preserves insertion position on assignment
+         * to an existing key; unsetting it first moved the entry to the end.
+         *
+         * That reordering broke dependency order. Craft's own asset chain emits
+         * jQuery before `cp.js`, but a legacy `View::registerAssetBundle()` call
+         * made while a screen renders — a plugin registering its CP bundle from
+         * `getSidebarHtml()`, say — re-registers jQuery through Yii's asset
+         * pipeline, which moved it *after* `cp.js` and left the page throwing
+         * `jQuery is not defined`.
+         *
+         * Last registration still wins for the value; only the position is now
+         * the first one's.
+         */
         $entries[$key] = $value;
     }
 }

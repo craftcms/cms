@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
@@ -13,6 +14,7 @@ use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutData;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
@@ -144,6 +146,39 @@ it('can save an entry type', function () {
 
     Event::assertDispatchedOnce(EntryTypeSaving::class);
     Event::assertDispatchedOnce(EntryTypeSaved::class);
+});
+
+it('does not save an invalid entry type', function () {
+    $entryType = new EntryTypeData([
+        'handle' => 'pages',
+    ]);
+
+    expect($this->entryTypes->saveEntryType($entryType))->toBeFalse()
+        ->and($entryType->errors()->has('name'))->toBeTrue()
+        ->and(EntryType::count())->toBe(0);
+});
+
+it('does not save an entry type with an invalid attached field layout', function () {
+    $entryType = new EntryTypeData([
+        'name' => 'Pages',
+        'handle' => 'pages',
+    ]);
+    $fieldLayout = new FieldLayoutData([
+        'type' => EntryElement::class,
+    ]);
+    $fieldLayout->setGeneratedFields([[
+        'name' => 'Author',
+        'handle' => 'author',
+        'template' => '{author}',
+    ]]);
+    $fieldUid = $fieldLayout->getGeneratedFields()[0]['uid'];
+    $entryType->setFieldLayout($fieldLayout);
+
+    expect($this->entryTypes->saveEntryType($entryType))->toBeFalse()
+        ->and($entryType->errors()->has('fieldLayout.customFields'))->toBeTrue()
+        ->and($entryType->errors()->has("fieldLayout.generatedFields.$fieldUid.handle"))->toBeTrue()
+        ->and($fieldLayout->errors()->has("generatedFields.$fieldUid.handle"))->toBeTrue()
+        ->and(EntryType::count())->toBe(0);
 });
 
 it('can delete an entry type by id', function () {

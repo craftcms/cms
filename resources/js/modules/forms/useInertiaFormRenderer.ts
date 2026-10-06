@@ -12,7 +12,9 @@ import {pathsMatch, visitControls} from './runtime';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
+  setSubmitting?(submitting: boolean): void;
   currentValues(): FormPayload['values'];
+  mutation(includeGroups?: string[][]): FormPayload['values'];
   resetValues(): void;
   setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
 }
@@ -45,6 +47,14 @@ export function useInertiaFormRenderer<
   watch(
     () => toValue(payload),
     (currentPayload) => (values.value = clone(currentPayload?.values ?? {}))
+  );
+
+  watch(
+    () => [form.processing, renderer.value] as const,
+    ([processing]) => {
+      renderer.value?.setSubmitting?.(processing);
+    },
+    {flush: 'sync', immediate: true}
   );
 
   const errors = computed(() =>
@@ -100,8 +110,23 @@ export function useInertiaFormRenderer<
   }
 
   function advanceBaseline(): void {
+    if (!toValue(payload)) return;
+
+    if (!renderer.value) {
+      form.defaults();
+      return;
+    }
+
+    if (mutationKey !== undefined) {
+      form.defaults({...form.data(), [mutationKey]: {}});
+    } else {
+      form.defaults(
+        Object.fromEntries(
+          [...rootKeys].map((key) => [key, undefined])
+        ) as Partial<T>
+      );
+    }
     renderer.value?.advanceBaseline();
-    form.defaults();
   }
 
   /**

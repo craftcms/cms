@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
+use CraftCms\Cms\Form\Contracts\Control as ControlContract;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\NestedFormPayload;
+use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
-
-use function CraftCms\Cms\template;
 
 /**
  * An ordered table Control. Its canonical value is a list or keyed map of row
- * maps; cell values must be JSON-safe scalars or null.
+ * maps. Each configured cell is rendered by a shared Form control.
  *
  * @since 6.0.0
  */
@@ -27,16 +36,18 @@ class Table extends Control
 
     private bool $allowReorder = false;
 
-    private ?string $addRowLabel = null;
-
     private ?int $minRows = null;
 
     private ?int $maxRows = null;
 
     private bool $keyed = false;
 
+    private ?string $addRowLabel = null;
+
     /** @var list<string> */
     private array $hiddenRows = [];
+
+    private bool $includeRowId = false;
 
     /** @var array<string, mixed> */
     private array $defaultValues = [];
@@ -46,25 +57,28 @@ class Table extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        $rows = is_array($value)
-            ? ((bool) ($control->props['keyed'] ?? false) ? $value : array_values($value))
-            : [];
+        $values = [];
+        $target = &$values;
 
-        return template('_includes/forms/editableTable', [
+        foreach ($control->path as $segment) {
+            $target[$segment] = [];
+            $target = &$target[$segment];
+        }
+
+        $target = $value ?? [];
+        $payload = new FormPayload(
+            scope: [],
+            refreshable: false,
+            nodes: [new NodePayload(type: Field::class, component: 'craft:field', props: [], control: $control)],
+            values: $values,
+            errors: $renderer->controlErrors($control->path),
+            globalErrors: [],
+        );
+
+        return Html::tag('craft-table-form', '', [
             'id' => $attributes['id'],
             'name' => $attributes['name'],
-            'cols' => $control->props['columns'],
-            'rows' => $rows,
-            'allowAdd' => (bool) ($control->props['allowAdd'] ?? false),
-            'allowDelete' => (bool) ($control->props['allowDelete'] ?? false),
-            'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
-            'addRowLabel' => $control->props['addRowLabel'] ?? null,
-            'minRows' => $control->props['minRows'] ?? null,
-            'maxRows' => $control->props['maxRows'] ?? null,
-            'defaultValues' => $control->props['defaultValues'] ?? [],
-            'static' => $attributes['name'] === null,
-            'hiddenRows' => $control->props['hiddenRows'] ?? [],
-            'errors' => $control->props['errors'] ?? [],
+            'data-payload' => Json::encode($payload),
         ]);
     }
 
@@ -102,13 +116,6 @@ class Table extends Control
         return $this;
     }
 
-    public function addRowLabel(?string $addRowLabel): static
-    {
-        $this->addRowLabel = $addRowLabel;
-
-        return $this;
-    }
-
     public function minRows(?int $minRows): static
     {
         $this->minRows = $minRows;
@@ -130,17 +137,95 @@ class Table extends Control
         return $this;
     }
 
-    /**
-     * Hide rows by key without removing their inputs or submitted values. Visibility
-     * is a prop so it can change on a reactive refresh without changing row values.
-     *
-     * @param  list<string>  $rowIds
-     */
+    public function addRowLabel(?string $label): static
+    {
+        $this->addRowLabel = $label;
+
+        return $this;
+    }
+
+    /** @param list<string> $rowIds */
     public function hiddenRows(array $rowIds): static
     {
         $this->hiddenRows = $rowIds;
 
         return $this;
+    }
+
+    public function includeRowId(bool $include = true): static
+    {
+        $this->includeRowId = $include;
+
+        return $this;
+    }
+
+    public function hasColumns(): bool
+    {
+        return $this->columns !== [];
+    }
+
+    /** @return array<string, mixed> */
+    public function rowDefaults(): array
+    {
+        $defaults = $this->defaultValues;
+
+        foreach ($this->columns as $key => $column) {
+            $control = $column['control'] ?? null;
+            $defaults[$key] ??= $column['value'] ?? ($control instanceof ControlContract ? $control->getValue() : null);
+
+            if (isset($column['prefixSelect'])) {
+                $prefix = $column['prefixSelect'];
+                $defaults[$prefix['key']] ??= $prefix['options'][0]['value'] ?? '';
+            }
+        }
+
+        return $defaults;
+    }
+
+    /** @param array<string, mixed> $row */
+    public function rowForm(array $row): Form
+    {
+        $form = Form::make();
+
+        foreach ($this->columns as $key => $column) {
+            $control = TableColumn::control((string) $key, $column);
+            if ($control instanceof Control) {
+                $control->value($row[$key] ?? $this->rowDefaults()[$key] ?? null);
+            }
+            $form->add(Field::make($column['heading'] ?? null, $control)->labelSrOnly()->required($column['required'] ?? false));
+
+            if (isset($column['prefixSelect'])) {
+                $prefix = $column['prefixSelect'];
+                $form->add(Field::make($prefix['label'], Choice::make([$prefix['key']])
+                    ->options(TableColumn::options($prefix['options']))
+                    ->withoutPlaceholder()
+                    ->value($row[$prefix['key']] ?? $this->rowDefaults()[$prefix['key']] ?? null))->labelSrOnly());
+            }
+        }
+
+        return $form;
+    }
+
+    #[\Override]
+    public function nestsForms(): bool
+    {
+        return $this->hasColumns();
+    }
+
+    #[\Override]
+    public function nestedForms(mixed $value = null): array
+    {
+        if (! is_array($value) || ! $this->hasColumns()) {
+            return [];
+        }
+
+        $forms = [];
+
+        foreach ($value as $key => $row) {
+            $forms[] = ['scope' => [(string) $key], 'form' => $this->rowForm((array) $row), 'refreshable' => false];
+        }
+
+        return $forms;
     }
 
     /** @param array<string, mixed> $defaultValues */
@@ -167,19 +252,37 @@ class Table extends Control
     }
 
     #[\Override]
+    public function resolveProps(mixed $value, ControlMode $mode): array
+    {
+        if (! $this->hasColumns()) {
+            return $this->props($value);
+        }
+
+        $template = app(FormResolver::class)->resolve(
+            $this->rowForm($this->rowDefaults()),
+            new FormContext(mode: $mode),
+        );
+
+        return $this->props($value) + [
+            'rowTemplate' => new NestedFormPayload(scope: [], refreshable: false, nodes: $template->nodes)->jsonSerialize(),
+        ];
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
-            'columns' => $this->columns,
+            'columns' => array_map(fn (array $column): array => array_diff_key($column, ['control' => true]), $this->columns),
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,
-            'addRowLabel' => $this->addRowLabel,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
             'hiddenRows' => $this->hiddenRows ?: null,
-            'defaultValues' => $this->defaultValues,
+            'defaultValues' => $this->rowDefaults(),
+            'addRowLabel' => $this->addRowLabel,
+            'includeRowId' => $this->includeRowId,
             'errors' => $this->errors ?: null,
         ]);
     }

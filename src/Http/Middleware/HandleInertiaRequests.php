@@ -50,6 +50,13 @@ class HandleInertiaRequests extends Middleware
      */
     public const string REFRESH_NAV_HEADER = 'X-Craft-Refresh-Nav';
 
+    /**
+     * Marks that the `app` view composer has been bound for this request.
+     *
+     * @see self::handle()
+     */
+    private const string APP_COMPOSER_BOUND = '_craft_app_view_composer_bound';
+
     #[Override]
     public function handle(Request $request, Closure $next)
     {
@@ -61,12 +68,33 @@ class HandleInertiaRequests extends Middleware
             $htmlStack->jsImport($specifier, $url);
         }
 
-        View::composer('app', function ($view) use ($htmlStack) {
-            $view->with([
-                'headHtml' => $htmlStack->headHtml(),
-                'bodyHtml' => $htmlStack->bodyHtml(),
-            ]);
-        });
+        /**
+         * Bound once per request, not once per run of this middleware.
+         *
+         * `headHtml()` and `bodyHtml()` drain as they render, and a composer
+         * bound twice fires twice against the same stack: the first call takes
+         * the assets, the second finds the stack empty and overwrites them with
+         * empty strings. That's not hypothetical — the Yii2 adapter's legacy
+         * action bridge re-dispatches through the router, so every middleware
+         * here runs a second time, and every bridged screen was shipping a
+         * document with no jQuery, Garnish or `cp.js` at all. Controls that
+         * delegate to legacy JS were inert as a result.
+         *
+         * The flag lives on the request because the bridge's internal request is
+         * a duplicate of this one and inherits its attributes, while a container
+         * binding would persist between requests under a long-lived worker and
+         * disable the composer for good after the first.
+         */
+        if (! $request->attributes->getBoolean(self::APP_COMPOSER_BOUND)) {
+            $request->attributes->set(self::APP_COMPOSER_BOUND, true);
+
+            View::composer('app', function ($view) use ($htmlStack) {
+                $view->with([
+                    'headHtml' => $htmlStack->headHtml(),
+                    'bodyHtml' => $htmlStack->bodyHtml(),
+                ]);
+            });
+        }
 
         $response = parent::handle($request, $next);
 
