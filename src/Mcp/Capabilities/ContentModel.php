@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\ContentModel\CheckRegistry;
+use CraftCms\Cms\Support\Json;
 use Mcp\Capability\Attribute\McpPrompt;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
@@ -94,7 +95,7 @@ readonly class ContentModel
         $checks = $this->checksFor($focus);
         $arguments = $checks === []
             ? '{}'
-            : json_encode(['checks' => $checks], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            : Json::encode(['checks' => $checks], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         $focusInstruction = match (true) {
             $focus === '' => 'Audit the full content model.',
