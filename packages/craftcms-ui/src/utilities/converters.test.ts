@@ -17,7 +17,7 @@ describe('defaultTrueBoolean', () => {
     expect(defaultTrueBoolean.fromAttribute!('no', Boolean)).toBe(true);
   });
 
-  test('serialises as a string both ways, so it survives a round trip', () => {
+  test('serializes as a string both ways, so it survives a round trip', () => {
     expect(defaultTrueBoolean.toAttribute!(false, Boolean)).toBe('false');
     expect(
       defaultTrueBoolean.fromAttribute!(
@@ -50,7 +50,7 @@ describe('jsonAttribute', () => {
     expect(converter.fromAttribute!(null, Array)).toEqual([]);
   });
 
-  test('serialises back to JSON', () => {
+  test('serializes back to JSON', () => {
     expect(converter.toAttribute!(['a'], Array)).toBe('["a"]');
   });
 });

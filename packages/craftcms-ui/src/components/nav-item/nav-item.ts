@@ -116,7 +116,7 @@ export default class CraftNavItem extends LitElement {
    * levels, so anything past the first is better off in a popover.
    *
    * Unset, an expanded item indents and a rail flies out — a rail has nowhere
-   * to indent to. Set explicitly, a rail honours `inline` as well: a column of
+   * to indent to. Set explicitly, a rail honors `inline` as well: a column of
    * stand-in icons under the parent, for the branch you're in.
    */
   @property({attribute: 'subnav-display', reflect: true})
@@ -145,7 +145,7 @@ export default class CraftNavItem extends LitElement {
     setOpen: (open) => {
       this.flyoutOpen = open;
     },
-    // Where the flyout landed, so the group can tell a pointer travelling
+    // Where the flyout landed, so the group can tell a pointer traveling
     // towards it from one leaving for good. This is the same box `fitFlyout`
     // measures. While the flyout is shut there's nothing laid out, and the
     // group falls back to plain timing.
@@ -239,7 +239,7 @@ export default class CraftNavItem extends LitElement {
     this.subnavState =
       this.active || this.initialState === 'open' ? 'open' : 'closed';
 
-    // Bound to the host rather than the link, so travelling into the flyout
+    // Bound to the host rather than the link, so traveling into the flyout
     // counts as staying inside: its content is a descendant of this element,
     // wherever the overlay paints it.
     const {signal} = (this.#hoverListeners = new AbortController());
@@ -423,7 +423,7 @@ export default class CraftNavItem extends LitElement {
    * a link, that's a navigation. CpLink puts Inertia's handlers on the host, and with
    * `prefetch="click"` those aren't on `click` at all: `mousedown` prefetches
    * (and cancels the press, so the control never takes focus), `mouseup`
-   * visits, and Enter does the same on `keydown`/`keyup` — cancelling the
+   * visits, and Enter does the same on `keydown`/`keyup` — canceling the
    * keydown stops the button activating at all. A gear that opens a dialog
    * would visit the page, which re-renders it out from under the dialog.
    *
@@ -500,7 +500,7 @@ export default class CraftNavItem extends LitElement {
    *
    * `withLabel` heads the flyout with the item's own label, standing in for
    * the tooltip a childless item would get. Only the rail can do that: a
-   * labelled item has already projected the default slot into itself, and a
+   * labeled item has already projected the default slot into itself, and a
    * slot can only render its content in one place.
    */
   protected renderFlyout(withLabel: boolean) {

@@ -76,7 +76,7 @@ function iconBox(root: ParentNode, selector: string) {
 it('lines the collapsed chevron up with the icon it replaces', async () => {
   const item = await railFixture();
   const shadow = item.shadowRoot!;
-  const centre = (rect: DOMRect) => [
+  const center = (rect: DOMRect) => [
     Math.round(rect.x + rect.width / 2),
     Math.round(rect.y + rect.height / 2),
   ];
@@ -90,7 +90,7 @@ it('lines the collapsed chevron up with the icon it replaces', async () => {
   // on the button — so a box that doesn't match the row's makes the swap read
   // as the row resizing. The row's box includes a transparent border, which is
   // what the two used to differ by.
-  expect(centre(toggle)).toEqual(centre(row));
+  expect(center(toggle)).toEqual(center(row));
   expect(toggle.width).toBeCloseTo(row.width, 1);
   expect(toggle.height).toBeCloseTo(row.height, 1);
 });
@@ -389,7 +389,7 @@ function movePointer(x: number, y: number) {
   );
 }
 
-it('keeps a flyout open while the pointer cuts across a neighbour', async () => {
+it('keeps a flyout open while the pointer cuts across a neighbor', async () => {
   flyoutHoverIntent.reset();
   flyoutHoverIntent.options = {...flyoutHoverIntent.options, warmUpDelay: 0};
 
@@ -409,19 +409,19 @@ it('keeps a flyout open while the pointer cuts across a neighbour', async () => 
   const flyout = above
     .shadowRoot!.querySelector('.flyout')!
     .getBoundingClientRect();
-  const neighbour = rowOf(below);
+  const neighbor = rowOf(below);
 
   // The safe area is the triangle out to the flyout's near edge, so this test
   // proves nothing unless the flyout really does open beside the row and reach
-  // past the neighbour being cut across.
+  // past the neighbor being cut across.
   expect(flyout.left).toBeGreaterThan(row.right);
-  expect(neighbour.top).toBeGreaterThan(flyout.top);
-  expect(neighbour.bottom).toBeLessThan(flyout.bottom);
+  expect(neighbor.top).toBeGreaterThan(flyout.top);
+  expect(neighbor.bottom).toBeLessThan(flyout.bottom);
 
   above.dispatchEvent(new MouseEvent('mouseleave'));
   movePointer(
     (row.right + flyout.left) / 2,
-    neighbour.top + neighbour.height / 2
+    neighbor.top + neighbor.height / 2
   );
   below.dispatchEvent(new MouseEvent('mouseenter'));
   await below.updateComplete;

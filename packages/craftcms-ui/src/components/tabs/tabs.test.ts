@@ -315,7 +315,7 @@ describe('equal width', () => {
     expect(body).toContain('min-width: 0');
 
     // A wrapped label makes its tab taller and stretches the row with it, so
-    // the labels are centred on both axes rather than only the inline one.
+    // the labels are centered on both axes rather than only the inline one.
     expect(body).toContain('justify-content: center');
     expect(body).toContain('align-items: center');
 

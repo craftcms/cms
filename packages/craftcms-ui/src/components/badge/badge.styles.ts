@@ -33,7 +33,7 @@ export default css`
 
   /* A badge with a label is as tall as a small control, so it lines up with
      the buttons and inputs beside it. */
-  .badge--labelled {
+  .badge--labeled {
     /* Border included, as a control's is; the preflight's border-box doesn't
        reach into the shadow root. */
     box-sizing: border-box;

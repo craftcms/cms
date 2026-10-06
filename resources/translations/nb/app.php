@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Kan utnyttes til å avsløre sensitivt innhold gjennom informasjonslekkasjeangrep.',
     'Can contain Markdown formatting.' => 'Kan inneholde Markdown-formatering.',
     'Cancel' => 'Avbryt',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Finner ikke indekseringsøkten, eller det er ingenting å vurdere.',
     'Canton' => 'Canton',
     'Can’t run Craft CMS' => 'Kan ikke kjøre Craft CMS',
@@ -2325,9 +2325,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',
