@@ -108,6 +108,15 @@ class Table implements Node
      * without sanitization in both renderers. Encode untrusted content with
      * {@see Html::encode()} before passing it.
      *
+     * A link with `'slideout' => true` opens its URL's screen in a slideout, and reloads the
+     * table once that screen is saved.
+     *
+     * A menu item can be `['label' => string, 'modalUrl' => string, 'actionUrl' => string,
+     * 'params' => ?array]` instead of a link, to open a modal Form. `modalUrl` is requested
+     * via GET with `params` and must return JSON `{form: FormPayload, title?: string,
+     * submitLabel?: string}`; submitting posts the Form's values plus `params` to `actionUrl`,
+     * then reloads the table.
+     *
      * `_deletable => false` suppresses deletion of one row. `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
@@ -385,7 +394,7 @@ class Table implements Node
                 'class' => ['zilch'],
             ]);
         } else {
-            $renderLink = fn (array $link): string => $link['url'] !== null
+            $renderLink = fn (array $link): string => ($link['url'] ?? null) !== null
                 ? Html::a(Html::encode($link['label']), $link['url'])
                 : Html::encode($link['label']);
 
