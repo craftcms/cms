@@ -24,7 +24,7 @@ test('defaults to h2, below the page its own h1', async () => {
   expect(heading(pane)).toBe('h2');
 });
 
-test('honours an explicit level', async () => {
+test('honors an explicit level', async () => {
   const pane = await mount(
     html`<craft-pane label="Settings" heading-level="3"></craft-pane>`
   );

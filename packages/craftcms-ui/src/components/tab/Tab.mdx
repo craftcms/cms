@@ -19,7 +19,7 @@ There are no stories here because a tab outside a strip controls nothing. See th
 
 The tab owns almost nothing. [Tabs](?path=/docs/components-tabs--docs), via Lion, assigns it an `id`, `role="tab"`, `aria-controls`, `aria-selected`, and `tabindex`, and toggles `selected` as the selection moves.
 
-The only state the tab owns is `disabled` — and even that is honoured by the strip, which skips disabled tabs during arrow-key navigation.
+The only state the tab owns is `disabled` — and even that is honored by the strip, which skips disabled tabs during arrow-key navigation.
 
 This is why `selected` is not something to set yourself: the strip will overwrite it. Set `selectedIndex` on the strip instead.
 

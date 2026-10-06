@@ -31,7 +31,7 @@ type Story = StoryObj<IconArgs>;
 export const Default: Story = {};
 
 /**
- * Icons inherit `currentColor` and are sized in `em`, so they take the colour
+ * Icons inherit `currentColor` and are sized in `em`, so they take the color
  * and size of the text around them rather than needing either set.
  */
 export const InheritsText: Story = {
@@ -45,7 +45,7 @@ export const InheritsText: Story = {
         Larger text <craft-icon name="star"></craft-icon>
       </p>
       <p style="margin: 0; color: var(--c-color-danger-on-normal)">
-        Coloured text <craft-icon name="star"></craft-icon>
+        Colored text <craft-icon name="star"></craft-icon>
       </p>
     </div>
   `,
@@ -56,13 +56,13 @@ export const InheritsText: Story = {
  * one it is `aria-hidden`, which is what you want beside text that already
  * says the same thing.
  */
-export const Labelled: Story = {
+export const Labeled: Story = {
   args: {name: 'circle-exclamation', label: 'Warning'},
 };
 
 /**
- * `appearance="badge"` draws the icon on a coloured disc, for a marker that
- * has to read as a status. `data-color` picks the colour.
+ * `appearance="badge"` draws the icon on a colored disc, for a marker that
+ * has to read as a status. `data-color` picks the color.
  */
 export const Badge: Story = {
   parameters: {controls: {disable: true}},

@@ -14,7 +14,7 @@ It is a controller element rather than a visual one: it has no shadow root and r
 </craft-thumbnail-loader>
 ```
 
-There are no stories on this page because there is nothing to look at — the element's whole behaviour is loading images into markup it did not render.
+There are no stories on this page because there is nothing to look at — the element's whole behavior is loading images into markup it did not render.
 
 ## Why It Exists
 
@@ -22,7 +22,7 @@ Craft's element markup is generated on the server, and its thumbnails are placeh
 
 Historically that was an imperative call — `Craft.cp.elementThumbLoader.load(…)` — which meant every code path that injected element markup had to remember to make it. Wrapping the markup instead makes it declarative: a fragment that arrives over XHR loads its own thumbnails because the wrapper came with it.
 
-## Behaviour
+## Behavior
 
 Booting waits for the wrapped markup to parse, retrying an animation frame at a time, because the element can upgrade before its children exist — during the initial HTML parse, or when an injected fragment is still being built.
 

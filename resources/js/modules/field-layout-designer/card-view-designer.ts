@@ -152,7 +152,7 @@ export class CardViewDesigner extends Base {
         Craft.cp.displayError(e?.response?.data?.message);
         throw e;
       }
-      // otherwise the request was cancelled by a newer preview — ignore.
+      // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
       Craft.cp.announce(Craft.t('app', 'Loading complete'));

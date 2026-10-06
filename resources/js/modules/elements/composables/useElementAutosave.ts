@@ -106,14 +106,14 @@ export function useElementAutosave<T extends object>(
   let inFlight: Promise<void> | null = null;
   let pending = false;
   let controller: AbortController | null = null;
-  let cancelled = false;
+  let canceled = false;
 
   async function send(): Promise<void> {
     const savingGeneration = changeGeneration.value;
     status.value = 'saving';
     error.value = null;
     httpStatus.value = null;
-    cancelled = false;
+    canceled = false;
     controller = new AbortController();
 
     const payload: FormValues = {
@@ -170,7 +170,7 @@ export function useElementAutosave<T extends object>(
       );
     } catch (e) {
       // Our own abort, not a failure.
-      if (cancelled) {
+      if (canceled) {
         return;
       }
 
@@ -299,7 +299,7 @@ export function useElementAutosave<T extends object>(
    * so the edits go out with the next mutation.
    */
   function cancel(): void {
-    cancelled = true;
+    canceled = true;
     pending = false;
     armed = false;
     controller?.abort();

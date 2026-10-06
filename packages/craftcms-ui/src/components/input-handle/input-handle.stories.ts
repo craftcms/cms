@@ -71,7 +71,7 @@ export const ComparedToInput: Story = {
 };
 
 /**
- * `autocorrect` is a boolean here, but it serialises as `on`/`off` rather than
+ * `autocorrect` is a boolean here, but it serializes as `on`/`off` rather than
  * as a bare boolean attribute, which is how the native attribute spells it.
  */
 export const AutocorrectOn: Story = {

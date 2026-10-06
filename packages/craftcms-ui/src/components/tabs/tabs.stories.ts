@@ -190,7 +190,7 @@ export const RightToLeft: Story = {
 };
 
 /**
- * `layout` is deprecated in favour of `placement`, and kept as an alias over
+ * `layout` is deprecated in favor of `placement`, and kept as an alias over
  * it: `vertical` is `inline-start` and `horizontal` is `block-start`.
  */
 export const DeprecatedLayout: Story = {
@@ -544,7 +544,7 @@ export const EqualWidth: Story = {
     await expect(tabs.some((tab) => tab.hasAttribute('hidden'))).toBe(false);
 
     // A label with no room left wraps, which makes that tab taller and
-    // stretches the row to match it. The single-line labels stay centred in
+    // stretches the row to match it. The single-line labels stay centered in
     // the space they were stretched into rather than riding its top edge.
     const wrapped = tabs.find(
       (tab) => tab.textContent!.trim() === 'Search Engine Optimization'

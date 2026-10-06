@@ -204,12 +204,12 @@ export const Links: Story = {
 
 /**
  * Disabled buttons across every variant. `disabled` also removes the link
- * behaviour from an `href` button, which then renders as plain text rather
+ * behavior from an `href` button, which then renders as plain text rather
  * than an anchor, and it suppresses the hover, active and focus treatments the
  * variants otherwise carry.
  *
  * Each variant keeps its own colors, muted, rather than all collapsing to one
- * flat grey — so a disabled primary still reads as the primary action.
+ * flat gray — so a disabled primary still reads as the primary action.
  */
 export const Disabled: Story = {
   render: () => html`

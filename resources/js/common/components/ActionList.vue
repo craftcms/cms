@@ -451,7 +451,7 @@
       the descriptor owns its click (see `ownsClick`). The element keeps its
       `href`, so the anchor in its shadow root still gives real link semantics;
       `CpLink` adds the handler on the host that cancels the navigation in
-      favour of a visit. -->
+      favor of a visit. -->
     <component
       v-else-if="action.kind === 'link' && action.onClick"
       v-bind="action.attrs"

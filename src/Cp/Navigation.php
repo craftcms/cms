@@ -13,8 +13,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
-use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -23,8 +21,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -38,26 +34,6 @@ use function CraftCms\Cms\t;
  */
 readonly class Navigation
 {
-    /**
-     * Cache tag for every stored nav tree.
-     *
-     * Most of what the tree is built from is project config, and that's keyed
-     * into the cache entry rather than watched — but anything else that
-     * reshapes the nav (a permission grant, a plugin toggling its CP section
-     * at runtime) invalidates this.
-     */
-    public const string CACHE_TAG = 'cp-nav';
-
-    /** Bump when the shape of a cached tree changes, to orphan stale entries. */
-    private const int CACHE_VERSION = 2;
-
-    /**
-     * Backstop for what the key can't see: a user's directly-granted
-     * permissions don't live in project config, so a nav built before a grant
-     * would otherwise stand until something else moved.
-     */
-    private const int CACHE_TTL = 3600;
-
     public function __construct(
         private Request $request,
         private Plugins $plugins,
@@ -68,7 +44,7 @@ readonly class Navigation
     ) {}
 
     /**
-     * The nav for the current request: the cached tree, with badge counts and
+     * The nav for the current request, with badge counts and
      * the selected trail applied.
      *
      * @return NavItem[]
@@ -125,45 +101,16 @@ readonly class Navigation
     }
 
     /**
-     * The whole navigation tree, structure only.
-     *
-     * No selection and no badge counts: both are per-request, and leaving them
-     * out is what makes this cacheable across every page a user visits, and
-     * what lets the front end be handed the tree once rather than on every
-     * response.
+     * The whole navigation tree, without selection or badge counts.
      *
      * @return NavItem[]
      */
     public function getTree(): array
     {
-        $tree = DependencyCache::remember(
-            $this->cacheKey(),
-            self::CACHE_TTL,
-            fn (): array => $this->hydrateArray($this->buildTree()),
-            new TagDependency(self::CACHE_TAG),
-        );
-
-        return $this->hydrateItems($tree);
+        return $this->buildTree();
     }
 
     /**
-     * Throws away every stored nav tree.
-     *
-     * Call this when something the cache key can't see has changed — a
-     * permission grant, most obviously.
-     */
-    public static function flushCache(): void
-    {
-        TagDependency::invalidate(self::CACHE_TAG);
-    }
-
-    /**
-     * The volatile half: counts that change without the nav's shape changing.
-     *
-     * Deliberately outside the cache. `Updates::badgeCount()` and friends each
-     * hit the database, so they're the part of the nav that can't be stale,
-     * and the part that must not keep the rest of it from being cached.
-     *
      * @return array<string, int>
      */
     public function getBadgeCounts(): array
@@ -192,7 +139,7 @@ readonly class Navigation
         ]);
 
         if (Sections::getTotalEditableSections()) {
-            $entryPages = $this->elementSources->getPages(Entry::class);
+            $entryPages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
 
             if ($entryPages->isNotEmpty()) {
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
@@ -251,7 +198,9 @@ readonly class Navigation
                 continue;
             }
 
-            if (($pluginNavItem = $plugin->getCpNavItem()) === null) {
+            $pluginNavItem = $plugin->getCpNavItem();
+
+            if ($pluginNavItem === null) {
                 continue;
             }
 
@@ -308,7 +257,7 @@ readonly class Navigation
         event($event = new CpNavItemsResolving($navItems->all()));
 
         return collect($event->navItems)
-            ->map(fn (NavItem $item): NavItem => $this->normalize($item))
+            ->map($this->normalize(...))
             ->all();
     }
 
@@ -335,11 +284,10 @@ readonly class Navigation
         $group = null;
 
         // Scoped to the site the CP is working with, so switching sites leaves
-        // the nav listing only the sources that run on the new one. The tree is
-        // cached and handed to the client per site ({@see cacheKey()}), so this
-        // is resolved once per site rather than per request.
+        // the nav listing only the sources that run on the new one.
         $sources = $this->elementSources->getSources(
             $elementType,
+            context: ElementSources::CONTEXT_NAVIGATION,
             page: $page,
             siteId: $this->navSiteId(),
         );
@@ -402,6 +350,7 @@ readonly class Navigation
         foreach ($this->sourceIndexes($elementType) as [$indexUri, $page]) {
             $source = collect($this->elementSources->getSources(
                 $elementType,
+                context: ElementSources::CONTEXT_NAVIGATION,
                 page: $page,
                 siteId: $this->navSiteId(),
             ))->first(fn (array $source): bool => ($source['key'] ?? null) === $key);
@@ -425,7 +374,7 @@ readonly class Navigation
     private function sourceIndexes(string $elementType): array
     {
         if ($elementType === Entry::class) {
-            $pages = $this->elementSources->getPages(Entry::class);
+            $pages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
 
             return $pages->isEmpty()
                 ? [['content/entries', null]]
@@ -572,8 +521,7 @@ readonly class Navigation
      *
      * Deliberately narrow: only a value naming an SVG file is rendered, so the
      * named icons the rest of the nav uses stay names. Inlining every icon
-     * would weigh down a tree that is cached and shared across every control
-     * panel page.
+     * would weigh down the tree sent with every control panel page.
      */
     private function resolveIcon(NavItem $item): void
     {
@@ -712,75 +660,6 @@ readonly class Navigation
         }
 
         return app(RequestedSite::class)->get()?->id;
-    }
-
-    /**
-     * The cache key for the current request's tree.
-     *
-     * Everything the tree's *shape* depends on is in here, so a change to any
-     * of it lands on a different key rather than needing to be noticed:
-     * project config carries sections, volumes, sites, plugins and user
-     * groups, and the rest is per-user or per-request config.
-     */
-    private function cacheKey(): string
-    {
-        return implode(':', [
-            'cp-nav',
-            self::CACHE_VERSION,
-            currentUser()?->getCraftUserId() ?? 'guest',
-            // The site the sources were filtered for, not `getCurrentSite()` —
-            // that's always the primary site on a CP request, so every site
-            // would share the primary site's tree.
-            $this->navSiteId() ?? 0,
-            Edition::get()->value,
-            app()->getLocale(),
-            (int) $this->generalConfig->allowAdminChanges,
-            (int) $this->generalConfig->headlessMode,
-            (string) ProjectConfig::get(ProjectConfigService::PATH_DATE_MODIFIED),
-        ]);
-    }
-
-    /**
-     * Objects go into the cache as plain arrays.
-     *
-     * A `NavItem` is a `Component`, and plugins put their own in the tree —
-     * storing those would make the cache hostage to whatever a third party
-     * hangs off one.
-     *
-     * @param  NavItem[]  $items
-     * @return array<int, array<string, mixed>>
-     */
-    private function hydrateArray(array $items): array
-    {
-        return array_map(function (NavItem $item): array {
-            $data = $item->toArray();
-
-            if (is_array($item->subnav)) {
-                $data['subnav'] = $this->hydrateArray($item->subnav);
-            }
-
-            return $data;
-        }, $items);
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $items
-     * @return NavItem[]
-     */
-    private function hydrateItems(array $items): array
-    {
-        return array_map(function (array $data): NavItem {
-            $subnav = $data['subnav'] ?? false;
-            unset($data['subnav']);
-
-            $item = new NavItem($data);
-
-            if (is_array($subnav)) {
-                $item->subnav = $this->hydrateItems($subnav);
-            }
-
-            return $item;
-        }, $items);
     }
 
     private function navItemPath(string $url): string

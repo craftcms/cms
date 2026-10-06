@@ -28,7 +28,7 @@ describe('craft-indicator', () => {
     expect(dot(await createIndicator())).toBeTruthy();
   });
 
-  /** A recognised variant resolves to that variant's fill token. */
+  /** A recognized variant resolves to that variant's fill token. */
   it('resolves a status variant to its token', async () => {
     const element = await createIndicator({fill: 'success'});
 
@@ -46,8 +46,8 @@ describe('craft-indicator', () => {
     );
   });
 
-  /** Anything else is passed through as a CSS colour. */
-  it('passes an arbitrary colour straight through', async () => {
+  /** Anything else is passed through as a CSS color. */
+  it('passes an arbitrary color straight through', async () => {
     const element = await createIndicator({fill: '#2c61de'});
 
     expect(dot(element).getAttribute('style')).toContain('#2c61de');
@@ -59,8 +59,35 @@ describe('craft-indicator', () => {
     expect(dot(element).classList.contains('indicator--outline')).toBe(true);
   });
 
+  /** White and black dots keep an outline by default, so they stay visible. */
+  it.each([
+    ['red', 'indicator--solid'],
+    ['white', 'indicator--outline-fill'],
+    ['black', 'indicator--outline-fill'],
+  ])('defaults a %s fill to the %s appearance', async (fill, modifier) => {
+    const element = await createIndicator({fill});
+
+    expect(dot(element).classList.contains(modifier)).toBe(true);
+  });
+
+  it('keeps an appearance that was set explicitly', async () => {
+    const element = await createIndicator({fill: 'black', appearance: 'solid'});
+
+    expect(dot(element).classList.contains('indicator--solid')).toBe(true);
+    expect(dot(element).classList.contains('indicator--outline-fill')).toBe(
+      false
+    );
+  });
+
+  /** A black dot's outline is white, since a dark one would vanish. */
+  it('marks a black fill so its outline can be white', async () => {
+    const element = await createIndicator({fill: 'black'});
+
+    expect(dot(element).classList.contains('indicator--black')).toBe(true);
+  });
+
   /**
-   * An unlabelled dot is decoration beside the thing it marks, so it is not
+   * An unlabeled dot is decoration beside the thing it marks, so it is not
    * announced as an unnamed image.
    */
   it('is not an image without a label', async () => {

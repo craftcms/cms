@@ -35,11 +35,11 @@ import {
  * On connect the chip stamps `data-color="white"` on itself so it reads as a
  * raised surface by default, filled with `--c-surface-raised` so it follows
  * the theme. Set `data-color` yourself to override it. Because the attribute
- * lands on the chip, an ancestor's `data-color` no longer reaches it — colour
+ * lands on the chip, an ancestor's `data-color` no longer reaches it — color
  * the chip directly instead.
  *
  * Any `<craft-button>` placed in the chip is given `inherit`, so its neutral
- * variants pick up the chip's colour. This includes buttons added after the
+ * variants pick up the chip's color. This includes buttons added after the
  * chip mounts and ones nested in other slotted content, such as an action
  * menu's invoker.
  *
@@ -68,10 +68,10 @@ import {
  * @cssproperty --c-chip-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-chip-spacing-inline - Inline (horizontal) padding. Defaults to `0`.
  * @cssproperty --c-chip-spacing-block - Block (vertical) padding. Defaults to `--c-spacing-sm`.
- * @cssproperty --c-chip-fill - Background colour. Defaults to
- *   `--c-surface-raised`. A `variant` fills with its own colour instead.
- * @cssproperty --c-chip-text - Label colour. Defaults to `--c-text-default`.
- * @cssproperty --c-chip-border-color - Border colour. Defaults to
+ * @cssproperty --c-chip-fill - Background color. Defaults to
+ *   `--c-surface-raised`. A `variant` fills with its own color instead.
+ * @cssproperty --c-chip-text - Label color. Defaults to `--c-text-default`.
+ * @cssproperty --c-chip-border-color - Border color. Defaults to
  *   `--c-color-neutral-border-quiet`.
  * @cssproperty --c-chip-shadow - Box shadow. Defaults to `--c-shadow-sm`.
  * @cssproperty --c-chip-border-width - Border width. Defaults to `1px`.
@@ -139,7 +139,7 @@ export default class CraftChip extends LitElement {
   /**
    * Accessible name for the `selectable` checkbox. Set it to name the entity
    * the chip stands for, so a list of chips does not read as a run of
-   * identically labelled checkboxes.
+   * identically labeled checkboxes.
    */
   @property({attribute: 'select-label'}) selectLabel: string | null = null;
 
@@ -167,7 +167,7 @@ export default class CraftChip extends LitElement {
 
   /**
    * Sets `inherit` on the chip's buttons so they take its palette rather than
-   * the neutral one, which would stand out against a coloured chip. Buttons
+   * the neutral one, which would stand out against a colored chip. Buttons
    * inside a nested chip are left to that chip.
    */
   #inheritButtons(): void {

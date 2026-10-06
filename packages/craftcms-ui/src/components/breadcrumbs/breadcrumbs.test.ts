@@ -35,7 +35,7 @@ beforeEach(() => {
 describe('craft-breadcrumbs', () => {
   /**
    * A page can hold more than one navigation landmark, so the trail names
-   * itself rather than being announced as an unlabelled "navigation".
+   * itself rather than being announced as an unlabeled "navigation".
    */
   it('is a named navigation landmark', async () => {
     const element = await createBreadcrumbs();

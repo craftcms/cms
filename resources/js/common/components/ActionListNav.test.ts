@@ -153,7 +153,7 @@ it("uses a plugin's own icon, which it ships rather than names", async () => {
 
   const plugin = item('Test Plugin')!;
 
-  // Through `craft-icon`, so it's sized and coloured like every named icon
+  // Through `craft-icon`, so it's sized and colored like every named icon
   // beside it rather than at whatever size the plugin drew it.
   const icon = plugin.querySelector(':scope > craft-icon[slot="icon"]');
   expect(icon?.querySelector('svg')).not.toBeNull();

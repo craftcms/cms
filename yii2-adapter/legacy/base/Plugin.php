@@ -212,7 +212,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
-        $response = $this->getFormSettingsResponse();
+        $route = $this->settingsUrlRule();
+
+        $response = $route !== null
+            ? Craft::$app->runAction($route)
+            : $this->getFormSettingsResponse();
 
         if ($response instanceof \craft\web\Response) {
             $response->send();
@@ -220,6 +224,29 @@ class Plugin extends Module implements PluginInterface
         }
 
         return $response;
+    }
+
+    /**
+     * Returns the route a `registerCpUrlRules` handler claimed for this plugin's
+     * settings path, if any.
+     *
+     * Craft 6 resolves `settings/plugins/<handle>` itself, before URL rules are
+     * consulted, so a rule that would have taken precedence is honoured here.
+     */
+    private function settingsUrlRule(): ?string
+    {
+        $path = 'settings/plugins/' . $this->handle;
+
+        foreach (Craft::$app->getUrlManager()->getCpUrlRules() as $pattern => $route) {
+            // A pattern may carry a verb prefix, as in `GET settings/plugins/foo`.
+            $pattern = preg_replace('/^[A-Z,]+ /', '', (string)$pattern);
+
+            if ($pattern === $path && is_string($route)) {
+                return $route;
+            }
+        }
+
+        return null;
     }
 
     public function settingsForm(FormContext $context = new FormContext()): ?Form
