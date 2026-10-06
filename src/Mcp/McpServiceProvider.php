@@ -163,7 +163,7 @@ class McpServiceProvider extends ServiceProvider
                     });
                 });
 
-                $router->options($config->endpoint, [McpController::class, 'admin'])
+                $router->options($config->endpoint, [McpController::class, 'preflight'])
                     ->middleware($middleware);
 
                 $router->post($config->endpoint, [McpController::class, 'admin'])

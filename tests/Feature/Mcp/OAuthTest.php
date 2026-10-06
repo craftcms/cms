@@ -189,6 +189,17 @@ it('returns OAuth errors for malformed registration metadata', function (array $
     'malformed name' => [['client_name' => ['unexpected']], 'invalid_client_metadata'],
 ]);
 
+it('answers CORS preflight requests without authentication', function (): void {
+    config()->set('app.url', 'https://craft.test');
+
+    $this->call('OPTIONS', route('craft.cp.mcp.server'), server: [
+        'HTTP_ORIGIN' => 'https://craft.test',
+        'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+    ])
+        ->assertNoContent()
+        ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test');
+});
+
 it('requires both the MCP scope and Craft endpoint permissions', function (array $scopes, array $permissions): void {
     Edition::set(Edition::Pro);
     $user = User::query()->firstOrFail();

@@ -43,7 +43,7 @@ readonly class PublicRouteRegistrar
             SetActivityOrigin::class,
         ];
 
-        $this->router->options($this->access->route(), [McpController::class, 'public'])
+        $this->router->options($this->access->route(), [McpController::class, 'preflight'])
             ->middleware($middleware)
             ->defaults('publicMcp', true);
         $this->router->post($this->access->route(), [McpController::class, 'public'])
