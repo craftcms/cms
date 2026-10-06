@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -666,5 +667,69 @@ class AssetsHelper
         }
 
         return $response;
+    }
+
+    /**
+     * Returns the asset filename for an imported file reference (a local path or an absolute URL).
+     */
+    public static function importFilename(string $source): string
+    {
+        $basename = pathinfo(Url::stripQueryString($source), PATHINFO_BASENAME);
+
+        return self::prepareAssetName(Url::isAbsoluteUrl($source) ? rawurldecode($basename) : $basename);
+    }
+
+    /**
+     * Fetches an imported file (an absolute URL or a local path) to a temp path, and returns the path along with
+     * the file’s extension, taken from its content type when the filename doesn’t have one.
+     *
+     * A local file is copied, so the source file itself is never handed over to be moved into a volume.
+     *
+     * @return array{0: string, 1: string}
+     *
+     * @throws AssetException if the file is too large or its type can’t be determined
+     * @throws FileException if a local file can’t be found, isn’t allowed, or can’t be copied
+     * @throws InvalidArgumentException if a URL can’t be downloaded
+     */
+    public static function fetchImportFile(UrlValidator $urlValidator, string $source, string $filename): array
+    {
+        // validate a local path before anything gets created for it
+        $localPath = Url::isAbsoluteUrl($source) ? null : self::resolveImportFilePath($source);
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $tempPath = self::tempFilePath($extension ?: 'tmp');
+
+        try {
+            $mimeType = null;
+
+            if ($localPath === null) {
+                $mimeType = self::downloadUrl($urlValidator, $source, $tempPath)->header('Content-Type');
+            } elseif (! @copy($localPath, $tempPath)) {
+                throw new FileException("Couldn’t copy $localPath to a temp location.");
+            }
+
+            if (filesize($tempPath) > Cms::config()->maxUploadFileSize) {
+                throw new AssetException(t('“{filename}” is too large.', [
+                    'filename' => $filename,
+                ]));
+            }
+
+            if ($extension === '') {
+                $mimeType = strtolower(trim(explode(';', $mimeType ?: (File::getMimeType($tempPath, checkExtension: false) ?? ''))[0]));
+
+                try {
+                    $extension = File::getExtensionByMimeType($mimeType);
+                } catch (InvalidArgumentException $e) {
+                    throw new AssetException(t('The file type of “{filename}” couldn’t be determined.', [
+                        'filename' => $filename,
+                    ]), previous: $e);
+                }
+            }
+        } catch (Throwable $e) {
+            File::delete($tempPath);
+
+            throw $e;
+        }
+
+        return [$tempPath, $extension];
     }
 }

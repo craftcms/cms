@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static BaseImporter createImporter(array $step)
+ * @method static ?BaseImporter createImporter(array $step)
  * @method static LaravelCollection getAllImportPlans()
  * @method static LaravelCollection getEditableImportPlans()
  * @method static LaravelCollection getNonEditableImportPlans()

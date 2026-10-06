@@ -34,15 +34,28 @@ class ImportPlan
 
     /**
      * Instantiates an importer from an import plan step, applying its properties and decoded
-     * settings via setter methods.
+     * settings via setter methods. Returns null for a step whose type isn't an importer, or whose
+     * importer can't be built (which is logged).
      *
      * @param  array<string, mixed>  $step  The step array, shaped `{uid, type, source, transformer, settings}`.
      */
     public static function createImporter(array $step): ?BaseImporter
     {
+        $type = $step['type'] ?? null;
+
+        if (! is_string($type) || ! is_subclass_of($type, BaseImporter::class)) {
+            return null;
+        }
+
         try {
-            return new $step['type']($step);
-        } catch (Throwable) {
+            return new $type($step);
+        } catch (Throwable $e) {
+            ImportLog::warning("Couldn’t create the “{$type}” importer for step “".($step['uid'] ?? '?')."”: {$e->getMessage()}", [
+                'uid' => $step['uid'] ?? null,
+                'type' => $type,
+                'exception' => $e,
+            ]);
+
             return null;
         }
     }

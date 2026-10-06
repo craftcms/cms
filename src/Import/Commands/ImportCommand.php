@@ -115,6 +115,8 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
         $importer = ImportPlan::createImporter($config);
 
         if ($importer === null) {
+            $this->components->error('Couldn’t create the importer. See the import log for details.');
+
             return self::FAILURE;
         }
 

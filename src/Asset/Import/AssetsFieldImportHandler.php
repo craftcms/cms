@@ -10,7 +10,6 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\ImportFileConflict;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
-use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -25,9 +24,7 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Url;
 use CraftCms\UrlValidator\UrlValidator;
-use InvalidArgumentException;
 use Override;
 use Throwable;
 
@@ -152,13 +149,13 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
      */
     private function importFile(AssetsField $field, string $source, ImportFileConflict $conflict, UrlValidator $urlValidator, BaseImporter $importer, VolumeFolder $folder): int
     {
-        $filename = $this->filename($source);
+        $filename = AssetsHelper::importFilename($source);
         $tempPath = null;
 
         try {
             // without an extension, the file has to be fetched to find out what it is
             if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                [$tempPath, $extension] = $this->fetchFile($source, $urlValidator, $filename);
+                [$tempPath, $extension] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename);
                 $filename .= ".$extension";
             }
 
@@ -179,7 +176,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 return $existingAsset->id;
             }
 
-            $tempPath ??= $this->fetchFile($source, $urlValidator, $filename)[0];
+            $tempPath ??= AssetsHelper::fetchImportFile($urlValidator, $source, $filename)[0];
             $asset = $this->createAsset($tempPath, $filename, $folder);
         } catch (Throwable $e) {
             if ($tempPath !== null) {
@@ -206,7 +203,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
         $tempPath = null;
 
         try {
-            [$tempPath] = $this->fetchFile($source, $urlValidator, $asset->getFilename());
+            [$tempPath] = AssetsHelper::fetchImportFile($urlValidator, $source, $asset->getFilename());
             AssetsService::replaceAssetFile($asset, $tempPath, $asset->getFilename());
 
             if (! empty($asset->getFirstErrors())) {
@@ -244,7 +241,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 return $item;
             }
 
-            $filename = $this->filename($item);
+            $filename = AssetsHelper::importFilename($item);
 
             if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
                 return $item;
@@ -252,16 +249,6 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
             return $this->findExistingAsset($filename, $folder)->id ?? $item;
         }, $items);
-    }
-
-    /**
-     * Returns the asset filename for an imported file reference.
-     */
-    private function filename(string $source): string
-    {
-        $basename = pathinfo(Url::stripQueryString($source), PATHINFO_BASENAME);
-
-        return AssetsHelper::prepareAssetName(Url::isAbsoluteUrl($source) ? rawurldecode($basename) : $basename);
     }
 
     /**
@@ -320,55 +307,5 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
         Elements::saveElement($asset);
 
         return $asset;
-    }
-
-    /**
-     * Fetches an imported file (an absolute URL or a local path) to a temp path, and returns the path along with
-     * the file’s extension, taken from the content type when the filename doesn’t have one.
-     *
-     * @return array{0: string, 1: string}
-     *
-     * @throws AssetException if the file can’t be fetched, is too large, or its type can’t be determined
-     */
-    private function fetchFile(string $source, UrlValidator $urlValidator, string $filename): array
-    {
-        // validate a local path before anything gets created for it
-        $localPath = Url::isAbsoluteUrl($source) ? null : AssetsHelper::resolveImportFilePath($source);
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $tempPath = AssetsHelper::tempFilePath($extension ?: 'tmp');
-
-        try {
-            $mimeType = null;
-
-            if ($localPath === null) {
-                $mimeType = AssetsHelper::downloadUrl($urlValidator, $source, $tempPath)->header('Content-Type');
-            } elseif (! copy($localPath, $tempPath)) {
-                throw new FileException("Couldn’t copy $localPath to a temp location.");
-            }
-
-            if (filesize($tempPath) > Cms::config()->maxUploadFileSize) {
-                throw new AssetException(t('“{filename}” is too large.', [
-                    'filename' => $filename,
-                ]));
-            }
-
-            if ($extension === '') {
-                $mimeType = strtolower(trim(explode(';', $mimeType ?: (File::getMimeType($tempPath, checkExtension: false) ?? ''))[0]));
-
-                try {
-                    $extension = File::getExtensionByMimeType($mimeType);
-                } catch (InvalidArgumentException $e) {
-                    throw new AssetDisallowedExtensionException(t('“{filename}” is not allowed in this field.', [
-                        'filename' => $filename,
-                    ]), previous: $e);
-                }
-            }
-        } catch (Throwable $e) {
-            File::delete($tempPath);
-
-            throw $e;
-        }
-
-        return [$tempPath, $extension];
     }
 }

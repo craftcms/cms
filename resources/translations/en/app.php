@@ -1867,6 +1867,7 @@ return [
     'The entry type to import into.' => 'The entry type to import into.',
     'The field layout is invalid.' => 'The field layout is invalid.',
     'The file failed to upload to the server properly.' => 'The file failed to upload to the server properly.',
+    'The file type of “{filename}” couldn’t be determined.' => 'The file type of “{filename}” couldn’t be determined.',
     'The file “{name}” does not appear to be an image.' => 'The file “{name}” does not appear to be an image.',
     'The filesystem doesn’t contain any files.' => 'The filesystem doesn’t contain any files.',
     'The following <a href="{url}">aliases</a> are defined:' => 'The following <a href="{url}">aliases</a> are defined:',

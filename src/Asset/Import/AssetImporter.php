@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -27,6 +28,7 @@ use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Validation\Validator;
 use Override;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -235,13 +237,48 @@ class AssetImporter extends ElementImporter
 
         // deduce filename - was one provided or should we get it from the provided file path
         if (empty($attributes['filename']) && ! empty($attributes['tempFilePath'])) {
-            $attributes['filename'] = AssetsHelper::prepareAssetName(pathinfo(Url::stripQueryString($attributes['tempFilePath']), PATHINFO_BASENAME));
+            $attributes['filename'] = AssetsHelper::importFilename($attributes['tempFilePath']);
         } elseif (isset($attributes['filename'])) {
             $attributes['filename'] = AssetsHelper::prepareAssetName($attributes['filename']);
         }
 
-        // this is just a placeholder like in AssetsHelper::tempFilePath()
-        $extension = 'tmp';
+        // a filename with an extension can be checked before anything is fetched
+        if (isset($attributes['filename']) && pathinfo($attributes['filename'], PATHINFO_EXTENSION) !== '') {
+            self::ensureAllowedExtension($attributes['filename']);
+        }
+
+        // fetch the file (a local path or a URL) to a temp location
+        if (! empty($attributes['tempFilePath'])) {
+            $source = $attributes['tempFilePath'];
+
+            try {
+                [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $attributes['filename']);
+            } catch (AssetException|FileException $e) {
+                throw $e;
+            } catch (Throwable $e) {
+                throw new AssetException(t('Couldn’t download “{url}”.', [
+                    'url' => $source,
+                ]), previous: $e);
+            }
+
+            $attributes['tempFilePath'] = $tempPath;
+
+            // without an extension, the fetched file's type decides it
+            if (pathinfo($attributes['filename'], PATHINFO_EXTENSION) === '') {
+                $attributes['filename'] .= ".$extension";
+
+                try {
+                    self::ensureAllowedExtension($attributes['filename']);
+                } catch (Throwable $e) {
+                    File::delete($tempPath);
+
+                    throw $e;
+                }
+            }
+        } elseif (isset($attributes['filename']) && pathinfo($attributes['filename'], PATHINFO_EXTENSION) === '') {
+            // nothing was fetched to tell what an extension-less filename is
+            self::ensureAllowedExtension($attributes['filename']);
+        }
 
         // avoid filename conflicts
         if (isset($attributes['filename'])) {
@@ -249,53 +286,25 @@ class AssetImporter extends ElementImporter
             if ($suggestedFilename !== $attributes['filename'] && (! $element->id || $attributes['filename'] !== $element->getFilename())) {
                 $attributes['filename'] = $suggestedFilename;
             }
-
-            // deduce extension and check if it's allowed
-            $allowedExtensions = Cms::config()->allowedFileExtensions;
-            $extension = strtolower(pathinfo($attributes['filename'], PATHINFO_EXTENSION));
-            if (! in_array($extension, $allowedExtensions, true)) {
-                throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
-                    'extension' => $extension,
-                ]));
-            }
-        }
-
-        $tempPath = AssetsHelper::tempFilePath($extension);
-
-        // process the file path (tempFilePath); if it's in a temp location - use it;
-        // if it's an absolute URL - download to a temp location and use it
-        if (! empty($attributes['tempFilePath'])) {
-            // if it's not an absolute URL
-            if (! Url::isAbsoluteUrl($attributes['tempFilePath'])) {
-                // make sure the file exists and is within a known temp path, the project root, or storage/ folder
-                $value = AssetsHelper::resolveImportFilePath($attributes['tempFilePath']);
-
-                // copy it to a temp file path so that Asset::_relocateFile() doesn't delete it from the original location;
-                // carrying on with the original path would hand the source file itself over to be moved
-                if (! @copy($value, $tempPath)) {
-                    throw new AssetException(t('Couldn’t copy “{file}” to a temp location.', [
-                        'file' => $value,
-                    ]));
-                }
-
-                $attributes['tempFilePath'] = $tempPath;
-            } else {
-                // if it's an absolute URL, we need to download the file to a temp location
-                try {
-                    AssetsHelper::downloadUrl(static::urlValidator(), $attributes['tempFilePath'], $tempPath);
-                } catch (Exception $e) {
-                    @unlink($tempPath);
-
-                    throw new AssetException(t('Couldn’t download “{url}”.', [
-                        'url' => $attributes['tempFilePath'],
-                    ]), previous: $e);
-                }
-
-                $attributes['tempFilePath'] = $tempPath;
-            }
         }
 
         parent::setAttributesForImport($element, $attributes);
+    }
+
+    /**
+     * Ensures an imported file’s extension is allowed site-wide.
+     *
+     * @throws AssetDisallowedExtensionException if it isn’t
+     */
+    private static function ensureAllowedExtension(string $filename): void
+    {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (! in_array($extension, Cms::config()->allowedFileExtensions, true)) {
+            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                'extension' => $extension,
+            ]));
+        }
     }
 
     /**

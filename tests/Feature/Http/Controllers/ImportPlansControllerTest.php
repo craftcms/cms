@@ -206,6 +206,14 @@ it('returns a container field’s destination columns for an unsaved step', func
     expect($handles)->toContain('outerMatrix[outerEt][fields][innerMatrix]');
 });
 
+it('rejects nested mapping columns for a step whose importer can’t be built', function () {
+    $this->postJson(action([ImportPlansController::class, 'nestedMappingCols']), [
+        'step' => ($this->entryStep)(['site' => 'no-such-site']),
+        'fieldUid' => $this->outerMatrixField->uid,
+        'fieldHandle' => 'outerMatrix',
+    ])->assertStatus(400);
+});
+
 it('returns a step’s mapping structure without the import being saved', function () {
     $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
         'step' => ($this->entryStep)(),

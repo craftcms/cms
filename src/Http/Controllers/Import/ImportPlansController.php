@@ -277,6 +277,8 @@ class ImportPlansController
     {
         $importer = $this->draftImporter();
 
+        abort_if($importer === null, 400, 'The import step couldn’t be built.');
+
         $fieldUid = $this->request->input('fieldUid');
         $field = ! empty($fieldUid) ? $this->fieldsService->getFieldByUid($fieldUid) : null;
 
@@ -324,7 +326,7 @@ class ImportPlansController
         $suggestions = ImportHelper::suggestMapValues(
             array_merge($importer->getDestinationCols(), $allDestinationCols),
             $sourceDataCols,
-            $importer->map ?? [],
+            $importer->map,
         );
         $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
 
