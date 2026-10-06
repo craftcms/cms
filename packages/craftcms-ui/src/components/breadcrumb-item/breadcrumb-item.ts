@@ -36,7 +36,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     :host {
       white-space: nowrap;
       display: inline-flex;
-      gap: var(--c-spacing-sm);
+      gap: var(--c-spacing-md);
       align-items: center;
       color: inherit;
     }
@@ -67,7 +67,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     slot[name='separator']::slotted(*) {
       color: var(--c-text-quiet);
       margin-block: 0;
-      margin-inline: var(--c-spacing-md);
+      margin-inline: var(--c-spacing-sm);
     }
   `;
 

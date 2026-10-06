@@ -78,4 +78,9 @@
   </craft-breadcrumbs>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  /* Prevent action menu buttons from looking like they take up extra space */
+  craft-action-menu > craft-button[slot='invoker'] {
+    margin-inline: -3px;
+  }
+</style>

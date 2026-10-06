@@ -125,8 +125,10 @@
             class="flex flex-nowrap items-center gap-md"
             v-show="crumbs || hasContextMenu"
           >
-            <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
-            <Breadcrumbs v-if="crumbs" :items="crumbs" />
+            <span class="text-xs text-(--c-text-quiet) px-sm" v-if="isLarge"
+              >/</span
+            >
+            <Breadcrumbs v-if="crumbs" :items="crumbs" class="gap-md" />
             <div v-show="hasContextMenu" class="context-menu-container">
               <LayoutSlotOutlet name="context-menu">
                 <slot name="context-menu"></slot>
