@@ -65,7 +65,7 @@ in development builds. This keeps a plugin from replacing the chrome of a page i
 |          |                         |                                                       |                         |
 |          |                         | +- sticky footer -----------------------------------+ |                         |
 |          |                         | | content-notices                                   | |                         |
-|          |                         | | [Save | v]   additional-buttons                   | |                         |
+|          |                         | | [primary-action | v]   additional-buttons         | |                         |
 |          |                         | | content-footer                                    | |                         |
 |          |                         | +---------------------------------------------------+ |                         |
 |          +-------------------------+-------------------------------------------------------+-------------------------+
@@ -95,16 +95,33 @@ sticky footer appear once something in them is filled.
 |                                                                                     |                                |
 | content-footer                                                                      |                                |
 +-------------------------------------------------------------------------------------+--------------------------------+
-| additional-buttons                                                             [Cancel]   [Save | v]                 |
+| additional-buttons                                                             [Cancel]   [primary-action | v]       |
 +----------------------------------------------------------------------------------------------------------------------+
 ```
 
 `context-menu`, `content-toolbar`, `title`, `content-sidebar`, `subnav-actions` and `page-footer`
 have no place in a slideout. Their content is kept but not shown.
 
-The Save menu (`[Save | v]`) is the same in both: Save, the `defaultFormActions` (Save and continue
-editing, unless the page changes them), and the page's `formActions`, with `formAdditionalButtons`
-and `formAdditionalActions` after it. A slideout without a Vue form gets a plain Save button.
+The Save menu (`[primary-action | v]`) is the same in both: the primary action, which is a Save
+button by default, then a menu of the `defaultFormActions` (Save and continue editing, unless the
+page changes them) and the page's `formActions`, with `formAdditionalButtons` and
+`formAdditionalActions` after it. A slideout without a Vue form gets the primary action alone.
+
+To replace the primary action, fill the `primary-action` slot, or set it on the response. The
+response's button always submits the screen's form:
+
+```php
+return new CpScreenResponse()
+    ->primaryAction(Button::make()->label(t('Apply'))->variant(ButtonVariant::Fill));
+```
+
+```vue
+<LayoutSlot name="primary-action">
+  <craft-button type="submit" variant="fill">Apply</craft-button>
+</LayoutSlot>
+```
+
+The slot wins over the response's button.
 
 ### All regions
 
@@ -124,6 +141,7 @@ and `formAdditionalActions` after it. A slideout without a Vue form gets a plain
 | `content-details`         | Opens the details pane.                   |
 | `content-footer`          |                                           |
 | `additional-buttons`      | In the footer, beside the Save menu.      |
+| `primary-action`          | The Save button; its menu stays.          |
 | `page-footer`             |                                           |
 
 See [slideouts](slideouts.md) for how a page renders in a slideout.

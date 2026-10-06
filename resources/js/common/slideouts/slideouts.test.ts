@@ -25,11 +25,18 @@ vi.mock('@/common/components/FormActions.vue', async () => {
     default: {
       name: 'FormActions',
       props: ['form', 'actionItems'],
-      setup(props: {actionItems: typeof saveMenu.actions}) {
+      setup(
+        props: {actionItems: typeof saveMenu.actions},
+        {slots}: {slots: Record<string, () => unknown>}
+      ) {
         return () => {
           saveMenu.actions = props.actionItems;
 
-          return h('div', {class: 'form-actions'});
+          return h(
+            'div',
+            {class: 'form-actions'},
+            slots['primary-action']?.() as never
+          );
         };
       },
     },
@@ -901,6 +908,63 @@ describe('SlideoutPanel', () => {
     await nextTick();
 
     expect(onSave).toHaveBeenCalled();
+  });
+
+  describe('primary action', () => {
+    const FormPage = defineComponent({
+      setup() {
+        const form: FormPayload = {
+          scope: [],
+          refreshable: false,
+          nodes: [],
+          values: {},
+          errors: [],
+          globalErrors: [],
+        };
+        useAppLayout({form});
+
+        return () =>
+          h(LayoutSlot, {name: 'primary-action'}, () =>
+            h('button', {class: 'from-page'}, 'Publish')
+          );
+      },
+    });
+
+    const outlet = (root: HTMLElement) =>
+      root.querySelector('[data-layout-slot="primary-action"]');
+
+    it('renders the response’s button in place of Save', async () => {
+      const Page = defineComponent({
+        setup() {
+          useAppLayout({form: {} as FormPayload});
+
+          return () => h('div');
+        },
+      });
+
+      const {root} = await mountPanel(Page, {
+        primaryAction:
+          '<craft-button type="submit" variant="fill">Apply</craft-button>',
+      });
+      await nextTick();
+
+      const button = root.querySelector('.form-actions craft-button');
+
+      expect(button?.textContent).toBe('Apply');
+      expect(button?.getAttribute('variant')).toBe('fill');
+    });
+
+    it('lets the page replace it with a layout slot', async () => {
+      const {root} = await mountPanel(FormPage, {
+        primaryAction: '<craft-button type="submit">Apply</craft-button>',
+      });
+      await nextTick();
+
+      expect(outlet(root)?.querySelector('.from-page')?.textContent).toBe(
+        'Publish'
+      );
+      expect(root.querySelector('.form-actions craft-button')).toBeNull();
+    });
   });
 
   it('offers the same Save menu as a full page', async () => {

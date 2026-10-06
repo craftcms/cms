@@ -80,7 +80,7 @@ The Control Panel app shell. Provides the same extension points as Craft 5's
 | \`#revision-indicators\` / \`toolbar\` | \`content-toolbar-meta\` slot |
 | \`additionalButtons\` | \`additional-buttons\` slot |
 | \`actionButton\` | \`content-actions\` slot, beside the title |
-| \`block submitButton\` | \`submitButtonLabel\` prop |
+| \`block submitButton\` | \`primary-action\` slot |
 | \`actionMenu\` | \`content-toolbar-actions\` slot, or the \`formAdditionalActions\` prop to keep it beside Save |
 | \`formActions\` | \`formActions\` / \`defaultFormActions\` props |
 | \`contentNotice\` | \`content-notices\` slot |
@@ -590,10 +590,10 @@ export const ContextMenuAndToolbar: Story = {
 };
 
 /**
- * Equivalent of overriding `block submitButton` in Craft 5 to relabel Save,
- * plus `additionalButtons` before it.
+ * Equivalent of overriding `block submitButton` in Craft 5, plus
+ * `additionalButtons` before it.
  */
-export const CustomSubmitButton: Story = {
+export const CustomPrimaryAction: Story = {
   render: (args) => ({
     components: {AppLayout},
     setup() {
@@ -606,13 +606,16 @@ export const CustomSubmitButton: Story = {
           <craft-button type="button">Save as draft</craft-button>
         </template>
 
+        <template #primary-action>
+          <craft-button type="submit" variant="fill">Publish</craft-button>
+        </template>
+
         ${sampleContent}
       </AppLayout>
     `,
   }),
   args: {
-    title: 'Custom Submit Button',
-    submitButtonLabel: 'Publish',
+    title: 'Custom Primary Action',
   },
 };
 

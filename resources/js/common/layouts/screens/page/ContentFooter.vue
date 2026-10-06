@@ -6,7 +6,9 @@
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
+  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {FormSaveOptions} from '@/common/types';
   import {formActionItems as buildFormActionItems} from '../formActionItems';
@@ -25,6 +27,8 @@
         readOnly: boolean;
         form: InertiaForm<any> | null;
         defaultFormActions: Array<DefaultFormAction>;
+        /** The response's `primaryAction()` button, rendered server-side. */
+        primaryActionHtml?: string | null;
         /**
          * Keeps the row within the content's column, for a constrained content
          * view: the footer's rule still spans the pane, but the save controls
@@ -40,7 +44,12 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  defineSlots<Pick<ScreenSlots, 'content-footer' | 'additional-buttons'>>();
+  defineSlots<
+    Pick<
+      ScreenSlots,
+      'content-footer' | 'additional-buttons' | 'primary-action'
+    >
+  >();
 
   const formActionItems = computed(() =>
     buildFormActionItems(
@@ -68,7 +77,23 @@
         :submit-label="submitButtonLabel"
         :read-only="readOnly"
         :save-disabled="saveDisabled"
-      />
+      >
+        <template #primary-action>
+          <LayoutSlotOutlet name="primary-action">
+            <slot name="primary-action">
+              <DynamicHtmlRenderer
+                v-if="primaryActionHtml"
+                :html="primaryActionHtml"
+              />
+              <PrimaryActionButton
+                v-else
+                :form="form!"
+                :label="submitButtonLabel"
+              />
+            </slot>
+          </LayoutSlotOutlet>
+        </template>
+      </FormActions>
 
       <LayoutSlotOutlet name="additional-buttons">
         <slot name="additional-buttons"></slot>

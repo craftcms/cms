@@ -70,7 +70,11 @@
   // The slots each region renders, forwarded only when the page filled them
   // so the regions' own fallbacks still apply.
   const HEADER_SLOTS = ['title'] as const;
-  const FOOTER_SLOTS = ['content-footer', 'additional-buttons'] as const;
+  const FOOTER_SLOTS = [
+    'content-footer',
+    'additional-buttons',
+    'primary-action',
+  ] as const;
   const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
 
   const headerSlots = computed(() =>
@@ -97,6 +101,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
@@ -371,6 +376,7 @@
                             :form-additional-actions="formAdditionalActions"
                             :form-additional-buttons="formAdditionalButtons"
                             :submit-button-label="submitButtonLabel"
+                            :primary-action-html="page.props.primaryAction"
                             :save-disabled="saveDisabled"
                             :contained="contentConstrained"
                             @save="save"

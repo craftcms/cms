@@ -48,6 +48,8 @@
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
   import FormActions from '@/common/components/FormActions.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
   import {DEFAULT_FORM_ACTIONS, formActionItems} from './formActionItems';
 
   const emit = defineEmits<{
@@ -88,6 +90,8 @@
     title?: string;
     readOnly?: boolean;
     submitButtonLabel?: string | null;
+    /** The response's `primaryAction()` button, rendered server-side. */
+    primaryAction?: string | null;
     screen?: {
       editUrl?: string | null;
       /** Present on screens that submit server-rendered HTML (`cp/Screen`). */
@@ -513,17 +517,42 @@
           :submit-label="submitLabel"
           :read-only="readOnly"
           :save-disabled="props.saveDisabled"
-        />
+        >
+          <template #primary-action>
+            <LayoutSlotOutlet name="primary-action">
+              <slot name="primary-action">
+                <DynamicHtmlRenderer
+                  v-if="chrome.primaryAction"
+                  :html="chrome.primaryAction"
+                />
+                <PrimaryActionButton v-else :form="form" :label="submitLabel" />
+              </slot>
+            </LayoutSlotOutlet>
+          </template>
+        </FormActions>
         <!-- Server-rendered screens and the element editor have no Vue form
           for the action menu to drive, so they get a plain Save button. -->
-        <craft-button
+        <LayoutSlotOutlet
           v-else-if="canSave && !readOnly && !props.saveDisabled"
-          type="submit"
-          :variant="ButtonVariant.Primary"
-          :loading="submittingHtml || elementEditor.saving.value || undefined"
+          name="primary-action"
         >
-          {{ submitLabel }}
-        </craft-button>
+          <slot name="primary-action">
+            <DynamicHtmlRenderer
+              v-if="chrome.primaryAction"
+              :html="chrome.primaryAction"
+            />
+            <craft-button
+              v-else
+              type="submit"
+              :variant="ButtonVariant.Primary"
+              :loading="
+                submittingHtml || elementEditor.saving.value || undefined
+              "
+            >
+              {{ submitLabel }}
+            </craft-button>
+          </slot>
+        </LayoutSlotOutlet>
       </div>
     </footer>
 

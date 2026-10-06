@@ -113,6 +113,11 @@ export interface ScreenSlots {
   'content-actions'?: () => any;
   /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
+  /**
+   * Replaces the Save button while keeping its action menu. Defaults to the
+   * response's `primaryAction()`, then a Save button. Craft 5: `block submitButton`.
+   */
+  'primary-action'?: () => any;
   /** Replaces the default form error summary. Craft 5: `errorSummary`. */
   'error-summary'?: () => any;
   /** Tabs above the content. Craft 5: `tabs`. */
