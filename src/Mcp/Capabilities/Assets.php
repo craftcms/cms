@@ -289,7 +289,7 @@ readonly class Assets
     }
 
     /** @return array{upload: array<string, mixed>} */
-    #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable upload for assets.create.')]
+    #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable upload. Provide folderId or volumeId for assets.create, or assetId for assets.replace.')]
     public function prepareUpload(
         #[Schema(minLength: 1, maxLength: 255)]
         string $filename,
@@ -299,12 +299,25 @@ readonly class Assets
         ?int $folderId = null,
         #[Schema(minimum: 1)]
         ?int $volumeId = null,
+        #[Schema(minimum: 1)]
+        ?int $assetId = null,
     ): array {
         $actor = $this->actor->user();
-        $folder = $this->targetFolder($folderId, $volumeId);
 
-        if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
-            throw new ToolCallException('You are not authorized to upload assets to this folder.');
+        if ($assetId !== null) {
+            if ($folderId !== null || $volumeId !== null) {
+                throw new ToolCallException('Provide either assetId or an upload destination, not both.');
+            }
+
+            $parameters = ['operation' => 'replace', 'assetId' => $assetId];
+        } else {
+            $folder = $this->targetFolder($folderId, $volumeId);
+
+            if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
+                throw new ToolCallException('You are not authorized to upload assets to this folder.');
+            }
+
+            $parameters = ['operation' => 'upload', 'folderId' => $folder->id];
         }
 
         try {
@@ -312,10 +325,7 @@ readonly class Assets
                 $this->request,
                 $filename,
                 $size,
-                [
-                    'operation' => 'upload',
-                    'folderId' => $folder->id,
-                ],
+                $parameters,
             );
         } catch (AuthorizationException|HttpExceptionInterface $exception) {
             throw new ToolCallException(
@@ -410,6 +420,91 @@ readonly class Assets
         } catch (RuntimeException $exception) {
             throw new ToolCallException($exception->getMessage());
         }
+    }
+
+    /**
+     * @param  array{download_url: string, file_id: string, mime_type?: string, file_name?: string}|null  $file  File reference.
+     * @param  string|null  $filename  Filename override for a file reference. Required if file_name is absent.
+     * @return array{asset: array<string, mixed>}
+     */
+    #[McpTool(
+        name: 'assets.replace',
+        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed assets.upload.prepare uploadId bound to assetId. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+        meta: ['openai/fileParams' => ['file']],
+    )]
+    public function replace(
+        #[Schema(minimum: 1)]
+        int $assetId,
+        #[Schema(format: 'uuid')]
+        ?string $uploadId = null,
+        #[Schema(definition: self::FileSchema)]
+        ?array $file = null,
+        #[Schema(minLength: 1, maxLength: 255)]
+        ?string $filename = null,
+    ): array {
+        $this->actor->user();
+
+        if (($uploadId === null) === ($file === null)) {
+            throw new ToolCallException('Provide exactly one of: uploadId, file.');
+        }
+
+        if ($uploadId !== null && $filename !== null) {
+            throw new ToolCallException('The uploadId already specifies the filename.');
+        }
+
+        try {
+            if ($file !== null) {
+                $filename ??= $file['file_name'] ?? null;
+
+                if ($filename === null || trim($filename) === '') {
+                    throw new ToolCallException('Provide filename when the file reference does not include file_name.');
+                }
+
+                $this->mcpAssetUploads->authorize($this->request, ['operation' => 'replace', 'assetId' => $assetId], $filename, 0);
+
+                return $this->mcpAssetUploads->consumeFile(
+                    $file['download_url'],
+                    $filename,
+                    fn (UploadedFile $source): array => $this->replaceAsset($assetId, $source),
+                );
+            }
+
+            return $this->mcpAssetUploads->consume(
+                $this->request,
+                $uploadId,
+                fn (UploadedFile $source): array => $this->replaceAsset($assetId, $source),
+                operation: 'replace',
+                assetId: $assetId,
+            );
+        } catch (ModelNotFoundException) {
+            throw new ToolCallException('Upload not found or no longer available.');
+        } catch (AuthorizationException|HttpExceptionInterface $exception) {
+            throw new ToolCallException(
+                $exception->getMessage() ?: 'Asset file could not be replaced.',
+                previous: $exception,
+            );
+        } catch (RuntimeException $exception) {
+            throw new ToolCallException($exception->getMessage());
+        }
+    }
+
+    /** @return array{asset: array<string, mixed>} */
+    private function replaceAsset(int $assetId, UploadedFile $source): array
+    {
+        $result = $this->assetUploads->replace($assetId, $source);
+
+        if ($result->status >= 400) {
+            throw new ToolCallException(implode("\n", Arr::flatten($result->errors ?? [])) ?: 'Asset file could not be replaced.');
+        }
+
+        $asset = $this->assets->getAssetById($assetId);
+
+        if (! $asset) {
+            throw new ToolCallException('Asset not found.');
+        }
+
+        return ['asset' => $this->elementSerializer->serialize($asset)];
     }
 
     /**

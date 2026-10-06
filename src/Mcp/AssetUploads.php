@@ -47,11 +47,13 @@ readonly class AssetUploads implements UploadHandler
      * @param  Closure(UploadedFile, array<string, mixed>): T  $callback
      * @return T
      */
-    public function consume(Request $request, string $id, Closure $callback): mixed
+    public function consume(Request $request, string $id, Closure $callback, string $operation = 'upload', ?int $assetId = null): mixed
     {
-        return $this->uploads->withSession($request, $id, function (UploadSession $session, Uploader $uploader) use ($callback) {
+        return $this->uploads->withSession($request, $id, function (UploadSession $session, Uploader $uploader) use ($operation, $callback, $assetId) {
             abort_unless($session->handler === self::class, 404);
             abort_if($session->result !== null, 409, 'This upload has already completed.');
+            abort_unless(($session->parameters['operation'] ?? null) === $operation, 422, 'The upload operation does not match this tool.');
+            abort_if($assetId !== null && ($session->parameters['assetId'] ?? null) !== $assetId, 422, 'The upload was prepared for a different asset.');
 
             $file = $uploader->complete($session);
 
@@ -123,6 +125,6 @@ readonly class AssetUploads implements UploadHandler
     /** @param array<string, mixed> $parameters */
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
-        throw new ConflictHttpException('Complete this upload with the assets.create MCP tool.');
+        throw new ConflictHttpException('Complete this upload with the assets.create or assets.replace MCP tool.');
     }
 }
