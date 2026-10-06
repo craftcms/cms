@@ -114,9 +114,9 @@
 {% set userPhoto = include('_layouts/components/header-photo.twig') %}
 
 {% js at head %}
-// Remove the hash so the browser doesn't scroll to it
+// Read by the legacy tab manager. The hash itself stays on the URL: `craft-tabs`
+// reads it to pick a tab, and a saved screen returns to the tab it was on.
 window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
-history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[0]);
 {% endjs %}
 
 {% block body %}
