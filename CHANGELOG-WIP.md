@@ -143,6 +143,7 @@
 - Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
 - Deprecated `craft\base\PluginTrait`.
 - Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
+- Deprecated `craft\base\Plugin::getVersion()` and `setVersion()`. The `$version` property should be used instead, since Craft 6 plugins don’t have these methods. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Deprecated `craft\errors\InvalidLicenseKeyException`. `CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException` should be used instead.
 - Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
 - Deprecated `craft\errors\InvalidSubpathException`. `CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException` should be used instead.

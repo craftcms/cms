@@ -37,6 +37,7 @@
 - `actionClient` and `apiClient` from `@craftcms/ui` are no longer axios instances. They're now built on a fetch-based HTTP client with the same request methods.
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use Axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
+- Deprecated `craft\base\Plugin::getVersion()` and `setVersion()`. The `$version` property should be used instead. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
 - Removed `Cp.$axios`.
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
@@ -44,6 +45,8 @@
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error that could occur on the control panel login page when a Craft 5 plugin’s type registration handlers, such as `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES` listeners, relied on the current user. Legacy type registration events are now triggered when the types are first needed rather than on every request, as they were in Craft 5. ([#19851](https://github.com/craftcms/cms/pull/19851))
+- Fixed a bug where `craft\base\Plugin::getVersion()` returned `1.0` for Craft 5 plugins, rather than the version from their Composer manifest. ([#19850](https://github.com/craftcms/cms/pull/19850))
+- Fixed a bug where Craft 5 plugins’ stored settings that didn’t have a validation rule weren’t loaded, so they reverted to their default values. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error where MCP CORS preflight requests collected admin instructions without an authenticated user.
 - Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
