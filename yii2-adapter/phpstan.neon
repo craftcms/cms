@@ -5,6 +5,9 @@ includes:
 parameters:
     phpVersion: 80500
     level: 5
+    # PHPStan 2.3 boots Laravel in each worker; concurrent boots race to create runtime directories.
+    parallel:
+        maximumNumberOfProcesses: 1
     paths:
         - src
         - legacy
