@@ -76,6 +76,10 @@ import {
  * @cssproperty --c-chip-shadow - Box shadow. Defaults to `--c-shadow-sm`.
  * @cssproperty --c-chip-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-chip-border-style - Border style. Defaults to `solid`.
+ *
+ * Label links aren't underlined until hovered, whether slotted straight into
+ * the chip or nested in a `craft-truncate`, which picks up the chip's
+ * `--c-truncate-link-decoration` and `--c-truncate-link-hover-decoration`.
  */
 export default class CraftChip extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
