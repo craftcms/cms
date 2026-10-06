@@ -56,6 +56,12 @@ The default indicator is decorative and deliberately unlabelled: the badge's own
 
 Replace the `prefix` with something meaningful and that changes — give it its own accessible name, such as a `label` on the [Indicator](?path=/docs/components-indicator--docs) or [Icon](?path=/docs/components-icon--docs).
 
+Always give a badge visible text. Without it, a badge is only a coloured dot, and sighted users can tell its status only by colour, which fails WCAG 1.4.1 Use of Color.
+An accessible name doesn't fix this, whether it's an `aria-label` or a labelled Indicator in `prefix`: it reaches screen-reader users, but not people who can't tell the colours apart.
+A tooltip doesn't fix it either, because it only appears on hover or focus.
+
+If space is tight, keep a short visible word, such as "Live" or "Off", rather than dropping the text.
+
 ## Properties
 
 <ArgTypes of={BadgeStories} />
