@@ -147,6 +147,7 @@
       regions.has('content-toolbar-actions')
   );
   const hasDetails = computed(() => regions.has('content-details'));
+  const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
   // standing empty.
@@ -342,9 +343,13 @@
                           </div>
                         </slot>
 
-                        <LayoutSlotOutlet name="content-tabs">
-                          <slot name="content-tabs"></slot>
-                        </LayoutSlotOutlet>
+                        <CpContainer v-show="hasTabs">
+                          <div>
+                            <LayoutSlotOutlet name="content-tabs">
+                              <slot name="content-tabs"></slot>
+                            </LayoutSlotOutlet>
+                          </div>
+                        </CpContainer>
                         <slot></slot>
                       </div>
                       <!-- Outside the content view, so its rule spans the pane even when
