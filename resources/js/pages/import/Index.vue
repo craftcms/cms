@@ -44,11 +44,25 @@
     );
   }
 
-  function runAction(body: Record<string, string | null>): ActionItems[number] {
+  function runAction(
+    body: Record<string, string | null>,
+    row: ImportRow
+  ): ActionItems[number] {
     return {
       type: 'button',
       label: t('Run'),
-      onClick: () => router.post(run().url, body),
+      onClick: () => {
+        if (
+          !window.confirm(
+            t('Are you sure you want to run “{name}”?', {
+              name: row.original.name,
+            })
+          )
+        ) {
+          return;
+        }
+        router.post(run().url, body);
+      },
     };
   }
 
@@ -76,7 +90,7 @@
         ];
 
         if (props.canTrigger) {
-          actions.push(runAction({uid: row.original.uid}));
+          actions.push(runAction({uid: row.original.uid}, row));
         }
 
         if (props.canSave) {
@@ -186,7 +200,7 @@
 
         return [
           h(ActionMenu, {
-            actions: [runAction({handle: row.original.handle})],
+            actions: [runAction({handle: row.original.handle}, row)],
           }),
         ];
       }),
