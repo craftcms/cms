@@ -102,7 +102,9 @@ test('stops resetting its state once it is removed', async () => {
   item.click();
   await new Promise((resolve) => setTimeout(resolve, 0));
   item.remove();
-  await new Promise((resolve) => setTimeout(resolve, item.feedbackDuration * 3));
+  await new Promise((resolve) =>
+    setTimeout(resolve, item.feedbackDuration * 3)
+  );
 
   expect(states).toEqual(['success']);
 });
