@@ -845,7 +845,8 @@ class HtmlStack
                     Html::script($this->loadJs()),
                 ]),
             )
-            ->map(fn (string|Stringable $part) => (string) $part);
+            ->map(fn (string|Stringable $part) => (string) $part)
+            ->values();
     }
 
     private function dispatchAssetsRenderingEvent(): void
