@@ -91,7 +91,6 @@ class Plugin extends Module implements PluginInterface
     public function __construct($id, $parent = null, array $config = [])
     {
         $this->handle = $id;
-        $this->version = $this->getVersion();
 
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call t() or Plugin::getInstance().
@@ -135,6 +134,27 @@ class Plugin extends Module implements PluginInterface
         }
 
         parent::__construct($id, $parent, $config);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * Yii keeps the version in a private store of its own, which `$version` —
+     * declared on {@see PluginTrait} to match Craft 6 — shadows. Both names have
+     * to answer the same thing: Craft populates `$version` from the Composer
+     * manifest, while plugins gate their integrations on `getVersion()`.
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setVersion($version): void
+    {
+        $this->version = is_scalar($version) ? (string)$version : (string)call_user_func($version, $this);
     }
 
     /**
