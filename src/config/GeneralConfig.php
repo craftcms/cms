@@ -278,6 +278,7 @@ class GeneralConfig extends BaseConfig
         'jpx',
         'js',
         'json',
+        'jxl',
         'lrc',
         'm2t',
         'm4a',
