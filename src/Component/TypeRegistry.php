@@ -51,16 +51,8 @@ abstract class TypeRegistry
     }
 
     /**
-     * Defers a callback until the registry is first read.
-     *
-     * Registration that can't run at boot — because it depends on request state
-     * that isn't established yet, such as the current user — belongs here rather
-     * than in a service provider's `boot()`. The callback runs at most once, on
-     * the first call to {@see self::types()}, and may register and remove types
-     * freely: reads made from inside it see the registry as it stands, without
-     * re-entering the deferred callbacks.
-     *
-     * A registry that's never read never runs them.
+     * Defers a callback until the registry is first read, for registration that
+     * needs request state. It runs once; reads made inside it don't re-enter it.
      *
      * @param  Closure(static): void  $callback
      */

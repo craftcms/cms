@@ -140,14 +140,8 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      *
-     * Yii keeps the version in a private store of its own, which `$version` —
-     * declared on {@see PluginTrait} to match Craft 6 — shadows. Both have to
-     * answer the same thing while this base class exists: Craft populates
-     * `$version` from the Composer manifest, and a plugin gating on another
-     * plugin's version reads it through here.
-     *
-     * Craft 6 plugins have no such method, so a version check made against one
-     * fatals. Reading `$version` works on either.
+     * `$version` holds the Composer manifest's version and shadows Yii's own
+     * private store, so this reads the property rather than `parent`.
      *
      * @deprecated 6.0.0 read the `$version` property instead.
      */

@@ -10,11 +10,9 @@ namespace craft\base;
 /**
  * Utility is the base class for classes representing control panel utilities.
  *
- * Craft 5 had this extend `Component`, which made every utility a model. Nothing
- * ever used that — `UtilityInterface` is static from top to bottom and utilities
- * are never instantiated — whereas extending the Craft 6 class is what lets a
- * plugin's utility survive `UtilityTypes`' contract check and show up in the
- * control panel without being ported.
+ * Extends the Craft 6 class so that legacy utilities satisfy `UtilityTypes`'
+ * contract. Craft 5 extended `Component`, but `UtilityInterface` is static
+ * throughout and utilities are never instantiated, so nothing is lost.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
