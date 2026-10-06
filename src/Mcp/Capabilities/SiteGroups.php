@@ -9,10 +9,8 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups as SiteGroupService;
 use CraftCms\Cms\Support\Arr;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
-use Mcp\Schema\ToolAnnotations;
 
 /**
  * @since 6.0.0
@@ -22,11 +20,6 @@ readonly class SiteGroups
     public function __construct(private SiteGroupService $siteGroups) {}
 
     /** @return array{count: int, groups: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'site-groups.list',
-        description: 'Lists Craft CMS site groups.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -42,11 +35,6 @@ readonly class SiteGroups
     }
 
     /** @return array{group: array<string, mixed>} */
-    #[McpTool(
-        name: 'site-groups.get',
-        description: 'Gets a Craft CMS site group by ID or UID.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -67,7 +55,6 @@ readonly class SiteGroups
     }
 
     /** @return array{group: array<string, mixed>} */
-    #[McpTool(name: 'site-groups.create', description: 'Creates a Craft CMS site group.')]
     #[RequiresAdminChanges]
     public function create(string $name): array
     {
@@ -81,11 +68,6 @@ readonly class SiteGroups
     }
 
     /** @return array{group: array<string, mixed>} */
-    #[McpTool(
-        name: 'site-groups.update',
-        description: 'Updates a Craft CMS site group.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         string $name,
@@ -109,11 +91,6 @@ readonly class SiteGroups
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'site-groups.delete',
-        description: 'Deletes a Craft CMS site group.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

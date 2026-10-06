@@ -13,11 +13,9 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -31,11 +29,6 @@ readonly class Volumes
     ) {}
 
     /** @return array{count: int, volumes: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'volumes.list',
-        description: 'Lists Craft CMS asset volumes.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -51,11 +44,6 @@ readonly class Volumes
     }
 
     /** @return array{volume: array<string, mixed>} */
-    #[McpTool(
-        name: 'volumes.get',
-        description: 'Gets a Craft CMS asset volume by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -85,7 +73,6 @@ readonly class Volumes
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{volume: array<string, mixed>}
      */
-    #[McpTool(name: 'volumes.create', description: 'Creates a Craft CMS asset volume.')]
     #[RequiresAdminChanges]
     public function create(
         string $name,
@@ -140,11 +127,6 @@ readonly class Volumes
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{volume: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'volumes.update',
-        description: 'Updates a Craft CMS asset volume.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -203,11 +185,6 @@ readonly class Volumes
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'volumes.delete',
-        description: 'Deletes a Craft CMS asset volume.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

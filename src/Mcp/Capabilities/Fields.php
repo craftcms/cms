@@ -15,12 +15,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -31,11 +29,6 @@ readonly class Fields
     public function __construct(private FieldService $fields) {}
 
     /** @return array{count: int, fields: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'fields.list',
-        description: 'Lists Craft CMS fields.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -51,11 +44,6 @@ readonly class Fields
     }
 
     /** @return array{field: array<string, mixed>} */
-    #[McpTool(
-        name: 'fields.get',
-        description: 'Gets a Craft CMS field by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -77,7 +65,6 @@ readonly class Fields
      * @param  array<string, mixed>  $settings  Type-specific field settings.
      * @return array{field: array<string, mixed>}
      */
-    #[McpTool(name: 'fields.create', description: 'Creates a Craft CMS field.')]
     #[RequiresAdminChanges]
     public function create(
         string $type,
@@ -119,11 +106,6 @@ readonly class Fields
      * @param  array<string, mixed>  $settings  Type-specific field settings to update.
      * @return array{field: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'fields.update',
-        description: 'Updates a Craft CMS field. Changing its field type is not supported.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -168,11 +150,6 @@ readonly class Fields
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'fields.delete',
-        description: 'Deletes a Craft CMS field.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

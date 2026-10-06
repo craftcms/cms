@@ -14,11 +14,9 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -29,11 +27,6 @@ readonly class ImageTransforms
     public function __construct(private ImageTransformService $imageTransforms) {}
 
     /** @return array{count: int, transforms: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'image-transforms.list',
-        description: 'Lists Craft CMS image transforms.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -49,11 +42,6 @@ readonly class ImageTransforms
     }
 
     /** @return array{transform: array<string, mixed>} */
-    #[McpTool(
-        name: 'image-transforms.get',
-        description: 'Gets a Craft CMS image transform by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -87,7 +75,6 @@ readonly class ImageTransforms
      * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by asset transformer UID.
      * @return array{transform: array<string, mixed>}
      */
-    #[McpTool(name: 'image-transforms.create', description: 'Creates a Craft CMS image transform.')]
     #[RequiresAdminChanges]
     public function create(
         string $name,
@@ -147,11 +134,6 @@ readonly class ImageTransforms
      * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by asset transformer UID.
      * @return array{transform: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'image-transforms.update',
-        description: 'Updates a Craft CMS image transform.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -211,11 +193,6 @@ readonly class ImageTransforms
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'image-transforms.delete',
-        description: 'Deletes a Craft CMS image transform.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

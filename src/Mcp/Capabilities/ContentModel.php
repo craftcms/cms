@@ -108,7 +108,7 @@ readonly class ContentModel
                 {$focusInstruction}
 
                 1. Run `content-model.audit` with {$arguments}.
-                2. Cross-check each finding with detail capabilities such as `fields.get`, `entry-types.get`, and `sections.get`.
+                2. Cross-check each finding with `configuration.get`, selecting `fields`, `entry-types`, or `sections` as the type.
                 3. Treat unused and duplicate items as review candidates. Check templates, modules, plugins, and external integrations before recommending removal or merging.
                 4. For images without alt text, inspect their context before recommending an update with `elements.update`.
                 5. Summarize what needs attention, why it was flagged, and the next non-destructive action.

@@ -58,7 +58,7 @@ An MCP capability is a public method on a class, marked with one of the SDK's at
 
 Identities must be unique across core and every plugin. Craft throws a `LogicException` when two capabilities share an identity, so a plugin cannot replace a core capability.
 
-Core tools use dotted, resource-oriented names, such as `elements.list`, `sections.create`, and `drafts.apply`. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
+Core tools use dotted, resource-oriented names, such as `elements.list`, `configuration.create`, and `drafts.apply`. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
 
 ### Element tools
 
@@ -87,6 +87,25 @@ The tools' own input schemas are kept small, because clients load every tool def
 Craft validates `criteria`, `attributes`, and `context` against these schemas and returns a tool error naming each invalid property. Attributes a schema doesn't declare are rejected.
 
 Operations that only make sense for one type keep their own tools, such as `assets.create`, which takes the file to upload, and `users.field-layout.update`.
+
+### Configuration tools
+
+Six tools manage sections, entry types, fields, volumes, sites, site groups, user groups, image transforms, and routes:
+
+| Tool | Purpose |
+| --- | --- |
+| `configuration.schema` | Lists types and available operations, or returns a selected operation's input schema and deletion effects |
+| `configuration.list` | Returns `{type, count, items}` for one type |
+| `configuration.get` | Returns `{type, item}` for a supported identifier |
+| `configuration.create` | Creates a record from `attributes` and returns `{type, item}` |
+| `configuration.update` | Updates supplied `attributes` and returns `{type, item}` |
+| `configuration.delete` | Deletes a record with optional type-specific `options` and returns `{type, deleted: true}` |
+
+Call `configuration.schema` without arguments to discover type values. Supply `type` and `operation` to fetch the full input schema before calling that operation. Craft validates the input against this schema before dispatching to the type's configuration service. These schemas are loaded on demand rather than repeated in the tool catalog.
+
+Put exactly one supported lookup key in `identifier`. Keep replacement values in `attributes`, so an update can use `{"identifier": {"handle": "news"}, "attributes": {"handle": "articles"}}`. Omitted attributes retain their values; explicit nulls are accepted only where the selected schema permits them. The outer `type` selects the configuration type; `attributes.type` can select a section kind or field class.
+
+All configuration tools require administrator access. Writes also require `allowAdminChanges`. Read the selected delete schema's effects before deleting: behavior depends on the type and can affect related content. For sites, `options.transferContentTo` selects the destination site ID. Existing `craft://` resources remain available. Permission assignment and project-config operations keep their dedicated tools.
 
 ## Authentication
 

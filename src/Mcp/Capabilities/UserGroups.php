@@ -13,12 +13,10 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\UserGroups as UserGroupService;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -29,11 +27,6 @@ readonly class UserGroups
     public function __construct(private UserGroupService $userGroups) {}
 
     /** @return array{count: int, groups: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'user-groups.list',
-        description: 'Lists Craft CMS user groups.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -49,11 +42,6 @@ readonly class UserGroups
     }
 
     /** @return array{group: array<string, mixed>} */
-    #[McpTool(
-        name: 'user-groups.get',
-        description: 'Gets a Craft CMS user group by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -75,10 +63,6 @@ readonly class UserGroups
     }
 
     /** @return array{group: array<string, mixed>} */
-    #[McpTool(
-        name: 'user-groups.create',
-        description: 'Creates a Craft CMS user group. Assign permissions separately with user-permissions.group.set.',
-    )]
     #[RequiresAdminChanges]
     public function create(
         string $name,
@@ -102,11 +86,6 @@ readonly class UserGroups
      * @param  string|null  $currentHandle  Existing user group handle.
      * @return array{group: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'user-groups.update',
-        description: 'Updates a Craft CMS user group. Assign permissions separately with user-permissions.group.set.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -141,11 +120,6 @@ readonly class UserGroups
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'user-groups.delete',
-        description: 'Deletes a Craft CMS user group.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

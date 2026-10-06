@@ -13,11 +13,9 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
-use Mcp\Schema\ToolAnnotations;
 
 /**
  * @since 6.0.0
@@ -39,11 +37,6 @@ readonly class Sites
     public function __construct(private SiteService $sites) {}
 
     /** @return array{count: int, sites: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'sites.list',
-        description: 'Lists Craft CMS sites.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -59,11 +52,6 @@ readonly class Sites
     }
 
     /** @return array{site: array<string, mixed>} */
-    #[McpTool(
-        name: 'sites.get',
-        description: 'Gets a Craft CMS site by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -88,7 +76,6 @@ readonly class Sites
      * @param  array<string, mixed>  $attributes  Native Craft site attributes.
      * @return array{site: array<string, mixed>}
      */
-    #[McpTool(name: 'sites.create', description: 'Creates a Craft CMS site.')]
     #[RequiresAdminChanges]
     public function create(
         #[Schema(
@@ -111,11 +98,6 @@ readonly class Sites
      * @param  array<string, mixed>  $attributes  Native Craft site attributes to update.
      * @return array{site: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'sites.update',
-        description: 'Updates a Craft CMS site.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         ?int $id = null,
@@ -148,11 +130,6 @@ readonly class Sites
      * @param  int|null  $transferContentTo  Site ID to transfer content to.
      * @return array{deleted: true}
      */
-    #[McpTool(
-        name: 'sites.delete',
-        description: 'Deletes a Craft CMS site.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

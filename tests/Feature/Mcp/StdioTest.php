@@ -48,17 +48,17 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
     });
 
     $editor = User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'editor']);
-    $call = static fn (string $tool): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool]];
+    $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
-    $admin = ($this->serve)(User::query()->firstOrFail()->username, [$call('sections.list'), $call('assets.upload.prepare')]);
-    $editorResponses = ($this->serve)($editor->email, [$call('sections.list')]);
+    $admin = ($this->serve)(User::query()->firstOrFail()->username, [$call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
+    $editorResponses = ($this->serve)($editor->email, [$call('configuration.list', ['type' => 'sections'])]);
 
-    expect($admin['sections.list'])->not->toHaveKey('error')
+    expect($admin['configuration.list'])->not->toHaveKey('error')
         ->and($admin['init']['result']['instructions'])->toContain('hardDelete')
         ->toEndWith("Preserve legal notices.\n\nUse reviews.list before changing a product.")
-        ->and($admin['sections.list']['result']['structuredContent'])->toHaveKey('sections')
+        ->and($admin['configuration.list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
         ->and($admin['assets.upload.prepare']['error']['message'])->toBe('Tool not found: "assets.upload.prepare".')
-        ->and($editorResponses['sections.list']['error']['message'])->toBe('Tool not found: "sections.list".');
+        ->and($editorResponses['configuration.list']['error']['message'])->toBe('Tool not found: "configuration.list".');
 });
 
 it('attributes every message’s activity to the named user and the MCP origin', function (): void {

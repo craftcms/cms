@@ -17,12 +17,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -65,11 +63,6 @@ readonly class Sections
     public function __construct(private SectionService $sections) {}
 
     /** @return array{count: int, sections: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'sections.list',
-        description: 'Lists Craft CMS sections.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -85,11 +78,6 @@ readonly class Sections
     }
 
     /** @return array{section: array<string, mixed>} */
-    #[McpTool(
-        name: 'sections.get',
-        description: 'Gets a Craft CMS section by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -116,7 +104,6 @@ readonly class Sections
      * @param  list<array{label: string, urlFormat: string}>|null  $previewTargets  Preview target configs.
      * @return array{section: array<string, mixed>}
      */
-    #[McpTool(name: 'sections.create', description: 'Creates a Craft CMS section.')]
     #[RequiresAdminChanges]
     public function create(
         string $name,
@@ -167,11 +154,6 @@ readonly class Sections
      * @param  list<array{label: string, urlFormat: string}>|null  $previewTargets  Preview target configs.
      * @return array{section: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'sections.update',
-        description: 'Updates a Craft CMS section.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -230,11 +212,6 @@ readonly class Sections
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'sections.delete',
-        description: 'Deletes a Craft CMS section.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,

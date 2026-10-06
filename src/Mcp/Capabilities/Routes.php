@@ -10,11 +10,9 @@ use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Exceptions\InvalidRouteException;
 use CraftCms\Cms\Route\Routes as RouteService;
 use CraftCms\Cms\Support\Arr;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -37,11 +35,6 @@ readonly class Routes
     public function __construct(private RouteService $routes) {}
 
     /** @return array{count: int, routes: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'routes.list',
-        description: 'Lists Craft CMS routes available to the current site.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -61,11 +54,6 @@ readonly class Routes
      * @param  string|null  $uri  Computed route URI, such as blog/{slug}.
      * @return array{route: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'routes.get',
-        description: 'Gets a Craft CMS route by UID or URI.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         #[Schema(format: 'uuid')]
@@ -91,7 +79,6 @@ readonly class Routes
      * @param  string|null  $siteUid  Optional site UID this route is limited to.
      * @return array{route: array<string, mixed>}
      */
-    #[McpTool(name: 'routes.create', description: 'Creates a Craft CMS route.')]
     #[RequiresAdminChanges]
     public function create(
         #[Schema(items: self::UriPartSchema)]
@@ -119,11 +106,6 @@ readonly class Routes
      * @param  string|null  $siteUid  Optional site UID this route is limited to.
      * @return array{route: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'routes.update',
-        description: 'Updates a Craft CMS route.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -167,11 +149,6 @@ readonly class Routes
      * @param  string|null  $uri  Computed route URI, such as blog/{slug}.
      * @return array{deleted: true}
      */
-    #[McpTool(
-        name: 'routes.delete',
-        description: 'Deletes a Craft CMS route.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         #[Schema(format: 'uuid')]

@@ -17,12 +17,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
-use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
 
 /**
@@ -36,11 +34,6 @@ readonly class EntryTypes
     ) {}
 
     /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
-    #[McpTool(
-        name: 'entry-types.list',
-        description: 'Lists Craft CMS entry types.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -56,11 +49,6 @@ readonly class EntryTypes
     }
 
     /** @return array{entryType: array<string, mixed>} */
-    #[McpTool(
-        name: 'entry-types.get',
-        description: 'Gets a Craft CMS entry type by ID, UID, or handle.',
-        annotations: new ToolAnnotations(readOnlyHint: true),
-    )]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -85,7 +73,6 @@ readonly class EntryTypes
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{entryType: array<string, mixed>}
      */
-    #[McpTool(name: 'entry-types.create', description: 'Creates a Craft CMS entry type.')]
     #[RequiresAdminChanges]
     public function create(
         string $name,
@@ -142,11 +129,6 @@ readonly class EntryTypes
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
      * @return array{entryType: array<string, mixed>}
      */
-    #[McpTool(
-        name: 'entry-types.update',
-        description: 'Updates a Craft CMS entry type.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function update(
         RequestContext $context,
@@ -217,11 +199,6 @@ readonly class EntryTypes
     }
 
     /** @return array{deleted: true} */
-    #[McpTool(
-        name: 'entry-types.delete',
-        description: 'Deletes a Craft CMS entry type.',
-        annotations: new ToolAnnotations(destructiveHint: true),
-    )]
     #[RequiresAdminChanges]
     public function delete(
         ?int $id = null,
