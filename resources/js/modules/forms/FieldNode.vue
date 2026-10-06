@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
-  import {actionClient} from '@craftcms/ui';
+  import {actionClient, isHttpError} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useEventListener} from '@vueuse/core';
-  import axios from 'axios';
   import {
     computed,
     getCurrentInstance,
@@ -34,6 +33,7 @@
   import type {
     FormChange,
     FormChangeKind,
+    FormControlPayload,
     FormNodePayload,
     FormPayload,
     FormValue,
@@ -57,10 +57,12 @@
   };
 
   type FieldNodeProps = {
+    id?: string;
     label?: string | null;
     /** Visually hides the label, keeping it available to screen readers. */
     labelSrOnly?: boolean;
     instructions?: string | null;
+    instructionsHtml?: string;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
     tip?: string;
@@ -181,14 +183,29 @@
     );
   }
 
-  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
+  function setValue(
+    value: FormValue,
+    kind: FormChangeKind = 'discrete',
+    /**
+     * Either an updated control definition (nested Blocks controls) or a
+     * fully formed change (editable table rows bound to their own paths).
+     */
+    detail?: FormControlPayload<object> | FormChange
+  ): void {
     setPathValue(props.values, control.value.path, value);
+
+    if (detail && !('component' in detail)) {
+      emit('change', detail);
+
+      return;
+    }
 
     emit('change', {
       kind,
       path: control.value.path,
       scope: props.scope,
       refreshable: refreshable.value,
+      control: detail,
     });
   }
 
@@ -264,7 +281,7 @@
       copyDetail.value = undefined;
       Craft.cp?.displayNotice?.(data.message);
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
       Craft.cp?.displayError?.(
@@ -279,10 +296,14 @@
 <template>
   <craft-field
     ref="field"
-    :id="fieldId(control.path)"
+    :id="resolvedNode.props.id ?? fieldId(control.path)"
     :label="resolvedNode.props.label ?? undefined"
     :label-sr-only="resolvedNode.props.labelSrOnly || undefined"
-    :help-text="resolvedNode.props.instructions ?? undefined"
+    :help-text="
+      resolvedNode.props.instructionsHtml
+        ? undefined
+        : (resolvedNode.props.instructions ?? undefined)
+    "
     :instructions-position="resolvedNode.props.instructionsPosition"
     :required="Boolean(resolvedNode.props.required)"
     :readonly="control.mode === 'readOnly'"
@@ -312,6 +333,11 @@
         @change="onChange"
       />
     </div>
+    <span
+      v-if="resolvedNode.props.instructionsHtml"
+      slot="help-text"
+      v-html="resolvedNode.props.instructionsHtml"
+    />
     <span
       v-if="resolvedNode.props.tipHtml"
       slot="tip"

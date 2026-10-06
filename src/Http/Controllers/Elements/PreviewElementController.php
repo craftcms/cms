@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 class PreviewElementController
 {
     use EditsElement;

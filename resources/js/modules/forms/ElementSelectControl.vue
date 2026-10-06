@@ -17,6 +17,8 @@
   } from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -33,6 +35,8 @@
      * fills the rest in.
      */
     url?: string | null;
+    /** The element's control panel edit screen, if it has one. */
+    cpEditUrl?: string | null;
     canEdit?: boolean;
     canCopy?: boolean;
     draftId?: number | null;
@@ -606,8 +610,33 @@
    */
   function openEditor(value: number | string): void {
     const element = presentation(value);
+    const elementType = props.control.props.elementType;
 
-    Craft.createElementEditor(props.control.props.elementType, {
+    if (canUseVueSlideout()) {
+      const href =
+        element.cpEditUrl ??
+        EditElementController[
+          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
+        ].url(undefined, {
+          query: {
+            elementType,
+            elementId: element.id,
+            siteId: element.siteId ?? null,
+          },
+        });
+
+      if (href) {
+        void openSlideout(href, {
+          // Registering a handler keeps a save from reloading the page behind,
+          // which would throw away the owner's unsaved edits.
+          onSaved: () => {},
+        });
+
+        return;
+      }
+    }
+
+    Craft.createElementEditor(elementType, {
       elementId: element.id,
       siteId: element.siteId ?? null,
     });
@@ -625,7 +654,7 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-2 pb-2" slot="header">
+      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
         <craft-button
           ref="addButton"
           type="button"
@@ -756,7 +785,7 @@
       </div>
 
       <div slot="footer">
-        <div class="flex justify-between mt-1"></div>
+        <div class="element-selection-footer"></div>
       </div>
     </component>
   </div>
@@ -773,5 +802,14 @@
     border-start-start-radius: var(--c-radius-md);
     border-start-end-radius: var(--c-radius-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .element-selection-footer {
+    display: flex;
+    justify-content: space-between;
+
+    &:not(:empty) {
+      margin-block-start: var(--c-spacing-sm);
+    }
   }
 </style>

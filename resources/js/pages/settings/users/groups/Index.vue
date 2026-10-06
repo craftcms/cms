@@ -3,7 +3,7 @@
   import {h} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {
     create,
     destroy,
@@ -14,7 +14,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import type {UserGroup} from '@/common/types';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     groups: Array<UserGroup>;
@@ -22,7 +21,7 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<UserGroup>();
-  const table = useVueTable({
+  const table = useCraftTable({
     get columns() {
       return [
         columnHelper.link('name', {
@@ -51,7 +50,6 @@
     get data() {
       return props.groups;
     },
-    getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
 </script>
 
@@ -62,8 +60,8 @@
     }}</CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
-    <AdminTable :table="table">
+  <div class="@container">
+    <AdminTable class="admin-table--padded" :table="table">
       <template #empty-row>
         <craft-empty icon="users" :label="t('No groups exist yet.')">
           <CpButtonLink :href="create().url" icon="plus">{{
@@ -72,5 +70,5 @@
         </craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 </template>

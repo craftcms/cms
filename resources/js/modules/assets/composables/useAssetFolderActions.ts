@@ -1,4 +1,4 @@
-import {actionClient, getActionUrl, t} from '@craftcms/ui';
+import {actionClient, getActionUrl, t, isHttpError} from '@craftcms/ui';
 import {useEventListener} from '@vueuse/core';
 import {computed, shallowRef} from 'vue';
 import {router} from '@inertiajs/vue3';
@@ -7,8 +7,7 @@ import {
   type FolderConflictResolution,
   moveFolders,
 } from '@/modules/assets/assetMover';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
-import axios from 'axios';
+import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
 
 interface FolderActionDetail {
   elementIds?: Array<string | number>;
@@ -43,8 +42,11 @@ function folderIds(action: FolderActionDetail): number[] {
     .map(Number);
 }
 
-export function useAssetFolderActions() {
-  const {table, onActionPerformed} = useElementIndexTable();
+export function useAssetFolderActions(index: ElementIndexOperations) {
+  function onActionPerformed(): void {
+    index.clearSelection();
+    void index.refresh();
+  }
   const newFolderParentId = shallowRef<number | null>(null);
   const newFolderName = shallowRef('');
   const newFolderError = shallowRef<string | null>(null);
@@ -96,7 +98,7 @@ export function useAssetFolderActions() {
       closeNewFolder();
       onActionPerformed();
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('Couldn’t create the folder.'))
         : t('Couldn’t create the folder.');
       newFolderError.value = message;
@@ -114,10 +116,8 @@ export function useAssetFolderActions() {
     if (!folderId) return;
 
     renameFolderId.value = folderId;
-    renameName.value =
-      action.label ??
-      table.value?.getRow(`folder:${folderId}`)?.original?.folderName ??
-      '';
+    const name = index.findRow(`folder:${folderId}`)?.folderName;
+    renameName.value = action.label ?? (typeof name === 'string' ? name : '');
     renameError.value = null;
     navigateAfterRename.value = action.navigate ?? false;
   }
@@ -151,7 +151,7 @@ export function useAssetFolderActions() {
         onActionPerformed();
       }
     } catch (error) {
-      const message = axios.isAxiosError<{message?: string}>(error)
+      const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('Couldn’t rename the folder.'))
         : t('Couldn’t rename the folder.');
       renameError.value = message;
@@ -169,7 +169,7 @@ export function useAssetFolderActions() {
     const label =
       action.label ??
       (ids.length === 1
-        ? table.value?.getRow(`folder:${ids[0]}`)?.original?.folderName
+        ? index.findRow(`folder:${ids[0]}`)?.folderName
         : null) ??
       t('Untitled');
     if (

@@ -12,6 +12,9 @@ use Twig\Source;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class TemplateLoader implements LoaderInterface
 {
     public function __construct(

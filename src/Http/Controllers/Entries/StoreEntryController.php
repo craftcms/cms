@@ -6,10 +6,11 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Data\UserInitiatedElementSaveResult;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
@@ -17,7 +18,6 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\User\Contracts\CraftUser;
-use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -27,6 +27,9 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class StoreEntryController
 {
     use EnforcesPermissions;
@@ -34,11 +37,10 @@ readonly class StoreEntryController
 
     public function __construct(
         private Request $request,
-        private Drafts $drafts,
         private Elements $elements,
         private Entries $entries,
         private Sites $sites,
-        private Workflows $workflows,
+        private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
 
     public function __invoke(): Response
@@ -76,63 +78,19 @@ readonly class StoreEntryController
             $entry->enabled = false;
         }
 
-        // Save the entry (finally!)
-        if ($entry->enabled && $entry->getEnabledForSite()) {
-            $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
+        $result = $duplicate
+            ? $this->saveDuplicate($entry, $currentUser)
+            : $this->userInitiatedElementSave->save($entry, $currentUser);
 
-        $isNotNew = (bool) $entry->id;
-        $saveAsDraft = ! $duplicate && $this->workflows->requiresApproval($entry);
-        if ($isNotNew) {
-            $lockKey = "entry:$entry->id";
-            $mutex = Cache::lock($lockKey, 15);
-            if (! $mutex->get()) {
-                throw new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}.");
-            }
-        }
+        /** @var Entry $entry */
+        $entry = $result->element;
 
-        try {
-            if ($saveAsDraft && $isNotNew) {
-                $entry = $this->drafts->createDraft($entry, $currentUser->getCraftUserId());
-                $success = true;
-            } elseif ($saveAsDraft) {
-                $success = $this->drafts->saveElementAsDraft($entry, $currentUser->getCraftUserId());
-            } else {
-                $success = $this->elements->saveElement($entry);
-            }
-        } catch (InvalidElementException $e) {
-            /** @var Entry $entry */
-            $entry = $e->element;
-            $success = false;
-        } catch (UnsupportedSiteException $e) {
-            $entry->errors()->add('siteId', $e->getMessage());
-            $success = false;
-        } finally {
-            if ($isNotNew) {
-                $mutex->release();
-            }
-        }
-
-        if (! $success) {
+        if (! $result->successful) {
             return $this->asModelFailure(
                 model: $entry,
                 message: t('Couldn’t save entry.'),
                 modelName: $entryVariable
             );
-        }
-
-        // See if the user happens to have a provisional entry. If so delete it.
-        /** @var Entry|null $provisional */
-        $provisional = $saveAsDraft ? null : Entry::find()
-            ->provisionalDrafts()
-            ->draftOf($entry->id)
-            ->draftCreator($currentUser->getCraftUserId())
-            ->siteId($entry->siteId)
-            ->status(null)
-            ->one();
-
-        if ($provisional) {
-            $this->elements->deleteElement($provisional, true);
         }
 
         $data = [];
@@ -234,6 +192,48 @@ readonly class StoreEntryController
         } catch (Throwable $e) {
             throw new Exception(t('An error occurred when duplicating the entry.'), 0, $e);
         }
+    }
+
+    private function saveDuplicate(Entry $entry, CraftUser $currentUser): UserInitiatedElementSaveResult
+    {
+        if ($entry->enabled && $entry->getEnabledForSite()) {
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
+
+        $lock = Cache::lock("entry:{$entry->id}", 15);
+        if (! $lock->get()) {
+            throw new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}.");
+        }
+
+        try {
+            $successful = $this->elements->saveElement($entry);
+        } catch (InvalidElementException $exception) {
+            /** @var Entry $entry */
+            $entry = $exception->element;
+            $successful = false;
+        } catch (UnsupportedSiteException $exception) {
+            $entry->errors()->add('siteId', $exception->getMessage());
+            $successful = false;
+        } finally {
+            $lock->release();
+        }
+
+        if ($successful) {
+            /** @var Entry|null $provisional */
+            $provisional = Entry::find()
+                ->provisionalDrafts()
+                ->draftOf($entry->id)
+                ->draftCreator($currentUser->getCraftUserId())
+                ->siteId($entry->siteId)
+                ->status(null)
+                ->one();
+
+            if ($provisional) {
+                $this->elements->deleteElement($provisional, true);
+            }
+        }
+
+        return new UserInitiatedElementSaveResult($entry, $successful);
     }
 
     private function populateEntry(Entry $entry, CraftUser $currentUser): void

@@ -25,6 +25,8 @@ use function CraftCms\Cms\t;
  * Users represents a Users field.
  *
  * @phpstan-import-type InputObjectFieldConfig from \GraphQL\Type\Definition\InputObjectField
+ *
+ * @since 6.0.0
  */
 class Users extends BaseRelationField
 {

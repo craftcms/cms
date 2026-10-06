@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Database\Events;
 
 use Illuminate\Database\Connection;
 
+/**
+ * @since 6.0.0
+ */
 class BackupCreated
 {
     public function __construct(

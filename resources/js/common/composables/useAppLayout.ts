@@ -20,7 +20,12 @@ export interface UseAppLayoutOptions {
   subnavActions?: Array<ActionItem>;
   /** Caps and centres the content column. See `ScreenProps.contentMaxWidth`. */
   contentMaxWidth?: boolean | string;
-  /** Restores Craft 5's `#main-form`/`#page-container`/`#toolbar`. See `ScreenProps.legacyIds`. */
+  /** The screen's own edit page. See `ScreenProps.editUrl`. */
+  editUrl?: string | null;
+  /**
+   * Restores Craft 5's `#main-form`/`#content`/`#details`/`#page-container`/
+   * `#toolbar`. See `ScreenProps.legacyIds`.
+   */
   legacyIds?: boolean;
   onSave?: (options?: FormSaveOptions) => void;
 }

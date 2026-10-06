@@ -16,13 +16,14 @@ use function CraftCms\Cms\craftAuth;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 class CpAsset implements LegacyAssetInterface
 {
     public array $depends = [
         // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
-        AxiosAsset::class,
         D3Asset::class,
         GarnishAsset::class,
         JqueryAsset::class,

@@ -35,7 +35,11 @@ use Throwable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-/** @phpstan-import-type TextExpanderTrigger from HasTextExpander */
+/**
+ * @phpstan-import-type TextExpanderTrigger from HasTextExpander
+ *
+ * @since 6.0.0
+ */
 readonly class EmailSettingsController
 {
     use RespondsWithFlash;

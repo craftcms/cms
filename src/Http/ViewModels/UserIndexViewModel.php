@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
  *
  * A `slug` path segment (`users/admins`, `users/{groupHandle}`) selects the
  * matching source — every user source publishes its slug in `data.slug`.
+ *
+ * @since 6.0.0
  */
 class UserIndexViewModel extends ContentIndexViewModel
 {
@@ -86,7 +88,7 @@ class UserIndexViewModel extends ContentIndexViewModel
             return null;
         }
 
-        foreach ($this->sources() as $source) {
+        foreach ($this->allSources() as $source) {
             if (isset($source['key']) && ($source['data']['slug'] ?? null) === $this->slug) {
                 return $source['key'];
             }

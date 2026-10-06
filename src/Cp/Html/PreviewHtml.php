@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Container\Attributes\Singleton;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class PreviewHtml
 {
@@ -35,7 +38,7 @@ readonly class PreviewHtml
         }
 
         $first = array_shift($elements);
-        $html = Html::beginTag('div', ['class' => ['inline-chips', 'no-truncate']]).
+        $html = Html::beginTag('div', ['class' => ['inline-chips', 'no-truncate', 'flex', 'flex-wrap', 'items-center', 'gap-sm']]).
             $this->elementHtml->elementChipHtml($first, [
                 'showDraftName' => $showDraftName,
                 'showLabel' => $showLabel,
@@ -55,15 +58,14 @@ readonly class PreviewHtml
                     'size' => $size,
                 ]);
             }
-            $html .= Html::tag('span', '+'.$this->i18N->getFormatter()->asInteger(count($elements)), [
+            $html .= Html::tag('craft-button', '+'.$this->i18N->getFormatter()->asInteger(count($elements)), [
+                'type' => 'button',
                 'title' => implode(', ', array_map(fn (ElementInterface $element) => $element->id, $elements)),
-                'class' => 'btn small',
-                'role' => 'button',
-                'tabindex' => 0,
+                'size' => 'small',
+                'variant' => 'plain',
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],
-                'aria-expanded' => 'false',
                 'onkeydown' => 'Craft.cp.previewCountBadge(event, this, true)', // have to use keydown or the page will scroll
                 'onclick' => 'Craft.cp.previewCountBadge(event, this, true)',
             ]);
@@ -83,7 +85,7 @@ readonly class PreviewHtml
         }
 
         $first = array_shift($components);
-        $html = Html::beginTag('div', ['class' => 'flex flex-wrap items-center gap-1']).
+        $html = Html::beginTag('div', ['class' => 'flex flex-wrap items-center gap-sm']).
             $this->elementHtml->chipHtml($first, $chipConfig);
 
         if (! empty($components)) {
@@ -93,9 +95,9 @@ readonly class PreviewHtml
             }
             $html .= Html::tag('craft-button', '+'.$this->i18N->getFormatter()->asInteger(count($components)), [
                 'type' => 'button',
-                'label' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
+                'title' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
                 'size' => 'small',
-                'variant' => 'fill',
+                'variant' => 'plain',
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],

@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Route\ControllerRoute;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
@@ -15,6 +16,9 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SiteRouteController
 {
     public function __construct(
@@ -49,7 +53,7 @@ readonly class SiteRouteController
 
         MatchedElement::set($element, $route);
 
-        if ($route instanceof ControllerRoute) {
+        if ($route instanceof ControllerRoute || $route instanceof ElementRoute) {
             return $route->handle($request, $element);
         }
 

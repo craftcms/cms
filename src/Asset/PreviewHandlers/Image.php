@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class Image extends AssetPreviewHandler
 {
     public function getPreviewHtml(array $variables = []): string

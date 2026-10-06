@@ -12,6 +12,9 @@ use Symfony\Component\Process\PhpExecutableFinder;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class PHP
 {
     /** @var string[]|null */

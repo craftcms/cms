@@ -13,6 +13,9 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 class RepairSectionStructureCommand extends RepairCommand implements PromptsForMissingInput
 {
     use CraftCommand;

@@ -108,6 +108,8 @@ use function CraftCms\Cms\t;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
+ *
+ * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
@@ -1303,12 +1305,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 <svg version="1.1" baseProfile="full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop offset="0%" style="stop-color:var(--$color1-500)" />
-        <stop offset="100%" style="stop-color:var(--$color2-500)" />
+        <stop offset="0%" style="stop-color:var(--color-$color1-500)" />
+        <stop offset="100%" style="stop-color:var(--color-$color2-500)" />
       </linearGradient>
     </defs>
     <circle cx="50" cy="50" r="50" fill="url(#$gradientId)" opacity="0.25"/>
-    <text x="50" y="66" font-size="46" font-weight="500" font-family="sans-serif" text-anchor="middle" fill="var(--text-color)">$initials</text>
+    <text x="50" y="66" font-size="46" font-weight="500" font-family="sans-serif" text-anchor="middle" fill="var(--c-text-default)">$initials</text>
 </svg>
 XML;
     }

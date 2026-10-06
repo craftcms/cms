@@ -4,7 +4,7 @@
   import '@craftcms/ui/components/element-selector-modal/element-selector-modal';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
-  import ModalElementIndex from './ModalElementIndex.vue';
+  import ElementPicker from './ElementPicker.vue';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
@@ -69,7 +69,7 @@
     }))
   );
 
-  const index = ref<InstanceType<typeof ModalElementIndex> | null>(null);
+  const index = ref<InstanceType<typeof ElementPicker> | null>(null);
 
   /**
    * The source the index is showing, which is what an upload targets.
@@ -112,7 +112,7 @@
       the same index sit inside the web component here and inside a plugin's own
       presentation elsewhere.
     -->
-    <ModalElementIndex
+    <ElementPicker
       v-if="indexBody"
       ref="index"
       :action="controller.options.bodyAction"

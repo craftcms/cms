@@ -13,6 +13,8 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * GetAttrAdjuster swaps [[GetAttrExpression]]
  * nodes with [[GetAttrNode]] nodes.
+ *
+ * @since 6.0.0
  */
 class GetAttrAdjuster implements NodeVisitorInterface
 {

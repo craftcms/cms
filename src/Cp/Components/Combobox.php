@@ -9,7 +9,11 @@ use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 
-/** PHP counterpart to the `<craft-combobox>` web component. */
+/**
+ * PHP counterpart to the `<craft-combobox>` web component.
+ *
+ * @since 6.0.0
+ */
 class Combobox extends ViewComponent
 {
     use HasDisabled;

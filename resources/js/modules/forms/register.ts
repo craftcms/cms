@@ -7,6 +7,7 @@ import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
+import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
@@ -16,6 +17,7 @@ import MoneyControl from './MoneyControl.vue';
 import AddressControl from './AddressControl.vue';
 import LinkControl from './LinkControl.vue';
 import TableControl from './TableControl.vue';
+import TableColumnsControl from './TableColumnsControl.vue';
 import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
@@ -24,7 +26,7 @@ import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
 import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
-import NestedElementCardsControl from './nested-elements/NestedElementCardsControl.vue';
+import NestedElementsControl from './nested-elements/NestedElementsControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -78,11 +80,13 @@ export function registerFormComponents(
   components.register('craft:date-time', DateTimeControl);
   components.register('craft:time', TextControl);
   components.register('craft:color', ColorControl);
+  components.register('craft:color-select', ColorSelectControl);
   components.register('craft:money', MoneyControl);
   components.register('craft:permission-tree', PermissionTreeControl);
   components.register('craft:user-group-select', UserGroupSelectControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
+  components.register('craft:table-columns', TableColumnsControl);
   components.register('craft:link', LinkControl);
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
@@ -100,6 +104,6 @@ export function registerFormComponents(
     'craft:nested-element-blocks',
     NestedElementBlocksControl
   );
-  components.register('craft:nested-element-cards', NestedElementCardsControl);
+  components.register('craft:nested-elements', NestedElementsControl);
   components.register('craft:content-block', ContentBlockControl);
 }

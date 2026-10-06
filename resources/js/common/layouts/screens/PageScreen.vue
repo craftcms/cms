@@ -12,21 +12,20 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef, watch} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
+  import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
+  import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
-  import CpTopBar from '@/common/components/CpTopBar.vue';
-  import FlashMessages from '@/common/components/FlashMessages.vue';
+  import CpTopBar from '@/common/components/CpHeaderBar.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
-  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
-  import {useFlash} from '@/common/composables/useFlash';
   import {useFieldHighlight} from '@/common/composables/useFieldHighlight';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
@@ -170,6 +169,19 @@
       subnav.value.length > 0
   );
 
+  // The top bar scrolls away with the page, so the sidebar and the details
+  // pane are only as tall as the viewport below whatever's still showing of it.
+  const topBar = useTemplateRef<{$el: HTMLElement}>('topBar');
+  const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
+  // The details pane and the sidebar both stop short of Laravel Debugbar.
+  const debugBarHeight = useDebugBarHeight();
+  const pageScreenStyle = computed(() => ({
+    '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    ...(debugBarHeight.value === null
+      ? {}
+      : {'--cp-debug-bar-height': `${debugBarHeight.value}px`}),
+  }));
+
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
   const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
@@ -197,7 +209,7 @@
   /**
    * A Vue page drives saving through its Inertia form, so the native submit is
    * cancelled. A bridged legacy screen has no such form: it posts to the
-   * current URL and the hidden `action` input in its own content names the
+   * current URL, and the hidden `action` input in its own content names the
    * controller action — the same contract Craft 5's page form used.
    */
   function onSubmit(event: Event): void {
@@ -206,12 +218,6 @@
       save();
     }
   }
-
-  // Announce flash messages to screen readers.
-  const {announce} = useAnnouncer();
-  const {errorFlash, successFlash} = useFlash();
-  watch(successFlash, (newMessage) => announce(newMessage));
-  watch(errorFlash, (newMessage) => announce(newMessage));
 
   useAppendHtml();
 
@@ -227,8 +233,13 @@
   />
   <div
     :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+    :style="pageScreenStyle"
   >
-    <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
+    <CpTopBar
+      ref="topBar"
+      :crumbs="crumbs"
+      :has-context-menu="hasContextMenu"
+    />
     <div class="cp">
       <div class="cp__sidebar">
         <!-- No props: the sidebar reads the shared store directly, and renders
@@ -297,7 +308,6 @@
                         </slot>
                       </LayoutSlotOutlet>
                       <CalloutReadOnly v-if="readOnly" />
-                      <FlashMessages />
                       <div
                         :class="{
                           'cp-content-view': true,
@@ -357,52 +367,55 @@
                         <!-- `#content` is how the legacy element editor finds its form
                           host: `$('#content').find('craft-entry-field-layout-form')`.
                           Without it `formHost` is undefined and every field-layout
-                          refresh throws, which is what stopped a nested element — an
-                          address, say — from ever being added on a bridged screen. -->
+                          refresh throws, which stopped a nested element — an address,
+                          say — from ever being added on a bridged screen. -->
                         <div v-if="legacyIds" id="content" class="contents">
                           <slot></slot>
                         </div>
                         <slot v-else></slot>
+                      </div>
+                      <!-- Outside the content view, so its rule spans the pane even when
+                        the view is constrained; the row itself keeps to the content's
+                        column through `contained`. -->
+                      <div
+                        v-show="hasNotices || hasFooter"
+                        class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
+                      >
+                        <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
+                          puts its notices, the legacy element editor's included. -->
                         <div
-                          v-show="hasNotices || hasFooter"
-                          class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
+                          v-show="hasNotices"
+                          id="content-notice"
+                          class="cp-content__notices"
+                          role="status"
                         >
-                          <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
-                        puts its notices, the legacy element editor's included. -->
-                          <div
-                            v-show="hasNotices"
-                            id="content-notice"
-                            class="cp-content__notices"
-                            role="status"
+                          <LayoutSlotOutlet name="content-notices">
+                            <slot name="content-notices"></slot>
+                          </LayoutSlotOutlet>
+                        </div>
+                        <div class="cp-content__footer">
+                          <ContentFooter
+                            v-show="hasFooter"
+                            :read-only="readOnly"
+                            :form="form"
+                            :default-form-actions="defaultFormActions"
+                            :form-actions="formActions"
+                            :form-additional-actions="formAdditionalActions"
+                            :form-additional-buttons="formAdditionalButtons"
+                            :full-page-form="fullPageForm"
+                            :submit-button-label="submitButtonLabel"
+                            :save-disabled="saveDisabled"
+                            :contained="contentConstrained"
+                            @save="save"
                           >
-                            <LayoutSlotOutlet name="content-notices">
-                              <slot name="content-notices"></slot>
-                            </LayoutSlotOutlet>
-                          </div>
-                          <div class="cp-content__footer">
-                            <ContentFooter
-                              v-show="hasFooter"
-                              :read-only="readOnly"
-                              :form="form"
-                              :default-form-actions="defaultFormActions"
-                              :form-actions="formActions"
-                              :form-additional-actions="formAdditionalActions"
-                              :form-additional-buttons="formAdditionalButtons"
-                              :full-page-form="fullPageForm"
-                              :submit-button-label="submitButtonLabel"
-                              :save-disabled="saveDisabled"
-                              :contained="contentConstrained"
-                              @save="save"
+                            <template
+                              v-for="name in footerSlots"
+                              :key="name"
+                              #[name]
                             >
-                              <template
-                                v-for="name in footerSlots"
-                                :key="name"
-                                #[name]
-                              >
-                                <slot :name="name"></slot>
-                              </template>
-                            </ContentFooter>
-                          </div>
+                              <slot :name="name"></slot>
+                            </template>
+                          </ContentFooter>
                         </div>
                       </div>
                     </div>
@@ -413,7 +426,7 @@
                       class="cp-content__details"
                     >
                       <div
-                        class="sticky top-0 h-screen"
+                        class="cp-content__details-pane"
                         :class="{details: legacyIds}"
                       >
                         <ContentDetails
@@ -457,9 +470,6 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: var(--c-radius-xl);
-    border-start-end-radius: var(--c-radius-xl);
-    overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -473,10 +483,6 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
-  }
-
-  .page-screen {
-    background-color: var(--c-surface-header);
   }
 
   /* The top bar keeps its height and the shell takes the rest. */
@@ -606,6 +612,15 @@ Content
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
+  }
+
+  .cp-content__details-pane {
+    position: sticky;
+    inset-block-start: 0;
+    height: calc(
+      100dvh - var(--cp-top-bar-visible-height, 0px) -
+        var(--cp-debug-bar-height, 0px)
+    );
   }
 
   .cp-content__footer {

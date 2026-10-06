@@ -13,6 +13,9 @@ use Illuminate\Container\Attributes\Singleton;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class StatusHtml
 {
@@ -21,17 +24,15 @@ readonly class StatusHtml
     {
         $label = Arr::get($attributes, 'label', ucfirst($status));
 
+        // An SVG icon rather than the legacy `data-icon` glyph, whose icon font
+        // styles only load on legacy-rendered pages.
         if ($status === 'draft') {
-            return Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s',
-                        t('Status:'),
-                        $label ?? t('Draft'),
-                    ),
-                ],
+            return Html::tag('craft-icon', '', [
+                ...Icons::resolveIconData('draft'),
+                'label' => sprintf('%s %s',
+                    t('Status:'),
+                    $label ?? t('Draft'),
+                ),
             ]);
         }
 

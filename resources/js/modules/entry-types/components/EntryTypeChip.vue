@@ -39,6 +39,7 @@
 
 <template>
   <craft-chip
+    align-items="start"
     :data-color="
       (color && typeof color !== 'string' ? color.value : color) ?? 'white'
     "
@@ -83,14 +84,6 @@
 </template>
 
 <style scoped lang="scss">
-  // Some special styles for nice icon alignment. We might want to move this
-  // into chips, but for right now this is the only spot
-  craft-chip::part(prefix) {
-    align-self: start;
-    min-height: 1lh;
-    justify-content: center;
-  }
-
   .drag-handle {
     display: inline-flex;
     cursor: grab;

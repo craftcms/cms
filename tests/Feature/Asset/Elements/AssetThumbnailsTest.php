@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Symfony\Component\DomCrawler\Crawler;
@@ -58,3 +59,17 @@ it('defaults native asset thumbnails to fit', function () {
             ['height' => 256, 'mode' => 'fit', 'width' => 256],
         ]);
 });
+
+it('shows image thumbnails’ placeholders while they load', function (?ImageColors $colors, bool $hasPlaceholder) {
+    new ControlPanelAssetTransformDriver()->register();
+    Cms::config()->defaultAssetTransformer('test');
+    $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id]);
+    $asset->colors = $colors;
+
+    $placeholder = new Crawler($asset->getThumbHtml(128))->filter('craft-thumbnail')->attr('placeholder');
+
+    expect($placeholder)->toBe($hasPlaceholder ? $asset->getPlaceholderDataUrl() : null);
+})->with([
+    'sampled' => [new ImageColors(grid: [['#3a6ea5']]), true],
+    'not sampled yet' => [null, false],
+]);

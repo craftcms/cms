@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
@@ -16,9 +19,19 @@ use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ElementActions
 {
+    /** @var array<class-string<ElementActionInterface>, string> */
+    private const array SELECTION_ATTRIBUTES = [
+        Copy::class => 'copyable',
+        Duplicate::class => 'duplicatable',
+        Delete::class => 'deletable',
+    ];
+
     /**
      * Actions whose interaction (a status picker, a section picker, …) hasn't
      * been ported to the Inertia CP yet. They're serialized for the bulk-actions
@@ -41,7 +54,9 @@ class ElementActions
      * @var array<class-string<ElementActionInterface>, string>
      */
     private const array CLIENT_EVENT_ACTIONS = [
-        Actions\Copy::class => 'craft:copy-elements',
+        Copy::class => 'craft:copy-elements',
+        Actions\Edit::class => 'craft:edit-element',
+        Actions\View::class => 'craft:view-element',
     ];
 
     /**
@@ -147,6 +162,9 @@ class ElementActions
                 'key' => $action::class,
                 'label' => $action->getTriggerLabel(),
                 'destructive' => $destructive,
+                ...(isset(self::SELECTION_ATTRIBUTES[$action::class])
+                    ? ['selectionAttribute' => self::SELECTION_ATTRIBUTES[$action::class]]
+                    : []),
             ];
 
             if ($destructive) {

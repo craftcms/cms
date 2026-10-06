@@ -8,6 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class ElementResaved
 {
     public function __construct(

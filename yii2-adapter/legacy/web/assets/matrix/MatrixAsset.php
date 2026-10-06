@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\web\assets\matrix;
 
 use craft\web\AssetBundle;
@@ -18,6 +20,6 @@ class MatrixAsset extends AssetBundle
 {
     public function registerAssetFiles($view)
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\MatrixAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset::class);
     }
 }

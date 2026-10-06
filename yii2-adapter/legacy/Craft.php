@@ -150,7 +150,7 @@ class Craft extends Yii
      */
     public static function createObject($type, array $params = [])
     {
-        if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
+        if (is_array($type) && array_key_exists('__class', $type) && array_key_exists('class', $type)) {
             throw new InvalidConfigException('`__class` and `class` cannot both be specified.');
         }
 

@@ -10,6 +10,9 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseUserSettingsController
 {
     /**
@@ -35,12 +38,17 @@ abstract class BaseUserSettingsController
         ];
     }
 
-    /** @return list<ActionItem> */
-    protected function crumbs(string $title, ?string $url = null): array
+    /**
+     * The trail to the user settings. Screens with the subnav get its selected
+     * item appended client-side; deeper screens append their own crumbs.
+     *
+     * @return list<ActionItem>
+     */
+    protected function crumbs(): array
     {
         return [
             new ActionItem()->label(t('Settings'))->href(cp_url('settings')),
-            new ActionItem()->label($title)->href($url),
+            new ActionItem()->label(t('Users'))->href(cp_url('settings/users')),
         ];
     }
 }

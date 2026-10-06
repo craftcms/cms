@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Email;
 use CraftCms\Cms\Email\Commands\SendTestMailCommand;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class EmailServiceProvider extends ServiceProvider
 {
     public function boot(): void

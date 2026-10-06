@@ -14,6 +14,9 @@ use ReflectionProperty;
 use RequirementsChecker;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class ConnectionConfig
 {
     /**

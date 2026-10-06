@@ -7,19 +7,16 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Workflow\Workflows;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +24,9 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SaveElementController
 {
     use SavesElement;
@@ -34,10 +34,9 @@ readonly class SaveElementController
     public function __construct(
         protected ElementRequest $request,
         private Drafts $drafts,
-        private ElementActivity $elementActivity,
         private Elements $elements,
         private Sites $sites,
-        private Workflows $workflows,
+        private UserInitiatedElementSave $userInitiatedElementSave,
     ) {}
 
     public function store(): Response
@@ -60,72 +59,30 @@ readonly class SaveElementController
 
         Gate::authorize('save', $element);
 
-        if ($element->enabled && $element->getEnabledForSite()) {
-            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
-
-        $isNotNew = $element->id;
-        $saveAsDraft = $this->workflows->requiresApproval($element);
-        if ($isNotNew) {
-            $mutex = Cache::lock("element:$element->id", 15);
-            if (! $mutex->get()) {
-                abort(500, 'Could not acquire a lock to save the element.');
-            }
-        }
-
-        if ($element instanceof NestedElementInterface && property_exists($element, 'updateSearchIndexForOwner')) {
-            $element->updateSearchIndexForOwner = true;
-        }
-
         try {
             $namespace = $this->request->header('X-Craft-Namespace');
-            if ($saveAsDraft && $isNotNew) {
-                $element = $this->drafts->createDraft($element, $this->request->craftUser()?->getCraftUserId());
-                $success = true;
-            } elseif ($saveAsDraft) {
-                $success = $this->drafts->saveElementAsDraft($element, $this->request->craftUser()?->getCraftUserId());
-            } else {
-                // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
-                $success = $this->elements->saveElement(
-                    $element,
-                    crossSiteValidate: (
-                        $namespace === null
-                        && $this->sites->isMultiSite()
-                        && Gate::check('createDrafts', $element)
-                    ),
-                );
-            }
-        } catch (InvalidElementException $e) {
-            $element = $e->element;
-            $success = false;
-        } catch (UnsupportedSiteException $e) {
-            $element->errors()->add('siteId', $e->getMessage());
-            $success = false;
-        } finally {
-            if ($isNotNew) {
-                $mutex->release();
-            }
+            $actor = $this->request->craftUser();
+            abort_if(! $actor, 401);
+
+            $result = $this->userInitiatedElementSave->save(
+                element: $element,
+                actor: $actor,
+                crossSiteValidate: (
+                    $namespace === null
+                    && $this->sites->isMultiSite()
+                    && Gate::check('createDrafts', $element)
+                ),
+            );
+        } catch (LockTimeoutException) {
+            abort(500, 'Could not acquire a lock to save the element.');
         }
 
-        if (! $success) {
+        $element = $result->element;
+
+        if (! $result->successful) {
             return new ElementResponse()->failure($element, mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
-        }
-
-        $this->elementActivity->trackActivity($element, ElementActivityType::Save);
-
-        // See if the user happens to have a provisional element. If so delete it.
-        $provisional = $saveAsDraft ? null : $element::find()
-            ->provisionalDrafts()
-            ->draftOf($element->id)
-            ->draftCreator($this->request->craftUser()?->asElement())
-            ->siteId($element->siteId)
-            ->status(null)
-            ->one();
-
-        if ($provisional) {
-            $this->elements->deleteElement($provisional, true);
         }
 
         if (! $this->request->acceptsJson()) {

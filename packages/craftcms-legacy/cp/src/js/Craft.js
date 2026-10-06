@@ -1,4 +1,6 @@
 import {formatMessage, t} from '@craftcms/ui/utilities/translate';
+import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
+import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import * as d3 from 'd3';
 
 /** global: Craft */
@@ -599,7 +601,8 @@ $.extend(Craft, {
    * Sends a request to a Craft/plugin action
    * @param {string} method The request action to use ('GET' or 'POST')
    * @param {?string} [action] The action to request
-   * @param {Object} [options] Axios request options
+   * @param {Object} [options] Request options (`data`, `params`, `headers`,
+   * `signal`, `responseType`, `timeout`; `cancelToken` is still accepted)
    * @returns {Promise}
    * @since 3.4.6
    */
@@ -636,8 +639,7 @@ $.extend(Craft, {
         // Force Safari to not load from cache
         v: new Date().getTime(),
       });
-      axios
-        .request(options)
+      sendLegacyRequest(this._httpClient, options)
         .then((response) => {
           if (response.headers['x-csrf-token']) {
             Craft.csrfTokenValue = response.headers['x-csrf-token'];
@@ -652,7 +654,7 @@ $.extend(Craft, {
    * Sends a request to the Craftnet API.
    * @param {string} method The request action to use ('GET' or 'POST')
    * @param {string} uri The API endpoint URI
-   * @param {Object} options Axios request options
+   * @param {Object} options Request options (see sendActionRequest())
    * @returns {Promise}
    * @since 3.3.16
    */
@@ -683,12 +685,7 @@ $.extend(Craft, {
             options.params.processCraftHeaders = 1;
           }
 
-          if (Craft.httpProxy) {
-            options.proxy = Craft.httpProxy;
-          }
-
-          axios
-            .request(options)
+          sendLegacyRequest(this._httpClient, options)
             .then((apiResponse) => {
               // Process the response headers
               this._processApiHeaders(apiResponse.headers, cancelToken)
@@ -703,6 +700,18 @@ $.extend(Craft, {
         .catch(reject);
     });
   },
+
+  /**
+   * Returns whether a request error is a cancellation.
+   * @param {*} error
+   * @returns {boolean}
+   * @since 6.0.0
+   */
+  isCancel: function (error) {
+    return isCancel(error);
+  },
+
+  _httpClient: createHttpClient(),
 
   _loadingApiHeaders: false,
   _apiHeaders: null,

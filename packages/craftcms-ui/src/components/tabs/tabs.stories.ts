@@ -251,7 +251,7 @@ export const Sizes: Story = {
       ].map((strip) => strip.querySelector('craft-tab')!);
 
       const fonts = firstTabs.map((tab) => px(tab, 'font-size'));
-      const paddings = firstTabs.map((tab) => px(tab, 'padding-inline-start'));
+      const paddings = firstTabs.map((tab) => px(tab, 'padding-block-start'));
 
       // Ordered small < medium < large...
       await expect(fonts[0]).toBeLessThan(fonts[1]!);
@@ -261,7 +261,7 @@ export const Sizes: Story = {
       await expect(paddings[0]).toBeLessThan(paddings[1]!);
       await expect(paddings[1]).toBeLessThan(paddings[2]!);
       firstTabs.forEach((_, index) =>
-        expect(paddings[index]).toBeCloseTo(fonts[index]!, 1)
+        expect(paddings[index]).toBeCloseTo(fonts[index]! / 2, 1)
       );
     }
   },

@@ -179,9 +179,9 @@
   they should be inherited from these styles.
    */
   /* Form Controls */
-  --c-form-control-fill: var(--c-surface-form);
+  --c-form-control-fill: color-mix(in oklab, var(--color-base-100), white 50%);
   --c-form-control-text: var(--c-text-default);
-  --c-form-control-border-color: var(--color-slate-500);
+  --c-form-control-border-color: var(--color-slate-400);
   --c-form-control-border-width: 1px;
   --c-form-control-border-style: solid;
   --c-form-control-radius: var(--c-radius-md);

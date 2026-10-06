@@ -19,6 +19,9 @@ use CraftCms\Cms\Element\Commands\RestoreCommand;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class ElementServiceProvider extends ServiceProvider
 {
     public function boot(): void

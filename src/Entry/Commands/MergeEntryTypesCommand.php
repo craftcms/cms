@@ -27,6 +27,9 @@ use Illuminate\Support\Collection;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
+/**
+ * @since 6.0.0
+ */
 class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
@@ -208,7 +211,11 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
                 }
             );
 
-            $entryTypes->saveEntryType($persistingEntryType);
+            if (! $entryTypes->saveEntryType($persistingEntryType)) {
+                $this->components->error("Unable to save entry type: {$persistingEntryType->handle}");
+
+                return self::FAILURE;
+            }
         }
 
         $this->components->task(

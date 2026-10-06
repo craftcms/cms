@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementRendering event is triggered before an element is rendered.
  *
  * If `output` is set, it will be used as the rendered output instead of looking for templates.
+ *
+ * @since 6.0.0
  */
 class ElementRendering
 {

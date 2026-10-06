@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Session\SessionManager;
 
+/**
+ * @since 6.0.0
+ */
 class SessionMixin
 {
     public function broadcastToJs(): Closure

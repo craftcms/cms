@@ -9,6 +9,9 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
+/**
+ * @since 6.0.0
+ */
 class Lightswitch extends Control
 {
     private bool $indeterminate = false;

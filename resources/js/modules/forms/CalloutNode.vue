@@ -9,6 +9,7 @@
       html: string;
       variant: string;
       appearance?: string;
+      padding?: string | number;
       icon?: string;
       dismissible: boolean;
       width: number;
@@ -35,7 +36,12 @@
     :class="`width-${node.props.width}`"
     :data-form-node="node.uid"
     :variant="node.props.variant"
-    v-bind="node.props.appearance ? {appearance: node.props.appearance} : {}"
+    v-bind="{
+      ...(node.props.appearance ? {appearance: node.props.appearance} : {}),
+      ...(node.props.padding !== undefined
+        ? {padding: node.props.padding}
+        : {}),
+    }"
     :icon="node.props.icon"
     :data-dismissible="node.props.dismissible || undefined"
   >

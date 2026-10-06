@@ -11,7 +11,11 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 class Asset extends Query
 {
     /** @return array<string, UnnamedFieldDefinitionConfig> */

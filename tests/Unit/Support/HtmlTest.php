@@ -246,8 +246,10 @@ test('ModifyTagAttributes', function (string|false $expected, string $tag, array
 })->with([
     ['<input type="text">', '<input type="text" disabled>', ['disabled' => false]],
     ['<!-- comment --> <input type="text" />', '<!-- comment --> <input type="text" disabled />', ['disabled' => false]],
+    ['<craft-switch off-label="Don&apos;t Save" slot="input"></craft-switch>', '<craft-switch off-label="Don&apos;t Save"></craft-switch>', ['slot' => 'input']],
     ['<div class="foo bar">', '<div class="foo">', ['class' => ['foo', 'bar']]],
     ['<div data-foo="2" data-bar="3">', '<div data-foo="1">', ['data' => ['foo' => '2', 'bar' => '3']]],
+    'HTML5 apostrophes' => ['<div data-label="Jane&apos;s notes" slot="input">', '<div data-label="Jane&apos;s notes">', ['slot' => 'input']],
     ['<div style="color: black; background: red;">', '<div>', ['style' => ['color' => 'black', 'background' => 'red']]],
     ['<div style="color: black; background: red;">', '<div style="color: red">', ['style' => ['color' => 'black', 'background' => 'red']]],
     [false, '<div', []],

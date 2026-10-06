@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class Text extends AssetPreviewHandler
 {
     public function getPreviewHtml(array $variables = []): string

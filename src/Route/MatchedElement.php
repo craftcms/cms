@@ -11,6 +11,8 @@ use Illuminate\Container\Attributes\Scoped;
  * Tracks the element matched for the current site
  * request so its resolved route can be reused
  * later in the request lifecycle.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class MatchedElement

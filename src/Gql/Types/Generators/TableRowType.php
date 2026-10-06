@@ -12,6 +12,9 @@ use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Facades\Gql;
 
+/**
+ * @since 6.0.0
+ */
 class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 {
     public static function generateTypes(mixed $context = null): array

@@ -19,6 +19,8 @@ use Illuminate\Container\Attributes\Scoped;
  * the JS action clients echo those back as `X-Registered-Asset-Bundles` /
  * `X-Registered-Js-Files` request headers, and this service consumes them to
  * skip re-registration during the XHR render.
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 class RegisteredClientAssets

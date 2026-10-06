@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Database\BackupCommands;
 use CraftCms\Cms\Cms;
 use Illuminate\Database\Connection;
 
+/**
+ * @since 6.0.0
+ */
 class PostgresBackupCommand extends BackupCommand
 {
     /** @param string[] $ignoreTables */

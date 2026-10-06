@@ -29,6 +29,16 @@ describe('elementChipHtml', function () {
             ->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => "calc({$pixels}rem/16)"]);
     })->with(['small' => ['small', 30], 'large' => ['large', 120]]);
 
+    it('leaves out the thumbnail when the element has none', function () {
+        $entry = Entry::factory()->createElement();
+
+        $html = $this->elementHtml->elementChipHtml($entry);
+
+        expect($html)->not->toContainTag('craft-chip', ['show-thumb' => true])
+            ->and($html)->not->toContain('slot="thumbnail"')
+            ->and($html)->toContain('"showThumb":true');
+    });
+
     it('renders field and index variants with expected controls', function () {
         $user = User::findOne(1);
 

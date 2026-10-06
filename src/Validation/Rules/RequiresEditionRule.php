@@ -8,6 +8,9 @@ use Closure;
 use CraftCms\Cms\Edition;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+/**
+ * @since 6.0.0
+ */
 class RequiresEditionRule implements ValidationRule
 {
     public function __construct(

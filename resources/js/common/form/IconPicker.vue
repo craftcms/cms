@@ -176,7 +176,7 @@
           slot="header"
           role="search"
           @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-4 px-4 pb-2 bg-white"
+          class="sticky top-0 pt-lg px-lg pb-md bg-white"
         >
           <CraftInput :label="t('Search')" v-model="query">
             <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
@@ -190,7 +190,7 @@
         <div>
           <!-- This only shows on the initial load -->
           <template v-if="http.processing && icons === null">
-            <div class="flex justify-center p-4">
+            <div class="flex justify-center p-lg">
               <craft-spinner></craft-spinner>
             </div>
           </template>

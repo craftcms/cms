@@ -15,6 +15,9 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Conditionable;
 
+/**
+ * @since 6.0.0
+ */
 class Callout implements Node
 {
     use Conditionable;
@@ -22,6 +25,8 @@ class Callout implements Node
     private string $variant = 'info';
 
     private ?string $appearance = null;
+
+    private string|int|null $padding = null;
 
     private ?string $icon = null;
 
@@ -40,6 +45,7 @@ class Callout implements Node
             ->variant($node->props['variant'])
             ->appearance($node->props['appearance'] ?? null)
             ->icon($node->props['icon'] ?? null)
+            ->padding($node->props['padding'] ?? null)
             ->content(new HtmlString($node->props['html']))
             ->attributes([
                 'class' => ["width-{$node->props['width']}"],
@@ -64,6 +70,13 @@ class Callout implements Node
     public function appearance(?string $appearance): static
     {
         $this->appearance = $appearance;
+
+        return $this;
+    }
+
+    public function padding(string|int|null $padding): static
+    {
+        $this->padding = $padding;
 
         return $this;
     }
@@ -108,6 +121,7 @@ class Callout implements Node
                 'appearance' => $this->appearance,
                 'icon' => $this->icon,
             ], fn (?string $value): bool => $value !== null),
+            ...($this->padding !== null ? ['padding' => $this->padding] : []),
             'dismissible' => $this->dismissible,
             'width' => $this->width,
         ];

@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -54,8 +55,10 @@ use function CraftCms\Cms\t;
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (the compiled form) are memoized privately since payload methods may be
  * invoked in any order.
+ *
+ * @since 6.0.0
  */
-abstract class ElementEditViewModel extends ViewModel
+class ElementEditViewModel extends ViewModel
 {
     /**
      * How many revisions {@see self::contextMenu()} lists — a most-recent
@@ -95,7 +98,22 @@ abstract class ElementEditViewModel extends ViewModel
      * nested input names, so the existing save controllers read it without a
      * translation layer.
      */
-    abstract protected function elementSaveUrl(): string;
+    protected function elementSaveUrl(): string
+    {
+        return Url::actionUrl('elements/save');
+    }
+
+    /** @return array<string, int|string|null> */
+    public function saveParams(): array
+    {
+        return [
+            'elementType' => $this->element::class,
+            'elementId' => $this->element->getIsDraft() || $this->element->getIsRevision()
+                ? $this->element->getCanonicalId()
+                : $this->element->id,
+            'siteId' => $this->element->siteId,
+        ];
+    }
 
     /**
      * Adopts an already-compiled field layout instead of compiling one.
@@ -111,6 +129,12 @@ abstract class ElementEditViewModel extends ViewModel
         $this->formResolved = true;
 
         return $this;
+    }
+
+    /** The element's own control panel edit page, which a slideout links to as "Open in a new tab". */
+    public function cpEditUrl(): ?string
+    {
+        return $this->element->getCpEditUrl();
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */
@@ -145,6 +169,45 @@ abstract class ElementEditViewModel extends ViewModel
     public function discardDraftUrl(): string
     {
         return Url::actionUrl('elements/delete-draft');
+    }
+
+    /**
+     * Where a nested element's changes are saved when they belong in a draft of
+     * its owner rather than the canonical owner it was queried through.
+     */
+    public function saveForDerivativeUrl(): string
+    {
+        return Url::actionUrl('elements/save-nested-element-for-derivative');
+    }
+
+    /**
+     * The field and owner a nested element is being edited through.
+     *
+     * Every request the editor sends carries these, so the server resolves the
+     * element against that owner (an owner draft included) rather than its
+     * primary owner.
+     *
+     * @return array{fieldId: int|null, ownerId: int}|null
+     */
+    public function nestedContext(): ?array
+    {
+        if (! $this->element instanceof NestedElementInterface || ! $this->element->getOwnerId()) {
+            return null;
+        }
+
+        return [
+            'fieldId' => $this->element->getField()?->id,
+            'ownerId' => $this->element->getOwnerId(),
+        ];
+    }
+
+    /**
+     * Whether this is a brand-new element being filled in for the first time.
+     * Posted back with each save so it propagates to all of its sites.
+     */
+    public function fresh(): bool
+    {
+        return $this->request->boolean('fresh') && $this->element->getIsUnpublishedDraft();
     }
 
     /**
@@ -343,7 +406,8 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * The drafts-and-revisions switcher shown beside the breadcrumbs.
+     * The drafts and revisions the editor can switch between, listed in the
+     * Revisions tab and folded into {@see self::revisionCrumb()}.
      *
      * Groups are flattened into a single item list — headings become `heading`
      * entries the client renders as non-interactive rows — because the action
@@ -352,6 +416,12 @@ abstract class ElementEditViewModel extends ViewModel
      * @return array<string, mixed>|null
      */
     public function contextMenu(): ?array
+    {
+        return once(fn (): ?array => $this->buildContextMenu());
+    }
+
+    /** @return array<string, mixed>|null */
+    private function buildContextMenu(): ?array
     {
         $element = $this->element->isProvisionalDraft
             ? $this->element->getCanonical(true)
@@ -599,11 +669,65 @@ abstract class ElementEditViewModel extends ViewModel
      */
     public function crumbs(): array
     {
-        $crumbs = $this->elementCrumbs($this->element);
+        $revisionCrumb = $this->revisionCrumb();
 
-        $siteCrumb = $this->siteCrumb();
+        return array_values(array_filter([
+            $this->siteCrumb(),
+            ...$this->elementCrumbs($this->element, hyperlink: $revisionCrumb !== null),
+            $revisionCrumb,
+        ]));
+    }
 
-        return $siteCrumb === null ? $crumbs : [$siteCrumb, ...$crumbs];
+    /**
+     * A crumb naming the draft or revision being edited — or “Current” — with
+     * a menu switching between them.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function revisionCrumb(): ?array
+    {
+        $contextMenu = $this->contextMenu();
+
+        if ($contextMenu === null) {
+            return null;
+        }
+
+        $label = t('Current');
+        $items = [];
+        $groupIndex = null;
+
+        foreach ($contextMenu['items'] as $item) {
+            if ($item['type'] === 'heading') {
+                $items[] = ['type' => 'group', 'heading' => $item['label'], 'items' => []];
+                $groupIndex = array_key_last($items);
+
+                continue;
+            }
+
+            if ($item['type'] === 'hr') {
+                $items[] = ['type' => 'hr'];
+                $groupIndex = null;
+
+                continue;
+            }
+
+            if ($item['selected']) {
+                $label = $item['label'];
+            }
+
+            $link = Arr::only($item, ['type', 'label', 'href', 'selected']);
+
+            if ($groupIndex === null) {
+                $items[] = $link;
+            } else {
+                $items[$groupIndex]['items'][] = $link;
+            }
+        }
+
+        return [
+            'label' => $label,
+            'items' => $items,
+        ];
     }
 
     /**

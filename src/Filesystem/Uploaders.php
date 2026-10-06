@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Manager;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Uploaders extends Manager
 {

@@ -19,6 +19,8 @@ use CraftCms\Cms\Support\Html;
  *         ->name('sources')
  *         ->allCheckbox(Checkbox::make()->label(t('All'))->name('sources')->value('*'))
  *         ->options([...]);
+ *
+ * @since 6.0.0
  */
 class CheckboxSelect extends ChoiceGroup
 {

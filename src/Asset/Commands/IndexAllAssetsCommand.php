@@ -11,6 +11,9 @@ use Illuminate\Console\Command;
 use Override;
 use Symfony\Component\Console\Input\InputOption;
 
+/**
+ * @since 6.0.0
+ */
 class IndexAllAssetsCommand extends Command
 {
     use CraftCommand;

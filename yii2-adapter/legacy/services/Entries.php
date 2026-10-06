@@ -615,7 +615,7 @@ class Entries extends Component
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
-        return EntryTypes::saveEntryType($entryType);
+        return EntryTypes::saveEntryType($entryType, $runValidation);
     }
 
     /**

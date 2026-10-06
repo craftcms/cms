@@ -22,7 +22,8 @@ const {
   setSlideoutDirtyCheck,
   slideoutPanels,
 } = await import('./store');
-const {stackedPanels} = await import('./panel-stack');
+const {registerPanel, stackedPanels, unregisterPanel} =
+  await import('./panel-stack');
 const SlideoutPanel = (await import('./SlideoutPanel.vue')).default;
 const LayoutSlot = (await import('@/common/components/LayoutSlot.vue')).default;
 const {useAppLayout} = await import('@/common/composables/useAppLayout');
@@ -485,6 +486,81 @@ describe('SlideoutHost', () => {
     ).not.toBe(0);
   });
 
+  it('nests a panel opened from a legacy slideout above the ones below it', async () => {
+    await mountHost();
+    const confirmSpy = vi.fn(() => false);
+    Object.defineProperty(window, 'confirm', {
+      configurable: true,
+      writable: true,
+      value: confirmSpy,
+    });
+
+    const first = (await openSlideout('/a'))!;
+    setSlideoutDirtyCheck(first.id, () => true);
+    await nextTick();
+
+    // A legacy CpScreenSlideout opened over the Vue panel. It has no
+    // `data-slideout-id`, so it's only visible to the store via the stack.
+    const legacy = {
+      element: document.body.appendChild(document.createElement('div')),
+      position() {},
+      handleShadeClick() {},
+    };
+    registerPanel(legacy);
+    const opener = legacy.element.appendChild(document.createElement('button'));
+
+    try {
+      await openSlideout('/b', {opener});
+      await nextTick();
+      await openSlideout('/c', {opener});
+      await nextTick();
+    } finally {
+      unregisterPanel(legacy);
+    }
+
+    // The dirty panel under the legacy slideout is left alone, while one
+    // stacked above it is still replaced.
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/c']);
+  });
+
+  it('stacks a Vue panel over a legacy one, with the shade between them', async () => {
+    await mountHost();
+    const first = (await openSlideout('/a'))!;
+    await nextTick();
+
+    // A legacy slideout's `.slideout` sits inside a body-level container.
+    const container = document.body.appendChild(document.createElement('div'));
+    const legacy = {
+      element: container.appendChild(document.createElement('div')),
+      position() {},
+      handleShadeClick() {},
+    };
+    registerPanel(legacy);
+
+    try {
+      const shade = document.querySelector('.cp-slideout-shade')!;
+      expect(shade.nextElementSibling).toBe(container);
+
+      const opener = legacy.element.appendChild(
+        document.createElement('button')
+      );
+      const second = (await openSlideout('/b', {opener}))!;
+      await nextTick();
+
+      const panel = (id: string) =>
+        document.querySelector(`[data-slideout-id="${id}"]`)!;
+      const follows = (a: Node, b: Node) =>
+        (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+
+      expect(follows(container, panel(second.id))).toBe(true);
+      expect(shade.nextElementSibling).toBe(panel(second.id));
+      expect(follows(panel(first.id), shade)).toBe(true);
+    } finally {
+      unregisterPanel(legacy);
+    }
+  });
+
   it('hides the shade again once the last slideout closes', async () => {
     await mountHost();
     const panel = (await openSlideout('/a'))!;
@@ -715,6 +791,22 @@ describe('SlideoutPanel', () => {
     expect(root.querySelector('.slideout-screen__title')?.textContent).toBe(
       'Edit entry type'
     );
+  });
+
+  it('takes the edit URL a screen sets through useAppLayout', async () => {
+    const Screen = defineComponent({
+      setup() {
+        useAppLayout(() => ({editUrl: '/admin/edit/25'}));
+
+        return () => h('div');
+      },
+    });
+    const {root} = await mountPanel(Screen, {});
+    await nextTick();
+
+    expect(
+      root.querySelector<HTMLAnchorElement>('.slideout-screen__edit-link')?.href
+    ).toContain('/admin/edit/25');
   });
 
   it('reads the edit URL from the slideout props', async () => {

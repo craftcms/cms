@@ -11,11 +11,17 @@ use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
 class ImageTransform extends Component
 {
     public const array CORE_PARAMETERS = [
@@ -145,6 +151,20 @@ class ImageTransform extends Component
         ];
     }
 
+    #[Override]
+    public function prepareForValidation(): void
+    {
+        if ($this->format === '') {
+            $this->format = null;
+        }
+
+        if ($this->mode === ImageTransformMode::Letterbox->value) {
+            $this->fill = $this->fill
+                ? ColorRule::normalizeColor($this->fill)
+                : 'transparent';
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -155,13 +175,24 @@ class ImageTransform extends Component
             'name' => ['required', 'string'],
             'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
             'parameters' => ['array'],
-            'width' => ['nullable', 'integer', 'min:1'],
+            'width' => ['nullable', 'required_without:height', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::enum(ImageTransformMode::class)],
             'position' => ['required', Rule::enum(ImageTransformPosition::class)],
             'interlace' => ['required', Rule::enum(ImageTransformInterlace::class)],
             'quality' => ['nullable', 'integer', 'min:1', 'max:100'],
             'format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[Override]
+    public function getMessages(): array
+    {
+        return [
+            'width.required_without' => t('You must set at least one of the dimensions.'),
         ];
     }
 }

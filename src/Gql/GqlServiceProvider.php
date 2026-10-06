@@ -10,6 +10,9 @@ use CraftCms\Cms\Gql\Commands\ListSchemasCommand;
 use CraftCms\Cms\Gql\Commands\PrintSchemaCommand;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class GqlServiceProvider extends ServiceProvider
 {
     public function boot(): void

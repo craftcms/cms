@@ -17,6 +17,8 @@ use function Illuminate\Filesystem\join_paths;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class Composer

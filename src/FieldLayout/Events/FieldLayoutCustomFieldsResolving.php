@@ -31,6 +31,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  * ```
  *
  * @see FieldLayout::getAvailableCustomFields()
+ * @since 6.0.0
  */
 class FieldLayoutCustomFieldsResolving
 {

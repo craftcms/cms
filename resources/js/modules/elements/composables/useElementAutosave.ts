@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/ui';
+import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
@@ -7,7 +7,6 @@ import type {
   FormPayload,
   FormValues,
 } from '@/modules/forms/types';
-import axios from 'axios';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -30,6 +29,13 @@ export interface ElementAutosaveOptions {
   isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
   enabled: boolean;
+  /**
+   * Extra params sent with every save, such as a nested element's owner, which
+   * the server needs to resolve it through the owner it's being edited in.
+   */
+  params?: () => FormValues;
+  /** Adapts the editor's form state into the save request. */
+  transform?: (data: object) => FormValues;
   /** How long to wait after the last edit before saving, per change kind. */
   debounceMs?: Partial<Record<FormChangeKind, number>>;
   /**
@@ -38,10 +44,13 @@ export interface ElementAutosaveOptions {
    * upstream edits has to re-baseline against these or it will report this
    * write as someone else's.
    */
-  onSaved?: (timestamps: {
-    element: number | null;
-    canonical: number | null;
-  }) => void;
+  onSaved?: (
+    timestamps: {
+      element: number | null;
+      canonical: number | null;
+    },
+    response: FormValues
+  ) => void;
 }
 
 export interface ElementAutosaveDependencies {
@@ -111,8 +120,9 @@ export function useElementAutosave<T extends object>(
       elementType: options.elementType,
       elementId: options.elementId,
       siteId: options.siteId,
+      ...options.params?.(),
     };
-    Object.assign(payload, form.data());
+    Object.assign(payload, options.transform?.(form.data()) ?? form.data());
 
     // No draft yet means this request creates one; an existing provisional
     // draft is targeted by id and stays provisional.
@@ -151,10 +161,13 @@ export function useElementAutosave<T extends object>(
         savingGeneration
       );
 
-      options.onSaved?.({
-        element: data.updatedTimestamp ?? null,
-        canonical: data.canonicalUpdatedTimestamp ?? null,
-      });
+      options.onSaved?.(
+        {
+          element: data.updatedTimestamp ?? null,
+          canonical: data.canonicalUpdatedTimestamp ?? null,
+        },
+        data
+      );
     } catch (e) {
       // Our own abort, not a failure.
       if (cancelled) {
@@ -162,7 +175,7 @@ export function useElementAutosave<T extends object>(
       }
 
       status.value = 'failed';
-      if (axios.isAxiosError<{message?: string}>(e)) {
+      if (isHttpError<{message?: string}>(e)) {
         error.value = e.response?.data?.message ?? null;
         httpStatus.value = e.response?.status ?? null;
       }

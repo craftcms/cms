@@ -32,6 +32,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FieldEditViewModel extends ViewModel
 {
     private ?Form $settingsForm = null;

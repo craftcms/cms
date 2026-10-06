@@ -1,38 +1,56 @@
-import { Validator } from "@lion/ui/form-core.js";
-import {
-  computed,
-  type ComputedRef,
-  type InjectionKey,
-  type Ref,
-  type Slots,
-} from "vue";
+import {Validator} from '@lion/ui/form-core.js';
+import {type InjectionKey, type Ref, type Slots} from 'vue';
 import type {
   CanonicalFormValue,
   FormChange,
   FormControlPayload,
   FormNodePayload,
+  NestedFormPayload,
   FormValue,
   FormValues,
-} from "./types";
-import type { ActionItems } from "@/common/types";
+} from './types';
+import type {ActionItems} from '@/common/types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
-  Symbol("FormFailure");
+  Symbol('FormFailure');
+
+export const FormPending: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('FormPending');
+
+export const FormErrors: InjectionKey<{
+  clearChildren(path: string[]): void;
+  childrenCleared(path: string[]): boolean;
+}> = Symbol('FormErrors');
+
+export type FormControlBehavior = {
+  comparisonValue: (value: FormValue) => FormValue;
+};
+
+export const FormControlBehaviors: InjectionKey<
+  (path: string[], behavior: FormControlBehavior) => () => void
+> = Symbol('FormControlBehaviors');
+
+export const FormControlStructure: InjectionKey<
+  (
+    control: Pick<FormControlPayload, 'path'>,
+    forms: NestedFormPayload[]
+  ) => void
+> = Symbol('FormControlStructure');
 
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
-  "FormControlOverrides",
+  'FormControlOverrides'
 );
 
 /** Modified delta groups as dotted paths, provided to every field beneath. */
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol("FormModifiedGroups");
+  Symbol('FormModifiedGroups');
 
 /**
  * Dotted paths of every control changed since the form was last reset. A field
  * holding nested forms badges when one lands at or below it — see FieldNode.
  */
 export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol("FormChangedPaths");
+  Symbol('FormChangedPaths');
 
 /**
  * Lets a field's control rewrite the field's "⋮" menu with state only the
@@ -42,21 +60,21 @@ export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
  */
 export const FieldActionItems: InjectionKey<
   Ref<((items: ActionItems) => ActionItems) | undefined>
-> = Symbol("FieldActionItems");
+> = Symbol('FieldActionItems');
 
 /**
  * Whether the surrounding field's label is visually hidden, so controls with
  * their own label chrome (e.g. `craft-select`) can hide theirs too.
  */
 export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
-  Symbol("FieldLabelSrOnly");
+  Symbol('FieldLabelSrOnly');
 
 /** Control paths whose changes have an active Form refresh. */
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol("FormRefreshingFields");
+  Symbol('FormRefreshingFields');
 
 class ServerError extends Validator {
-  static override validatorName = "ServerError";
+  static override validatorName = 'ServerError';
 
   override execute(): boolean {
     return true;
@@ -85,7 +103,7 @@ export function controlValueAt(
   values: FormValue,
   // `emptyValue` is typed here and nowhere else: `FormControlPayload` omits it
   // on purpose — see the note there — and this is the only thing that reads it.
-  control: { path: string[]; emptyValue?: unknown },
+  control: {path: string[]; emptyValue?: unknown}
 ): FormValue {
   const value = valueAt(values, control.path);
 
@@ -101,7 +119,7 @@ export function serverErrorValidators(invalid: boolean): Validator[] {
   return invalid
     ? [
         new ServerError(undefined, {
-          getMessage: () => "",
+          getMessage: () => '',
           visibilityDuration: Infinity,
         }),
       ]
@@ -109,7 +127,7 @@ export function serverErrorValidators(invalid: boolean): Validator[] {
 }
 
 export function ignoreModelValueInitialization(
-  callback: (event: Event) => void,
+  callback: (event: Event) => void
 ): (event: Event) => void {
   return (event) => {
     if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
@@ -119,7 +137,7 @@ export function ignoreModelValueInitialization(
 }
 
 export function formChangeFromEvent(
-  change: FormChange | Event,
+  change: FormChange | Event
 ): FormChange | null {
   // A component that doesn't declare `change` lets the listener fall through
   // to its root, so a child component's own `change` payload — a condition
@@ -139,7 +157,7 @@ export function formChangeFromEvent(
 
 function isFormChange(value: unknown): value is FormChange {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
     Array.isArray((value as FormChange).path)
   );
@@ -157,11 +175,11 @@ export function fieldId(path: string[]): string {
   const encoded = path.map((segment) =>
     encodeURIComponent(segment).replace(
       /[!'()*]/g,
-      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
-    ),
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+    )
   );
 
-  return `form-${encoded.join("-")}`;
+  return `form-${encoded.join('-')}`;
 }
 
 /** The id of the control's own input, which sits inside that field. */
@@ -173,18 +191,18 @@ export function inputName(path: string[]): string {
   return `${path[0]}${path
     .slice(1)
     .map((segment) => `[${segment}]`)
-    .join("")}`;
+    .join('')}`;
 }
 
 const ID_CHARACTERS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 function randomId(length = 10): string {
-  let id = "";
+  let id = '';
 
   for (let index = 0; index < length; index++) {
     id += ID_CHARACTERS.charAt(
-      Math.floor(Math.random() * ID_CHARACTERS.length),
+      Math.floor(Math.random() * ID_CHARACTERS.length)
     );
   }
 
@@ -198,7 +216,7 @@ function randomId(length = 10): string {
  * server-side — the markup a form renders carries ids the client then has to
  * address, so the two have to agree character for character.
  */
-export function elementId(id = ""): string {
+export function elementId(id = ''): string {
   // Placeholders pass through untouched, e.g. `__NAMESPACE__-fieldId`.
   if (/^__[A-Z_]+__/.test(id)) {
     return id;
@@ -207,10 +225,10 @@ export function elementId(id = ""): string {
   const normalized = id
     // Drop invalid characters already sitting against a hyphen, so they don't
     // each become a hyphen of their own below.
-    .replace(/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/g, "")
+    .replace(/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/g, '')
     // Collapse whatever invalid characters are left into single hyphens.
-    .replace(/[^A-Za-z0-9_.-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^A-Za-z0-9_.-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
   return normalized || randomId();
 }
@@ -230,7 +248,7 @@ export function elementId(id = ""): string {
  * joining itself affects.
  */
 export function namespaceId(id: string, namespace?: string | null): string {
-  if (id === "") {
+  if (id === '') {
     return id;
   }
 
@@ -247,10 +265,14 @@ export function valueAt(source: FormValue, path: string[]): FormValue {
   let value = source;
 
   for (const segment of path) {
-    if (!isRecord(value)) {
+    if (Array.isArray(value)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(segment)) return undefined;
+      value = value[Number(segment)];
+    } else if (isRecord(value)) {
+      value = value[segment];
+    } else {
       return undefined;
     }
-    value = value[segment];
   }
 
   return value;
@@ -259,39 +281,64 @@ export function valueAt(source: FormValue, path: string[]): FormValue {
 export function setValue(
   source: FormValues,
   path: string[],
-  value: FormValue,
+  value: FormValue
 ): void {
-  let target = source;
+  let target: FormValues | FormValue[] = source;
 
-  path.forEach((segment, index) => {
+  for (let index = 0; index < path.length; index++) {
+    const segment = path[index]!;
+
+    if (Array.isArray(target)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(segment)) {
+        throw new Error(`Form array path [${segment}] must be a row index.`);
+      }
+      const rowIndex = Number(segment);
+
+      if (index === path.length - 1) {
+        target[rowIndex] = value;
+        return;
+      }
+
+      const child: FormValue = target[rowIndex];
+      if (Array.isArray(child) || isRecord(child)) {
+        target = child;
+      } else {
+        target[rowIndex] = {};
+        target = target[rowIndex];
+      }
+      continue;
+    }
+
     if (index === path.length - 1) {
       target[segment] = value;
-
       return;
     }
 
-    if (!isRecord(target[segment])) {
+    const child: FormValue = target[segment];
+    if (Array.isArray(child) || isRecord(child)) {
+      target = child;
+    } else {
       target[segment] = {};
+      target = target[segment];
     }
-    target = target[segment];
-  });
+  }
 }
 
 export function unsetValue(source: FormValue, path: string[]): void {
-  if (!isRecord(source) || path.length === 0) {
-    return;
-  }
-
+  if (path.length === 0) return;
   const parent = valueAt(source, path.slice(0, -1));
+  const segment = path.at(-1)!;
 
-  if (isRecord(parent)) {
-    delete parent[path.at(-1)!];
+  if (Array.isArray(parent) && /^(0|[1-9][0-9]*)$/.test(segment)) {
+    parent[Number(segment)] = undefined;
+  } else if (isRecord(parent)) {
+    delete parent[segment];
   }
 }
 
 export function visitControls(
   nodes: FormNodePayload[],
-  visit: (control: FormControlPayload) => void,
+  visit: (control: FormControlPayload) => void
 ): void {
   for (const node of nodes) {
     if (node.control) {
@@ -329,8 +376,8 @@ export function canonicalValue(value: FormValue): CanonicalFormValue {
   // one where the server sent the other has not edited anything. Without
   // this, populating a field on load can read as a change purely because the
   // control's idea of empty differs from the server's.
-  if (value === null || value === undefined || value === "") {
-    return "";
+  if (value === null || value === undefined || value === '') {
+    return '';
   }
 
   if (Array.isArray(value)) {
@@ -351,7 +398,7 @@ export function canonicalValue(value: FormValue): CanonicalFormValue {
   return Object.fromEntries(
     Object.keys(value)
       .sort()
-      .map((key) => [key, canonicalValue(value[key])]),
+      .map((key) => [key, canonicalValue(value[key])])
   );
 }
 

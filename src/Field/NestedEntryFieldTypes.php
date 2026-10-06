@@ -19,6 +19,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<ElementContainerFieldInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class NestedEntryFieldTypes extends TypeRegistry

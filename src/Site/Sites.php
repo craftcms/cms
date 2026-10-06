@@ -46,6 +46,9 @@ use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
 
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Sites
 {
@@ -424,6 +427,14 @@ class Sites
             oldPrimarySiteId: $primarySite->id ?? null,
         ));
 
+        if ($site->primary) {
+            $site->setEnabled(true);
+        }
+
+        if (! $site->hasUrls) {
+            $site->setBaseUrl(null);
+        }
+
         if ($runValidation && ! $site->validate()) {
             Log::info('Site not saved due to validation error.', [__METHOD__]);
 
@@ -493,12 +504,12 @@ class Sites
             $siteModel->uid = $siteUid;
             $siteModel->groupId = $group->id;
             $siteModel->primary = $data['primary'];
-            $siteModel->enabled = $data['enabled'] ?? 'true';
+            $siteModel->enabled = $siteModel->primary ? true : ($data['enabled'] ?? 'true');
             $siteModel->name = $data['name'];
             $siteModel->handle = $data['handle'];
             $siteModel->language = $data['language'];
             $siteModel->hasUrls = $data['hasUrls'];
-            $siteModel->baseUrl = $data['baseUrl'];
+            $siteModel->baseUrl = $siteModel->hasUrls ? ($data['baseUrl'] ?? null) : null;
             $siteModel->sortOrder = $data['sortOrder'];
             $siteModel->dateDeleted = null;
             $siteModel->save();
@@ -634,6 +645,19 @@ class Sites
             return false;
         }
 
+        $transferContentTo = $event->transferContentTo;
+        $transferContentToSite = null;
+
+        if ($transferContentTo !== null) {
+            $transferContentToSite = $this->getSiteById($transferContentTo, true);
+
+            if (! $transferContentToSite || $transferContentToSite->id === $site->id) {
+                Log::warning('Attempted to delete a site with an invalid content transfer target.', [__METHOD__]);
+
+                return false;
+            }
+        }
+
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
         $sectionIds = DB::table(Table::SECTIONS_SITES)
@@ -655,9 +679,6 @@ class Sites
         if (! empty($soloSectionIds)) {
             // Should we enable those for a different site?
             if ($transferContentTo !== null) {
-                /** @var Site $transferContentToSite */
-                $transferContentToSite = $this->getSiteById($transferContentTo);
-
                 DB::table(Table::SECTIONS_SITES)
                     ->whereIn('sectionId', $soloSectionIds)
                     ->update([

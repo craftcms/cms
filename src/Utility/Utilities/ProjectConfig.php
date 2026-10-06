@@ -14,6 +14,8 @@ use function CraftCms\Cms\t;
 
 /**
  * ProjectConfig represents a ProjectConfig utility.
+ *
+ * @since 6.0.0
  */
 class ProjectConfig extends Utility
 {

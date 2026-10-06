@@ -1,13 +1,14 @@
 import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
 import {computed, type Ref} from 'vue';
-import axios from 'axios';
+import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
 import {topStackedPanel} from '@/common/slideouts/panel-stack';
+import {showMessagesFromResponse} from '@/modules/messages';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
@@ -16,9 +17,24 @@ interface PasswordConfirmationOptions<T> {
 
 export interface UseSettingsSaveOptions<T extends object> {
   transform?: (data: T) => object;
-  onSuccess?: () => void;
+  /** Uses the existing topmost-panel save listener for alternate submissions. */
+  onSaveShortcut?: (event: KeyboardEvent) => void;
+  /** Receives the response data when saving from a slideout. */
+  onSuccess?: (data?: any) => void;
+  /** Called with a failed slideout save's response data, before the errors are applied. */
+  onError?: (data: any) => void;
   /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
   onBeforeSave?: () => void;
+  /**
+   * Awaited before submitting; resolving `false` calls the save off. For work
+   * the submission depends on, like creating the draft it will save.
+   */
+  prepare?: () => Promise<boolean>;
+  /**
+   * Whether a successful slideout save closes the panel even when it was asked
+   * to stay open — when what was being edited no longer exists as it was.
+   */
+  forceClose?: () => boolean;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -37,7 +53,7 @@ interface SettingsSaveSlideout {
 }
 
 export interface SettingsSaveDependencies {
-  request: typeof axios.request;
+  request: typeof http.request;
   reload: typeof router.reload;
   elevatedSession: Pick<typeof elevatedSessionManager, 'require'>;
   slideout: SettingsSaveSlideout | null;
@@ -48,7 +64,7 @@ function defaultDependencies(): SettingsSaveDependencies {
   const page = usePage<{redirectUrl?: string}>();
 
   return {
-    request: (...args) => axios.request(...args),
+    request: (...args) => http.request(...args),
     reload: (...args) => router.reload(...args),
     elevatedSession: elevatedSessionManager,
     slideout: useSlideout(),
@@ -76,7 +92,11 @@ export function useSettingsSave<T extends object>(
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.key.toLowerCase() === 's' &&
+      !event.altKey
+    ) {
       // Only the topmost panel (or the page, when none is open) saves.
       const top = topStackedPanel();
       const isTopmost = top
@@ -90,26 +110,37 @@ export function useSettingsSave<T extends object>(
 
       event.preventDefault();
       event.stopImmediatePropagation();
-      save({redirect: false});
+      if (options.onSaveShortcut) {
+        options.onSaveShortcut(event);
+      } else if (!event.shiftKey) {
+        save({redirect: false});
+      }
     }
   });
 
   function save({
     redirect = true,
+    action: actionOverride,
+    preserveScroll = true,
+    keepOpen = !redirect,
     data: extraData = {},
     // Reset page state when this screen sends the user elsewhere, while saves
     // that remain on the current screen keep their local state by default.
-    preserveState = !(redirect && redirectUrl.value),
+    // Validation failures preserve input and errors instead of remounting.
+    preserveState = redirect && (extraData.redirect || redirectUrl.value)
+      ? 'errors'
+      : true,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();
 
     const submitOptions = redirect
       ? {
-          preserveScroll: true,
+          preserveScroll,
           preserveState,
         }
       : {
           replace: true,
+          preserveScroll,
         };
 
     /**
@@ -122,39 +153,42 @@ export function useSettingsSave<T extends object>(
      * usual 422 — `asJsonFailure()` picks it.
      */
     async function submitInSlideout(retried = false): Promise<void> {
-      const route = action();
+      const route = actionOverride ?? action();
       const routeIsString = Object(route).constructor === String;
 
       form.clearErrors();
       form.processing = true;
 
       try {
+        const payload: Record<string, any> = {
+          ...(options.transform?.(form.data()) ?? form.data()),
+          ...extraData,
+        };
+        // Slideout submissions never navigate, including alternate redirects.
+        delete payload.redirect;
+
         const response = await request({
           url: routeIsString ? String(route) : route.url,
           method: routeIsString ? 'post' : (route.method ?? 'post'),
-          // No `redirect`: a slideout closes rather than navigating anywhere.
-          data: {
-            ...(options.transform?.(form.data()) ?? form.data()),
-            ...extraData,
-          },
+          data: payload,
           headers: {
             'X-Craft-Container-Id': slideout!.instance.containerId,
           },
         });
 
         form.processing = false;
-        options.onSuccess?.();
+        showMessagesFromResponse(response.data);
+        options.onSuccess?.(response.data);
 
         // An opener that registered `onSaved` refreshes itself, and knows
         // better than we do what actually needs refreshing. Before the close:
         // closing drops the panel from the store, taking its handler with it.
         const handled = slideout!.saved({data: response.data});
 
-        // `redirect: false` is "save and continue editing" (the cmd+S path),
-        // which keeps the panel open. `force` because the form can still read
-        // dirty right after a save — Inertia only clears that when its
+        // Continue-editing submissions keep the panel open. `force` because
+        // the form can still read dirty right after a save; Inertia clears it when its
         // defaults are updated, which the page behind does on reload.
-        if (redirect !== false) {
+        if (!keepOpen || options.forceClose?.()) {
           slideout!.close({force: true});
         }
 
@@ -162,16 +196,14 @@ export function useSettingsSave<T extends object>(
           return;
         }
 
-        // Otherwise: the controller flashes the success message to the session
-        // even on its JSON branch, so refreshing the page behind both surfaces
-        // that message and picks up whatever was just saved. `reload()`
-        // preserves scroll and state inherently.
+        // Otherwise refresh the page behind to pick up whatever was just
+        // saved. `reload()` preserves scroll and state inherently.
         reload();
       } catch (error) {
         form.processing = false;
 
         if (
-          !axios.isAxiosError<{
+          !isHttpError<{
             errors?: Record<string, string | string[]>;
           }>(error)
         ) {
@@ -194,6 +226,10 @@ export function useSettingsSave<T extends object>(
             });
 
           return;
+        }
+
+        if (error.response?.data) {
+          options.onError?.(error.response.data);
         }
 
         const errors = error.response?.data?.errors;
@@ -227,19 +263,15 @@ export function useSettingsSave<T extends object>(
             ...extraData,
           };
 
-          // Only layer the screen's own redirect on when this save asked for
-          // one. Setting the key unconditionally would overwrite a redirect the
-          // caller's `transform` contributed — which is precisely what
-          // `save({redirect: false})` means for an action that carries its own
-          // target (e.g. the element editor's "Create a draft", which redirects
-          // to the draft it just created).
-          if (redirect && redirectUrl.value) {
+          // An explicit redirect from extra data or the transform takes
+          // precedence over the screen's default target.
+          if (redirect && redirectUrl.value && !('redirect' in payload)) {
             payload.redirect = redirectUrl.value;
           }
 
           return payload;
         })
-        .submit(action(), {
+        .submit(actionOverride ?? action(), {
           ...submitOptions,
           onHttpException: (response) => {
             if (!passwordConfirmation || response.status !== 423 || retried) {
@@ -264,21 +296,37 @@ export function useSettingsSave<T extends object>(
         });
     }
 
-    if (passwordConfirmation?.required(form.data())) {
-      void elevatedSession
-        .require({
-          minimumRemainingSeconds: passwordConfirmation.minimumRemainingSeconds,
-        })
-        .then((confirmed) => {
-          if (confirmed) {
-            submit();
-          }
-        });
+    if (options.prepare) {
+      const prepare = options.prepare;
+      void prepare().then((ready) => {
+        if (ready) {
+          confirmAndSubmit();
+        }
+      });
 
       return;
     }
 
-    submit();
+    confirmAndSubmit();
+
+    function confirmAndSubmit(): void {
+      if (passwordConfirmation?.required(form.data())) {
+        void elevatedSession
+          .require({
+            minimumRemainingSeconds:
+              passwordConfirmation.minimumRemainingSeconds,
+          })
+          .then((confirmed) => {
+            if (confirmed) {
+              submit();
+            }
+          });
+
+        return;
+      }
+
+      submit();
+    }
   }
 
   return {save};

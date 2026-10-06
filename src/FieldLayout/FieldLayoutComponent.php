@@ -28,6 +28,8 @@ use function CraftCms\Cms\t;
  * @property ?ElementConditionInterface $elementCondition The element condition for this layout element
  * @property ?UserCondition $userCondition The user condition for this layout element
  * @property FieldLayout $layout The layout this element belongs to
+ *
+ * @since 6.0.0
  */
 abstract class FieldLayoutComponent extends Component
 {

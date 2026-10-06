@@ -225,7 +225,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
         this.originalType = this.type;
       }
       this.setAttribute('role', 'presentation');
-      this.tabIndex = -1;
+      // No tabindex at all, rather than -1: a negative tabindex on a shadow
+      // host drops its whole shadow tree from sequential focus navigation,
+      // so the anchor could never be reached with Tab. The null property
+      // keeps a pending reflect (Lion's constructor queues a 0) from adding
+      // it back; removing the attribute too takes effect right away.
+      this.tabIndex = null as unknown as number;
+      this.removeAttribute('tabindex');
       this.type = 'button';
       this.linkHostStateApplied = true;
     } else if (this.linkHostStateApplied) {

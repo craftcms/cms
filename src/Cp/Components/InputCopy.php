@@ -28,6 +28,8 @@ use Stringable;
  *     InputCopy::make()
  *         ->value('sk-••••••••••••••1234')
  *         ->copyValue($fullToken);
+ *
+ * @since 6.0.0
  */
 class InputCopy extends Input
 {

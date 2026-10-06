@@ -4,7 +4,10 @@ import {useElementQuickEdit} from './useElementQuickEdit';
 const openSlideout = vi.fn();
 const refreshResults = vi.fn();
 
-const {onDblClick} = useElementQuickEdit({openSlideout, refreshResults});
+const {onDblClick, openEditor} = useElementQuickEdit({
+  openSlideout,
+  refreshResults,
+});
 
 beforeEach(() => {
   openSlideout.mockReset();
@@ -88,6 +91,16 @@ function dblclick(target: Element): MouseEvent {
 }
 
 describe('useElementQuickEdit', () => {
+  it('preserves the opener when a client-side action opens the editor', () => {
+    const opener = document.createElement('button');
+    openEditor(CP_URL, opener);
+
+    expect(openSlideout).toHaveBeenCalledWith(
+      CP_URL,
+      expect.objectContaining({opener})
+    );
+  });
+
   it('opens the element when a row is double-clicked', () => {
     const {postDate} = renderRow();
 

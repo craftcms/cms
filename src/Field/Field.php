@@ -79,6 +79,8 @@ use function CraftCms\Cms\t;
 /**
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  * @phpstan-import-type InputObjectFieldConfig from InputObjectField
+ *
+ * @since 6.0.0
  */
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {

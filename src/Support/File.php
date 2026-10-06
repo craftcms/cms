@@ -19,6 +19,9 @@ use ZipArchive;
 
 use function Illuminate\Filesystem\join_paths;
 
+/**
+ * @since 6.0.0
+ */
 class File extends \Illuminate\Support\Facades\File
 {
     /**

@@ -1,7 +1,4 @@
 {% set name = name ?? false %}
-{% if name %}
-    {{ hiddenInput(name, '') }}
-{% endif -%}
 
 {% set id = id ?? "elementselect#{random()}" -%}
 {% set elements = elements ?? [] -%}
@@ -91,6 +88,10 @@
 {% from "_includes/forms" import text %}
 
 {% tag useCustomElement ? customElement : 'div' with containerAttributes %}
+    {% if name %}
+        {{ hiddenInput(name, '') }}
+    {% endif %}
+
     {% if maintainHierarchy %}
         {{ include('_elements/structurelist.twig', {
             id,

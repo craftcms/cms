@@ -54,6 +54,38 @@ export class AssetSelectInput extends BaseElementSelectInput {
     }) as any);
   }
 
+  override addElements($elements: any): void {
+    super.addElements($elements);
+
+    // Route the Open in Image Editor actions through this input, so new assets can replace the selected ones
+    for (let i = 0; i < $elements.length; i++) {
+      const $element = $elements.eq(i);
+      $element
+        .find('[id*="action-image-edit"]')
+        .each((_: number, btn: HTMLElement) => {
+          const $btn = $(btn);
+          // Remove the existing handler, and change the ID in case it hasn't been registered yet
+          $btn
+            .off('activate')
+            .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
+          // `activate` is a jQuery synthetic event, so it needs `.on()` rather than `addListener()`.
+          $btn.on('activate', () => {
+            new Craft.AssetImageEditor($element.data('id'), {
+              allowDegreeFractions: Craft.isImagick,
+              onSave: (data: {newAssetId?: number}) => {
+                if (data.newAssetId) {
+                  this.replaceElement(
+                    $element.data('id'),
+                    data.newAssetId
+                  ).catch(() => {});
+                }
+              },
+            });
+          });
+        });
+    }
+  }
+
   override elementSelectSettings(): any {
     return Object.assign(super.elementSelectSettings(), {
       makeFocusable: true,

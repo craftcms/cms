@@ -28,6 +28,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -41,6 +42,9 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SitesController
 {
     use RespondsWithFlash;
@@ -69,7 +73,7 @@ readonly class SitesController
 
         $crumbs = array_filter([
             ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-            ['label' => t('Sites'), 'href' => isset($group) ? Url::cpUrl('settings/sites') : null],
+            ['label' => t('Sites'), 'href' => Url::cpUrl('settings/sites')],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
@@ -119,7 +123,7 @@ readonly class SitesController
             ->crumbs([
                 new ActionItem()->label(t('Settings'))->href(Url::url('settings')),
                 new ActionItem()->label(t('Sites'))->href(Url::url('settings/sites')),
-                new ActionItem()->label(t('Create site'))->href(Url::url('settings/sites/new')),
+                new ActionItem()->label(t('Create a new site')),
             ])
             ->inertiaPage('settings/sites/Edit', [
                 ...$this->formProps($site),
@@ -168,7 +172,7 @@ readonly class SitesController
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
-            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
+            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')->whereNull('dateDeleted')],
         ]);
 
         $siteId = $request->input('siteId');
@@ -180,21 +184,23 @@ readonly class SitesController
             $isNew = true;
         }
 
-        $site->groupId = $request->has('group') ? $request->integer('group') : null;
+        $site->groupId = $request->integer('group');
         $site->name = $request->input('name');
         $site->handle = $request->input('handle');
         $site->language = $request->input('language');
         $site->primary = $request->boolean('primary');
-        $site->enabled = $site->primary ? true : $request->input('enabled', true);
+        $site->enabled = $request->input('enabled', true);
         $site->hasUrls = $request->boolean('hasUrls');
-        $site->baseUrl = $site->hasUrls ? $request->input('baseUrl') : null;
+        $site->baseUrl = $request->input('baseUrl');
 
         if (! $this->sites->saveSite($site)) {
             throw ValidationException::withMessages($site->errors()->getMessages());
         }
 
         if ($isNew) {
-            return to_route('craft.cp.settings.sites.index')->with('success', t('Site created'));
+            Flash::success(t('Site created'));
+
+            return to_route('craft.cp.settings.sites.index');
         }
 
         return $this->asSuccess(t('Site saved.'));
@@ -210,7 +216,9 @@ readonly class SitesController
 
         $this->sites->reorderSites($ids);
 
-        return back()->with('success', t('New order saved.'));
+        Flash::success(t('New order saved.'));
+
+        return back();
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -220,7 +228,12 @@ readonly class SitesController
             'contentDestination' => ['required', 'in:transfer,delete'],
             'transferContentTo' => Rule::when(
                 $request->get('contentDestination') === 'transfer',
-                ['required', 'integer', Rule::exists(Table::SITES, 'id')]),
+                [
+                    'required',
+                    'integer',
+                    'different:id',
+                    Rule::exists(Table::SITES, 'id')->whereNull('dateDeleted'),
+                ]),
         ]);
 
         $this->sites->deleteSiteById(
@@ -228,8 +241,9 @@ readonly class SitesController
             transferContentTo: $data['contentDestination'] === 'transfer' ? (int) $data['transferContentTo'] : null,
         );
 
-        return to_route('craft.cp.settings.sites.index')
-            ->with('success', t('Site deleted.'));
+        Flash::success(t('Site deleted.'));
+
+        return to_route('craft.cp.settings.sites.index');
     }
 
     /** @return array<string, mixed> */

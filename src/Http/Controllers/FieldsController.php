@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
@@ -18,6 +19,8 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Table as TableField;
+use CraftCms\Cms\Field\TableCellTypes;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -41,6 +44,7 @@ use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -50,6 +54,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class FieldsController
 {
     use RespondsWithFlash;
@@ -109,6 +116,7 @@ class FieldsController
             ->title(t('Create a new field'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Fields'), 'settings/fields')
+            ->addCrumb(t('Create a new field'))
             ->redirectUrl('settings/fields')
             ->formAttributes(['action' => action([self::class, 'store'])])
             ->inertiaPage('settings/fields/Edit', new FieldEditViewModel(
@@ -145,10 +153,13 @@ class FieldsController
         }
 
         /** @var Field $field */
+        $title = trim((string) $field->name) ?: t('Edit Field');
+
         $response = new CpScreenResponse()
-            ->title(trim((string) $field->name) ?: t('Edit Field'))
+            ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Fields'), 'settings/fields')
+            ->addCrumb($title)
             ->redirectUrl('settings/fields')
             ->editUrl("settings/fields/edit/$field->id")
             ->formAttributes(['action' => action([self::class, 'store'])])
@@ -195,6 +206,7 @@ class FieldsController
             'values.translationKeyFormat' => ['nullable', 'string'],
             'values.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
+            'settingsOnly' => ['sometimes', 'boolean'],
         ]);
         $values = $data['values'];
         $type = $values['type'];
@@ -204,6 +216,13 @@ class FieldsController
         if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settings = $this->compatibleSettings($settings, $type, $oldType);
         }
+
+        $settings = $this->tableSettingsFromRequest(
+            $type,
+            $settings,
+            isset($values['fieldId']) ? $this->fieldsService->getFieldById((int) $values['fieldId']) : null,
+            'values.settings',
+        );
 
         $field = $this->fieldsService->createField([
             'type' => $type,
@@ -219,12 +238,14 @@ class FieldsController
 
         abort_unless($field instanceof Field, 500, 'Field types must extend the base field class.');
 
+        $viewModel = new FieldEditViewModel(
+            $field,
+            $this->fieldsService,
+            multiInstanceTypesOnly: $request->boolean('multiInstanceTypesOnly'),
+        );
+
         return new JsonResponse([
-            'form' => new FieldEditViewModel(
-                $field,
-                $this->fieldsService,
-                multiInstanceTypesOnly: $request->boolean('multiInstanceTypesOnly'),
-            )->form(),
+            'form' => $request->boolean('settingsOnly') ? $viewModel->settingsForm() : $viewModel->form(),
         ]);
     }
 
@@ -382,11 +403,20 @@ class FieldsController
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
-            'settings' => $this->typeSettingsFromRequest($request, $type, $oldField ?? null),
+            'settings' => $this->tableSettingsFromRequest(
+                $type,
+                $this->typeSettingsFromRequest($request, $type, $oldField ?? null),
+                $oldField ?? null,
+                'settings',
+            ),
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::error(t('Couldn’t save field.'));
+            // A JSON client gets the field errors in the 422 body; a flashed
+            // message would only surface on some later page.
+            if (! $request->expectsJson()) {
+                Flash::error(t('Couldn’t save field.'));
+            }
 
             $errors = $field->errors()->getMessages();
 
@@ -417,6 +447,68 @@ class FieldsController
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
             'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     * @return array<string, mixed>
+     */
+    private function tableSettingsFromRequest(string $type, array $settings, ?FieldInterface $oldField, string $errorPrefix): array
+    {
+        if (! is_a($type, TableField::class, true)) {
+            return $settings;
+        }
+
+        $cellTypes = app(TableCellTypes::class);
+
+        if ($oldField instanceof TableField && array_any(
+            $oldField->columns,
+            fn (array $column): bool => $cellTypes->create($column) instanceof MissingComponentInterface,
+        )) {
+            return array_replace($settings, Arr::only($oldField->getSettings(), [
+                'columns', 'defaults', 'defaultRowValues', 'staticRows',
+            ]));
+        }
+
+        $validationSettings = $settings;
+
+        if ($oldField instanceof TableField && is_array($settings['columns'] ?? null)) {
+            foreach ($settings['columns'] as $id => $column) {
+                $persistedColumn = $oldField->columns[$id] ?? null;
+                if (! is_array($persistedColumn) || ! is_array($column)) {
+                    continue;
+                }
+
+                $comparison = [$persistedColumn, $column];
+                array_walk_recursive($comparison, function (mixed &$value): void {
+                    if ($value === '') {
+                        $value = null;
+                    }
+                });
+
+                if ($comparison[0] === $comparison[1]) {
+                    $settings['columns'][$id] = $persistedColumn;
+                    unset($validationSettings['columns'][$id]);
+                }
+            }
+        }
+
+        $validator = Validator::make($validationSettings, [
+            'columns' => ['sometimes', 'array'],
+            'columns.*' => ['array'],
+            'columns.*.type' => ['required', 'string', Rule::in(array_keys($cellTypes->selectableTypes()))],
+            'columns.*.settings' => ['sometimes', 'nullable', 'array'],
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages(
+                collect($validator->errors()->getMessages())
+                    ->mapWithKeys(fn (array $messages, string $attribute): array => ["{$errorPrefix}.{$attribute}" => $messages])
+                    ->all(),
+            );
+        }
+
+        return $settings;
     }
 
     /**

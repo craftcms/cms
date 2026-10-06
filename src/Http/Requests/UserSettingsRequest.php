@@ -13,6 +13,9 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserSettingsRequest extends FormRequest
 {
     /** @return array<string, list<string|object>> */

@@ -8,7 +8,11 @@ use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
-/** @implements Arrayable<string, mixed> */
+/**
+ * @implements Arrayable<string, mixed>
+ *
+ * @since 6.0.0
+ */
 readonly class NestedElementCard implements Arrayable, JsonSerializable
 {
     /**
@@ -25,15 +29,17 @@ readonly class NestedElementCard implements Arrayable, JsonSerializable
         public bool $ownerIsUnpublishedDraft,
         public ?int $primaryOwnerId,
         public bool $isCanonical,
+        /** @var array{copyable: bool, duplicatable: bool, deletable: bool} */
+        public array $capabilities,
         /** The slideout editor URL for this nested context. */
         public ?string $editUrl,
         /** The element’s own edit page, for opening in a new tab. */
         public ?string $cpEditUrl,
         #[LiteralTypeScriptType("import('@/common/types').ActionItems")]
         public array $actionMenuItems,
-        #[LiteralTypeScriptType("import('@craftcms/ui').ServerAttributes & { data?: { label?: string; url?: string; 'draft-id'?: number; 'revision-id'?: number; editable?: boolean } & Partial<Record<'editable' | 'copyable' | 'duplicatable' | 'deletable', boolean>> }")]
+        #[LiteralTypeScriptType("import('@craftcms/ui').ServerAttributes & { data?: { label?: string; url?: string; 'draft-id'?: number; 'revision-id'?: number; editable?: boolean } }")]
         public array $cardAttributes,
-        public string $cardLabelHtml,
+        public string $cardHeaderHtml,
         public string $cardActionsHtml,
         public string $cardContentHtml,
         public string $cardFooterHtml,

@@ -33,5 +33,12 @@
       class="skip-link skip-link--global"
       >{{ link.label }}</a
     >
+    <!-- Shown only while there are messages; see messages.css. -->
+    <a
+      href="#messages"
+      class="skip-link skip-link--global"
+      data-messages-skip-link
+      >{{ t('Skip to messages') }}</a
+    >
   </div>
 </template>

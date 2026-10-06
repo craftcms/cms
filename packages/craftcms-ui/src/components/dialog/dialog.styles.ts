@@ -74,7 +74,7 @@ export default css`
     block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
-    border-radius: var(--c-radius-xl);
+    border-radius: var(--c-radius-lg);
     box-shadow: var(--c-shadow-lg);
     overflow: hidden;
   }
@@ -85,7 +85,7 @@ export default css`
 
   .header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-md);
     padding: var(--c-spacing-md);

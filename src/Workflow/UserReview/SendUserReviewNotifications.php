@@ -19,6 +19,9 @@ use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SendUserReviewNotifications
 {
     public function handleTransition(WorkflowTransitioned $event): void

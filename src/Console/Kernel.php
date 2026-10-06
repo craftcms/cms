@@ -10,6 +10,8 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 class Kernel extends \Illuminate\Foundation\Console\Kernel
 {

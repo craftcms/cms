@@ -12,6 +12,9 @@ use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UseWriteConnection
 {
     private const array READ_ONLY_ACTIONS = [

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Translation;
 
 use IntlDateFormatter;
 
+/**
+ * @since 6.0.0
+ */
 class FormatConverter
 {
     /** @var array<string, int> */

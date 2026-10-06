@@ -11,6 +11,9 @@ use CraftCms\Cms\Plugin\Commands\ListCommand;
 use CraftCms\Cms\Plugin\Commands\UninstallCommand;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class PluginServiceProvider extends ServiceProvider
 {
     #[\Override]

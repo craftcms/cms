@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
+use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -38,10 +39,15 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class EditElementController
 {
     use EditsElement;
@@ -63,7 +69,7 @@ class EditElementController
         return $this;
     }
 
-    public function __invoke(): Response|CpScreenResponse
+    public function __invoke(): Response|CpScreenResponse|InertiaResponse
     {
         $strictSite = $this->request->acceptsJson();
         $elementId = $this->request->route('id') ?? $this->request->integer('elementId');
@@ -145,6 +151,20 @@ class EditElementController
             };
         }
 
+        if ($this->request->inertia() || ! $this->request->wantsJson()) {
+            $viewModelClass = $element::editViewModelClass();
+
+            $viewModel = new $viewModelClass($element, $this->request, $canSave, $mergeCanonicalChanges);
+
+            event($event = new ElementEditorPayloadResolving(
+                $element,
+                $viewModel->toArray(),
+                $this->request->header('X-Craft-Container-Id') ?? 'main-form',
+            ));
+
+            return Inertia::render('elements/Edit', $event->data);
+        }
+
         // Screen prep
         [$docTitle, $title] = $this->editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
@@ -189,7 +209,7 @@ class EditElementController
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->crumbs($this->crumbs($element))
+            ->crumbs($this->crumbs($element, hyperlink: false))
             ->contextMenuItems(fn () => $this->contextMenuItems(
                 element: $element,
                 isUnpublishedDraft: $isUnpublishedDraft,

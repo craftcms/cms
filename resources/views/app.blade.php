@@ -20,6 +20,7 @@
     </head>
     <body>
         <x-inertia::app />
+        <cp-messages id="messages"></cp-messages>
         {!! $bodyHtml !!}
         <script>
           let CpConfig = {{ Illuminate\Support\Js::from(\CraftCms\Cms\Cp\Cp::config()) }};

@@ -1,12 +1,21 @@
 import {http} from '@inertiajs/vue3';
 import {createApp, h, nextTick, shallowRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import type {
   ElementEditPayload,
   ElementEditPayloadUpdater,
 } from '@/modules/elements/composables/useElementEditor';
 import WorkflowDetailsActions from './WorkflowDetailsActions.vue';
+
+const messages = vi.hoisted(() => ({
+  showMessage: vi.fn(),
+  notice: vi.fn(),
+  success: vi.fn(),
+  error: vi.fn(),
+}));
+vi.mock('@/modules/messages/useMessages', () => ({
+  useMessages: () => messages,
+}));
 
 type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
 
@@ -52,7 +61,7 @@ describe('WorkflowDetailsActions', () => {
 
   beforeEach(() => {
     requestSpy.mockReset();
-    useFlashMessages().clearAll();
+    Object.values(messages).forEach((fn) => fn.mockReset());
     vi.stubGlobal(
       'confirm',
       vi.fn(() => true)

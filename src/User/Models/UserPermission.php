@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @since 6.0.0
+ */
 class UserPermission extends BaseModel
 {
     /** @use HasFactory<UserPermissionFactory> */

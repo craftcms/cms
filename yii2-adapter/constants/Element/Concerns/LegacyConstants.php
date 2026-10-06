@@ -41,6 +41,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
+use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
@@ -80,6 +81,7 @@ use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Yii2Adapter\Element\LegacyActionMenuItems;
 use Illuminate\Support\Facades\Event;
 use ReflectionClass;
 
@@ -695,6 +697,35 @@ trait LegacyConstants
 
                 $event->items = $yiiEvent->items;
             }
+        });
+
+        // The Inertia editor and element chips read descriptors, so legacy items are converted for them.
+        Event::listen(function(ElementActionMenuDescriptorsResolving $event) use ($elementClasses) {
+            $legacy = app(LegacyActionMenuItems::class);
+            $items = [];
+
+            foreach ($elementClasses as $class) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                    continue;
+                }
+
+                if (!self::matchesElementClass($class, $event->element::class)) {
+                    continue;
+                }
+
+                // Handlers only see each other's items; the core ones are already descriptors.
+                $yiiEvent = new DefineMenuItemsEvent([
+                    'sender' => $event->element,
+                    'items' => $items,
+                ]);
+
+                $legacy->withoutJs(fn() => self::triggerEvent($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent));
+
+                $items = $yiiEvent->items;
+            }
+
+            $legacy->addEventItems($event, $items);
+            $legacy->addOverrideItems($event);
         });
 
         Event::listen(function(ElementSidebarHtmlResolving $event) use ($elementClasses) {

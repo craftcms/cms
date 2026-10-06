@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 use JsonException;
 
+/**
+ * @since 6.0.0
+ */
 class FormResolver
 {
     /** @var array<string, true> */
@@ -149,7 +152,8 @@ class FormResolver
         $value = $this->has($context->values, $path)
             ? $this->get($context->values, $path)
             : $control->getValue();
-        $props = $control->props($value);
+        $mode = $inheritedMode ?? ($context->mode === ControlMode::Editable ? $control->getMode() : $context->mode);
+        $props = $control->resolveProps($value, $mode);
         $this->ensureJsonSafe($props, "Form Control [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($path === []) {
@@ -162,7 +166,6 @@ class FormResolver
             throw new InvalidArgumentException("Duplicate Control path [{$identity}] for type [{$type}] with component [{$component}].");
         }
 
-        $mode = $inheritedMode ?? ($context->mode === ControlMode::Editable ? $control->getMode() : $context->mode);
         $deltaGroup = $control->getDeltaGroup();
         $deltaGroup = $inheritedDeltaGroup ?? ($deltaGroup === null
             ? $path
@@ -178,7 +181,12 @@ class FormResolver
         $this->set($this->values, $path, $value);
         $this->controlPathIndex[$pathKey] = true;
 
-        $forms = array_map(function (array $definition) use ($context, $path, $deltaGroup, $mode, $type, $component, $identity): NestedFormPayload {
+        $nestedContext = new FormContext(
+            values: array_replace_recursive($context->values, $this->values),
+            mode: $context->mode,
+        );
+
+        $forms = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedFormPayload {
             if (! isset($definition['scope'], $definition['form'], $definition['refreshable']) || ! $definition['form'] instanceof Form || ! is_bool($definition['refreshable'])) {
                 throw new InvalidArgumentException("Nested Forms for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
             }
@@ -194,7 +202,7 @@ class FormResolver
                 nodes: array_map(
                     fn (Node $node): NodePayload => $this->resolveNode(
                         $node,
-                        $context,
+                        $nestedContext,
                         $scope,
                         $deltaGroup,
                         $mode === ControlMode::Editable ? null : $mode,

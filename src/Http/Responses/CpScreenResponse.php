@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -32,6 +33,9 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * @since 6.0.0
+ */
 class CpScreenResponse implements Responsable
 {
     use Conditionable;
@@ -170,7 +174,7 @@ class CpScreenResponse implements Responsable
     /**
      * @var list<array<string, mixed>>|callable|null Alternate form actions.
      *
-     * This will only be used by full-page screens.
+     * This is passed to full-page screens and Inertia slideouts.
      *
      * @see altActions()
      * @see addAltAction()
@@ -494,12 +498,16 @@ class CpScreenResponse implements Responsable
      * - `redirect` _(optional)_ – The URL the form should redirect to afterwards.
      * - `confirm` _(optional)_ – A confirmation message that should be shown.
      * - `params` _(optional)_ – Array of additional params that should be posted.
-     * - `eventData` _(optional)_ – Additional properties that should be assigned to the JavaScript `submit` event.
+     * - `eventData` _(optional)_ – Additional properties for the legacy jQuery `submit` event. Inertia Form pages always perform regular saves, so `autosave: false` is redundant; other event extensions are unsupported.
      * - `shortcut` _(optional)_ – Whether the action can be triggered with a <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut
      *   (or <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> if `'shift' => true` is also set).
+     * - `shift` _(optional)_ – Whether the shortcut requires <kbd>Shift</kbd>.
      * - `retainScroll` _(optional)_ – Whether the browser should retain its scroll position on the next page.
      *
-     * This will only be used by full-page screens.
+     * Passed to Inertia screens and legacy full-page screens as `formActions`.
+     * Like legacy CP screen slideouts, Form slideouts save through AJAX without navigating
+     * to redirect URLs. Continue-editing
+     * actions using the default endpoint keep the panel open.
      */
     /** @param list<array<string, mixed>>|callable|null $value */
     public function altActions(callable|array|null $value): self
@@ -512,7 +520,7 @@ class CpScreenResponse implements Responsable
     /**
      * Adds an alternate form action.
      *
-     * This will only be used by full-page screens.
+     * Passed to Inertia screens and legacy full-page screens as `formActions`.
      *
      * @see altActions()
      */
@@ -859,9 +867,7 @@ class CpScreenResponse implements Responsable
                 : $this->inertiaProps,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'actionMenu' => $this->actionMenu(withDestructive: false, config: [
-                'withButton' => false,
-            ], namespace: $namespace),
+            'actionMenu' => $this->actionMenu(withDestructive: false, namespace: $namespace),
         ];
     }
 
@@ -910,7 +916,10 @@ class CpScreenResponse implements Responsable
      */
     private function slideoutInertiaResponse(Request $request, array $parts): Response
     {
-        return Inertia::render($this->inertiaPage ?? 'cp/Screen', $this->inertiaProps)
+        $props = $parts['inertiaProps'];
+        $props['formActions'] = array_merge($this->resolvedAltActions(), $props['formActions'] ?? []);
+
+        return Inertia::render($this->inertiaPage ?? 'cp/Screen', $props)
             ->with($this->screenProps('slideout', [
                 'containerId' => $parts['containerId'],
                 'namespace' => $parts['namespace'],
@@ -1020,13 +1029,7 @@ class CpScreenResponse implements Responsable
             'mainAttributes' => $this->mainAttributes,
             'mainFormAttributes' => $this->formAttributes,
             'redirectUrl' => $this->redirectUrl ? Crypt::encrypt($this->redirectUrl) : null,
-            'formActions' => array_map(function (array $action): array {
-                if (isset($action['redirect'])) {
-                    $action['redirect'] = Crypt::encrypt($action['redirect']);
-                }
-
-                return $action;
-            }, $altActions ?? []),
+            'formActions' => $this->resolvedAltActions($altActions ?? []),
             'saveShortcutRedirect' => $this->saveShortcutRedirectUrl,
             'contentNotice' => $notice,
             'content' => $content,
@@ -1091,10 +1094,42 @@ class CpScreenResponse implements Responsable
                     : null);
         }
 
-        return Inertia::render($page, $this->inertiaProps)
+        /**
+         * A page may declare its props as an `Arrayable`, and its own
+         * `formActions` have to join the screen's rather than replace them.
+         */
+        $props = $this->inertiaProps instanceof Arrayable
+            ? $this->inertiaProps->toArray()
+            : $this->inertiaProps;
+
+        $templateProps['formActions'] = array_merge(
+            $templateProps['formActions'],
+            $props['formActions'] ?? [],
+        );
+
+        return Inertia::render($page, $props)
             ->with($templateProps)
             ->with($this->screenProps('page', withAssets: $request->inertia()))
             ->toResponse($request);
+    }
+
+    /**
+     * Resolve alternate actions and encrypt their redirect targets.
+     *
+     * @param  list<array<string, mixed>>|null  $altActions
+     * @return list<array<string, mixed>>
+     */
+    private function resolvedAltActions(?array $altActions = null): array
+    {
+        $altActions ??= (is_callable($this->altActions) ? call_user_func($this->altActions) : $this->altActions) ?? [];
+
+        return array_map(function (array $action): array {
+            if (isset($action['redirect'])) {
+                $action['redirect'] = Crypt::encrypt($action['redirect']);
+            }
+
+            return $action;
+        }, $altActions);
     }
 
     private function contextMenu(?string $namespace = null): ?string
@@ -1107,8 +1142,13 @@ class CpScreenResponse implements Responsable
         ], $namespace);
     }
 
-    /** @param array<string, mixed> $config */
-    private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
+    /**
+     * Renders the slideout's action menu as a `<craft-action-menu>`.
+     *
+     * Item collection happens inside the namespace closure, along with rendering, so JS that items register against
+     * their IDs gets the same namespaced IDs as the rendered markup.
+     */
+    private function actionMenu(bool $withDestructive = true, ?string $namespace = null): ?string
     {
         $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
 
@@ -1116,9 +1156,24 @@ class CpScreenResponse implements Responsable
             return null;
         }
 
-        return $this->menu($itemsFactory, $config + [
-            'id' => 'action-menu',
-        ], $namespace);
+        $render = function () use ($itemsFactory): ?string {
+            $items = $this->menuItems($itemsFactory);
+
+            if (empty($items)) {
+                return null;
+            }
+
+            return ActionMenu::make()
+                ->menuItems($items, normalize: false)
+                ->label(t('Actions'))
+                ->toHtml();
+        };
+
+        if ($namespace) {
+            return InputNamespace::namespaceInputs($render, $namespace);
+        }
+
+        return $render();
     }
 
     /** @return list<array<string, mixed>>|null */

@@ -17,6 +17,8 @@ use function CraftCms\Cms\t;
 
 /**
  * HorizontalRule represents an `<hr>` UI element can be included in field layouts.
+ *
+ * @since 6.0.0
  */
 class HorizontalRule extends FieldLayoutElement
 {

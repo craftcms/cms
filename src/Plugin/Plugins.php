@@ -57,7 +57,11 @@ use UnexpectedValueException;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
-/** @phpstan-import-type LicenseInfo from License */
+/**
+ * @phpstan-import-type LicenseInfo from License
+ *
+ * @since 6.0.0
+ */
 #[Singleton]
 class Plugins
 {

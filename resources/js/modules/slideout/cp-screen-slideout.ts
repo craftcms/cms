@@ -29,11 +29,14 @@ import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
 import type {FormValues} from '@/modules/forms/types';
-import type {AxiosRequestConfig} from 'axios';
+import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
+import {
+  sendLegacyRequest,
+  type LegacyRequestOptions,
+} from '@craftcms/ui/utilities/api/legacyRequest';
 
 declare const Craft: any;
 declare const $: any;
-declare const axios: any;
 
 /**
  * Settings accepted by {@link CpScreenSlideout}, layered on top of
@@ -43,7 +46,7 @@ declare const axios: any;
  */
 export interface CpScreenSlideoutSettings extends SlideoutSettings {
   params: FormValues;
-  requestOptions: AxiosRequestConfig;
+  requestOptions: LegacyRequestOptions;
   showHeader: boolean | null;
   closeOnSubmit: boolean;
   // Optional (despite `defaults` always providing fallbacks) so the
@@ -121,7 +124,7 @@ export class CpScreenSlideout extends Slideout {
   tabManager: any = null;
   showingSidebar = false;
 
-  cancelToken: any = null;
+  abortController: AbortController | null = null;
   ignoreFailedRequest = false;
   fieldsWithErrors: any[] = [];
 
@@ -301,26 +304,26 @@ export class CpScreenSlideout extends Slideout {
 
   /**
    * Fetch the screen's content from {@link action} and {@link update} the
-   * DOM with it. Cancels any in-flight request first (via `axios`'s cancel
-   * token); `ignoreFailedRequest` suppresses the error display the
-   * cancelled request's rejection would otherwise produce.
+   * DOM with it. Aborts any in-flight request first; `ignoreFailedRequest`
+   * suppresses the error display the aborted request's rejection would
+   * otherwise produce.
    */
   load(data?: any, refreshInitialData?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       this.trigger('beforeLoad');
       this.showLoadSpinner();
 
-      if (this.cancelToken) {
+      if (this.abortController) {
         this.ignoreFailedRequest = true;
-        this.cancelToken.cancel();
+        this.abortController.abort();
       }
 
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
 
       const options = $.extend(
         {
           params: Object.assign({}, this.getParams(), this.settings!.params),
-          cancelToken: this.cancelToken.token,
+          signal: this.abortController.signal,
           headers: {
             'X-Craft-Container-Id': this.$container.attr('id'),
           },
@@ -328,8 +331,10 @@ export class CpScreenSlideout extends Slideout {
         this.settings!.requestOptions
       );
       const request = /^(?:https?:\/\/|\/)/.test(this.action!)
-        ? axios.get(this.action!, {
+        ? sendLegacyRequest(http, {
             ...options,
+            method: 'get',
+            url: this.action!,
             headers: {...Craft._actionHeaders(), ...options.headers},
           })
         : Craft.sendActionRequest('GET', this.action, options);
@@ -364,7 +369,7 @@ export class CpScreenSlideout extends Slideout {
         })
         .finally(() => {
           this.hideLoadSpinner();
-          this.cancelToken = null;
+          this.abortController = null;
         });
     });
   }
@@ -421,10 +426,7 @@ export class CpScreenSlideout extends Slideout {
 
       this.unmountInertiaApp();
       this.$content.html(data.content);
-      if (this.$actionBtn) {
-        this.$actionBtn.data('disclosureMenu')?.destroy();
-        this.$actionBtn.remove();
-      }
+      this.$actionBtn?.remove();
 
       if (data.submitButtonLabel) {
         this.$saveBtn.find('.label').text(data.submitButtonLabel);
@@ -445,27 +447,10 @@ export class CpScreenSlideout extends Slideout {
         this.hasCpLink = false;
       }
 
-      if (data.actionMenu) {
-        const labelId = Craft.namespaceId('action-menu-label', this.namespace);
-        const menuId = Craft.namespaceId('action-menu', this.namespace);
-        $('<label/>', {
-          id: labelId,
-          class: 'visually-hidden',
-          text: Craft.t('app', 'Actions'),
-        }).insertBefore(this.$editLink);
-        this.$actionBtn = $('<button/>', {
-          class: 'btn action-btn header-btn',
-          type: 'button',
-          title: Craft.t('app', 'Actions'),
-          'aria-controls': menuId,
-          'aria-describedby': labelId,
-          'data-disclosure-trigger': 'true',
-        }).insertBefore(this.$editLink);
-        $(data.actionMenu).insertBefore(this.$editLink);
-        this.$actionBtn.disclosureMenu();
-      } else {
-        this.$actionBtn = null;
-      }
+      // A `<craft-action-menu>`, which brings its own invoker
+      this.$actionBtn = data.actionMenu
+        ? $(data.actionMenu).insertBefore(this.$editLink)
+        : null;
 
       if (data.sidebar) {
         this.$sidebarBtn.removeClass('hidden');
@@ -721,7 +706,7 @@ export class CpScreenSlideout extends Slideout {
       },
     };
     const request = action
-      ? axios.post(action, data, {
+      ? http.post(action, data, {
           headers: {...Craft._actionHeaders(), ...options.headers},
         })
       : Craft.sendActionRequest('POST', null, options);
@@ -762,11 +747,11 @@ export class CpScreenSlideout extends Slideout {
 
   handleSubmitError(e: any): void {
     // Careful: `(!e.response.status) === 400` is always `false` (a boolean is
-    // never `=== 400`), so the status clause never contributes — every axios
+    // never `=== 400`), so the status clause never contributes — every HTTP
     // error with a response is treated as a validation failure. Kept for
     // compatibility; the `as any` only silences TS2367, which correctly
     // flags the comparison.
-    if (!e.isAxiosError || !e.response) {
+    if (!isHttpError(e) || !e.response) {
       Craft.cp.displayError();
       throw e;
     }
@@ -966,9 +951,9 @@ export class CpScreenSlideout extends Slideout {
 
     super.close();
 
-    if (this.cancelToken) {
+    if (this.abortController) {
       this.ignoreFailedRequest = true;
-      this.cancelToken.cancel();
+      this.abortController.abort();
     }
   }
 

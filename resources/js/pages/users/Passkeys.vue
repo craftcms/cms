@@ -7,7 +7,7 @@
     platformAuthenticatorIsAvailable,
     startRegistration,
   } from '@simplewebauthn/browser';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import CraftDate from '@/common/components/Date.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -154,7 +154,7 @@
   }
 
   const columnHelper = createCraftColumnHelper<Passkey>();
-  const table = useVueTable<Passkey>({
+  const table = useCraftTable<Passkey>({
     get data() {
       return page.props.passkeys;
     },
@@ -189,45 +189,41 @@
         ]),
       ];
     },
-    getCoreRowModel: getCoreRowModel<Passkey>(),
-    enableSorting: false,
   });
 </script>
 
 <template>
   <UserScreen>
-    <craft-pane>
-      <div class="grid gap-4">
-        <div>
-          <h2>{{ t('Passkeys') }}</h2>
-          <p>
-            {{
-              t(
-                'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
-              )
-            }}
-          </p>
-        </div>
-
-        <craft-callout v-if="!supported" variant="warning">
-          {{ t('This browser doesn’t support passkeys.') }}
-        </craft-callout>
-
-        <craft-pane :padding="0" appearance="raised">
-          <AdminTable :table="table" />
-        </craft-pane>
-
-        <div v-if="supported">
-          <craft-button
-            type="button"
-            icon="plus"
-            :loading="adding"
-            @click="addPasskey"
-          >
-            {{ t('Add a passkey') }}
-          </craft-button>
-        </div>
+    <div class="grid gap-4">
+      <div>
+        <h2>{{ t('Passkeys') }}</h2>
+        <p>
+          {{
+            t(
+              'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
+            )
+          }}
+        </p>
       </div>
-    </craft-pane>
+
+      <craft-callout v-if="!supported" variant="warning">
+        {{ t('This browser doesn’t support passkeys.') }}
+      </craft-callout>
+
+      <craft-pane :padding="0" appearance="raised">
+        <AdminTable :table="table" />
+      </craft-pane>
+
+      <div v-if="supported">
+        <craft-button
+          type="button"
+          icon="plus"
+          :loading="adding"
+          @click="addPasskey"
+        >
+          {{ t('Add a passkey') }}
+        </craft-button>
+      </div>
+    </div>
   </UserScreen>
 </template>

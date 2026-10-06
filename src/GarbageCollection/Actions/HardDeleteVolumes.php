@@ -10,6 +10,8 @@ use stdClass;
 
 /**
  * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
+ *
+ * @since 6.0.0
  */
 class HardDeleteVolumes extends GarbageCollectionAction
 {

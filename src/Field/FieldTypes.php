@@ -19,6 +19,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<FieldInterface>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class FieldTypes extends TypeRegistry

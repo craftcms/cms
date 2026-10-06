@@ -14,8 +14,15 @@ const stub = vi.hoisted(() => {
     })
   );
 
-  return {show, destroy, createElementSelectorModal};
+  const openSlideout = vi.fn(async () => null);
+
+  return {show, destroy, createElementSelectorModal, openSlideout};
 });
+
+vi.mock('@/common/slideouts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/common/slideouts')>()),
+  openSlideout: stub.openSlideout,
+}));
 
 // The control opens the selector itself now. The real factory mounts a second
 // Vue app and pulls in the whole element index, so the seam it is driven
@@ -114,6 +121,7 @@ describe('ElementSelectControl', () => {
     stub.createElementSelectorModal.mockClear();
     stub.show.mockClear();
     stub.destroy.mockClear();
+    stub.openSlideout.mockClear();
   });
 
   let updates: Array<number[] | number | null>;
@@ -339,6 +347,30 @@ describe('ElementSelectControl', () => {
 
     expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
   });
+
+  it('keeps server card actions alongside the field actions', async () => {
+    const root = await mount({
+      props: {
+        viewMode: 'cards',
+        elements: [
+          {
+            id: 5,
+            label: 'Some entry',
+            canEdit: true,
+            cardHeaderHtml: 'Some entry',
+            cardActionsHtml:
+              '<button type="button" data-server-action>Server action</button>',
+          },
+        ],
+      },
+    });
+
+    expect(root.querySelector('[data-server-action]')?.textContent).toBe(
+      'Server action'
+    );
+    expect(root.querySelector('craft-card craft-button')).not.toBeNull();
+  });
+
   function addButton(root: HTMLElement): HTMLElement | null {
     return root.querySelector('[data-element-select-add]');
   }
@@ -722,6 +754,55 @@ describe('ElementSelectControl', () => {
       expect(createElementEditor).toHaveBeenCalledWith(
         'CraftCms\\Cms\\Elements\\Entry',
         expect.objectContaining({elementId: 5})
+      );
+    });
+
+    it.each([
+      'CraftCms\\Cms\\Entry\\Elements\\Entry',
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+    ])(
+      'opens %s in the generic editor when it has no edit URL',
+      async (elementType) => {
+        vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+        const root = await mount({
+          props: {
+            elementType,
+            elements: [{id: 5, label: 'Some element', siteId: 2}],
+          },
+          value: [5],
+        });
+
+        doubleClick(chip(root));
+
+        expect(createElementEditor).not.toHaveBeenCalled();
+        expect(stub.openSlideout).toHaveBeenCalledOnce();
+        const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
+        const url = new URL(href, 'https://example.test');
+        expect(url.pathname).toMatch(/\/elements\/edit$/);
+        expect(url.searchParams.get('elementType')).toBe(elementType);
+        expect(url.searchParams.get('elementId')).toBe('5');
+        expect(url.searchParams.get('siteId')).toBe('2');
+      }
+    );
+
+    it('opens an element’s own edit screen in a Vue slideout', async () => {
+      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
+      const root = await mount({
+        props: {
+          elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
+          elements: [
+            {id: 5, label: 'Some asset', cpEditUrl: '/admin/assets/edit/5'},
+          ],
+        },
+        value: [5],
+      });
+
+      doubleClick(chip(root));
+
+      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).toHaveBeenCalledWith(
+        '/admin/assets/edit/5',
+        expect.objectContaining({onSaved: expect.any(Function)})
       );
     });
 

@@ -15,6 +15,9 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 class SendTestMailCommand extends Command
 {
     use CraftCommand;

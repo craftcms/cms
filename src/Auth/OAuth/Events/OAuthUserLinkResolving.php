@@ -8,6 +8,9 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
+/**
+ * @since 6.0.0
+ */
 class OAuthUserLinkResolving
 {
     public function __construct(

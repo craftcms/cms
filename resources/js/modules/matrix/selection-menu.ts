@@ -242,13 +242,23 @@ function serverItem(element: Element): SelectionMenuItem | null {
   return item;
 }
 
+/** Embedded native controls share the surrounding HTML field's menu. */
+export function matrixField(element: Element): HTMLElement | null {
+  const field = element.closest<HTMLElement>('craft-field');
+  const host = field?.parentElement;
+
+  return host?.matches('craft-entry-field-layout-form[data-field-path]')
+    ? (host.closest<HTMLElement>('craft-field') ?? field)
+    : field;
+}
+
 /**
  * Brings a server-rendered field menu in line with the field's blocks. Its
  * items are `craft-action-item` elements carrying their action as a JSON
  * attribute and their label as text.
  */
 export function syncSelectionMenu(field: Element): void {
-  const own = (element: Element) => element.closest('craft-field') === field;
+  const own = (element: Element) => matrixField(element) === field;
   const blocks = [...field.querySelectorAll('[data-matrix-block]')].filter(own);
   const selected = blocks.filter((block) =>
     block.hasAttribute('data-selected')

@@ -11,6 +11,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ElementAction extends Component implements ElementActionInterface
 {
     use ConfigurableComponent;

@@ -140,6 +140,14 @@ export async function runAction(
         throw new Error(data.message ?? 'Request failed');
       }
 
+      // The host shows them (see the control panel's `craft-message`
+      // listener); they outlive the redirect below.
+      for (const message of Array.isArray(data.messages) ? data.messages : []) {
+        window.dispatchEvent(
+          new CustomEvent('craft-message', {detail: message})
+        );
+      }
+
       if (typeof data.redirect === 'string' && data.redirect) {
         navigateTo(data.redirect);
       }

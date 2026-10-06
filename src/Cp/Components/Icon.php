@@ -26,6 +26,8 @@ use Stringable;
  * `color()` renders as the `data-color` attribute, which scopes the
  * `--c-color-*` tokens the icon's styles consume (e.g. the `badge`
  * appearance).
+ *
+ * @since 6.0.0
  */
 class Icon extends ViewComponent
 {

@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Plugin\Exceptions;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class InvalidLicenseKeyException extends RuntimeException
 {
     public function __construct(

@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Support\Html;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class InputDate extends Input
 {
     #[Override]

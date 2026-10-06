@@ -24,6 +24,8 @@ use InvalidArgumentException;
  *     $arguments->register('relatedToProducts', RelatedProducts::class);
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class GqlArguments

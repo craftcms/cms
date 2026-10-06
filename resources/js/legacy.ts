@@ -22,14 +22,17 @@ import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
+import {installMessages} from './modules/messages';
 import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineFieldSettingsFormHost} from './modules/forms/field-settings-form-host';
+import {defineTableFormHost} from './modules/forms/table-form-host';
+import {defineNestedElementsControlHost} from './modules/forms/nested-elements/nested-elements-control-host';
 import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 
 import './modules/listbox/index';
-import './modules/matrix/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
@@ -62,7 +65,6 @@ import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
-import './modules/nested-element-manager/index';
 import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
@@ -78,10 +80,16 @@ window.Cp = Cp;
 Cp.config(window.Craft ?? {});
 Cp.init();
 
+// The Twig layout renders `<cp-messages>` and queues the flashed messages.
+installMessages();
+
 defineDashboardWidgetSettingsFormHost(Cp.$components);
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineNestedElementsControlHost(Cp.$components);
 defineConditionBuilderHost(Cp.$components);
 defineInlineAttributeFormHost(Cp.$components);
+defineTableFormHost(Cp.$components);
+defineFieldSettingsFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);
 
 mountElevatedSessionHost();

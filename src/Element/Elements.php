@@ -37,6 +37,9 @@ use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 class Elements
 {
     public const string REF_TAG_PATTERN = '/
@@ -410,6 +413,8 @@ class Elements
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws \Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
+     *
+     * @phpstan-impure
      */
     public function saveElement(
         ElementInterface $element,

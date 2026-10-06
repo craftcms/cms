@@ -17,6 +17,9 @@ use CraftCms\Cms\Support\Arr;
 use InvalidArgumentException;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class EntryTitleField extends TitleField
 {
     #[Override]

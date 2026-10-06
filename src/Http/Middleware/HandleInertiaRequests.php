@@ -38,6 +38,9 @@ use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUserElement;
 
+/**
+ * @since 6.0.0
+ */
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -171,9 +174,11 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            // Read through the Flash getters, which also cover the CP
-            // notification keys that legacy-style controllers flash via
-            // Flash::success()/error() without the plain session keys.
+            // Always included, so a partial reload can't consume the flashed
+            // messages without delivering them.
+            'messages' => Inertia::always(fn () => Flash::all()),
+            // @deprecated Read `messages`, which also carries notices, message
+            // settings and ids.
             'flash' => fn () => [
                 'success' => Flash::getSuccess(),
                 'error' => Flash::getError(),

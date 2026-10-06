@@ -9,6 +9,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ElementUriRule implements ValidationRule
 {
     private const string URI_PATTERN = '/^\S+$/u';

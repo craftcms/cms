@@ -9,6 +9,8 @@ use Override;
 
 /**
  * @internal
+ *
+ * @since 6.0.0
  */
 class Migrator extends \Illuminate\Database\Migrations\Migrator
 {

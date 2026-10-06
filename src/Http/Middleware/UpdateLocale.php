@@ -9,6 +9,9 @@ use CraftCms\Cms\Cms;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class UpdateLocale
 {
     public function __construct(

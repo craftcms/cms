@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -16,7 +16,6 @@
   import type {SortItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface VolumeData {
     id: number;
@@ -110,7 +109,7 @@
     ]),
   ]);
 
-  const table = useVueTable<VolumeData>({
+  const table = useCraftTable<VolumeData>({
     get data() {
       return volumes.value;
     },
@@ -122,8 +121,6 @@
         return columnVisibility.value;
       },
     },
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
   useAppLayout({title: props.title});
@@ -136,8 +133,9 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
+  <div class="@container">
     <AdminTable
+      class="admin-table--padded"
       :table="table"
       :reorderable="true"
       :read-only="readOnly"
@@ -150,5 +148,5 @@
         ></craft-empty>
       </template>
     </AdminTable>
-  </CpContainer>
+  </div>
 </template>

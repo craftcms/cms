@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class AddressSettingsController
 {
     use RespondsWithFlash;
@@ -31,6 +34,7 @@ class AddressSettingsController
         return new CpScreenResponse()
             ->title(t('Address Fields'))
             ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Addresses'))
             ->inertiaPage('settings/addresses/Fields', [
                 'fieldLayoutDesigner' => [
                     'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [

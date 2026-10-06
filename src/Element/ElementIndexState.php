@@ -34,6 +34,8 @@ use Illuminate\Support\Collection;
  *     defaultDir: mixed,
  *     option: mixed,
  * }
+ *
+ * @since 6.0.0
  */
 #[Scoped]
 readonly class ElementIndexState

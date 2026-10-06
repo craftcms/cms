@@ -17,6 +17,8 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
  * Profiler adds profiling to template bodies, blocks, and macros.
+ *
+ * @since 6.0.0
  */
 class Profiler implements NodeVisitorInterface
 {

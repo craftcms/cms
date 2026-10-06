@@ -69,3 +69,42 @@ it('processes response headers from failed API responses', function () {
     expect(fn () => $this->api->request('GET', 'updates'))->toThrow(RequestException::class);
     expect(Cache::get('licensedDomain'))->toBe('failed.cloud');
 });
+
+it('only caches valid licensed domains', function (string $domain, bool $expectCached) {
+    $this->api->processResponseHeaders([
+        'X-Craft-License-Domain' => $domain,
+    ]);
+
+    expect(Cache::get('licensedDomain'))->toBe($expectCached ? $domain : null);
+})->with([
+    'domain' => ['example.com', true],
+    'subdomain' => ['www.example.co.uk', true],
+    'localhost' => ['localhost', true],
+    'html' => ['poison.test"><img src=x onerror=alert(document.domain)>', false],
+    'space' => ['example .com', false],
+    'empty' => ['', false],
+]);
+
+it('skips malformed license info entries', function () {
+    $this->api->processResponseHeaders([
+        'X-Craft-License-Info' => implode(',', [
+            'craft:1;pro;mismatched',
+            'plugin-foo-bar:2;standard;valid',
+            'plugin-trial:;;trial',
+            'plugin-invalid:invalid',
+            'plugin-bad-id:1"><img src=x>;standard;valid',
+            'plugin-bad-edition:3;<img src=x>;valid',
+            'plugin-bad-status:4;standard;bogus',
+            'plugin-missing-values:5;standard',
+            'plugin-<img src=x>:6;standard;valid',
+            'notaplugin:7;standard;valid',
+            'nocolon',
+        ]),
+    ]);
+
+    $licenseInfo = Cache::get(License::CACHE_KEY_LICENSE_INFO);
+
+    expect(array_keys($licenseInfo))->toBe(['craft', 'plugin-foo-bar', 'plugin-trial', 'plugin-invalid'])
+        ->and($licenseInfo['craft'])->toMatchArray(['id' => '1', 'edition' => 'pro', 'status' => 'mismatched'])
+        ->and($licenseInfo['plugin-invalid'])->toMatchArray(['id' => null, 'status' => 'invalid']);
+});

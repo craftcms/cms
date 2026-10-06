@@ -11,7 +11,11 @@ use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use LogicException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class AssetActivity
 {
     public static function shouldRecord(Asset $asset): bool

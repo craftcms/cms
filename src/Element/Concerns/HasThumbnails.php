@@ -63,6 +63,7 @@ trait HasThumbnails
             'srcset' => "{$thumbUrl} {$size}w, {$this->thumbUrl($size * 2, $mode)} ".($size * 2).'w',
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
+            'placeholder' => $this->thumbPlaceholderUrl(),
         ]);
     }
 
@@ -134,5 +135,13 @@ trait HasThumbnails
     protected function couldHaveAnimatedThumb(): bool
     {
         return false;
+    }
+
+    /**
+     * Returns the URL of a small image to show in place of the element's thumbnail while it loads.
+     */
+    protected function thumbPlaceholderUrl(): ?string
+    {
+        return null;
     }
 }

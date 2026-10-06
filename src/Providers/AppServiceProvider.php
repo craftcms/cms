@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
@@ -52,6 +53,9 @@ use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class AppServiceProvider extends ServiceProvider
 {
     public static int $minPasswordLength = UserPasswordRule::MIN_PASSWORD_LENGTH;
@@ -264,7 +268,9 @@ class AppServiceProvider extends ServiceProvider
         $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
             $handler->renderable(function (ThrottleRequestsException $e, $request) {
                 if ($request->inertia()) {
-                    return back()->with('error', t('Too many requests. Please wait a moment before trying again.'));
+                    Flash::error(t('Too many requests. Please wait a moment before trying again.'));
+
+                    return back();
                 }
             });
         });

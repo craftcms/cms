@@ -18,6 +18,8 @@ use RuntimeException;
 
 /**
  * Service for tracking job progress and status.
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 readonly class JobProgress

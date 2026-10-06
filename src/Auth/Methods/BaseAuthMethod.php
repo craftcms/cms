@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Auth\Methods;
 use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\User\Elements\User;
 
+/**
+ * @since 6.0.0
+ */
 abstract class BaseAuthMethod implements AuthMethodInterface
 {
     use LegacyEventConstants;

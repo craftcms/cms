@@ -11,6 +11,9 @@ use CraftCms\Cms\Site\Data\Site;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class RevisionRestored extends ActivityEventType
 {
     protected const string LABEL = 'Revision restored';

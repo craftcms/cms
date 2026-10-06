@@ -8,6 +8,8 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserNameResolving The event that is triggered when defining the user’s name, as returned by {@see User::getName()} or {@see User::__toString()}.
+ *
+ * @since 6.0.0
  */
 class UserNameResolving
 {

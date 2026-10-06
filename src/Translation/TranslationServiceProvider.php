@@ -11,6 +11,9 @@ use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 use Yiisoft\Translator\Translator;
 
+/**
+ * @since 6.0.0
+ */
 class TranslationServiceProvider extends ServiceProvider
 {
     #[\Override]

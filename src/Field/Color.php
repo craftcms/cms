@@ -36,6 +36,8 @@ use function CraftCms\Cms\t;
  * Color represents a Color field.
  *
  * @property string|null $defaultColor
+ *
+ * @since 6.0.0
  */
 class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
@@ -194,7 +196,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     {
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
-            'palette' => ['nullable', 'required_if:allowCustomColors,true'],
+            'palette' => ['nullable', 'required_if:allowCustomColors,false'],
             'palette.*.label' => ['string'],
             'palette.*.default' => ['nullable', 'boolean'],
             'palette.*.color' => [new ColorRule],

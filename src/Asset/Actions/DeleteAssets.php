@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Asset\Actions;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 
+/**
+ * @since 6.0.0
+ */
 class DeleteAssets extends Delete
 {
     #[\Override]

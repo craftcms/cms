@@ -24,6 +24,7 @@ use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMainte
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
@@ -42,6 +43,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
@@ -49,6 +52,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RouteServiceProvider extends ServiceProvider
 {
     #[Override]
@@ -62,6 +68,8 @@ class RouteServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
+        $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
+        $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
@@ -84,6 +92,14 @@ class RouteServiceProvider extends ServiceProvider
 
     public function boot(Router $router, Routes $routes): void
     {
+        Event::listen(RouteMatched::class, function (RouteMatched $event): void {
+            MatchedElement::set(null);
+
+            if (Cms::isInstalled() && $event->request->isSiteRequest() && ! $event->request->isActionRequest() && ! Cms::config()->headlessMode) {
+                $event->route->middleware([ResolveSite::class, ResolveElementRoute::class]);
+            }
+        });
+
         URL::defaults([
             'cpTrigger' => trim((string) Cms::config()->cpTrigger, '/') ?: null,
             'actionTrigger' => trim(Cms::config()->actionTrigger, '/'),

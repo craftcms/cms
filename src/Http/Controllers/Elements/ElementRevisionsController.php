@@ -18,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementRevisionsController
 {
     use ElementCrumbs;
@@ -45,7 +48,7 @@ class ElementRevisionsController
                 'title' => $element->getUiLabel(),
             ]))
             ->crumbs([
-                ...$this->crumbs($element, current: false),
+                ...$this->crumbs($element),
                 new ActionItem()->label(t('Revisions')),
             ])
             ->contentTemplate('_elements/revisions', [

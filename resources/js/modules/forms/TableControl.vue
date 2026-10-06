@@ -1,299 +1,601 @@
 <script setup lang="ts">
-  import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
-  import {t} from '@craftcms/ui';
-  import {useEventListener, useMutationObserver} from '@vueuse/core';
-  import {EditableTable} from '../editable-table';
+  import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/reorder-button/reorder-button';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {computed, inject, nextTick, onMounted, ref} from 'vue';
+  import {FormControlStructure, inputName} from './runtime';
   import type {
-    EditableTableColumns,
-    EditableTableRow,
-    EditableTableValue,
-  } from '../editable-table/types';
-  import type {FormControlPayload, FormValue} from './types';
-  import {inputName} from './runtime';
-
-  type TableControlProps = {
-    columns: EditableTableColumns;
-    allowAdd?: boolean;
-    allowDelete?: boolean;
-    allowReorder?: boolean;
-    minRows?: number;
-    maxRows?: number;
-    keyed?: boolean;
-    defaultValues?: EditableTableRow;
-    errors?: Record<string, Record<string, true>>;
-  };
-  type TableRow = EditableTableRow;
-  interface TableRows {
-    [key: string]: TableRow;
-  }
-  type TableValue = TableRow[] | TableRows | null;
+    FormChange,
+    FormChangeKind,
+    FormControlPayload,
+    FormNodePayload,
+    FormPayload,
+    FormValue,
+  } from './types';
+  import TableCell from './table/TableCell.vue';
+  import {rowFields} from './table/rowForms';
+  import {firstFocusableWithin} from '@/common/utils/dom';
+  import {useReorderableRows} from '@/common/composables/useReorderableRows';
+  import DropIndicator from '@/common/components/DropIndicator.vue';
+  import {useAutopopulation} from './table/useAutopopulation';
+  import {useTableRows} from './table/useTableRows';
+  import {useTableBehavior} from './table/useTableBehavior';
+  import type {TableControlProps, TableRow, TableValue} from './table/types';
 
   const props = defineProps<{
     control: FormControlPayload<TableControlProps>;
     value: TableValue;
     editable: boolean;
+    values?: FormPayload['values'];
+    errors?: FormPayload['errors'];
+    touchedPaths?: Set<string>;
+    formScope?: string[];
+    formRefreshable?: boolean;
   }>();
   const emit = defineEmits<{
     (
       event: 'update:value',
       value: TableValue,
-      kind: 'discrete' | 'typing'
+      kind: FormChangeKind,
+      change?: FormChange
     ): void;
   }>();
+  defineSlots<{
+    'row-actions'(props: {
+      row: TableRow;
+      index: number;
+      rowKey: string;
+    }): unknown;
+  }>();
   const host = ref<HTMLElement>();
-  const table = ref<HTMLTableElement>();
-  const tableBody = computed(() => table.value?.tBodies[0]);
-  const id = `form-table-${crypto.randomUUID()}`;
-  let rows = props.value;
-  let instance: EditableTable | undefined;
+  const status = ref('');
+  const structure = inject(FormControlStructure, undefined);
+  const {rows, forms, keyed, externalValue, createRow, rowForm} =
+    useTableRows(props);
+  const {pending, errorsCleared, clearErrors} = useTableBehavior(
+    () => props.control.path,
+    () => keyed.value
+  );
+  const autopopulation = useAutopopulation();
+  const columns = computed(() => Object.entries(props.control.props.columns));
+  const autopopulations = computed(() =>
+    columns.value.flatMap(([key, column]) => {
+      if (!column.autopopulate) return [];
+      return [
+        key === 'heading' && column.autopopulate === 'handle'
+          ? {source: key, target: column.autopopulate}
+          : {source: column.autopopulate, target: key},
+      ];
+    })
+  );
+  const visibleColumns = computed(() =>
+    columns.value.filter(([, column]) => column.type !== 'hidden')
+  );
+  const canAdd = computed(
+    () =>
+      props.editable &&
+      !pending.value &&
+      !props.control.props.staticRows &&
+      props.control.props.allowAdd &&
+      (props.control.props.maxRows == null ||
+        rows.value.length < props.control.props.maxRows)
+  );
+  const canDelete = computed(
+    () =>
+      props.editable &&
+      !pending.value &&
+      !props.control.props.staticRows &&
+      props.control.props.allowDelete &&
+      rows.value.length > (props.control.props.minRows ?? 0)
+  );
+  const canReorder = computed(
+    () =>
+      props.editable &&
+      !pending.value &&
+      !props.control.props.staticRows &&
+      props.control.props.allowReorder
+  );
+  const {setRowRef, setHandleRef, getDragState, getDropState} =
+    useReorderableRows({
+      getRowIds: () => rows.value.map((row) => row.id),
+      onReorder: moveRow,
+      enabled: () => Boolean(canReorder.value),
+    });
 
-  useEventListener(host, 'input', () => emitRows('typing'));
-  useEventListener(host, 'model-value-changed', () => emitRows('typing'));
-  useEventListener(host, 'change', () => emitRows('discrete'));
-  const {takeRecords} = useMutationObserver(
-    tableBody,
-    () => emitRows('discrete'),
-    {
-      childList: true,
+  function closestEdge(id: string) {
+    const state = getDropState(id);
+    return state.type === 'is-over' ? state.closestEdge : null;
+  }
+  const effectiveValues = computed(() => props.values ?? {});
+  const effectiveTouched = computed(
+    () => props.touchedPaths ?? new Set<string>()
+  );
+  const renderedRows = computed(() =>
+    rows.value.map((row, index) => ({
+      row,
+      fields: rowFields(rowForm(index)?.nodes ?? []),
+    }))
+  );
+
+  onMounted(() => {
+    structure?.(props.control, forms.value);
+    if (!props.editable) return;
+
+    let added = false;
+    while (rows.value.length < (props.control.props.minRows ?? 0)) {
+      appendRow();
+      added = true;
     }
-  );
-
-  onMounted(renderTable);
-  onBeforeUnmount(() => instance?.destroy());
-
-  watch(
-    () => props.value,
-    (current) => {
-      if (sameRows(current, rows)) {
-        return;
-      }
-
-      rows = current;
-      renderTable();
-    },
-    {deep: true}
-  );
-  watch([() => props.control.props, () => props.editable], renderTable, {
-    deep: true,
+    if (added) commit('discrete');
   });
 
-  function renderTable(): void {
-    if (!table.value || !tableBody.value) {
-      return;
-    }
-
-    instance?.destroy();
-    instance = undefined;
-    const tableElement = table.value!;
-    const bodyElement = tableElement.tBodies[0]!;
-    const name = inputName(props.control.path);
-    bodyElement.replaceChildren();
-    rowEntries(rows).forEach(([rowId, row]) => {
-      EditableTable.createRow(
-        rowId,
-        props.control.props.columns,
-        name,
-        row,
-        props.editable && props.control.props.allowReorder,
-        props.editable && props.control.props.allowDelete,
-        !props.editable
-      ).appendTo(bodyElement);
-
-      const rowElement = bodyElement.lastElementChild;
-      if (!(rowElement instanceof HTMLTableRowElement)) {
-        throw new TypeError('Expected the editable table to append a row.');
+  function appendRow(): TableRow {
+    const value = {...props.control.props.defaultValues};
+    for (const [key, column] of columns.value) {
+      if (!(key in value))
+        value[key] =
+          column.value ??
+          (['checkbox', 'lightswitch'].includes(column.type) ? false : '');
+      if (column.prefixSelect && !(column.prefixSelect.key in value)) {
+        value[column.prefixSelect.key] =
+          column.prefixSelect.options[0]?.value ?? '';
       }
-      Object.keys(props.control.props.columns).forEach((column, index) => {
-        rowElement.cells[index]?.classList.toggle(
-          'error',
-          props.control.props.errors?.[rowId]?.[column] === true
-        );
-      });
-    });
-
-    if (!props.editable) {
-      const disabledElements = host.value?.querySelectorAll<
-        HTMLElement & {disabled: boolean; name: string}
-      >('[name], input, select, textarea, button');
-      disabledElements?.forEach((element) => {
-        element.disabled = true;
-        element.name = '';
-      });
-      return;
     }
-
-    instance = new EditableTable(id, name, props.control.props.columns, {
-      allowAdd: props.control.props.allowAdd,
-      allowDelete: props.control.props.allowDelete,
-      allowReorder: props.control.props.allowReorder,
-      minRows: props.control.props.minRows ?? null,
-      maxRows: props.control.props.maxRows ?? null,
-      defaultValues: props.control.props.defaultValues,
-      rowIdPrefix: rowIdPrefix(rows),
-    });
-    takeRecords();
-
-    if (bodyElement.children.length !== rowEntries(rows).length) {
-      emitRows('discrete');
-    }
+    const row = createRow(value);
+    row.form = props.control.props.rowTemplate;
+    if (props.control.props.includeRowId) row.value.rowId = row.id;
+    rows.value.push(row);
+    return row;
   }
 
-  function emitRows(kind: 'discrete' | 'typing'): void {
-    if (!props.editable) {
-      return;
-    }
+  function rowKey(index: number): string {
+    return keyed.value ? rows.value[index]!.key : String(index);
+  }
 
-    const columns = Object.keys(props.control.props.columns);
-    const data = new FormData(host.value!.closest('form')!);
-    const entries = [
-      ...(table.value?.querySelectorAll<HTMLTableRowElement>('tbody > tr') ??
-        []),
-    ].map(
-      (row) =>
+  function commit(kind: FormChangeKind, path = props.control.path): void {
+    const value = externalValue();
+    structure?.(props.control, forms.value);
+    emit('update:value', value, kind, {
+      kind,
+      path,
+      scope: props.formScope,
+      refreshable: Boolean(props.formRefreshable),
+    });
+  }
+
+  function fieldFor(
+    fields: FormNodePayload[],
+    column: string
+  ): FormNodePayload | undefined {
+    return fields.find((field) => field.control?.path.at(-1) === column);
+  }
+
+  function disabledCell(row: TableRow, key: string): boolean {
+    return columns.value.some(
+      ([source, column]) =>
+        column.toggle?.some((target) =>
+          target === key
+            ? !row.value[source]
+            : target === `!${key}` && Boolean(row.value[source])
+        ) ?? false
+    );
+  }
+
+  function updateCell(
+    index: number,
+    key: string,
+    value: FormValue,
+    kind: FormChangeKind = 'discrete'
+  ): void {
+    const row = rows.value[index];
+    if (
+      !props.editable ||
+      !row ||
+      row.value[key] === value ||
+      disabledCell(row, key)
+    )
+      return;
+
+    autopopulation.update(row.id, row.value, key, value, autopopulations.value);
+    if (props.control.props.columns[key]?.radioMode && value) {
+      for (const other of rows.value) {
+        if (other.id !== row.id) other.value[key] = false;
+      }
+    }
+    commit(kind, [...props.control.path, rowKey(index), key]);
+  }
+
+  async function addRow(): Promise<void> {
+    if (!canAdd.value) return;
+
+    clearErrors();
+    const row = appendRow();
+    commit('discrete');
+    status.value = t('Row added.');
+    await nextTick();
+    await focusRow(row.id);
+  }
+
+  async function deleteRow(index: number): Promise<void> {
+    if (!canDelete.value) return;
+
+    clearErrors();
+    autopopulation.forget(rows.value[index]!.id);
+    rows.value.splice(index, 1);
+    commit('discrete');
+    status.value = t('Row deleted.');
+    await nextTick();
+    const row = rows.value[Math.min(index, rows.value.length - 1)];
+    if (row) await focusRow(row.id);
+    else host.value?.querySelector<HTMLElement>('[data-add-row]')?.focus();
+  }
+
+  async function reorder(
+    index: number,
+    event: CustomEvent<{direction: 'up' | 'down'}>
+  ): Promise<void> {
+    const next = event.detail.direction === 'up' ? index - 1 : index + 1;
+    if (!moveRow(index, next)) return;
+
+    const invoker = event.currentTarget as HTMLElement;
+    await nextTick();
+    firstFocusableWithin(invoker)?.focus();
+  }
+
+  function moveRow(index: number, next: number): boolean {
+    if (!canReorder.value || next < 0 || next >= rows.value.length)
+      return false;
+
+    clearErrors();
+    const [row] = rows.value.splice(index, 1);
+    rows.value.splice(next, 0, row!);
+    commit('discrete');
+    status.value = t('Row moved to position {position}.', {position: next + 1});
+    return true;
+  }
+
+  function position(index: number): 'only' | 'first' | 'last' | 'middle' {
+    if (rows.value.length === 1) return 'only';
+    if (index === 0) return 'first';
+    if (index === rows.value.length - 1) return 'last';
+    return 'middle';
+  }
+
+  async function focusRow(id: string, column?: string): Promise<void> {
+    const row = host.value?.querySelector<HTMLElement>(`[data-row-id="${id}"]`);
+    const cell = column
+      ? [...(row?.querySelectorAll<HTMLElement>('[data-column]') ?? [])].find(
+          (cell) => cell.dataset.column === column
+        )
+      : row;
+    if (!cell) return;
+
+    const field = cell.querySelector('craft-field');
+    if (field && 'updateComplete' in field) await field.updateComplete;
+    const control = field?.querySelector('[slot="input"]');
+    if (control && 'updateComplete' in control) await control.updateComplete;
+
+    firstFocusableWithin(cell)?.focus();
+  }
+
+  function compatible(
+    key: string,
+    feature: 'tsvPaste' | 'enterNavigation'
+  ): boolean {
+    const column = props.control.props.columns[key];
+    return (
+      column?.[feature] === true ||
+      (column?.[feature] === undefined &&
         [
-          row.dataset.id!,
-          Object.fromEntries(
-            columns.map((column, index) => [
-              column,
-              cellValue(row, row.cells[index]!, column, data),
-            ])
-          ),
-        ] as const
+          'singleline',
+          'heading',
+          'multiline',
+          'number',
+          'email',
+          'url',
+        ].includes(column?.type ?? ''))
     );
-    const currentRows: TableValue = props.control.props.keyed
-      ? Object.fromEntries(entries)
-      : entries.map(([, row]) => row);
-    if (sameRows(currentRows, rows)) {
+  }
+
+  async function navigate(
+    index: number,
+    key: string,
+    event: KeyboardEvent
+  ): Promise<void> {
+    if (
+      !props.editable ||
+      event.defaultPrevented ||
+      event.key !== 'Enter' ||
+      event.altKey ||
+      event.isComposing ||
+      !compatible(key, 'enterNavigation') ||
+      disabledCell(rows.value[index]!, key) ||
+      props.control.props.columns[key]?.static
+    )
       return;
-    }
 
-    rows = currentRows;
-    emit('update:value', currentRows, kind);
+    if (
+      props.control.props.columns[key]?.type === 'multiline' &&
+      !event.ctrlKey &&
+      !event.metaKey
+    )
+      return;
+
+    const next = index + (event.shiftKey ? -1 : 1);
+    event.preventDefault();
+    event.stopPropagation();
+    if (next < 0) return;
+    if (next === rows.value.length) {
+      if (!canAdd.value) return;
+      appendRow();
+      commit('discrete');
+    }
+    await nextTick();
+    await focusRow(rows.value[next]!.id, key);
   }
 
-  function cellValue(
-    row: HTMLTableRowElement,
-    cell: HTMLTableCellElement,
-    column: string,
-    data: FormData
-  ): EditableTableValue {
-    const rowId = row.dataset.id!;
-    const name = `${inputName(props.control.path)}[${rowId}][${column}]`;
-    const type = props.control.props.columns[column]?.type ?? '';
-    const entries = [...data.entries()].filter(
-      ([key]) => key === name || key.startsWith(`${name}[`)
+  async function paste(
+    index: number,
+    key: string,
+    event: ClipboardEvent
+  ): Promise<void> {
+    if (
+      !props.editable ||
+      pending.value ||
+      event.defaultPrevented ||
+      !compatible(key, 'tsvPaste') ||
+      disabledCell(rows.value[index]!, key) ||
+      props.control.props.columns[key]?.static
+    )
+      return;
+
+    const text = event.clipboardData?.getData('text/plain');
+    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+
+    const values = text
+      .replace(/\r\n?/g, '\n')
+      .replace(/\n$/, '')
+      .split('\n')
+      .map((line) => line.split('\t'));
+    const start = visibleColumns.value.findIndex(([column]) => column === key);
+    event.preventDefault();
+    clearErrors();
+    for (const [offset, cells] of values.entries()) {
+      if (!rows.value[index + offset]) {
+        if (!canAdd.value) break;
+        appendRow();
+      }
+      const row = rows.value[index + offset]!;
+      for (const [cellIndex, value] of cells.entries()) {
+        const column = visibleColumns.value[start + cellIndex]?.[0];
+        const field = fieldFor(
+          renderedRows.value[index + offset]!.fields,
+          column ?? ''
+        );
+        if (
+          column &&
+          compatible(column, 'tsvPaste') &&
+          !disabledCell(row, column) &&
+          !props.control.props.columns[column]?.static &&
+          field?.control?.mode === 'editable'
+        ) {
+          autopopulation.update(
+            row.id,
+            row.value,
+            column,
+            value,
+            autopopulations.value
+          );
+        }
+      }
+    }
+    commit('discrete');
+    await nextTick();
+    await focusRow(
+      rows.value[Math.min(index + values.length - 1, rows.value.length - 1)]!
+        .id,
+      key
     );
-
-    if (cell.classList.contains('disabled')) {
-      return rowValue(rows, rowId)?.[column] ?? '';
-    }
-
-    if (['autosuggest', 'template'].includes(type)) {
-      const combobox = cell.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      );
-      if (combobox) {
-        return combobox.modelValue ?? '';
-      }
-    }
-
-    if (['checkbox', 'lightswitch'].includes(type)) {
-      return entries.some(
-        ([key, value]) => key === name && String(value) !== ''
-      );
-    }
-
-    const exact = entries.filter(([key]) => key === name);
-    if (exact.length) {
-      return String(exact.at(-1)![1]);
-    }
-
-    if (entries.length) {
-      return Object.fromEntries(
-        entries.map(([key, value]) => [
-          key.slice(name.length + 1, -1),
-          String(value),
-        ])
-      );
-    }
-
-    return rowValue(rows, rowId)?.[column] ?? '';
-  }
-
-  function rowEntries(value: TableValue): Array<[string, TableRow]> {
-    if (value === null) {
-      return [];
-    }
-
-    return Array.isArray(value)
-      ? value.map((row, index) => [String(index), row])
-      : Object.entries(value);
-  }
-
-  function rowValue(value: TableValue, rowId: string): TableRow | undefined {
-    if (value === null) {
-      return undefined;
-    }
-
-    return Array.isArray(value) ? value[Number(rowId)] : value[rowId];
-  }
-
-  function rowIdPrefix(value: TableValue): string {
-    if (!props.control.props.keyed || value === null || Array.isArray(value)) {
-      return '';
-    }
-
-    for (const rowId of Object.keys(value)) {
-      const match = rowId.match(/^(.*\D)\d+$/);
-      if (match) {
-        return match[1]!;
-      }
-    }
-
-    return 'row';
-  }
-
-  function sameRows(left: TableValue, right: TableValue): boolean {
-    return JSON.stringify(left) === JSON.stringify(right);
   }
 </script>
 
 <template>
-  <div ref="host" slot="input" :inert="!editable">
-    <span role="status" class="sr-only" data-status-message />
-    <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <table
-      :id="id"
-      ref="table"
-      class="editable cp-table cp-table--editable w-full"
-    >
-      <thead>
-        <tr>
-          <th
-            v-for="(column, key) in control.props.columns"
-            :key="key"
-            scope="col"
+  <div ref="host" slot="input" class="min-w-0">
+    <span role="status" class="sr-only">{{ status }}</span>
+    <input
+      v-if="editable"
+      type="hidden"
+      :name="inputName(control.path)"
+      value=""
+    />
+    <div class="overflow-x-auto">
+      <table
+        class="editable cp-table cp-table--editable cp-table--ruled w-full"
+      >
+        <thead>
+          <tr>
+            <th
+              v-for="[key, column] in columns"
+              :key="key"
+              scope="col"
+              :hidden="column.type === 'hidden'"
+              :style="{
+                width:
+                  typeof column.width === 'number'
+                    ? `${column.width}%`
+                    : column.width,
+              }"
+            >
+              {{ column.heading ?? column.label ?? key }}
+              <span v-if="column.required">({{ t('Required') }})</span>
+            </th>
+            <th
+              v-if="
+                $slots['row-actions'] ||
+                (editable &&
+                  (control.props.allowReorder || control.props.allowDelete))
+              "
+              scope="col"
+            >
+              <span class="sr-only">{{ t('Row actions') }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="({row, fields}, index) in renderedRows"
+            :key="row.id"
+            :ref="
+              (element) =>
+                setRowRef(element as HTMLTableRowElement | null, row.id)
+            "
+            :class="{
+              'row--dragging': getDragState(row.id).type === 'is-dragging',
+            }"
+            :data-row-id="row.id"
           >
-            {{ column.heading ?? column.label }}
-          </th>
-          <th
-            v-if="
-              editable &&
-              (control.props.allowDelete || control.props.allowReorder)
-            "
-            :colspan="
-              control.props.allowDelete && control.props.allowReorder ? 2 : 1
-            "
-            scope="colgroup"
-          />
-        </tr>
-      </thead>
-      <tbody v-once />
-    </table>
-    <div v-if="editable && control.props.allowAdd">
-      <craft-button type="button" command="--add-row">
-        {{ t('Add a row') }}
-      </craft-button>
+            <component
+              :is="column.type === 'heading' ? 'th' : 'td'"
+              v-for="[key, column] in columns"
+              :key="key"
+              :scope="column.type === 'heading' ? 'row' : undefined"
+              :data-column="key"
+              :hidden="column.type === 'hidden'"
+              :class="[
+                column.class,
+                {
+                  error:
+                    !errorsCleared &&
+                    control.props.errors?.[rowKey(index)]?.[key],
+                  disabled: disabledCell(row, key),
+                },
+              ]"
+              @keydown="navigate(index, key, $event)"
+              @paste="paste(index, key, $event)"
+            >
+              <DropIndicator :edge="closestEdge(row.id)" contained />
+              <input
+                v-if="
+                  editable &&
+                  control.props.includeRowId &&
+                  key === columns[0]?.[0]
+                "
+                type="hidden"
+                :name="inputName([...control.path, rowKey(index), 'rowId'])"
+                :value="row.value.rowId ?? row.key"
+              />
+              <TableCell
+                v-if="fieldFor(fields, key)"
+                :node="fieldFor(fields, key)!"
+                :value="row.value[key]"
+                :label="
+                  t('{heading}, row {row}', {
+                    heading: column.heading ?? column.label ?? key,
+                    row: index + 1,
+                  })
+                "
+                :editable="
+                  editable && !disabledCell(row, key) && !column.static
+                "
+                :values="effectiveValues"
+                :errors="errors ?? []"
+                :touched-paths="effectiveTouched"
+                :form-scope="formScope ?? []"
+                :form-refreshable="Boolean(formRefreshable)"
+                @update:value="
+                  (value, kind) => updateCell(index, key, value, kind)
+                "
+                @change="commit($event.kind, $event.path)"
+              />
+              <span v-else>{{ row.value[key] }}</span>
+              <TableCell
+                v-if="
+                  column.prefixSelect &&
+                  fieldFor(fields, column.prefixSelect.key)
+                "
+                :node="fieldFor(fields, column.prefixSelect.key)!"
+                :value="row.value[column.prefixSelect.key]"
+                :label="column.prefixSelect.label"
+                :editable="
+                  editable && !disabledCell(row, key) && !column.static
+                "
+                :values="effectiveValues"
+                :errors="errors ?? []"
+                :touched-paths="effectiveTouched"
+                :form-scope="formScope ?? []"
+                :form-refreshable="Boolean(formRefreshable)"
+                @update:value="
+                  (value, kind) =>
+                    updateCell(index, column.prefixSelect!.key, value, kind)
+                "
+              />
+            </component>
+            <td
+              v-if="
+                $slots['row-actions'] ||
+                (editable &&
+                  (control.props.allowReorder || control.props.allowDelete))
+              "
+            >
+              <DropIndicator :edge="closestEdge(row.id)" contained />
+              <div class="flex items-center justify-end gap-2">
+                <slot
+                  name="row-actions"
+                  :row="row"
+                  :index="index"
+                  :row-key="rowKey(index)"
+                />
+                <craft-reorder-button
+                  v-if="
+                    editable &&
+                    control.props.allowReorder &&
+                    !control.props.staticRows
+                  "
+                  :label="t('Reorder row {row}', {row: index + 1})"
+                  :position="position(index)"
+                  :ref="
+                    (element: unknown) =>
+                      setHandleRef(element as HTMLElement | null, row.id)
+                  "
+                  .disabled="!canReorder"
+                  @craft-reorder="reorder(index, $event)"
+                />
+                <craft-button
+                  v-if="editable && control.props.allowDelete"
+                  type="button"
+                  icon="trash"
+                  variant="plain"
+                  .disabled="!canDelete"
+                  :aria-label="t('Delete row {row}', {row: index + 1})"
+                  @click="deleteRow(index)"
+                />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <craft-button
+      v-if="editable && !control.props.staticRows && control.props.allowAdd"
+      data-add-row
+      type="button"
+      icon="plus"
+      variant="dashed"
+      class="w-full"
+      .disabled="!canAdd"
+      @click="addRow"
+    >
+      {{ control.props.addRowLabel ?? t('Add a row') }}
+    </craft-button>
   </div>
 </template>
+
+<style scoped>
+  :deep(craft-checkbox) {
+    --c-checkbox-size: 24px;
+  }
+
+  .row--dragging {
+    opacity: 0.4;
+  }
+</style>

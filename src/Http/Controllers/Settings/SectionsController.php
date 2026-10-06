@@ -33,6 +33,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class SectionsController
 {
     use RespondsWithFlash;
@@ -84,6 +87,7 @@ readonly class SectionsController
             ->addCrumb(t('Settings'), 'settings')
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
+            ->addCrumb(t('Create a new section'))
             ->inertiaPage('settings/sections/Edit', $this->viewModel($section, $sites, brandNew: true));
     }
 
@@ -97,6 +101,7 @@ readonly class SectionsController
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
+            ->addCrumb($sectionData->name)
             ->inertiaPage('settings/sections/Edit', $this->viewModel($sectionData, $sites, brandNew: false));
     }
 
@@ -192,11 +197,15 @@ readonly class SectionsController
                 $siteSettingsData['enabledByDefault'] = (bool) ($postedSettings['enabledByDefault'] ?? false);
             }
 
-            if ($siteSettingsData['hasUrls'] = (bool) $siteSettingsData['uriFormat']) {
-                $siteSettingsData['template'] = $postedSettings['template'] ?? null;
-            }
-
+            $siteSettingsData['hasUrls'] = (bool) $siteSettingsData['uriFormat'];
             $siteSettings = new SectionSiteSettings($siteSettingsData);
+
+            if ($siteSettings->hasUrls) {
+                $siteSettings->applyForm([
+                    ...$postedSettings,
+                    'uriFormat' => $siteSettings->uriFormat,
+                ]);
+            }
 
             $allSiteSettings[$site->id] = $siteSettings;
         }

@@ -12,6 +12,9 @@ use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class RequireCpRequest
 {
     public function handle(Request $request, Closure $next): mixed

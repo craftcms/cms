@@ -20,6 +20,9 @@ use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
 
+/**
+ * @since 6.0.0
+ */
 class LaravelExtension extends AbstractExtension implements GlobalsInterface
 {
     #[Override]

@@ -9,6 +9,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event AssetReplacing The event that is triggered before an asset's file is replaced.
+ *
+ * @since 6.0.0
  */
 class AssetReplacing
 {

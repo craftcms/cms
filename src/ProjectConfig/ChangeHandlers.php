@@ -8,7 +8,11 @@ use Closure;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 class ChangeHandlers
 {
     /** @var list<array{event: string, pattern: string, depth: int, handler: callable, data: mixed}> */

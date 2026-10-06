@@ -6,5 +6,7 @@ namespace CraftCms\Cms\Twig\Events;
 
 /**
  * @event PageStarting The event that is triggered when page rendering begins.
+ *
+ * @since 6.0.0
  */
 class PageStarting {}

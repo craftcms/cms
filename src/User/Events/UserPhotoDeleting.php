@@ -8,6 +8,8 @@ use CraftCms\Cms\User\Elements\User;
 
 /**
  * @event UserPhotoDeleting The event that is triggered before a user photo is deleted.
+ *
+ * @since 6.0.0
  */
 class UserPhotoDeleting
 {

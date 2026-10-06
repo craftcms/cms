@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Http\Requests;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
+/**
+ * @since 6.0.0
+ */
 class AssetUploadRequest extends UploadRequest
 {
     /** @return array<string, list<string|In>> */

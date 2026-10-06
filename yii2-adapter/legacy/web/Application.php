@@ -22,10 +22,10 @@ use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Routing\Router;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use IntlDateFormatter;
 use IntlException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -336,7 +336,7 @@ class Application extends \yii\web\Application
             $request->getRequestUri(),
         );
 
-        Inertia::resolveUrlUsing(static function (IlluminateRequest $request): string {
+        Inertia::resolveUrlUsing(static function(IlluminateRequest $request): string {
             $original = $request->attributes->get(CaptureOriginalActionRequestUri::BRIDGED_ORIGINAL_REQUEST_URI);
 
             if (is_string($original) && $original !== '') {
@@ -399,7 +399,7 @@ class Application extends \yii\web\Application
                 '%s%s%s',
                 $originalRequest->getSchemeAndHttpHost(),
                 $originalRequest->getPathInfo(),
-                $query !== null && $query !== '' ? '?'.$query : '',
+                $query !== null && $query !== '' ? '?' . $query : '',
             ));
         }
     }

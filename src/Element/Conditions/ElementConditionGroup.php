@@ -16,6 +16,8 @@ use RuntimeException;
 
 /**
  * @property Collection<int, self|ElementConditionRuleInterface|ElementQueryConditionRuleInterface> $rules
+ *
+ * @since 6.0.0
  */
 class ElementConditionGroup extends BaseConditionGroup
 {

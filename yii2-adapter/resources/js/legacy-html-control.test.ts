@@ -20,16 +20,15 @@ describe('Legacy HTML Form Control', () => {
   it('mounts assets in order and expands flat values before mutation', async () => {
     const appendChild = Node.prototype.appendChild;
 
-    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (
-      this: Node,
-      node
-    ) {
-      if (node instanceof HTMLElement && node.dataset.legacyOrder) {
-        ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
-      }
+    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(
+      function (this: Node, node) {
+        if (node instanceof HTMLElement && node.dataset.legacyOrder) {
+          ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
+        }
 
-      return appendChild.call(this, node) as Node;
-    });
+        return appendChild.call(this, node) as Node;
+      }
+    );
 
     const {container, mutation} = await mount(
       {
@@ -70,48 +69,94 @@ describe('Legacy HTML Form Control', () => {
   });
 
   it('submits edited and unchanged HTML widget settings', async () => {
-    const {container, form, submitted} = await mount({
-      html: '<input name="widget1-settings[title]" value="Original"><input name="widget1-settings[limit]" value="5">',
-      headHtml: '',
-      bodyHtml: '',
-    }, {
-      scope: ['widget1-settings'],
-      path: ['widget1-settings', '__legacySettings'],
-      namespace: 'widget1-settings',
-      values: {'widget1-settings': {__legacySettings: {
-        'widget1-settings[title]': 'Original',
-        'widget1-settings[limit]': '5',
-      }}},
-    });
-    const input = container.querySelector<HTMLInputElement>('[name="widget1-settings[title]"]')!;
+    const {container, form, submitted} = await mount(
+      {
+        html: '<input name="widget1-settings[title]" value="Original"><input name="widget1-settings[limit]" value="5">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        scope: ['widget1-settings'],
+        path: ['widget1-settings', '__legacySettings'],
+        namespace: 'widget1-settings',
+        values: {
+          'widget1-settings': {
+            __legacySettings: {
+              'widget1-settings[title]': 'Original',
+              'widget1-settings[limit]': '5',
+            },
+          },
+        },
+      }
+    );
+    const input = container.querySelector<HTMLInputElement>(
+      '[name="widget1-settings[title]"]'
+    )!;
     input.value = 'Edited';
     input.dispatchEvent(new InputEvent('input', {bubbles: true}));
     await nextTick();
 
-    form.dispatchEvent(new SubmitEvent('submit', {bubbles: true, cancelable: true}));
+    form.dispatchEvent(
+      new SubmitEvent('submit', {bubbles: true, cancelable: true})
+    );
 
-    expect(submitted.value).toEqual({'widget1-settings': {title: 'Edited', limit: '5'}});
+    expect(submitted.value).toEqual({
+      'widget1-settings': {title: 'Edited', limit: '5'},
+    });
   });
+
+  it.each([
+    {
+      tag: 'craft-nested-elements-control',
+      marker: 'data-nested-modified',
+      attributes: '',
+    },
+    {
+      tag: 'craft-entry-field-layout-form',
+      marker: 'data-form-field-name',
+      attributes: 'data-field-path="[&quot;fields&quot;,&quot;nested&quot;]"',
+    },
+  ])(
+    'rebases the captured $tag anchor to the control path',
+    async ({tag, marker, attributes}) => {
+      const {container} = await mount(
+        {
+          html: `<${tag} ${attributes}><input type="hidden" name="fields[nested]" disabled ${marker}></${tag}>`,
+          headHtml: '',
+          bodyHtml: '',
+        },
+        {
+          path: ['fields', 'blocks', 'entries', 'block-a', 'fields', 'nested'],
+          values: {},
+        }
+      );
+      const input = container.querySelector<HTMLInputElement>(
+        `input[${marker}]`
+      )!;
+      expect(input.name).toBe(
+        'fields[blocks][entries][block-a][fields][nested]'
+      );
+    }
+  );
 
   it('reports asset failures and prevents submission', async () => {
     const appendChild = document.body.appendChild;
     let failedScript: HTMLScriptElement | undefined;
 
-    vi.spyOn(document.body, 'appendChild').mockImplementation(function (
-      this: Node,
-      node
-    ) {
-      if (
-        node instanceof HTMLScriptElement &&
-        node.src.endsWith('/missing-legacy.js')
-      ) {
-        failedScript = node;
+    vi.spyOn(document.body, 'appendChild').mockImplementation(
+      function (this: Node, node) {
+        if (
+          node instanceof HTMLScriptElement &&
+          node.src.endsWith('/missing-legacy.js')
+        ) {
+          failedScript = node;
 
-        return node;
+          return node;
+        }
+
+        return appendChild.call(this, node) as Node;
       }
-
-      return appendChild.call(this, node) as Node;
-    });
+    );
 
     const {form, container} = await mount({
       html: '<input name="settings[title]" value="Original">',
@@ -164,7 +209,11 @@ describe('Legacy HTML Form Control', () => {
 
   it('preserves leading-zero keys like PHP', async () => {
     const {container, mutation} = await mount(
-      {html: '<input name="codes[00]" value="leading">', headHtml: '', bodyHtml: ''},
+      {
+        html: '<input name="codes[00]" value="leading">',
+        headHtml: '',
+        bodyHtml: '',
+      },
       {values: {__legacy: {'codes[00]': 'leading'}}}
     );
 
@@ -207,7 +256,8 @@ describe('Legacy HTML Form Control', () => {
       headHtml: '',
       bodyHtml: '',
     });
-    const input = container.querySelector<HTMLInputElement>('input[type=file]')!;
+    const input =
+      container.querySelector<HTMLInputElement>('input[type=file]')!;
 
     Object.defineProperty(input, 'files', {
       configurable: true,
@@ -328,7 +378,7 @@ async function mount(
   const registry = createCpComponentRegistry();
   const mutation = ref<Record<string, unknown>>({});
   const submitted = ref<FormPayload['values']>();
-  const renderer = ref<InstanceType<typeof FormRenderer>>();
+  const renderer = ref<{currentValues(): FormPayload['values']}>();
   const payload: FormPayload = {
     scope: options.scope ?? [],
     refreshable: options.refreshable ?? false,
@@ -387,7 +437,7 @@ async function mount(
     },
   });
 
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
     submitted.value = renderer.value!.currentValues();
   });

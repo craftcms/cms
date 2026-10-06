@@ -16,6 +16,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Validates an asset's location (folder + filename).
+ *
+ * @since 6.0.0
  */
 readonly class AssetLocationRule implements ValidationRule
 {

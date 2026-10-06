@@ -12,6 +12,9 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStageStatus;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class MissingWorkflowStage extends WorkflowStage implements MissingComponentInterface
 {
     use MissingComponentTrait;

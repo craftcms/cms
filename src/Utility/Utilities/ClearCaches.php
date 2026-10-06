@@ -38,6 +38,8 @@ use function CraftCms\Cms\t;
  * @phpstan-type CacheOption array{key: string, label: string, action: callable|string, info?: string, params?: array<array-key, mixed>}
  * @phpstan-type CacheOptionInput array{label: string, action: callable|string, info?: string, params?: array<array-key, mixed>}
  * @phpstan-type TagOption array{tag: string, label: string}
+ *
+ * @since 6.0.0
  */
 class ClearCaches extends Utility
 {

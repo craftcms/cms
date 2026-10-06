@@ -450,6 +450,21 @@ class View extends \yii\web\View
     }
 
     /**
+     * Returns whether a string or object template is currently being rendered.
+     *
+     * This will also return `true` for any templates that are included from a string or object template.
+     *
+     * @since 5.11.4
+     * @deprecated 6.0.0 use {@see TemplateManager::isRenderingStringTemplate()} instead.
+     */
+    public function getIsRenderingStringTemplate(): bool
+    {
+        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingStringTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingStringTemplate()` instead.');
+
+        return Template::isRenderingStringTemplate();
+    }
+
+    /**
      * Renders a Twig template that represents an entire web page.
      *
      * @param  string  $template  The name of the template to load

@@ -42,7 +42,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           );
           display: flex;
           height: var(--c-switch-height);
-          width: calc(var(--c-switch-height) * 2);
+          width: calc(var(--c-switch-height) * 1.75);
           margin: -1px;
         }
 
@@ -58,7 +58,6 @@ export default class CraftSwitchButton extends LionSwitchButton {
         .switch-button__track {
           ${baseFormControlStyles}
           --tw-inset-shadow-color: var(--color-slate-300);
-          margin-inline: -1px;
           background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
           min-height: unset;
@@ -72,40 +71,42 @@ export default class CraftSwitchButton extends LionSwitchButton {
           border: 1px solid var(--c-form-control-border-color);
           background-color: var(--c-switch-thumb-fill, var(--c-surface-raised));
           inset-block-start: calc(var(--c-switch-thumb-offset) / 2);
-          inset-inline-start: calc(var(--c-switch-thumb-offset) / 2 - 1px);
+          inset-inline-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-end: auto;
           box-sizing: border-box;
+          background-clip: padding-box;
         }
 
         :host([indeterminate]:not([checked])) .switch-button__thumb {
-          inset-inline-start: calc(
-            50% - (var(--c-switch-thumb-height) / 2) + 1px
-          );
+          inset-inline-start: calc(50% - (var(--c-switch-thumb-height) / 2));
           inset-inline-end: auto;
         }
 
         :host([checked]) .switch-button__track {
-          background-color: var(--c-color-static-success-fill);
+          border-color: transparent;
+          background-color: var(--c-color-accent-fill-loud);
         }
 
         :host([checked]) .switch-button__thumb {
-          border: 1px solid var(--c-color-success-border-loud);
+          border-color: transparent;
           inset-inline-start: auto;
-          inset-inline-end: calc(
-            (var(--c-switch-height) - var(--c-switch-thumb-height)) / 2 + 1px
-          );
+          inset-inline-end: calc(var(--c-switch-thumb-offset) / 2);
         }
 
         :host([checked]) .switch-button__thumb:after {
+          --_checkmark-size: calc(var(--c-switch-thumb-height) / 2);
+          --_checkmark-offset: calc(
+            (var(--c-switch-thumb-height) - var(--_checkmark-size)) / 2 - 1px
+          );
           content: '';
           position: absolute;
-          inset-block-start: 3px;
-          inset-inline-start: 4px;
-          mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3C!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc.--%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7l233.4-233.3c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+          inset-block-start: var(--_checkmark-offset);
+          inset-inline-start: var(--_checkmark-offset);
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E");
           mask-repeat: no-repeat;
-          width: calc(var(--c-switch-thumb-height) - 6px);
+          width: var(--_checkmark-size);
           aspect-ratio: 1;
-          background-color: var(--c-color-success-on-normal);
+          background-color: var(--c-color-accent-fill-loud);
         }
       `,
     ];

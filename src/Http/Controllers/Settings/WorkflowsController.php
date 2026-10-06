@@ -19,6 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class WorkflowsController
 {
     use RespondsWithFlash;
@@ -125,6 +128,7 @@ class WorkflowsController
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Workflows'), 'settings/workflows')
+            ->addCrumb($title)
             ->inertiaPage('settings/workflows/Edit', app(WorkflowEditViewModel::class, [
                 'workflow' => $workflow,
                 'readOnly' => $this->readOnly,

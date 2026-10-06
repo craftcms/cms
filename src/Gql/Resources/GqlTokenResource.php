@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 /**
  * @mixin GqlToken
+ *
+ * @since 6.0.0
  */
 class GqlTokenResource extends JsonResource
 {

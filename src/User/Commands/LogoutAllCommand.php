@@ -8,6 +8,9 @@ use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Illuminate\Session\SessionManager;
 
+/**
+ * @since 6.0.0
+ */
 class LogoutAllCommand extends Command
 {
     use CraftCommand;

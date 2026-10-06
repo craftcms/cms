@@ -15,6 +15,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User as UserElement;
 
+/**
+ * @since 6.0.0
+ */
 class User extends ElementResolver
 {
     /** @param array<string, mixed> $arguments */

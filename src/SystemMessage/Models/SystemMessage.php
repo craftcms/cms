@@ -10,6 +10,8 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 
 /**
  * @property string $heading
+ *
+ * @since 6.0.0
  */
 class SystemMessage extends BaseModel
 {

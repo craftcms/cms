@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @since 6.0.0
+ */
 class WrongEditionException extends Exception
 {
     public function render(Request $request): Response|bool

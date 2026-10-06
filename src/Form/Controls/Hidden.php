@@ -8,6 +8,9 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
 
+/**
+ * @since 6.0.0
+ */
 class Hidden extends Control
 {
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string

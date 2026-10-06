@@ -14,7 +14,7 @@ export function useConditionRuleRequest(id: string, fallbackMessage: string) {
   }>(ConditionsController.rule().url, {
     method: 'post',
     immediate: false,
-    axiosInstance: actionClient,
+    client: actionClient,
     transform: async (data) => {
       await appendHeadHtml(data.headHtml);
       await appendBodyHtml(data.bodyHtml);

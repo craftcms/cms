@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class PruneRevisions extends Job
 {
     /**

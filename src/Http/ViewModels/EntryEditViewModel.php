@@ -17,7 +17,9 @@ use Override;
 use function CraftCms\Cms\currentUser;
 
 /**
- * The Inertia payload for the entry edit screen (`content/Edit`).
+ * The Inertia payload for the entry edit screen (`elements/Edit`).
+ *
+ * @since 6.0.0
  */
 class EntryEditViewModel extends ElementEditViewModel
 {
@@ -33,7 +35,38 @@ class EntryEditViewModel extends ElementEditViewModel
     #[Override]
     protected function elementSaveUrl(): string
     {
-        return Url::actionUrl('entries/save-entry');
+        // Nested entries have no section for the entry store action to save
+        // them into; the generic action resolves them through their owner.
+        return $this->isNested()
+            ? Url::actionUrl('elements/save')
+            : Url::actionUrl('entries/save-entry');
+    }
+
+    /**
+     * What the save action needs to resolve the entry it's saving.
+     *
+     * @return array<string, int|string|null>
+     */
+    public function saveParams(): array
+    {
+        if ($this->isNested()) {
+            return [
+                'elementType' => Entry::class,
+                'elementId' => $this->saveId(),
+                'siteId' => $this->entry->siteId,
+            ];
+        }
+
+        return [
+            'entryId' => $this->saveId(),
+            'siteId' => $this->entry->siteId,
+            'typeId' => $this->entry->typeId,
+        ];
+    }
+
+    private function isNested(): bool
+    {
+        return ! $this->entry->sectionId && $this->entry->getOwnerId();
     }
 
     #[Override]

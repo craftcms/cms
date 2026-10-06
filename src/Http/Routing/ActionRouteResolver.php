@@ -8,6 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActionRouteResolver
 {
     public function resolve(Request $request): ?ActionRoute

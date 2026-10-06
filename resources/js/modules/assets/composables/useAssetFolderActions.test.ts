@@ -1,15 +1,15 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {effectScope} from 'vue';
 import {useAssetFolderActions} from './useAssetFolderActions';
-import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 
 const post = vi.hoisted(() => vi.fn());
 const visit = vi.hoisted(() => vi.fn());
 const VolumeFolderSelectorModal = vi.hoisted(() => vi.fn());
 const onActionPerformed = vi.fn();
 
-vi.mock('@craftcms/ui', () => ({
+vi.mock('@craftcms/ui', async () => ({
   actionClient: {post},
+  isHttpError: (await import('@craftcms/ui/utilities/api/http')).isHttpError,
   getActionUrl: (action: string) => `/actions/${action}`,
   t: (message: string, params?: Record<string, string>) =>
     params
@@ -29,7 +29,6 @@ vi.mock(
   () => ({VolumeFolderSelectorModal})
 );
 
-const {register} = useElementIndexTable();
 let scope: ReturnType<typeof effectScope>;
 let actions: ReturnType<typeof useAssetFolderActions>;
 
@@ -49,23 +48,25 @@ beforeEach(() => {
     },
   });
   scope = effectScope();
-  register({
-    table: {
-      getRow: (id: string) => ({
-        original: {folderName: id === 'folder:7' ? 'Product Photos' : null},
-      }),
-    } as any,
-    onActionPerformed,
-    refreshResults: vi.fn(),
-  });
   scope.run(() => {
-    actions = useAssetFolderActions();
+    actions = useAssetFolderActions({
+      findRow: (id) => ({
+        id,
+        label: '',
+        folderName: id === 'folder:7' ? 'Product Photos' : null,
+      }),
+      clearSelection: () => {},
+      refresh: async () => {
+        onActionPerformed();
+      },
+      captureSelection: () => () => {},
+      view: {} as never,
+    });
   });
 });
 
 afterEach(() => {
   scope.stop();
-  register(null);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -89,7 +90,7 @@ it('creates a subfolder in the requested parent folder', async () => {
 
 it('keeps create and rename failures in their open dialogs', async () => {
   post.mockRejectedValueOnce({
-    isAxiosError: true,
+    isHttpError: true,
     response: {data: {message: 'A folder with that name already exists.'}},
   });
   window.dispatchEvent(
@@ -105,7 +106,7 @@ it('keeps create and rename failures in their open dialogs', async () => {
   );
 
   post.mockRejectedValueOnce({
-    isAxiosError: true,
+    isHttpError: true,
     response: {data: {message: 'The folder could not be renamed.'}},
   });
   window.dispatchEvent(

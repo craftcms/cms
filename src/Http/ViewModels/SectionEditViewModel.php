@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Data\ElementSiteSettings;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -37,6 +38,9 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class SectionEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */
@@ -229,8 +233,7 @@ class SectionEditViewModel extends ViewModel
                 'name' => $site->getName(),
                 'singleHomepage' => false,
                 'singleUri' => $uriFormat,
-                'uriFormat' => $uriFormat,
-                'template' => $settings === null ? '' : ($settings->template ?? ''),
+                ...($settings ?? new ElementSiteSettings)->toForm(),
                 'enabledByDefault' => $settings === null || $settings->enabledByDefault,
             ];
         }
@@ -283,11 +286,7 @@ class SectionEditViewModel extends ViewModel
                     'info' => SelectOptions::getObjectTemplateTip(),
                     'textExpanderTriggers' => $this->objectTemplateTriggers(),
                 ],
-                'template' => [
-                    'heading' => t('Template'),
-                    'type' => 'template',
-                    'options' => $this->templateOptions(),
-                ],
+                'route' => ElementSiteSettings::routeColumn(),
                 'enabledByDefault' => ['heading' => t('Default Status'), 'type' => 'lightswitch'],
             ]);
     }

@@ -28,6 +28,8 @@ use function CraftCms\Cms\t;
  *         ->instructions(t('How you’ll refer to this field in the templates.'))
  *         ->input(FormFields::textHtml(['name' => 'handle']))
  *         ->errors($model->errors()->get('handle'));
+ *
+ * @since 6.0.0
  */
 class Field extends ViewComponent
 {

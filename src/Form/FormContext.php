@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Form;
 
 use CraftCms\Cms\Form\Enums\ControlMode;
 
+/**
+ * @since 6.0.0
+ */
 readonly class FormContext
 {
     public ControlMode $mode;

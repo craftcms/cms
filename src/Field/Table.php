@@ -8,12 +8,18 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
+use CraftCms\Cms\Field\Contracts\TableCellInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Field\Models\Field as FieldModel;
+use CraftCms\Cms\Field\TableCells\MissingTableCell;
+use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
+use CraftCms\Cms\Form\Controls\TableColumns;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
@@ -28,7 +34,6 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
@@ -48,17 +53,16 @@ use function CraftCms\Cms\template;
 /**
  * Table represents a Table field.
  *
- * @phpstan-type TableColumnType 'checkbox'|'color'|'date'|'select'|'email'|'heading'|'lightswitch'|'multiline'|'number'|'singleline'|'time'|'url'
+ * @phpstan-type TableColumnType string
  * @phpstan-type TableOption array{label: string, value: string, default?: bool}
- * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>}
+ * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>, settings?: array<string, mixed>}
  * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|null
  * @phpstan-type TableRowData array<string, TableCellValue>
+ *
+ * @since 6.0.0
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
-    /** @var array<string, string> */
-    private static array $typeOptions;
-
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];
 
@@ -83,27 +87,24 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     /** @return array<string, string> */
     private static function typeOptions(): array
     {
-        if (! isset(self::$typeOptions)) {
-            self::$typeOptions = [
-                'checkbox' => t('Checkbox'),
-                'color' => t('Color'),
-                'date' => t('Date'),
-                'select' => t('Dropdown'),
-                'email' => t('Email'),
-                'heading' => t('Row heading'),
-                'lightswitch' => t('Lightswitch'),
-                'multiline' => t('Multi-line text'),
-                'number' => t('Number'),
-                'singleline' => t('Single-line text'),
-                'time' => t('Time'),
-                'url' => t('URL'),
-            ];
-
-            // Make sure they are sorted alphabetically (post-translation)
-            asort(self::$typeOptions);
+        $options = [];
+        foreach (app(TableCellTypes::class)->selectableTypes() as $identity => $type) {
+            $options[$identity] = $type::displayName();
         }
+        asort($options);
 
-        return self::$typeOptions;
+        return $options;
+    }
+
+    /** @param array<string, mixed> $column */
+    public function cellType(array $column): TableCellInterface
+    {
+        return app(TableCellTypes::class)->create($column);
+    }
+
+    public function hasMissingCellTypes(): bool
+    {
+        return array_any($this->columns, fn ($column) => $this->cellType($column) instanceof MissingTableCell);
     }
 
     #[Override]
@@ -115,58 +116,94 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     public function formControl(FieldContext $context): Control
     {
-        $columns = collect($this->columns)
-            ->map(fn (array $column): array => Arr::only($column, ['heading', 'type', 'width', 'options']))
-            ->all();
+        $columns = $this->controlColumns($context->element?->getLanguage());
+        $missing = $this->hasMissingCellTypes();
+        $value = $this->controlValues(is_array($context->value) ? $context->value : [], false);
 
-        return TableControl::make($context->path)
+        $control = TableControl::make($context->path)
             ->columns($columns)
-            ->defaultValues($this->defaultRowValues)
+            ->defaultValues($this->controlValues([$this->defaultRowValues])[0])
             ->allowAdd(! $this->staticRows)
             ->allowDelete(! $this->staticRows)
             ->allowReorder(! $this->staticRows)
+            ->addRowLabel(t($this->addRowLabel, category: 'site'))
+            ->includeRowId($this->staticRows)
             ->minRows($this->minRows)
             ->maxRows($this->maxRows)
-            ->value($this->serializeValue($context->value, $context->element));
+            ->value($value);
+
+        return $missing ? $control->mode(ControlMode::ReadOnly) : $control;
+    }
+
+    /**
+     * @param  array<array<string, mixed>>  $rows
+     * @return array<array<string, mixed>>
+     */
+    private function controlValues(array $rows, bool $normalize = true): array
+    {
+        if ($this->hasMissingCellTypes()) {
+            return $rows;
+        }
+
+        $cells = array_map($this->cellType(...), $this->columns);
+        foreach ($rows as &$row) {
+            foreach ($cells as $id => $cell) {
+                if (! array_key_exists($id, $row)) {
+                    continue;
+                }
+                $value = $normalize ? $cell->normalizeValue($row[$id]) : $row[$id];
+                $row[$id] = $cell->formControl(new TableCellContext([$id], $value))->getValue();
+            }
+        }
+
+        return $rows;
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private function controlColumns(?string $locale = null, bool $editableHeadings = false): array
+    {
+        $columns = [];
+        foreach ($this->columns as $id => $column) {
+            if ($editableHeadings && $column['type'] === 'heading') {
+                $column['type'] = 'singleline';
+            }
+            $column['heading'] = t($column['heading'] ?? '', category: 'site', locale: $locale);
+            $column['control'] = $this->cellType($column)->formControl(new TableCellContext('value', locale: $locale));
+            $columns[$id] = $column;
+        }
+
+        return $columns;
     }
 
     #[Override]
     public function settingsForm(FormContext $context = new FormContext): Form
     {
-        $columnRows = [];
-        foreach ($this->columns as $id => $column) {
-            $columnRows[$id] = [
-                ...$column,
-                'options' => isset($column['options']) ? Json::encode($column['options']) : '',
-            ];
+        $columnForms = [];
+        $types = [];
+        foreach (self::typeOptions() as $identity => $label) {
+            $types[] = ['value' => $identity, 'label' => $label];
         }
-        $defaultColumns = array_map(function (array $column): array {
-            if ($column['type'] === 'heading') {
-                $column['type'] = 'singleline';
+        foreach ($this->columns as $id => $column) {
+            $form = $this->cellType($column)->settingsForm(new FormContext(values: $column));
+            if ($form !== null) {
+                $columnForms[$id] = $form;
             }
-
-            return $column;
-        }, $this->columns);
+        }
+        $defaultColumns = $this->controlColumns(editableHeadings: true);
+        $columnsControl = TableColumns::make('columns')
+            ->cellTypes($types)
+            ->columnForms($columnForms)
+            ->errors($this->columnErrors)
+            ->value($this->columns)
+            ->reactive();
+        if ($this->hasMissingCellTypes()) {
+            $columnsControl->mode(ControlMode::ReadOnly);
+        }
 
         return Form::make([
             FormField::make(t('Columns'))
-                ->instructions(t('Define the columns your table should have. Dropdown options are entered as JSON arrays.'))
-                ->control(TableControl::make('columns')
-                    ->keyed()
-                    ->columns([
-                        'heading' => ['heading' => t('Column Heading'), 'type' => 'singleline', 'autopopulate' => 'handle'],
-                        'handle' => ['heading' => t('Handle'), 'type' => 'singleline', 'code' => true],
-                        'width' => ['heading' => t('Width'), 'type' => 'singleline', 'code' => true, 'width' => 50],
-                        'type' => ['heading' => t('Type'), 'type' => 'select', 'options' => self::typeOptions()],
-                        'options' => ['heading' => t('Dropdown Options'), 'type' => 'multiline', 'code' => true],
-                    ])
-                    ->allowAdd()
-                    ->allowDelete()
-                    ->allowReorder()
-                    ->defaultValues(['type' => 'singleline'])
-                    ->errors($this->columnErrors)
-                    ->value($columnRows)
-                    ->reactive()),
+                ->instructions(t('Define the columns your table should have.'))
+                ->control($columnsControl),
             Group::make('table-default-values', [
                 FormField::make(t('Default Values'))
                     ->instructions(t('Define the default values for the field.'))
@@ -175,14 +212,17 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->allowAdd()
                         ->allowDelete()
                         ->allowReorder()
-                        ->value($this->defaults ?? [])),
+                        ->includeRowId($this->staticRows)
+                        ->value($this->controlValues($this->defaults ?? []))
+                        ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
                 FormField::make(t('Default Row Values'))
                     ->instructions(t('Define the default values for new rows.'))
                     ->control(TableControl::make('defaultRowValues')
                         ->columns($defaultColumns)
                         ->minRows(1)
                         ->maxRows(1)
-                        ->value([$this->defaultRowValues])),
+                        ->value($this->controlValues([$this->defaultRowValues]))
+                        ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
             ])->dependsOn('settings.columns'),
             FormField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
@@ -255,8 +295,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         } elseif (is_string($column['options'])) {
                             $column['options'] = Json::decode($column['options']);
                         }
-                    } else {
-                        unset($column['options']);
                     }
                 }
                 unset($column);
@@ -330,9 +368,32 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $this->columnErrors = [];
         $typeOptions = self::typeOptions();
 
+        $persistedColumns = null;
         foreach ($this->columns as $colId => &$col) {
             if (! isset($typeOptions[$col['type']])) {
-                $col['type'] = 'singleline';
+                $persistedColumns ??= $this->id !== null
+                    ? (FieldModel::query()->whereKey($this->id)->value('settings')['columns'] ?? [])
+                    : [];
+                if (($persistedColumns[$colId] ?? null) === $col) {
+                    continue;
+                }
+                $this->columnErrors[$colId]['type'] = true;
+                $validator?->errors()->add('columns', t('The selected table cell type is unavailable.'));
+            } else {
+                $cell = $this->cellType($col);
+                if (! $cell->validate()) {
+                    foreach ($cell->errors()->getMessages() as $attribute => $messages) {
+                        $setting = explode('.', $attribute)[0];
+                        $prefix = ! array_key_exists($setting, $col) && array_key_exists($setting, $col['settings'] ?? [])
+                            ? "columns.{$colId}.settings"
+                            : "columns.{$colId}";
+                        $this->columnErrors[$colId][$attribute] = true;
+
+                        foreach ($messages as $message) {
+                            $validator?->errors()->add("{$prefix}.{$attribute}", $message);
+                        }
+                    }
+                }
             }
 
             if (! $col['handle']) {
@@ -420,34 +481,44 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 string $attribute,
                 mixed $value,
                 Closure $fail,
-            ) => $this->validateTableData($value, $fail),
+            ) => $this->validateTableData($value, $fail, $attribute),
         ];
     }
 
     /**
      * Validates the table data.
      */
-    public function validateTableData(mixed $value, Closure $fail): void
+    public function validateTableData(mixed $value, Closure $fail, ?string $attribute = null): void
     {
         if (empty($value)) {
             return;
         }
 
-        if (empty($this->columns)) {
+        if (empty($this->columns) || $this->hasMissingCellTypes()) {
             return;
         }
 
-        foreach ($value as &$row) {
+        $invalid = false;
+        foreach ($value as $rowIndex => &$row) {
             foreach ($this->columns as $colId => $col) {
-                if (is_string($row[$colId])) {
+                if (is_string($row[$colId] ?? null)) {
                     // Trim the value before validating
                     $row[$colId] = trim($row[$colId]);
                 }
 
-                if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
-                    $fail($error);
+                foreach ($this->cellErrors($col, $row[$colId] ?? null) as $message) {
+                    $invalid = true;
+                    if ($attribute === null) {
+                        $fail($message);
+                    } else {
+                        $fail("$attribute.$rowIndex.$colId", $message);
+                    }
                 }
             }
+        }
+
+        if ($invalid && $attribute !== null) {
+            $fail($attribute, t('One or more table cells contain invalid values.'));
         }
     }
 
@@ -460,6 +531,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
+        if ($this->hasMissingCellTypes()) {
+            return $element?->getFieldValue($this->handle);
+        }
+
         return $this->_normalizeValueInternal($value, $element, true);
     }
 
@@ -468,6 +543,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     {
         if (empty($this->columns)) {
             return null;
+        }
+
+        if ($this->hasMissingCellTypes()) {
+            $value = is_string($value) ? Json::decodeIfJson($value) : $value;
+
+            return is_array($value) ? $value : null;
         }
 
         $defaults = $this->defaults ?? [];
@@ -568,7 +649,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 } else {
                     $cellValue = null;
                 }
-                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue, $fromRequest);
+                $cellValue = $this->cellType($col)->normalizeValue($cellValue, $fromRequest);
                 $row[$colId] = $cellValue;
                 if ($col['handle']) {
                     $row[$col['handle']] = $cellValue;
@@ -586,6 +667,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return null;
         }
 
+        if ($this->hasMissingCellTypes()) {
+            return $value;
+        }
+
         $serialized = [];
         $supportsMb4 = DB::supportsMb4();
 
@@ -596,7 +681,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     continue;
                 }
 
-                $value = $row[$colId];
+                $value = $row[$colId] ?? null;
 
                 if (is_string($value)) {
                     $value = Str::escapeShortcodes($value);
@@ -605,7 +690,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     }
                 }
 
-                $serializedRow[$colId] = parent::serializeValue($value ?? null, null);
+                $serializedRow[$colId] = $this->cellType($column)->serializeValue($value);
             }
             $serialized[] = $serializedRow;
         }
@@ -620,6 +705,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return null;
         }
 
+        if ($this->hasMissingCellTypes()) {
+            return $value;
+        }
+
         $serialized = [];
         $supportsMb4 = DB::supportsMb4();
 
@@ -630,19 +719,13 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     continue;
                 }
 
-                $value = $row[$colId];
+                $value = $row[$colId] ?? null;
 
                 if (is_string($value) && ! $supportsMb4) {
                     $value = Str::emojiToShortcodes(Str::escapeShortcodes($value));
                 }
 
-                // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()
-                // see https://github.com/craftcms/cms/pull/17091
-                if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
-                    $serializedRow[$colId] = Query::prepareDateForDb($value);
-                } else {
-                    $serializedRow[$colId] = parent::serializeValue($value, $element);
-                }
+                $serializedRow[$colId] = $this->cellType($column)->serializeValue($value, true);
             }
 
             // if the table has static rows, store the rowId too
@@ -668,9 +751,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $keywords = [];
 
         foreach ($value as $row) {
-            foreach (array_keys($this->columns) as $colId) {
-                if (isset($row[$colId]) && ! $row[$colId] instanceof DateTimeInterface) {
-                    $keywords[] = $row[$colId];
+            foreach ($this->columns as $colId => $column) {
+                if (! $this->cellType($column) instanceof MissingTableCell) {
+                    $keywords[] = $this->cellType($column)->searchKeywords($row[$colId] ?? null);
                 }
             }
         }
@@ -694,7 +777,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $type = GqlEntityRegistry::getOrCreate($typeName, fn () => new InputObjectType([
             'name' => $typeName,
             'description' => sprintf('Defines a row within the “%s” Table field’s data.', $this->name),
-            'fields' => fn () => TableRow::prepareRowFieldDefinition($this->columns),
+            'fields' => fn () => TableRow::prepareRowFieldDefinition($this->columns, input: true),
         ]));
 
         if (! $type instanceof InputObjectType) {
@@ -705,107 +788,21 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     /**
-     * Normalizes a cell’s value.
-     *
-     * @param  string  $type  The cell type
-     * @param  mixed  $value  The cell value
-     *
-     * @see normalizeValue()
+     * @param  array<string, mixed>  $column
+     * @return list<string>
      */
-    private function _normalizeCellValue(string $type, mixed $value, bool $fromRequest): mixed
+    private function cellErrors(array $column, mixed $value): array
     {
-        switch ($type) {
-            case 'color':
-                if ($value instanceof ColorData) {
-                    return $value;
-                }
-
-                if (! $value || $value === '#') {
-                    return null;
-                }
-
-                $value = strtolower((string) $value);
-
-                if ($value[0] !== '#') {
-                    $value = '#'.$value;
-                }
-
-                if (strlen($value) === 4) {
-                    $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
-                }
-
-                return new ColorData($value);
-
-            case 'multiline':
-            case 'singleline':
-                if ($value === null) {
-                    return null;
-                }
-
-                if (! $fromRequest) {
-                    $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
-                }
-
-                return trim(Str::convertLineBreaks($value));
-            case 'number':
-                if (isset($value['locale'], $value['value'])) {
-                    return I18N::normalizeNumber($value['value'], $value['locale']);
-                }
-                break;
-            case 'date':
-            case 'time':
-                return DateTimeHelper::toDateTime($value) ?: null;
+        $cell = $this->cellType($column);
+        $rules = $cell->getValueRules();
+        if ($rules === []) {
+            return [];
         }
 
-        return $value;
-    }
-
-    /**
-     * Validates a cell’s value.
-     *
-     * @param  string  $type  The cell type
-     * @param  mixed  $value  The cell value
-     * @param  string|null  $error  The error text to set on the element
-     * @return bool Whether the value is valid
-     *
-     * @see normalizeValue()
-     */
-    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
-    {
-        if ($value === null || $value === '') {
-            return true;
-        }
-
-        switch ($type) {
-            case 'color':
-                /** @var ColorData $value */
-                $value = $value->getHex();
-                $validator = ValidatorFacade::make(
-                    data: ['value' => $value],
-                    rules: ['value' => new ColorRule]
-                );
-                break;
-            case 'url':
-                $validator = ValidatorFacade::make(
-                    data: ['value' => $value],
-                    rules: ['value' => ['url']],
-                );
-                break;
-            case 'email':
-                $validator = ValidatorFacade::make(
-                    data: ['value' => $value],
-                    rules: ['value' => ['email']],
-                );
-                break;
-            default:
-                return true;
-        }
-
-        if ($validator->fails()) {
-            $error = $validator->errors()->first();
-        }
-
-        return $validator->passes();
+        return ValidatorFacade::make(
+            ['value' => $cell->serializeValue($value)],
+            ['value' => $rules],
+        )->errors()->get('value');
     }
 
     /**
@@ -846,7 +843,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         foreach ($value as &$row) {
             foreach ($columns as $colId => $col) {
                 if (isset($row[$colId])) {
-                    $hasErrors = $checkForErrors && ! $this->_validateCellValue($col['type'], $row[$colId]);
+                    $hasErrors = $checkForErrors && $this->cellErrors($col, $row[$colId]) !== [];
                     $row[$colId] = [
                         'value' => match ($col['type']) {
                             'heading' => Html::encode($row[$colId]),

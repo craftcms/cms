@@ -39,6 +39,8 @@ use function CraftCms\Cms\t;
  * @property FieldLayout|null $layout The tab’s layout
  *
  * @phpstan-type TabConfig array{id?: int, layoutId?: int, name?: string|null, sortOrder?: int, uid?: string, userCondition?: array<string, mixed>|null, elementCondition?: array<string, mixed>|null, fields?: array<string, array{sortOrder: int, required: bool}>, elements?: list<array<string, mixed>>}
+ *
+ * @since 6.0.0
  */
 class FieldLayoutTab extends FieldLayoutComponent
 {

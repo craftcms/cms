@@ -8,6 +8,11 @@ use CraftCms\Cms\Support\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use function CraftCms\Cms\currentUser;
+
+/**
+ * @since 6.0.0
+ */
 readonly class ApiController
 {
     public function __construct(
@@ -24,6 +29,15 @@ readonly class ApiController
         $headers = $request->validate([
             'headers' => ['required', 'array'],
         ])['headers'];
+
+        // Only admins can relay headers that write license keys or affect trial licensing
+        if (! currentUser()?->isAdmin()) {
+            $headers = array_filter($headers, fn ($name) => ! in_array(strtolower((string) $name), [
+                'x-craft-allow-trials',
+                'x-craft-license',
+                'x-craft-plugin-licenses',
+            ], true), ARRAY_FILTER_USE_KEY);
+        }
 
         $this->api->processResponseHeaders($headers);
 

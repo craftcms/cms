@@ -8,6 +8,9 @@ use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 class OptionData implements Serializable, Stringable
 {
     public function __construct(

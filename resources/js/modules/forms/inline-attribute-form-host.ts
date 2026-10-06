@@ -1,19 +1,15 @@
+import {mountFormHost} from './mountFormHost';
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import {
-  createApp,
-  defineComponent,
-  h,
-  nextTick,
-  shallowRef,
-  type App,
-} from 'vue';
+import {h, shallowRef} from 'vue';
 import FormRenderer from './FormRenderer.vue';
 import type {FormPayload} from './types';
+import {firstFocusableWithin} from '@/common/utils/dom';
 
 export interface InlineAttributeFormHost extends HTMLElement {
   ready: Promise<void>;
   errors: Record<string, string[]>;
   canSubmit(): boolean;
+  focusFirst(): boolean;
 }
 
 /** Mounts Form controls in the legacy table without changing its row save contract. */
@@ -27,7 +23,7 @@ export function defineInlineAttributeFormHost(
   customElements.define(
     'craft-inline-attribute-form',
     class extends HTMLElement {
-      #app: App | null = null;
+      #mount: ReturnType<typeof mountFormHost> | null = null;
       #payload: FormPayload | null = null;
       readonly #errors = shallowRef<FormPayload['errors']>([]);
       readonly #renderer = shallowRef<{canSubmit(): boolean} | null>(null);
@@ -44,53 +40,38 @@ export function defineInlineAttributeFormHost(
       }
 
       connectedCallback(): void {
-        if (this.#app) {
+        if (this.#mount) {
           return;
         }
 
         const payload: FormPayload = JSON.parse(this.dataset.payload!);
         this.#payload = payload;
         this.#errors.value = payload.errors;
-        this.#app = createApp(
-          defineComponent({
-            setup: () => () =>
-              h(FormRenderer, {
-                payload,
-                ref: this.#renderer,
-                errors: this.#errors.value,
-              }),
+        this.#mount = mountFormHost(this, components, () =>
+          h(FormRenderer, {
+            payload,
+            ref: this.#renderer,
+            errors: this.#errors.value,
           })
         );
-        this.#app.config.compilerOptions.isCustomElement = (tag) =>
-          tag.includes('-');
-        components.install(this.#app);
-        this.#app.mount(this);
-        this.ready = this.#whenReady();
-      }
-
-      async #whenReady(): Promise<void> {
-        await nextTick();
-
-        for (const element of this.querySelectorAll('*')) {
-          if ('updateComplete' in element) {
-            await element.updateComplete;
-          }
-
-          if ('ready' in element) {
-            await element.ready;
-          }
-        }
+        this.ready = this.#mount.ready;
       }
 
       canSubmit(): boolean {
         return this.#renderer.value?.canSubmit() ?? false;
       }
 
+      focusFirst(): boolean {
+        const target = firstFocusableWithin(this);
+        target?.focus();
+
+        return Boolean(target);
+      }
+
       disconnectedCallback(): void {
-        if (this.#app) {
-          components.uninstall(this.#app);
-          this.#app.unmount();
-          this.#app = null;
+        if (this.#mount) {
+          this.#mount.unmount();
+          this.#mount = null;
         }
       }
     }

@@ -18,6 +18,8 @@ use CraftCms\Cms\Cms;
  *     ]));
  * }
  * ```
+ *
+ * @since 6.0.0
  */
 class GqlEntityRegistry
 {

@@ -9,6 +9,9 @@ use CraftCms\Cms\Gql\Interfaces\Elements\ContentBlock as ContentBlockInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class ContentBlock extends Element
 {
     public function __construct(array $config)

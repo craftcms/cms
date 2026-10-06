@@ -17,7 +17,11 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<Section> */
+/**
+ * @extends Ruleset<Section>
+ *
+ * @since 6.0.0
+ */
 class SectionRules extends Ruleset
 {
     /** @return array<string, array<int, string|Closure|object>> */

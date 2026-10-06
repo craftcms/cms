@@ -6,15 +6,20 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
+use CraftCms\Cms\Field\Table;
+use CraftCms\Cms\Field\TableCells\TableCell;
+use CraftCms\Cms\Field\TableCellTypes;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -407,6 +412,42 @@ it('can save a new field with settings posted as a url-encoded string', function
     });
 });
 
+it('saves only the selected Matrix site destination while keeping the URI format', function () {
+    $site = Site::firstOrFail();
+    $entryType = EntryType::factory()->withFieldLayout()->create();
+    $data = [
+        'type' => Matrix::class,
+        'name' => 'Routed entries',
+        'handle' => 'routedEntries',
+        'settings' => [
+            'entryTypes' => [$entryType->id],
+            'siteSettings' => [$site->uid => [
+                'uriFormat' => 'nested/{slug}',
+                'routeType' => 'route',
+                'route' => ' entries.nested ',
+            ]],
+        ],
+    ];
+
+    $this->postJson(action([FieldsController::class, 'store']), $data)->assertSuccessful();
+
+    $field = FieldModel::where('handle', 'routedEntries')->firstOrFail();
+    expect($field->settings['siteSettings'][$site->uid])->toBe([
+        'uriFormat' => 'nested/{slug}',
+        'route' => 'entries.nested',
+    ]);
+
+    $data['fieldId'] = $field->id;
+    $data['settings']['siteSettings'][$site->uid]['routeType'] = 'template';
+    $data['settings']['siteSettings'][$site->uid]['route'] = 'entries/nested';
+    $this->postJson(action([FieldsController::class, 'store']), $data)->assertSuccessful();
+
+    expect($field->fresh()->settings['siteSettings'][$site->uid])->toBe([
+        'uriFormat' => 'nested/{slug}',
+        'template' => 'entries/nested',
+    ]);
+});
+
 it('saves changed Form groups without resetting untouched settings', function () {
     Fields::saveField($field = Fields::createField([
         'type' => PlainText::class,
@@ -508,3 +549,205 @@ it('rejects invalid selection conditions before saving a relation field', functi
 
     expect(FieldModel::where('handle', 'related')->exists())->toBeFalse();
 });
+
+it('rejects invalid table cell configuration before resolving or saving settings', function (string $action, string $errorPath, array $column) {
+    $values = [
+        'type' => Table::class,
+        'name' => 'Table',
+        'handle' => 'table',
+        'settings' => ['columns' => [
+            'col1' => ['heading' => 'Value', 'handle' => 'value', ...$column],
+        ]],
+    ];
+
+    $this->postJson(action([FieldsController::class, $action]), $action === 'renderForm'
+        ? ['values' => $values, 'scope' => []]
+        : $values)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors($errorPath);
+
+    expect(FieldModel::where('handle', 'table')->exists())->toBeFalse();
+})->with([
+    'save unavailable type' => ['store', 'settings.columns.col1.type', ['type' => 'Unavailable\\TableCell']],
+    'refresh unavailable type' => ['renderForm', 'values.settings.columns.col1.type', ['type' => 'Unavailable\\TableCell']],
+    'save invalid settings' => ['store', 'settings.columns.col1.settings', ['type' => 'singleline', 'settings' => 'invalid']],
+    'refresh invalid settings' => ['renderForm', 'values.settings.columns.col1.settings', ['type' => 'singleline', 'settings' => 'invalid']],
+]);
+
+it('validates plugin cell settings before saving a table field', function (array $settings, bool $valid, string $errorPath) {
+    app(TableCellTypes::class)->register(FieldSettingsTableCell::class);
+    $response = $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => Table::class,
+        'name' => 'Table',
+        'handle' => 'table',
+        'settings' => ['columns' => [
+            'col1' => ['heading' => 'Value', 'handle' => 'value', 'type' => FieldSettingsTableCell::class, ...$settings],
+        ]],
+    ]);
+
+    if (! $valid) {
+        $response->assertUnprocessable()->assertJsonValidationErrors($errorPath);
+        expect(FieldModel::where('handle', 'table')->exists())->toBeFalse();
+
+        return;
+    }
+
+    $response->assertOk();
+    $field = Fields::getFieldByHandle('table');
+    expect($field->cellType($field->columns['col1'])->prefix)->toBe('Valid');
+})->with([
+    'invalid flat settings' => [['prefix' => 'a'], false, 'settings.columns.col1.prefix'],
+    'invalid nested settings' => [['settings' => ['prefix' => 'a']], false, 'settings.columns.col1.settings.prefix'],
+    'valid nested settings' => [['settings' => ['prefix' => 'Valid']], true, ''],
+    'flat settings override nested settings' => [['prefix' => 'Valid', 'settings' => ['prefix' => 'a']], true, ''],
+]);
+
+it('refreshes a legacy field settings island without returning the outer field metadata form', function () {
+    $response = $this->postJson(action([FieldsController::class, 'renderForm']), [
+        'values' => [
+            'type' => Table::class,
+            'name' => 'Outer field name',
+            'settings' => [
+                'columns' => ['col1' => ['heading' => 'Status', 'handle' => 'status', 'type' => 'singleline']],
+                'defaults' => [['col1' => 'Draft']],
+            ],
+        ],
+        'scope' => [],
+        'settingsOnly' => true,
+    ])->assertOk()
+        ->assertJsonPath('form.scope', ['settings'])
+        ->assertJsonPath('form.values.settings.columns.col1.heading', 'Status')
+        ->assertJsonPath('form.values.settings.defaults.0.col1', 'Draft');
+
+    expect($response->json('form.values'))->not->toHaveKey('name');
+});
+
+it('retains retired cell types only in unchanged persisted columns', function (string $action, string $scenario, bool $allowed) {
+    RetiredFieldSettingsTableCell::$selectable = true;
+    app(TableCellTypes::class)->register(RetiredFieldSettingsTableCell::class);
+    $columns = ['col1' => [
+        'heading' => 'Value',
+        'handle' => 'value',
+        'width' => '',
+        'type' => RetiredFieldSettingsTableCell::class,
+        'settings' => ['prefix' => 'Original'],
+    ]];
+    expect(Fields::saveField($field = Fields::createField([
+        'type' => Table::class,
+        'name' => 'Original table',
+        'handle' => 'table',
+        'columns' => $columns,
+    ])))->toBeTrue();
+    RetiredFieldSettingsTableCell::$selectable = false;
+
+    $submitted = $columns;
+    if ($scenario === 'changed') {
+        $submitted['col1']['settings']['prefix'] = 'Changed';
+    } elseif ($scenario === 'added') {
+        $submitted['col2'] = [...$columns['col1'], 'handle' => 'anotherValue'];
+    }
+    $values = [
+        'type' => Table::class,
+        'name' => 'Renamed table',
+        'handle' => $scenario === 'new' ? 'newTable' : 'table',
+        'settings' => ['columns' => $submitted],
+    ];
+    if ($scenario !== 'new') {
+        $values['fieldId'] = $field->id;
+    }
+
+    try {
+        $response = $this->postJson(action([FieldsController::class, $action]), $action === 'renderForm'
+            ? ['values' => $values, 'scope' => []]
+            : $values);
+        if (! $allowed) {
+            $columnId = $scenario === 'added' ? 'col2' : 'col1';
+            $prefix = $action === 'renderForm' ? 'values.settings' : 'settings';
+            $response->assertUnprocessable()->assertJsonValidationErrors("{$prefix}.columns.{$columnId}.type");
+            expect(Fields::getFieldById($field->id)->columns)->toBe($columns)
+                ->and(FieldModel::where('handle', 'newTable')->exists())->toBeFalse();
+
+            return;
+        }
+
+        $response->assertOk();
+        if ($action === 'renderForm') {
+            $response->assertJsonPath('form.values.settings.columns', $columns);
+        } else {
+            $saved = Fields::getFieldById($field->id);
+            expect($saved->name)->toBe('Renamed table')->and($saved->columns)->toBe($columns);
+        }
+    } finally {
+        RetiredFieldSettingsTableCell::$selectable = true;
+    }
+})->with(['store', 'renderForm'])->with([
+    'unchanged existing column' => ['unchanged', true],
+    'changed existing column' => ['changed', false],
+    'added column' => ['added', false],
+    'new field' => ['new', false],
+]);
+
+it('preserves unavailable table configuration while saving unrelated field metadata', function () {
+    $cellTypes = app(TableCellTypes::class);
+    $cellTypes->register(FieldSettingsTableCell::class);
+    $columns = [
+        'col1' => [
+            'heading' => 'Value',
+            'handle' => 'value',
+            'type' => FieldSettingsTableCell::class,
+            'settings' => ['prefix' => 'Original'],
+        ],
+    ];
+    $defaults = [['col1' => 'Saved value']];
+
+    Fields::saveField($field = Fields::createField([
+        'type' => Table::class,
+        'name' => 'Original table',
+        'handle' => 'table',
+        'columns' => $columns,
+        'defaults' => $defaults,
+    ]));
+    $cellTypes->remove(FieldSettingsTableCell::class);
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'fieldId' => $field->id,
+        'type' => Table::class,
+        'name' => 'Renamed table',
+        'handle' => 'table',
+        'settings' => [
+            'columns' => ['col1' => ['heading' => 'Changed', 'handle' => 'value', 'type' => 'singleline']],
+            'defaults' => [],
+        ],
+    ])->assertOk();
+
+    $saved = Fields::getFieldById($field->id);
+
+    expect($saved->name)->toBe('Renamed table')
+        ->and($saved->columns)->toBe($columns)
+        ->and($saved->defaults)->toBe($defaults);
+});
+
+class FieldSettingsTableCell extends TableCell
+{
+    public string $prefix = '';
+
+    public function getRules(): array
+    {
+        return ['prefix' => ['nullable', 'string', 'min:3']];
+    }
+
+    public static function displayName(): string
+    {
+        return 'Field settings cell';
+    }
+}
+
+class RetiredFieldSettingsTableCell extends FieldSettingsTableCell
+{
+    public static bool $selectable = true;
+
+    public static function isSelectable(): bool
+    {
+        return self::$selectable;
+    }
+}

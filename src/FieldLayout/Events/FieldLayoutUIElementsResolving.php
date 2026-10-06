@@ -21,6 +21,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
  * ```
  *
  * @see FieldLayout::getAvailableUiElements()
+ * @since 6.0.0
  */
 class FieldLayoutUIElementsResolving
 {

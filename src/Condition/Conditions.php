@@ -16,6 +16,9 @@ use InvalidArgumentException;
 use ReflectionException;
 use ReflectionProperty;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class Conditions
 {

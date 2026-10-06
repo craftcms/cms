@@ -42,6 +42,33 @@ test('field(false) only returns addresses with no field', function () {
     expect(new AddressQuery()->field(false)->ids())->toEqualCanonicalizing([$userAddress->id]);
 });
 
+test('field(false) with an owner returns the owner’s addresses outside any field', function () {
+    $field = Field::factory()->create([
+        'type' => Addresses::class,
+    ]);
+
+    Fields::refreshFields();
+
+    $owner = Entry::factory()->create();
+    $ownAddress = Address::factory()->create([
+        'primaryOwnerId' => $owner->id,
+    ]);
+    $fieldAddress = Address::factory()->create([
+        'primaryOwnerId' => $owner->id,
+        'fieldId' => $field->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)
+        ->insert([
+            'elementId' => $fieldAddress->id,
+            'ownerId' => $owner->id,
+            'sortOrder' => 1,
+        ]);
+
+    expect(new AddressQuery()->field(false)->ownerId($owner->id)->ids())->toEqual([$ownAddress->id])
+        ->and(new AddressQuery()->fieldId($field->id)->ownerId($owner->id)->ids())->toEqual([$fieldAddress->id]);
+});
+
 it('queries by properties', function (string $property, mixed $value, mixed $param, int $expectedCount) {
     Address::factory()->create([$property => 'bar']);
     Address::factory()->create([$property => $value]);

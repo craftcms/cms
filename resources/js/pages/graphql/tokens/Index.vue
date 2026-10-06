@@ -2,14 +2,13 @@
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface TokenData {
     id: number;
@@ -38,7 +37,7 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<TokenData>();
-  const table = useVueTable({
+  const table = useCraftTable({
     get columns() {
       return [
         columnHelper.link('name', {
@@ -84,8 +83,6 @@
         };
       },
     },
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<TokenData>(),
   });
 </script>
 
@@ -95,15 +92,13 @@
       t('New token')
     }}</CpButtonLink>
   </LayoutSlot>
-  <CpContainer>
-    <AdminTable :table="table">
-      <template #empty-row>
-        <craft-empty :label="t('No GraphQL tokens exist yet.')">
-          <CpButtonLink :href="create().url" icon="plus">{{
-            t('New token')
-          }}</CpButtonLink>
-        </craft-empty>
-      </template>
-    </AdminTable>
-  </CpContainer>
+  <AdminTable class="admin-table--padded" :table="table">
+    <template #empty-row>
+      <craft-empty :label="t('No GraphQL tokens exist yet.')">
+        <CpButtonLink :href="create().url" icon="plus">{{
+          t('New token')
+        }}</CpButtonLink>
+      </craft-empty>
+    </template>
+  </AdminTable>
 </template>

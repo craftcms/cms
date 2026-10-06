@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
+/**
+ * @since 6.0.0
+ */
 class Range extends Text
 {
     #[\Override]

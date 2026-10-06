@@ -1,10 +1,10 @@
+import {isCancel} from '@craftcms/ui/utilities/api/http';
 import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
 
 declare const Craft: any;
-declare const axios: any;
 
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
@@ -21,7 +21,7 @@ export class CardViewDesigner extends Base {
   sortableCheckboxSelect: any = null;
   $thumbManagementContainer: any = null;
   alwaysShowThumbAlignmentBtns = false;
-  cancelToken: any = null;
+  abortController: AbortController | null = null;
   attribute: any = null;
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
@@ -119,11 +119,11 @@ export class CardViewDesigner extends Base {
     this.$previewContainer.classList.add('loading');
     Craft.cp.announce(Craft.t('app', 'Loading'));
 
-    if (this.cancelToken) {
-      this.cancelToken.cancel();
+    if (this.abortController) {
+      this.abortController.abort();
     }
 
-    this.cancelToken = axios.CancelToken.source();
+    this.abortController = new AbortController();
 
     let response;
     try {
@@ -131,10 +131,14 @@ export class CardViewDesigner extends Base {
         'POST',
         'fields/render-card-preview',
         {
-          cancelToken: this.cancelToken.token,
+          signal: this.abortController.signal,
           data: {
             fieldLayoutConfig: {
               ...this.designer.config,
+              // Not part of `this.designer.config` (that lives at
+              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+              // needs a `type` on the layout config to instantiate a sample element.
+              type: this.designer.settings!.elementType,
               generatedFields:
                 document
                   .querySelector('craft-generated-fields-table')
@@ -144,7 +148,7 @@ export class CardViewDesigner extends Base {
         }
       );
     } catch (e: any) {
-      if (!axios.isCancel(e)) {
+      if (!isCancel(e)) {
         Craft.cp.displayError(e?.response?.data?.message);
         throw e;
       }
@@ -152,7 +156,7 @@ export class CardViewDesigner extends Base {
     } finally {
       this.$previewContainer.classList.remove('loading');
       Craft.cp.announce(Craft.t('app', 'Loading complete'));
-      this.cancelToken = null;
+      this.abortController = null;
     }
 
     if (response) {
@@ -344,7 +348,7 @@ export class CardViewDesigner extends Base {
    * teardown. The sortable checkbox custom element owns its controller teardown.
    */
   override destroy(): void {
-    this.cancelToken?.cancel();
+    this.abortController?.abort();
     this.sortableCheckboxSelect = null;
 
     if (this.$container) {

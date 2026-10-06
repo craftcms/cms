@@ -21,7 +21,9 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\MigrationRepository;
 use CraftCms\Cms\Database\Migrator as CoreMigrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
+use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Gql\AssetTransformContext;
@@ -55,6 +57,8 @@ use CraftCms\Yii2Adapter\Console\OnCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
+use CraftCms\Yii2Adapter\Element\LegacyElementEditorScreen;
+use CraftCms\Yii2Adapter\Field\MatrixBlockHtml;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Form\LegacyConditions;
@@ -120,6 +124,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new LegacyApp()->register($this->app);
         new CompatibilityMixins()->register();
+        Event::listen(MatrixBlockHtmlRendering::class, MatrixBlockHtml::class);
         Event::listen(VolumeConfigPreparing::class, function(VolumeConfigPreparing $event): void {
             $event->config['transformFs'] = $event->volume->getTransformFsHandle(false);
             $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
@@ -169,6 +174,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->setLaravelDefaults();
         $this->registerLegacySiteTemplateRoot();
         $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, 'yii2-adapter', __DIR__ . '/../resources/templates');
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, '_components/fieldtypes/Matrix', __DIR__ . '/../resources/templates/_components/fieldtypes/Matrix');
         $this->registerExceptionHandling();
     }
 
@@ -276,6 +282,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Event::listen(ElementEditorPayloadResolving::class, LegacyElementEditorScreen::class);
+
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),

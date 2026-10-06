@@ -14,7 +14,11 @@ use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Log;
 
-/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
+/**
+ * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ *
+ * @since 6.0.0
+ */
 abstract class Generator
 {
     /** @return array<string, (Type&OutputType)|UnnamedFieldDefinitionConfig> */

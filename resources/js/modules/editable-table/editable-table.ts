@@ -2,6 +2,9 @@ import {Base} from '@craftcms/garnish';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
 import '@craftcms/ui/components/text-expander/text-expander';
+import '@craftcms/ui/components/field/field';
+import '@craftcms/ui/components/field-group/field-group';
+import '@craftcms/ui/components/select/select';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
@@ -129,6 +132,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     this.$tbody = this.$table.children('tbody');
     this.$tableParent = this.$table.parent();
     this.$statusMessage = this.$tableParent.find('[data-status-message]');
+    this.$addRowBtn = this.$table
+      .closest('.input, craft-field')
+      .find('[command="--add-row"]');
     const $rows = this.$tbody.children();
     this.rowCount = $rows.length;
 
@@ -197,7 +203,6 @@ export class EditableTable extends Base<EditableTableSettings> {
       $container.css('overflow-x', 'auto');
     }
 
-    this.$addRowBtn = $container.find('[command="--add-row"]');
     this.updateAddRowButton();
 
     // If there's only one row, disable the action button
@@ -765,6 +770,47 @@ export class EditableTable extends Base<EditableTableSettings> {
             }
         }
 
+        if (col.prefixSelect) {
+          const config = col.prefixSelect;
+          const select = document.createElement('select');
+          select.slot = 'input';
+          select.name = `${baseName}[${rowId}][${config.key}]`;
+          for (const option of config.options) {
+            select.add(new Option(option.label, option.value));
+          }
+          select.value = String(
+            values[config.key] ?? config.options[0]?.value ?? ''
+          );
+
+          const prefix = document.createElement('craft-select');
+          prefix.label = config.label;
+          prefix.setAttribute('label-sr-only', '');
+          prefix.name = select.name;
+          prefix.className = 'w-28 shrink-0';
+          prefix.append(select);
+
+          const input = document.createElement('craft-field');
+          input.label = col.heading ?? colId;
+          input.setAttribute('label-sr-only', '');
+          input.className = 'min-w-0 flex-1';
+          const controls = [...$cell[0].children] as HTMLElement[];
+          for (const control of controls) {
+            control.slot = 'input';
+          }
+          input.append(...controls);
+          const group = document.createElement('craft-field-group');
+          group.slot = 'input';
+          group.className = '!flex w-full flex-wrap items-end !gap-2';
+          group.append(prefix, input);
+          const field = document.createElement('craft-field');
+          field.fieldset = true;
+          field.label = col.heading ?? colId;
+          field.setAttribute('label-sr-only', '');
+          field.className = 'min-w-72 p-1';
+          field.append(group);
+          $cell.append(field);
+        }
+
         if (col.textExpanderTriggers && textExpanderTarget) {
           textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
           textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
@@ -1246,7 +1292,7 @@ export class Row extends Base {
     const tdHeight = this.$textareas
       .filter(':visible')
       .first()
-      .parent()
+      .closest('td')
       .height();
 
     if (tdHeight > tallestTextareaHeight) {

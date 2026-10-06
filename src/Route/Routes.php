@@ -11,14 +11,22 @@ use CraftCms\Cms\Route\Events\RouteDeleted;
 use CraftCms\Cms\Route\Events\RouteDeleting;
 use CraftCms\Cms\Route\Events\RouteSaved;
 use CraftCms\Cms\Route\Events\RouteSaving;
+use CraftCms\Cms\Route\Exceptions\InvalidRouteException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
 #[Scoped]
 class Routes
 {
@@ -150,6 +158,12 @@ class Routes
                 sortOrder: isset($route['sortOrder']) ? (int) $route['sortOrder'] : null,
             );
 
+            try {
+                $this->validateAndNormalize($route);
+            } catch (InvalidRouteException) {
+                continue;
+            }
+
             $uri = $route->getUri();
 
             if (isset($this->projectConfigRoutes[$uri])) {
@@ -174,6 +188,8 @@ class Routes
     public function saveRoute(Route $route): string
     {
         event(new RouteSaving($route));
+
+        $this->validateAndNormalize($route);
 
         if ($route->uid !== null) {
             $sortOrder = $this->projectConfig->get(
@@ -279,5 +295,30 @@ class Routes
         }
 
         return (int) $max + 1;
+    }
+
+    private function validateAndNormalize(Route $route): void
+    {
+        $route->normalize();
+
+        $validator = Validator::make([
+            'template' => $route->template,
+            'siteUid' => $route->siteUid,
+            'uriParts' => $route->getUri(),
+        ], [
+            'template' => ['required', 'string'],
+            'siteUid' => ['nullable', function (string $attribute, mixed $value, callable $fail): void {
+                try {
+                    $this->sites->getSiteByUid((string) $value, true);
+                } catch (SiteNotFoundException) {
+                    $fail(t('Invalid site.'));
+                }
+            }],
+            'uriParts' => [new UriFormatRule],
+        ]);
+
+        if ($validator->fails()) {
+            throw new InvalidRouteException($route, $validator->errors()->messages());
+        }
     }
 }

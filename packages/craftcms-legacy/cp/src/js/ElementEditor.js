@@ -37,7 +37,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      */
     formObserver: null,
     formHost: null,
-    cancelToken: null,
+    abortController: null,
     ignoreFailedRequest: false,
     queue: null,
     savingDraft: false,
@@ -1452,7 +1452,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.failed = false;
       this.httpStatus = null;
       this.httpError = null;
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
 
       this.statusIcons()
         .velocity('stop')
@@ -1509,7 +1509,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'POST',
           'elements/save-draft',
           {
-            cancelToken: this.cancelToken.token,
+            signal: this.abortController.signal,
             headers: this._saveHeaders,
             data: params.join('&'),
           }
@@ -1754,7 +1754,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.lastSerializedValue = data;
-      this.cancelToken = axios.CancelToken.source();
+      this.abortController = new AbortController();
 
       // Prep the data to be saved, keeping track of the first input name for each delta group
       let preparedData = this.prepareData(data);
@@ -1782,7 +1782,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'POST',
           'elements/update-field-layout',
           {
-            cancelToken: this.cancelToken.token,
+            signal: this.abortController.signal,
             headers: this._saveHeaders,
             data: preparedData,
           }
@@ -1911,15 +1911,15 @@ Craft.ElementEditor = Garnish.Base.extend(
      * The `<craft-entry-field-layout-form>` this editor drives, looked up on
      * first use rather than when the editor is constructed.
      *
-     * The host isn't necessarily in the document yet at construction: on a screen
-     * rendered inside the Vue shell, the legacy ready JS that calls
-     * `new Craft.ElementEditor()` runs before the content fragment has mounted.
-     * Capturing it eagerly left it permanently undefined there, so every
-     * field-layout refresh threw and a nested element — an address, say — could
-     * never be added.
+     * The host isn't necessarily in the document yet at construction: on a
+     * screen whose markup is mounted by the control panel's Vue shell, the
+     * ready-JS that calls `new Craft.ElementEditor()` can run before the content
+     * has been rendered. Capturing the host eagerly left it permanently
+     * undefined in that case, so every field-layout refresh threw and a nested
+     * element could never be added.
      *
      * `$contentContainer` is re-resolved for the same reason while it's still
-     * empty: it was captured eagerly too, and an empty jQuery set caches just as
+     * empty: it is captured eagerly too, and an empty jQuery set caches just as
      * badly as a missing host.
      */
     getFormHost() {
@@ -1928,7 +1928,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (this.isFullPage && !this.$contentContainer.length) {
-        this.$contentContainer = this.settings.$contentContainer ?? $('#content');
+        this.$contentContainer =
+          this.settings.$contentContainer ?? $('#content');
       }
 
       this.formHost = this.$contentContainer.find(
@@ -2138,9 +2139,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       // Abort the current save request if there is one
-      if (this.cancelToken) {
+      if (this.abortController) {
         this.ignoreFailedRequest = true;
-        this.cancelToken.cancel();
+        this.abortController.abort();
       }
 
       this.trigger('beforeSubmit');

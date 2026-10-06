@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Facades\Addresses as AddressesFacade;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @since 6.0.0
+ */
 class Addresses extends InputObjectType
 {
     public static function getType(): mixed

@@ -28,6 +28,8 @@ use function CraftCms\Cms\t;
  * ```
  *
  * Use {@see registerReadOnlySetting()} for links shown when admin changes are disabled.
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class Settings

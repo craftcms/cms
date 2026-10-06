@@ -166,7 +166,6 @@
 <template>
   <craft-tabs
     ref="tabs"
-    size="small"
     placement="inline-end"
     collapsible
     @craft-tab-show="onSelectedChanged"

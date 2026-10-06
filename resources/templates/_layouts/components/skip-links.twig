@@ -29,4 +29,12 @@
       }) }}
     </li>
   {% endfor %}
+  {# Shown only while there are messages; see messages.css. #}
+  <li data-messages-skip-link>
+    {{ tag('a', {
+      text: 'Skip to messages'|t('app'),
+      href: '#messages',
+      class: 'skip-link skip-link--global btn',
+    }) }}
+  </li>
 </ul>

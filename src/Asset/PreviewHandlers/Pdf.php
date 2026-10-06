@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Asset\PreviewHandlers;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Support\Html;
 
+/**
+ * @since 6.0.0
+ */
 class Pdf extends AssetPreviewHandler
 {
     public function getPreviewHtml(array $variables = []): string

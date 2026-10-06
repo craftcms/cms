@@ -1,0 +1,156 @@
+import {usePage} from '@inertiajs/vue3';
+import {computed, reactive, toValue, type MaybeRefOrGetter} from 'vue';
+import type {PaginationData, SortItem} from '@/common/types';
+import type {ConditionConfig} from '@/modules/conditions/types';
+import type {BulkActionItem} from '@/modules/elements/types/actions';
+import type {ElementCapabilities} from '@/modules/elements/types/actions';
+import type {Source, SourceItem} from '@/modules/elements/types/sources';
+import type {IndexSite} from '@/modules/elements/types/sites';
+import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
+import type {
+  SortOption,
+  ViewMode,
+  ViewState,
+} from '@/modules/elements/types/view-state';
+
+type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
+
+export interface ElementIndexRow extends InlineEditableRow {
+  id: string | number;
+  capabilities?: Partial<ElementCapabilities>;
+  cpEditUrl?: string | null;
+  viewUrl?: string | null;
+  /** The row's depth in the tree (1-based). Structure mode only. */
+  level?: number;
+  /** Whether the row has descendants the index would list (its toggle). */
+  hasDescendants?: boolean;
+  /** The element's site, as `structures/move-element` requires. */
+  siteId?: number | null;
+  /** The element's plain-text name, for the row's checkbox and (in structure mode) its toggle label. */
+  label: string;
+}
+
+/**
+ * The `ContentIndexViewModel` payload, with the element-index domain types
+ * layered over the keys the PHP type generator can only express loosely
+ * (`Array<any>`). The generated type stays the source of truth for which keys
+ * exist; this narrows what they contain.
+ */
+export type ContentIndexData = Omit<
+  GeneratedProps,
+  | 'source'
+  | 'sources'
+  | 'sites'
+  | 'currentCondition'
+  | 'viewState'
+  | 'viewModes'
+  | 'sortOptions'
+  | 'sort'
+  | 'data'
+  | 'actions'
+  | 'exporters'
+  | 'pagination'
+> & {
+  source: SourceItem | null;
+  sources: Source[];
+  sites: IndexSite[];
+  currentCondition: ConditionConfig | null;
+  viewState: Partial<ViewState>;
+  viewModes: ViewMode[];
+  sortOptions: SortOption[];
+  sort: SortItem[];
+  data: ElementIndexRow[];
+  actions: BulkActionItem[] | null;
+  exporters: Array<{type: string; name: string; formattable: boolean}>;
+  pagination: PaginationData;
+};
+
+/**
+ * Typed, reactive access to the `ContentIndexViewModel` payload shared by
+ * every element index screen (entries, assets, …).
+ *
+ * Returns a reactive object shaped like the payload, so it can be handed
+ * directly to the `useElementIndex*` composables in place of a props object,
+ * while staying in sync across partial Inertia visits (sorting, filtering,
+ * pagination). Read keys off the returned object (or `toRef()` them) —
+ * destructuring would snapshot the current values.
+ *
+ * `extra` merges page-supplied data (refs unwrap reactively) into the same
+ * object — e.g. route-param props or local state an embedded index owns.
+ * Extra keys win over payload keys, so a caller can also deliberately
+ * override a payload value.
+ *
+ * `source` replaces the Inertia page as where the payload is read from, for
+ * indexes that aren't a page at all. The keys and their reactivity are the
+ * same either way, so the `useElementIndex*` composables can't tell which.
+ */
+export function useContentIndexData<
+  Extra extends object = Record<never, never>,
+  Source extends Omit<ContentIndexData, 'data'> & {
+    data: Array<ElementIndexRow>;
+  } = ContentIndexData,
+>(extra?: Extra, source?: MaybeRefOrGetter<Source>) {
+  // Indexes that aren't an Inertia page — the element selector modal, which
+  // fetches the same payload over XHR — pass their own source. `usePage()` is
+  // only called when none is given, since it needs an Inertia app to read.
+  const inertiaPage = source === undefined ? usePage<ContentIndexData>() : null;
+  const props = (): Source =>
+    source === undefined
+      ? (inertiaPage!.props as unknown as Source)
+      : toValue(source);
+
+  const data = reactive({
+    // Element type
+    elementType: computed(() => props().elementType),
+    elementDisplayName: computed(() => props().elementDisplayName),
+    elementPluralDisplayName: computed(() => props().elementPluralDisplayName),
+    canHaveDrafts: computed(() => props().canHaveDrafts),
+
+    // Page chrome
+    context: computed(() => props().context),
+    title: computed(() => props().title),
+    page: computed(() => props().page),
+    selectedSubnavItem: computed(() => props().selectedSubnavItem),
+    showSiteMenu: computed(() => props().showSiteMenu),
+    showStatusMenu: computed(() => props().showStatusMenu),
+
+    // Sites
+    siteId: computed(() => props().siteId),
+    sites: computed(() => props().sites),
+
+    // Sources
+    sources: computed(() => props().sources),
+    source: computed(() => props().source),
+    structure: computed(() => props().structure),
+
+    // Filtering
+    status: computed(() => props().status),
+    statusOptions: computed(() => props().statusOptions),
+    search: computed(() => props().search),
+    currentCondition: computed(() => props().currentCondition),
+    drafts: computed(() => props().drafts),
+    trashed: computed(() => props().trashed),
+
+    // View state
+    viewState: computed(() => props().viewState),
+    viewModes: computed(() => props().viewModes),
+    tableColumns: computed(() => props().tableColumns),
+    defaultTableColumns: computed(() => props().defaultTableColumns),
+    sort: computed(() => props().sort),
+    sortOptions: computed(() => props().sortOptions),
+
+    // Results
+    data: computed<Source['data']>(() => props().data),
+    actions: computed(() => props().actions),
+    exporters: computed(() => props().exporters),
+    pagination: computed(() => props().pagination),
+
+    // Merged into the literal rather than `Object.assign`ed onto the result:
+    // every key above is a `computed()` ref, and assigning over one after
+    // `reactive()` has wrapped it does not take — `extra` would silently lose
+    // to the payload, which is the opposite of the documented precedence.
+    ...((extra ?? {}) as Extra),
+  });
+
+  return data;
+}

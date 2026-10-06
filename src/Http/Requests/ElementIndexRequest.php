@@ -17,6 +17,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class ElementIndexRequest extends FormRequest
 {
     /**
@@ -43,7 +46,7 @@ class ElementIndexRequest extends FormRequest
 
     public function isAdministrative(?string $context = null): bool
     {
-        return in_array($context ?? $this->context(), [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_EMBEDDED_INDEX]);
+        return in_array($context ?? $this->context(), [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_EMBEDDED_INDEX, 'embedded-index']);
     }
 
     /**

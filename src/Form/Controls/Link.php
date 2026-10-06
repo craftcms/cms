@@ -13,6 +13,8 @@ use CraftCms\Cms\Support\Json;
 /**
  * A Link Control. Its canonical value is an object with required `type` and
  * `value` strings and optional `label`, `urlSuffix`, and `title` strings.
+ *
+ * @since 6.0.0
  */
 class Link extends Control
 {

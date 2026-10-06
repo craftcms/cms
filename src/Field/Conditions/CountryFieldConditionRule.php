@@ -13,6 +13,9 @@ use CraftCms\Cms\Field\Country;
 use CraftCms\Cms\Form\Contracts\Node;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;

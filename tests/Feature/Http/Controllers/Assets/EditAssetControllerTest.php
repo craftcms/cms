@@ -15,6 +15,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -74,6 +75,20 @@ it('renders the asset edit screen as an Inertia page', function () {
         );
 });
 
+it('ends the breadcrumbs with an unlinked chip for the asset', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', function (Collection $crumbs) {
+                $chip = $crumbs->last()['html'] ?? '';
+
+                return str_contains($chip, 'data-id="'.$this->asset->id.'"')
+                    && ! str_contains($chip, '<a ');
+            })
+            ->etc()
+        );
+});
+
 it('compiles the field layout into a form payload', function () {
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -129,4 +144,48 @@ it('re-keys rename errors onto the field that posts them', function () {
 
 it('rejects an id that doesn’t resolve to an asset', function () {
     get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
+});
+
+it('shows the image preview’s placeholder over a gradient between the image’s edge colors', function () {
+    AssetModel::whereKey($this->asset->id)->update(['colors' => json_encode([
+        'dominant' => '#3a6ea5',
+        'grid' => [
+            ['#ff0000', '#3a6ea5', '#0000ff'],
+            ['#990000', '#3a6ea5', '#000099'],
+        ],
+    ])]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains(
+                $html,
+                'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #d40000, #0000d4)',
+            ) && str_contains($html, 'placeholder="data:image/png;base64,'))
+        );
+});
+
+it('leaves the preview background alone without a usable dominant color', function (?string $colors) {
+    AssetModel::whereKey($this->asset->id)->update(['colors' => $colors]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewFragment.html', fn (string $html): bool => str_contains($html, 'thumb-container')
+                && ! str_contains($html, 'style='))
+        );
+})->with([
+    'not sampled yet' => [null],
+    'inconclusive' => ['{"dominant":null,"grid":[]}'],
+    'no grid' => ['{"dominant":"#3a6ea5","grid":[]}'],
+    'not a hex color' => ['{"dominant":null,"grid":[["red;x"]]}'],
+]);
+
+it('shows the uploader as a plain chip in the metadata', function () {
+    AssetModel::whereKey($this->asset->id)->update(['uploaderId' => User::findOne()->id]);
+
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('metadataHtml', fn (string $html): bool => new Crawler($html)
+                ->filter('craft-chip')
+                ->attr('appearance') === 'plain')
+        );
 });

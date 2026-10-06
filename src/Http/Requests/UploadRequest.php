@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @since 6.0.0
+ */
 class UploadRequest extends FormRequest
 {
     /** @return array<string, list<string>> */

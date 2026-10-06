@@ -10,6 +10,9 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Arr;
 
+/**
+ * @since 6.0.0
+ */
 class DateTime extends Control
 {
     private bool $showDate = true;

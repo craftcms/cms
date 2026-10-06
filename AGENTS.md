@@ -15,7 +15,7 @@ Boost's `search-docs` covers Laravel ecosystem documentation. Use Craft's source
 
 This is a large codebase with some large files. Search narrowly before reading full files.
 
-All UI — PHP view components, Twig templates, Vue components, and the Lit web components in `packages/craftcms-ui` — must conform to WCAG 2.2 Level AA. See `.ai/rules/accessibility.md` for what that means in practice here.
+All UI — PHP view components, Twig templates, Vue components, and the Lit web components in `packages/craftcms-ui` — must conform to WCAG 2.2 Level AA. See `.ai/rules/accessibility.md` for what that means in practice here. Before planning or making any UI change, read `.github/instructions/a11y.instructions.md` in full and apply every section relevant to the change.
 
 ## Inferring conventions
 
@@ -50,7 +50,9 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Regression tests
 
-- After a bug fix or behavior change, add a regression test that covers it and list it under Changed.
+- Apply the `test-audit` authoring gate after a bug fix or behavior change. Add a
+  regression test only when it closes a genuine behavior-coverage gap, and
+  demonstrate that it fails on the pre-fix code for the intended reason.
 
 ## Working through tasks
 
@@ -58,7 +60,8 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## Reporting
 
-- End every long run (one that edits files or spans many steps) with three headings: **Blocked on me** (decisions or approvals you need, or "Nothing"), **Changed** (what you changed), **Found** (issues noticed but not acted on).
+- End every long run (one that edits files or spans many steps) with three headings: **Blocked** (decisions or approvals you need, or omit if nothing), **Changed** (what you changed), **Found** (issues noticed but not acted on).
+- When a run changes UI (any path covered by `.ai/rules/accessibility.md`), add an **Accessibility** heading after **Changed**. Name each section of `.github/instructions/a11y.instructions.md` that applied, say how you verified it (a test name, a keyboard pass, a forced-colors check, a screen reader), and list what you didn't verify so a person can check it by hand.
 
 === foundation rules ===
 

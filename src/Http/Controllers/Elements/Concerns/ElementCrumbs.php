@@ -11,8 +11,13 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 trait ElementCrumbs
 {
-    /** @return list<ActionItem|array<string, mixed>> */
-    protected function crumbs(ElementInterface $element, bool $current = true): array
+    /**
+     * The element's crumbs, ending in a chip for it. The chip only links when
+     * another crumb follows it; otherwise it names the page you're on.
+     *
+     * @return list<ActionItem|array<string, mixed>>
+     */
+    protected function crumbs(ElementInterface $element, bool $hyperlink = true): array
     {
         $crumbs = $element->isProvisionalDraft
             ? $element->getCanonical(true)->getCrumbs()
@@ -20,10 +25,9 @@ trait ElementCrumbs
 
         return [
             ...$crumbs,
-            new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($element, [
-                'showDraftName' => ! $current,
-                'class' => 'chromeless',
-                'hyperlink' => true,
+            new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($element->getCanonical(true), [
+                'showDraftName' => false,
+                'hyperlink' => $hyperlink,
                 'appearance' => Appearance::Plain->value,
             ])),
         ];

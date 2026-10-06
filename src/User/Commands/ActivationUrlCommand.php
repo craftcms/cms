@@ -14,6 +14,9 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\info;
 
+/**
+ * @since 6.0.0
+ */
 #[Aliases(['users/activation-url', 'users:activationUrl', 'users/activationUrl'])]
 #[Description('Creates a new user.')]
 #[Signature('craft:users:activation-url {user}')]

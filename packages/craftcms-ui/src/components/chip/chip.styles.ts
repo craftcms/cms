@@ -32,8 +32,8 @@ export default css`
   }
 
   .cp-chip input[type='checkbox'] {
-    margin-inline-start: var(--c-spacing-md);
-    margin-inline-end: 0;
+    margin-inline-start: var(--_chip-spacing);
+    margin-inline-end: calc(var(--_chip-spacing) / 2);
   }
 
   /*
@@ -90,11 +90,21 @@ export default css`
     color: var(--c-chip-text, var(--c-text-default));
   }
 
-  /* Layout side of plain: no chrome, so no padding or shadow either. */
+  :host([data-color='white'][appearance~='outline']) .cp-chip,
+  :host([data-color='white'][appearance~='plain']) .cp-chip {
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  /* Layout side of plain: no chrome, so no padding, border, or shadow either. */
   .cp-chip--plain {
     padding-block: 0;
     padding-inline: 0;
+    border-width: 0;
     box-shadow: none;
+    /* The border's stand-in, drawn inside the edge so it takes no space.
+       Invisible, except in forced colors, where it gives the chip an edge. */
+    outline: 1px solid transparent;
+    outline-offset: -1px;
   }
 
   .cp-chip--small {
@@ -122,6 +132,11 @@ export default css`
   :host([selected]) .cp-chip {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-quiet);
+  }
+
+  /* A plain chip has no border to color, so its outline takes the color. */
+  :host([selected]) .cp-chip--plain {
+    outline-color: var(--c-color-accent-border-quiet);
   }
 
   .cp-chip__prefix,
@@ -167,10 +182,75 @@ export default css`
   }
 
   .cp-chip__thumbnail {
+    --c-thumbnail-size: var(--_thumb-size);
+    --c-thumbnail-image-radius: var(--c-radius-sm);
     display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     width: var(--_thumb-size);
     aspect-ratio: 1;
-    padding-inline-end: var(--_chip-spacing);
+    padding-inline-start: var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
+  }
+
+  /*
+   * Leading the chip, the thumbnail sits half the spacing in from every outer
+   * edge, matching the suffix's inset at the other end. Behind a checkbox or
+   * custom prefix content it keeps the full spacing, as a gap from it.
+   */
+  .cp-chip--leads-with-thumbnail .cp-chip__thumbnail {
+    padding-inline-start: calc(var(--_chip-spacing) / 2);
+  }
+
+  /*
+   * An image slotted straight in has no craft-thumbnail around it to size it,
+   * so it would render at its natural size and spill out of the prefix.
+   */
+  .cp-chip__thumbnail::slotted(img),
+  .cp-chip__thumbnail::slotted(svg) {
+    flex: none;
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+    object-fit: cover;
+    border-radius: var(--c-thumbnail-image-radius);
+  }
+
+  .cp-chip--align-start {
+    align-items: start;
+  }
+
+  .cp-chip--align-end {
+    align-items: end;
+  }
+
+  /*
+   * Off-center, the prefix is as tall as one line of the label plus the
+   * label's block padding, so an icon or status centers against the first
+   * (or last) line instead of sitting flush with the chip's edge.
+   */
+  .cp-chip--align-start .cp-chip__prefix,
+  .cp-chip--align-end .cp-chip__prefix {
+    min-height: calc(1lh + var(--_chip-spacing));
+  }
+
+  .cp-chip--plain.cp-chip--leads-with-thumbnail .cp-chip__thumbnail,
+  .cp-chip--plain.cp-chip--leads-with-icon .cp-chip__icon,
+  .cp-chip--plain.cp-chip--leads-with-status .cp-chip__status,
+  .cp-chip--plain.cp-chip--leads-with-body .cp-chip__body {
+    padding-inline-start: 0;
+  }
+
+  /* And the same at the trailing edge, where the suffix (when there is one) or
+     else the body ends the chip. Inner padding stays, as the gap between parts. */
+  .cp-chip--plain .cp-chip__body:last-child,
+  .cp-chip--plain .cp-chip__suffix {
+    padding-inline-end: 0;
+  }
+
+  .cp-chip--plain .cp-chip__thumbnail,
+  .cp-chip--plain .cp-chip__body,
+  .cp-chip--plain .cp-chip__suffix {
+    padding-block: 0;
   }
 `;

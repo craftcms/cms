@@ -47,11 +47,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class EntryTypes
 {
@@ -289,16 +293,23 @@ class EntryTypes
      * Saves an entry type.
      *
      * @param  EntryType  $entryType  The entry type to be saved
+     * @param  bool  $runValidation  Whether the entry type should be validated
      * @return bool Whether the entry type was saved successfully
      *
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveEntryType(EntryType $entryType): bool
+    public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
         $isNewEntryType = ! $entryType->id;
 
         event(new EntryTypeSaving($entryType, $isNewEntryType));
+
+        if ($runValidation && ! $entryType->validate()) {
+            Log::info('Entry type not saved due to validation error.', [__METHOD__]);
+
+            return false;
+        }
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 

@@ -33,6 +33,9 @@ use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 readonly class Navigation
 {
     /**
@@ -46,7 +49,7 @@ readonly class Navigation
     public const string CACHE_TAG = 'cp-nav';
 
     /** Bump when the shape of a cached tree changes, to orphan stale entries. */
-    private const int CACHE_VERSION = 1;
+    private const int CACHE_VERSION = 2;
 
     /**
      * Backstop for what the key can't see: a user's directly-granted
@@ -404,7 +407,7 @@ readonly class Navigation
             ))->first(fn (array $source): bool => ($source['key'] ?? null) === $key);
 
             if ($source !== null) {
-                return Url::url($this->sourceUri($elementType, $indexUri, $source, $page));
+                return Url::cpUrl($this->sourceUri($elementType, $indexUri, $source, $page));
             }
         }
 
@@ -538,7 +541,7 @@ readonly class Navigation
         $item->id ??= $this->itemId((string) $item->href);
 
         if ($item->href !== null && $item->href !== '') {
-            $item->href = Url::url($item->href);
+            $item->href = Url::cpUrl($item->href);
         }
 
         $this->resolveIcon($item);

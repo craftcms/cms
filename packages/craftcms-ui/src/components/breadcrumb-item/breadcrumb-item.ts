@@ -36,7 +36,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     :host {
       white-space: nowrap;
       display: inline-flex;
-      gap: var(--c-spacing-sm);
+      gap: var(--c-spacing-md);
       align-items: center;
       color: inherit;
     }
@@ -46,6 +46,11 @@ export default class CraftBreadcrumbItem extends LitElement {
       align-items: center;
       font-weight: 400;
       color: inherit;
+    }
+
+    /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
+    :host([aria-current='page']) .label {
+      font-weight: var(--font-weight-semibold);
     }
 
     a.label {
@@ -67,7 +72,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     slot[name='separator']::slotted(*) {
       color: var(--c-text-quiet);
       margin-block: 0;
-      margin-inline: var(--c-spacing-md);
+      margin-inline: var(--c-spacing-sm);
     }
   `;
 

@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Events\SearchResultsResolving;
@@ -31,6 +32,9 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class Search
 {
@@ -78,32 +82,55 @@ class Search
             return true;
         }
 
-        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
-        $updateFieldIds = [];
-        $ignoreFieldIds = [];
+        $customFields = array_values(array_filter(
+            $element->getFieldLayout()?->getCustomFields() ?? [],
+            fn (FieldInterface $field) => $field->searchable && $field->layoutElement !== null,
+        ));
 
-        if (! empty($customFields)) {
-            if ($fieldHandles !== null) {
-                $fieldHandles = array_flip($fieldHandles);
-            }
+        // Reindex every instance of a field when any of its instances is being reindexed, so rows
+        // indexed before keywords were split by layout element (which cover every instance) are
+        // always replaced as a whole.
+        /** @var array<int, true>|null $updateFieldIds */
+        $updateFieldIds = null;
+
+        if ($fieldHandles !== null) {
+            $fieldHandles = array_flip($fieldHandles);
+            $updateFieldIds = [];
+
             foreach ($customFields as $field) {
-                if ($field->searchable && ! isset($updateFieldIds[$field->id])) {
-                    if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
-                        $updateFieldIds[$field->id] = true;
-                        unset($ignoreFieldIds[$field->id]);
-                    } else {
-                        $ignoreFieldIds[$field->id] = true;
-                    }
+                if (isset($fieldHandles[$field->handle])) {
+                    $updateFieldIds[$field->id] = true;
                 }
             }
         }
+
+        /** @var array<string, FieldInterface> $updateFields */
+        $updateFields = [];
+        /** @var array<string, int> $ignoreFields */
+        $ignoreFields = [];
+
+        foreach ($customFields as $field) {
+            if ($updateFieldIds === null || isset($updateFieldIds[$field->id])) {
+                $updateFields[$field->layoutElement->uid] = $field;
+            } else {
+                $ignoreFields[$field->layoutElement->uid] = $field->id;
+            }
+        }
+
+        $ignoreFieldIds = array_values(array_unique($ignoreFields));
 
         DB::table(Table::SEARCHINDEX)
             ->where('elementId', $element->id)
             ->where('siteId', $element->siteId)
             ->unless(
+                empty($ignoreFields),
+                fn (Builder $query) => $query->whereNotIn('layoutElementUid', array_keys($ignoreFields)),
+            )
+            ->unless(
                 empty($ignoreFieldIds),
-                fn (Builder $query) => $query->whereNotIn('fieldId', array_map(fn (int $fieldId) => (string) $fieldId, array_keys($ignoreFieldIds))),
+                fn (Builder $query) => $query->whereNot(fn (Builder $query) => $query
+                    ->where('layoutElementUid', '0')
+                    ->whereIn('fieldId', array_map(fn (int $fieldId) => (string) $fieldId, $ignoreFieldIds))),
             )
             ->delete();
 
@@ -112,15 +139,10 @@ class Search
             $this->indexKeywords($element, $value, attribute: $attribute);
         }
 
-        $keywords = [];
-        foreach ($customFields as $field) {
-            if (isset($updateFieldIds[$field->id])) {
-                $fieldValue = $element->getFieldValue($field->handle);
-                $keywords[$field->id][] = $field->getSearchKeywords($fieldValue, $element);
-            }
-        }
-        foreach ($keywords as $fieldId => $instanceKeywords) {
-            $this->indexKeywords($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
+        foreach ($updateFields as $layoutElementUid => $field) {
+            $fieldValue = $element->getFieldValue($field->handle);
+            $keywords = $field->getSearchKeywords($fieldValue, $element);
+            $this->indexKeywords($element, $keywords, fieldId: $field->id, layoutElementUid: $layoutElementUid);
         }
 
         $mutex->release();
@@ -454,8 +476,13 @@ class Search
             ->delete();
     }
 
-    private function indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
-    {
+    private function indexKeywords(
+        ElementInterface $element,
+        string $keywords,
+        ?string $attribute = null,
+        ?int $fieldId = null,
+        ?string $layoutElementUid = null,
+    ): void {
         if ($attribute !== null) {
             $attribute = strtolower($attribute);
         }
@@ -463,7 +490,7 @@ class Search
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->getLanguage());
 
-        $event = new KeywordsIndexing($element, $attribute, $fieldId, $keywords);
+        $event = new KeywordsIndexing($element, $attribute, $fieldId, $keywords, $layoutElementUid);
         event($event);
 
         if (! $event->isValid) {
@@ -476,6 +503,7 @@ class Search
             'elementId' => $element->id,
             'attribute' => $attribute ?? 'field',
             'fieldId' => $fieldId ? (string) $fieldId : '0',
+            'layoutElementUid' => $layoutElementUid ?? '0',
             'siteId' => $site->id,
         ];
 
@@ -661,25 +689,12 @@ class Search
         $keywords = null;
 
         if ($term->attribute !== null) {
-            $fieldId = $this->getFieldIdFromAttribute($term->attribute, $customFields);
+            $fields = $this->getFieldsFromAttribute($term->attribute, $customFields);
 
-            if (! empty($fieldId)) {
-                $attr = 'fieldId';
-                $val = $fieldId;
+            if (! empty($fields)) {
+                $subSelect = $this->sqlFieldInstances($fields);
             } else {
-                $attr = 'attribute';
-                $val = strtolower($term->attribute);
-            }
-
-            if (is_array($val)) {
-                $where = array_map(fn (int $v) => $this->sqlWhere($attr, '=', $v), $val);
-                $subSelect = $this->combineSqlConditions($where, ' OR ');
-
-                if ($subSelect !== null) {
-                    $subSelect['sql'] = "({$subSelect['sql']})";
-                }
-            } else {
-                $subSelect = $this->sqlWhere($attr, '=', $val);
+                $subSelect = $this->sqlWhere('attribute', '=', strtolower($term->attribute));
             }
         } else {
             $subSelect = null;
@@ -767,21 +782,61 @@ class Search
     }
 
     /**
+     * Returns the field instances a search term attribute refers to.
+     *
      * @param  MemoizableArray<FieldInterface>|null  $customFields
-     * @return int|int[]|null
+     * @return list<FieldInterface>
      */
-    private function getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
+    private function getFieldsFromAttribute(string $attribute, ?MemoizableArray $customFields): array
     {
         if ($customFields !== null) {
-            return array_map(
-                fn (FieldInterface $field) => $field->id,
-                $customFields->where('handle', $attribute)->all(),
-            );
+            return array_values($customFields->where('handle', $attribute)->all());
         }
 
-        $field = app(Fields::class)->getFieldByHandle($attribute);
+        // A field can be added to a layout more than once, with a different handle each time,
+        // so look for every instance with this handle.
+        return app(Fields::class)->getAllLayouts()
+            ->flatMap(fn (FieldLayout $layout) => $layout->getCustomFields())
+            ->filter(fn (FieldInterface $field) => $field->handle === $attribute)
+            ->values()
+            ->all();
+    }
 
-        return $field->id ?? null;
+    /**
+     * Returns a condition matching keywords indexed for the given field instances.
+     *
+     * Rows indexed before keywords were split by layout element are matched by field ID instead.
+     *
+     * @param  list<FieldInterface>  $fields
+     * @return array{sql: string, bindings: list<int|float|string|bool|null>}
+     */
+    private function sqlFieldInstances(array $fields): array
+    {
+        $layoutElementUids = array_values(array_unique(array_filter(
+            array_map(fn (FieldInterface $field) => $field->layoutElement?->uid, $fields),
+        )));
+        $fieldIds = array_values(array_unique(array_map(fn (FieldInterface $field) => $field->id, $fields)));
+
+        $conditions = array_map(fn (string $uid) => $this->sqlWhere('layoutElementUid', '=', $uid), $layoutElementUids);
+
+        $legacyFieldIds = $this->combineSqlConditions(
+            array_map(fn (int $fieldId) => $this->sqlWhere('fieldId', '=', $fieldId), $fieldIds),
+            ' OR ',
+        );
+
+        if ($legacyFieldIds !== null) {
+            $conditions[] = [
+                'sql' => sprintf('(%s AND (%s))', $this->sqlWhere('layoutElementUid', '=', '0')['sql'], $legacyFieldIds['sql']),
+                'bindings' => ['0', ...$legacyFieldIds['bindings']],
+            ];
+        }
+
+        $condition = $this->combineSqlConditions($conditions, ' OR ');
+
+        return [
+            'sql' => "({$condition['sql']})",
+            'bindings' => $condition['bindings'],
+        ];
     }
 
     /** @return array{sql: string, bindings: list<int|float|string|bool|null>} */

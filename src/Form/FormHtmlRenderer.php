@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form;
 
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -12,6 +13,9 @@ use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 class FormHtmlRenderer
 {
     private ?FormPayload $payload = null;
@@ -20,6 +24,32 @@ class FormHtmlRenderer
         private readonly FormNodeTypes $nodeTypes,
         private readonly FormControlTypes $controlTypes,
     ) {}
+
+    /** @return list<string> */
+    public function scope(): array
+    {
+        return $this->payload->scope ?? [];
+    }
+
+    /** Builds the isolated Form used to mount a native control in an HTML field. */
+    public function controlForm(ControlPayload $control, mixed $value): FormPayload
+    {
+        foreach (array_reverse($control->path) as $segment) {
+            $value = [$segment => $value];
+        }
+
+        return new FormPayload(
+            scope: $this->scope(),
+            refreshable: $this->payload->refreshable ?? false,
+            nodes: [new NodePayload(Field::class, 'craft:field', [], control: $control)],
+            values: $value,
+            errors: array_values(array_filter(
+                $this->payload->errors ?? [],
+                fn (array $error): bool => array_slice($error['path'], 0, count($control->path)) === $control->path,
+            )),
+            globalErrors: [],
+        );
+    }
 
     public function render(FormPayload $payload): string
     {
@@ -115,7 +145,7 @@ class FormHtmlRenderer
             throw new RuntimeException('Nested Forms can only be rendered within a Form payload.');
         }
 
-        return $this->renderNodes($form->nodes, $this->payload);
+        return $this->renderNodes($form->nodes, $this->payload->forScope($form->scope));
     }
 
     private function renderNode(NodePayload $node, FormPayload $payload): string
@@ -213,6 +243,16 @@ class FormHtmlRenderer
         }
 
         return $values;
+    }
+
+    /** @param list<string> $path
+     * @return list<array{path: list<string>, messages: list<string>}>
+     */
+    public function controlErrors(array $path): array
+    {
+        return array_values(array_filter($this->payload->errors ?? [],
+            fn (array $error): bool => array_slice($error['path'], 0, count($path)) === $path,
+        ));
     }
 
     /**

@@ -22,6 +22,8 @@ use Illuminate\Container\Attributes\Singleton;
  * ```
  *
  * @extends TypeRegistry<Mutation>
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class GqlMutations extends TypeRegistry

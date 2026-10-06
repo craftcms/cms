@@ -63,6 +63,9 @@ class MarkdownField extends LitElement {
   @property({attribute: 'asset-sources', type: Array})
   assetSources: string[] = [];
 
+  @property()
+  label: string | null = null;
+
   @property({attribute: 'described-by'})
   describedBy: string | null = null;
 
@@ -484,6 +487,12 @@ class MarkdownField extends LitElement {
   private syncEditorState(): void {
     if (!this.editor) {
       return;
+    }
+
+    if (this.label) {
+      this.editor.textarea.setAttribute('aria-label', this.label);
+    } else {
+      this.editor.textarea.removeAttribute('aria-label');
     }
 
     this.editor.textarea.name = this.name ?? '';

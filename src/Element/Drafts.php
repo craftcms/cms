@@ -38,6 +38,9 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class Drafts
 {

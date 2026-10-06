@@ -14,6 +14,9 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @since 6.0.0
+ */
 class Entry extends ElementResolver
 {
     /** @param array<string, mixed> $arguments */

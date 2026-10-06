@@ -12,6 +12,9 @@ use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class SectionServiceProvider extends ServiceProvider
 {
     public function boot(): void

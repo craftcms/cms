@@ -16,6 +16,8 @@ use function CraftCms\Cms\template;
 
 /**
  * RadioButtons represents a Radio Buttons field.
+ *
+ * @since 6.0.0
  */
 class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {

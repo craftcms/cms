@@ -103,7 +103,7 @@ describe('useElementAutosave', () => {
 
   it('records a failure without throwing', async () => {
     postSpy.mockRejectedValue({
-      isAxiosError: true,
+      isHttpError: true,
       response: {data: {message: 'Nope.'}},
     });
 
@@ -266,10 +266,13 @@ describe('useElementAutosave', () => {
 
     await autosave.save();
 
-    expect(onSaved).toHaveBeenCalledWith({
-      element: 1_700_000_100,
-      canonical: 1_700_000_000,
-    });
+    expect(onSaved).toHaveBeenCalledWith(
+      {
+        element: 1_700_000_100,
+        canonical: 1_700_000_000,
+      },
+      expect.any(Object)
+    );
   });
 
   it('reports nulls when the response omits timestamps', async () => {
@@ -278,7 +281,10 @@ describe('useElementAutosave', () => {
 
     await autosave.save();
 
-    expect(onSaved).toHaveBeenCalledWith({element: null, canonical: null});
+    expect(onSaved).toHaveBeenCalledWith(
+      {element: null, canonical: null},
+      expect.any(Object)
+    );
   });
 
   it('does not report a save that failed', async () => {

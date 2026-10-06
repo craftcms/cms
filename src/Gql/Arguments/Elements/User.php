@@ -12,7 +12,11 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
-/** @phpstan-import-type ArgumentConfig from Argument */
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ *
+ * @since 6.0.0
+ */
 class User extends ElementArguments
 {
     #[\Override]

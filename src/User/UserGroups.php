@@ -24,6 +24,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -31,6 +32,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class UserGroups
 {
@@ -243,10 +247,11 @@ readonly class UserGroups
      * Saves a user group.
      *
      * @param  UserGroup  $group  The user group to be saved
+     * @param  bool  $runValidation  Whether the user group should be validated
      *
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
-    public function saveGroup(UserGroup $group): bool
+    public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
         Edition::require($group->uid === self::TEAM_GROUP_UUID
             ? Edition::Team
@@ -256,6 +261,12 @@ readonly class UserGroups
         $isNewGroup = ! $group->id;
 
         event(new UserGroupSaving($group, $isNewGroup));
+
+        if ($runValidation && ! $group->validate()) {
+            Log::info('User group not saved due to validation error.', [__METHOD__]);
+
+            return false;
+        }
 
         $group->uid ??= $isNewGroup
             ? Str::uuid()->toString()

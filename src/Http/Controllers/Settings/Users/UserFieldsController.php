@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 class UserFieldsController extends BaseUserSettingsController
 {
     use RespondsWithFlash;
@@ -36,7 +39,7 @@ class UserFieldsController extends BaseUserSettingsController
 
         return new CpScreenResponse()
             ->title(t('User Settings'))
-            ->crumbs($this->crumbs(t('User Profile Fields')))
+            ->crumbs($this->crumbs())
             ->inertiaPage('settings/users/Fields', [
                 'subnav' => $this->subnav(),
                 'fieldLayoutDesigner' => [

@@ -6,7 +6,11 @@ namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Entry\Elements\Entry;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 readonly class DraftWrite
 {
     /**

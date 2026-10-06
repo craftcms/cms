@@ -24,6 +24,8 @@ use RuntimeException;
  * @extends Collection<TKey,TElement>
  *
  * @method TElement one(callable|null $callback, mixed $default)
+ *
+ * @since 6.0.0
  */
 class ElementCollection extends Collection
 {

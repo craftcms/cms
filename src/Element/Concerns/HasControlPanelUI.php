@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
@@ -79,19 +81,13 @@ trait HasControlPanelUI
     private array $_uiLabelPath = [];
 
     /**
-     * The view model that builds this element type's edit screen payload, or
-     * `null` for a type whose editor hasn't been ported off the legacy screen.
+     * The view model used by the edit screen and autosave responses.
      *
-     * The edit controllers construct it directly — they know their own element
-     * type. This is for the shared `elements/*` actions, which don't: autosave
-     * rebuilds the screen payload so the client can adopt the state the save
-     * left the element in, and has only the element to go on.
-     *
-     * @return class-string<ElementEditViewModel>|null
+     * @return class-string<ElementEditViewModel>
      */
-    public static function editViewModelClass(): ?string
+    public static function editViewModelClass(): string
     {
-        return null;
+        return ElementEditViewModel::class;
     }
 
     /**
@@ -344,7 +340,8 @@ JS, [
      * an inline handler. The Inertia editor renders these; the legacy editor and
      * slideouts keep using the HTML pairing.
      *
-     * Element types extend this the way they extend the HTML items.
+     * Element types extend this via {@see extraActionMenuDescriptors()}; plugins
+     * listen for {@see ElementActionMenuDescriptorsResolving}.
      *
      * @return list<array<string, mixed>>
      */
@@ -498,6 +495,9 @@ JS, [
                 ],
             ];
         }
+
+        event($event = new ElementActionMenuDescriptorsResolving($this, $context, $items));
+        $items = array_values($event->items);
 
         if ($context->isEditor()) {
             return $items;
@@ -1181,9 +1181,8 @@ JS,
             return [
                 ...$owner->getCrumbs(),
                 new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($owner, [
-                    'appearance' => 'plain',
-                    'showDraftName' => false,
-                    'class' => 'chromeless',
+                    'appearance' => Appearance::Plain->value,
+                    'showDraftName' => true,
                     'hyperlink' => true,
                 ])),
             ];

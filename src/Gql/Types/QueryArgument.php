@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Utils\AST;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class QueryArgument extends ScalarType implements SingularTypeInterface
 {
     #[Override]

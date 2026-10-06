@@ -416,3 +416,58 @@ describe('[disabled]', () => {
     );
   });
 });
+
+describe('craft-button link click area', () => {
+  async function linkArea(markup: string): Promise<string> {
+    document.body.innerHTML = markup;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return getComputedStyle(
+      button.shadowRoot!.querySelector('.link')!,
+      '::before'
+    ).minWidth;
+  }
+
+  it('defaults to a 44px click area', async () => {
+    expect(
+      await linkArea('<craft-button href="/" size="small">Go</craft-button>')
+    ).toBe('44px');
+  });
+
+  it('takes its click area from an ancestor', async () => {
+    expect(
+      await linkArea(
+        '<div style="--_link-min-width: 28px"><craft-button href="/" size="small">Go</craft-button></div>'
+      )
+    ).toBe('28px');
+  });
+
+  it('keeps the smaller touch target for extra-small links', async () => {
+    expect(
+      await linkArea(
+        '<div style="--_link-min-width: 28px; --c-size-touch-target-sm: 24px"><craft-button href="/" size="xsmall">Go</craft-button></div>'
+      )
+    ).toBe('24px');
+  });
+});
+
+describe('craft-button link keyboard focus', () => {
+  it('is a single tab stop on its anchor', async () => {
+    const {userEvent} = await import('@vitest/browser/context');
+    document.body.innerHTML =
+      '<button>Before</button><craft-button href="/">Go</craft-button><button>After</button>';
+    const [before, after] = document.querySelectorAll('button');
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    before!.focus();
+    await userEvent.tab();
+    expect(button.shadowRoot!.activeElement).toBe(
+      button.shadowRoot!.querySelector('a.link')
+    );
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(after);
+  });
+});

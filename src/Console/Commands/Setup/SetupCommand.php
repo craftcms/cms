@@ -13,6 +13,9 @@ use Override;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\warning;
 
+/**
+ * @since 6.0.0
+ */
 class SetupCommand extends Command
 {
     use CraftCommand;

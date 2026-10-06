@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Condition;
 
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ConditionBuilderPayload
 {
     /**

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\View\Data;
 
 use Stringable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ResourceEntry implements Stringable
 {
     /** @param array<array-key, mixed> $arguments */

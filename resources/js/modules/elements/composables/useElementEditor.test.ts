@@ -7,7 +7,18 @@ import {
   shallowReactive,
 } from 'vue';
 import {router} from '@inertiajs/vue3';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import jquery from 'jquery';
+import {defineEntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
+import {HttpError, http} from '@craftcms/ui/utilities/api/http';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import {
   ScreenPagePropsKey,
   type ScreenPageProps,
@@ -154,7 +165,9 @@ describe('useElementEditor', () => {
    */
   function mount(
     screenProps: Partial<ElementEditPayload>,
-    slideout: ReturnType<typeof slideoutController> | null = null
+    slideout: ReturnType<typeof slideoutController> | null = null,
+    options: Parameters<typeof useElementEditor>[0] = {},
+    components = createCpComponentRegistry()
   ) {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
     // `props` as a computed, and the slideout store's panels are `reactive()`.
@@ -166,10 +179,10 @@ describe('useElementEditor', () => {
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
-        editor = useElementEditor();
+        editor = useElementEditor({root: () => container, ...options});
 
         return () =>
-          h('div', [
+          h('form', [
             editor.formPayload.value
               ? h(FormRenderer, {
                   ref: editor.renderer as any,
@@ -209,13 +222,388 @@ describe('useElementEditor', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(Shell);
-    const components = createCpComponentRegistry();
     registerFormComponents(components);
     components.install(app);
     app.mount(container);
 
     return {editor, page};
   }
+
+  it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
+    vi.stubGlobal('Craft', {
+      systemUid: 'test',
+      cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+    });
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+    const outer = ['fields', 'outer'];
+    const scope = [...outer, 'entries', 'owner-block'];
+    const inner = [...scope, 'fields', 'inner'];
+    const text = (
+      path: string[],
+      mode: 'editable' | 'readOnly' | 'disabled' = 'editable'
+    ) => ({
+      type: 'Field',
+      component: 'craft:field',
+      props: {label: path.at(-1)!},
+      control: {
+        type: 'Text',
+        component: 'craft:text',
+        props: {},
+        path,
+        mode,
+        deltaGroup: outer,
+        reactive: false,
+      },
+    });
+    const form: FormPayload = {
+      scope: [],
+      refreshable: true,
+      errors: [],
+      globalErrors: [],
+      values: {
+        fields: {
+          unrelated: 'Unchanged unrelated value',
+          outer: {
+            entries: {
+              'owner-block': {
+                type: 'text',
+                title: 'Unchanged block title',
+                fields: {
+                  protected: 'Read-only value',
+                  disabled: 'Disabled value',
+                  inner: {entries: {}, sortOrder: []},
+                },
+              },
+            },
+            sortOrder: ['owner-block'],
+          },
+        },
+      },
+      nodes: [
+        {
+          type: 'Field',
+          component: 'craft:field',
+          props: {label: 'Outer'},
+          control: {
+            type: 'NestedElementBlocks',
+            component: 'craft:nested-element-blocks',
+            mode: 'editable',
+            path: outer,
+            deltaGroup: outer,
+            nestsForms: true,
+            props: {
+              entryTypes: [{value: 'text', label: 'Text'}],
+              addLabel: 'Add',
+              minEntries: 0,
+            },
+            forms: [
+              {
+                scope,
+                refreshable: true,
+                nodes: [
+                  text([...scope, 'title']),
+                  text([...scope, 'fields', 'protected'], 'readOnly'),
+                  text([...scope, 'fields', 'disabled'], 'disabled'),
+                  {
+                    type: 'Field',
+                    component: 'craft:field',
+                    props: {label: 'Inner'},
+                    control: {
+                      type: 'NestedElementBlocks',
+                      component: 'craft:nested-element-blocks',
+                      mode: 'editable',
+                      path: inner,
+                      deltaGroup: outer,
+                      nestsForms: true,
+                      props: {
+                        entryTypes: [{value: 'text', label: 'Text'}],
+                        addLabel: 'Add',
+                        minEntries: 0,
+                        create: {
+                          fieldId: 9,
+                          ownerId: 73,
+                          ownerElementType: 'Entry',
+                          ownerHasDrafts: true,
+                          siteId: 1,
+                          entryTypeIds: {text: 4},
+                        },
+                      },
+                      forms: [],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          type: 'Field',
+          component: 'craft:field',
+          props: {label: 'Unrelated'},
+          control: {
+            type: 'Text',
+            component: 'craft:text',
+            props: {},
+            path: ['fields', 'unrelated'],
+            deltaGroup: ['fields', 'unrelated'],
+            mode: 'editable',
+            reactive: false,
+          },
+        },
+      ],
+    };
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, draftElementIds: {73: 173, 12: 112}},
+    });
+    const {editor, page} = mount(payload({canAutosave: true, form}));
+    await nextTick();
+    const prepared = await editor.nestedOwnerEditor.prepare(inner);
+
+    const submitted = postSpy.mock.calls[0]![1];
+    expect(submitted.fields).toEqual({
+      outer: {
+        entries: {
+          'owner-block': {
+            type: 'text',
+            title: 'Unchanged block title',
+            fields: {inner: {entries: {}, sortOrder: []}},
+          },
+        },
+        sortOrder: ['owner-block'],
+      },
+    });
+    expect(editor.renderer.value!.currentValues()).toEqual(form.values);
+    expect(editor.form.isDirty).toBe(false);
+    expect(prepared).toMatchObject({
+      ownerId: 173,
+      ownerIsDerivative: true,
+      ownerIsInDerivativeTree: true,
+    });
+
+    postSpy.mockResolvedValueOnce({data: {draftId: 7}});
+    expect(await editor.nestedOwnerEditor.prepare(inner)).toMatchObject({
+      ownerId: 173,
+    });
+    expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(112);
+
+    page.props = payload({canAutosave: true, form});
+    await nextTick();
+    expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(12);
+  });
+
+  it.each([false, true])(
+    'creates and discards plugin blocks through the native editor while retaining the wrapper, flat=%s',
+    async (flat) => {
+      vi.stubGlobal('$', jquery);
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+      vi.stubGlobal('Craft', {
+        systemUid: 'test',
+        cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+      });
+      const components = createCpComponentRegistry();
+      registerFormComponents(components);
+      defineEntryFieldLayoutFormHost(components);
+      vi.stubGlobal('Cp', {$components: components});
+      vi.resetModules();
+      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      onTestFinished(() => {
+        vi.unstubAllGlobals();
+      });
+      const path = ['fields', 'blocks'];
+      const native: FormPayload = {
+        scope: [],
+        refreshable: true,
+        errors: [],
+        globalErrors: [],
+        values: {fields: {blocks: {entries: {}, sortOrder: []}}},
+        nodes: [
+          {
+            type: 'Field',
+            component: 'craft:field',
+            props: {label: 'Blocks'},
+            control: {
+              type: 'NestedElementBlocks',
+              component: 'craft:nested-element-blocks',
+              path,
+              deltaGroup: path,
+              mode: 'editable',
+              nestsForms: true,
+              forms: [],
+              props: {
+                entryTypes: [{value: 'text', label: 'Text'}],
+                addLabel: 'Add',
+                minEntries: 0,
+                create: {
+                  fieldId: 9,
+                  ownerId: 73,
+                  ownerElementType: 'Entry',
+                  ownerHasDrafts: true,
+                  siteId: 1,
+                  entryTypeIds: {text: 4},
+                },
+              },
+            },
+          },
+        ],
+      };
+      const captured = (ownerId: number): FormPayload => {
+        const inner = structuredClone(native);
+        Object.assign(inner.nodes[0]!.control!.props.create!, {
+          ownerId,
+          ownerIsDerivative: ownerId !== 73,
+        });
+        const host = document.createElement('craft-entry-field-layout-form');
+        host.dataset.fieldPath = JSON.stringify(path);
+        host.dataset.payload = JSON.stringify(inner);
+        host.innerHTML =
+          '<input type="hidden" name="fields[blocks]" disabled data-form-field-name>';
+        return {
+          ...inner,
+          values: {
+            fields: {
+              blocks: flat
+                ? {'fields[blocks]': '', 'fields[blocks][extra]': 'Initial'}
+                : {entries: {}, sortOrder: [], extra: 'Initial'},
+            },
+          },
+          nodes: [
+            {
+              type: 'Field',
+              component: 'craft:field',
+              props: {label: 'Plugin'},
+              control: {
+                type: 'LegacyHtmlControl',
+                component: 'craft-legacy:html',
+                mode: 'editable',
+                path,
+                deltaGroup: path,
+                props: {
+                  expandValues: true,
+                  fragment: {
+                    html:
+                      '<button type="button" data-plugin>Plugin command</button><input name="fields[blocks][extra]" value="Initial">' +
+                      host.outerHTML,
+                    headHtml: '',
+                    bodyHtml: '',
+                  },
+                },
+              },
+            },
+          ],
+        };
+      };
+      const {editor} = mount(
+        payload({canAutosave: true, form: captured(73)}),
+        null,
+        {},
+        components
+      );
+      const legacy = container!.querySelector(
+        'craft-legacy-html-control'
+      ) as HTMLElement & {ready: Promise<void>};
+      await legacy.ready;
+      await nextTick();
+      const host = container!.querySelector('craft-entry-field-layout-form')!;
+      const input = container!.querySelector<HTMLInputElement>(
+        'input[name="fields[blocks][extra]"]'
+      )!;
+      input.value = 'Unsaved plugin value';
+      input.dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+      postSpy.mockImplementation(async (url: string) =>
+        url.includes('save-draft')
+          ? {
+              data: {
+                draftId: 7,
+                draftElementIds: {73: 173},
+                form: captured(173),
+                screen: {draftId: 7},
+              },
+            }
+          : {
+              data: {
+                uid: 'created',
+                type: 'text',
+                block: {actions: []},
+                values: {
+                  fields: {
+                    blocks: {entries: {created: {title: 'Server default'}}},
+                  },
+                },
+                form: {
+                  scope: [...path, 'entries', 'created'],
+                  refreshable: true,
+                  nodes: [
+                    {
+                      type: 'Field',
+                      component: 'craft:field',
+                      props: {label: 'Title'},
+                      control: {
+                        type: 'Text',
+                        component: 'craft:text',
+                        props: {},
+                        mode: 'editable',
+                        path: [...path, 'entries', 'created', 'title'],
+                        deltaGroup: path,
+                        reactive: false,
+                      },
+                    },
+                  ],
+                },
+              },
+            }
+      );
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {
+            action: 'add',
+            entryType: 'text',
+            trigger: host.querySelector('[data-matrix-field]'),
+          },
+        })
+      );
+      await vi.waitFor(() =>
+        expect(container!.querySelectorAll('[data-matrix-block]')).toHaveLength(
+          1
+        )
+      );
+      expect(
+        postSpy.mock.calls.find(([url]) => !url.includes('save-draft'))![1]
+      ).toMatchObject({ownerId: 173});
+      expect(container!.querySelector('[data-plugin]')?.textContent).toBe(
+        'Plugin command'
+      );
+      expect(
+        container!.querySelector<HTMLInputElement>(
+          'input[name="fields[blocks][extra]"]'
+        )!.value
+      ).toBe('Unsaved plugin value');
+      await nextTick();
+      await nextTick();
+      expect(editor.renderer.value!.currentValues().fields).toMatchObject({
+        blocks: {
+          extra: 'Unsaved plugin value',
+          entries: {created: {title: 'Server default'}},
+        },
+      });
+      const reload = vi.spyOn(router, 'reload').mockImplementation(() => {});
+      postSpy.mockResolvedValue({data: {}});
+      await editor.discardDraft();
+      await nextTick();
+      expect(container!.querySelectorAll('[data-matrix-block]')).toHaveLength(
+        0
+      );
+      expect(
+        container!.querySelector<HTMLInputElement>(
+          'input[name="fields[blocks][extra]"]'
+        )!.value
+      ).toBe('Initial');
+      expect(editor.form.isDirty).toBe(false);
+      reload.mockRestore();
+    }
+  );
 
   it('updates the editor payload from a details tab', () => {
     const {editor} = mount(payload({title: 'Original title'}));
@@ -341,8 +729,8 @@ describe('useElementEditor', () => {
           component: 'craft:field',
           props: {label: 'Cards', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementCards',
-            component: 'craft:nested-element-cards',
+            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+            component: 'craft:nested-elements',
             props: {
               viewMode: 'cards',
               manager: null,
@@ -377,6 +765,51 @@ describe('useElementEditor', () => {
     titleInput().dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
   }
+
+  it('does not write a pending draft after the editor is removed', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+
+    await typeTitle('Unsaved edit');
+    app!.unmount();
+    app = undefined;
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('aborts an in-flight draft request when the editor is removed', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      }
+    );
+    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+
+    await typeTitle('Unsaved edit');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(requestSignal?.aborted).toBe(false);
+
+    app!.unmount();
+    app = undefined;
+    await nextTick();
+
+    expect(requestSignal?.aborted).toBe(true);
+  });
 
   it('generates an empty entry slug from its title until the slug is edited', async () => {
     vi.stubGlobal('Craft', {
@@ -472,6 +905,48 @@ describe('useElementEditor', () => {
     });
     expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('canonicalId');
     expect(titleInput().value).toBe('Edited title');
+  });
+
+  it('doesn’t report its own nested changes as someone else’s edit', async () => {
+    let serverStamp = 1;
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('update-field-layout')
+        ? {
+            data: {
+              form: fieldLayout('Original title'),
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              activity: [],
+              updatedTimestamp: serverStamp,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const {editor} = mount(
+      payload({
+        activityUrl: '/actions/elements/recent-activity',
+        updatedTimestamps: {element: 1, canonical: 1},
+        form: fieldLayout('Original title'),
+      })
+    );
+    await editor.activity.poll();
+
+    // Saving a nested element into the element bumps its `dateUpdated`.
+    serverStamp = 2;
+    await editor.nestedOwnerEditor.refresh!();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+
+    // Something that changes it afterwards is still someone else's edit.
+    serverStamp = 3;
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(true);
   });
 
   it('omits presentation-only null controls when refreshing an untouched form', async () => {
@@ -1359,5 +1834,171 @@ describe('useElementEditor', () => {
     editor.onSidebarMutation({slug: 'changed'});
 
     expect(schedule).toHaveBeenCalledTimes(2);
+  });
+
+  describe('nested elements in a slideout', () => {
+    const nestedContext = {fieldId: 3, ownerId: 40};
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
+
+    function stubSaveRequest(response: () => Promise<unknown>) {
+      return vi.spyOn(http, 'request').mockImplementation(response as never);
+    }
+
+    /** A panel whose opener registered `onSaved`, as every opener here does. */
+    function handledSlideout() {
+      const slideout = slideoutController();
+      slideout.saved.mockReturnValue(true);
+
+      return slideout;
+    }
+
+    it('sends the owner it was opened through with every draft save', async () => {
+      const {editor} = mount(
+        payload({canAutosave: true, nestedContext, fresh: true}),
+        slideoutController()
+      );
+
+      await editor.autosave.save();
+
+      expect(postSpy.mock.calls[0]![1]).toMatchObject({
+        fieldId: 3,
+        ownerId: 40,
+        fresh: 1,
+      });
+    });
+
+    it('reports autosaved drafts to the opener', async () => {
+      const slideout = slideoutController();
+      const {editor} = mount(payload({canAutosave: true}), slideout);
+
+      await editor.autosave.save();
+
+      expect(slideout.saved).toHaveBeenCalledWith({
+        draft: true,
+        data: {draftId: 7},
+      });
+    });
+
+    it('saves into the owner draft the opener prepares, then closes', async () => {
+      const slideout = handledSlideout();
+      const prepareNestedOwner = vi.fn().mockResolvedValue(73);
+      Object.assign(slideout.instance, {prepareNestedOwner});
+      const request = stubSaveRequest(() =>
+        Promise.resolve({data: {element: {id: 12}}})
+      );
+      const {editor} = mount(
+        payload({
+          canAutosave: true,
+          nestedContext,
+          saveForDerivativeUrl:
+            '/actions/elements/save-nested-element-for-derivative',
+        }),
+        slideout
+      );
+
+      editor.save({redirect: false});
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(prepareNestedOwner).toHaveBeenCalledOnce();
+      // The nested element has no draft yet, so one is made to move.
+      expect(postSpy).toHaveBeenCalledOnce();
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/elements/save-nested-element-for-derivative',
+        data: expect.objectContaining({
+          newOwnerId: 73,
+          draftId: 7,
+          fieldId: 3,
+          ownerId: 40,
+        }),
+      });
+      await vi.waitFor(() =>
+        expect(slideout.close).toHaveBeenCalledWith({force: true})
+      );
+    });
+
+    it('saves normally when the opener has no owner draft to save into', async () => {
+      const slideout = handledSlideout();
+      Object.assign(slideout.instance, {
+        prepareNestedOwner: vi.fn().mockResolvedValue(undefined),
+      });
+      const request = stubSaveRequest(() => Promise.resolve({data: {}}));
+      const {editor} = mount(payload({nestedContext}), slideout);
+
+      editor.save();
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/entries/save-entry',
+        data: expect.not.objectContaining({newOwnerId: expect.anything()}),
+      });
+    });
+
+    it('announces invalid nested elements when a save fails', async () => {
+      const displayError = vi.fn();
+      vi.stubGlobal('Craft', {cp: {displayError}});
+      const root = document.createElement('div');
+      document.body.append(root);
+      const listener = vi.fn();
+      root.addEventListener('craft:nested-validation', listener);
+      // A plain stand-in rather than a spy: a spy tracks the rejected promise
+      // it returns, and reports that as unhandled.
+      const request = http.request;
+      http.request = (() =>
+        Promise.reject(
+          new HttpError('Bad Request', 'ERR_BAD_REQUEST', {headers: {}}, {
+            status: 400,
+            data: {
+              message: 'Couldn’t save entry.',
+              errors: {title: ['Title cannot be blank.']},
+              invalidNestedElementIds: [5],
+            },
+          } as never)
+        )) as never;
+      onTestFinished(() => {
+        http.request = request;
+      });
+      const {editor} = mount(payload(), handledSlideout(), {
+        root: () => root,
+      });
+
+      editor.save();
+
+      await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+      expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+        ids: [5],
+      });
+      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      root.remove();
+    });
+
+    it('announces a finished save to the rest of the CP', async () => {
+      const displaySuccess = vi.fn();
+      const postMessage = vi.fn();
+      const refresh = vi.fn();
+      vi.stubGlobal('Craft', {
+        cp: {displaySuccess},
+        broadcaster: {
+          postMessage,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        },
+        Preview: {refresh},
+      });
+      stubSaveRequest(() =>
+        Promise.resolve({data: {message: 'Entry saved.', element: {id: 12}}})
+      );
+      const {editor} = mount(payload(), handledSlideout());
+
+      editor.save();
+
+      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
+      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      expect(postMessage).toHaveBeenCalledWith({event: 'saveElement', id: 12});
+      expect(refresh).toHaveBeenCalled();
+    });
   });
 });

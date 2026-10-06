@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Element;
  * @event ElementLifecycleRestored The event that is triggered after the element is restored.
  *
  * {@see Element::afterRestore()}
+ *
+ * @since 6.0.0
  */
 class ElementLifecycleRestored
 {

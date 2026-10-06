@@ -9,6 +9,9 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @since 6.0.0
+ */
 class RecoveryCodes extends BaseModel
 {
     #[\Override]

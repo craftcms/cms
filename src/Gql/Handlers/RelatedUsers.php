@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Gql\Handlers;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class RelatedUsers extends RelationArgumentHandler
 {
     #[Override]

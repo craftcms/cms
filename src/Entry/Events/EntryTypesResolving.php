@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  * @event EntryTypesResolving The event that is triggered when defining the available entry types for the entry
  *
  * @see Entry::getAvailableEntryTypes()
+ * @since 6.0.0
  */
 class EntryTypesResolving
 {

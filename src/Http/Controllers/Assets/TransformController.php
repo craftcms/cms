@@ -19,6 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 readonly class TransformController
 {
     use EnforcesPermissions;

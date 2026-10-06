@@ -11,6 +11,9 @@ use Illuminate\Container\Attributes\Singleton;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 readonly class ContentHtml
 {

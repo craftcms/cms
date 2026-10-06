@@ -17,6 +17,7 @@
     onMounted,
     provide,
     ref,
+    useId,
     useTemplateRef,
   } from 'vue';
   import {useElementSize, useEventListener} from '@vueuse/core';
@@ -41,10 +42,12 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
   import {firstMessages} from '@/common/slideouts/errors';
+  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import FormActions from '@/common/components/FormActions.vue';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -98,7 +101,10 @@
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
-  const editUrl = computed(() => chrome.value.screen?.editUrl ?? null);
+  const editUrl = computed(
+    () => props.value.editUrl || chrome.value.screen?.editUrl || null
+  );
+  const editLinkId = `slideout-edit-link-${useId()}`;
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
@@ -310,14 +316,14 @@
       return;
     }
 
+    showMessagesFromResponse(result.data);
+
     const handled = slideout?.saved({data: result.data});
 
     slideout?.close({force: true});
 
     if (!handled) {
-      // The controller flashes its success message to the session even on the
-      // JSON branch, so refreshing the page behind surfaces it and picks up
-      // whatever changed.
+      // Refresh the page behind to pick up whatever changed.
       router.reload();
     }
   }
@@ -377,7 +383,7 @@
             </LayoutSlotOutlet>
           </div>
 
-          <div class="flex gap-sm items-center">
+          <div class="slideout-screen__actions flex gap-sm items-center">
             <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
@@ -391,25 +397,33 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
-            <a
-              v-if="editUrl"
-              :href="editUrl"
-              target="_blank"
-              rel="noopener"
-              class="slideout-screen__edit-link"
-            >
-              <craft-icon
-                name="external-link"
-                :label="t('Open in a new tab')"
-              />
-            </a>
+            <template v-if="editUrl">
+              <craft-button
+                :id="editLinkId"
+                icon
+                size="small"
+                :variant="ButtonVariant.Plain"
+                :href="editUrl"
+                target="_blank"
+                rel="noopener"
+                class="slideout-screen__edit-link"
+              >
+                <craft-icon
+                  name="arrow-up-right-from-square"
+                  :label="t('Open in a new tab')"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip :for="editLinkId">
+                {{ t('Open in a new tab') }}
+              </craft-tooltip>
+            </template>
 
             <craft-button
               icon
               type="button"
               size="small"
               :variant="ButtonVariant.Plain"
-              flush
+              flush="inline-end"
               @click="close"
               data-slideout-close
             >
@@ -478,8 +492,16 @@
 
         <LayoutSlotOutlet name="submit-button">
           <slot name="submit-button">
+            <FormActions
+              v-if="form && props.formActions?.length"
+              :form="form"
+              :action-items="props.formActions"
+              :submit-label="submitLabel"
+              :read-only="readOnly"
+              :save-disabled="props.saveDisabled"
+            />
             <craft-button
-              v-if="canSave && !readOnly && !props.saveDisabled"
+              v-else-if="canSave && !readOnly && !props.saveDisabled"
               type="submit"
               :variant="ButtonVariant.Primary"
               :loading="
@@ -530,6 +552,10 @@
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+  }
+
+  .slideout-screen__actions {
+    --_link-min-width: calc(24px + var(--c-spacing-sm));
   }
 
   .slideout-screen__toolbar {
@@ -614,29 +640,23 @@
   }
 
   /* Wide enough to seat the column in the flow beside the content. */
-  @container slideout (width >= 960px) {
+  @container slideout (width > 700px) {
+    /* Sized by its panels plus the rail, so closing it hands the room back. */
     .slideout-screen__details {
       --cp-details-overlay: 0;
 
-      flex: 0 1 calc(350rem / 16);
-      min-inline-size: calc(300rem / 16);
-
-      /* Closed, it hands the track back — the floor included, or the rail
-         would keep reserving it. */
-      &:has(craft-tabs[collapsed]) {
-        flex: 0 0 auto;
-        min-inline-size: 0;
-      }
+      flex: 0 0 auto;
     }
 
     /* Room of its own, so the panels stay in the flow. */
     .slideout-screen__details :deep(craft-tabs::part(panels)) {
       position: static;
-      inline-size: auto;
+      inline-size: calc(350rem / 16);
       min-inline-size: 0;
       max-inline-size: none;
       overflow: visible;
       border-inline-start: 0;
+      box-shadow: none;
     }
   }
 

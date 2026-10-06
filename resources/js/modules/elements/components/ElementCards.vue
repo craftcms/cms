@@ -12,8 +12,10 @@
 
   interface CardElement {
     id: string | number;
+    label?: string;
     cardAttributes?: ServerAttributes;
     cardHeaderHtml?: string;
+    cardActionsHtml?: string;
     cardThumbHtml?: string;
     thumbAlignment?: string;
     cardContentHtml?: string;
@@ -28,8 +30,10 @@
       selectAll?: boolean;
       singleColumn?: boolean;
       sortable?: boolean;
+      interactionsDisabled?: boolean;
       readOnly?: boolean;
       loading?: boolean;
+      renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
     }>(),
     {
@@ -39,6 +43,7 @@
       singleColumn: false,
       sortable: false,
       loading: false,
+      renderServerActions: true,
     }
   );
 
@@ -82,6 +87,14 @@
     };
   }
 
+  function cardSelectLabel(id: string | number): string | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    return element?.label
+      ? t('Select {label}', {label: element.label})
+      : undefined;
+  }
+
   function onCardClick(id: string | number, event: MouseEvent) {
     const element = props.data.find((candidate) => candidate.id === id);
 
@@ -89,7 +102,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value) {
+    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
       props.selection.handleClick(id, event);
     }
   }
@@ -133,7 +146,7 @@
         label-sr-only
         .checked="selection.allSelected.value"
         .indeterminate="selection.someSelected.value"
-        .disabled="readOnly"
+        .disabled="readOnly || interactionsDisabled"
         @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
@@ -146,12 +159,14 @@
       :selection="selection"
       :selectable="selectable"
       :sortable="sortable"
+      :interactions-disabled="interactionsDisabled"
       :read-only="readOnly"
       :single-column="singleColumn"
       :list-class="{'card-grid': true, 'card-grid--single': singleColumn}"
       :item-class="itemClass"
       :item-attrs="itemAttrs"
       :card-attrs="cardAttrs"
+      :select-label="cardSelectLabel"
       :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
@@ -169,6 +184,10 @@
 
       <template #actions="{index}">
         <slot name="actions" :element="data[index]" :index="index"></slot>
+        <DynamicHtmlRenderer
+          v-if="renderServerActions"
+          :html="data[index]?.cardActionsHtml ?? ''"
+        />
       </template>
 
       <template #default="{index}">
@@ -208,6 +227,7 @@
     gap: var(--c-spacing-md);
     align-items: stretch;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    margin-block: var(--c-spacing-md);
   }
 
   // One card per row, however wide the container gets.

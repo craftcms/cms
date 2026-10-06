@@ -6,5 +6,7 @@ namespace CraftCms\Cms\Plugin\Events;
 
 /**
  * @event PluginsLoading The event that is triggered before any plugins have been loaded
+ *
+ * @since 6.0.0
  */
 class PluginsLoading {}

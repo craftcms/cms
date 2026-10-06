@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Context;
 use Illuminate\View\Compilers\BladeCompiler;
 
+/**
+ * @since 6.0.0
+ */
 class NamespaceDirective
 {
     public static function register(BladeCompiler $blade): void

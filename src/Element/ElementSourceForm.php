@@ -37,6 +37,8 @@ use function CraftCms\Cms\t;
  * `label` posts as `sources[<key>][label]` — the shape
  * {@see ElementSourcesController::store()}
  * reads.
+ *
+ * @since 6.0.0
  */
 readonly class ElementSourceForm
 {

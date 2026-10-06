@@ -1,7 +1,7 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import type {DefineComponent} from 'vue';
-import axios from 'axios';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
+import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
@@ -12,6 +12,7 @@ import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {elementDetailsTabRegistry} from './element-details-tabs.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
+import {setUpInertiaMessages} from '@/modules/messages/inertia';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -57,10 +58,6 @@ const Cp = {
 
   get $queue() {
     return queue;
-  },
-
-  get $axios() {
-    return axios;
   },
 
   get $inertia() {
@@ -109,12 +106,14 @@ const Cp = {
   async start() {
     this.init();
 
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfTokenValue');
+    http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
+    http.defaults.headers['X-CSRF-TOKEN'] = this.$config.get('csrfTokenValue');
 
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
+
+    // Before the app mounts, so the first page's messages have somewhere to go.
+    setUpInertiaMessages();
 
     await createInertiaApp({
       resolve: async (name) => {
@@ -132,7 +131,6 @@ const Cp = {
 
     handleNonInertiaRequests();
     handleAccessibleRouting();
-    ensureLegacyNotificationContainer();
     registerSlideoutGlobals();
 
     bootedCallbacks.forEach((callback) => callback(this));
@@ -146,7 +144,7 @@ const Cp = {
  */
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
-  let previousPathname: string | null = null;
+  let previousPathname = window.location.pathname;
   router.on('navigate', (event) => {
     const {props, url} = event.detail.page;
     const pathname = new URL(url, window.location.origin).pathname;
@@ -161,40 +159,6 @@ function handleAccessibleRouting() {
 
     announce(t('Navigated to {title} page', {title: props.title}));
   });
-}
-
-/**
- * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
- * notifications, …) appends into `#notifications`, which only the Twig layout
- * renders. Create it for Inertia pages — outside the Vue root, so page visits
- * can't clobber legacy-appended notifications — and re-point the CP
- * singleton's cached (empty) reference if it booted before the container
- * existed.
- */
-function ensureLegacyNotificationContainer() {
-  if (!document.getElementById('notifications')) {
-    const container = document.createElement('div');
-    container.id = 'notifications';
-    container.setAttribute('role', 'status');
-    document.body.appendChild(container);
-  }
-
-  // Which corner notifications stack in — the user's preference, which the
-  // Twig layout writes onto `<body>` as the same class.
-  const position = (Craft as {notificationPosition?: string})
-    .notificationPosition;
-
-  if (
-    ![...document.body.classList].some((name) =>
-      name.startsWith('notifications--')
-    )
-  ) {
-    document.body.classList.add(`notifications--${position ?? 'end-start'}`);
-  }
-
-  if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
-    Craft.cp.$notificationContainer = $('#notifications');
-  }
 }
 
 function handleNonInertiaRequests() {

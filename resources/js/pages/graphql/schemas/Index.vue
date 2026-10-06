@@ -3,13 +3,12 @@
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {create, destroy, edit} from '@actions/Gql/SchemasController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface SchemaData {
     id: number;
@@ -25,7 +24,7 @@
   }>();
 
   const columnHelper = createCraftColumnHelper<SchemaData>();
-  const table = useVueTable({
+  const table = useCraftTable({
     get columns() {
       return [
         columnHelper.link('name', {
@@ -79,8 +78,6 @@
         };
       },
     },
-    enableSorting: false,
-    getCoreRowModel: getCoreRowModel<SchemaData>(),
   });
 </script>
 
@@ -90,7 +87,5 @@
       t('New schema')
     }}</CpButtonLink>
   </LayoutSlot>
-  <CpContainer>
-    <AdminTable :table="table" />
-  </CpContainer>
+  <AdminTable class="admin-table--padded" :table="table" />
 </template>

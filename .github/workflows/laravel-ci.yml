@@ -115,85 +115,9 @@ jobs:
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
 
-  unit-tests:
+  tests:
     needs: [pint, phpstan, rector]
-    name: 'Tests / Unit on ${{ matrix.os }}'
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # ComponentManifestDriftTest needs the Custom Elements Manifest, which is
-      # gitignored (packages/craftcms-ui/dist). The cache key hashes everything
-      # the analyzer reads, so a hit is never stale; the cache itself is shared
-      # repo-wide, so whichever workflow generates it first serves the rest. On
-      # a miss it's built the way js-ci.yml builds it, which needs
-      # @craftcms/ui's own dependencies: the analyzer config imports plugins
-      # from them, and Node resolves those from the package, not from npx.
-      - name: Restore Custom Elements Manifest
-        id: cem
-        uses: actions/cache@v4
-        with:
-          path: packages/craftcms-ui/dist/custom-elements.json
-          key: cem-${{ hashFiles('packages/craftcms-ui/src/components/**', 'packages/craftcms-ui/custom-elements-manifest.config.mjs', 'packages/craftcms-ui/package.json', 'packages/craftcms-ui/tsconfig.json') }}
-
-      - name: Setup Vite+
-        if: steps.cem.outputs.cache-hit != 'true'
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: '24'
-          cache: true
-          run-install: false
-
-      # pnpm's supply-chain pass re-checks every lockfile entry, the Font
-      # Awesome kit included, so even this filtered install needs the license
-      # token. pnpm won't expand env vars in credentials coming from the
-      # project .npmrc, so the token goes in the user-level one.
-      - name: Generate Custom Elements Manifest
-        if: steps.cem.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
-          vp install --frozen-lockfile --filter @craftcms/ui
-          vp run @craftcms/ui#build:manifest
-        env:
-          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
-
-      - name: Run tests
-        uses: ./.github/actions/run-tests
-        with:
-          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Unit
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          packagist-username: ${{ secrets.packagist_username }}
-          packagist-token: ${{ secrets.packagist_token }}
-
-  arch-tests:
-    needs: [pint, phpstan, rector]
-    name: 'Tests / Arch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run tests
-        uses: ./.github/actions/run-tests
-        with:
-          test-command: ./vendor/bin/pest --parallel --ci --testsuite=Arch
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          packagist-username: ${{ secrets.packagist_username }}
-          packagist-token: ${{ secrets.packagist_token }}
-
-  feature-tests:
-    needs: [pint, phpstan, rector]
-    name: 'Tests / Feature on ${{ matrix.os }} with ${{ matrix.db }}'
+    name: 'Tests / ${{ matrix.os }} / ${{ matrix.db }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -231,6 +155,44 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ComponentManifestDriftTest needs the Custom Elements Manifest, which is
+      # gitignored (packages/craftcms-ui/dist). The cache key hashes everything
+      # the analyzer reads, so a hit is never stale; the cache itself is shared
+      # repo-wide, so whichever workflow generates it first serves the rest. On
+      # a miss it's built the way js-ci.yml builds it, which needs
+      # @craftcms/ui's own dependencies: the analyzer config imports plugins
+      # from them, and Node resolves those from the package, not from npx.
+      - name: Restore Custom Elements Manifest
+        id: cem
+        uses: actions/cache@v4
+        with:
+          path: packages/craftcms-ui/dist/custom-elements.json
+          key: cem-${{ hashFiles('packages/craftcms-ui/src/components/**', 'packages/craftcms-ui/custom-elements-manifest.config.mjs', 'packages/craftcms-ui/package.json', 'packages/craftcms-ui/tsconfig.json') }}
+
+      - name: Setup Vite+
+        if: steps.cem.outputs.cache-hit != 'true'
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+          run-install: false
+
+      # pnpm's supply-chain pass re-checks every lockfile entry, the Font
+      # Awesome kit included, so even this filtered install needs the license
+      # token. pnpm won't expand env vars in credentials coming from the
+      # project .npmrc, so the token goes in the user-level one.
+      - name: Generate Custom Elements Manifest
+        if: steps.cem.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile --filter @craftcms/ui
+          vp run @craftcms/ui#build:manifest
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Install libvips
         if: matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite'
@@ -248,7 +210,10 @@ jobs:
         env:
           CRAFT_REQUIRE_VIPS: ${{ matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite' && '1' || '' }}
         with:
-          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Feature
+          test-command: ./vendor/bin/pest --parallel --ci --compact
+          tia: 'true'
+          tia-environment: ${{ matrix.db }}
+          coverage: pcov
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}

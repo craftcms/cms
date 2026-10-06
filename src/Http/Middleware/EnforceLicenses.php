@@ -14,6 +14,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Uri;
 
+/**
+ * @since 6.0.0
+ */
 readonly class EnforceLicenses
 {
     public function __construct(

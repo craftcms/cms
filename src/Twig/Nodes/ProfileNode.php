@@ -10,6 +10,9 @@ use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
+/**
+ * @since 6.0.0
+ */
 #[YieldReady]
 class ProfileNode extends Node
 {

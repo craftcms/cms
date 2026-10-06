@@ -24,6 +24,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class SiteGroups
 {

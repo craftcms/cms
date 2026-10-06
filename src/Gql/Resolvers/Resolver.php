@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Gql\Resolvers;
 
 use GraphQL\Type\Definition\ResolveInfo;
 
+/**
+ * @since 6.0.0
+ */
 abstract class Resolver
 {
     /**

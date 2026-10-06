@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * The legacy `EditElementController` still serves slideouts and the element
  * types that haven't been ported.
+ *
+ * @since 6.0.0
  */
 class EditAssetController
 {

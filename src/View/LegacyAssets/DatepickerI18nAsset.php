@@ -14,6 +14,8 @@ use function CraftCms\Cms\craftAsset;
  * @deprecated
  *
  * @internal
+ *
+ * @since 6.0.0
  */
 class DatepickerI18nAsset implements LegacyAssetInterface
 {

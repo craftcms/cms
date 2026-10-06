@@ -9,7 +9,13 @@ use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -35,11 +41,13 @@ it('returns 400 for unsupported exporters', function () {
     ])->assertStatus(400);
 });
 
-it('exports only the selected ids when criteria include an id filter', function () {
+it('exports only the selected ids when criteria include an id filter', function (string $context) {
     $included = EntryModel::factory()->createElement(['title' => 'Included']);
     EntryModel::factory()->createElement(['title' => 'Excluded']);
 
     $response = ($this->export)([
+        'context' => $context,
+        'source' => '__IMP__',
         'type' => Raw::class,
         'format' => 'json',
         'criteria' => [
@@ -54,11 +62,14 @@ it('exports only the selected ids when criteria include an id filter', function 
 
     expect($payload)->toHaveCount(1)
         ->and($payload[0]['id'])->toBe($included->id);
-});
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('exports the full query with an explicit limit when no ids are selected', function () {
-    EntryModel::factory()->createElement(['title' => 'First']);
-    EntryModel::factory()->createElement(['title' => 'Second']);
+    EntryModel::factory()->createElement(['title' => 'Zulu']);
+    EntryModel::factory()->createElement(['title' => 'Alpha']);
 
     $response = ($this->export)([
         'type' => Raw::class,
@@ -67,11 +78,71 @@ it('exports the full query with an explicit limit when no ids are selected', fun
             'limit' => 1,
             'status' => null,
         ],
+        'baseCriteria' => ['orderBy' => 'id asc'],
+        'sort' => [['field' => 'id', 'direction' => 'desc']],
     ]);
 
     $response->assertOk();
 
-    expect(json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR))->toHaveCount(1);
+    $payload = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($payload)->toHaveCount(1)
+        ->and($payload[0]['title'])->toBe('Alpha');
+});
+
+it('keeps embedded exports scoped to the requested owner field', function () {
+    $nestedType = EntryType::factory()->withFieldLayout()->create(['hasTitleField' => true]);
+    $settings = ['entryTypes' => [$nestedType->id], 'viewMode' => Matrix::VIEW_MODE_INDEX];
+    $fixture = EntryModel::factory()
+        ->withField('matrixField', Matrix::class, $settings)
+        ->withField('otherMatrix', Matrix::class, $settings)
+        ->createElementWithFields();
+    $owner = $fixture->element;
+
+    foreach ([
+        ['matrixField', ['First included', 'Second included']],
+        ['otherMatrix', ['Wrong field']],
+    ] as [$handle, $titles]) {
+        $entries = [];
+        $sortOrder = [];
+
+        foreach ($titles as $title) {
+            $uid = 'uid:'.Str::uuid();
+            $entries[$uid] = ['type' => $nestedType->handle, 'title' => $title];
+            $sortOrder[] = $uid;
+        }
+
+        $owner->setFieldValueFromRequest($handle, [
+            'entries' => $entries,
+            'sortOrder' => $sortOrder,
+        ]);
+        expect(Elements::saveElement($owner))->toBeTrue();
+    }
+
+    $owner = Entry::find()->id($owner->id)->one();
+    $field = Fields::getFieldById($fixture->field('matrixField')->id);
+    $manager = $field->formControl(new FieldContext(path: 'matrixField', element: $owner))->props()['manager'];
+    $response = ($this->export)([
+        ...$manager,
+        'context' => 'embeddedIndex',
+        'source' => '*',
+        'baseCriteria' => ['ownerId' => 999999, 'fieldId' => 999999],
+        'criteria' => [
+            'ownerId' => 999999,
+            'fieldId' => 999999,
+            'field' => 'otherMatrix',
+            'site' => '*',
+            'trashed' => true,
+        ],
+        'type' => Raw::class,
+        'format' => 'json',
+    ])->assertOk();
+
+    $rows = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+    $titles = array_column($rows, 'title');
+    sort($titles);
+
+    expect($titles)->toBe(['First included', 'Second included']);
 });
 
 it('returns download responses for each supported formattable format', function (string $format, string $contentType, string $exporterClass) {

@@ -11,6 +11,9 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Twig;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class Custom extends Widget
 {
     public string $definitionId = '';

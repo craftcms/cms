@@ -41,6 +41,8 @@ Add the boolean `inherit` property to a button placed inside a [Colorable](?path
 
 <Canvas of={ButtonStories.Icons} />
 
+The `icon` attribute always renders a decorative icon, hidden from screen readers. When the icon means something the label doesn't, such as an external-link icon on a link that opens a new window, slot a `<craft-icon slot="suffix" label="…">` instead, or add hidden `sr-only` text to the label.
+
 ## Flush
 
 A `plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.

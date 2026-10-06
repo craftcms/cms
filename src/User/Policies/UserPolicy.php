@@ -15,6 +15,9 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\UserPermissions;
 use Override;
 
+/**
+ * @since 6.0.0
+ */
 class UserPolicy extends ElementPolicy
 {
     public function __construct(

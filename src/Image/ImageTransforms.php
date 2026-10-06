@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -24,6 +27,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
 class ImageTransforms
 {
@@ -33,6 +39,8 @@ class ImageTransforms
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
     /**
@@ -69,7 +77,13 @@ class ImageTransforms
             isNew: $isNewTransform,
         ));
 
-        if ($runValidation && ! $transform->validate()) {
+        $isValid = ! $runValidation || $transform->validate();
+
+        if ($runValidation && ! $this->prepareTransformerParameters($transform)) {
+            $isValid = false;
+        }
+
+        if (! $isValid) {
             Log::info('Image transform not saved due to validation error.', [__METHOD__]);
 
             return false;
@@ -228,6 +242,54 @@ class ImageTransforms
         return ImageTransformModel::query()
             ->where('uid', $uid)
             ->firstOrNew();
+    }
+
+    private function prepareTransformerParameters(ImageTransform $transform): bool
+    {
+        $isValid = true;
+        $parameterBuckets = [];
+        $storedParameters = $transform->id
+            ? ImageTransformModel::query()->find($transform->id)?->getAttribute('parameters')
+            : [];
+        $storedParameters = is_array($storedParameters) ? $storedParameters : [];
+
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
+            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
+                $parameters = $storedParameters[$assetTransformer->uid] ?? [];
+
+                if (is_array($parameters) && $parameters !== []) {
+                    $parameterBuckets[$assetTransformer->uid] = $parameters;
+                }
+
+                continue;
+            }
+
+            try {
+                $parameters = $this->assetTransformers->validateParameters(
+                    $assetTransformer,
+                    $transform->getParametersForTransformer($assetTransformer->uid),
+                );
+            } catch (InvalidAssetTransformException $exception) {
+                $transform->errors()->add("parameters.{$assetTransformer->uid}", $exception->getMessage());
+                $isValid = false;
+
+                continue;
+            }
+
+            $parameterRules = $this->assetTransformDrivers
+                ->driver($assetTransformer->driver)
+                ->definition()
+                ->parameterRules;
+            $parameters = Arr::only($parameters, array_keys($parameterRules));
+
+            if ($parameters !== []) {
+                $parameterBuckets[$assetTransformer->uid] = $parameters;
+            }
+        }
+
+        $transform->setParameters($parameterBuckets);
+
+        return $isValid;
     }
 
     public function reset(): void

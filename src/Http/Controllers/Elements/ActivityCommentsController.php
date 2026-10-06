@@ -18,6 +18,9 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\currentUserElement;
 
+/**
+ * @since 6.0.0
+ */
 readonly class ActivityCommentsController
 {
     public function __construct(

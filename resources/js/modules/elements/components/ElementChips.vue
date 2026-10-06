@@ -12,12 +12,11 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   /**
-   * The element data a chip draws. Everything past `id` and `label` is optional,
-   * so a caller with nothing but ids still gets a usable list.
+   * The element data a chip draws. Everything past `id` and `label` is optional.
    */
   interface ChipElement {
     id: number;
-    label?: string;
+    label: string;
     siteId?: number | string | null;
     /**
      * Already resolved to a fill and a label — which statuses exist, and what
@@ -56,9 +55,8 @@
 
   const ids = computed(() => props.data.map((element) => element.id));
 
-  /** Falls back to the id, so a list of bare ids still reads as something. */
   function labelFor(element: ChipElement): string {
-    return element.label ?? String(element.id);
+    return element.label;
   }
 
   const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
@@ -165,6 +163,7 @@
         :selected="selection.isSelected(element.id) || undefined"
         :select-label="t('Select {label}', {label: labelFor(element)})"
         :show-status="!!element.status || undefined"
+        :show-thumb="!!element.thumbHtml || undefined"
         @craft-selection-change="
           (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
             onSelectedChange(element, event.detail)
@@ -172,12 +171,15 @@
         @click="(event: MouseEvent) => onChipClick(element, event)"
         @dblclick="(event: MouseEvent) => onDoubleClick(element, event)"
       >
-        <div slot="prefix" class="flex items-center px-md gap-1">
+        <div
+          v-if="$slots.prefix"
+          slot="prefix"
+          class="flex items-center gap-sm"
+        >
           <slot name="prefix" :element="element" :index="index"></slot>
-          <DynamicHtmlRenderer
-            v-if="element.thumbHtml"
-            :html="element.thumbHtml"
-          />
+        </div>
+        <div v-if="element.thumbHtml" slot="thumbnail" class="flex">
+          <DynamicHtmlRenderer :html="element.thumbHtml" />
         </div>
 
         <!--
@@ -186,13 +188,13 @@
           Absent entirely for element types that don't show a status.
         -->
         <div v-if="element.status" slot="status">
-          <span
+          <!-- `scribble` is what `Icons::resolveIconData('draft')` gives the
+            server-rendered chips. -->
+          <craft-icon
             v-if="element.status.draft"
-            class="icon"
-            data-icon="draft"
-            role="img"
-            :aria-label="`${t('Status:')} ${element.status.label}`"
-          ></span>
+            name="scribble"
+            :label="`${t('Status:')} ${element.status.label}`"
+          ></craft-icon>
           <craft-indicator
             v-else
             :fill="element.status.fill"

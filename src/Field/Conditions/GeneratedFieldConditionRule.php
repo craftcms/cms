@@ -27,6 +27,8 @@ use function CraftCms\Cms\t;
  * @method ElementConditionInterface getCondition()
  *
  * @phpstan-import-type GeneratedField from FieldLayout
+ *
+ * @since 6.0.0
  */
 class GeneratedFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

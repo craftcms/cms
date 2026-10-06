@@ -30,6 +30,9 @@ use function Laravel\Prompts\form;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 class CreateCommand extends Command
 {
     use ConfirmableTrait;

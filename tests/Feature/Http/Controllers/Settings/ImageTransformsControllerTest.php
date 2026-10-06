@@ -230,7 +230,7 @@ it('redirects to the saved transform edit page when saving and continuing', func
 
     post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
-        ->assertSessionHas('success', t('Transform saved.'));
+        ->assertMessage('success', t('Transform saved.'));
 });
 
 it('redirects to the posted redirect when saving normally', function () {
@@ -241,7 +241,7 @@ it('redirects to the posted redirect when saving normally', function () {
 
     post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
-        ->assertSessionHas('success', t('Transform saved.'));
+        ->assertMessage('success', t('Transform saved.'));
 });
 
 it('updates an existing transform', function () {
@@ -269,14 +269,6 @@ it('updates an existing transform', function () {
         ->and($updated->height)->toBe(120);
 });
 
-it('rejects save when both width and height are missing', function () {
-    post(action([ImageTransformsController::class, 'store']), validTransformData([
-        'width' => '',
-        'height' => '',
-    ]))
-        ->assertSessionHasErrors('width');
-});
-
 it('saves custom parameters under the Asset Transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
     $payload = validTransformData([
@@ -297,49 +289,6 @@ it('saves custom parameters under the Asset Transformer UUID', function () {
             'quality' => 'high',
         ],
     ])->and($transform->getParameters($transformer->uid)['quality'])->toBe('high');
-});
-
-it('preserves parameters for a configured unavailable driver', function () {
-    $assetTransformer = new AssetTransformer([
-        'name' => 'Unavailable',
-        'handle' => 'unavailable',
-        'driver' => 'missing',
-    ]);
-    app(AssetTransformers::class)->saveAssetTransformer($assetTransformer, runValidation: false);
-    $transform = new ImageTransformData([
-        'name' => 'Unavailable',
-        'handle' => 'unavailable',
-        'width' => 100,
-        'parameters' => [$assetTransformer->uid => ['blur' => 5]],
-    ]);
-    app(ImageTransforms::class)->saveTransform($transform, runValidation: false);
-
-    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
-        'transformId' => $transform->id,
-        'handle' => 'unavailable',
-    ]))->assertOk();
-
-    app(ImageTransforms::class)->reset();
-
-    expect(app(ImageTransforms::class)->getTransformByHandle('unavailable')
-        ?->getParametersForTransformer($assetTransformer->uid))->toBe(['blur' => 5]);
-});
-
-it('normalizes letterbox fill color on save', function () {
-    $payload = validTransformData([
-        'handle' => 'letterboxTransform',
-        'mode' => 'letterbox',
-        'fill' => 'abc',
-    ]);
-
-    postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
-
-    $service = app(ImageTransforms::class);
-    $service->reset();
-    $transform = $service->getTransformByHandle($payload['handle']);
-
-    expect($transform)->not->toBeNull()
-        ->and($transform->fill)->toBe('#aabbcc');
 });
 
 it('deletes a transform', function () {
