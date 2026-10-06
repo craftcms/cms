@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use CraftCms\Cms\Mcp\Public\Access;
 use Illuminate\Routing\Router;
 
@@ -39,6 +40,7 @@ readonly class PublicRouteRegistrar
             ResolveSite::class,
             UseWriteConnection::class,
             'throttle:60,1',
+            SetActivityOrigin::class,
         ];
 
         $this->router->options($this->access->route(), [McpController::class, 'public'])

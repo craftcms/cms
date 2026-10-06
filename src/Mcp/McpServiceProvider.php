@@ -18,6 +18,7 @@ use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
 use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
+use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use CraftCms\Cms\Mcp\Http\Middleware\UseDebugMcpUser;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
 use CraftCms\Cms\Mcp\OAuth\Metadata;
@@ -122,6 +123,7 @@ class McpServiceProvider extends ServiceProvider
             ...$authentication,
             'can:accessCp',
             'can:useCraftMcp',
+            SetActivityOrigin::class,
             ...$config->middleware,
         ];
 
