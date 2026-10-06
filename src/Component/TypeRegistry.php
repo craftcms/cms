@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component;
 
+use Closure;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -39,9 +40,33 @@ abstract class TypeRegistry
     /** @var array<string, class-string<T>> */
     private array $types = [];
 
+    /** @var list<Closure(static): void> */
+    private array $deferred = [];
+
+    private bool $resolvingDeferred = false;
+
     public function __construct()
     {
         $this->register(...static::DEFAULT_TYPES);
+    }
+
+    /**
+     * Defers a callback until the registry is first read.
+     *
+     * Registration that can't run at boot — because it depends on request state
+     * that isn't established yet, such as the current user — belongs here rather
+     * than in a service provider's `boot()`. The callback runs at most once, on
+     * the first call to {@see self::types()}, and may register and remove types
+     * freely: reads made from inside it see the registry as it stands, without
+     * re-entering the deferred callbacks.
+     *
+     * A registry that's never read never runs them.
+     *
+     * @param  Closure(static): void  $callback
+     */
+    public function defer(Closure $callback): void
+    {
+        $this->deferred[] = $callback;
     }
 
     /**
@@ -95,12 +120,16 @@ abstract class TypeRegistry
      */
     public function types(): Collection
     {
+        $this->resolveDeferred();
+
         return new Collection(array_values($this->types));
     }
 
     /** @return Collection<string, class-string<T>> */
     protected function typesByIdentity(): Collection
     {
+        $this->resolveDeferred();
+
         return new Collection($this->types);
     }
 
@@ -113,6 +142,8 @@ abstract class TypeRegistry
     /** @return class-string<T>|null */
     protected function typeByIdentity(string $identity): ?string
     {
+        $this->resolveDeferred();
+
         return $this->types[$identity] ?? null;
     }
 
@@ -120,6 +151,25 @@ abstract class TypeRegistry
     protected function reservedIdentities(): array
     {
         return [];
+    }
+
+    private function resolveDeferred(): void
+    {
+        if ($this->deferred === [] || $this->resolvingDeferred) {
+            return;
+        }
+
+        $callbacks = $this->deferred;
+        $this->deferred = [];
+        $this->resolvingDeferred = true;
+
+        try {
+            foreach ($callbacks as $callback) {
+                $callback($this);
+            }
+        } finally {
+            $this->resolvingDeferred = false;
+        }
     }
 
     /** @param class-string<T> $type */
