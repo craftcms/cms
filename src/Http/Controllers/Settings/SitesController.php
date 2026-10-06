@@ -319,12 +319,12 @@ readonly class SitesController
                     [
                         'label' => t('Enabled'),
                         'value' => '1',
-                        'data' => ['indicator' => ['variant' => 'success']],
+                        'data' => ['indicator' => ['fill' => 'success']],
                     ],
                     [
                         'label' => t('Disabled'),
                         'value' => '0',
-                        'data' => ['indicator' => ['variant' => 'empty']],
+                        'data' => ['indicator' => ['appearance' => 'outline']],
                     ],
                     ...$this->booleanEnvOptions(),
                 ])
@@ -405,9 +405,9 @@ readonly class SitesController
                     'data' => [
                         ...$option['data'],
                         'hint' => $enabled ? t('Enabled') : t('Disabled'),
-                        'indicator' => [
-                            'variant' => $enabled ? 'success' : 'empty',
-                        ],
+                        'indicator' => $enabled
+                            ? ['fill' => 'success']
+                            : ['appearance' => 'outline'],
                     ],
                 ];
             })

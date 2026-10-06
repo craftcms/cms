@@ -21,7 +21,7 @@ export interface ComboboxOptionData {
    * Renders a `craft-indicator` before the label. `fill` takes what the
    * component's own does: a status variant, a palette swatch, or any colour.
    */
-  indicator?: {fill?: string} & Record<string, unknown>;
+  indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
   /** Name of a `craft-icon` rendered before the label, and in the textbox while this option is selected. */
   icon?: string;
   [key: string]: unknown;
@@ -619,6 +619,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
           ${data.indicator
             ? html`<craft-indicator
                 fill=${data.indicator.fill ?? nothing}
+                appearance=${data.indicator.appearance ?? nothing}
               ></craft-indicator>`
             : nothing}
           ${data.icon

@@ -42,6 +42,16 @@ it('leaves an indicator without a fill on the component’s default', async () =
   expect(indicator.getAttribute('fill')).toBe('var(--c-color-fill-loud)');
 });
 
+it('renders an indicator’s appearance', async () => {
+  const control = await fixture([
+    {label: 'Off', value: 'off', data: {indicator: {appearance: 'outline'}}},
+  ]);
+
+  expect(
+    control.querySelector('craft-indicator')!.getAttribute('appearance')
+  ).toBe('outline');
+});
+
 it('colours an option’s icon', async () => {
   const control = await fixture([
     {label: 'Red', value: 'red', data: {icon: 'circle', color: 'danger'}},
