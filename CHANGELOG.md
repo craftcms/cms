@@ -4,6 +4,7 @@
 
 - Fixed a bug where saving an image as a new asset from the Image Editor didn’t always replace the original asset within the Assets field it was selected in. ([#19791](https://github.com/craftcms/cms/issues/19791))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-cphx-cx67-jcqj)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4rg3-m2h8-grqw)
 
 ## 5.11.4 - 2026-10-01
 
