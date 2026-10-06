@@ -53,6 +53,7 @@ readonly class Metadata
             'authorization_endpoint' => $this->url('craft.cp.mcp.oauth.authorize'),
             'token_endpoint' => $this->url('passport.token'),
             'registration_endpoint' => $this->url('craft.cp.mcp.oauth.register'),
+            'token_endpoint_auth_methods_supported' => ['none', 'client_secret_basic', 'client_secret_post'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
             'scopes_supported' => [self::SCOPE],

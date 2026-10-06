@@ -81,6 +81,10 @@ it('discovers and completes dynamic client registration and authorization', func
         ->assertJsonPath('scope', 'mcp:use')
         ->assertJsonPath('token_endpoint_auth_method', 'none')
         ->json();
+
+    expect($metadata['token_endpoint_auth_methods_supported'] ?? [])
+        ->toContain($registration['token_endpoint_auth_method']);
+
     $parameters = mcpAuthorizationParameters($registration['client_id']);
 
     $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
