@@ -193,21 +193,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         });
     }
 
-    /**
-     * The plugin's version.
-     *
-     * `$version` is the idiomatic way to read this; the accessor exists because
-     * Craft 5 plugins reach for `getVersion()`, which they inherited from Yii's
-     * `Module`. Plugins running through the Yii2 adapter still extend that base
-     * and still have it, but they call it on *whatever* plugin they integrate
-     * with — and a Craft 6 plugin had no such method, so a version check against
-     * one fataled with "Call to undefined method …::getVersion()".
-     */
-    public function getVersion(): string
-    {
-        return $this->version;
-    }
-
     public function getResourcesPath(): string
     {
         return dirname($this->getBasePath()).'/resources';

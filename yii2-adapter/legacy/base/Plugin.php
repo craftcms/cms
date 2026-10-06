@@ -24,6 +24,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -140,20 +141,32 @@ class Plugin extends Module implements PluginInterface
      * @inheritdoc
      *
      * Yii keeps the version in a private store of its own, which `$version` —
-     * declared on {@see PluginTrait} to match Craft 6 — shadows. Both names have
-     * to answer the same thing: Craft populates `$version` from the Composer
-     * manifest, while plugins gate their integrations on `getVersion()`.
+     * declared on {@see PluginTrait} to match Craft 6 — shadows. Both have to
+     * answer the same thing while this base class exists: Craft populates
+     * `$version` from the Composer manifest, and a plugin gating on another
+     * plugin's version reads it through here.
+     *
+     * Craft 6 plugins have no such method, so a version check made against one
+     * fatals. Reading `$version` works on either.
+     *
+     * @deprecated 6.0.0 read the `$version` property instead.
      */
     public function getVersion(): string
     {
+        Deprecator::log('Plugin-getVersion', 'Calling ->getVersion() on a plugin is deprecated. The $version property should be used instead — Craft 6 plugins do not have this method.');
+
         return $this->version;
     }
 
     /**
      * @inheritdoc
+     *
+     * @deprecated 6.0.0 assign to the `$version` property instead.
      */
     public function setVersion($version): void
     {
+        Deprecator::log('Plugin-setVersion', 'Calling ->setVersion() on a plugin is deprecated. The $version property should be assigned instead — Craft 6 plugins do not have this method.');
+
         $this->version = is_scalar($version) ? (string)$version : (string)call_user_func($version, $this);
     }
 

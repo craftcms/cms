@@ -759,7 +759,6 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 
 #### Added
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
-- Added `CraftCms\Cms\Plugin\Plugin::getVersion()`.
 
 #### Deprecations
 
