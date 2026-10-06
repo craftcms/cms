@@ -175,6 +175,11 @@ Sidebar metadata
     gap: unset;
     grid-template-columns: subgrid;
   }
+
+  /* Values against the far edge, now they have a column of their own. */
+  .cp-metadata-list dd {
+    text-align: end;
+  }
 }
 
 .context-label {
