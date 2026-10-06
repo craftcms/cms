@@ -28,7 +28,7 @@ enum JobStatus: int implements JsonSerializable
             self::Done => t('Done'),
             self::Failed => t('Failed'),
             self::Delayed => t('Delayed'),
-            self::Cancelled => t('Cancelled'),
+            self::Cancelled => t('Canceled'),
         };
     }
 

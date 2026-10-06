@@ -178,7 +178,7 @@ function closeReview() {
  * actions are fire-and-forget — state updates arrive via the `change`
  * event from the service and are synced into reactive refs automatically.
  *
- * @example Initialise with server data (typically in a page-level component)
+ * @example Initialize with server data (typically in a page-level component)
  * ```vue
  * <script setup lang="ts">
  * const { isProcessing, progressPercent, startIndexing } = useAssetIndexer({

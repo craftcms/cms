@@ -834,7 +834,7 @@
     flex: 1;
     position: relative;
     /* Without this the browser claims touch drags for panning and the pointer
-       stream is cancelled mid-gesture. */
+       stream is canceled mid-gesture. */
     touch-action: none;
     /* Without this a flex item refuses to shrink below its content. */
     min-block-size: 0;

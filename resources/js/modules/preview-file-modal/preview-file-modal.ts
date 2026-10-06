@@ -35,7 +35,7 @@ const EMPTY_CLASSES = 'zilch flex items-center justify-center py-[100px]';
  * sibling assets in an element select.
  *
  * Notes:
- * - Uses `quickShow()` to skip the fade-in animation (legacy behaviour).
+ * - Uses `quickShow()` to skip the fade-in animation (legacy behavior).
  * - `#$container` is the jQuery reference; `this.$container` (DOM element from
  *   `Modal`) is used only for `setContainer()`.
  * - Static methods `resizePreviewImage` and `showForAsset` are preserved for

@@ -31,7 +31,7 @@ declare const Craft: {
 };
 
 /**
- * @summary Renders and initialises a 2FA form, and handles switching between
+ * @summary Renders and initializes a 2FA form, and handles switching between
  * authentication methods.
  * @since 6.0
  *
@@ -72,7 +72,7 @@ export default class CraftLoginChallenge extends LitElement {
       return;
     }
 
-    // Build the form off-DOM so it can be fully initialised before it's
+    // Build the form off-DOM so it can be fully initialized before it's
     // ever visible or interactive.
     const template = document.createElement('template');
     template.innerHTML = this.data.authForm.trim();

@@ -14,7 +14,7 @@ import type {ComplexAttributeConverter} from 'lit';
  * default wants Lit's `{type: Boolean}` instead, which keeps the ordinary HTML
  * semantics consumers expect.
  *
- * It serialises back as `"true"`/`"false"` rather than as a bare attribute, so
+ * It serializes back as `"true"`/`"false"` rather than as a bare attribute, so
  * a reflected value survives a round trip through the DOM.
  */
 export const defaultTrueBoolean: ComplexAttributeConverter<boolean> = {

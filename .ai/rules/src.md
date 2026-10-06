@@ -20,3 +20,6 @@ Use `t()` with replacement parameters second and the category third or named. Ma
 Element queries default their `siteId` to `getCurrentSite()`, so a CP view model that doesn't set one explicitly lists primary-site content regardless of `?site=`. `ContentIndexViewModel::site()` does this correctly — copy it.
 
 The element selector modal posts its index params in the body, so honour an explicit `site` input before falling back to `RequestedSite`, which only reads the query string.
+
+## User-facing strings use US English
+Write user-facing strings (`t()` source strings, exception and log messages) in US English. Translation files are keyed by the English source string. When you change one, rename its key in every `resources/translations/*/app.php`. In `en-GB/app.php`, rename only the key and keep the British value (e.g. `'Canceled' => 'Cancelled'`).

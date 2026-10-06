@@ -79,7 +79,7 @@ export const Monospace: Story = {
   args: {monospace: true, 'label-slot': 'Handle'},
 };
 
-/** `center` centre-aligns the value. */
+/** `center` center-aligns the value. */
 export const Centered: Story = {
   args: {center: true, maxlength: 4, 'label-slot': 'Year'},
 };
@@ -103,7 +103,7 @@ export const Sizes: Story = {
 /**
  * `type` accepts any native input type. The date and time types have their own
  * components — [Input Date](?path=/docs/form-controls-text-controls-input-date--docs) and
- * [Input Time](?path=/docs/form-controls-text-controls-input-time--docs) — which add behaviour on
+ * [Input Time](?path=/docs/form-controls-text-controls-input-time--docs) — which add behavior on
  * top.
  */
 export const Types: Story = {

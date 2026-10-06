@@ -33,7 +33,7 @@ export type {
 /**
  * An action menu built on craft-popover.
  *
- * The web component is the single source of truth for action-menu behaviour.
+ * The web component is the single source of truth for action-menu behavior.
  * It supports two mutually-compatible modes:
  *
  * 1. **Slot-based** (default / backwards compatible): the consumer slots their
@@ -262,7 +262,7 @@ export default class CraftActionMenu extends CraftPopover {
       // shadow boundaries without nesting them inside the items' internal
       // (already interactive) buttons/links — and a search input isn't valid
       // inside a `menu` either. Native button/link semantics are the
-      // semantically-safe fallback; the *keyboard behaviour* still follows
+      // semantically-safe fallback; the *keyboard behavior* still follows
       // the APG menu pattern (see `_onContentKeydown`).
       firstContent.setAttribute('role', 'none');
     }
@@ -939,7 +939,7 @@ export default class CraftActionMenu extends CraftPopover {
    * Keyboard navigation between items (WAI-ARIA APG menu pattern, adapted):
    *
    * - ArrowDown/ArrowUp move to the next/previous navigable item and *wrap*
-   *   at the ends (the APG-recommended behaviour).
+   *   at the ends (the APG-recommended behavior).
    * - Home/End jump to the first/last navigable item.
    * - In searchable mode, printable characters and Backspace return focus to
    *   the search input and apply the keystroke there, so filtering continues

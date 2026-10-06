@@ -53,7 +53,7 @@ A pane that clamps its height scrolls its content — either through `variant="c
 
 **A scrolling region has to be reachable by keyboard.** Someone using a keyboard or a switch with no pointer otherwise cannot read past the clamp, which fails WCAG 2.1.1.
 
-So when — and only when — the content actually overflows, the pane makes its own scroll container a labelled tab stop. It is conditional because a tab stop that cannot scroll anywhere is a focus trap with nothing to do.
+So when — and only when — the content actually overflows, the pane makes its own scroll container a labeled tab stop. It is conditional because a tab stop that cannot scroll anywhere is a focus trap with nothing to do.
 
 Do not put `tabindex` on the host yourself. The host is not the scroller, and browsers only scroll the focused element or a scrollable _ancestor_ of it — never a descendant.
 
@@ -63,7 +63,7 @@ Do not put `tabindex` on the host yourself. The host is not the scroller, and br
 
 <Canvas of={PaneStories.Padding} sourceState="shown" />
 
-Values off that scale are ignored; set `--c-pane-padding` for anything else. This is the same `Paddable` behaviour [Callout](?path=/docs/components-callout--docs) uses.
+Values off that scale are ignored; set `--c-pane-padding` for anything else. This is the same `Paddable` behavior [Callout](?path=/docs/components-callout--docs) uses.
 
 ## Styling
 

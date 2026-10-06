@@ -143,7 +143,7 @@ const FIT_TOLERANCE = 1;
  *       <div slot="panel">…</div>
  *     </craft-tabs>
  *
- * This replaces the overflow behaviour rather than combining with it: tabs that
+ * This replaces the overflow behavior rather than combining with it: tabs that
  * share the width always fit, so nothing collapses into the menu, and a label
  * with no room left shrinks (wrapping, then clipping) in place. Inline
  * placements are unaffected — their tabs already span the strip.

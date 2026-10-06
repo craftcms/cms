@@ -46,9 +46,9 @@ export default class CraftIcon extends LitElement {
   @property() label?: string;
 
   /**
-   * `badge` draws the icon on a coloured disc, for a marker that has to read
+   * `badge` draws the icon on a colored disc, for a marker that has to read
    * as a status rather than as decoration. It defaults the disc to the warning
-   * colour; set `data-color` for another.
+   * color; set `data-color` for another.
    */
   @property({reflect: true}) appearance?: 'plain' | 'badge' = 'plain';
 

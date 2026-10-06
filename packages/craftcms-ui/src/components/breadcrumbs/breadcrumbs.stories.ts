@@ -21,7 +21,7 @@ const TRAIL = `
   <craft-breadcrumb-item href="#">Site Name</craft-breadcrumb-item>
   <craft-breadcrumb-item href="#">Entries</craft-breadcrumb-item>
   <craft-breadcrumb-item href="#">Entry Type</craft-breadcrumb-item>
-  <craft-breadcrumb-item href="#">Current Entry</craft-breadcrumb-item>
+  <craft-breadcrumb-item aria-current="page">Current Entry</craft-breadcrumb-item>
 `;
 
 const meta = {
@@ -52,7 +52,9 @@ export const Resizable: Story = {
         <craft-breadcrumb-item href="#">Site Name</craft-breadcrumb-item>
         <craft-breadcrumb-item href="#">Entries</craft-breadcrumb-item>
         <craft-breadcrumb-item href="#">Entry Type</craft-breadcrumb-item>
-        <craft-breadcrumb-item href="#">Current Entry</craft-breadcrumb-item>
+        <craft-breadcrumb-item aria-current="page"
+          >Current Entry</craft-breadcrumb-item
+        >
       </craft-breadcrumbs>
     </div>
   `,
