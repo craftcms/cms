@@ -154,6 +154,5 @@ Nav states:
   .secondary-nav {
     position: sticky;
     inset-block-start: 0;
-    padding: var(--c-spacing-md);
   }
 </style>

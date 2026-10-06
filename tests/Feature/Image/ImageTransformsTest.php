@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
@@ -14,6 +21,20 @@ use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
+
+function registerNamedTransformTestTransformer(string $driver = 'namedTransformTest'): AssetTransformer
+{
+    app(AssetTransformDrivers::class)->extend($driver, fn () => new NamedTransformTestDriver);
+
+    $transformer = new AssetTransformer([
+        'name' => 'Named Transform Test',
+        'handle' => $driver,
+        'driver' => $driver,
+    ]);
+    app(AssetTransformers::class)->saveAssetTransformer($transformer);
+
+    return $transformer;
+}
 
 beforeEach(function () {
     $this->service = app(ImageTransforms::class);
@@ -139,13 +160,74 @@ describe('getTransformByUid', function () {
 });
 
 describe('saveTransform', function () {
-    it('round trips transformer-specific parameters through project config', function () {
-        $transformerUid = Str::uuid()->toString();
+    it('canonicalizes letterbox fill without changing non-letterbox fill', function (string $mode, ?string $fill, ?string $expected) {
+        $transform = new ImageTransform([
+            'name' => 'Fill '.$mode,
+            'handle' => 'fill'.ucfirst($mode),
+            'width' => 500,
+            'mode' => $mode,
+            'fill' => $fill,
+        ]);
+
+        expect($this->service->saveTransform($transform))->toBeTrue();
+
+        $this->service->reset();
+
+        expect($this->service->getTransformByHandle($transform->handle)?->fill)->toBe($expected);
+    })->with([
+        'letterbox color' => ['letterbox', 'abc', '#aabbcc'],
+        'letterbox default' => ['letterbox', null, 'transparent'],
+        'non-letterbox' => ['fit', 'abc', 'abc'],
+    ]);
+
+    it('rejects invalid configured transformer parameters', function () {
+        $transformer = registerNamedTransformTestTransformer();
+        $transform = new ImageTransform([
+            'name' => 'Invalid Parameters',
+            'handle' => 'invalidParameters',
+            'width' => 500,
+            'parameters' => [$transformer->uid => ['blur' => 0]],
+        ]);
+
+        expect($this->service->saveTransform($transform))->toBeFalse()
+            ->and($transform->errors()->has("parameters.{$transformer->uid}"))->toBeTrue()
+            ->and(ImageTransformModel::count())->toBe(0);
+    });
+
+    it('preserves stored parameters when a configured transformer driver is unavailable', function () {
+        $transformer = new AssetTransformer([
+            'name' => 'Unavailable',
+            'handle' => 'unavailable',
+            'driver' => 'missing',
+        ]);
+        app(AssetTransformers::class)->saveAssetTransformer($transformer, runValidation: false);
+        $transform = new ImageTransform([
+            'name' => 'Unavailable Parameters',
+            'handle' => 'unavailableParameters',
+            'width' => 500,
+            'parameters' => [$transformer->uid => ['blur' => 5]],
+        ]);
+        $this->service->saveTransform($transform, runValidation: false);
+        $transform->setParameters([]);
+
+        expect($this->service->saveTransform($transform))->toBeTrue();
+
+        $this->service->reset();
+
+        expect($this->service->getTransformByHandle('unavailableParameters')
+            ?->getParametersForTransformer($transformer->uid))->toBe(['blur' => 5]);
+    });
+
+    it('filters and round trips transformer-specific parameters through project config', function () {
+        $transformerUid = registerNamedTransformTestTransformer('roundTripDriver')->uid;
         $transform = new ImageTransform([
             'name' => 'Custom',
             'handle' => 'custom',
             'width' => 500,
-            'parameters' => [$transformerUid => ['blur' => 12]],
+            'parameters' => [$transformerUid => [
+                'blur' => 12,
+                'unknown' => 'discarded',
+            ]],
         ]);
 
         $this->service->saveTransform($transform);
@@ -196,7 +278,7 @@ describe('saveTransform', function () {
     });
 
     it('preserves custom parameters through metadata changes and saves parameter updates', function () {
-        $transformerUid = Str::uuid()->toString();
+        $transformerUid = registerNamedTransformTestTransformer('parameterUpdateDriver')->uid;
         $transform = new ImageTransform([
             'name' => 'Original',
             'handle' => 'stableHandle',
@@ -334,6 +416,7 @@ describe('saveTransform', function () {
         $this->service->saveTransform(new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
         ]));
 
         Event::assertDispatchedOnce(TransformSaving::class);
@@ -347,6 +430,7 @@ describe('saveTransform', function () {
         $this->service->saveTransform(new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
         ]));
 
         Event::assertDispatchedOnce(TransformSaved::class);
@@ -356,6 +440,7 @@ describe('saveTransform', function () {
         $this->service->saveTransform(new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
+            'width' => 100,
         ]));
 
         $this->service->reset();
@@ -372,6 +457,22 @@ describe('saveTransform', function () {
         Event::assertDispatchedOnce(TransformSaved::class);
     });
 });
+
+class NamedTransformTestDriver implements AssetTransformDriver
+{
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition(
+            'Named Transform Test',
+            parameterRules: ['blur' => ['integer', 'min:1']],
+        );
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        return new AssetTransformResult('/test.webp', 'image/webp');
+    }
+}
 
 describe('deleteTransform', function () {
     it('deletes a transform', function () {

@@ -187,13 +187,17 @@ export default defineConfig(({mode}) => {
         '**/*',
         '!resources/js/**',
         '!workbench/resources/js/**',
+        '!yii2-adapter/resources/js/**',
         'resources/build/**',
         'resources/legacy/**',
         'resources/js/**/fixtures/**',
       ],
       overrides: [
         {
-          files: ['resources/js/**/*.{ts,vue}'],
+          files: [
+            'resources/js/**/*.{ts,vue}',
+            'yii2-adapter/resources/js/**/*.{ts,vue}',
+          ],
           rules: {
             'no-undef': 'off',
             'vue/require-default-prop': 'off',
@@ -225,7 +229,7 @@ export default defineConfig(({mode}) => {
       '!(yii2-adapter)/**/*.{css,scss,vue,ts,html}':
         'stylelint --allow-empty-input',
       '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
-      'resources/js/**/*.{ts,vue}': 'vp check --fix',
+      '{resources,yii2-adapter/resources}/js/**/*.{ts,vue}': 'vp check --fix',
       // Blocks on physical Tailwind classes. Spacing-scale warnings are
       // printed by .vite-hooks/pre-commit, since this hides passing output.
       '{resources,workbench/resources}/**/*.{vue,ts,js,twig,php,html}':
@@ -251,6 +255,9 @@ export default defineConfig(({mode}) => {
         'resources/js/routes/*',
         'resources/js/wayfinder/*',
         'yii2-adapter/*',
+        '!yii2-adapter/resources',
+        'yii2-adapter/resources/*',
+        '!yii2-adapter/resources/js',
         'tests-playwright/.authentication.json',
         // Written by `boost:install`
         '.mcp.json',
@@ -352,6 +359,7 @@ export default defineConfig(({mode}) => {
                 'resources/js/cp.ts',
                 'resources/js/elements.ts',
                 'yii2-adapter/resources/js/element-editor.ts',
+                'yii2-adapter/resources/js/cp-compat.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',

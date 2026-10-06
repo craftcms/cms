@@ -172,7 +172,7 @@ readonly class SitesController
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
-            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
+            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')->whereNull('dateDeleted')],
         ]);
 
         $siteId = $request->input('siteId');
@@ -184,14 +184,14 @@ readonly class SitesController
             $isNew = true;
         }
 
-        $site->groupId = $request->has('group') ? $request->integer('group') : null;
+        $site->groupId = $request->integer('group');
         $site->name = $request->input('name');
         $site->handle = $request->input('handle');
         $site->language = $request->input('language');
         $site->primary = $request->boolean('primary');
-        $site->enabled = $site->primary ? true : $request->input('enabled', true);
+        $site->enabled = $request->input('enabled', true);
         $site->hasUrls = $request->boolean('hasUrls');
-        $site->baseUrl = $site->hasUrls ? $request->input('baseUrl') : null;
+        $site->baseUrl = $request->input('baseUrl');
 
         if (! $this->sites->saveSite($site)) {
             throw ValidationException::withMessages($site->errors()->getMessages());
@@ -228,7 +228,12 @@ readonly class SitesController
             'contentDestination' => ['required', 'in:transfer,delete'],
             'transferContentTo' => Rule::when(
                 $request->get('contentDestination') === 'transfer',
-                ['required', 'integer', Rule::exists(Table::SITES, 'id')]),
+                [
+                    'required',
+                    'integer',
+                    'different:id',
+                    Rule::exists(Table::SITES, 'id')->whereNull('dateDeleted'),
+                ]),
         ]);
 
         $this->sites->deleteSiteById(

@@ -25,6 +25,11 @@ class SiteRules extends Ruleset
     public function rules(): array
     {
         return [
+            'groupId' => [
+                'required',
+                'integer',
+                Rule::exists(Table::SITEGROUPS, 'id')->whereNull('dateDeleted'),
+            ],
             'language' => [
                 'required',
                 new LanguageRule(false, parseValue: true),

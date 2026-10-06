@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Velg bort alle',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'PC',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Bestemmer hvilket nettsted brukeren vil motta e-poster fra, når de sendes via kontrollpanelet.',
     'Developer Response' => 'Utviklersvar',
     'Development Settings' => 'Utviklingsinnstillinger',
@@ -2324,9 +2325,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

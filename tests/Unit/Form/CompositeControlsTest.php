@@ -129,8 +129,7 @@ it('renders composite Controls with nested submission names and escaped values',
         ->and($textExpander)->toHaveCount(1)
         ->and($textExpander->attr('for'))->toBe($markdown->attr('id'))
         ->and($textExpander->attr('slot'))->toBe('input')
-        ->and($crawler->filter('textarea[name="settings[rows][0][name]"]')->text())->toBe('<Row>')
-        ->and($crawler->filter('input[type="checkbox"][name="settings[rows][0][enabled]"][checked]'))->toHaveCount(1)
+        ->and(json_decode($crawler->filter('craft-table-form')->attr('data-payload'), true)['values']['settings']['rows'])->toBe([['name' => '<Row>', 'enabled' => true]])
         ->and($crawler->filter('craft-link-field[name="settings[link]"][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[address][addressLine1]"][value="123 Main Street"]'))->toHaveCount(1)
         ->and($crawler->filter('select[name="settings[address][administrativeArea]"] option[value="CA"][selected]'))->toHaveCount(1)
@@ -144,7 +143,7 @@ it('displays composite values without submitting them in non-editable modes', fu
 
     expect($crawler->filter('input:not([disabled])[name], textarea:not([disabled])[name], select:not([disabled])[name]')->each(fn (Crawler $node) => $node->outerHtml()))->toBe([])
         ->and($crawler->filter('craft-markdown-field')->text())->toContain('**Safe**')
-        ->and($crawler->filter('pre.noteditable')->text())->toBe('<Row>')
+        ->and(json_decode($crawler->filter('craft-table-form')->attr('data-payload'), true)['nodes'][0]['control']['mode'])->toBe($mode->value)
         ->and($crawler->filter('craft-link-field[disabled][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[value="123 Main Street"][disabled]'))->toHaveCount(1)
         ->and($crawler->filter('craft-icon-picker[disabled][value="star"]'))->toHaveCount(1);
@@ -164,7 +163,7 @@ it('preserves keyed Table rows in payloads and PHP submission names', function (
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($payload->values['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']])
-        ->and($crawler->filter('textarea[name="settings[rows][site-one][name]"]')->text())->toBe('Primary');
+        ->and(json_decode($crawler->filter('craft-table-form')->attr('data-payload'), true)['values']['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']]);
 });
 
 it('passes a custom add row label through Table payloads and HTML', function () {

@@ -24,6 +24,8 @@ use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 use IntlDateFormatter;
 use IntlException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -316,8 +318,38 @@ class Application extends \yii\web\Application
             $internalRequest->setLaravelSession($request->session());
         }
 
+        /**
+         * `REQUEST_URI` above had to become the action URI so the router matches
+         * the action's controller, but that URI is an implementation detail the
+         * browser never asked for. Inertia builds its page object's `url` from
+         * the request it's handed, and its client writes that straight into
+         * `window.history` once the page mounts — so without this, visiting
+         * `shopify/products/2395` silently rewrites the address bar to
+         * `actions/elements/edit` and the URL no longer reloads or shares.
+         *
+         * Recorded on the request rather than closed over, so that a resolver
+         * surviving into a later request (a long-lived worker) finds no
+         * attribute and defers to Inertia's own default.
+         */
+        $internalRequest->attributes->set(
+            CaptureOriginalActionRequestUri::BRIDGED_ORIGINAL_REQUEST_URI,
+            $request->getRequestUri(),
+        );
+
+        Inertia::resolveUrlUsing(static function(IlluminateRequest $request): string {
+            $original = $request->attributes->get(CaptureOriginalActionRequestUri::BRIDGED_ORIGINAL_REQUEST_URI);
+
+            if (is_string($original) && $original !== '') {
+                return $original;
+            }
+
+            return Str::start(Str::after($request->fullUrl(), $request->getSchemeAndHttpHost()), '/');
+        });
+
         /** @var SymfonyResponse $laravelResponse */
         $laravelResponse = app(Router::class)->dispatch($internalRequest);
+
+        self::restoreBridgedRedirectTarget($laravelResponse, $internalRequest, $request);
 
         $response = $this->getResponse();
 
@@ -326,6 +358,50 @@ class Application extends \yii\web\Application
         }
 
         return $response;
+    }
+
+    /**
+     * Points a redirect built from the synthesized action URI back at the URI the
+     * browser asked for.
+     *
+     * Resolving Inertia's page `url` isn't enough. A bridged screen that an
+     * Inertia visit asks for answers `409` with an `X-Inertia-Location` telling
+     * the client to hard-visit "the current URL" — and core computes that from
+     * the request it was handed, which is the internal one. The client obeys,
+     * navigating to `actions/elements/edit`, which has no element to edit and
+     * fails. Core can't fix this itself: it would have to know about the bridge,
+     * and the bridge is what moved the URI, so correcting it here keeps the
+     * knowledge in one place and covers every call site at once.
+     *
+     * Only a target whose path is the internal path is touched — a redirect
+     * genuinely aimed elsewhere is left alone — and the target's own query
+     * string is preserved rather than assumed.
+     */
+    private static function restoreBridgedRedirectTarget(
+        SymfonyResponse $response,
+        IlluminateRequest $internalRequest,
+        IlluminateRequest $originalRequest,
+    ): void {
+        foreach (['X-Inertia-Location', 'Location'] as $header) {
+            $target = $response->headers->get($header);
+
+            if ($target === null || $target === '') {
+                continue;
+            }
+
+            if (parse_url($target, PHP_URL_PATH) !== $internalRequest->getPathInfo()) {
+                continue;
+            }
+
+            $query = parse_url($target, PHP_URL_QUERY);
+
+            $response->headers->set($header, sprintf(
+                '%s%s%s',
+                $originalRequest->getSchemeAndHttpHost(),
+                $originalRequest->getPathInfo(),
+                $query !== null && $query !== '' ? '?' . $query : '',
+            ));
+        }
     }
 
     private function handleOriginalLaravelActionRequest(): BaseResponse

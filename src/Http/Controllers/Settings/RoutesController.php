@@ -7,15 +7,16 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Http\Requests\RouteRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Route\Exceptions\InvalidRouteException;
 use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -60,18 +61,14 @@ readonly class RoutesController
         return $this->editResponse($route, isNew: false);
     }
 
-    public function store(RouteRequest $request): Response
+    public function store(Request $request): Response
     {
-        $this->routes->saveRoute($request->toRoute());
-
-        return $this->asSuccess(t('Route saved.'));
+        return $this->saveRoute($this->routeFromRequest($request));
     }
 
-    public function update(RouteRequest $request, string $uid): Response
+    public function update(Request $request, string $uid): Response
     {
-        $this->routes->saveRoute($request->toRoute($uid));
-
-        return $this->asSuccess(t('Route saved.'));
+        return $this->saveRoute($this->routeFromRequest($request, $uid));
     }
 
     public function destroy(string $uid): Response
@@ -114,6 +111,33 @@ readonly class RoutesController
                 'sites' => $this->siteProps(),
                 'templateOptions' => SelectOptions::getTemplateSuggestions(),
             ]);
+    }
+
+    private function saveRoute(Route $route): Response
+    {
+        try {
+            $this->routes->saveRoute($route);
+        } catch (InvalidRouteException $exception) {
+            throw ValidationException::withMessages($exception->errors());
+        }
+
+        return $this->asSuccess(t('Route saved.'));
+    }
+
+    private function routeFromRequest(Request $request, ?string $routeUid = null): Route
+    {
+        $data = $request->validate([
+            'uriParts' => ['present', 'array'],
+            'template' => ['present', 'string'],
+            'siteUid' => ['nullable', 'string'],
+        ]);
+
+        return new Route(
+            uriParts: $data['uriParts'],
+            template: $data['template'],
+            siteUid: $data['siteUid'] ?? null,
+            uid: $routeUid,
+        );
     }
 
     /** @return list<array{label:string, value:string}> */

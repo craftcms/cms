@@ -1,5 +1,5 @@
 import {serializeFormInputs, t} from '@craftcms/ui';
-import {focusableWithin} from '@craftcms/ui/utilities/focus-trap';
+import {firstFocusableWithin} from '@/common/utils/dom';
 import type {CellContext} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
@@ -84,7 +84,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
       const firstCell =
         options.container.value?.querySelector<HTMLElement>('[data-inline-id]');
       if (firstCell) {
-        focusableWithin(firstCell)[0]?.focus();
+        firstFocusableWithin(firstCell)?.focus();
       }
     }
   }

@@ -32,6 +32,8 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use Override;
+use RuntimeException;
 use Stringable;
 
 use function CraftCms\Cms\currentUser;
@@ -105,6 +107,20 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
         if ($this->slugTranslationKeyFormat === '') {
             $this->slugTranslationKeyFormat = null;
         }
+    }
+
+    #[Override]
+    public function validationData(): array
+    {
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (RuntimeException) {
+            $fieldLayout = null;
+        }
+
+        return array_merge(parent::validationData(), [
+            'fieldLayout' => $fieldLayout,
+        ]);
     }
 
     public static function get(int|string $id): ?self
