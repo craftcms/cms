@@ -2,6 +2,8 @@ import {isRecord, pathsMatch, visitControls} from '@/modules/forms/runtime';
 import {
   nestedOwnerContext,
   type NestedOwnerEditor,
+  type NestedOwnerEditorRequest,
+  NESTED_OWNER_EDITOR_REQUEST,
 } from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
@@ -501,11 +503,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   const nestedOwnerEditor: NestedOwnerEditor = {
-    async prepare(path) {
+    async prepare(path, initialContext) {
       if (
         props.readOnly ||
         workflowReviewLocked.value ||
-        !nestedOwnerContext(formPayload.value, path)
+        !(nestedOwnerContext(formPayload.value, path) ?? initialContext)
       ) {
         return null;
       }
@@ -517,7 +519,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           visitControls(formPayload.value?.nodes ?? [], (control) => {
             if (
               control.mode === 'editable' &&
-              pathsMatch(control.path, path) &&
+              control.path.every((segment, index) => path[index] === segment) &&
               !pathsMatch(control.deltaGroup, path)
             ) {
               preparingOwnerGroups.set(preparation, control.deltaGroup);
@@ -531,7 +533,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           await nextTick();
         }
 
-        const context = nestedOwnerContext(formPayload.value, path);
+        const context =
+          nestedOwnerContext(formPayload.value, path) ?? initialContext;
         if (!context) {
           return null;
         }
@@ -556,6 +559,15 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     resolveElementId: resolveNestedElementId,
     refresh: refreshAfterNestedChange,
   };
+
+  useEventListener(
+    () => root?.(),
+    NESTED_OWNER_EDITOR_REQUEST,
+    (event: NestedOwnerEditorRequest) => {
+      event.detail.editor = nestedOwnerEditor;
+      event.stopPropagation();
+    }
+  );
 
   function requestValues(data: object): FormValues {
     return transform?.(data) ?? ({...data} as FormValues);
@@ -1019,7 +1031,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     onSidebarMutation,
     props,
     renderer,
-    refreshAfterNestedChange,
     nestedOwnerEditor,
     refreshForm,
     refreshLayout,

@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Avmarkera alla',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'PC',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Avgör från vilken webbplats användaren kommer att få e-post ifrån när de skickas via kontrollpanelen.',
     'Developer Response' => 'Svar från utvecklaren',
     'Development Settings' => 'Utvecklingsinställningar',

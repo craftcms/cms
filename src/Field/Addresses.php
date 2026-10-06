@@ -44,7 +44,6 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -747,28 +746,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ],
             ],
         ];
-    }
-
-    /**
-     * @throws RuntimeException
-     */
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->inputHtmlInternal($element);
-    }
-
-    private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
-    {
-        $config = $this->nestedElementManagerConfig($static);
-
-        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
-            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
-                'id' => $this->getInputId(),
-            ]);
-        }
-
-        return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
     /**

@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Minden kiválasztás visszavonása',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Asztal',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Meghatározza, hogy a felhasználó melyik webhelyről kapja a vezérlőpulton keresztül küldött e-maileket.',
     'Developer Response' => 'Fejlesztő válasza',
     'Development Settings' => 'Fejlesztési beállítások',

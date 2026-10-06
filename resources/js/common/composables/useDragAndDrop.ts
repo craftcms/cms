@@ -235,7 +235,24 @@ export function useDragAndDrop(
               }
               preview.style.width = `${rect.width}px`;
               preview.style.height = `${rect.height}px`;
-              container.appendChild(preview);
+              if (element instanceof HTMLTableRowElement) {
+                const sourceTable = element.closest('table')!;
+                const table = sourceTable.cloneNode(false) as HTMLTableElement;
+                table.style.width = `${sourceTable.getBoundingClientRect().width}px`;
+                table.style.tableLayout = 'fixed';
+
+                [...preview.children].forEach((cell, index) => {
+                  const sourceCell = element.cells[index]!;
+                  const previewCell = cell as HTMLElement;
+                  previewCell.style.boxSizing = 'border-box';
+                  previewCell.style.width = `${sourceCell.getBoundingClientRect().width}px`;
+                });
+
+                table.createTBody().appendChild(preview);
+                container.appendChild(table);
+              } else {
+                container.appendChild(preview);
+              }
 
               return () => preview.remove();
             },

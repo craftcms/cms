@@ -19,25 +19,17 @@ use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
-use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\MatrixController;
-use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\Section\Models\SectionSiteSettings;
-use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
-use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
-use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Workflow\Workflows;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -45,125 +37,8 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(UserElement::findOne());
-
-    $innerField = Field::factory()->create([
-        'name' => 'Inner Text',
-        'handle' => 'innerText',
-        'type' => PlainText::class,
-    ]);
-
-    $entryType = EntryType::factory()
-        ->withField($innerField)
-        ->create([
-            'name' => 'Matrix Block',
-            'handle' => 'matrixBlock',
-            'hasTitleField' => true,
-        ]);
-
-    $matrixField = Field::factory()->create([
-        'name' => 'Matrix Field',
-        'handle' => 'matrixField',
-        'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$entryType->id]],
-    ]);
-
-    $ownerType = EntryType::factory()
-        ->withField($matrixField)
-        ->create([
-            'name' => 'Owner',
-            'handle' => 'owner',
-            'hasTitleField' => true,
-        ]);
-
-    $section = Section::factory()
-        ->withEntryTypes($ownerType)
-        ->create([
-            'handle' => 'owners',
-        ]);
-
-    $owner = EntryModel::factory()
-        ->forSection($section)
-        ->forEntryType($ownerType)
-        ->createElement([
-            'title' => 'Owner Entry',
-            'slug' => Str::slug('Owner Entry '.Str::random(6)),
-        ]);
-
-    EntryTypesFacade::refreshEntryTypes();
-    FieldsFacade::invalidateCaches();
-    FieldsFacade::refreshFields();
-
-    $this->fixture = [
-        'entryType' => $entryType,
-        'field' => FieldsFacade::getFieldById($matrixField->id),
-        'innerField' => $innerField,
-        'owner' => EntryElement::find()->id($owner->id)->status(null)->one(),
-        'ownerType' => $ownerType,
-        'section' => $section,
-        'siteId' => Site::firstOrFail()->id,
-    ];
+    $this->fixture = MatrixControllerFixture::create();
 });
-
-function createMatrixControllerPayload(array $fixture, array $overrides = []): array
-{
-    return array_merge([
-        'fieldId' => $fixture['field']->id,
-        'entryTypeId' => $fixture['entryType']->id,
-        'ownerId' => $fixture['owner']->id,
-        'ownerElementType' => EntryElement::class,
-        'siteId' => $fixture['siteId'],
-        'namespace' => 'testNamespace',
-    ], $overrides);
-}
-
-function saveMatrixControllerBlocks(array $fixture, array $blocks): EntryElement
-{
-    $entries = [];
-    $sortOrder = [];
-
-    foreach ($blocks as $block) {
-        $uid = $block['uid'] ?? Str::uuid()->toString();
-        $sortOrder[] = $uid;
-        $entries["uid:$uid"] = [
-            'type' => $fixture['entryType']->handle,
-            'title' => $block['title'],
-            'enabled' => $block['enabled'] ?? true,
-            'enabledForSite' => $block['enabledForSite'] ?? true,
-            'fields' => [
-                'innerText' => $block['innerText'],
-            ],
-        ];
-    }
-
-    $owner = EntryElement::find()->id($fixture['owner']->id)->status(null)->one();
-    $owner->setFieldValueFromRequest($fixture['field']->handle, [
-        'entries' => $entries,
-        'sortOrder' => $sortOrder,
-    ]);
-
-    expect(ElementsFacade::saveElement($owner))->toBeTrue();
-
-    return EntryElement::find()->id($owner->id)->status(null)->one();
-}
-
-function matrixControllerNestedEntries(array $fixture): Collection
-{
-    return collect(EntryElement::find()
-        ->fieldId($fixture['field']->id)
-        ->ownerId($fixture['owner']->id)
-        ->siteId($fixture['siteId'])
-        ->drafts(null)
-        ->status(null)
-        ->all());
-}
-
-function refreshMatrixControllerFixture(array $fixture): array
-{
-    $fixture['field'] = FieldsFacade::getFieldById($fixture['field']->id);
-    $fixture['owner'] = EntryElement::find()->id($fixture['owner']->id)->status(null)->one();
-
-    return $fixture;
-}
 
 it('validates entry type ids for default table column options', function () {
     postJson(action([MatrixController::class, 'defaultTableColumnOptions']))
@@ -196,106 +71,48 @@ it('validates create entry payloads', function () {
 });
 
 it('rejects invalid owners when creating a matrix entry', function () {
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'ownerId' => 999999,
     ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid owner ID, element type, or site ID.');
 });
 
 it('rejects invalid matrix field ids when creating a matrix entry', function () {
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'fieldId' => 999999,
     ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid Matrix field ID: 999999');
 });
 
 it('rejects invalid entry type ids when creating a matrix entry', function () {
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'entryTypeId' => 999999,
     ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid entry type ID: 999999');
 });
 
 it('rejects invalid site ids when creating a matrix entry', function () {
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'siteId' => 999999,
     ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid owner ID, element type, or site ID.');
 });
 
-it('creates a new matrix entry draft and renders its block html', function () {
-    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
-        'staticEntries' => true,
-    ]))
-        ->assertOk()
-        ->assertJsonStructure(['blockHtml', 'headHtml', 'bodyHtml']);
-
-    $entries = matrixControllerNestedEntries($this->fixture);
-    $entry = $entries->sole();
-
-    expect($entry->typeId)->toBe($this->fixture['entryType']->id)
-        ->and($entry->fieldId)->toBe($this->fixture['field']->id)
-        ->and($entry->getOwnerId())->toBe($this->fixture['owner']->id)
-        ->and($entry->draftId)->not->toBeNull();
-
-    $html = $response->json('blockHtml');
-    $host = new Crawler($html)->filter('craft-entry-field-layout-form[data-payload]');
-
-    expect($html)
-        ->toContain('Matrix Block')
-        ->toContain('testNamespace[matrixField][entries][uid:'.$entry->uid.'][fresh]')
-        ->and($host)->toHaveCount(1)
-        ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['scope'])
-        ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
-});
-
-it('renders localized actions and an escaped site status for dynamically loaded blocks', function () {
-    Site::query()->whereKey($this->fixture['siteId'])->update(['name' => 'Primary <em>Site</em>']);
-    $secondSite = Site::factory()->create();
-    Sites::refreshSites();
-    SectionSiteSettings::factory()->create([
-        'sectionId' => $this->fixture['section']->id,
-        'siteId' => $secondSite->id,
-        'hasUrls' => true,
-    ]);
-    Sections::refreshSections();
-
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
-        'title' => 'Localized Block',
-        'innerText' => 'Localized text',
-        'enabledForSite' => false,
-    ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $entry = matrixControllerNestedEntries($this->fixture)->sole();
-
-    $html = postJson(action([MatrixController::class, 'renderBlocks']), [
-        'entryIds' => [$entry->id],
-        'siteId' => $this->fixture['siteId'],
-        'namespace' => 'testNamespace',
-    ])->assertOk()->json('blockHtml');
-    $block = new Crawler($html);
-    $visibleActions = $block
-        ->filter('.menu li:not(.hidden) .menu-item-label')
-        ->each(fn (Crawler $item): string => trim($item->text()));
-
-    expect($visibleActions)
-        ->toContain('Enable for Primary <em>Site</em>')
-        ->and($block->filter('.status .visually-hidden')->text())
-        ->toBe('Disabled for Primary <em>Site</em>');
-});
-
 it('returns the new block as form nodes when given a control path', function () {
     // The Form control renders blocks with FormNodeList, so it asks for nodes
     // rather than the rendered block HTML the legacy stack splices in.
-    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
-        'namespace' => null,
+    $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'path' => ['fields', 'matrixField'],
     ]))
         ->assertOk()
         ->assertJsonStructure(['uid', 'type', 'form' => ['scope', 'refreshable', 'nodes'], 'values']);
 
-    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+    $entry = MatrixControllerFixture::entries($this->fixture)->sole();
+
+    expect($entry->typeId)->toBe($this->fixture['entryType']->id)
+        ->and($entry->fieldId)->toBe($this->fixture['field']->id)
+        ->and($entry->getOwnerId())->toBe($this->fixture['owner']->id)
+        ->and($entry->draftId)->not->toBeNull();
 
     // The server minted the identity, and it is the bare UUID the Control keys
     // blocks by — no `uid:` prefix, nothing for the browser to reconcile.
@@ -317,11 +134,11 @@ it('refuses an entry type the field does not offer', function () {
         'handle' => 'notOnThisField',
     ]);
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'entryTypeId' => $other->id,
     ]))->assertBadRequest();
 
-    expect(matrixControllerNestedEntries($this->fixture))->toHaveCount(0);
+    expect(MatrixControllerFixture::entries($this->fixture))->toHaveCount(0);
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {
@@ -333,14 +150,14 @@ it('returns a failure response when saving a new matrix draft fails', function (
         }
     });
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))->assertBadRequest()
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture))->assertBadRequest()
         ->assertJsonPath('message', mb_ucfirst(t('Couldn’t create {type}.', [
             'type' => EntryElement::lowerDisplayName(),
         ])));
 });
 
 it('rejects invalid duplicate source ids when creating a matrix entry', function () {
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => 999999,
     ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid source element ID: 999999');
@@ -359,26 +176,26 @@ it('rejects duplicate sources from another matrix owner', function () {
         'owner' => EntryElement::find()->id($victimOwner->id)->status(null)->one(),
     ];
 
-    $victimFixture['owner'] = saveMatrixControllerBlocks($victimFixture, [[
+    $victimFixture['owner'] = MatrixControllerFixture::saveBlocks($victimFixture, [[
         'title' => 'Victim Block',
         'innerText' => 'Victim text',
     ]]);
-    $victimFixture = refreshMatrixControllerFixture($victimFixture);
-    $source = matrixControllerNestedEntries($victimFixture)->sole();
+    $victimFixture = MatrixControllerFixture::refresh($victimFixture);
+    $source = MatrixControllerFixture::entries($victimFixture)->sole();
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $source->id,
     ]))->assertBadRequest()
         ->assertJsonPath('message', "Invalid source element ID: $source->id");
 });
 
 it('forbids duplicating a matrix entry when authorization fails', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Source Block',
         'innerText' => 'Source text',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $source = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
     Gate::before(function ($user, string $ability) {
         if ($ability === 'duplicateAsDraft') {
@@ -388,19 +205,19 @@ it('forbids duplicating a matrix entry when authorization fails', function () {
         return null;
     });
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $source->id,
     ]))
         ->assertForbidden();
 });
 
 it('forbids duplicating a matrix entry when viewing the source is not authorized', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Source Block',
         'innerText' => 'Source text',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $source = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
     Gate::before(function ($user, string $ability) {
         if ($ability === 'view') {
@@ -410,27 +227,27 @@ it('forbids duplicating a matrix entry when viewing the source is not authorized
         return null;
     });
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $source->id,
     ]))
         ->assertForbidden();
 });
 
-it('duplicates an existing matrix entry and renders its block html', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+it('duplicates an existing matrix entry and returns its form', function () {
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Source Block',
         'innerText' => 'Source text',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $source = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
-    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $source->id,
     ]))
         ->assertOk()
-        ->assertJsonStructure(['blockHtml', 'headHtml', 'bodyHtml']);
+        ->assertJsonStructure(['uid', 'form', 'values']);
 
-    $entries = matrixControllerNestedEntries($this->fixture);
+    $entries = MatrixControllerFixture::entries($this->fixture);
     $duplicate = $entries->first(fn (EntryElement $entry) => $entry->id !== $source->id);
 
     expect($entries)->toHaveCount(2)
@@ -438,17 +255,17 @@ it('duplicates an existing matrix entry and renders its block html', function ()
         ->and($duplicate->id)->not->toBe($source->id)
         ->and($duplicate->getFieldValue('innerText'))->toBe('Source text');
 
-    expect($response->json('blockHtml'))
-        ->toContain('testNamespace[matrixField][entries][uid:'.$duplicate->uid.'][fresh]');
+    expect($response->json('uid'))->toBe($duplicate->uid)
+        ->and($response->json('values.fields.matrixField.entries.'.$duplicate->uid.'.fields.innerText'))->toBe('Source text');
 });
 
 it('returns a failure response when duplicating a matrix entry fails validation', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Source Block',
         'innerText' => 'Source text',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $source = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
     app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends Elements
     {
@@ -464,7 +281,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
         }
     });
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $source->id,
     ]))->assertBadRequest()
         ->assertJsonPath('message', t('Couldn’t duplicate {type}.', [
@@ -477,35 +294,24 @@ it('validates render blocks payloads', function () {
         ->assertJsonValidationErrorFor('entryIds');
 });
 
-it('returns empty html when render blocks cannot find entries', function () {
-    postJson(action([MatrixController::class, 'renderBlocks']), [
-        'entryIds' => [999999],
-        'siteId' => Site::firstOrFail()->id,
-        'namespace' => 'testNamespace',
-    ])
-        ->assertOk()
-        ->assertJsonPath('blockHtml', '')
-        ->assertJsonStructure(['headHtml', 'bodyHtml']);
-});
-
 it('rejects render blocks requests for entries outside matrix fields', function () {
     $entry = EntryModel::factory()->createElement();
 
     postJson(action([MatrixController::class, 'renderBlocks']), [
         'entryIds' => [$entry->id],
         'siteId' => $entry->siteId,
-        'namespace' => 'testNamespace',
+        'path' => ['fields', 'matrixField'],
     ])->assertBadRequest()
         ->assertJsonPath('message', 'Entry must belong to a Matrix field.');
 });
 
 it('forbids rendering matrix blocks when authorization fails', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'First Block',
         'innerText' => 'First text',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $entry = MatrixControllerFixture::entries($this->fixture)->sole();
 
     Gate::before(function ($user, string $ability) {
         if ($ability === 'view') {
@@ -518,43 +324,9 @@ it('forbids rendering matrix blocks when authorization fails', function () {
     postJson(action([MatrixController::class, 'renderBlocks']), [
         'entryIds' => [$entry->id],
         'siteId' => $this->fixture['siteId'],
-        'namespace' => 'testNamespace',
+        'path' => ['fields', 'matrixField'],
     ])
         ->assertForbidden();
-});
-
-it('renders matrix blocks in the requested order', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [
-        [
-            'title' => 'First Block',
-            'innerText' => 'First text',
-        ],
-        [
-            'title' => 'Second Block',
-            'innerText' => 'Second text',
-        ],
-    ]);
-
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    [$first, $second] = matrixControllerNestedEntries($this->fixture)->values()->all();
-
-    $blockHtml = postJson(action([MatrixController::class, 'renderBlocks']), [
-        'entryIds' => [$second->id, $first->id],
-        'siteId' => $this->fixture['siteId'],
-        'namespace' => 'testNamespace',
-    ])
-        ->assertOk()
-        ->assertJsonStructure(['blockHtml', 'headHtml', 'bodyHtml'])
-        ->json('blockHtml');
-
-    $secondPosition = strpos((string) $blockHtml, 'testNamespace[matrixField][entries][uid:'.$second->uid.']');
-    $firstPosition = strpos((string) $blockHtml, 'testNamespace[matrixField][entries][uid:'.$first->uid.']');
-
-    expect($blockHtml)->toContain('testNamespace[matrixField][entries][uid:'.$second->uid.']')
-        ->toContain('testNamespace[matrixField][entries][uid:'.$first->uid.']')
-        ->and($secondPosition)->not->toBeFalse()
-        ->and($firstPosition)->not->toBeFalse()
-        ->and($secondPosition)->toBeLessThan($firstPosition);
 });
 
 it('saves a draft owner that holds a block minted before the draft existed', function () {
@@ -562,10 +334,10 @@ it('saves a draft owner that holds a block minted before the draft existed', fun
     // by whichever element the form was compiled against. Edit the owner
     // afterwards and it becomes a provisional draft — leaving a block that is
     // already a draft and still primarily owned by the canonical.
-    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))
+    $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture))
         ->assertOk();
 
-    $block = matrixControllerNestedEntries($this->fixture)->sole();
+    $block = MatrixControllerFixture::entries($this->fixture)->sole();
 
     expect($block->getIsDraft())->toBeTrue()
         ->and($block->getPrimaryOwnerId())->toBe($this->fixture['owner']->id);
@@ -582,7 +354,7 @@ it('saves a draft owner that holds a block minted before the draft existed', fun
     ]);
 
     expect(ElementsFacade::saveElement($draft))->toBeTrue();
-    expect($response->json('blockHtml'))->toBeString();
+    expect($response->json('uid'))->toBe($block->uid);
 });
 
 it('badges a block’s own field when that block was edited through a draft', function () {
@@ -590,12 +362,12 @@ it('badges a block’s own field when that block was edited through a draft', fu
     // A block that exists on the canonical owner, then edited through a
     // provisional draft, is duplicated as a draft with a canonical behind it —
     // which is what gives it something to be "modified" against.
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Block',
         'innerText' => 'Original',
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $canonicalBlock = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $canonicalBlock = MatrixControllerFixture::entries($this->fixture)->sole();
 
     $draft = app(Drafts::class)->createDraft($this->fixture['owner'], provisional: true);
     $draft->setFieldValueFromRequest($this->fixture['field']->handle, [
@@ -674,13 +446,13 @@ it('badges a block’s own field when that block was edited through a draft', fu
 });
 
 it('only creates event-added types for eligible authorized owners', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Existing disabled block',
         'innerText' => 'Existing text',
         'enabled' => false,
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
-    $existing = matrixControllerNestedEntries($this->fixture)->sole();
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
+    $existing = MatrixControllerFixture::entries($this->fixture)->sole();
     $extra = EntryType::factory()->withField($this->fixture['innerField'])->create([
         'name' => 'Plugin type',
         'handle' => 'pluginType',
@@ -701,17 +473,17 @@ it('only creates event-added types for eligible authorized owners', function () 
         ->forSection($this->fixture['section'])
         ->forEntryType($this->fixture['ownerType'])
         ->createElement();
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'ownerId' => $otherOwner->id,
         'entryTypeId' => $extra->id,
         'path' => ['fields', 'matrixField'],
     ]))->assertBadRequest()
         ->assertJsonPath('message', "Entry type {$extra->id} is not available to Matrix field {$fieldId}.");
 
-    $payload = createMatrixControllerPayload($this->fixture, ['entryTypeId' => $extra->id, 'path' => ['fields', 'matrixField']]);
+    $payload = MatrixControllerFixture::payload($this->fixture, ['entryTypeId' => $extra->id, 'path' => ['fields', 'matrixField']]);
     $response = postJson(action([MatrixController::class, 'createEntry']), $payload)
         ->assertOk()->assertJsonPath('type', 'pluginType');
-    $created = matrixControllerNestedEntries($this->fixture)->firstWhere('uid', $response->json('uid'));
+    $created = MatrixControllerFixture::entries($this->fixture)->firstWhere('uid', $response->json('uid'));
     expect($created->typeId)->toBe($extra->id)
         ->and($created->getOwnerId())->toBe($ownerId);
 
@@ -725,23 +497,18 @@ it('only creates event-added types for eligible authorized owners', function () 
     expect($props['createEntryTypes'])->toContain('pluginType')
         ->and($props['create']['entryTypeIds']['pluginType'] ?? null)->toBe($extra->id);
 
-    $legacy = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
-        'entryTypeId' => $extra->id,
-    ]))->assertOk();
-    expect($legacy->json('blockHtml'))->toContain('Add Plugin type above');
-
     Gate::before(fn ($user, string $ability): ?bool => $ability === 'save' ? false : null);
     postJson(action([MatrixController::class, 'createEntry']), $payload)->assertForbidden();
-    expect(matrixControllerNestedEntries($this->fixture))->toHaveCount(3);
+    expect(MatrixControllerFixture::entries($this->fixture))->toHaveCount(2);
 });
 
 it('renders and duplicates event-added entry types absent from creation choices', function () {
-    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+    $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Existing block',
         'innerText' => 'Retained content',
         'enabled' => false,
     ]]);
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
     $extra = EntryType::factory()->withField($this->fixture['innerField'])->create([
         'name' => 'Plugin type',
         'handle' => 'pluginType',
@@ -754,11 +521,11 @@ it('renders and duplicates event-added entry types absent from creation choices'
             $event->entryTypes[] = $extraType;
         }
     });
-    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+    $entry = MatrixControllerFixture::entries($this->fixture)->sole();
     $entry->setTypeId($extra->id);
     $entry->setFieldValue('innerText', 'Retained content');
     expect(ElementsFacade::saveElement($entry))->toBeTrue();
-    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $this->fixture = MatrixControllerFixture::refresh($this->fixture);
 
     postJson(action([MatrixController::class, 'renderBlocks']), [
         'entryIds' => [$entry->id],
@@ -779,18 +546,57 @@ it('renders and duplicates event-added entry types absent from creation choices'
         ->and($props['createEntryTypes'])->not->toContain('pluginType')
         ->and($control->getValue()['entries'][$entry->uid]['enabled'])->toBeFalse();
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'entryTypeId' => $extra->id,
         'path' => ['fields', 'matrixField'],
     ]))->assertBadRequest()
         ->assertJsonPath('message', "Entry type {$extra->id} is not available to Matrix field {$fieldId}.");
 
-    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+    $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'duplicate' => $entry->id,
         'entryTypeId' => $extra->id,
         'path' => ['fields', 'matrixField'],
     ]))->assertOk()->assertJsonPath('type', 'pluginType');
-    $duplicate = matrixControllerNestedEntries($this->fixture)->firstWhere('uid', $response->json('uid'));
+    $duplicate = MatrixControllerFixture::entries($this->fixture)->firstWhere('uid', $response->json('uid'));
     expect($duplicate->id)->not->toBe($entry->id)
         ->and($duplicate->getFieldValue('innerText'))->toBe('Retained content');
+});
+
+it('rejects legacy HTML requests without creating an entry when the adapter is absent', function () {
+    $payload = MatrixControllerFixture::payload($this->fixture);
+    unset($payload['path']);
+    $payload['namespace'] = 'testNamespace';
+
+    postJson(action([MatrixController::class, 'createEntry']), $payload)->assertBadRequest();
+    expect(MatrixControllerFixture::entries($this->fixture))->toHaveCount(0);
+
+    postJson(action([MatrixController::class, 'renderBlocks']), [
+        'entryIds' => [999999],
+        'siteId' => $this->fixture['siteId'],
+        'namespace' => 'testNamespace',
+    ])->assertBadRequest();
+});
+
+it('returns empty blocks when no entries match', function () {
+    postJson(action([MatrixController::class, 'renderBlocks']), [
+        'entryIds' => [999999],
+        'siteId' => $this->fixture['siteId'],
+        'path' => ['fields', 'matrixField'],
+    ])->assertOk()->assertJsonPath('blocks', []);
+});
+
+it('returns block forms in the requested order', function () {
+    MatrixControllerFixture::saveBlocks($this->fixture, [
+        ['title' => 'First Block', 'innerText' => 'First text'],
+        ['title' => 'Second Block', 'innerText' => 'Second text'],
+    ]);
+    [$first, $second] = MatrixControllerFixture::entries($this->fixture)->values()->all();
+
+    $response = postJson(action([MatrixController::class, 'renderBlocks']), [
+        'entryIds' => [$second->id, $first->id],
+        'siteId' => $this->fixture['siteId'],
+        'path' => ['fields', 'matrixField'],
+    ])->assertOk();
+
+    expect(array_column($response->json('blocks'), 'uid'))->toBe([$second->uid, $first->uid]);
 });

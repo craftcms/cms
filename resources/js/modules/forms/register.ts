@@ -17,6 +17,7 @@ import MoneyControl from './MoneyControl.vue';
 import AddressControl from './AddressControl.vue';
 import LinkControl from './LinkControl.vue';
 import TableControl from './TableControl.vue';
+import TableColumnsControl from './TableColumnsControl.vue';
 import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
@@ -85,6 +86,7 @@ export function registerFormComponents(
   components.register('craft:user-group-select', UserGroupSelectControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
+  components.register('craft:table-columns', TableColumnsControl);
   components.register('craft:link', LinkControl);
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);

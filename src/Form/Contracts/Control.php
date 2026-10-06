@@ -122,6 +122,13 @@ interface Control
     public function props(mixed $value = null): array;
 
     /**
+     * Resolves control-specific configuration using its effective interaction mode.
+     *
+     * @return array<string, mixed>
+     */
+    public function resolveProps(mixed $value, ControlMode $mode): array;
+
+    /**
      * Returns Forms owned by this Control, scoped relative to its path.
      *
      * @return list<array{scope: string|list<string>, form: Form, refreshable: bool}>

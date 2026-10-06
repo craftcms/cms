@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Zrušit výběr všech',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Stolní počítač',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Určuje, ze kterého webu bude uživatel dostávat e-maily odesílané prostřednictvím ovládacího panelu.',
     'Developer Response' => 'Odpověď vývojáře',
     'Development Settings' => 'Nastavení pro vývoj',

@@ -33,6 +33,7 @@
   import type {
     FormChange,
     FormChangeKind,
+    FormControlPayload,
     FormNodePayload,
     FormPayload,
     FormValue,
@@ -56,6 +57,7 @@
   };
 
   type FieldNodeProps = {
+    id?: string;
     label?: string | null;
     /** Visually hides the label, keeping it available to screen readers. */
     labelSrOnly?: boolean;
@@ -181,14 +183,29 @@
     );
   }
 
-  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
+  function setValue(
+    value: FormValue,
+    kind: FormChangeKind = 'discrete',
+    /**
+     * Either an updated control definition (nested Blocks controls) or a
+     * fully formed change (editable table rows bound to their own paths).
+     */
+    detail?: FormControlPayload<object> | FormChange
+  ): void {
     setPathValue(props.values, control.value.path, value);
+
+    if (detail && !('component' in detail)) {
+      emit('change', detail);
+
+      return;
+    }
 
     emit('change', {
       kind,
       path: control.value.path,
       scope: props.scope,
       refreshable: refreshable.value,
+      control: detail,
     });
   }
 
@@ -279,7 +296,7 @@
 <template>
   <craft-field
     ref="field"
-    :id="fieldId(control.path)"
+    :id="resolvedNode.props.id ?? fieldId(control.path)"
     :label="resolvedNode.props.label ?? undefined"
     :label-sr-only="resolvedNode.props.labelSrOnly || undefined"
     :help-text="

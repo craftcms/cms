@@ -7,18 +7,22 @@ namespace CraftCms\Yii2Adapter\Tests\Legacy;
 use craft\fieldlayoutelements\entries\EntryTitleField as LegacyEntryTitleField;
 use craft\fields\Assets;
 use craft\fields\Entries;
+use craft\fields\Table;
 use craft\fields\Users;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\View\TemplateMode;
@@ -131,8 +135,8 @@ it('captures plugin title overrides once in every form mode', function(ControlMo
 
 it('serializes the adapter title class and omits titles disabled by the entry type', function() {
     $field = new LegacyEntryTitleField(['uid' => 'title', 'name' => 'headline', 'required' => false]);
-    $layout = \CraftCms\Cms\FieldLayout\FieldLayout::make(Entry::class)
-        ->tab('Content', fn(\CraftCms\Cms\FieldLayout\FieldLayoutTab $tab) => $tab->add($field));
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn(FieldLayoutTab $tab) => $tab->add($field));
     $entry = Mockery::mock(Entry::class)->makePartial();
     $entry->shouldReceive('getType')->andReturn(new EntryType(['hasTitleField' => false]));
 
@@ -143,3 +147,39 @@ it('serializes the adapter title class and omits titles disabled by the entry ty
         'required' => false,
     ])->and($field->formNode(new FieldLayoutElementContext($entry, new FormContext())))->toBeNull();
 });
+
+it('renders the complete legacy Table settings Form with its namespace and effective mode', function(ControlMode $mode) {
+    $field = new class(['columns' => ['col1' => ['heading' => 'Status', 'handle' => 'status', 'type' => 'singleline']], 'defaults' => [['col1' => 'Draft']]]) extends Table {
+        public function getSettingsHtml(): ?string
+        {
+            return parent::getSettingsHtml() . '<input name="pluginOption" value="Custom">';
+        }
+    };
+    $html = InputNamespace::namespaceInputs(fn() => $mode === ControlMode::Editable
+        ? $field->getSettingsHtml()
+        : $field->getReadOnlySettingsHtml(), 'plugin[settings]');
+    $crawler = new Crawler($html);
+    $host = $crawler->filter('craft-field-settings-form');
+    $pluginInput = $crawler->filter('input[name="plugin[settings][pluginOption]"]');
+    $payload = json_decode($host->attr('data-payload'), true);
+    $columns = $payload['nodes'][0]['control'];
+    $defaults = $payload['nodes'][1]['children'][0]['control'];
+
+    expect($pluginInput)->toHaveCount(1)
+        ->and($pluginInput->attr('value'))->toBe('Custom')
+        ->and($pluginInput->matches('[disabled]'))->toBe($mode === ControlMode::ReadOnly)
+        ->and($host)->toHaveCount(1)
+        ->and($host->attr('name'))->toBe('plugin[settings][__fieldSettings]')
+        ->and($payload['scope'])->toBe(['settings'])
+        ->and($payload['refreshable'])->toBe($mode === ControlMode::Editable)
+        ->and($payload['values']['settings']['defaults'])->toBe([['col1' => 'Draft']])
+        ->and($columns['component'])->toBe('craft:table-columns')
+        ->and($columns['deltaGroup'])->toBe(['settings', 'columns'])
+        ->and($columns['mode'])->toBe($mode->value)
+        ->and($defaults['mode'])->toBe($mode->value)
+        ->and($defaults['forms'][0]['nodes'][0]['control']['mode'])->toBe($mode->value);
+
+    $editablePayload = json_decode(new Crawler($field->getSettingsHtml())->filter('craft-field-settings-form')->attr('data-payload'), true);
+
+    expect($editablePayload['nodes'][0]['control']['mode'])->toBe(ControlMode::Editable->value);
+})->with([ControlMode::Editable, ControlMode::ReadOnly]);

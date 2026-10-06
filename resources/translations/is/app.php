@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Afvelja allt',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Skrifborð',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Ákveður hvaða síðu notandinn mun fá tölvupóst frá, þegar hann er sendur í gegnum stjórnborðið.',
     'Developer Response' => 'Viðbrögð þróunaraðila',
     'Development Settings' => 'Þróunarstillingar',

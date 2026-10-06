@@ -241,6 +241,13 @@ export default css`
     padding-inline-start: 0;
   }
 
+  /* And the same at the trailing edge, where the suffix (when there is one) or
+     else the body ends the chip. Inner padding stays, as the gap between parts. */
+  .cp-chip--plain .cp-chip__body:last-child,
+  .cp-chip--plain .cp-chip__suffix {
+    padding-inline-end: 0;
+  }
+
   .cp-chip--plain .cp-chip__thumbnail,
   .cp-chip--plain .cp-chip__body,
   .cp-chip--plain .cp-chip__suffix {

@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Hiçbirini Seçme',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Masaüstü',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Kullanıcının, kontrol paneliyle gönderilen e-postaları hangi siteden alacağını belirler.',
     'Developer Response' => 'Geliştirici Yanıtı',
     'Development Settings' => 'Geliştirme Ayarları',

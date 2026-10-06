@@ -4,7 +4,10 @@ import type {FormPayload} from '@/modules/forms/types';
 
 /** The editor that owns a nested field, including when it lives in a slideout. */
 export interface NestedOwnerEditor {
-  prepare(path: string[]): Promise<NestedOwnerContext | null>;
+  prepare(
+    path: string[],
+    context?: NestedOwnerContext
+  ): Promise<NestedOwnerContext | null>;
   resolveElementId?(id: number): number;
   refresh?(): Promise<void>;
 }
@@ -55,6 +58,7 @@ export function nestedOwnerContext(
         ownerIsDerivative: manager.ownerIsDerivative === true,
         ownerIsInDerivativeTree: manager.ownerIsInDerivativeTree === true,
         ownerIsUnpublishedDraft: manager.ownerIsUnpublishedDraft === true,
+        requiresDerivative: manager.ownerHasDrafts !== false,
       };
     }
   });
@@ -84,3 +88,23 @@ export function savedNestedOwner(
 export const NestedOwnerEditorKey: InjectionKey<NestedOwnerEditor> = Symbol(
   'nested-owner-editor'
 );
+
+export const NESTED_OWNER_EDITOR_REQUEST = 'craft:nested-owner-editor-request';
+export type NestedOwnerEditorRequest = CustomEvent<{
+  editor: NestedOwnerEditor | null;
+}>;
+
+/** Lets native controls in separate HTML form islands find their containing editor. */
+export function requestNestedOwnerEditor(
+  element: HTMLElement
+): NestedOwnerEditor | null {
+  const request: NestedOwnerEditorRequest = new CustomEvent(
+    NESTED_OWNER_EDITOR_REQUEST,
+    {
+      bubbles: true,
+      detail: {editor: null},
+    }
+  );
+  element.dispatchEvent(request);
+  return request.detail.editor;
+}

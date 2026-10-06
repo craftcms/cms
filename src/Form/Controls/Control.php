@@ -180,6 +180,11 @@ abstract class Control implements ControlContract
         return [];
     }
 
+    public function resolveProps(mixed $value, ControlMode $mode): array
+    {
+        return $this->props($value);
+    }
+
     /**
      * @return list<array{scope: string|list<string>, form: Form, refreshable: bool}>
      */
