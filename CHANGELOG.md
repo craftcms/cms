@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Updated control panel navigation to refresh on each server navigation, including items added or removed dynamically by plugins.
+- Reduced database queries when building control panel navigation.
 - Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))
 - Brought back users’ gradient-based default avatars.
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))

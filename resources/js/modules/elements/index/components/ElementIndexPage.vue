@@ -90,16 +90,13 @@
    * highlights it; without one, the source is named in the query.
    *
    * An Inertia visit rather than a reload, so the page stays on screen while
-   * the new one loads. The nav tree is normally sent once and kept, so the
-   * visit asks for it again.
+   * the new one loads.
    */
   function onSourcesSaved(landing: {
     sourceKey: string | null;
     url: string | null;
   }): void {
-    router.visit(landingUrl(landing), {
-      headers: {'X-Craft-Refresh-Nav': '1'},
-    });
+    router.visit(landingUrl(landing));
   }
 
   function landingUrl(landing: {

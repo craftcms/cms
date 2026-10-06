@@ -159,11 +159,13 @@ class EntryTypes
         // `craft:up` reads entry types (to diff project config) before running
         // pending migrations, so a DB that hasn't been migrated yet doesn't
         // have these columns.
-        if (Schema::hasColumn(Table::ENTRYTYPES, 'showPostDateField')) {
+        $columns = Schema::getColumnListing(Table::ENTRYTYPES);
+
+        if (in_array('showPostDateField', $columns, true)) {
             $query->addSelect('showPostDateField');
         }
 
-        if (Schema::hasColumn(Table::ENTRYTYPES, 'showExpiryDateField')) {
+        if (in_array('showExpiryDateField', $columns, true)) {
             $query->addSelect('showExpiryDateField');
         }
 

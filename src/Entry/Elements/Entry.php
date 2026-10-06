@@ -418,7 +418,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     protected static function defineSources(string $context): array
     {
-        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL, ElementSources::CONTEXT_NAVIGATION])) {
             $sections = Sections::getEditableSections();
             $editable = true;
         } else {
@@ -485,13 +485,20 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                             'type' => $type,
                             'handle' => $section->handle,
                             'section-id' => $section->id,
-                            'entry-type-ids' => array_map(fn (EntryType $entryType) => $entryType->id, $section->getEntryTypes()),
                         ],
                         'criteria' => [
                             'sectionId' => $section->id,
                             'editable' => $editable,
                         ],
                     ];
+
+                    if ($context === ElementSources::CONTEXT_NAVIGATION) {
+                        $sources[] = $source;
+
+                        continue;
+                    }
+
+                    $source['data']['entry-type-ids'] = array_map(fn (EntryType $entryType) => $entryType->id, $section->getEntryTypes());
 
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
