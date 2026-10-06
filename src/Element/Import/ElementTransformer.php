@@ -121,7 +121,7 @@ class ElementTransformer extends BaseTransformer
     {
         if ($rawValue !== null) {
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
-                return $this::{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
+                return $this->{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
             }
 
             return $rawValue;

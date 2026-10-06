@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -302,10 +303,9 @@ class ImportPlansController
             }
         }
 
-        // if it's a property, and the target element type has the method that takes care of
-        // importing into that property, use that method
+        // a container property gets its columns from its element type
         $targetClass = $importer::targetClass();
-        if (! $field && $fieldIsProperty && method_exists($targetClass, 'getDestinationColsForProperty')) {
+        if (! $field && $fieldIsProperty && is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
             $groups[] = new MappingColumnGroup(
                 providerName: null,
                 destinationCols: $targetClass::getDestinationColsForProperty($importer, $fieldHandle) ?? [],

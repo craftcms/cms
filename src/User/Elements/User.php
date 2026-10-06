@@ -18,6 +18,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
@@ -35,8 +36,6 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
-use CraftCms\Cms\Import\Data\CompoundMappingColumn;
-use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -118,7 +117,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, ImportableContainerPropertiesInterface, MustVerifyEmailContract
 {
     use Authenticatable {
         getAuthPassword as getAuthPasswordAuthenticatable;
@@ -2356,11 +2355,7 @@ JS, [
         return true;
     }
 
-    /**
-     * Returns the mapping columns for an importable container property, or null if it isn't one.
-     *
-     * @return list<MappingColumn|CompoundMappingColumn>|null
-     */
+    #[Override]
     public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
     {
         return match ($property) {
@@ -2371,13 +2366,7 @@ JS, [
         };
     }
 
-    /**
-     * Special method that can be used to import data into a container-type attribute.
-     * It handles normalizing value for import and saving the data.
-     *
-     * @param  array<string, mixed>  $attribute
-     * @param  array<string, mixed>  $item
-     */
+    #[Override]
     public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
     {
         // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,

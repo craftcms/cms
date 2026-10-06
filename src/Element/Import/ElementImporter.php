@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Import;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -414,7 +415,7 @@ abstract class ElementImporter extends BaseImporter
 
         // attributes that are containers need special processing
         foreach ($containerProps as $prop) {
-            if (isset($item[$prop['name']]) && method_exists($element, 'importIntoContainerAttribute')) {
+            if (isset($item[$prop['name']]) && $element instanceof ImportableContainerPropertiesInterface) {
                 $element->importIntoContainerAttribute($prop, $item, $this);
             }
         }

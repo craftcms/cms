@@ -229,8 +229,9 @@ is accepted and expanded). Behaviour:
 7. Enable keep-flags, save, restore flags in a `finally`.
 8. Return the element.
 
-Container *properties* (as opposed to fields) go through
-`$element->importIntoContainerAttribute()` — only `User` defines it, for `addresses`.
+Container *properties* (as opposed to fields) go through `ImportableContainerPropertiesInterface`:
+`getDestinationColsForProperty()` supplies the mapping panel's columns, and `importIntoContainerAttribute()`
+imports the data — only `User` implements it, for `addresses`.
 
 ---
 
@@ -274,7 +275,8 @@ __construct(
 Both `name` and `label` are **required** positionally. Examples: `id`/`uid` are
 `canBeCleared: false, canBeSet: false` (so they can only be used for matching); `Entry::$_typeId` is `#[Importable('typeId', 'Type ID', true)]`
 (excluded from UI mapping since the field-layout-provider step covers it);
-`User::$_addresses` is the only `isContainer: true` property.
+`User::$_addresses` is the only `isContainer: true` property; an element type with one must implement
+`ImportableContainerPropertiesInterface`.
 
 ### Field layout elements
 
