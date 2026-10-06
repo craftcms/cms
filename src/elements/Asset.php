@@ -1802,9 +1802,14 @@ $('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
-      if (!data.newAssetId) {
-        $updatePreviewThumbJs
+      if (data.newAssetId) {
+        // The menu gets moved to the <body> when shown, so look for the slideout from its trigger
+        const \$trigger = $('#' + $id).closest('.menu').data('disclosureMenu')?.\$trigger;
+        {$this->_replaceSlideoutAssetJs('$trigger')}
+        return;
       }
+
+      $updatePreviewThumbJs
     },
   });
 });
@@ -2893,6 +2898,27 @@ JS, [
     }
 
     /**
+     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
+     * Assets field’s editor slideout.
+     *
+     * @param string $elementJs JavaScript expression for a jQuery object within the slideout
+     * @return string
+     */
+    private function _replaceSlideoutAssetJs(string $elementJs): string
+    {
+        return <<<JS
+// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
+// since it's still editing the old asset
+const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
+if (slideout && slideout.settings.elementSelectInput) {
+    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+        .then(() => slideout.closeMeMaybe())
+        .catch(() => {});
+}
+JS;
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
@@ -3005,12 +3031,7 @@ $('#$editBtnId').on('activate', () => {
         allowDegreeFractions: Craft.isImagick,
         onSave: data => {
             if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset 
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
-                }
+                {$this->_replaceSlideoutAssetJs("$('#$editBtnId')")}
                 return;
             }
 
