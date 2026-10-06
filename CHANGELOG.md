@@ -105,12 +105,12 @@
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530))
 - Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
 - Fixed a bug where field condition rules within field layout components weren’t getting updated when a custom field was replaced within the layout. ([#19515](https://github.com/craftcms/cms/pull/19515))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc, GHSA-xmwr-88vw-5ghh)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7rr3-4jcm-x526)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) account hijack vulnerability. (GHSA-xh42-494x-2xgv)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-pcmv-c398-gc5m, GHSA-4w9w-3x96-7ghp, GHSA-j697-8x93-7mp2)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-w643-x88w-6wcm)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-j6r9-fxgv-j7x5)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. ([GHSA-g48f-wc2q-4rrv](https://github.com/craftcms/cms/security/advisories/GHSA-g48f-wc2q-4rrv), [GHSA-wr79-9v6x-5rfq](https://github.com/craftcms/cms/security/advisories/GHSA-wr79-9v6x-5rfq), [GHSA-qm9x-rmcj-h2rc](https://github.com/craftcms/cms/security/advisories/GHSA-qm9x-rmcj-h2rc), [GHSA-xmwr-88vw-5ghh](https://github.com/craftcms/cms/security/advisories/GHSA-xmwr-88vw-5ghh))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-7rr3-4jcm-x526](https://github.com/craftcms/cms/security/advisories/GHSA-7rr3-4jcm-x526))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) account hijack vulnerability. ([GHSA-xh42-494x-2xgv](https://github.com/craftcms/cms/security/advisories/GHSA-xh42-494x-2xgv))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-pcmv-c398-gc5m](https://github.com/craftcms/cms/security/advisories/GHSA-pcmv-c398-gc5m), [GHSA-4w9w-3x96-7ghp](https://github.com/craftcms/cms/security/advisories/GHSA-4w9w-3x96-7ghp), [GHSA-j697-8x93-7mp2](https://github.com/craftcms/cms/security/advisories/GHSA-j697-8x93-7mp2))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-w643-x88w-6wcm](https://github.com/craftcms/cms/security/advisories/GHSA-w643-x88w-6wcm))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-j6r9-fxgv-j7x5](https://github.com/craftcms/cms/security/advisories/GHSA-j6r9-fxgv-j7x5))
 
 ## 5.10.14 - 2026-08-18
 
