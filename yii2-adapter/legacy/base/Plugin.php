@@ -231,7 +231,12 @@ class Plugin extends Module implements PluginInterface
             return;
         }
 
-        $model->setAttributes($settings);
+        /**
+         * Not safe-only: these are the plugin's own stored settings, not user
+         * input, and an attribute without a validation rule would otherwise be
+         * dropped on load while saving fine.
+         */
+        $model->setAttributes($settings, false);
     }
 
     /**
