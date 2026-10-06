@@ -45,6 +45,7 @@
 - `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed a bug where `craft\base\Plugin::getVersion()` returned `1.0` for Craft 5 plugins, rather than the version from their Composer manifest. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Fixed a bug where Craft 5 plugins’ stored settings that didn’t have a validation rule weren’t loaded, so they reverted to their default values. ([#19850](https://github.com/craftcms/cms/pull/19850))
+- Fixed an error that occurred when `Craft::getAlias()` was passed a value that wasn’t an alias, such as `null`. Non-alias values are now returned unchanged, as they were in Craft 5. ([#19853](https://github.com/craftcms/cms/pull/19853))
 - Fixed a bug where legacy batched queue jobs failed on their second item when run by Laravel’s queue worker. ([#19835](https://github.com/craftcms/cms/pull/19835))
 - Fixed an error where MCP CORS preflight requests collected admin instructions without an authenticated user.
 - Fixed an error that occurred when registering asset bundles that depend on `craft\web\assets\htmx\HtmxAsset`. The bundle is now deprecated and doesn’t register htmx, so plugins that rely on htmx should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
