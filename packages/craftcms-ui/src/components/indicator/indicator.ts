@@ -2,7 +2,7 @@ import {css, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
-import {colors} from '@src/constants/colors';
+import {Color, colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 import {Appearance} from '@src/constants/appearances';
 
@@ -39,20 +39,27 @@ export default class CraftIndicator extends LitElement {
         border-color: var(--_fill);
       }
 
-      /* Appearances */
-      :host([appearance~='outline-fill']) .indicator {
-        background: var(--_fill);
-        border: 1px solid rgba(0, 0, 0, 0.5);
+      /*
+       * Appearances. Classes rather than :host([appearance]) selectors, because
+       * the default depends on the fill (see effectiveAppearance), and an
+       * unset appearance isn't reflected to the attribute.
+       */
+      .indicator--outline-fill {
+        border-color: rgba(0, 0, 0, 0.5);
       }
 
-      :host([appearance~='solid']) .indicator {
-        background: var(--_fill);
+      /* A dark outline would vanish against a black dot. */
+      .indicator--outline-fill.indicator--black {
+        border-color: var(--color-white);
+      }
+
+      .indicator--solid {
         border-color: transparent;
       }
 
-      :host([appearance~='outline']) .indicator {
+      .indicator--outline {
         background: transparent;
-        border: 1px solid var(--_fill);
+        border-color: var(--_fill);
       }
     `,
   ];
@@ -84,12 +91,27 @@ export default class CraftIndicator extends LitElement {
   label: string | null = null;
 
   /**
-   * How the dot is drawn: `solid` (the default) is filled with no outline,
-   * `outline-fill` is filled with a subtle outline, and `outline` is a hollow
-   * ring over a transparent centre.
+   * How the dot is drawn: `solid` is filled with no outline, `outline-fill` is
+   * filled with a subtle outline (white on a black dot), and `outline` is a
+   * hollow ring over a transparent centre.
+   *
+   * Defaults to `outline-fill` for white and black fills, which would
+   * otherwise disappear against a light or dark surface, and `solid` for
+   * everything else.
    */
   @property({reflect: true})
-  appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.Solid;
+  appearance?: 'solid' | 'outline-fill' | 'outline';
+
+  /** The appearance to draw: the one set, or the default for the fill. */
+  private get effectiveAppearance(): 'solid' | 'outline-fill' | 'outline' {
+    if (this.appearance) {
+      return this.appearance;
+    }
+
+    return this.fill === Color.White || this.fill === Color.Black
+      ? Appearance.OutlineFill
+      : Appearance.Solid;
+  }
 
   protected getFill() {
     // If the fill is known swatch
@@ -125,7 +147,8 @@ export default class CraftIndicator extends LitElement {
       role="${this.label ? 'img' : nothing}"
       class="${classMap({
         indicator: true,
-        'indicator--outline': this.appearance === Appearance.Outline,
+        [`indicator--${this.effectiveAppearance}`]: true,
+        'indicator--black': this.fill === Color.Black,
       })}"
     ></span>`;
   }
