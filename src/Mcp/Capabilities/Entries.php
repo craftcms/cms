@@ -221,9 +221,9 @@ readonly class Entries
     /**
      * @param  array<string, mixed>  $attributes  Built-in entry attributes.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
-     * @return array{entry: array<string, mixed>}
+     * @return array{entry: array<string, mixed>}|array{entry: array<string, mixed>, savedAsDraft: true, instructions: string, nextToolCall: array{name: 'workflows.submit', arguments: array{type: 'entries', id: int, siteId: int}}}
      */
-    #[McpTool(name: 'entries.create', description: 'Creates a Craft CMS entry. Use entries.field-schema to discover custom fields.')]
+    #[McpTool(name: 'entries.create', description: 'Creates a Craft CMS entry. Use entries.field-schema to discover custom fields. In a section with an approval workflow, an enabled entry is saved as an unpublished draft; the result then sets savedAsDraft and suggests the next tool call.')]
     public function create(
         #[Schema(definition: self::CreateAttributesSchema)]
         array $attributes,
@@ -236,7 +236,7 @@ readonly class Entries
         $this->populate($entry, $attributes, $fields, $actor);
         $this->authorizeSave($actor, $entry);
 
-        return ['entry' => $this->save($entry, $actor)];
+        return $this->save($entry, $actor);
     }
 
     /**
@@ -245,11 +245,11 @@ readonly class Entries
      * @param  int|null  $siteId  Site ID to load the entry in.
      * @param  array<string, mixed>  $attributes  Built-in entry attributes to update.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
-     * @return array{entry: array<string, mixed>}
+     * @return array{entry: array<string, mixed>}|array{entry: array<string, mixed>, savedAsDraft: true, instructions: string, nextToolCall: array{name: 'workflows.submit', arguments: array{type: 'entries', id: int, siteId: int}}}
      */
     #[McpTool(
         name: 'entries.update',
-        description: 'Updates a Craft CMS entry. Use entries.field-schema to discover custom fields.',
+        description: 'Updates a Craft CMS entry. Use entries.field-schema to discover custom fields. In a section with an approval workflow, changes to an enabled entry are saved as a new draft and the entry itself is unchanged; the result then sets savedAsDraft and suggests the next tool call.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(
@@ -274,7 +274,7 @@ readonly class Entries
         $this->populate($entry, $attributes, $fields, $actor);
         $this->authorizeSave($actor, $entry);
 
-        return ['entry' => $this->save($entry, $actor)];
+        return $this->save($entry, $actor);
     }
 
     /**
@@ -472,6 +472,7 @@ readonly class Entries
     }
 
     /** @return array<string, mixed> */
+    /** @return array{entry: array<string, mixed>}|array{entry: array<string, mixed>, savedAsDraft: true, instructions: string, nextToolCall: array{name: 'workflows.submit', arguments: array{type: 'entries', id: int, siteId: int}}} */
     private function save(Entry $entry, CraftUser $actor): array
     {
         try {
@@ -484,6 +485,25 @@ readonly class Entries
             throw new ToolCallException(implode("\n", $result->element->errors()->all()) ?: 'Entry could not be saved.');
         }
 
-        return $this->elementSerializer->serialize($result->element);
+        $saved = $result->element;
+        $serialized = ['entry' => $this->elementSerializer->serialize($saved)];
+
+        if (! $saved->getIsDraft()) {
+            return $serialized;
+        }
+
+        $instructions = $saved->getIsUnpublishedDraft()
+            ? "This section requires approval, so the entry was saved as an unpublished draft (ID {$saved->id}) instead of being published."
+            : "This section requires approval, so your changes were saved as a new draft (ID {$saved->id}). Entry {$saved->getCanonicalId()} is unchanged until the draft is approved and applied.";
+
+        return [
+            ...$serialized,
+            'savedAsDraft' => true,
+            'instructions' => $instructions.' Use the draft ID with the drafts.* and workflows.* tools; entries.get and entries.update do not load drafts. Submit the draft for review with workflows.submit, then publish it with drafts.apply once it is approved.',
+            'nextToolCall' => [
+                'name' => 'workflows.submit',
+                'arguments' => ['type' => 'entries', 'id' => $saved->id, 'siteId' => $saved->siteId],
+            ],
+        ];
     }
 }

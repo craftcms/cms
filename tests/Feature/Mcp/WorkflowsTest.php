@@ -106,6 +106,37 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
     expect(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Published);
 });
 
+it('saves enabled entries in a workflow section as drafts and suggests submitting them', function (string $tool, Closure $arguments, bool $unpublished): void {
+    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+
+    $saved = McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments($this)])
+        ->assertOk()
+        ->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.savedAsDraft', true)
+        ->assertJsonPath('result.structuredContent.nextToolCall.name', 'workflows.submit')
+        ->json('result.structuredContent');
+    $draft = EntryElement::find()->id($saved['entry']['id'])->drafts()->status(null)->one();
+
+    expect($draft)->not->toBeNull()
+        ->and($draft->getIsUnpublishedDraft())->toBe($unpublished)
+        ->and($saved['nextToolCall']['arguments'])->toBe(['type' => 'entries', 'id' => $draft->id, 'siteId' => $draft->siteId])
+        ->and($saved['instructions'])->toContain("ID {$draft->id}")
+        ->and(EntryElement::find()->id($this->entry->id)->one()->title)->toBe('Canonical title');
+
+    McpRequest::send($this, 'tools/call', $saved['nextToolCall'])
+        ->assertOk()
+        ->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.review.status', 'pending');
+})->with([
+    'new entry' => ['entries.create', fn ($test): array => ['attributes' => [
+        'sectionId' => $test->section->id,
+        'typeId' => $test->entry->typeId,
+        'title' => 'Proposed entry',
+        'enabled' => true,
+    ]], true],
+    'existing entry' => ['entries.update', fn ($test): array => ['id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
+]);
+
 it('distinguishes re-review from restarting and rejects obsolete review targets', function (): void {
     $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
     $target = ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']];

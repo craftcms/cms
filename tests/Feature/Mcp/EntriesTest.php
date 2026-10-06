@@ -120,11 +120,12 @@ it('reads custom fields on demand and expands only one level of nested content',
 it('manages entries through MCP', function () {
     $entries = app(Entries::class);
     $fieldSchema = $entries->fieldSchema(sectionId: $this->section->id)['schema'];
-    $created = $entries->create([
+    $createResult = $entries->create([
         'sectionId' => $this->section->id,
         'title' => 'First title',
         'enabled' => true,
-    ], ['summary' => 'Original summary'])['entry'];
+    ], ['summary' => 'Original summary']);
+    $created = $createResult['entry'];
     $listed = $entries->list([
         'sectionId' => $this->section->id,
         'status' => null,
@@ -148,6 +149,7 @@ it('manages entries through MCP', function () {
         'required' => ['summary'],
         'additionalProperties' => false,
     ])
+        ->and(array_keys($createResult))->toBe(['entry'])
         ->and($created['authorId'])->toBe(User::query()->firstOrFail()->id)
         ->and($created['summary'])->toBe('Original summary')
         ->and($listed['entries'])->toHaveCount(1)
