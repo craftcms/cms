@@ -101,11 +101,8 @@
     @close="emit('close')"
     @submit="submit"
   >
-    <FormRenderer
-      v-if="modal"
-      ref="renderer"
-      :payload="modal.form"
-      :errors="errors"
-    />
+    <craft-field-group v-if="modal">
+      <FormRenderer ref="renderer" :payload="modal.form" :errors="errors" />
+    </craft-field-group>
   </ModalForm>
 </template>
