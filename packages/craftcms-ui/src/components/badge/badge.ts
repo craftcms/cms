@@ -1,5 +1,5 @@
 import {html, LitElement, nothing} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import styles from './badge.styles.js';
 import {Color, type ColorValue} from '@src/constants/colors';
@@ -37,6 +37,58 @@ export default class CraftBadge extends LitElement {
   /** The badge's scale: `small`, `medium` (the default), or `large`. */
   @property() size: SizeValue = Size.Medium;
 
+  /**
+   * Whether the default slot holds a label, as opposed to the badge being a
+   * bare indicator. A labelled badge takes a control's height, so it lines up
+   * with the buttons and inputs it sits beside.
+   */
+  @state() private hasLabel = false;
+
+  /** Whether anything is slotted into `suffix`. */
+  @state() private hasSuffix = false;
+
+  /**
+   * Watches the light DOM for what the label and suffix slots would hold. They
+   * aren't rendered while empty, so there's no slot to fire `slotchange`.
+   */
+  private readonly contentObserver = new MutationObserver(() =>
+    this.readContent()
+  );
+
+  /**
+   * Read before the first render, so an empty region never renders and a
+   * labelled badge never renders a frame at the wrong height.
+   */
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.readContent();
+    this.contentObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.contentObserver.disconnect();
+  }
+
+  private readContent(): void {
+    const children = [...this.childNodes];
+
+    this.hasLabel = children.some(
+      (node) =>
+        (node instanceof Element && !node.hasAttribute('slot')) ||
+        (node.nodeType === Node.TEXT_NODE && node.textContent!.trim() !== '')
+    );
+    this.hasSuffix = children.some(
+      (node) => node instanceof Element && node.slot === 'suffix'
+    );
+  }
+
   /** The resolved color value used for the badge fill. */
   private getFill(): ColorValue {
     return this.fill;
@@ -58,22 +110,25 @@ export default class CraftBadge extends LitElement {
           badge: true,
           'badge--small': this.size === Size.Small,
           'badge--large': this.size === Size.Large,
+          'badge--labelled': this.hasLabel,
         })}"
       >
-        <span class="badge__prefix">
-          ${this.noPrefix
-            ? nothing
-            : html` <slot name="prefix" part="prefix">
+        ${this.noPrefix
+          ? nothing
+          : html`<span class="badge__prefix">
+              <slot name="prefix" part="prefix">
                 <craft-indicator
                   part="indicator"
                   fill="${this.getFill()}"
                 ></craft-indicator>
-              </slot>`}
-        </span>
-        <slot></slot>
-        <span class="badge__suffix">
-          <slot name="suffix" part="suffix"></slot>
-        </span>
+              </slot>
+            </span>`}
+        ${this.hasLabel ? html`<slot></slot>` : nothing}
+        ${this.hasSuffix
+          ? html`<span class="badge__suffix">
+              <slot name="suffix" part="suffix"></slot>
+            </span>`
+          : nothing}
       </span>
     `;
   }

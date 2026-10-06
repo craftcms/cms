@@ -56,7 +56,7 @@ describe('craft-badge', () => {
   });
 
   it('exposes its regions as parts', async () => {
-    const element = await createBadge();
+    const element = await createBadge({}, 'Live<span slot="suffix">2</span>');
     const parts = [...element.shadowRoot!.querySelectorAll('[part]')].map(
       (el) => el.getAttribute('part')
     );
@@ -64,5 +64,36 @@ describe('craft-badge', () => {
     expect(parts).toEqual(
       expect.arrayContaining(['badge', 'prefix', 'indicator', 'suffix'])
     );
+  });
+
+  /** Empty regions aren't rendered, so they take no space or gap. */
+  it('leaves out the label slot and suffix while they have no content', async () => {
+    const element = await createBadge({}, '');
+    const root = element.shadowRoot!;
+
+    expect(root.querySelector('slot:not([name])')).toBeNull();
+    expect(root.querySelector('.badge__suffix')).toBeNull();
+    expect(root.querySelector('.badge__prefix')).not.toBeNull();
+  });
+
+  it('leaves out the prefix with no-prefix', async () => {
+    const element = await createBadge({'no-prefix': ''});
+
+    expect(element.shadowRoot!.querySelector('.badge__prefix')).toBeNull();
+  });
+
+  /** The regions follow content added after the first render. */
+  it('renders a region once content arrives for it', async () => {
+    const element = await createBadge({}, '');
+    const suffix = document.createElement('span');
+    suffix.slot = 'suffix';
+    suffix.textContent = '2';
+    element.append('Live', suffix);
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    const root = element.shadowRoot!;
+
+    expect(root.querySelector('slot:not([name])')).not.toBeNull();
+    expect(root.querySelector('.badge__suffix')).not.toBeNull();
   });
 });

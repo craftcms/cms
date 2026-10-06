@@ -2,6 +2,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
 import {expect} from 'storybook/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './badge.js';
@@ -108,5 +109,7 @@ export const CustomPrefix: Story = {
     const [prefix] = slot.assignedElements();
     await expect(prefix).toBeTruthy();
     await expect(prefix?.tagName.toLowerCase()).toBe('craft-icon');
+    // … and keeps its own accessible name, since it says more than the label.
+    await expect(computeAccessibleName(prefix!)).toBe('Done');
   },
 };

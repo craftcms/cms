@@ -296,6 +296,10 @@ readonly class ElementDeletions
                 $this->elementCaches->invalidateForElement($element);
 
                 if ($element->hardDelete) {
+                    // Remove drafts and revisions first. Otherwise PostgreSQL can null their elements' canonicalId after
+                    // cascading away their draft or revision rows, which violates the draftId or revisionId foreign key.
+                    DB::table(Table::DRAFTS)->where('canonicalId', $element->id)->delete();
+                    DB::table(Table::REVISIONS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::ELEMENTS)->delete($element->id);
                     DB::table(Table::SEARCHINDEX)
                         ->where('elementId', $element->id)

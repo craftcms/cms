@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
@@ -156,7 +157,7 @@ trait QueriesRolesAndPermissions
         if (is_string($value) && ! is_numeric($value)) {
             // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
             $value = DB::table(Table::USERPERMISSIONS)
-                ->where('name', strtolower($value))
+                ->where(new Lower('name'), strtolower($value))
                 ->select('id')
                 ->value('id') ?? false;
         }
