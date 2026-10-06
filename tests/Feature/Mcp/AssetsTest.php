@@ -84,8 +84,7 @@ it('accepts client file references through MCP and stores the downloaded bytes',
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
     $temporaryFiles = File::files(Path::temp());
 
-    $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools');
-    $create = collect($tools)->firstWhere('name', 'assets.create');
+    $create = collect(McpRequest::tools($this))->firstWhere('name', 'assets.create');
 
     expect($create['_meta']['openai/fileParams'])->toBe(['file'])
         ->and($create['inputSchema']['properties']['file']['properties'])->toHaveKeys(['download_url', 'file_id', 'mime_type', 'file_name'])
@@ -295,8 +294,7 @@ describe('file replacement', function (): void {
                 $arguments['filename'] = 'replacement.txt';
             }
 
-            $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools');
-            expect(collect($tools)->firstWhere('name', 'assets.replace')['_meta']['openai/fileParams'])->toBe(['file']);
+            expect(collect(McpRequest::tools($this))->firstWhere('name', 'assets.replace')['_meta']['openai/fileParams'])->toBe(['file']);
         }
 
         McpRequest::send($this, 'tools/call', [

@@ -24,6 +24,27 @@ class McpRequest
     }
 
     /**
+     * Lists every tool on the authenticated server, following pagination cursors.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function tools(TestCase $test): array
+    {
+        $tools = [];
+        $cursor = null;
+
+        do {
+            $result = self::send($test, 'tools/list', $cursor === null ? [] : ['cursor' => $cursor])
+                ->assertOk()
+                ->json('result');
+            $tools = [...$tools, ...$result['tools']];
+            $cursor = $result['nextCursor'] ?? null;
+        } while ($cursor !== null);
+
+        return $tools;
+    }
+
+    /**
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
      */

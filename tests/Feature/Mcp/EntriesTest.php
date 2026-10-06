@@ -195,7 +195,7 @@ it('requires paginated queries for large nested collections', function (): void 
         ->and($lastPage)->toHaveCount(1)
         ->and(array_intersect(array_column($firstPage, 'id'), array_column($lastPage, 'id')))->toBe([]);
 
-    $entries->delete(id: $lastPage[0]['id'], hardDelete: true);
+    $entries->delete(id: $lastPage[0]['id']);
 
     expect($entries->get(id: $result->element->id, fields: ['largeBlocks'])['entry']['largeBlocks'])->toHaveCount(100);
 });
