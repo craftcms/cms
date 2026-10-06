@@ -57,8 +57,31 @@ describe('Markdown', function () {
             Markdown::FLAVOR_PRE_ENCODED,
             Markdown::FLAVOR_GFM,
             Markdown::FLAVOR_GFM_COMMENT,
+            Markdown::FLAVOR_CP_CONTENT,
             Markdown::FLAVOR_EXTRA,
         );
+    });
+
+    it('leaves indented markup alone under the control panel flavor', function () {
+        $markdown = "<div>\n    <div class=\"info\">\n        First paragraph.\n\n        Second paragraph.\n    </div>\n</div>";
+
+        $html = $this->markdown->parse($markdown, Markdown::FLAVOR_CP_CONTENT);
+
+        expect($html)
+            ->not->toContain('&lt;/div&gt;')
+            ->and(substr_count($html, '</div>'))->toBe(2);
+    });
+
+    it('reads indented markup as code under the comment flavor', function () {
+        $markdown = "<div>\n    <div class=\"info\">\n        First paragraph.\n\n        Second paragraph.\n    </div>\n</div>";
+
+        expect($this->markdown->parse($markdown, Markdown::FLAVOR_GFM_COMMENT))
+            ->toContain('&lt;/div&gt;');
+    });
+
+    it('still renders fenced code under the control panel flavor', function () {
+        expect($this->markdown->parse("Text\n\n```\ncode line\n```", Markdown::FLAVOR_CP_CONTENT))
+            ->toContain('<pre><code>code line');
     });
 
     it('supports extending flavors with lazy callables', function () {
