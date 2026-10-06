@@ -150,7 +150,11 @@ class AssetsController extends Controller
         $width = $this->request->getRequiredParam('width');
         $height = $this->request->getRequiredParam('height');
 
-        $asset = Asset::findOne($assetId);
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
+
+        $asset = Asset::findOne((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
@@ -1495,8 +1499,11 @@ class AssetsController extends Controller
         $this->requireCpRequest();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
 
-        $asset = Asset::findOne($assetId);
+        $asset = Asset::findOne((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
