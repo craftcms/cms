@@ -10,18 +10,21 @@ use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -169,6 +172,53 @@ readonly class Assets
         }
 
         return ['asset' => $this->elementSerializer->serialize($asset, fields: $fields)];
+    }
+
+    /**
+     * @param  array<string, mixed>|string  $transform  Named image transform handle or inline transform parameters.
+     * @param  int|null  $id  Asset ID.
+     * @param  string|null  $uid  Asset UID.
+     * @param  int|null  $siteId  Site ID to load the asset in.
+     * @param  string|null  $transformer  Existing asset transformer handle. Defaults to the volume's transformer, then the configured default.
+     * @return array{url: string, mimeType: string, width: int|null, height: int|null}
+     */
+    #[McpTool(
+        name: 'assets.transform-url',
+        description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Honors the selected transformer\'s generation settings, so this may queue or generate a transform and return a temporary generation URL.',
+        annotations: new ToolAnnotations(readOnlyHint: false, destructiveHint: false),
+    )]
+    public function transformUrl(
+        #[Schema(definition: [
+            'anyOf' => [
+                ['type' => 'string', 'minLength' => 1],
+                ['type' => 'object', 'additionalProperties' => true],
+            ],
+        ])]
+        array|string $transform,
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?int $siteId = null,
+        ?string $transformer = null,
+    ): array {
+        $asset = $this->find($id, $uid, $siteId);
+
+        if (! $asset || ! Gate::forUser($this->actor->user())->allows('view', $asset)) {
+            throw new ToolCallException('Asset not found.');
+        }
+
+        try {
+            $result = $asset->transform($transform, $transformer);
+        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
+        }
+
+        return [
+            'url' => $result->url,
+            'mimeType' => $result->mimeType,
+            'width' => $result->width,
+            'height' => $result->height,
+        ];
     }
 
     /**
