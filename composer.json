@@ -180,6 +180,7 @@
     "allow-plugins": {
       "craftcms/plugin-installer": true,
       "pestphp/pest-plugin": true,
+      "php-http/discovery": true,
       "yiisoft/yii2-composer": true
     }
   },
