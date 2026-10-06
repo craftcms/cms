@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -41,7 +40,6 @@ readonly class SettingsForm
     public function __construct(
         private CapabilityDiscovery $capabilities,
         private Fields $fields,
-        private GeneralConfig $generalConfig,
         private PublicElementTypes $publicElementTypes,
         private Sections $sections,
         private Sites $sites,
@@ -55,7 +53,7 @@ readonly class SettingsForm
 
         return Form::make([
             Heading::make('mcp-connection-heading', t('Connection'))
-                ->description($this->authenticationDescription()),
+                ->description(t('Clients authenticate through Laravel Passport. The authorizing user must have control panel access and the “Use Craft MCP” permission.')),
             Field::make(t('MCP Endpoint'), Text::make('endpoint')->monospace()->mode(ControlMode::ReadOnly))
                 ->instructions(t('Use this URL when connecting an authenticated MCP client to Craft.'))
                 ->actions(CopyAttribute::make('mcp-endpoint-copy', $endpoint)),
@@ -141,15 +139,6 @@ readonly class SettingsForm
     {
         return Field::make($label, Lightswitch::make($attribute))
             ->instructions($instructions);
-    }
-
-    private function authenticationDescription(): string
-    {
-        if (app()->hasDebugModeEnabled() && ! is_null($this->generalConfig->mcp->debugUserId)) {
-            return t('Authentication uses the configured MCP debug user.');
-        }
-
-        return t('Clients authenticate through Laravel Passport. The authorizing user must have control panel access and the “Use Craft MCP” permission.');
     }
 
     /** @return list<Permission> */

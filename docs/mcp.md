@@ -1,19 +1,20 @@
 # MCP server
 
-Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package and speaks the stateless HTTP transport for protocol version `2026-07-28`.
+Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Over HTTP, it speaks the stateless transport for protocol version `2026-07-28`. Over stdio, it speaks the session-based protocol that local MCP clients use.
 
-Craft runs two MCP servers:
+Craft runs three MCP servers:
 
 | Server        | URL                                     | Who can use it                                                     |
 | ------------- | --------------------------------------- | ------------------------------------------------------------------ |
 | Authenticated | `{cpTrigger}/mcp`, such as `/admin/mcp` | Users with the **Access the control panel** and **Use Craft MCP** permissions, through OAuth |
 | Public        | Configurable, `/mcp` by default         | Anyone, but only for capabilities and content an administrator has approved |
+| Stdio         | `php craft mcp:serve --user=…`          | Whoever can run Craft's CLI, acting as the named user with the **Use Craft MCP** permission |
 
-The authenticated server is always registered. The public server is disabled until an administrator enables it under **Settings → MCP**.
+The authenticated and stdio servers are always available. The public server is disabled until an administrator enables it under **Settings → MCP**.
 
 ## How a request is handled
 
-Both servers are stateless. Every request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message.
+The HTTP servers are stateless. Every request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message.
 
 ```mermaid
 sequenceDiagram
@@ -42,7 +43,7 @@ Discovery combines two sources:
 
 Discovery then filters the result for the current request. A capability the user may not use is absent from `tools/list`, `resources/list`, and `prompts/list`, and calling it directly returns the same `-32602` error as an unknown capability.
 
-Every authenticated and public MCP request runs inside an `MCP` activity origin. Activity events recorded during the request, including events recorded by queued jobs it dispatches, are labeled with that origin. See [Activity logging](activity-logging.md).
+Every MCP request and stdio message runs inside an `MCP` activity origin. Activity events recorded during the request, including events recorded by queued jobs it dispatches, are labeled with that origin. See [Activity logging](activity-logging.md).
 
 ### Capabilities
 
@@ -85,7 +86,6 @@ return GeneralConfig::create()
     ->mcp([
         'endpoint' => 'mcp',
         'middleware' => [MyMcpMiddleware::class],
-        'debugUserId' => null,
     ]);
 ```
 
@@ -93,9 +93,47 @@ return GeneralConfig::create()
 | ------------- | ------------------------------------------------------------------------------------------------- |
 | `endpoint`    | Path below the control panel trigger. Defaults to `mcp`.                                          |
 | `middleware`  | Extra route middleware appended to the authenticated server and its upload routes.                |
-| `debugUserId` | When debug mode is on, authenticates every request as this user and skips OAuth. Never use it in production. |
+
+To try capabilities locally without completing an OAuth flow, [run the server over stdio](#running-the-server-over-stdio) instead.
 
 The public server is configured in the control panel. Its settings are stored in project config under `mcp`.
+
+## Running the server over stdio
+
+MCP clients that launch servers as local processes, such as desktop agents and coding assistants, can run Craft's MCP server through the CLI:
+
+```json
+{
+  "mcpServers": {
+    "craft": {
+      "command": "php",
+      "args": ["craft", "mcp:serve", "--user=editor@example.com"],
+      "cwd": "/path/to/project"
+    }
+  }
+}
+```
+
+The command is also available as `php artisan craft:mcp:serve`. `--user` accepts a user ID, username, or email address. The user must be active and have the **Use Craft MCP** permission. The **Access the control panel** permission is not required.
+
+### Authentication
+
+The stdio server does not use OAuth. Following the MCP specification, a stdio server takes its credentials from its environment. Anyone who can run Craft's CLI can already read its environment, database credentials, and application key, so a password or token would not add a security boundary.
+
+The `--user` option identifies whom the server acts as, rather than authenticating them. That identity matters because it drives the same checks as the authenticated HTTP server:
+
+- capability authorization attributes, such as `#[RequiresAdmin]` and `#[RequiresPermission]`;
+- per-record gate checks inside capabilities;
+- authorship of new content, and the actor on activity events.
+
+Stdio activity events are labeled with the `MCP` origin, as HTTP ones are.
+
+### Differences from the HTTP server
+
+- Capabilities are discovered once, when the session starts. Restart the client's server after changing the user's permissions or admin status.
+- Each message is handled in a fresh request scope, as each job in a queue worker is. Singleton services, such as those for fields, entry types, volumes, and project config, keep what they loaded for the life of the process. Restart the client's server after changing the content model elsewhere, such as in the control panel.
+- Capabilities marked with `#[RequiresHttp]`, such as `assets.upload.prepare`, are not offered. Use file references with `assets.create` and `assets.replace` instead.
+- The server writes only protocol messages to stdout. PHP errors go to stderr. Keep log channels that write to stdout disabled when running it.
 
 ## The public server
 
@@ -261,6 +299,7 @@ Every capability on the authenticated server already requires `accessCp` and `us
 | `#[RequiresPermission('handle')]` | The user has the permission. Repeat the attribute to require several permissions.   |
 | `#[RequiresAdmin]`                | The user is an administrator.                                                       |
 | `#[RequiresAdminChanges]`         | The user is an administrator and `allowAdminChanges` is enabled. Use it for tools that write project config. |
+| `#[RequiresHttp]`                 | The request arrived over HTTP. Use it for capabilities that return URLs authenticated by the MCP access token, which a stdio client does not have. |
 
 These attributes decide whether a capability is listed at all. They do not check access to individual records. Inside the method, authorize each element with Laravel's gate, as the `reviews.list` example does. `McpActor::user()` returns the authenticated user and throws a `ToolCallException` when there is none.
 

@@ -168,14 +168,14 @@ it('applies environment overrides when resolved', function () {
 it('materializes typed MCP configuration from JSON environment overrides', function () {
     app(ConfigRepository::class)->set('craft.general', []);
     app()->forgetInstance(GeneralConfig::class);
-    $_SERVER['CRAFT_MCP'] = '{"debugUserId":42,"middleware":["throttle:mcp"]}';
+    $_SERVER['CRAFT_MCP'] = '{"endpoint":"agents","middleware":["throttle:mcp"]}';
 
     new ConfigServiceProvider(app())->register();
 
     $config = app(GeneralConfig::class);
 
     expect($config->mcp)->toBeInstanceOf(McpConfig::class)
-        ->and($config->mcp->debugUserId)->toBe(42)
+        ->and($config->mcp->endpoint)->toBe('agents')
         ->and($config->mcp->middleware)->toBe(['throttle:mcp']);
 });
 

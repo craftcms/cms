@@ -18,8 +18,6 @@ class McpConfig extends BaseConfig
     /** @var list<string> */
     public array $middleware = [];
 
-    public ?int $debugUserId = null;
-
     /** @param array<string, mixed>|string $value */
     public static function fromConfig(array|string $value): self
     {
@@ -48,13 +46,6 @@ class McpConfig extends BaseConfig
     public function middleware(array $value): self
     {
         $this->middleware = array_values($value);
-
-        return $this;
-    }
-
-    public function debugUserId(?int $value): self
-    {
-        $this->debugUserId = $value;
 
         return $this;
     }

@@ -12,6 +12,7 @@ use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
+use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
@@ -19,7 +20,6 @@ use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
 use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
-use CraftCms\Cms\Mcp\Http\Middleware\UseDebugMcpUser;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
 use CraftCms\Cms\Mcp\OAuth\Metadata;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -73,6 +73,10 @@ class McpServiceProvider extends ServiceProvider
         Routes $routes,
         Metadata $metadata,
     ): void {
+        $this->commands([
+            ServeCommand::class,
+        ]);
+
         $this->app->booted(function (): void {
             $scopes = Passport::scopes()
                 ->mapWithKeys(fn (Scope $scope): array => [$scope->id => $scope->description])
@@ -109,9 +113,6 @@ class McpServiceProvider extends ServiceProvider
     private function registerRoutes(Router $router, Routes $routes, Metadata $metadata): void
     {
         $config = Cms::config()->mcp;
-        $authentication = $this->app->hasDebugModeEnabled() && ! is_null($config->debugUserId)
-            ? [UseDebugMcpUser::class]
-            : [AddOAuthChallenge::class, ReorderJsonAccept::class, 'auth:craft-mcp', CheckToken::using(Metadata::SCOPE)];
         $middleware = [
             EnsureInstalled::class,
             AddLogContext::class,
@@ -120,7 +121,10 @@ class McpServiceProvider extends ServiceProvider
         ];
         $authenticatedMiddleware = [
             ...$middleware,
-            ...$authentication,
+            AddOAuthChallenge::class,
+            ReorderJsonAccept::class,
+            'auth:craft-mcp',
+            CheckToken::using(Metadata::SCOPE),
             'can:accessCp',
             'can:useCraftMcp',
             SetActivityOrigin::class,

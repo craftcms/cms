@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use Illuminate\Http\Request;
 use LogicException;
@@ -65,6 +66,23 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         return $this->filter(
             $discovered,
             fn (ElementReference $reference): bool => $this->isPublic($reference) && $this->allows($reference),
+        );
+    }
+
+    /**
+     * @param  list<string>  $directories
+     * @param  list<string>  $excludeDirs
+     * @param  list<string>  $namePatterns
+     */
+    public function discoverStdio(
+        string $basePath,
+        array $directories,
+        array $excludeDirs = [],
+        array $namePatterns = self::DEFAULT_NAME_PATERNS,
+    ): DiscoveryState {
+        return $this->filter(
+            $this->discover($basePath, $directories, $excludeDirs, $namePatterns),
+            fn (ElementReference $reference): bool => ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === [],
         );
     }
 

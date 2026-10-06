@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp;
 use CraftCms\Cms\Cms;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Schema\Enum\ProtocolVersion;
+use Mcp\Server;
 use Mcp\Server\Builder;
 use Mcp\Server\Stateless\StatelessProtocol;
 use Psr\Log\LoggerInterface;
@@ -21,43 +22,35 @@ readonly class ServerFactory
         private CapabilityContainer $container,
         private LoggerInterface $logger,
         private PublicCapabilityDiscovery $publicCapabilities,
+        private StdioCapabilityDiscovery $stdioCapabilities,
     ) {}
 
     public function admin(): StatelessProtocol
     {
-        return $this->make(['.']);
+        return $this->builder($this->capabilities)->buildStateless([ProtocolVersion::V2026_07_28]);
     }
 
     public function public(): StatelessProtocol
     {
-        return $this->make(
-            scanDirectories: ['.'],
+        return $this->builder(
             discoverer: $this->publicCapabilities,
             instructions: 'Use craft-context-get to inspect allowed public content, then craft-query to query element types that the site administrator has explicitly exposed.',
-        );
+        )->buildStateless([ProtocolVersion::V2026_07_28]);
     }
 
-    /**
-     * @param  list<string>  $scanDirectories
-     * @param  list<string>  $excludeDirectories
-     */
-    private function make(
-        array $scanDirectories,
-        array $excludeDirectories = [],
-        ?DiscovererInterface $discoverer = null,
-        ?string $instructions = null,
-    ): StatelessProtocol {
+    public function stdio(): Server
+    {
+        return $this->builder($this->stdioCapabilities)->build();
+    }
+
+    private function builder(DiscovererInterface $discoverer, ?string $instructions = null): Builder
+    {
         return new Builder()
             ->setServerInfo('Craft CMS', Cms::VERSION, 'Craft CMS MCP server')
             ->setContainer($this->container)
-            ->setDiscoverer($discoverer ?? $this->capabilities)
+            ->setDiscoverer($discoverer)
             ->setInstructions($instructions)
             ->setLogger($this->logger)
-            ->setDiscovery(
-                basePath: __DIR__.'/Capabilities',
-                scanDirs: $scanDirectories,
-                excludeDirs: $excludeDirectories,
-            )
-            ->buildStateless([ProtocolVersion::V2026_07_28]);
+            ->setDiscovery(basePath: __DIR__.'/Capabilities', scanDirs: ['.']);
     }
 }

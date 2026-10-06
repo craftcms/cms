@@ -19,6 +19,7 @@ use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
+use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
@@ -292,6 +293,7 @@ readonly class Assets
 
     /** @return array{upload: array<string, mixed>} */
     #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable upload. Provide folderId or volumeId for assets.create, or assetId for assets.replace.')]
+    #[RequiresHttp]
     public function prepareUpload(
         #[Schema(minLength: 1, maxLength: 255)]
         string $filename,
