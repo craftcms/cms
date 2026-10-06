@@ -16,6 +16,12 @@ import styles from './truncate.styles.js';
  * @example <craft-truncate>A label that might be too long to fit</craft-truncate>
  *
  * @slot - The content to truncate. Its text is used for the tooltip.
+ *
+ * @cssproperty --c-truncate-link-decoration - `text-decoration` for a link
+ *   slotted into the truncate. Unset by default, leaving the link's own.
+ *   `craft-chip` sets it to `none`.
+ * @cssproperty --c-truncate-link-hover-decoration - The same, while the link
+ *   is hovered. `craft-chip` sets it to `underline`.
  */
 export default class CraftTruncate extends LitElement {
   static override styles = styles;
