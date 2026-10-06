@@ -17,8 +17,11 @@ export interface ComboboxOptionData {
   keywords?: string;
   /** Secondary text rendered after the label. */
   hint?: string;
-  /** Renders a `craft-indicator` before the label. */
-  indicator?: {variant?: string} & Record<string, unknown>;
+  /**
+   * Renders a `craft-indicator` before the label. `fill` takes what the
+   * component's own does: a status variant, a palette swatch, or any colour.
+   */
+  indicator?: {fill?: string} & Record<string, unknown>;
   /** Name of a `craft-icon` rendered before the label, and in the textbox while this option is selected. */
   icon?: string;
   [key: string]: unknown;
@@ -615,11 +618,14 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         <span class="combobox__option">
           ${data.indicator
             ? html`<craft-indicator
-                variant=${data.indicator.variant ?? 'neutral'}
+                fill=${data.indicator.fill ?? nothing}
               ></craft-indicator>`
             : nothing}
           ${data.icon
-            ? html`<craft-icon name="${data.icon}"></craft-icon>`
+            ? html`<craft-icon
+                name="${data.icon}"
+                style=${data.color ? `--icon-color: ${data.color}` : nothing}
+              ></craft-icon>`
             : nothing}
           ${isEnv ? html`<code>${label}</code>` : label}
         </span>
