@@ -63,7 +63,7 @@ export default css`
     position: relative;
     /*
       The window the strip slides behind. Clipped so it stays the rule's width,
-      which the positioning maths centres the strip against.
+      which the positioning maths centers the strip against.
     */
     overflow: hidden;
 
@@ -141,7 +141,7 @@ export default css`
     /* The graduation element is the tick; the track supplies the spacing. */
     justify-self: start;
     /*
-      Centred on its point at the start of the track, so the cursor lines up
+      Centered on its point at the start of the track, so the cursor lines up
       and marks of any thickness align.
     */
     translate: -50%;
@@ -169,7 +169,7 @@ export default css`
     /* Clear of the tallest mark, so a taller graduation pushes the labels
        down with it rather than crowding them. */
     inset-block-start: calc(var(--_graduation-main-height) + var(--_label-gap));
-    /* Centred on the mark. */
+    /* Centered on the mark. */
     inset-inline-start: 50%;
     transform: translateX(-50%);
     display: none;

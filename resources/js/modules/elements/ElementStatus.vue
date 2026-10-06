@@ -48,17 +48,14 @@
     }
   });
 
-  const indicatorStyles = computed(() => {
-    // Empty string === all
-    if (!props.value) {
-      return {
-        '--background':
-          'transparent linear-gradient(60deg, #184cef, #e5422b) border-box',
-      };
-    }
-
-    return {};
-  });
+  // Empty string === all. `fill` takes any CSS value, so the gradient goes
+  // through it; only set when there is one, or the indicator's own fill would
+  // be overridden with nothing.
+  const indicatorBindings = computed(() =>
+    props.value
+      ? {}
+      : {fill: 'linear-gradient(60deg, #184cef, #e5422b) border-box'}
+  );
 
   const computedLabel = computed(
     () => props.label ?? capitalize(props.value.toString())
@@ -77,7 +74,7 @@
   >
     <craft-indicator
       :variant="variant"
-      :style="indicatorStyles"
+      v-bind="indicatorBindings"
     ></craft-indicator>
     {{ computedLabel }}
   </div>

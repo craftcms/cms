@@ -168,7 +168,7 @@ class Uploads
      * @param  Closure(UploadSession, Uploader): T  $callback
      * @return T
      */
-    private function withSession(Request $request, string $id, Closure $callback, bool $authorize = true, bool $allowExpired = false): mixed
+    public function withSession(Request $request, string $id, Closure $callback, bool $authorize = true, bool $allowExpired = false): mixed
     {
         return DB::transaction(function () use ($request, $id, $callback, $authorize, $allowExpired) {
             $session = UploadSession::query()->lockForUpdate()->findOrFail($id);

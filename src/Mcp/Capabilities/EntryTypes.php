@@ -1,0 +1,312 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Mcp\Capabilities;
+
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\EntryTypes as EntryTypeService;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
+use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
+use Mcp\Capability\Attribute\McpResource;
+use Mcp\Capability\Attribute\McpResourceTemplate;
+use Mcp\Capability\Attribute\Schema;
+use Mcp\Exception\ResourceReadException;
+use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Request\CallToolRequest;
+use Mcp\Server\RequestContext;
+
+/**
+ * @since 6.0.0
+ */
+readonly class EntryTypes
+{
+    public function __construct(
+        private EntryTypeService $entryTypes,
+        private FieldLayoutConfig $fieldLayouts,
+    ) {}
+
+    /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
+    #[RequiresAdmin]
+    public function list(): array
+    {
+        $entryTypes = $this->entryTypes
+            ->getAllEntryTypes()
+            ->map($this->serialize(...))
+            ->values();
+
+        return [
+            'count' => $entryTypes->count(),
+            'entryTypes' => $entryTypes->all(),
+        ];
+    }
+
+    /** @return array{entryType: array<string, mixed>} */
+    #[RequiresAdmin]
+    public function get(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?string $handle = null,
+    ): array {
+        if (count(Arr::whereNotNull([$id, $uid, $handle])) !== 1) {
+            throw new ToolCallException('Provide exactly one of: id, uid, handle.');
+        }
+
+        $entryType = $this->find($id, $uid, $handle);
+
+        if (! $entryType) {
+            throw new ToolCallException('Entry type not found.');
+        }
+
+        return ['entryType' => $this->serialize($entryType)];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
+     * @return array{entryType: array<string, mixed>}
+     */
+    #[RequiresAdminChanges]
+    public function create(
+        string $name,
+        string $handle,
+        ?string $description = null,
+        ?string $icon = null,
+        ?Color $color = null,
+        string $uiLabelFormat = '{title}',
+        ?string $titleFormat = null,
+        TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
+        ?string $titleTranslationKeyFormat = null,
+        bool $allowLineBreaksInTitles = false,
+        bool $showSlugField = true,
+        TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
+        ?string $slugTranslationKeyFormat = null,
+        bool $showStatusField = true,
+        bool $showPostDateField = true,
+        bool $showExpiryDateField = true,
+        #[Schema(definition: FieldLayoutConfig::Schema)]
+        ?array $fieldLayout = null,
+    ): array {
+        $entryType = new EntryType([
+            'name' => $name,
+            'handle' => $handle,
+            'description' => $description,
+            'icon' => $icon,
+            'color' => $color,
+            'uiLabelFormat' => $uiLabelFormat,
+            'titleFormat' => $titleFormat,
+            'titleTranslationMethod' => $titleTranslationMethod,
+            'titleTranslationKeyFormat' => $titleTranslationKeyFormat,
+            'allowLineBreaksInTitles' => $allowLineBreaksInTitles,
+            'showSlugField' => $showSlugField,
+            'slugTranslationMethod' => $slugTranslationMethod,
+            'slugTranslationKeyFormat' => $slugTranslationKeyFormat,
+            'showStatusField' => $showStatusField,
+            'showPostDateField' => $showPostDateField,
+            'showExpiryDateField' => $showExpiryDateField,
+        ]);
+
+        if ($fieldLayout !== null) {
+            $entryType->setFieldLayout($this->fieldLayouts->make($fieldLayout, Entry::class));
+        }
+
+        if (! $this->entryTypes->saveEntryType($entryType)) {
+            throw new ToolCallException($this->validationErrors($entryType));
+        }
+
+        return ['entryType' => $this->serialize($entryType)];
+    }
+
+    /**
+     * @param  string|null  $currentHandle  Existing entry type handle.
+     * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
+     * @return array{entryType: array<string, mixed>}
+     */
+    #[RequiresAdminChanges]
+    public function update(
+        RequestContext $context,
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?string $currentHandle = null,
+        ?string $name = null,
+        ?string $handle = null,
+        ?string $description = null,
+        ?string $icon = null,
+        ?Color $color = null,
+        string $uiLabelFormat = '{title}',
+        ?string $titleFormat = null,
+        TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
+        ?string $titleTranslationKeyFormat = null,
+        bool $allowLineBreaksInTitles = false,
+        bool $showSlugField = true,
+        TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
+        ?string $slugTranslationKeyFormat = null,
+        bool $showStatusField = true,
+        bool $showPostDateField = true,
+        bool $showExpiryDateField = true,
+        #[Schema(definition: FieldLayoutConfig::NullableSchema)]
+        ?array $fieldLayout = null,
+    ): array {
+        $entryType = $this->find($id, $uid, $currentHandle);
+
+        if (! $entryType) {
+            throw new ToolCallException('Entry type not found.');
+        }
+
+        $request = $context->getRequest();
+        assert($request instanceof CallToolRequest);
+
+        Typecast::configure($entryType, array_intersect_key([
+            'name' => $name,
+            'handle' => $handle,
+            'description' => $description,
+            'icon' => $icon,
+            'color' => $color,
+            'uiLabelFormat' => $uiLabelFormat,
+            'titleFormat' => $titleFormat,
+            'titleTranslationMethod' => $titleTranslationMethod,
+            'titleTranslationKeyFormat' => $titleTranslationKeyFormat,
+            'allowLineBreaksInTitles' => $allowLineBreaksInTitles,
+            'showSlugField' => $showSlugField,
+            'slugTranslationMethod' => $slugTranslationMethod,
+            'slugTranslationKeyFormat' => $slugTranslationKeyFormat,
+            'showStatusField' => $showStatusField,
+            'showPostDateField' => $showPostDateField,
+            'showExpiryDateField' => $showExpiryDateField,
+        ], $request->arguments));
+
+        if (array_key_exists('fieldLayout', $request->arguments)) {
+            $entryType->setFieldLayout($this->fieldLayouts->make(
+                $fieldLayout ?? [],
+                Entry::class,
+                $entryType->getFieldLayout(),
+            ));
+        }
+
+        if (! $this->entryTypes->saveEntryType($entryType)) {
+            throw new ToolCallException($this->validationErrors($entryType));
+        }
+
+        return ['entryType' => $this->serialize($entryType)];
+    }
+
+    /** @return array{deleted: true} */
+    #[RequiresAdminChanges]
+    public function delete(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        ?string $handle = null,
+    ): array {
+        $entryType = $this->find($id, $uid, $handle);
+
+        if (! $entryType) {
+            throw new ToolCallException('Entry type not found.');
+        }
+
+        if (! $this->entryTypes->deleteEntryType($entryType)) {
+            throw new ToolCallException('Entry type could not be deleted.');
+        }
+
+        return ['deleted' => true];
+    }
+
+    /** @return array{count: int, entryTypes: list<array<string, mixed>>} */
+    #[McpResource(
+        uri: 'craft://entry-types',
+        name: 'craft-entry-types',
+        title: 'Craft Entry Types',
+        description: 'A JSON list of Craft CMS entry types.',
+        mimeType: 'application/json',
+    )]
+    #[RequiresAdmin]
+    public function resource(): array
+    {
+        return $this->list();
+    }
+
+    /** @return array{entryType: array<string, mixed>} */
+    #[McpResourceTemplate(
+        uriTemplate: 'craft://entry-types/{entryType}',
+        name: 'craft-entry-types-get',
+        title: 'Craft Entry Type',
+        description: 'A JSON Craft CMS entry type record addressed by entry type ID, UID, or handle.',
+        mimeType: 'application/json',
+    )]
+    #[RequiresAdmin]
+    public function resourceByIdentifier(string $entryType): array
+    {
+        return ['entryType' => $this->serialize($this->resolveResourceEntryType($entryType))];
+    }
+
+    /** @return array{fieldLayout: array<string, mixed>} */
+    #[McpResourceTemplate(
+        uriTemplate: 'craft://field-layouts/entry-types/{entryType}',
+        name: 'craft-entry-types-field-layout',
+        title: 'Craft Entry Type Field Layout',
+        description: 'A JSON field layout addressed by its owning entry type ID, UID, or handle.',
+        mimeType: 'application/json',
+    )]
+    #[RequiresAdmin]
+    public function fieldLayoutResourceByIdentifier(string $entryType): array
+    {
+        $resolved = $this->resolveResourceEntryType($entryType);
+
+        return ['fieldLayout' => $this->fieldLayouts->serialize($resolved->getFieldLayout())];
+    }
+
+    private function resolveResourceEntryType(string $entryType): EntryType
+    {
+        $resolved = match (true) {
+            ctype_digit($entryType) => $this->find(id: (int) $entryType),
+            Str::isUuid($entryType) => $this->find(uid: $entryType),
+            default => $this->find(handle: $entryType),
+        };
+
+        if (! $resolved) {
+            throw new ResourceReadException('Entry type not found.');
+        }
+
+        return $resolved;
+    }
+
+    private function find(?int $id = null, ?string $uid = null, ?string $handle = null): ?EntryType
+    {
+        return match (true) {
+            $id !== null => $this->entryTypes->getEntryTypeById($id),
+            $uid !== null => $this->entryTypes->getEntryTypeByUid($uid),
+            $handle !== null => $this->entryTypes->getEntryTypeByHandle($handle),
+            default => null,
+        };
+    }
+
+    /** @return array<string, mixed> */
+    private function serialize(EntryType $entryType): array
+    {
+        $config = $entryType->getConfig();
+
+        unset($config['fieldLayouts']);
+
+        $layout = $entryType->getFieldLayout();
+
+        return [
+            'id' => $entryType->id,
+            'uid' => $entryType->uid,
+            ...$config,
+            'fieldLayout' => $this->fieldLayouts->serialize($layout),
+        ];
+    }
+
+    private function validationErrors(EntryType $entryType): string
+    {
+        return implode("\n", $entryType->errors()->all()) ?: 'Entry type could not be saved.';
+    }
+}

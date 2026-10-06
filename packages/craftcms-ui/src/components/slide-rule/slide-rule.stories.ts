@@ -71,7 +71,7 @@ export const InAForm: Story = {
   },
 };
 
-export const CentredOnZero: Story = {
+export const CenteredOnZero: Story = {
   args: {},
   async play({canvasElement}) {
     const rule = canvasElement.querySelector(
@@ -203,7 +203,7 @@ export const CustomColors: Story = {
       'rgb(124, 58, 237)'
     );
 
-    // Labels have no colour of their own — they take whatever text colour
+    // Labels have no color of their own — they take whatever text color
     // they land in, so they can never be the one thing that doesn't match.
     const label = rule.shadowRoot!.querySelector<HTMLElement>(
       '.main-graduation .label'
@@ -238,16 +238,16 @@ export const ValueIndicator: Story = {
     )!;
 
     const box = indicator.getBoundingClientRect();
-    const cursorCentre =
+    const cursorCenter =
       cursor.getBoundingClientRect().left + cursor.offsetWidth / 2;
-    const zeroCentre =
+    const zeroCenter =
       zero.getBoundingClientRect().left +
       zero.getBoundingClientRect().width / 2;
 
     // It runs from the mark for zero to the value under the cursor, landing
     // 4px past the 12th graduation rather than on it.
-    await expect(box.left).toBeCloseTo(zeroCentre, 0);
-    await expect(box.right).toBeCloseTo(cursorCentre, 0);
+    await expect(box.left).toBeCloseTo(zeroCenter, 0);
+    await expect(box.right).toBeCloseTo(cursorCenter, 0);
     await expect(box.width).toBeCloseTo(124, 0);
 
     // The same accent a selected row takes, so a selection reads the same
@@ -262,7 +262,7 @@ export const ValueIndicator: Story = {
 
     // And it sits behind the marks rather than over them.
     const atZero = rule.shadowRoot!.elementFromPoint(
-      zeroCentre,
+      zeroCenter,
       zero.getBoundingClientRect().top + 2
     );
 

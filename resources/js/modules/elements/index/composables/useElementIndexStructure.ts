@@ -251,7 +251,7 @@ export interface ResolveStructureMoveOptions {
 
 /**
  * Resolves a move into a placement, or `null` when it can't be made from the
- * rows at hand (no sibling to swap with, a neighbour on another page) or
+ * rows at hand (no sibling to swap with, a neighbor on another page) or
  * wouldn't change anything.
  *
  * Positions are worked out against the rows with the moved branch removed,

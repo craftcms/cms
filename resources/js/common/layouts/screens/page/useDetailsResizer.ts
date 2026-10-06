@@ -65,7 +65,7 @@ export function useDetailsResizer({
   });
 
   // The floor gives way on a viewport too narrow for both, rather than
-  // reporting a range the handle can't honour.
+  // reporting a range the handle can't honor.
   const minWidth = computed(() => Math.min(DETAILS_MIN_WIDTH, maxWidth.value));
 
   return useResizable({

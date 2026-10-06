@@ -167,7 +167,7 @@
   const created = shallowRef(new Map<string, NestedFormPayload>());
   /**
    * Presentation for those same blocks. Without it a block the server has just
-   * minted renders as a blank card — no entry type colour, no icon, no menu —
+   * minted renders as a blank card — no entry type color, no icon, no menu —
    * until the next save brings the field's own copy round.
    */
   const createdBlocks = shallowRef(new Map<string, BlockPresentation>());
@@ -1229,7 +1229,7 @@
       return {
         ...item,
         ...(bulk && BULK_LABEL[name] ? {label: BULK_LABEL[name]()} : {}),
-        // Craft 5 relabelled paste with what was actually on the clipboard.
+        // Craft 5 relabeled paste with what was actually on the clipboard.
         ...(name === 'paste' && pasteable.value.length
           ? {
               label: t('Paste {type} above', {

@@ -4,28 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
+use CraftCms\Cms\Auth\AuthenticationViews;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\UserEmailVerifying;
-use CraftCms\Cms\View\TemplateMode;
-use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
-use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +38,7 @@ abstract readonly class AuthenticationController
     public function __construct(
         protected GeneralConfig $generalConfig,
         protected AuthMethods $auth,
+        protected AuthenticationViews $views,
     ) {}
 
     protected function completeLogin(Request $request, CraftUser $user, bool $remember): Response
@@ -114,26 +111,11 @@ abstract readonly class AuthenticationController
      */
     protected function renderViewWithFallback(string $inertiaComponent, ?array $inertiaProps = null, array $data = []): View|InertiaResponse|Response
     {
-        $request = request();
-
-        // if this is a front-end request and a template exists for the requested path, render it
-        if (! $request->isCpRequest() && app(TemplateResolver::class)->exists($request->craftPath(), TemplateMode::Site)) {
-            return new TemplateRoute($request->craftPath(), $data, publicOnly: false)->handle($request);
-        }
-
-        TemplateMode::set(TemplateMode::Cp);
-
-        if ($request->isCpRequest()) {
-            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
-        }
-
-        // Front-end requests don't run through the `craft.cp` middleware group, so
-        // `HandleInertiaRequests` never gets a chance to prep the Inertia root view
-        // (headHtml/bodyHtml, shared props, etc). Invoke it manually since we're
-        // falling back to an Inertia-rendered response.
-        return app(HandleInertiaRequests::class)->handle(
-            $request,
-            fn (Request $request): Response => Inertia::render($inertiaComponent, $inertiaProps ?? $data)->toResponse($request),
+        return $this->views->render(
+            request: request(),
+            inertiaComponent: $inertiaComponent,
+            inertiaProps: $inertiaProps,
+            templateData: $data,
         );
     }
 

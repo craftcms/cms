@@ -53,3 +53,6 @@ issues; the rest need a deliberate, manual pass.
 Done when: axe is clean, the component's `.a11y.md` items are each verified
 by a test, and you've reported a keyboard and forced-colors check of the
 changed UI.
+
+## Write docs in US English
+Use US English spellings in JSDoc (component JSDoc feeds the custom elements manifest and Storybook API tables), `<component>.a11y.md` checklists, `.mdx` pages, story names and descriptions, comments, test names, and local variable names: color, behavior, center, labeled, canceling, gray, -ize/-ization. Keep names you don't own as they are: the `aria-labelledby` attribute, Lion's `addToAriaLabelledBy()`, Inertia's `cancelled` visit flag, and exported APIs like `HttpCancelledError`.

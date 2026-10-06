@@ -38,6 +38,7 @@ use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -56,7 +57,7 @@ class Workflows
         private readonly ProjectConfig $projectConfig,
     ) {}
 
-    /** @return Collection<int, Workflow> */
+    /** @return EloquentCollection<int, Workflow> */
     public function getAllWorkflows(): Collection
     {
         return Workflow::query()->get();
@@ -735,7 +736,7 @@ class Workflows
         $event = new WorkflowTransitioning($transition, $draft, $actor, $run, $note);
         event($event);
         if ($event->cancel) {
-            throw new WorkflowException('The workflow transition was cancelled.');
+            throw new WorkflowException('The workflow transition was canceled.');
         }
     }
 

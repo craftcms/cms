@@ -4,7 +4,7 @@ import type {LitElement, PropertyValues} from 'lit';
 type Constructor<T = object> = new (...args: any[]) => T;
 
 /** The Lion `FormControlMixin` members the mixin reads. */
-interface LabelledFormControl extends LitElement {
+interface LabeledFormControl extends LitElement {
   label: string;
 }
 
@@ -13,7 +13,7 @@ interface LabelledFormControl extends LitElement {
  * attribute, so styles that space the label from the control (such as
  * `baseFieldStyles`) only apply when there's a label to space.
  *
- * A control counts as labelled when its `label` — the `label` attribute or
+ * A control counts as labeled when its `label` — the `label` attribute or
  * property, or the text of the slotted `[slot=label]` element — isn't blank,
  * or when the slotted label contains an element (an icon, say). The attribute
  * is kept in sync after every update, and when the slotted label's content
@@ -23,7 +23,7 @@ interface LabelledFormControl extends LitElement {
  * class CraftThing extends HasLabel(LionInput) {}
  * ```
  */
-export const HasLabel = <T extends Constructor<LabelledFormControl>>(
+export const HasLabel = <T extends Constructor<LabeledFormControl>>(
   Base: T
 ) => {
   class HasLabelElement extends Base {

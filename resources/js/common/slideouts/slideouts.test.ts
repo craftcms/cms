@@ -265,7 +265,7 @@ describe('locally-built panels', () => {
     expect(slideoutPanels()).toHaveLength(1);
   });
 
-  it('honours the unsaved-changes prompt of the panel it replaces', async () => {
+  it('honors the unsaved-changes prompt of the panel it replaces', async () => {
     fetchSlideoutPage.mockResolvedValue({
       component: {render: () => null},
       props: {},

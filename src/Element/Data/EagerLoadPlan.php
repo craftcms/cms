@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Data;
 
 use Closure;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * @since 6.0.0
@@ -41,5 +42,8 @@ class EagerLoadPlan
          * this property and the criteria.
          */
         public ?array $siteIds = null,
+
+        /** @var Closure(ElementQueryInterface): void|null Applied after mapping criteria, before fetching targets. */
+        public ?Closure $configureQuery = null,
     ) {}
 }

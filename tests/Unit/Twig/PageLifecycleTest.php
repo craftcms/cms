@@ -203,6 +203,43 @@ describe('placeholder replacement', function () {
         expect($output)->toContain('.fallback');
     });
 
+    it('keeps a position’s assets on the stack when the output has no placeholder for it', function () {
+        $this->registry->css('.collected {}');
+
+        $output = $this->lifecycle->wrap(fn () => '<div>collected screen</div>');
+
+        expect($output)->toBe('<div>collected screen</div>')
+            ->and($this->registry->headHtml())->toContain('.collected');
+    });
+
+    it('puts a PageEnded override back on the stack when the output has no placeholder for it', function () {
+        Event::listen(PageEnded::class, function (PageEnded $event) {
+            $event->headHtml = '<link rel="stylesheet" href="cp.css">';
+            $event->bodyEndHtml = '<script src="jquery.js"></script>';
+        });
+
+        $output = $this->lifecycle->wrap(fn () => '<div>collected screen</div>');
+
+        expect($output)->toBe('<div>collected screen</div>')
+            ->and($this->registry->headHtml())->toContain('cp.css')
+            ->and($this->registry->bodyEndHtml())->toContain('jquery.js');
+    });
+
+    it('does not put a placeholder’s own override back on the stack', function () {
+        Event::listen(PageEnded::class, function (PageEnded $event) {
+            $event->headHtml = '<link rel="stylesheet" href="cp.css">';
+        });
+
+        $output = $this->lifecycle->wrap(function () {
+            echo PageLifecycle::HEAD_PLACEHOLDER;
+
+            return '';
+        });
+
+        expect($output)->toContain('cp.css')
+            ->and($this->registry->headHtml())->not->toContain('cp.css');
+    });
+
     it('produces empty strings when no assets registered and no PageEnded overrides', function () {
         $output = $this->lifecycle->wrap(function () {
             echo '<head>'.PageLifecycle::HEAD_PLACEHOLDER.'</head>';

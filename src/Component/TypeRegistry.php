@@ -123,7 +123,7 @@ abstract class TypeRegistry
     }
 
     /** @param class-string<T> $type */
-    private function validate(string $type): void
+    protected function validate(string $type): void
     {
         $contract = static::CONTRACT;
 

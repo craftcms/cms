@@ -69,7 +69,7 @@ const OVERFLOW_TOLERANCE = 1;
  * reachable by keyboard — a sighted keyboard or switch user with no pointer
  * otherwise can't read past the clamp (WCAG 2.1.1) — so when, and only when,
  * the content actually overflows, the pane makes its own scroll container a
- * labelled tab stop. Consumers don't (and shouldn't) put `tabindex` on the
+ * labeled tab stop. Consumers don't (and shouldn't) put `tabindex` on the
  * host: the host isn't the scroller, and browsers only scroll the focused
  * element or a scrollable *ancestor* of it, never a descendant.
  *

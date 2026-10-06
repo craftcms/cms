@@ -17,6 +17,7 @@ use Override;
  * @method static bool doesGroupHavePermission(int $groupId, string $checkPermission)
  * @method static bool saveGroupPermissions(int $groupId, string[] $permissions)
  * @method static \Illuminate\Support\Collection getPermissionsByUserId(int $userId)
+ * @method static \Illuminate\Support\Collection getDirectPermissionsByUserId(int $userId)
  * @method static bool validatePermission(string $permission)
  * @method static bool doesUserHavePermission(int $userId, string $checkPermission)
  * @method static bool saveUserPermissions(int $userId, string[] $permissions)
