@@ -227,7 +227,9 @@
 
 <template>
   <LayoutSlot v-if="tabs" name="content-tabs">
-    <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="bootTabs" />
+    <CpContainer>
+      <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="bootTabs" />
+    </CpContainer>
   </LayoutSlot>
 
   <LayoutSlot v-if="contentNotice" name="content-notices">
