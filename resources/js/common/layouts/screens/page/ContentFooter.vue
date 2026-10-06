@@ -3,13 +3,13 @@
    * The row below the content: whatever the page puts in `content-footer`
    * (pagination, meta info), then the form's save controls.
    */
-  import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
   import CpContainer from '@/common/components/CpContainer.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
-  import type {ActionItem, FormSaveOptions} from '@/common/types';
+  import type {FormSaveOptions} from '@/common/types';
+  import {formActionItems as buildFormActionItems} from '../formActionItems';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from '../types';
 
   const props = withDefaults(
@@ -40,30 +40,15 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  const slots =
-    defineSlots<
-      Pick<
-        ScreenSlots,
-        'content-footer' | 'additional-buttons' | 'submit-button'
-      >
-    >();
+  defineSlots<Pick<ScreenSlots, 'content-footer' | 'additional-buttons'>>();
 
-  const formActionItems = computed(() => [
-    ...props.defaultFormActions.map(defaultFormActionItem),
-    ...(props.formActions ?? []),
-  ]);
-
-  function defaultFormActionItem(action: DefaultFormAction): ActionItem {
-    if (action === 'saveAndContinueEditing') {
-      return {
-        label: t('Save and continue editing'),
-        onClick: () => emit('save', {redirect: false}),
-        shortcut: 'S',
-      };
-    }
-
-    throw new Error(`Unknown default form action: ${action}`);
-  }
+  const formActionItems = computed(() =>
+    buildFormActionItems(
+      props.defaultFormActions,
+      props.formActions,
+      (options) => emit('save', options)
+    )
+  );
 </script>
 
 <template>
@@ -83,11 +68,7 @@
         :submit-label="submitButtonLabel"
         :read-only="readOnly"
         :save-disabled="saveDisabled"
-      >
-        <template v-if="slots['submit-button']" #submit-button>
-          <slot name="submit-button"></slot>
-        </template>
-      </FormActions>
+      />
 
       <LayoutSlotOutlet name="additional-buttons">
         <slot name="additional-buttons"></slot>

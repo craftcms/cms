@@ -48,6 +48,7 @@
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
+  import {DEFAULT_FORM_ACTIONS} from './formActionItems';
   import CpContainer from '@/common/components/CpContainer.vue';
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
@@ -58,7 +59,7 @@
 
   const props = withDefaults(defineProps<ScreenProps>(), {
     form: null,
-    defaultFormActions: () => ['saveAndContinueEditing'],
+    defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
     fillViewport: false,
@@ -69,11 +70,7 @@
   // The slots each region renders, forwarded only when the page filled them
   // so the regions' own fallbacks still apply.
   const HEADER_SLOTS = ['title'] as const;
-  const FOOTER_SLOTS = [
-    'content-footer',
-    'additional-buttons',
-    'submit-button',
-  ] as const;
+  const FOOTER_SLOTS = ['content-footer', 'additional-buttons'] as const;
   const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
 
   const headerSlots = computed(() =>

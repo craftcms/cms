@@ -6,6 +6,7 @@
    * though the DOM is teleported into the shell.
    */
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+  import {isLayoutSlotName} from '@/common/composables/layoutSlotNames';
   import {useLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 
   const props = defineProps<{
@@ -16,6 +17,12 @@
      */
     scope?: string;
   }>();
+
+  if (import.meta.env.DEV && !isLayoutSlotName(props.name)) {
+    console.warn(
+      `[LayoutSlot] "${props.name}" isn't a known layout slot, so nothing will render it.`
+    );
+  }
 
   const registry = useLayoutSlotRegistry();
   const scope = computed(() => props.scope ?? registry.scope);

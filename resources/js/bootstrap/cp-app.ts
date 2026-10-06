@@ -21,6 +21,7 @@ import {registerFormComponents} from '@/modules/forms/register';
 import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
 import {registerWorkflowComponents} from '@/modules/workflows/register';
+import {registerLayoutComponents} from '@/common/layouts/register';
 
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
@@ -29,6 +30,7 @@ registerFormComponents(cpComponentRegistry);
 registerWidgetComponents(cpComponentRegistry);
 registerActivityComponents(cpComponentRegistry);
 registerWorkflowComponents(cpComponentRegistry, elementDetailsTabRegistry);
+registerLayoutComponents(cpComponentRegistry);
 
 export function installCpApp(app: App): void {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
