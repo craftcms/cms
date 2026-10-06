@@ -94,6 +94,7 @@ class EntryTypesController
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
+            ->addCrumb(t('Create a new entry type'))
             ->formAttributes([
                 'action' => Url::cpUrl('settings/entry-types'),
             ])
@@ -120,6 +121,7 @@ class EntryTypesController
             ->title(trim($entryTypeData->name) ?: t('Edit Entry Type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
+            ->addCrumb($entryTypeData->name)
             ->redirectUrl('settings/entry-types')
             ->inertiaPage('settings/entry-types/Edit', new EntryTypeEditViewModel(
                 $entryTypeData,
@@ -245,17 +247,13 @@ class EntryTypesController
 
         $entryType->setFieldLayout($this->fieldLayout);
 
-        $entryType->validate(throw: true);
-
-        if (! $this->fieldLayout->validate()) {
-            throw ValidationException::withMessages($this->fieldLayout->errors()->getMessages());
-        }
-
         if ($saveAsNew) {
             $this->fieldLayout->resetUids();
         }
 
-        $this->entryTypes->saveEntryType($entryType);
+        if (! $this->entryTypes->saveEntryType($entryType)) {
+            throw ValidationException::withMessages($entryType->errors()->getMessages());
+        }
 
         return $this->asModelSuccess(
             $entryType,

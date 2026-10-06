@@ -97,10 +97,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$sidebar =
         this.settings.$sidebar ??
         (this.isFullPage ? $('#details .details') : $());
-      this.formHost = this.$contentContainer.find(
-        'craft-entry-field-layout-form'
-      )[0];
-
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
 
@@ -1386,7 +1382,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   console.warn('Couldn’t save draft:', e);
                   reject(e);
                 });
-            } else if (this.formHost) {
+            } else if (this.getFormHost()) {
               resolve();
             } else {
               this.updateFieldLayout(data)
@@ -1911,12 +1907,46 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
+    /**
+     * The `<craft-entry-field-layout-form>` this editor drives, looked up on
+     * first use rather than when the editor is constructed.
+     *
+     * The host isn't necessarily in the document yet at construction: on a
+     * screen whose markup is mounted by the control panel's Vue shell, the
+     * ready-JS that calls `new Craft.ElementEditor()` can run before the content
+     * has been rendered. Capturing the host eagerly left it permanently
+     * undefined in that case, so every field-layout refresh threw and a nested
+     * element could never be added.
+     *
+     * `$contentContainer` is re-resolved for the same reason while it's still
+     * empty: it is captured eagerly too, and an empty jQuery set caches just as
+     * badly as a missing host.
+     */
+    getFormHost() {
+      if (this.formHost) {
+        return this.formHost;
+      }
+
+      if (this.isFullPage && !this.$contentContainer.length) {
+        this.$contentContainer =
+          this.settings.$contentContainer ?? $('#content');
+      }
+
+      this.formHost = this.$contentContainer.find(
+        'craft-entry-field-layout-form'
+      )[0];
+
+      return this.formHost;
+    },
+
     async _afterUpdateFieldLayout(response) {
-      if (!this.formHost || !response.data.form) {
+      const formHost = this.getFormHost();
+
+      if (!formHost || !response.data.form) {
         throw new Error('Entry Form refresh requires a Form host.');
       }
 
-      this.formHost.payload = response.data.form;
+      formHost.payload = response.data.form;
       const updateTabs =
         this.settings.updateTabs ??
         (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : null);

@@ -5,8 +5,8 @@ import type {FormPayload} from '@/modules/forms/types';
 describe('nestedOwnerId', () => {
   it('resolves the requested nested block owner rather than the root element', () => {
     const control = (path: string[], ownerId: number) => ({
-      type: 'NestedEntries',
-      component: 'craft:nested-entries',
+      type: 'NestedElements',
+      component: 'craft:nested-elements',
       mode: 'editable',
       path,
       deltaGroup: path,

@@ -11,7 +11,9 @@
         return context.widgetTypes;
       },
       getTypeInfo(type, property, fallback) {
-        const info = context.widgetTypes[type] ?? context.widgets.find((widget) => widget.type === type);
+        const info =
+          context.widgetTypes[type] ??
+          context.widgets.find((widget) => widget.type === type);
 
         return property ? (info?.[property] ?? fallback) : info;
       },
@@ -23,15 +25,18 @@
     window.dashboard = dashboard;
   });
 
-  window.addEventListener('craft:dashboard-unmounted', ({detail: {element}}) => {
-    const {previous, dashboard} = dashboards.get(element);
+  window.addEventListener(
+    'craft:dashboard-unmounted',
+    ({detail: {element}}) => {
+      const {previous, dashboard} = dashboards.get(element);
 
-    if (window.dashboard === dashboard) {
-      window.dashboard = previous;
+      if (window.dashboard === dashboard) {
+        window.dashboard = previous;
+      }
+
+      dashboards.delete(element);
     }
-
-    dashboards.delete(element);
-  });
+  );
 
   window.addEventListener('craft:widget-mounted', ({detail: context}) => {
     widgets.set(context.element, {context, api: null});
@@ -44,7 +49,13 @@
     if (!state || state.api) return;
 
     const {context} = state;
-    const api = new window.Craft.Widget(element, null, () => {}, context.widget.settings, context.widget.settingsForm);
+    const api = new window.Craft.Widget(
+      element,
+      null,
+      () => {},
+      context.widget.settings,
+      context.widget.settingsForm
+    );
     api.removeListener(api.$settingsBtn, 'click');
     api.showSettings = context.showSettings;
     api.hideSettings = context.hideSettings;

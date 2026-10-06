@@ -80,10 +80,10 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * @var PluginSettings|false|null The model used to store the plugin’s settings
+     * @var Model|PluginSettings|false|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private PluginSettings|false|null $_settings = null;
+    private Model|PluginSettings|false|null $_settings = null;
 
     /**
      * @inheritdoc
@@ -180,7 +180,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getSettings(): ?PluginSettings
+    public function getSettings(): Model|PluginSettings|null
     {
         if (!isset($this->_settings)) {
             $this->_settings = $this->createSettingsModel() ?: false;
@@ -295,9 +295,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Creates and returns the model used to store the plugin’s settings.
      *
-     * @return PluginSettings|null
+     * @return Model|PluginSettings|null
      */
-    protected function createSettingsModel(): ?PluginSettings
+    protected function createSettingsModel(): Model|PluginSettings|null
     {
         return null;
     }

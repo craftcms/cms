@@ -9,6 +9,7 @@ import {
   createColumnHelper,
   type DisplayColumnDef,
 } from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {AccessorParam} from '@/modules/admin-table/composables/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';
@@ -19,60 +20,76 @@ type ComponentProperties = Record<
   string | number | boolean | null | undefined
 >;
 
-type LinkColumnDef<T extends object> = AccessorColumnDef<T> & {
+type LinkColumnDef<T extends object> = AccessorColumnDef<
+  CraftTableFeatures,
+  T
+> & {
   props: (
-    cellContext: CellContext<T, unknown>
+    cellContext: CellContext<CraftTableFeatures, T, unknown>
   ) => ComponentProperties & {href: InertiaLinkProps['href']};
 };
 
-type HtmlColumnDef<T extends object> = AccessorColumnDef<T> & {
-  props: (cellContext: CellContext<T, unknown>) => ComponentProperties;
+type HtmlColumnDef<T extends object> = AccessorColumnDef<
+  CraftTableFeatures,
+  T
+> & {
+  props: (
+    cellContext: CellContext<CraftTableFeatures, T, unknown>
+  ) => ComponentProperties;
 };
 
 type DateColumnDef<T extends object> = {
   format?: string;
-  header?: ColumnDef<T>['header'];
+  header?: ColumnDef<CraftTableFeatures, T>['header'];
   size?: number;
-  meta?: ColumnDef<T>['meta'];
+  meta?: ColumnDef<CraftTableFeatures, T>['meta'];
 };
 
-export type CraftColumnHelper<T extends object> = ColumnHelper<T> & {
+export type CraftColumnHelper<T extends object> = ColumnHelper<
+  CraftTableFeatures,
+  T
+> & {
   handle: (
     accessor: AccessorParam<T>,
-    config?: Partial<AccessorColumnDef<T>>
-  ) => AccessorColumnDef<T, unknown>;
+    config?: Partial<AccessorColumnDef<CraftTableFeatures, T>>
+  ) => AccessorColumnDef<CraftTableFeatures, T, unknown>;
   html: (
     accessor: AccessorParam<T>,
     config?: Partial<HtmlColumnDef<T>>
-  ) => AccessorColumnDef<T, unknown>;
+  ) => AccessorColumnDef<CraftTableFeatures, T, unknown>;
   link: (
     accessor: AccessorParam<T>,
     config?: Partial<LinkColumnDef<T>>
-  ) => AccessorColumnDef<T, unknown>;
+  ) => AccessorColumnDef<CraftTableFeatures, T, unknown>;
   actions: (
-    actions: (cellContext: CellContext<T, unknown>) => VNodeChild[],
-    config?: Partial<DisplayColumnDef<T>>
-  ) => ColumnDef<T, unknown>;
+    actions: (
+      cellContext: CellContext<CraftTableFeatures, T, unknown>
+    ) => VNodeChild[],
+    config?: Partial<DisplayColumnDef<CraftTableFeatures, T>>
+  ) => ColumnDef<CraftTableFeatures, T, unknown>;
   date: (
     accessor: AccessorParam<T>,
     config?: Partial<DateColumnDef<T>>
-  ) => AccessorColumnDef<T, unknown>;
+  ) => AccessorColumnDef<CraftTableFeatures, T, unknown>;
 };
 
 export function createCraftColumnHelper<T extends object>() {
-  const baseHelper = createColumnHelper<T>();
+  const baseHelper = createColumnHelper<CraftTableFeatures, T>();
 
   const columnHelper: CraftColumnHelper<T> = {
     accessor: baseHelper.accessor,
+    columns: baseHelper.columns,
     display: baseHelper.display,
     group: baseHelper.group,
 
     date(accessor, config = {}) {
       // oxlint-disable-next-line @typescript-eslint/no-unused-vars
       const {format, ...rest} = config;
-      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+      const columnDef: Parameters<
+        ColumnHelper<CraftTableFeatures, T>['accessor']
+      >[1] = {
         id: String(accessor),
-        cell: (cellContext: CellContext<T, unknown>) => {
+        cell: (cellContext: CellContext<CraftTableFeatures, T, unknown>) => {
           const value = cellContext.getValue();
           if (Object(value).constructor === String) {
             return h(Date, {value: String(value)});
@@ -114,10 +131,12 @@ export function createCraftColumnHelper<T extends object>() {
     link(accessor, config = {}) {
       const {props, ...rest} = config;
 
-      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+      const columnDef: Parameters<
+        ColumnHelper<CraftTableFeatures, T>['accessor']
+      >[1] = {
         id: String(accessor),
         // With nothing to link to, the value is shown as it is.
-        cell: (cellContext: CellContext<T, any>) =>
+        cell: (cellContext: CellContext<CraftTableFeatures, T, any>) =>
           h('div', [
             props
               ? h(
@@ -136,10 +155,12 @@ export function createCraftColumnHelper<T extends object>() {
     },
 
     handle(accessor, config = {}) {
-      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+      const columnDef: Parameters<
+        ColumnHelper<CraftTableFeatures, T>['accessor']
+      >[1] = {
         id: String(accessor),
         header: t('Handle'),
-        cell: ({getValue}: CellContext<T, any>) =>
+        cell: ({getValue}: CellContext<CraftTableFeatures, T, any>) =>
           h(
             'craft-copy-attribute',
             {
@@ -155,9 +176,11 @@ export function createCraftColumnHelper<T extends object>() {
     html(accessor, config = {}) {
       const {props = () => ({}), ...rest} = config;
 
-      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+      const columnDef: Parameters<
+        ColumnHelper<CraftTableFeatures, T>['accessor']
+      >[1] = {
         id: String(accessor),
-        cell: (cellContext: CellContext<T, any>) =>
+        cell: (cellContext: CellContext<CraftTableFeatures, T, any>) =>
           h(DynamicHtmlRenderer, {
             html: cellContext.getValue(),
             ...props(cellContext),

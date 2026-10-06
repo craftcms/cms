@@ -27,7 +27,11 @@ class TestBufferedBundleAsset implements LegacyAssetInterface
     }
 }
 
-function assertLatestRegistrationOrder(string $output): void
+/**
+ * The re-registered `target` key takes its latest value but keeps the slot of its
+ * first registration, ahead of `middle`, so dependency order isn't disturbed.
+ */
+function assertFirstRegistrationOrder(string $output): void
 {
     $firstPos = strpos($output, 'first');
     $middlePos = strpos($output, 'middle');
@@ -35,8 +39,8 @@ function assertLatestRegistrationOrder(string $output): void
 
     expect($output)
         ->not->toContain('initial')
-        ->and($firstPos)->toBeLessThan($middlePos)
-        ->and($middlePos)->toBeLessThan($updatedPos);
+        ->and($firstPos)->toBeLessThan($updatedPos)
+        ->and($updatedPos)->toBeLessThan($middlePos);
 }
 
 dataset('ordered asset cases', [
@@ -438,8 +442,8 @@ describe('linkTag registration', function () {
 
 });
 
-describe('latest registration order', function () {
-    it('moves keyed registrations to their latest registration order', function (array $case) {
+describe('keyed registration order', function () {
+    it('keeps re-registered keys in their first registration position', function (array $case) {
         $case['register']($this->registry, 'first', 'first');
         $case['register']($this->registry, 'initial', 'target');
         $case['register']($this->registry, 'middle', 'middle');
@@ -447,7 +451,7 @@ describe('latest registration order', function () {
 
         $output = $case['render']($this->registry);
 
-        assertLatestRegistrationOrder($output);
+        assertFirstRegistrationOrder($output);
     })->with('ordered asset cases');
 });
 
@@ -753,7 +757,7 @@ describe('applyBuffer', function () {
             ->toContain('.buffered');
     });
 
-    it('preserves latest keyed registration order when applying a buffer', function (array $case) {
+    it('keeps re-registered keys in their first registration position when applying a buffer', function (array $case) {
         $case['register']($this->registry, 'first', 'first');
         $case['register']($this->registry, 'initial', 'target');
 
@@ -766,7 +770,7 @@ describe('applyBuffer', function () {
 
         $output = $case['render']($this->registry);
 
-        assertLatestRegistrationOrder($output);
+        assertFirstRegistrationOrder($output);
     })->with('ordered asset cases');
 
     it('handles partial buffer state', function () {

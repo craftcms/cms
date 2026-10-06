@@ -1,4 +1,5 @@
 import type {ColumnDef} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {shallowRef, type ComputedRef, type MaybeRefOrGetter} from 'vue';
 import {
   useContentIndexData,
@@ -47,9 +48,9 @@ export interface UseDetachedElementIndexOptions<
     elementIndex: ReturnType<typeof useContentIndexData>
   ) => ElementIndexRow[];
   columns?: (
-    columns: ComputedRef<Array<ColumnDef<ElementIndexRow>>>,
+    columns: ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>,
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
-  ) => ComputedRef<Array<ColumnDef<ElementIndexRow>>>;
+  ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
 }
 
 /** Adds local payloads and request ordering to the shared index. */

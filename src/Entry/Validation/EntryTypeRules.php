@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Validation;
 
+use Closure;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,7 @@ use function CraftCms\Cms\t;
  */
 class EntryTypeRules extends Ruleset
 {
-    /** @return array<string, array<int, string|\Closure|object>> */
+    /** @return array<string, array<int, string|Closure|object>> */
     public function rules(): array
     {
         $rules = [
@@ -30,23 +31,8 @@ class EntryTypeRules extends Ruleset
                 'nullable',
                 Rule::enum(Color::class),
             ],
-            'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
-                $fieldLayout = Fields::assembleLayoutFromPost();
-                $fieldLayout->reservedFieldHandles = [
-                    'author',
-                    'authorId',
-                    'authorIds',
-                    'authors',
-                    'section',
-                    'sectionId',
-                    'type',
-                    'postDate',
-                ];
-
-                if (! $fieldLayout->validate()) {
-                    $fail(t('The field layout is invalid.'));
-                }
-            }],
+            'fieldLayoutId' => ['nullable', 'integer'],
+            'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFieldLayout($value)],
             'name' => ['required', 'string', 'max:255'],
             'handle' => [
                 'required',
@@ -61,5 +47,29 @@ class EntryTypeRules extends Ruleset
         }
 
         return $rules;
+    }
+
+    private function validateFieldLayout(mixed $fieldLayout): void
+    {
+        if (! $fieldLayout instanceof FieldLayout) {
+            $this->subject->errors()->add('fieldLayout', t('The field layout is invalid.'));
+
+            return;
+        }
+
+        $fieldLayout->reservedFieldHandles = [
+            'author',
+            'authorId',
+            'authorIds',
+            'authors',
+            'section',
+            'sectionId',
+            'type',
+            'postDate',
+        ];
+
+        if (! $fieldLayout->validate()) {
+            $this->subject->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 }

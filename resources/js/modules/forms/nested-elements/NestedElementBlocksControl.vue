@@ -11,6 +11,11 @@
   import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
   import {
+    createEntry,
+    renderBlocks,
+  } from '@/actions/CraftCms/Cms/Http/Controllers/MatrixController';
+  import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import {
     computed,
     inject,
     onBeforeUnmount,
@@ -22,7 +27,6 @@
     useId,
     watch,
   } from 'vue';
-  import '@/modules/matrix';
   import {
     collapsedBlockId,
     isBlockCollapsed,
@@ -36,16 +40,18 @@
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
   import {
     MATRIX_SELECTION_ACTION,
+    matrixField,
+    syncSelectionMenu,
     selectionMenuItem,
     withoutStraySeparators,
   } from '@/modules/matrix/selection-menu';
-  import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
+  import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from '../FormNodeList.vue';
-  import NestedEntriesCreateButton from './NestedEntriesCreateButton.vue';
-  import {isPasteable} from './nested-entries';
+  import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
+  import {isPasteable} from './nested-elements';
   import type {ActionItems} from '@/common/types';
   import {useMessages} from '@/modules/messages/useMessages';
   import {
@@ -80,6 +86,7 @@
   };
   type NestedElementBlocksProps = {
     entryTypes?: EntryType[];
+    createEntryTypes?: string[] | null;
     addLabel: string;
     minEntries?: number | null;
     maxEntries?: number | null;
@@ -97,6 +104,7 @@
       fieldId: number;
       ownerId: number;
       ownerElementType: string;
+      ownerHasDrafts?: boolean;
       siteId: number;
       entryTypeIds: Record<string, number>;
     } | null;
@@ -138,10 +146,16 @@
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: NestedElementValue, kind: 'discrete'): void;
+    (
+      event: 'update:value',
+      value: NestedElementValue,
+      kind: 'discrete',
+      definition?: FormControlPayload<NestedElementBlocksProps>
+    ): void;
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();
+  const owner = inject(NestedOwnerEditorKey, null);
   const matrixId = useId();
   /**
    * Forms for blocks the server minted since the last full payload. They're
@@ -252,35 +266,33 @@
 
     const fits = isPasteable(elements, {
       elementType,
-      entryTypeIds: Object.values(create.entryTypeIds),
+      pasteableData: {
+        attribute: 'entryTypeId',
+        values: Object.values(create.entryTypeIds),
+      },
       room: true,
-      requireEntryTypeId: true,
     });
 
     return fits ? elements : [];
   });
-  const entryTypes = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type, index) => ({
-      id: index + 1,
-      handle: type.value,
-      name: type.label,
-    }))
-  );
+  const creationTypes = computed(() => {
+    const catalog = props.control.props.entryTypes ?? [];
+    const handles = props.control.props.createEntryTypes;
+    return handles
+      ? handles.flatMap((handle) =>
+          catalog.filter((type) => type.value === handle)
+        )
+      : catalog;
+  });
   const createChoices = computed(() =>
-    (props.control.props.entryTypes ?? []).map((type) => ({
+    creationTypes.value.map((type) => ({
       ...type,
       icon: type.icon?.name,
     }))
   );
 
-  const settings = computed(() =>
-    JSON.stringify({
-      formControl: true,
-      maxEntries: props.control.props.maxEntries,
-    })
-  );
   /**
-   * Rebuilds `craft-matrix-input` whenever the block list changes.
+   * Rebuilds the field whenever the block list changes.
    *
    * Heavy-handed, and deliberately so: a block can hold a control that
    * relocates its own light DOM — a Lion overlay behind an action menu, say —
@@ -349,29 +361,6 @@
     }
 
     return anchors;
-  }
-
-  function sync(event?: Event): void {
-    const value = structuredClone(toRaw(props.value));
-    const source =
-      event?.currentTarget instanceof HTMLElement
-        ? event.currentTarget
-        : matrixHost.value;
-    const entries = [
-      ...(source?.querySelectorAll<HTMLElement>('[data-matrix-block]') ?? []),
-    ];
-    value.sortOrder = entries.map((entry) => entry.dataset.id!);
-    value.entries = Object.fromEntries(
-      entries.map((entry) => {
-        const uid = entry.dataset.id!;
-
-        return [
-          uid,
-          value.entries[uid] ?? {type: entry.dataset.type ?? '', enabled: true},
-        ];
-      })
-    );
-    emit('update:value', value, 'discrete');
   }
 
   /**
@@ -523,6 +512,7 @@
       }
     }
     collapsedTick.value++;
+    void initializeMinimumEntries();
 
     // A block that opens folded up still needs its summary, and its fields are
     // rendered but hidden — so they're there to read once Vue has laid them out.
@@ -535,6 +525,36 @@
       collapsedTick.value++;
     });
   });
+
+  async function initializeMinimumEntries(): Promise<void> {
+    const types = creationTypes.value;
+    const minimum = props.control.props.minEntries ?? 0;
+    if (
+      !props.editable ||
+      !props.control.props.create ||
+      types.length !== 1 ||
+      props.errors.some((error) =>
+        props.control.path.every(
+          (segment, index) => error.path[index] === segment
+        )
+      )
+    ) {
+      return;
+    }
+
+    try {
+      while (
+        matrixHost.value?.isConnected &&
+        props.value.sortOrder.length < minimum &&
+        canAdd.value &&
+        !busy.value
+      ) {
+        await addBlock(types[0]!.value, undefined, undefined, false);
+      }
+    } catch {
+      // addBlock has already reported the failure to the user.
+    }
+  }
 
   /**
    * The card frame — selection, the select checkbox, drag-sort and the reorder
@@ -561,9 +581,17 @@
   async function addBlock(
     entryType: string,
     beforeUid?: string,
-    duplicate?: number | string
+    duplicateUid?: string,
+    reveal = true
   ): Promise<void> {
     if (!canAdd.value || busy.value) {
+      return;
+    }
+
+    if (
+      duplicateUid === undefined &&
+      !creationTypes.value.some((type) => type.value === entryType)
+    ) {
       return;
     }
 
@@ -578,7 +606,8 @@
             type: entryType,
           },
         ],
-        index
+        index,
+        reveal
       );
 
       return;
@@ -587,23 +616,34 @@
     adding.value = entryType;
 
     try {
-      const {data} = await actionClient.post<CreatedBlock>(
-        'matrix/create-entry',
-        {
-          fieldId: create.fieldId,
-          entryTypeId: create.entryTypeIds[entryType],
-          ownerId: create.ownerId,
-          ownerElementType: create.ownerElementType,
-          siteId: create.siteId,
-          path: props.control.path,
-          ...(duplicate === undefined ? {} : {duplicate}),
-        }
-      );
+      const ownerId = await prepareOwner();
+      const sourceId =
+        duplicateUid === undefined ? undefined : elementId(duplicateUid);
+      const duplicate =
+        sourceId === undefined
+          ? undefined
+          : (owner?.resolveElementId?.(Number(sourceId)) ?? sourceId);
+      if (duplicateUid !== undefined && duplicate === undefined) {
+        throw new Error(t('Couldn’t duplicate {type}.', {type: t('entry')}));
+      }
+      const {data} = await actionClient.post<CreatedBlock>(createEntry.url(), {
+        fieldId: create.fieldId,
+        entryTypeId:
+          duplicateUid === undefined
+            ? create.entryTypeIds[entryType]
+            : (block(duplicateUid)?.data?.['type-id'] ??
+              create.entryTypeIds[entryType]),
+        ownerId,
+        ownerElementType: create.ownerElementType,
+        siteId: create.siteId,
+        path: props.control.path,
+        ...(duplicate === undefined ? {} : {duplicate}),
+      });
 
-      await insertBlocks([data], index);
+      await insertBlocks([data], index, reveal);
     } catch (error) {
       messages.error(
-        duplicate === undefined
+        duplicateUid === undefined
           ? t('Couldn’t create {type}.', {type: t('entry')})
           : t('Couldn’t duplicate {type}.', {type: t('entry')})
       );
@@ -611,6 +651,38 @@
     } finally {
       adding.value = null;
     }
+  }
+
+  async function prepareOwner(): Promise<number> {
+    const create = props.control.props.create!;
+    await nextTick();
+
+    if (!props.editable || !matrixHost.value?.isConnected) {
+      throw new Error(t('This field cannot be edited here.'));
+    }
+
+    if (!owner && create.ownerHasDrafts !== true) {
+      return create.ownerId;
+    }
+
+    const context = await owner?.prepare(props.control.path);
+    await nextTick();
+
+    if (
+      !props.editable ||
+      !matrixHost.value?.isConnected ||
+      !context ||
+      (context.requiresDerivative &&
+        !context.ownerIsUnpublishedDraft &&
+        !context.ownerIsDerivative &&
+        !context.ownerIsInDerivativeTree)
+    ) {
+      throw new Error(
+        t('Could not prepare the owner draft. No nested elements were changed.')
+      );
+    }
+
+    return context.ownerId;
   }
 
   /**
@@ -628,7 +700,7 @@
 
       const order = props.value.sortOrder;
       const after = order[order.indexOf(target) + 1];
-      await addBlock(type, after, id);
+      await addBlock(type, after, target);
     }
   }
 
@@ -688,9 +760,10 @@
     pasting.value = true;
 
     try {
+      const ownerId = await prepareOwner();
       const pasted = await craft().cp.pasteElements({
-        primaryOwnerId: create.ownerId,
-        ownerId: create.ownerId,
+        primaryOwnerId: ownerId,
+        ownerId,
         fieldId: create.fieldId,
         siteId: create.siteId,
       });
@@ -700,7 +773,7 @@
       }
 
       const {data} = await actionClient.post<{blocks: CreatedBlock[]}>(
-        'matrix/render-blocks',
+        renderBlocks.url(),
         {
           entryIds: pasted.map((element) => element.id),
           siteId: create.siteId,
@@ -732,7 +805,7 @@
   }
 
   /**
-   * Deferred a tick on purpose. Changing sortOrder re-keys `craft-matrix-input`,
+   * Deferred a tick on purpose. Changing sortOrder rebuilds the field,
    * which tears the whole subtree down and rebuilds it — and the button that was
    * clicked lives in there. Doing that while its click is still dispatching
    * leaves Vue patching against DOM a Lion overlay inside a block has already
@@ -740,7 +813,8 @@
    */
   async function insertBlocks(
     blocks: ReadonlyArray<CreatedBlock | {uid: string; type: string}>,
-    index: number
+    index: number,
+    reveal = true
   ): Promise<void> {
     await nextTick();
 
@@ -778,15 +852,32 @@
     createdBlocks.value = presentations;
     // The rebuild this sets off would otherwise be held in place; `revealBlock`
     // is about to scroll somewhere better.
-    scrollingToBlock = true;
-    emit('update:value', next, 'discrete');
+    scrollingToBlock = reveal;
+    emit('update:value', next, 'discrete', {
+      ...props.control,
+      forms: [
+        ...new Map(
+          [...(props.control.forms ?? []), ...forms.values()].map((form) => [
+            JSON.stringify(form.scope),
+            form,
+          ])
+        ).values(),
+      ],
+      props: {
+        ...props.control.props,
+        blocks: {
+          ...Object.fromEntries(presentations),
+          ...props.control.props.blocks,
+        },
+      },
+    });
 
     for (const added of blocks) {
       highlightBlock(added.uid);
     }
 
     // A paste lands several at once; the first is where the group starts.
-    if (blocks[0]) {
+    if (reveal && blocks[0]) {
       await revealBlock(blocks[0].uid);
     }
 
@@ -871,11 +962,6 @@
     return block(uid)?.icon ?? null;
   }
 
-  /**
-   * `[data-matrix-block]` stays the direct child of the blocks container: the legacy
-   * `craft-matrix-input` still finds its entries through it, and `sync()` reads
-   * the identity back off `data-id`.
-   */
   function blockAttrs(uid: string): Record<string, unknown> {
     const presentation = block(uid);
 
@@ -1026,7 +1112,7 @@
         action: blockEvent(uid, 'delete'),
       },
       {type: 'hr'},
-      ...(props.control.props.entryTypes ?? []).map((type) => ({
+      ...creationTypes.value.map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
         hidden: !canAdd.value,
@@ -1251,7 +1337,7 @@
     const trigger = detail.trigger;
     const owned =
       trigger instanceof HTMLElement &&
-      trigger.closest('craft-matrix-input') === matrixHost.value;
+      trigger.closest('[data-matrix-field]') === matrixHost.value;
 
     if (!owned) {
       return;
@@ -1355,12 +1441,12 @@
   }
 
   function fromOwnField(trigger: unknown): boolean {
-    const field = matrixHost.value?.closest('craft-field');
+    const field = matrixHost.value ? matrixField(matrixHost.value) : null;
 
     return (
       Boolean(field) &&
       trigger instanceof HTMLElement &&
-      trigger.closest('craft-field') === field
+      matrixField(trigger) === field
     );
   }
 
@@ -1434,6 +1520,21 @@
     };
   });
 
+  watch(
+    [selectionState, matrixHost],
+    () => {
+      const field = matrixHost.value?.closest('craft-field');
+      if (
+        field?.parentElement?.matches(
+          'craft-entry-field-layout-form[data-field-path]'
+        )
+      ) {
+        syncSelectionMenu(matrixField(matrixHost.value!)!);
+      }
+    },
+    {flush: 'post'}
+  );
+
   if (fieldActionItems) {
     fieldActionItems.value = (items) =>
       withoutStraySeparators(
@@ -1474,24 +1575,12 @@
 </script>
 
 <template>
-  <craft-matrix-input
-    ref="matrixHost"
-    :key="key"
-    form-control
-    :entry-types="JSON.stringify(entryTypes)"
-    :input-name-prefix="inputName(control.path)"
-    :settings="settings"
-    :min-entries="control.props.minEntries ?? 0"
-    @form-change="sync"
-  >
+  <div ref="matrixHost" :key="key" class="form-control" data-matrix-field>
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <div :id="matrixId" data-matrix-field>
+    <div :id="matrixId">
       <span role="status" class="sr-only" data-status-message>{{
         statusMessage
       }}</span>
-      <!-- `data-matrix-blocks` sits on the list itself: the legacy
-           `craft-matrix-input` finds its entries with `:scope > [data-matrix-block]`,
-           so a wrapper between the two hides every block from it. -->
       <SelectableCardList
         role="list"
         data-matrix-blocks
@@ -1512,7 +1601,7 @@
       >
         <template #label="{id: uid}">
           <div
-            class="flex flex-nowrap gap-1 items-center"
+            class="flex flex-nowrap gap-sm items-center"
             data-matrix-block-titlebar
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
@@ -1542,6 +1631,7 @@
           <ActionMenu
             v-if="editable"
             :actions="blockActions(uid)"
+            :flush="false"
             :label="
               t('{type} actions', {
                 type: entryType(uid)?.label ?? uid,
@@ -1562,6 +1652,15 @@
               :name="`${inputName(control.path)}[entries][${id}][type]`"
               :value="value.entries[id]?.type ?? ''"
             />
+            <input
+              v-for="state in ['enabled', 'enabledForSite', 'collapsed']"
+              :key="state"
+              type="hidden"
+              :name="`${inputName(control.path)}[entries][${id}][${state}]`"
+              :value="
+                (value.entries[id]?.[state] ?? state !== 'collapsed') ? '1' : ''
+              "
+            />
           </template>
           <div data-matrix-block-fields>
             <template v-if="forms.get(id)">
@@ -1579,8 +1678,8 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="mt-3">
-        <NestedEntriesCreateButton
+      <div v-if="canAdd" class="mt-md">
+        <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
           :adding="adding"
@@ -1592,7 +1691,7 @@
           type="button"
           variant="dashed"
           icon="duplicate"
-          class="mt-1"
+          class="mt-sm"
           :loading="pasting"
           :disabled="busy"
           @click.stop.prevent="pasteBlocks()"
@@ -1605,5 +1704,5 @@
         </craft-button>
       </div>
     </div>
-  </craft-matrix-input>
+  </div>
 </template>

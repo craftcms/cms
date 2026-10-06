@@ -41,10 +41,21 @@ TestResponse::macro('assertMessage', function (string $type, ?string $message = 
     return $this;
 });
 
-pest()->tia()
-    ->locally()    // run TIA on every local invocation, no --tia flag needed
-    ->baselined()  // fetch the shared baseline from CI when no local graph exists
-    ->filtered();  // narrow PHPUnit to only affected test files
+$tia = pest()->tia()
+    ->defaultBranch('6.x')
+    ->filtered();
+
+$tiaDirectory = getenv('CRAFT_TIA_DIRECTORY');
+
+if (is_string($tiaDirectory) && $tiaDirectory !== '') {
+    $tia->directory($tiaDirectory);
+
+    if (getenv('GITHUB_EVENT_NAME') === 'pull_request') {
+        $tia->always();
+    }
+} else {
+    $tia->locally()->baselined();
+}
 
 /**
  * Asserts the HTML under expectation contains an element with the given tag

@@ -1209,10 +1209,11 @@ class Install extends Migration
             $table->integer('elementId');
             $table->string('attribute', 25);
             $table->integer('fieldId');
+            $table->char('layoutElementUid', 36)->default('0');
             $table->integer('siteId');
             $table->text('keywords');
 
-            $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
+            $table->primary(['elementId', 'attribute', 'fieldId', 'layoutElementUid', 'siteId']);
         });
 
         if (DB::isMysql()) {

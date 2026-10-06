@@ -432,7 +432,7 @@ it('preserves nullable settings and renderer-native static output on built-in al
 it('preserves FieldLayout createForm on its public alias', function() {
     $layout = LegacyFieldLayout::make(Entry::class);
 
-    expect(method_exists($layout, 'createForm'))->toBeTrue()
+    expect(LegacyFieldLayout::hasMacro('createForm'))->toBeTrue()
         ->and($layout->createForm())->toBeInstanceOf(FieldLayoutForm::class);
 });
 

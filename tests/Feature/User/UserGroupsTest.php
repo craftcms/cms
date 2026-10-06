@@ -68,10 +68,51 @@ it('can get a group by handle', function () {
     expect(UserGroups::getGroupByHandle($this->group->handle))->not()->toBeNull();
 });
 
+it('does not save invalid groups', function (array $attributes, array $expectedErrors) {
+    $group = new UserGroup($attributes);
+    $groupCount = UserGroupModel::count();
+
+    expect(UserGroups::saveGroup($group))->toBeFalse()
+        ->and($group->errors()->keys())->toEqualCanonicalizing($expectedErrors)
+        ->and($group->id)->toBeNull()
+        ->and($group->uid)->toBeNull()
+        ->and(UserGroupModel::count())->toBe($groupCount);
+})->with([
+    'required values' => [[], ['name', 'handle']],
+    'unique values' => [[
+        'name' => 'Test group',
+        'handle' => 'testGroup',
+    ], ['name', 'handle']],
+]);
+
+it('can skip validation when saving a group', function () {
+    $group = new UserGroup([
+        'name' => 'Test group',
+        'handle' => 'testGroup',
+    ]);
+
+    expect(UserGroups::saveGroup($group, runValidation: false))->toBeTrue()
+        ->and($group->id)->not()->toBeNull()
+        ->and($group->uid)->not()->toBeNull();
+});
+
 it('can get team group', function () {
     Edition::set(Edition::Team);
 
     expect(UserGroups::getTeamGroup())->not()->toBeNull();
+});
+
+it('saves changes to the team group without changing its identity', function () {
+    Edition::set(Edition::Team);
+    $group = UserGroups::getTeamGroup();
+    $id = $group->id;
+    $uid = $group->uid;
+    $group->description = 'Updated description';
+
+    expect(UserGroups::saveGroup($group))->toBeTrue()
+        ->and($group->id)->toBe($id)
+        ->and($group->uid)->toBe($uid)
+        ->and(UserGroups::getGroupByUid($uid)->description)->toBe('Updated description');
 });
 
 it('creates a unique name and handle for the team group', function () {

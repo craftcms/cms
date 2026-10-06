@@ -19,7 +19,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -44,7 +43,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedEntries;
+use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Form\Controls\Text;
@@ -61,26 +60,18 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
-use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
-use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -98,7 +89,6 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Matrix field type
@@ -549,13 +539,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            Event::listen(function (NestedElementsSaved $event) {
-                if ($event->manager !== $this->_entryManager) {
-                    return;
-                }
-
-                $this->afterSaveEntries($event);
-            });
         }
 
         return $this->_entryManager;
@@ -571,6 +554,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $this->_entryTypes;
     }
 
+    /**
+     * Whether a type is configured on this field or supplied by its owner's creation choices.
+     */
+    public function isEntryTypeAvailableForOwner(int $entryTypeId, ElementInterface $owner): bool
+    {
+        if (in_array($entryTypeId, array_column($this->getEntryTypes(), 'id'), true)) {
+            return true;
+        }
+
+        return in_array($entryTypeId, array_column($this->getEntryTypesForOwner($owner), 'id'), true);
+    }
+
+    /** @return list<EntryType> */
+    public function getEntryTypesForOwner(ElementInterface $owner): array
+    {
+        return $this->getEntryTypesForField(
+            $this->entriesForForm($owner->getFieldValue($this->handle)),
+            $owner,
+        );
+    }
+
     #[Override]
     public function formControl(FieldContext $context): Control
     {
@@ -578,35 +582,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $this->nestedEntriesControl($context);
         }
 
-        $entryTypes = collect($this->getEntryTypes())
+        $entries = $this->entriesForForm($context->value);
+        $creationTypes = $this->getEntryTypesForField($entries, $context->element);
+        $entryTypes = collect([
+            ...array_map(fn (Entry $entry): EntryType => $entry->getType(), $entries),
+            ...$this->getEntryTypes(),
+            ...$creationTypes,
+        ])
             ->mapWithKeys(fn (EntryType $type): array => [$type->handle => [
                 'label' => t($type->name, category: 'site'),
                 'icon' => $type->icon !== null ? Icons::resolveIconData($type->icon) : null,
                 'color' => $type->color?->value,
                 'group' => $type->group,
             ]])
-            ->all() ?: ['entry' => Entry::displayName()];
-        // Disabled blocks still have to reach the editor, or disabling one makes it
-        // disappear from the Form. Matches how `blockInputHtml()` resolves the value.
-        $entries = array_values(match (true) {
-            $context->value instanceof ElementCollection => $context->value->all(),
-            $context->value instanceof EntryQuery => $context->value->getResultOverride()
-                ?? (clone $context->value)
-                    ->drafts(null)
-                    ->canonicalsOnly()
-                    ->status(null)
-                    ->limit(null)
-                    ->all(),
-            default => [],
-        });
+            ->all();
         $values = $forms = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
-            if (! $entry instanceof Entry) {
-                throw new LogicException('Matrix Controls require Entry values.');
-            }
-
             $uid = $identities[$index];
             $values[$uid] = [
                 'type' => $entry->getType()->handle,
@@ -614,7 +607,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
             ];
-            $blocks[$uid] = $this->blockPresentation($entry, $uid);
+            $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
@@ -625,14 +618,40 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return NestedElementBlocks::make($context->path)
             ->entryTypes($entryTypes)
+            ->createEntryTypes(array_map(fn (EntryType $type): string => $type->handle, $creationTypes))
             ->elementType(Entry::class)
             ->blocks($blocks)
-            ->create($this->createConfig($context->element))
+            ->create($this->createConfig($context->element, $creationTypes))
             ->forms($forms)
             ->siteName($this->localizedSiteName($context->element))
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /** @return list<Entry> */
+    protected function entriesForForm(mixed $value): array
+    {
+        // Include disabled entries and in-memory values retained after validation.
+        $entries = array_values(match (true) {
+            $value instanceof ElementCollection => $value->all(),
+            $value instanceof EntryQuery => $value->getResultOverride()
+                ?? (clone $value)
+                    ->drafts(null)
+                    ->canonicalsOnly()
+                    ->status(null)
+                    ->limit(null)
+                    ->all(),
+            default => [],
+        });
+
+        foreach ($entries as $entry) {
+            if (! $entry instanceof Entry) {
+                throw new LogicException('Matrix Controls require Entry values.');
+            }
+        }
+
+        return $entries;
     }
 
     /**
@@ -643,9 +662,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * the same shape back for a block it has just minted, so a new block looks
      * like its neighbours right away rather than waiting for the next save.
      *
+     * @param  list<EntryType>|null  $creationTypes
      * @return array<string, mixed>
      */
-    public function blockPresentation(Entry $entry, string $uid): array
+    public function blockPresentation(Entry $entry, string $uid, ?array $creationTypes = null): array
     {
         $entryType = $entry->getType();
 
@@ -659,7 +679,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // turn into the whole `--c-color-*` alias set — so the card and
             // everything in it takes the entry type's color for free.
             'color' => $entryType->color?->value,
-            'actions' => $this->blockActions($entry, $uid),
+            'actions' => $this->blockActions($entry, $uid, $creationTypes),
             'data' => $this->blockData($entry, $entryType),
             // Folded up, a block hides the fields its errors are attached
             // to, so the header says there are some. Craft 5 put an alert
@@ -698,9 +718,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * block. Null until the owner has an ID to hang one off — a nested block
      * inside an unsaved block, say, which has nothing to own it yet.
      *
+     * @param  list<EntryType>  $creationTypes
      * @return array<string, mixed>|null
      */
-    private function createConfig(?ElementInterface $element): ?array
+    private function createConfig(?ElementInterface $element, array $creationTypes): ?array
     {
         if ($element?->id === null || $this->id === null) {
             return null;
@@ -710,8 +731,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'fieldId' => $this->id,
             'ownerId' => $element->id,
             'ownerElementType' => $element::class,
+            'ownerIsDerivative' => $element->getIsDerivative(),
+            'ownerIsInDerivativeTree' => ElementHelper::isDraftOrRevision($element),
+            'ownerIsUnpublishedDraft' => $element->getIsUnpublishedDraft(),
+            'ownerHasDrafts' => $element->getRootOwner()::hasDrafts(),
             'siteId' => $element->siteId,
-            'entryTypeIds' => collect($this->getEntryTypes())
+            'entryTypeIds' => collect($creationTypes)
                 ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->id])
                 ->all(),
         ];
@@ -726,9 +751,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
      * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
      *
+     * @param  list<EntryType>|null  $creationTypes
      * @return list<array<string, mixed>>
      */
-    private function blockActions(Entry $entry, string $uid): array
+    private function blockActions(Entry $entry, string $uid, ?array $creationTypes = null): array
     {
         $blockAction = fn (string $action, array $detail = []): array => [
             'type' => 'event',
@@ -751,7 +777,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ],
         ];
 
-        $siteName = $this->localizedSiteName($entry->getOwner());
+        $owner = $entry->getOwner();
+        $siteName = $this->localizedSiteName($owner);
 
         if ($siteName === null) {
             $items[] = [
@@ -854,7 +881,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
         $items[] = ['hr' => true];
 
-        foreach ($this->getEntryTypes() as $entryType) {
+        $creationTypes ??= $this->getEntryTypesForOwner($owner);
+        foreach ($creationTypes as $entryType) {
             $items[] = [
                 'icon' => $entryType->icon ?? 'plus',
                 'color' => $entryType->color,
@@ -1365,213 +1393,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    /**
-     * @throws RuntimeException
-     */
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->inputHtmlInternal($value, $element, false);
-    }
-
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        return match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
-            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
-                'id' => $this->getInputId(),
-            ]),
-        };
-    }
-
-    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
-    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
-    {
-        if (! $element?->id) {
-            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => Entry::pluralDisplayName(),
-                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
-            ]);
-
-            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
-        }
-
-        if ($element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle)->all();
-        }
-
-        if ($value instanceof EntryQuery) {
-            $value = $value->getResultOverride() ?? (clone $value)
-                ->drafts(null)
-                ->canonicalsOnly()
-                ->status(null)
-                ->limit(null)
-                ->all();
-        }
-
-        if ($static && empty($value)) {
-            return '<p class="light">'.t('No entries.').'</p>';
-        }
-
-        $id = $this->getInputId();
-        /** @var Entry[] $value */
-        $entryTypes = $this->getEntryTypesForField($value, $element);
-
-        // Get the entry types data
-        $entryTypeInfo = array_map(fn (EntryType $entryType) => [
-            'id' => $entryType->id,
-            'handle' => $entryType->handle,
-            'name' => t($entryType->name, category: 'site'),
-        ], $entryTypes);
-        $createDefaultEntries = (
-            $this->minEntries != 0 &&
-            count($entryTypeInfo) === 1 &&
-            ! $element->errors()->has($this->handle)
-        );
-        $staticEntries = (
-            $static ||
-            (
-                $createDefaultEntries &&
-                $this->minEntries === $this->maxEntries &&
-                $this->maxEntries >= count($value)
-            )
-        );
-
-        // app(InternalAssetRegistry::class)->register(MatrixAsset::class);
-
-        $settings = [
-            'fieldId' => $this->id,
-            'maxEntries' => $this->maxEntries,
-            'namespace' => InputNamespace::get(),
-            'baseInputName' => InputNamespace::namespaceInputName($this->handle),
-            'ownerElementType' => $element::class,
-            'ownerId' => $element->id,
-            'siteId' => $element->siteId,
-            'static' => $static,
-            'staticEntries' => $staticEntries,
-        ];
-
-        // Safe to create the default entries?
-        if ($createDefaultEntries && count($value) < $this->minEntries) {
-            // @link https://github.com/craftcms/cms/issues/12973
-            // for fields with minEntries set Craft.MatrixInput.addEntry() is called before new Craft.ElementEditor(),
-            // so when we get our initialSerializedValue() for the ElementEditor,
-            // the entry is already there which means the field is reported as not changed since the init
-            // and so not passed to PHP for save
-            DeltaRegistry::setInitialValue($this->handle, null);
-
-            $settings['addDefaultEntries'] = [
-                'type' => $entryTypes[0]->handle,
-                'count' => $this->minEntries - count($value),
-            ];
-        }
-
-        $inputHtml = template('_components/fieldtypes/Matrix/input', [
-            'id' => $id,
-            'field' => $this,
-            'name' => $this->handle,
-            'entryTypes' => $entryTypes,
-            'entries' => $value,
-            'static' => $static,
-            'staticEntries' => $staticEntries,
-            'createButtonLabel' => $this->createButtonLabel(),
-            'labelId' => $this->getLabelId(),
-            'siteName' => $this->localizedSiteName($element),
-            'forms' => collect($value)->mapWithKeys(fn (Entry $entry): array => [
-                $entry->uid => $this->blockFormVariables($entry, $static),
-            ])->all(),
-        ]);
-
-        // The `<craft-matrix-input>` element (resources/js/modules/matrix)
-        // boots the MatrixInput controller from these attributes, replacing the
-        // imperative `new Craft.MatrixInput(...)` boot script. The attribute
-        // values are written fully namespaced, since the outer namespacing pass
-        // only rewrites name/id-style attributes.
-        return Html::tag('craft-matrix-input', $inputHtml, [
-            'entry-types' => Json::encode($entryTypeInfo),
-            'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
-            'settings' => Json::encode($settings),
-        ]);
-    }
-
-    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
-    public function blockFormVariables(Entry $entry, bool $static): array
-    {
-        $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
-        $payload = app(FieldLayoutCompiler::class)->compile(
-            $entry->getFieldLayout(),
-            $entry,
-            new FormContext(
-                namespace: explode('[', str_replace(']', '', $namespace)),
-                errors: $entry->errors()->getMessages(),
-                mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
-            ),
-        );
-
-        return [
-            'formPayload' => $payload->jsonSerialize(),
-            'siteName' => $this->localizedSiteName($entry->getOwner()),
-        ];
-    }
-
     /** The Cards, Cards Grid, and Index view modes manage their entries outside the owner form. */
-    private function nestedEntriesControl(FieldContext $context): NestedEntries
+    private function nestedEntriesControl(FieldContext $context): NestedElements
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
             && $context->form->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
-        $config = $this->nestedElementManagerConfig($context->value, $owner, ! $editable);
-        $control = NestedEntries::make($context->path)
-            ->viewMode($this->viewMode)
-            ->unavailableMessage($owner?->id ? null : t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => Entry::pluralDisplayName(),
-                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
-            ]));
 
-        if ($this->viewMode === self::VIEW_MODE_INDEX) {
-            $config = $this->entryManager()->getIndexConfig($owner, $config);
-            $data = $this->entryManager()->getIndexData($owner, $config);
-
-            if ($data === null) {
-                return $control;
-            }
-
-            if ($config['static']) {
-                $control->indexHtml($this->entryManager()->getIndexHtml($owner, $config));
-            }
-
-            $index = [
-                'indexSettings' => $data['indexSettings'],
-            ];
-
-            $index['initial'] = EmbeddedIndexViewModel::forOwner(
-                Entry::class,
-                $owner,
-                sprintf('field:%s', $this->handle),
-                $config,
-            )->payload();
-
-            return $control
-                ->manager(Arr::except($data, ['indexSettings']))
-                ->index($index);
-        }
-
-        $data = $this->entryManager()->getCardsData($owner, $config);
-
-        return $control
-            ->manager($data === null ? null : Arr::except($data, ['elements']))
-            ->cards($data['elements'] ?? []);
-    }
-
-    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
-    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
-    {
-        $config = $this->nestedElementManagerConfig($value, $owner, $static);
-
-        return $this->viewMode === self::VIEW_MODE_INDEX
-            ? $this->entryManager()->getIndexHtml($owner, $config)
-            : $this->entryManager()->getCardsHtml($owner, $config);
+        return $this->entryManager()->formControl(
+            $context->path,
+            $owner,
+            $this->viewMode,
+            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
+        );
     }
 
     /**
@@ -1661,17 +1496,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-    }
-
-    /** @return array<string, mixed> */
-    public function embeddedIndexConfig(ElementInterface $owner, bool $static): array
-    {
-        $value = $owner->getFieldValue((string) $this->handle);
-
-        return $this->entryManager()->getIndexConfig(
-            $owner,
-            $this->nestedElementManagerConfig($value, $owner, $static),
-        );
     }
 
     private function createButtonLabel(): string
@@ -2001,32 +1825,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $this->entryManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
-    }
-
-    /**
-     * Handles nested entry saves.
-     */
-    public function afterSaveEntries(NestedElementsSaved $event): void
-    {
-        if (app()->runningInConsole()) {
-            return;
-        }
-
-        // Tell the browser to collapse any new entry IDs
-        $collapsedIds = Collection::make($event->elements)
-            ->filter(fn (ElementInterface $entry) => $entry instanceof Entry && $entry->collapsed)
-            ->map(fn (ElementInterface $entry) => $entry->id)
-            ->all();
-
-        if (empty($collapsedIds)) {
-            return;
-        }
-
-        app(InternalAssetRegistry::class)->flash(MatrixAsset::class);
-
-        foreach ($collapsedIds as $id) {
-            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($id);", Position::BodyEnd);
-        }
     }
 
     #[Override]

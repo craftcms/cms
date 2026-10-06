@@ -603,6 +603,7 @@ return [
     'Deselect All' => '取消全选',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => '桌面',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => '确定在通过控制面板发送时，用户将从哪个站点接收电子邮件。',
     'Developer Response' => '开发者回复',
     'Development Settings' => '开发设置',

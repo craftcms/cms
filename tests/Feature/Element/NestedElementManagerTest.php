@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Copy;
@@ -26,6 +27,8 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Controls\NestedElements;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
@@ -46,13 +49,7 @@ beforeEach(function () {
     actingAs(User::findOne());
 });
 
-class LegacyMatrixInputField extends Matrix
-{
-    public function renderInput(mixed $value, ?ElementInterface $element): string
-    {
-        return $this->inputHtml($value, $element, false);
-    }
-}
+class TestPluginNestedElement extends AddressElement {}
 
 function createMatrixEntryType(): EntryTypeModel
 {
@@ -169,26 +166,6 @@ function createMatrixQuery(Matrix $field, ?ElementInterface $owner): EntryQuery
 
     return $query;
 }
-
-it('renders a Form host for each legacy Matrix block', function () {
-    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
-    $entry = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Block');
-    $query = createMatrixQuery($field, $owner);
-    $query->setResultOverride([$entry]);
-    $field = new LegacyMatrixInputField([
-        'id' => $field->id,
-        'handle' => $field->handle,
-        'entryTypes' => [$entryType],
-        'viewMode' => Matrix::VIEW_MODE_BLOCKS,
-    ]);
-
-    $host = new Crawler($field->renderInput($query, $owner))
-        ->filter('craft-entry-field-layout-form[data-payload]');
-
-    expect($host)->toHaveCount(1)
-        ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR))
-        ->toHaveKeys(['nodes', 'values']);
-});
 
 it('saves matrix nested entries in collection order and deletes detached entries', function () {
     ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
@@ -377,7 +354,7 @@ it('preserves canonical ancestry when preparing a shared element for a deeply-de
         ->and($prepared->getOwnerId())->toBe($derivedOwner->id);
 });
 
-it('provides index data while retaining the legacy rendered index settings', function () {
+it('provides native index data and authorizes reordering', function () {
     $user = UserModel::factory()->createElement();
     $manager = $user->getAddressManager();
 
@@ -391,12 +368,7 @@ it('provides index data while retaining the legacy rendered index settings', fun
         ->and($data['indexSettings']['static'])->toBeFalse()
         ->and($data['indexSettings'])->not->toHaveKey('actions');
 
-    $html = $manager->getIndexHtml($user, ['sortable' => true]);
-    expect(preg_match('/settings="([^"]+)"/', (string) $html, $matches))->toBe(1);
-    $encoded = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
-    expect($encoded['ownerIdParam'])->toBe('ownerId')
-        ->and($encoded['indexSettings']['criteria']['ownerId'])->toBe($user->id)
-        ->and($encoded['indexSettings']['actions'])->toHaveCount(3);
+    expect(SessionAuth::checkAuthorization("reorderNestedElements::{$user->id}::addresses"))->toBeTrue();
 });
 
 it('normalizes creation and paste entry type data for manager data payloads', function (string $method) {
@@ -415,14 +387,14 @@ it('normalizes creation and paste entry type data for manager data payloads', fu
         'label' => 'New address',
         'attributes' => ['typeId' => 17],
     ]])
-        ->and($data['pasteableEntryTypeIds'])->toBe([17, 23])
-        ->and(NestedElementManager::htmlManagerSettings($data)['createAttributes'])->toBe(['typeId' => 17]);
+        ->and($data['pasteableData'])->toBe(['attribute' => 'entryTypeId', 'values' => ['17', 23]])
+        ->and($data)->not->toHaveKey('pasteableEntryTypeIds');
 })->with([
     'cards data' => 'getCardsData',
     'index data' => 'getIndexData',
 ]);
 
-it('provides cards data matching the rendered cards settings', function () {
+it('provides card content and owner-scoped actions for native cards', function () {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([
         'primaryOwnerId' => $user->id,
@@ -458,21 +430,6 @@ it('provides cards data matching the rendered cards settings', function () {
         ->and($card['thumbAlignment'])->toBeIn(['start', 'end']);
     $cardActionsHtml = html_entity_decode($card['cardActionsHtml']);
     expect($cardActionsHtml)->toContain('elements/duplicate', 'nested-elements/delete');
-
-    // The settings match what the HTML path encodes into the
-    // <craft-nested-element-manager settings> attribute; `elements` is the
-    // data path's addition, and `baseInputName` is namespace-derived.
-    $html = $manager->getCardsHtml($user, ['showInGrid' => true]);
-    expect(preg_match('/settings="([^"]+)"/', (string) $html, $matches))->toBe(1);
-    $encoded = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
-
-    $normalize = function (array $settings): array {
-        unset($settings['baseInputName'], $settings['elementType'], $settings['elements']);
-
-        return $settings;
-    };
-
-    expect($normalize($data))->toBe($normalize($encoded));
 });
 
 it('provides an editor action url for editable nested element cards', function () {
@@ -501,34 +458,31 @@ it('provides an editor action url for editable nested element cards', function (
         ]);
 });
 
-it('renders Matrix cards controls for server-rendered forms', function (string $viewMode, string $listClass) {
+it('passes Matrix content to the native control in HTML forms', function (string $viewMode, ControlMode $mode) {
     $fixture = createMatrixOwnerFixture(['viewMode' => $viewMode]);
-    createMatrixNestedEntry($fixture['owner'], $fixture['field'], $fixture['entryType'], 1, 'Nested entry');
+    $entry = createMatrixNestedEntry($fixture['owner'], $fixture['field'], $fixture['entryType'], 1, 'Nested entry');
     $owner = EntryElement::find()->id($fixture['owner']->id)->one();
 
     $payload = app(FieldLayoutCompiler::class)->compile(
         $owner->getFieldLayout(),
         $owner,
-        new FormContext,
+        new FormContext(namespace: ['editor'], mode: $mode),
     );
-    $manager = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-nested-element-manager');
-    $settings = json_decode($manager->attr('settings'), true, flags: JSON_THROW_ON_ERROR);
-    $cards = $manager->filter(sprintf('.nested-element-cards > ul.elements.%s > li > craft-card.element', $listClass));
+    $host = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-nested-elements-control');
+    $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
+    $elements = $viewMode === Matrix::VIEW_MODE_INDEX ? $control['props']['index']['initial']['data'] : $control['props']['cards'];
 
-    expect($manager->attr('element-type'))->toBe(EntryElement::class)
-        ->and($settings)->toMatchArray([
-            'mode' => 'cards',
-            'canCreate' => true,
-            'sortable' => true,
-            'baseInputName' => 'fields[matrixField]',
-        ])
-        ->and($cards->count())->toBe(1)
-        ->and($cards->filter('.card-titlebar > .card-actions-container > .card-actions > .move-btn')->count())->toBe(1)
-        ->and($cards->html())->toContain('Nested entry', 'data-delete-action');
+    expect($control['path'])->toBe(['editor', 'fields', 'matrixField'])
+        ->and($control['props']['viewMode'])->toBe($viewMode)
+        ->and($elements)->toHaveCount(1)
+        ->and($elements[0]['id'])->toBe($entry->id)
+        ->and(json_encode($elements[0], JSON_THROW_ON_ERROR))->toContain('Nested entry')
+        ->and($host->filter('input[name="editor[fields][matrixField]"][disabled]')->count())->toBe($mode === ControlMode::Editable ? 1 : 0);
 })->with([
-    'cards' => [Matrix::VIEW_MODE_CARDS, 'cards'],
-    'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, 'card-grid'],
-]);
+    'cards' => Matrix::VIEW_MODE_CARDS,
+    'cards grid' => Matrix::VIEW_MODE_CARDS_GRID,
+    'index' => Matrix::VIEW_MODE_INDEX,
+])->with([ControlMode::Editable, ControlMode::ReadOnly]);
 
 it('provides permitted card menu events for the hosting field', function (bool $showInGrid, bool $static, bool $authorized) {
     $user = UserModel::factory()->createElement();
@@ -602,16 +556,75 @@ it('provides permitted card menu events for the hosting field', function (bool $
     expect($nestedActions['move-forward']['label'])->toBe($showInGrid ? 'Move forward' : 'Move up')
         ->and($nestedActions['move-backward']['label'])->toBe($showInGrid ? 'Move backward' : 'Move down')
         ->and($elementActions[Delete::class]['variant'])->toBe('danger');
-
-    $html = $manager->getCardsHtml($user, ['showInGrid' => $showInGrid]);
-    expect($html)->toContain('data-delete-action', 'data-duplicate-action')
-        ->not->toContain('nested-elements/delete', 'elements/duplicate');
 })->with([
     'cards' => [false, false, true],
     'card grid' => [true, false, true],
     'static' => [false, true, true],
     'unauthorized' => [false, false, false],
 ]);
+
+it('builds a shared nested elements control for attribute-backed owners', function (string $viewMode) {
+    $user = UserModel::factory()->createElement();
+
+    $control = $user->getAddressManager()->formControl('addresses', $user, $viewMode, [
+        'showInGrid' => true,
+        'canCreate' => true,
+    ]);
+    $props = $control->props();
+
+    expect($control)->toBeInstanceOf(NestedElements::class)
+        ->and($props['viewMode'])->toBe($viewMode)
+        ->and($props['unavailableMessage'])->toBeNull()
+        ->and($props['manager']['elementType'])->toBe(AddressElement::class)
+        ->and($props['manager']['ownerId'])->toBe($user->id)
+        ->and($props['manager']['attribute'])->toBe('addresses')
+        ->and($props['manager']['canCreate'])->toBeTrue()
+        ->and($props['manager'])->not->toHaveKeys(['elements', 'indexSettings', 'pasteableEntryTypeIds']);
+
+    if ($viewMode === 'index') {
+        expect($props['index'])->toHaveKeys(['indexSettings', 'initial'])
+            ->and($props['index']['initial'])->toHaveKeys(['data', 'pagination']);
+    } else {
+        expect($props)->not->toHaveKey('index')
+            ->and($props['cards'])->toBe([]);
+    }
+})->with([
+    'cards' => 'cards',
+    'card grid' => 'cards-grid',
+    'index' => 'index',
+]);
+
+it('builds the shared control for plugin nested element types', function () {
+    $user = UserModel::factory()->createElement();
+    $manager = new NestedElementManager(
+        TestPluginNestedElement::class,
+        fn (ElementInterface $owner) => AddressElement::find()->id(false),
+        [
+            'attribute' => 'pluginItems',
+            'valueGetter' => fn (ElementInterface $owner) => AddressElement::find()->id(false),
+        ],
+    );
+
+    $control = $manager->formControl('pluginItems', $user, 'cards', ['canCreate' => true]);
+
+    expect($control)->toBeInstanceOf(NestedElements::class)
+        ->and($control->component())->toBe('craft:nested-elements')
+        ->and($control->props()['manager'])->toMatchArray([
+            'elementType' => TestPluginNestedElement::class,
+            'attribute' => 'pluginItems',
+            'canCreate' => true,
+        ]);
+});
+
+it('explains why a nested elements control is unavailable for unsaved owners', function () {
+    $user = UserModel::factory()->createElement();
+
+    $props = $user->getAddressManager()->formControl('addresses', new User, 'cards')->props();
+
+    expect($props['manager'])->toBeNull()
+        ->and($props['cards'])->toBe([])
+        ->and($props['unavailableMessage'])->toBe('Addresses can only be created after the user has been saved.');
+});
 
 it('returns no index or cards data for unsaved owners', function () {
     $user = UserModel::factory()->createElement();

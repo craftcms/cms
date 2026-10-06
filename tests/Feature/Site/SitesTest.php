@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
@@ -266,6 +268,49 @@ it('can save a new site', function () {
     expect($projectConfigData['handle'])->toBe('newSite');
 });
 
+it('rejects sites without an active group before writing project config', function (string $group) {
+    $site = $this->sites->getPrimarySite();
+    $originalConfig = $this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$site->uid);
+
+    $site->groupId = match ($group) {
+        'missing' => null,
+        'unknown' => 999999,
+        'deleted' => tap(SiteGroup::factory()->create(), fn (SiteGroup $group) => $group->delete())->id,
+    };
+
+    expect($this->sites->saveSite($site))->toBeFalse()
+        ->and($site->errors()->has('groupId'))->toBeTrue()
+        ->and($this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$site->uid))->toBe($originalConfig);
+})->with(['missing', 'unknown', 'deleted']);
+
+it('persists canonical site values without losing applicable environment expressions', function () {
+    $primarySite = $this->sites->getPrimarySite();
+    $primarySite->enabled = '$PRIMARY_SITE_ENABLED';
+    $primarySite->hasUrls = false;
+    $primarySite->baseUrl = '$PRIMARY_SITE_URL';
+
+    expect($this->sites->saveSite($primarySite))->toBeTrue();
+
+    $primaryConfig = $this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$primarySite->uid);
+
+    expect($primaryConfig['enabled'])->toBeTrue()
+        ->and($primaryConfig['baseUrl'])->toBeNull();
+
+    $this->sites->saveSite($site = new SiteData([
+        'name' => 'Environment site',
+        'handle' => 'environmentSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+        'enabled' => '$SITE_ENABLED',
+        'baseUrl' => '$SITE_URL',
+    ]));
+
+    $siteConfig = $this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$site->uid);
+
+    expect($siteConfig['enabled'])->toBe('$SITE_ENABLED')
+        ->and($siteConfig['baseUrl'])->toBe('$SITE_URL');
+});
+
 it('can reorder sites', function () {
     $this->sites->saveSite($otherSite = new SiteData([
         'name' => 'New site',
@@ -354,6 +399,42 @@ it('can prevent deletion through an event', function () {
 
     expect(Site::count())->toBe(2);
 });
+
+it('rejects invalid content transfer targets before mutating site data', function (string $target) {
+    $this->sites->saveSite($site = new SiteData([
+        'name' => 'Site to delete',
+        'handle' => 'siteToDelete',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
+
+    $section = Section::factory()->create();
+    $section->siteSettings()->update(['siteId' => $site->id]);
+    $entry = Entry::factory()->forSection($section)->create();
+    $entry->element->siteSettings()->update(['siteId' => $site->id]);
+
+    $deletedTargetSite = null;
+
+    if ($target === 'deleted') {
+        $deletedTargetSite = Site::factory()->createOne();
+        $deletedTargetSite->delete();
+        $this->sites->refreshSites();
+    }
+
+    $transferContentTo = match ($target) {
+        'missing' => 999999,
+        'self' => $site->id,
+        'deleted' => $deletedTargetSite->id,
+    };
+
+    $this->projectConfig->rebuild();
+
+    expect($this->sites->deleteSite($site, $transferContentTo))->toBeFalse()
+        ->and(Site::find($site->id))->not->toBeNull()
+        ->and($section->siteSettings()->pluck('siteId')->all())->toBe([$site->id])
+        ->and($entry->element->siteSettings()->pluck('siteId')->all())->toBe([$site->id])
+        ->and($this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$site->uid))->not->toBeNull();
+})->with(['missing', 'self', 'deleted']);
 
 it('can restore a site by id', function () {
     $this->sites->saveSite($newSite = new SiteData([

@@ -6,31 +6,28 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\NestedFormPayload;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -74,17 +71,18 @@ readonly class MatrixController
             'ownerId' => ['required'],
             'ownerElementType' => ['required', 'string', new ElementTypeRule],
             'siteId' => ['required'],
-            // The legacy stack asks for rendered block HTML and passes the input
-            // namespace it wants that HTML written under. Form controls pass the
-            // control's `path` instead and get form nodes back. See the response
-            // at the bottom of this method; the HTML half goes when the Twig
-            // block renderer does.
-            'namespace' => ['required_without:path'],
+            'namespace' => ['required_without:path', 'string'],
             'path' => ['required_without:namespace', 'array'],
             'path.*' => ['string'],
             'staticEntries' => ['nullable', 'boolean'],
             'duplicate' => ['nullable'],
         ]);
+
+        abort_if(
+            ! isset($validated['path']) && ! Event::hasListeners(MatrixBlockHtmlRendering::class),
+            400,
+            'Legacy Matrix block rendering requires the Yii2 adapter.',
+        );
 
         $owner = $this->owner(
             (int) $validated['ownerId'],
@@ -101,15 +99,6 @@ readonly class MatrixController
         $entryType = $this->entryTypes->getEntryTypeById($validated['entryTypeId']);
 
         abort_if(is_null($entryType), 400, "Invalid entry type ID: $validated[entryTypeId]");
-
-        // Any entry type would save, and then the field couldn't render what it
-        // got back — `Form\Controls\NestedElementBlocks` rejects a block whose type it doesn't
-        // offer, which takes the whole edit screen down with it.
-        abort_if(
-            ! in_array($entryType->id, array_column($field->getEntryTypes(), 'id'), true),
-            400,
-            "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
-        );
 
         $site = $this->sites->getSiteById($validated['siteId'], true);
 
@@ -161,6 +150,12 @@ readonly class MatrixController
                 ]));
             }
         } else {
+            abort_if(
+                ! $field->isEntryTypeAvailableForOwner($entryType->id, $owner),
+                400,
+                "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
+            );
+
             $entry = new Entry([
                 ...$attributes,
             ]);
@@ -176,30 +171,26 @@ readonly class MatrixController
             }
         }
 
-        /** @var EntryQuery<Entry>|ElementCollection<array-key, Entry> $value */
-        $value = $owner->getFieldValue($field->handle);
-
-        /** @var Entry[] $entries */
-        $entries = $value->all();
-
         if (isset($validated['path'])) {
             return new JsonResponse($this->blockFormResponse($entry, $validated['path'], $field));
         }
 
-        $html = InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
-            'name' => $field->handle,
-            'entryTypes' => $field->getEntryTypesForField($entries, $owner),
-            'entry' => $entry,
-            'isFresh' => true,
-            'staticEntries' => $validated['staticEntries'] ?? false,
-            ...$field->blockFormVariables($entry, false),
-        ]), $validated['namespace']);
+        return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
+            entries: [$entry],
+            field: $field,
+            namespace: $validated['namespace'],
+            fresh: true,
+            staticEntries: $validated['staticEntries'] ?? false,
+        ));
+    }
 
-        return new JsonResponse([
-            'blockHtml' => $html,
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
-        ]);
+    private function blockHtmlResponse(MatrixBlockHtmlRendering $event): JsonResponse
+    {
+        Event::dispatch($event);
+
+        abort_if($event->response === null, 400, 'Legacy Matrix block rendering is unavailable.');
+
+        return $event->response;
     }
 
     /**
@@ -249,13 +240,16 @@ readonly class MatrixController
         $validated = $request->validate([
             'entryIds' => ['required', 'array', 'min:1'],
             'siteId' => ['required'],
-            // Same split as `createEntry()`: the legacy stack asks for rendered
-            // HTML under an input namespace, a Form Control asks for form nodes
-            // under its own path.
             'namespace' => ['required_without:path', 'string'],
             'path' => ['required_without:namespace', 'array'],
             'path.*' => ['string'],
         ]);
+
+        abort_if(
+            ! isset($validated['path']) && ! Event::hasListeners(MatrixBlockHtmlRendering::class),
+            400,
+            'Legacy Matrix block rendering requires the Yii2 adapter.',
+        );
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
@@ -265,20 +259,7 @@ readonly class MatrixController
             ->status(null)
             ->all();
 
-        if (empty($entries)) {
-            return isset($validated['path'])
-                ? new JsonResponse(['blocks' => []])
-                : new JsonResponse([
-                    'blockHtml' => '',
-                    'headHtml' => HtmlStack::headHtml(),
-                    'bodyHtml' => HtmlStack::bodyHtml(),
-                ]);
-        }
-
         $field = null;
-        $entryTypes = null;
-        $html = '';
-
         $blocks = [];
 
         foreach ($entries as $entry) {
@@ -290,41 +271,21 @@ readonly class MatrixController
                 'Entry must belong to a Matrix field.',
             );
 
-            // An entry of a type the field doesn't offer would render here and
-            // then take the edit screen down on the next load, where the Matrix
-            // Control rejects it. Same guard `createEntry()` applies.
-            abort_if(
-                ! in_array($entry->getType()->id, array_column($field->getEntryTypes(), 'id'), true),
-                400,
-                "Entry type {$entry->getType()->id} is not available to Matrix field {$field->id}.",
-            );
-
-            $entryTypes ??= $field->getEntryTypesForField($entries, $entry->getOwner());
-
             Gate::authorize('view', $entry);
 
             if (isset($validated['path'])) {
                 $blocks[] = $this->blockFormResponse($entry, $validated['path'], $field);
-
-                continue;
             }
-
-            $html .= InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
-                'name' => $field->handle,
-                'entryTypes' => $entryTypes,
-                'entry' => $entry,
-                ...$field->blockFormVariables($entry, false),
-            ]), $validated['namespace']);
         }
 
         if (isset($validated['path'])) {
             return new JsonResponse(['blocks' => $blocks]);
         }
 
-        return new JsonResponse([
-            'blockHtml' => $html,
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
-        ]);
+        return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
+            entries: $entries,
+            field: $field,
+            namespace: $validated['namespace'],
+        ));
     }
 }

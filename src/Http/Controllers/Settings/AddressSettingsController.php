@@ -34,6 +34,7 @@ class AddressSettingsController
         return new CpScreenResponse()
             ->title(t('Address Fields'))
             ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Addresses'))
             ->inertiaPage('settings/addresses/Fields', [
                 'fieldLayoutDesigner' => [
                     'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [

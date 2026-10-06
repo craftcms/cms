@@ -2,11 +2,8 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import CpLink from '@/common/components/CpLink.vue';
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
@@ -22,7 +19,7 @@
     {totalJobs: 0}
   );
 
-  const columnHelper = createColumnHelper<JobInfo>();
+  const columnHelper = createCraftColumnHelper<JobInfo>();
 
   function getStatusVariant(value: number) {
     if (value === 2 || value === 3) {
@@ -44,59 +41,60 @@
     return job.status.value == JobStatus.Failed;
   }
 
-  const columns = ref([
-    columnHelper.accessor('description', {
-      header: () => t('Name'),
-      cell: ({row, getValue}) =>
-        h(
-          CpLink,
-          {href: show.url({id: 'queue-manager', extra: row.original.uid})},
-          () => getValue()
-        ),
-    }),
-    columnHelper.accessor('status', {
-      header: () => t('Status'),
-      size: 80,
-      cell: (info) =>
-        h(
-          'craft-badge',
-          {
-            fill: getStatusVariant(info.getValue().value),
-          },
-          info.getValue().label
-        ),
-    }),
-    columnHelper.display({
-      id: 'progress',
-      header: () => t('Progress'),
-      cell: ({row}) =>
-        row.original.progress > 0
-          ? `${row.original.progress}% ${row.original.progressLabel ? `(${row.original.progressLabel})` : ''}`
-          : '',
-    }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) => {
-        return h('div', {class: 'flex justify-end gap-2'}, [
-          isRetryable(row.original)
-            ? h(RetryJobButton, {job: row.original})
-            : null,
-          row.original.status.value !== JobStatus.Done
-            ? h(ReleaseJobButton, {job: row.original})
-            : null,
-        ]);
-      },
-    }),
-  ]);
+  const columns = ref(
+    columnHelper.columns([
+      columnHelper.accessor('description', {
+        header: () => t('Name'),
+        cell: ({row, getValue}) =>
+          h(
+            CpLink,
+            {href: show.url({id: 'queue-manager', extra: row.original.uid})},
+            () => getValue()
+          ),
+      }),
+      columnHelper.accessor('status', {
+        header: () => t('Status'),
+        size: 80,
+        cell: (info) =>
+          h(
+            'craft-badge',
+            {
+              fill: getStatusVariant(info.getValue().value),
+            },
+            info.getValue().label
+          ),
+      }),
+      columnHelper.display({
+        id: 'progress',
+        header: () => t('Progress'),
+        cell: ({row}) =>
+          row.original.progress > 0
+            ? `${row.original.progress}% ${row.original.progressLabel ? `(${row.original.progressLabel})` : ''}`
+            : '',
+      }),
+      columnHelper.display({
+        id: 'actions',
+        cell: ({row}) => {
+          return h('div', {class: 'flex justify-end gap-2'}, [
+            isRetryable(row.original)
+              ? h(RetryJobButton, {job: row.original})
+              : null,
+            row.original.status.value !== JobStatus.Done
+              ? h(ReleaseJobButton, {job: row.original})
+              : null,
+          ]);
+        },
+      }),
+    ])
+  );
 
-  const jobsTable = useVueTable({
+  const jobsTable = useCraftTable({
     get data() {
       return props.jobs;
     },
     get columns() {
       return columns.value;
     },
-    getCoreRowModel: getCoreRowModel<JobInfo>(),
   });
 </script>
 

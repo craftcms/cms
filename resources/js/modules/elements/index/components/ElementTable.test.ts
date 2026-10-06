@@ -260,7 +260,7 @@ describe('DataTable', () => {
             readOnly: false,
           }),
           loading: loading.value,
-        }),
+        } as never),
     });
     app.mount(container);
     await nextTick();
@@ -310,7 +310,7 @@ describe('DataTable', () => {
             readOnly: false,
           }),
           loading: loading.value,
-        }),
+        } as never),
     });
     app.mount(container);
     await nextTick();

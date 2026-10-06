@@ -20,7 +20,7 @@
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
-  import CpTopBar from '@/common/components/CpTopBar.vue';
+  import CpTopBar from '@/common/components/CpHeaderBar.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -344,45 +344,48 @@
                           <slot name="content-tabs"></slot>
                         </LayoutSlotOutlet>
                         <slot></slot>
+                      </div>
+                      <!-- Outside the content view, so its rule spans the pane even when
+                        the view is constrained; the row itself keeps to the content's
+                        column through `contained`. -->
+                      <div
+                        v-show="hasNotices || hasFooter"
+                        class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
+                      >
+                        <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
+                          puts its notices, the legacy element editor's included. -->
                         <div
-                          v-show="hasNotices || hasFooter"
-                          class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
+                          v-show="hasNotices"
+                          id="content-notice"
+                          class="cp-content__notices"
+                          role="status"
                         >
-                          <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
-                        puts its notices, the legacy element editor's included. -->
-                          <div
-                            v-show="hasNotices"
-                            id="content-notice"
-                            class="cp-content__notices"
-                            role="status"
+                          <LayoutSlotOutlet name="content-notices">
+                            <slot name="content-notices"></slot>
+                          </LayoutSlotOutlet>
+                        </div>
+                        <div class="cp-content__footer">
+                          <ContentFooter
+                            v-show="hasFooter"
+                            :read-only="readOnly"
+                            :form="form"
+                            :default-form-actions="defaultFormActions"
+                            :form-actions="formActions"
+                            :form-additional-actions="formAdditionalActions"
+                            :form-additional-buttons="formAdditionalButtons"
+                            :submit-button-label="submitButtonLabel"
+                            :save-disabled="saveDisabled"
+                            :contained="contentConstrained"
+                            @save="save"
                           >
-                            <LayoutSlotOutlet name="content-notices">
-                              <slot name="content-notices"></slot>
-                            </LayoutSlotOutlet>
-                          </div>
-                          <div class="cp-content__footer">
-                            <ContentFooter
-                              v-show="hasFooter"
-                              :read-only="readOnly"
-                              :form="form"
-                              :default-form-actions="defaultFormActions"
-                              :form-actions="formActions"
-                              :form-additional-actions="formAdditionalActions"
-                              :form-additional-buttons="formAdditionalButtons"
-                              :submit-button-label="submitButtonLabel"
-                              :save-disabled="saveDisabled"
-                              :contained="contentConstrained"
-                              @save="save"
+                            <template
+                              v-for="name in footerSlots"
+                              :key="name"
+                              #[name]
                             >
-                              <template
-                                v-for="name in footerSlots"
-                                :key="name"
-                                #[name]
-                              >
-                                <slot :name="name"></slot>
-                              </template>
-                            </ContentFooter>
-                          </div>
+                              <slot :name="name"></slot>
+                            </template>
+                          </ContentFooter>
                         </div>
                       </div>
                     </div>
@@ -429,9 +432,6 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: var(--c-radius-xl);
-    border-start-end-radius: var(--c-radius-xl);
-    overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -445,10 +445,6 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
-  }
-
-  .page-screen {
-    background-color: var(--c-surface-header);
   }
 
   /* The top bar keeps its height and the shell takes the rest. */

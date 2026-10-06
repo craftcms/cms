@@ -613,20 +613,17 @@
     const elementType = props.control.props.elementType;
 
     if (canUseVueSlideout()) {
-      // The element's own edit screen, the way an element index opens it.
-      // Elements picked since the last render don't know it yet; entries can
-      // still get their editor through the generic edit action.
       const href =
         element.cpEditUrl ??
-        (elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
-          ? EditElementController.url(undefined, {
-              query: {
-                elementType,
-                elementId: element.id,
-                siteId: element.siteId ?? null,
-              },
-            })
-          : null);
+        EditElementController[
+          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
+        ].url(undefined, {
+          query: {
+            elementType,
+            elementId: element.id,
+            siteId: element.siteId ?? null,
+          },
+        });
 
       if (href) {
         void openSlideout(href, {
@@ -657,7 +654,7 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-2 pb-2" slot="header">
+      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
         <craft-button
           ref="addButton"
           type="button"

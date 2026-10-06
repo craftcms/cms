@@ -24,13 +24,12 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
-use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
@@ -41,7 +40,6 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
@@ -352,31 +350,17 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function formControl(FieldContext $context): Control
     {
-        $addresses = array_values(match (true) {
-            $context->value instanceof ElementCollection => $context->value->all(),
-            $context->value instanceof AddressQuery => $context->value->all(),
-            default => [],
-        });
-        $values = $forms = $sortOrder = [];
-        $identities = ElementHelper::nestedElementIdentities($addresses);
+        $owner = $context->element;
+        $static = $context->mode !== ControlMode::Editable
+            || $context->form->mode !== ControlMode::Editable
+            || ($owner?->getIsRevision() ?? false);
 
-        foreach ($addresses as $index => $address) {
-            $uid = $identities[$index];
-            $values[$uid] = ['type' => 'address'];
-            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
-                $address->getFieldLayout(),
-                $address,
-                new FormContext,
-            );
-            $sortOrder[] = $uid;
-        }
-
-        return NestedElementBlocks::make($context->path)
-            ->entryTypes(['address' => Address::displayName()])
-            ->forms($forms)
-            ->minEntries($this->minAddresses)
-            ->maxEntries($this->maxAddresses)
-            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+        return $this->addressManager()->formControl(
+            $context->path,
+            $owner,
+            $this->viewMode === self::VIEW_MODE_INDEX ? self::VIEW_MODE_INDEX : 'cards-grid',
+            $this->nestedElementManagerConfig($static),
+        );
     }
 
     #[Override]
@@ -707,7 +691,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     {
         $items = [];
 
-        if ($this->viewMode === self::VIEW_MODE_CARDS && $this->maxAddresses !== 1) {
+        if ($this->viewMode !== self::VIEW_MODE_INDEX && $this->maxAddresses !== 1) {
             $items[] = $this->copyAction();
         }
 
@@ -742,7 +726,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 'type' => 'event',
                 'name' => 'craft:copy-nested-elements',
                 'detail' => [
-                    'selector' => '.nested-element-cards .elements > li > .element',
+                    'selector' => '.nested-element-cards .elements > li > .element, [data-nested-id] > craft-card[data-copyable]',
                     'elementType' => Address::class,
                     'fieldId' => $this->id,
                 ],
@@ -751,21 +735,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     /**
-     * @throws RuntimeException
+     * The nested element manager config for the Cards and Index view modes.
+     *
+     * @return array<string, mixed>
      */
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->inputHtmlInternal($element);
-    }
-
-    private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
+    private function nestedElementManagerConfig(bool $static): array
     {
         $config = [
             'showInGrid' => true,
         ];
 
-        if (! $static) {
+        // Left unset otherwise, so revisions keep their static default.
+        if ($static) {
+            $config['static'] = true;
+        } else {
             $config += [
                 'sortable' => true,
                 'canCreate' => true,
@@ -775,21 +758,17 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             ];
         }
 
-        if ($this->viewMode === self::VIEW_MODE_CARDS) {
-            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
-                'id' => $this->getInputId(),
-            ]);
+        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
+            return $config;
         }
 
-        $config += [
+        return $config + [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
             // addresses don't have drafts, but in this particular context we need to allow drafts,
             // so that addresses show while adding them via slideout in the element index view mode
             'canHaveDrafts' => true,
         ];
-
-        return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
     /** @return list<Closure> */

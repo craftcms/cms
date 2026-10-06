@@ -1,5 +1,6 @@
 import type {ComputedRef, Ref} from 'vue';
 import type {Table} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {CheckboxOption} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {
@@ -31,9 +32,9 @@ export type ExportElementIndex = (
 
 export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
-  table: Table<ElementIndexRow>;
+  table: Table<CraftTableFeatures, ElementIndexRow>;
   data: ComputedRef<ElementIndexRow[]>;
-  selection: ElementIndexSelection;
+  selection: ElementIndexSelection<ElementIndexRow>;
   search: Ref<string>;
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;

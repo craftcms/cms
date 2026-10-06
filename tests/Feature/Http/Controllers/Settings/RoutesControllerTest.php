@@ -224,6 +224,16 @@ it('validates route uri parts', function () {
     ])->assertSessionHasErrors('uriParts');
 });
 
+it('returns domain validation errors for an unknown site', function () {
+    post(action([RoutesController::class, 'store']), [
+        'uriParts' => ['news'],
+        'template' => '_route',
+        'siteUid' => '11111111-1111-4111-8111-111111111111',
+    ])->assertSessionHasErrors('siteUid');
+
+    expect($this->routes->getProjectConfigRoutes())->toBeEmpty();
+});
+
 it('validates route uris do not start with reserved triggers', function (array $uriParts) {
     post(action([RoutesController::class, 'store']), [
         'uriParts' => $uriParts,

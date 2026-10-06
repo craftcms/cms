@@ -1,10 +1,11 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import {
     type Column,
     FlexRender,
     type Row,
     type Table,
   } from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -23,7 +24,7 @@
   import DropIndicator from '@/common/components/DropIndicator.vue';
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
       /**
@@ -33,7 +34,7 @@
       interactionsDisabled?: boolean;
       readOnly?: boolean;
       leadingColumnTracks?: string[];
-      rowAttributes?: (row: Row<any>) => HTMLAttributes;
+      rowAttributes?: (row: Row<CraftTableFeatures, TData>) => HTMLAttributes;
       loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
@@ -53,9 +54,13 @@
 
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
-    rowClick: [row: Row<any>, event: MouseEvent];
-    rowKeydown: [row: Row<any>, index: number, event: KeyboardEvent];
-    rowRef: [element: Element | null, row: Row<any>];
+    rowClick: [row: Row<CraftTableFeatures, TData>, event: MouseEvent];
+    rowKeydown: [
+      row: Row<CraftTableFeatures, TData>,
+      index: number,
+      event: KeyboardEvent,
+    ];
+    rowRef: [element: Element | null, row: Row<CraftTableFeatures, TData>];
   }>();
 
   const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
@@ -134,7 +139,7 @@
   );
 
   function getAriaSortAttribute(
-    column: Column<any>
+    column: Column<CraftTableFeatures, TData>
   ): 'ascending' | 'descending' | 'none' | undefined {
     if (column.getCanSort()) {
       if (column.getIsSorted()) {
@@ -146,8 +151,8 @@
 
   const visibleColumnCount = computed(() => {
     const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter((column: Column<any>) =>
-      column.getIsVisible()
+    const visibleColumns = columns.filter(
+      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
     );
     let columnCount = visibleColumns.length;
 
@@ -160,14 +165,14 @@
 
   const tableStyles = computed(() => {
     const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter((column: Column<any>) =>
-      column.getIsVisible()
+    const visibleColumns = columns.filter(
+      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
     );
 
     const columnCount = visibleColumnCount.value;
 
     const gridDef = visibleColumns.reduce(
-      (acc: Array<string>, column: Column<any>) => {
+      (acc: Array<string>, column: Column<CraftTableFeatures, TData>) => {
         acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
         return acc;
       },
@@ -212,7 +217,11 @@
     rows?.[index]?.focus();
   }
 
-  function onRowKeydown(row: Row<any>, index: number, event: KeyboardEvent) {
+  function onRowKeydown(
+    row: Row<CraftTableFeatures, TData>,
+    index: number,
+    event: KeyboardEvent
+  ) {
     emit('rowKeydown', row, index, event);
 
     if (event.defaultPrevented || !(event.currentTarget instanceof HTMLElement))
@@ -288,7 +297,7 @@
             :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
-              class="flex gap-1 items-center [.text-center>&]:justify-center"
+              class="flex gap-sm items-center [.text-center>&]:justify-center"
               :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
             >
               <ColumnHeaderTitle
@@ -299,8 +308,7 @@
               >
                 <FlexRender
                   v-if="!header.isPlaceholder"
-                  :render="header.column.columnDef.header"
-                  :props="header.getContext()"
+                  :header="header"
                 /><template v-if="header.column.getCanSort()">&nbsp;</template
                 ><craft-icon
                   v-if="
@@ -393,10 +401,7 @@
               ]"
             >
               <slot name="cell" :cell="cell" :row="row" :index="cellIdx">
-                <FlexRender
-                  :render="cell.column.columnDef.cell"
-                  :props="cell.getContext()"
-                />
+                <FlexRender :cell="cell" />
               </slot>
             </component>
           </tr>

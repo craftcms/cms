@@ -1,3 +1,10 @@
+import {isRecord, pathsMatch, visitControls} from '@/modules/forms/runtime';
+import {
+  nestedOwnerContext,
+  type NestedOwnerEditor,
+  type NestedOwnerEditorRequest,
+  NESTED_OWNER_EDITOR_REQUEST,
+} from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
@@ -85,6 +92,7 @@ export interface ElementContextMenuItem {
 
 /** The shared payload every {@link ElementEditViewModel} emits. */
 export interface ElementEditPayload {
+  editorContainerId?: string;
   elementId: number | null;
   canonicalId: number | null;
   elementType: string;
@@ -165,6 +173,8 @@ interface Options {
    * whatever the type's save action needs to resolve the element it's saving.
    */
   saveData?: () => FormValues;
+  /** Adapts form state before autosave and explicit submissions. */
+  transform?: (data: object) => FormValues;
   /**
    * Where the screen's content is rendered. Failed saves announce invalid
    * nested elements from here, so the nested element fields inside hear it.
@@ -180,7 +190,7 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData, root}: Options = {}) {
+export function useElementEditor({saveData, root, transform}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -286,8 +296,14 @@ export function useElementEditor({saveData, root}: Options = {}) {
     return {
       ...props.nestedContext,
       ...(props.fresh ? {fresh: 1} : {}),
+      ...(props.editorContainerId
+        ? {editorContainerId: props.editorContainerId}
+        : {}),
     };
   }
+
+  const preparingOwnerGroups = new Map<symbol, string[]>();
+  const draftElementIds = new Map<number, number>();
 
   const autosave = useElementAutosave(form, {
     url: props.autosaveUrl,
@@ -298,11 +314,30 @@ export function useElementEditor({saveData, root}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
+    transform: (data) =>
+      requestValues(
+        preparingOwnerGroups.size
+          ? {
+              ...data,
+              ...renderer.value?.mutation([...preparingOwnerGroups.values()]),
+            }
+          : data
+      ),
     // Autosave moves the draft's `dateUpdated` without a visit, so the poller
     // has to re-baseline against what the save just wrote — otherwise it reads
     // our own keystrokes back as an edit from elsewhere. `activity` is
     // initialized just below; this only ever runs after a save settles.
     onSaved: (timestamps, response) => {
+      if (isRecord(response.draftElementIds)) {
+        for (const [canonicalId, draftId] of Object.entries(
+          response.draftElementIds
+        )) {
+          if (typeof draftId === 'number') {
+            draftElementIds.set(Number(canonicalId), draftId);
+          }
+        }
+      }
+
       activity.rebase(timestamps);
       // The draft is what an opener shows until the element is saved, so it
       // hears about each one — debounced on its side.
@@ -428,6 +463,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
     () => pageProps(),
     () => {
       invalidateFormRefreshes();
+      draftElementIds.clear();
       savedForm.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
@@ -460,6 +496,81 @@ export function useElementEditor({saveData, root}: Options = {}) {
     if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule(kind);
     }
+  }
+
+  function resolveNestedElementId(id: number): number {
+    return draftElementIds.get(id) ?? id;
+  }
+
+  const nestedOwnerEditor: NestedOwnerEditor = {
+    async prepare(path, initialContext) {
+      if (
+        props.readOnly ||
+        workflowReviewLocked.value ||
+        !(nestedOwnerContext(formPayload.value, path) ?? initialContext)
+      ) {
+        return null;
+      }
+
+      const preparation = Symbol();
+
+      try {
+        if (props.canAutosave) {
+          visitControls(formPayload.value?.nodes ?? [], (control) => {
+            if (
+              control.mode === 'editable' &&
+              control.path.every((segment, index) => path[index] === segment) &&
+              !pathsMatch(control.deltaGroup, path)
+            ) {
+              preparingOwnerGroups.set(preparation, control.deltaGroup);
+            }
+          });
+
+          await autosave.save();
+          if (autosave.status.value !== 'saved') {
+            return null;
+          }
+          await nextTick();
+        }
+
+        const context =
+          nestedOwnerContext(formPayload.value, path) ?? initialContext;
+        if (!context) {
+          return null;
+        }
+
+        const ownerId = resolveNestedElementId(context.ownerId);
+        return {
+          ...context,
+          ownerId,
+          ownerIsDerivative:
+            ownerId !== context.ownerId || context.ownerIsDerivative,
+          ownerIsInDerivativeTree:
+            ownerId !== context.ownerId || context.ownerIsInDerivativeTree,
+          requiresDerivative: Boolean(props.canAutosave),
+          canonicalId: props.canonicalId,
+          draftId: props.draftId,
+          isProvisionalDraft: props.isProvisionalDraft,
+        };
+      } finally {
+        preparingOwnerGroups.delete(preparation);
+      }
+    },
+    resolveElementId: resolveNestedElementId,
+    refresh: refreshAfterNestedChange,
+  };
+
+  useEventListener(
+    () => root?.(),
+    NESTED_OWNER_EDITOR_REQUEST,
+    (event: NestedOwnerEditorRequest) => {
+      event.detail.editor = nestedOwnerEditor;
+      event.stopPropagation();
+    }
+  );
+
+  function requestValues(data: object): FormValues {
+    return transform?.(data) ?? ({...data} as FormValues);
   }
 
   /**
@@ -603,7 +714,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
         const transformed =
           pendingAction.value?.includeFormData === false
             ? {}
-            : {...saveData?.(), ...data};
+            : {...saveData?.(), ...requestValues(data)};
         // Shared `elements/*` actions need generic identity params: the
         // type-specific ones (an entry's `entryId`) mean nothing there.
         if (autosave.draftId.value !== null) {
@@ -657,6 +768,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
         autosave.cancel();
       },
       onSuccess: (data) => {
+        draftElementIds.clear();
         if (slideout) {
           announceSaved(data);
         }
@@ -718,6 +830,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
    * explicitly.
    */
   async function revertToLoadedPayload(): Promise<void> {
+    draftElementIds.clear();
     reverting++;
 
     try {
@@ -903,6 +1016,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
   }
 
   onBeforeUnmount(invalidateFormRefreshes);
+  onBeforeUnmount(autosave.cancel);
 
   return {
     activity,
@@ -917,7 +1031,7 @@ export function useElementEditor({saveData, root}: Options = {}) {
     onSidebarMutation,
     props,
     renderer,
-    refreshAfterNestedChange,
+    nestedOwnerEditor,
     refreshForm,
     refreshLayout,
     save,

@@ -262,13 +262,15 @@ export function serializeFormInputs(container: HTMLElement): string {
  * Names are kept verbatim — PHP-style bracket names (`settings[path]`) stay
  * flat keys, matching what the server would see after parsing the string
  * form. Repeated names are grouped into arrays rather than last-one-wins.
+ * An excluded subtree can contain a native form whose state is tracked separately.
  */
 export function serializeFormInputsAsObject(
-  container: HTMLElement
+  container: HTMLElement,
+  exclude?: HTMLElement | null
 ): Record<string, string | string[]> {
   const object: Record<string, string | string[]> = {};
 
-  for (const [name, value] of collectFormInputs(container)) {
+  for (const [name, value] of collectFormInputs(container, exclude)) {
     const existing = object[name];
 
     if (existing === undefined) {
@@ -283,14 +285,17 @@ export function serializeFormInputsAsObject(
   return object;
 }
 
-function collectFormInputs(container: HTMLElement): URLSearchParams {
+function collectFormInputs(
+  container: HTMLElement,
+  exclude?: HTMLElement | null
+): URLSearchParams {
   const params = new URLSearchParams();
   const controls = container.querySelectorAll<
     HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
   >('input[name], select[name], textarea[name]');
 
   for (const control of controls) {
-    if (control.disabled) {
+    if (control.disabled || exclude?.contains(control)) {
       continue;
     }
 
@@ -321,7 +326,7 @@ function collectFormInputs(container: HTMLElement): URLSearchParams {
   }
 
   for (const host of container.querySelectorAll<FormValueHost>('*')) {
-    if (!host.tagName.includes('-')) {
+    if (!host.tagName.includes('-') || exclude?.contains(host)) {
       continue;
     }
 

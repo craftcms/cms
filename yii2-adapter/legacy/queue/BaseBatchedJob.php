@@ -168,8 +168,12 @@ abstract class BaseBatchedJob extends BaseJob
                 break;
             }
 
-            // Make sure the job is still reserved before continuing
-            if ($queue instanceof Queue && !$queue->isReserved($queue->getJobId())) {
+            // Make sure the job is still reserved before continuing.
+            // No job ID means Yii's queue isn't the one running this, so there's
+            // nothing to ask: `isReserved()` resolves through `status()`, which is
+            // written against Yii's queue table rather than Laravel's. Treat it as
+            // "can't tell" and keep going, rather than quietly abandoning the batch.
+            if ($queue instanceof Queue && ($jobId = $queue->getJobId()) !== null && !$queue->isReserved($jobId)) {
                 return;
             }
         }

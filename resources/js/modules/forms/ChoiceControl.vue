@@ -323,6 +323,7 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
+    :label="fieldLabelSrOnly ? label : undefined"
     :label-sr-only="fieldLabelSrOnly || undefined"
     :name="
       editable

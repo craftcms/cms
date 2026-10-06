@@ -23,5 +23,6 @@ class KeywordsIndexing
         public ?string $attribute,
         public ?int $fieldId,
         public string $keywords,
+        public ?string $layoutElementUid = null,
     ) {}
 }

@@ -1,10 +1,11 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends Record<string, any>">
   import {
     FlexRender,
     type CellContext,
     type Row,
     type Table,
   } from '@tanstack/vue-table';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import {t} from '@craftcms/ui';
   import {computed, ref, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
@@ -24,8 +25,8 @@
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
-      selection: ElementIndexSelection;
+      table: Table<CraftTableFeatures, TData>;
+      selection: ElementIndexSelection<TData>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
@@ -54,7 +55,7 @@
       interactionsDisabled?: boolean;
       inlineEditing?: boolean;
       renderCell?: (
-        context: CellContext<any, unknown>,
+        context: CellContext<CraftTableFeatures, TData, unknown>,
         showErrors: boolean
       ) => unknown;
     }>(),
@@ -88,7 +89,9 @@
     extendSelectionTo,
   } = props.selection;
 
-  function renderInlineCell(context: CellContext<any, unknown>): VNodeChild {
+  function renderInlineCell(
+    context: CellContext<CraftTableFeatures, TData, unknown>
+  ): VNodeChild {
     const showErrors = context.row.getVisibleCells()[0]?.id === context.cell.id;
 
     return props.renderCell?.(context, showErrors) as VNodeChild;
@@ -175,7 +178,7 @@
     ...(props.selectable ? ['44px'] : []),
   ]);
 
-  function rowAttributes(row: Row<any>): HTMLAttributes {
+  function rowAttributes(row: Row<CraftTableFeatures, TData>): HTMLAttributes {
     return {
       ...props.itemBehavior?.attrs?.(row.original),
       tabindex: props.selectable ? 0 : undefined,
@@ -191,7 +194,7 @@
     };
   }
 
-  function rowLabel(row: Row<any>): string {
+  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
     return row.original.label ?? String(row.original.id);
   }
 
@@ -275,7 +278,9 @@
         <craft-checkbox
           label-sr-only
           .checked="table.getIsAllRowsSelected()"
-          .indeterminate="table.getIsSomeRowsSelected()"
+          .indeterminate="
+            table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+          "
           .disabled="readOnly || interactionsDisabled"
           @model-value-changed="
             onToggleAllSelected(($event.target as HTMLInputElement).checked)
@@ -373,16 +378,9 @@
         <span class="sr-only"
           >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
         </span>
-        <FlexRender
-          :render="cell.column.columnDef.cell"
-          :props="cell.getContext()"
-        />
+        <FlexRender :cell="cell" />
       </div>
-      <FlexRender
-        v-else
-        :render="cell.column.columnDef.cell"
-        :props="cell.getContext()"
-      />
+      <FlexRender v-else :cell="cell" />
     </template>
     <template #empty-row v-if="$slots['empty-row']"
       ><slot name="empty-row"

@@ -25,6 +25,11 @@ CP Styles
   --cp-footer-height: calc(54rem / 16);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-header-bg: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-blue-50), white 50%),
+    black 4%
+  );
 
   /* Inline padding for the CpContainer element */
   --cp-container-padding: var(--c-spacing-lg);
@@ -73,7 +78,6 @@ CP Styles
 html,
 body {
   height: 100%;
-  background-color: var(--c-surface-default);
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The
@@ -171,6 +175,24 @@ Sidebar metadata
     gap: unset;
     grid-template-columns: subgrid;
   }
+
+  /* Values against the far edge, now they have a column of their own. */
+  .cp-metadata-list dd {
+    text-align: end;
+  }
+}
+
+.context-label {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--c-spacing-sm);
+  padding-inline: var(--c-spacing-md);
+  font-size: calc(11rem / 16);
+  font-weight: normal;
+  line-height: 1.5;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: var(--c-radius-full);
 }
 
 /**

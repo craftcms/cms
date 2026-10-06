@@ -48,7 +48,7 @@ class ElementRevisionsController
                 'title' => $element->getUiLabel(),
             ]))
             ->crumbs([
-                ...$this->crumbs($element, current: false),
+                ...$this->crumbs($element),
                 new ActionItem()->label(t('Revisions')),
             ])
             ->contentTemplate('_elements/revisions', [

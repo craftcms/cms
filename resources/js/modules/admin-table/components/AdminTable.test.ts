@@ -1,6 +1,6 @@
 import {createApp, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createTable, getCoreRowModel} from '@tanstack/vue-table';
+import {useCraftTable} from '@/modules/admin-table/craftTable';
 import AdminTable from './AdminTable.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -21,7 +21,7 @@ afterEach(() => {
 
 it('renders settings rows and drives caller pagination without an element payload', () => {
   const onPaginationChange = vi.fn();
-  const table = createTable({
+  const table = useCraftTable({
     data: [{id: 1, name: 'Settings record'}],
     columns: [
       {accessorKey: 'name', header: 'Name', cell: ({getValue}) => getValue()},
@@ -29,19 +29,12 @@ it('renders settings rows and drives caller pagination without an element payloa
     state: {pagination: {pageIndex: 0, pageSize: 50}},
     manualPagination: true,
     rowCount: 151,
-    getCoreRowModel: getCoreRowModel(),
-    onStateChange: () => {},
     onPaginationChange,
-    renderFallbackValue: null,
   });
-  table.setOptions((options) => ({
-    ...options,
-    state: {...table.initialState, pagination: {pageIndex: 0, pageSize: 50}},
-  }));
   const host = document.createElement('div');
   document.body.append(host);
   const app = createApp({
-    render: () => h(AdminTable, {table, from: 1, to: 50, total: 151}),
+    render: () => h(AdminTable, {table, from: 1, to: 50, total: 151} as never),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(host);

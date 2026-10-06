@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -11,6 +13,7 @@ use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -24,6 +27,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
@@ -140,10 +144,14 @@ it('requires authentication for get-elements', function () {
     ])->assertUnauthorized();
 });
 
-it('returns element HTML and action metadata for get-elements', function () {
+it('returns element HTML and action metadata for get-elements', function (string $context) {
     EntryModel::factory()->count(2)->create();
 
-    ($this->postIndexAction)('get-elements')->assertOk()
+    $response = ($this->postIndexAction)('get-elements', [
+        'context' => $context,
+        'source' => '__IMP__',
+        'sortable' => true,
+    ])->assertOk()
         ->assertJsonStructure([
             'html',
             'headHtml',
@@ -152,7 +160,14 @@ it('returns element HTML and action metadata for get-elements', function () {
             'actionsBodyHtml',
             'exporters',
         ]);
-});
+
+    expect(array_column($response->json('actions') ?? [], 'type'))->toContain(Delete::class)
+        ->and(array_column($response->json('exporters') ?? [], 'type'))->toContain(Raw::class)
+        ->and(new Crawler($response->json('html'))->filter('tbody .move')->count())->toBe(2);
+})->with([
+    'standalone index' => ['index'],
+    'legacy embedded index' => ['embedded-index'],
+]);
 
 it('renders element table rows with strict Twig variables', function () {
     app(Twig::class)->get(TemplateMode::Cp)->enableStrictVariables();
@@ -372,7 +387,10 @@ it('includes the first server-rendered page in editable Matrix index controls', 
         ->and($props['index']['initial']['sort'])->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
         ->and($props['index']['initial']['reorderable'])->toBeTrue()
         ->and(json_decode(json_encode($props), true))->toBe($props)
-        ->and($props['manager']['pasteableEntryTypeIds'])->toBe([$fixture['nestedType']->id]);
+        ->and($props['manager']['pasteableData'])->toBe([
+            'attribute' => 'entryTypeId',
+            'values' => [$fixture['nestedType']->id],
+        ]);
 });
 
 it('keeps page assets outside an embedded Matrix initial payload', function () {
@@ -388,7 +406,7 @@ it('keeps page assets outside an embedded Matrix initial payload', function () {
         ->and(HtmlStack::headHtml())->toContain('/page-before-matrix.css');
 });
 
-it('applies server-owned Matrix index configuration', function () {
+it('uses posted Matrix index presentation settings while retaining the owner scope', function () {
     $fixture = embeddedMatrixIndexFixture();
     $props = $fixture['field']->formControl(new FieldContext(
         path: 'matrixField',
@@ -402,35 +420,101 @@ it('applies server-owned Matrix index configuration', function () {
         'source' => '__IMP__',
         'fieldId' => 999999,
         'viewMode' => 'table',
-        'allowedViewModes' => ['thumbs'],
+        'allowedViewModes' => ['table'],
         'defaultTableColumns' => ['dateUpdated'],
-        'fieldLayouts' => [],
-        'per_page' => 100,
+        'fieldLayouts' => $props['index']['initial']['fieldLayouts'],
+        'per_page' => 2,
         'showHeaderColumn' => false,
-        'sortable' => false,
-        'static' => true,
+        'sortable' => true,
+        'static' => false,
         'prevalidate' => true,
         'sort' => [['field' => 'sortOrder', 'direction' => 'desc']],
     ])->assertOk();
     $actions = collect($response->json('actions'))->keyBy('key');
 
-    expect($response->json('pagination.per_page'))->toBe(1)
-        ->and($response->json('data'))->toHaveCount(1)
+    expect($response->json('pagination.per_page'))->toBe(2)
+        ->and($response->json('data'))->toHaveCount(2)
         ->and($response->json('data.0.title'))->toContain('First')
         ->and($response->json('data.0.cardAttributes.class'))->toContain('removable')
         ->and($response->json('data.0.editUrl'))->toContain("fieldId={$fixture['field']->id}", 'prevalidate=1')
         ->and($response->json('sort'))->toBe([['field' => 'sortOrder', 'direction' => 'asc']])
         ->and($response->json('reorderable'))->toBeTrue()
         ->and($response->json('viewState.static'))->toBeFalse()
-        ->and($response->json('viewState.showHeaderColumn'))->toBeTrue()
-        ->and($response->json('defaultTableColumns'))->toBe(['dateCreated'])
+        ->and($response->json('viewState.showHeaderColumn'))->toBeFalse()
+        ->and($response->json('defaultTableColumns'))->toBe(['dateUpdated'])
         ->and(array_column($response->json('tableColumns'), 'value'))->toContain("field:{$fixture['columnField']->uid}")
-        ->and(array_column($response->json('viewModes'), 'mode'))->toEqualCanonicalizing(['cards', 'table'])
+        ->and(array_column($response->json('viewModes'), 'mode'))->toBe(['table'])
         ->and($actions->keys()->all())->toContain(Copy::class, Duplicate::class, Delete::class)
         ->and($actions[Copy::class]['selectionAttribute'])->toBe('copyable')
         ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
         ->and($actions[Delete::class]['selectionAttribute'])->toBe('deletable');
 });
+
+it('preserves posted native index settings without changing owner scope or authorization', function (bool $authorized, bool $canReorder) {
+    $columnField = Field::factory()->create(['handle' => 'addressIndexColumn', 'type' => PlainText::class]);
+    $layout = FieldLayout::factory()->forField($columnField)->create(['type' => Address::class]);
+    Fields::refreshFields();
+    $owner = UserModel::factory()->createElement();
+    AddressModel::factory()->withOwnedElement($owner, 1)->createElement(['addressLine1' => 'First']);
+    AddressModel::factory()->withOwnedElement($owner, 2)->createElement(['addressLine1' => 'Second']);
+    $config = [
+        'sortable' => true,
+        'canPaste' => true,
+        'pageSize' => 1,
+        'allowedViewModes' => ['table'],
+        'defaultViewMode' => 'table',
+        'defaultTableColumns' => ['addressLine1'],
+        'fieldLayouts' => [Fields::getLayoutById($layout->id)],
+    ];
+    $manager = $owner->getAddressManager()->getIndexData($owner, $config);
+    $initial = EmbeddedIndexViewModel::forOwner(
+        Address::class,
+        $owner,
+        'addresses',
+        $owner->getAddressManager()->getIndexConfig($owner, $config),
+    )->payload();
+    $otherOwner = UserModel::factory()->createElement();
+    AddressModel::factory()->withOwnedElement($otherOwner, 1)->createElement(['addressLine1' => 'Wrong owner']);
+
+    if (! $authorized) {
+        SessionAuth::deauthorize("manageNestedElements::$owner->id::addresses");
+    }
+
+    if (! $canReorder) {
+        SessionAuth::deauthorize("reorderNestedElements::$owner->id::addresses");
+    }
+
+    $response = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$manager,
+        'elementType' => Address::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '__IMP__',
+        'viewMode' => 'table',
+        'per_page' => $initial['pagination']['per_page'],
+        'sortable' => true,
+        'canPaste' => true,
+        'allowedViewModes' => ['table'],
+        'defaultTableColumns' => $initial['defaultTableColumns'],
+        'fieldLayouts' => $initial['fieldLayouts'] ?? [],
+        'baseCriteria' => ['ownerId' => $otherOwner->id],
+        'criteria' => ['ownerId' => $otherOwner->id],
+        'static' => false,
+    ])->assertOk()
+        ->assertJsonPath('pagination.per_page', 1)
+        ->assertJsonPath('pagination.total', 2)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('defaultTableColumns', ['addressLine1'])
+        ->assertJsonPath('viewModes.0.mode', 'table')
+        ->assertJsonCount(1, 'viewModes')
+        ->assertJsonPath('viewState.static', ! $authorized)
+        ->assertJsonPath('reorderable', $authorized && $canReorder);
+
+    expect(array_column($response->json('tableColumns'), 'value'))->toContain("field:$columnField->uid");
+})->with([
+    'editable' => [true, true],
+    'read-only' => [false, true],
+    'reordering not authorized' => [true, false],
+]);
 
 it('disables embedded reordering when the view is filtered or re-sorted', function (Closure $query) {
     $fixture = embeddedMatrixIndexFixture();
@@ -498,7 +582,7 @@ it('scopes a read-only embedded Matrix index without granting mutation access', 
     ])->assertOk()
         ->assertJsonPath('pagination.total', 1)
         ->assertJsonPath('pagination.unfilteredTotal', 1)
-        ->assertJsonPath('pagination.per_page', 1)
+        ->assertJsonPath('pagination.per_page', 100)
         ->assertJsonPath('reorderable', false)
         ->assertJsonPath('viewState.static', true);
     $tableResponse = postJson(action([ElementIndexController::class, 'getElements']), [

@@ -354,13 +354,13 @@
       <slot v-else-if="footerActive" name="footer" />
       <PaginationControls
         v-else
-        :page-index="table.getState().pagination.pageIndex"
-        :page-size="table.getState().pagination.pageSize"
+        :page-index="table.atoms.pagination.get().pageIndex"
+        :page-size="table.atoms.pagination.get().pageSize"
         :page-count="table.getPageCount()"
         :paginated="
           Boolean(
             table.options.manualPagination ||
-            table.options.getPaginationRowModel
+            'paginatedRowModel' in table.options.features
           )
         "
         :from="elementIndex.pagination.from"

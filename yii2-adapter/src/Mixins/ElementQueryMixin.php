@@ -211,6 +211,30 @@ class ElementQueryMixin
     }
 
     /**
+     * Craft 5's `joinElementTable()`, which has no Craft 6 equivalent to defer to.
+     *
+     * Throws rather than joining the table, because doing half the job here would
+     * be worse than doing none: Craft 5 callers paired this join with conditions
+     * staged on `$subQuery`, which no longer exists, so the join alone would
+     * satisfy the ORDER BY and quietly return unfiltered rows. A query that
+     * can't be honoured should fail, not lie.
+     */
+    public function joinElementTable(): Closure
+    {
+        return function(string $table) {
+            Deprecator::log(
+                'ElementQuery-joinElementTable',
+                'Calling ->joinElementTable on an ElementQuery is deprecated. Declare the table with the `$table` property on the element query class instead.',
+            );
+
+            throw new NotSupportedException(sprintf(
+                'joinElementTable(\'%s\') is not supported as of Craft 6. Declare the element’s table with the `$table` property on the element query class, which joins it automatically, and apply joins and conditions to `$query`.',
+                $table,
+            ));
+        };
+    }
+
+    /**
      * Removes [[isEmpty()|empty operands]] from the given query condition.
      *
      * @param  array  $condition  the original condition
