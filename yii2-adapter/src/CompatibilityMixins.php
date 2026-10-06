@@ -6,6 +6,7 @@ namespace CraftCms\Yii2Adapter;
 
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Asset\Data\FolderCriteria as AssetFolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
 use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
@@ -28,6 +29,7 @@ use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
 use CraftCms\Yii2Adapter\Behavior\Mixins\LegacyBehaviorMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
+use CraftCms\Yii2Adapter\Mixins\FieldLayoutMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
@@ -65,6 +67,7 @@ readonly class CompatibilityMixins
         Field::mixin(new ValidateMixin());
         FieldLayoutComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
+        FieldLayout::mixin(new FieldLayoutMixin());
         User::mixin(new UserMixin());
         AssetFolderCriteria::mixin(new ValidateMixin());
         AssetVolume::mixin(new ValidateMixin());

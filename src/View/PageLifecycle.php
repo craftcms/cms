@@ -66,11 +66,30 @@ readonly class PageLifecycle
 
             event($event = new PageEnded);
 
-            return strtr((string) ob_get_clean(), [
-                self::HEAD_PLACEHOLDER => $event->headHtml ?? $this->HtmlStack->headHtml(),
-                self::BODY_BEGIN_PLACEHOLDER => $event->bodyBeginHtml ?? $this->HtmlStack->bodyBeginHtml(),
-                self::BODY_END_PLACEHOLDER => $event->bodyEndHtml ?? $this->HtmlStack->bodyEndHtml(),
-            ]);
+            $output = (string) ob_get_clean();
+
+            /**
+             * Only drain a position this output actually has a placeholder for.
+             * The drain methods clear as they render, so asking for all three
+             * unconditionally consumed them even when there was nowhere to put
+             * them — and a render with no placeholders at all, which is what a
+             * screen collected for the control panel shell produces, threw away
+             * every asset its controller had registered. Whoever does emit a
+             * document later in the request gets them instead.
+             */
+            $replacements = array_filter([
+                self::HEAD_PLACEHOLDER => str_contains($output, self::HEAD_PLACEHOLDER)
+                    ? ($event->headHtml ?? $this->HtmlStack->headHtml())
+                    : null,
+                self::BODY_BEGIN_PLACEHOLDER => str_contains($output, self::BODY_BEGIN_PLACEHOLDER)
+                    ? ($event->bodyBeginHtml ?? $this->HtmlStack->bodyBeginHtml())
+                    : null,
+                self::BODY_END_PLACEHOLDER => str_contains($output, self::BODY_END_PLACEHOLDER)
+                    ? ($event->bodyEndHtml ?? $this->HtmlStack->bodyEndHtml())
+                    : null,
+            ], fn (?string $html) => $html !== null);
+
+            return $replacements === [] ? $output : strtr($output, $replacements);
         } catch (TemplateExitException) {
             // {% exit %} without a status code: return whatever has been
             // rendered so far as a normal 200 response.

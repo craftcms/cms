@@ -145,10 +145,16 @@ class ActionItem extends Component
         unset($config['url']);
 
         if (isset($config['subnav']) && is_array($config['subnav'])) {
-            $config['subnav'] = array_map(
+            // `array_values` because Craft 5 documented a plugin's subnav as a
+            // map keyed by handle — `$item['subnav']['products'] = [...]` — and
+            // string keys would survive to JSON as an object. The control panel
+            // reads children with `Array.isArray(item.subnav)`, which is false
+            // for an object, so a keyed subnav vanished on the client. Nothing
+            // looks a child up by its key; selection is by path.
+            $config['subnav'] = array_values(array_map(
                 fn ($item) => $item instanceof self ? $item : new static($item),
                 $config['subnav'],
-            );
+            ));
         }
 
         parent::__construct($config);
@@ -304,10 +310,19 @@ class ActionItem extends Component
         return $this;
     }
 
-    /** @param static[]|false $subnav */
+    /**
+     * The children beneath this item.
+     *
+     * Stored as a list: the control panel reads children with
+     * `Array.isArray(item.subnav)`, so a keyed array — which is how Craft 5
+     * plugins wrote one — would reach the client as a JSON object and be
+     * skipped.
+     *
+     * @param  static[]|false  $subnav
+     */
     public function subnav(array|false $subnav): static
     {
-        $this->subnav = $subnav;
+        $this->subnav = $subnav === false ? false : array_values($subnav);
 
         return $this;
     }

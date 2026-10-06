@@ -152,6 +152,7 @@
   const hasFooter = computed(
     () =>
       Boolean(props.form) ||
+      Boolean(props.fullPageForm) ||
       regions.has('content-footer') ||
       regions.has('additional-buttons')
   );
@@ -193,6 +194,19 @@
     emit('save', options);
   }
 
+  /**
+   * A Vue page drives saving through its Inertia form, so the native submit is
+   * cancelled. A bridged legacy screen has no such form: it posts to the
+   * current URL and the hidden `action` input in its own content names the
+   * controller action — the same contract Craft 5's page form used.
+   */
+  function onSubmit(event: Event): void {
+    if (props.form) {
+      event.preventDefault();
+      save();
+    }
+  }
+
   // Announce flash messages to screen readers.
   const {announce} = useAnnouncer();
   const {errorFlash, successFlash} = useFlash();
@@ -229,11 +243,15 @@
               <main id="main" tabindex="-1">
                 <form
                   method="post"
-                  @submit.prevent="form && save()"
+                  accept-charset="UTF-8"
+                  novalidate
+                  :id="legacyIds ? 'main-form' : undefined"
+                  @submit="onSubmit"
                   class="cp-main"
                 >
                   <div
                     ref="contentLayout"
+                    :id="legacyIds ? 'page-container' : undefined"
                     class="cp-content"
                     :class="{
                       'cp-content--sidebar': hasSidebar,
@@ -292,7 +310,10 @@
                               class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
                             >
                               <LayoutSlotOutlet name="content-toolbar">
-                                <div class="flex gap-2 items-center">
+                                <div
+                                  :id="legacyIds ? 'toolbar' : undefined"
+                                  class="flex gap-2 items-center"
+                                >
                                   <LayoutSlotOutlet name="content-toolbar-meta">
                                     <slot name="content-toolbar-meta"></slot>
                                   </LayoutSlotOutlet>
@@ -333,7 +354,15 @@
                         <LayoutSlotOutlet name="content-tabs">
                           <slot name="content-tabs"></slot>
                         </LayoutSlotOutlet>
-                        <slot></slot>
+                        <!-- `#content` is how the legacy element editor finds its form
+                          host: `$('#content').find('craft-entry-field-layout-form')`.
+                          Without it `formHost` is undefined and every field-layout
+                          refresh throws, which is what stopped a nested element — an
+                          address, say — from ever being added on a bridged screen. -->
+                        <div v-if="legacyIds" id="content" class="contents">
+                          <slot></slot>
+                        </div>
+                        <slot v-else></slot>
                         <div
                           v-show="hasNotices || hasFooter"
                           class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
@@ -359,6 +388,7 @@
                               :form-actions="formActions"
                               :form-additional-actions="formAdditionalActions"
                               :form-additional-buttons="formAdditionalButtons"
+                              :full-page-form="fullPageForm"
                               :submit-button-label="submitButtonLabel"
                               :save-disabled="saveDisabled"
                               :contained="contentConstrained"
@@ -376,8 +406,16 @@
                         </div>
                       </div>
                     </div>
-                    <aside v-show="hasDetails" class="cp-content__details">
-                      <div class="sticky top-0 h-screen">
+                    <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
+                    <aside
+                      v-show="hasDetails"
+                      :id="legacyIds ? 'details' : undefined"
+                      class="cp-content__details"
+                    >
+                      <div
+                        class="sticky top-0 h-screen"
+                        :class="{details: legacyIds}"
+                      >
                         <ContentDetails
                           ref="detailsColumn"
                           :resizer="detailsResizer"

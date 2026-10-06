@@ -39,7 +39,10 @@
 └────────────────────────────────────────────────────────────────────────────────────┘
 #}
 
-{% extends '_layouts/basecp.twig' %}
+{# The parent is chosen at runtime: the document normally, or a layout that
+   collects this screen's fragments and draws nothing, so the control panel
+   shell can render around them. See CraftCms\Cms\View\LegacyScreenFragments. #}
+{% extends craft.cp.screenShell() %}
 
 {# The control panel only supports queue components that implement QueueInterface #}
 {% set sidebarState = Request.cookie("Craft-#{craft.systemUid}_sidebar") ?? 'expanded' %}
@@ -57,6 +60,7 @@
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 {% set trialInfo = craft.cp.trialInfo() %}
 
+{% set content = (content ?? block('content') ?? '')|trim %}
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
@@ -268,9 +272,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                                     </header>
                                                 {% endif %}
 
-                                                {% block content %}
-                                                    {{ content is defined ? content|raw }}
-                                                {% endblock %}
+                                                {{ content|raw }}
 
                                                 {# footer #}
                                                 {% if footer %}

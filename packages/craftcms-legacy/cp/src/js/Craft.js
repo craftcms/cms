@@ -3032,7 +3032,7 @@ $.extend($.fn, {
    */
   checkboxselect: function () {
     return this.each(function () {
-      if (!$.data(this, 'checkboxSelect')) {
+      if (!$.data(this, 'checkboxSelect') && Garnish.CheckboxSelect) {
         new Garnish.CheckboxSelect(this, {
           storageKey: this.getAttribute('data-storage-key'),
         });
@@ -3053,7 +3053,7 @@ $.extend($.fn, {
 
   nicetext: function () {
     return this.each(function () {
-      if (!$.data(this, 'nicetext')) {
+      if (!$.data(this, 'nicetext') && Garnish.NiceText) {
         new Garnish.NiceText(this);
       }
     });
@@ -3268,16 +3268,22 @@ $.extend($.fn, {
   },
 });
 
-// Override Garnish.NiceText.charsLeftHtml() to be more accessible
-Garnish.NiceText.charsLeftHtml = (charsLeft) => {
-  return Craft.t(
-    'app',
-    '<span class="visually-hidden">Characters left:</span> {chars, number}',
-    {
-      chars: charsLeft,
-    }
-  );
-};
+// Override Garnish.NiceText.charsLeftHtml() to be more accessible.
+// Guarded: the modernized Garnish has no NiceText — `craft-input`'s
+// `showCharsLeft` covers it — and this runs at module scope, so an
+// unguarded assignment aborts the rest of Craft.js on any page where the
+// modern namespace owns `window.Garnish`.
+if (Garnish.NiceText) {
+  Garnish.NiceText.charsLeftHtml = (charsLeft) => {
+    return Craft.t(
+      'app',
+      '<span class="visually-hidden">Characters left:</span> {chars, number}',
+      {
+        chars: charsLeft,
+      }
+    );
+  };
+}
 
 Garnish.$doc.ready(function () {
   Craft.initUiElements();

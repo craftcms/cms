@@ -204,6 +204,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   th,
   td {
+    text-align: start;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -97,13 +98,17 @@ describe('index', function () {
 
         Date::setTestNow();
 
+        // The screen has no Vue page of its own, so it renders through the
+        // shell's fragment page: its markup arrives as a prop rather than in
+        // the document body.
         get($route($entry))
             ->assertOk()
-            ->assertSeeText('Revisions for')
-            ->assertSeeText('Updated Title')
-            ->assertSee('id="revisions"', false)
-            ->assertSeeText('Revision 1')
-            ->assertSeeText('Initial notes');
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('cp/Screen')
+                ->where('title', 'Revisions for “Updated Title”')
+                ->where('content', fn (string $content) => str_contains($content, 'id="revisions"')
+                    && str_contains($content, 'Revision 1')
+                    && str_contains($content, 'Initial notes')));
     })->with('elementRevisionRoutes');
 
     it('returns 400 when the element type does not support revisions', function () {

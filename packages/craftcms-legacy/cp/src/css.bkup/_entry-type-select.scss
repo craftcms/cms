@@ -1,0 +1,39 @@
+@charset "UTF-8";
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
+
+.entry-type-override-settings-body {
+  flex: 1;
+  margin-block: -24px 0;
+  margin-inline: var(--neg-padding);
+  padding-block: 24px;
+  padding-inline: var(--padding);
+  overflow: hidden auto;
+  position: relative;
+}
+
+.entry-type-override-settings-footer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  margin-block: 0 -24px;
+  margin-inline: var(--neg-padding);
+  padding-block: 5px;
+  padding-inline: var(--padding);
+  @include mixins.pane;
+  background-color: var(--gray-050);
+  z-index: 3;
+
+  & > .ee-site-select {
+    flex: 1;
+  }
+
+  & > .btn {
+    margin-inline-start: 5px;
+  }
+
+  & > .spinner {
+    margin-inline: 0 var(--neg-padding);
+    margin-block: 0;
+  }
+}

@@ -1,6 +1,6 @@
-import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
+// import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
 
-/**
+/**src
  * Register the full `craft-*` element set, same as `cp.ts` does.
  *
  * Legacy-rendered pages emit components that aren't imported anywhere in this
@@ -89,8 +89,6 @@ mountElevatedSessionHost();
 /**
  * Components - dynamically imported after Craft is initialized
  */
-import('@craftcms/ui/components/nav-list/nav-list');
-import('@craftcms/ui/components/nav-item/nav-item');
 import('./modules/navigation/components/cp-global-sidebar.js');
 import('./modules/navigation/components/cp-queue-indicator.js');
 import('./modules/notifications/components/cp-notification-center.js');

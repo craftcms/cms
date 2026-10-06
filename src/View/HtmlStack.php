@@ -139,6 +139,7 @@ class HtmlStack
     {
         $key ??= $url;
 
+
         // Skip files the browser reported as already loaded (Craft 5's
         // registered-JS-files mechanism); see RegisteredClientAssets.
         if ($this->clientAssets->hasJsFile($key)) {
@@ -859,13 +860,27 @@ class HtmlStack
     {
         $js = implode(PHP_EOL, $this->js[Position::Ready->value] ?? []);
 
+        /**
+         * `Craft.whenReady` is a compatibility seam, not a general API. Only
+         * the legacy-screen bridge defines it, and only because a screen's
+         * markup is mounted by Vue after the document is parsed — so
+         * `DOMContentLoaded` is no longer the moment this JS can safely run.
+         *
+         * Where nothing defines it, the two branches below are the original
+         * behavior, untouched. Removing the shim means removing the hook: drop
+         * the first branch and this is exactly what it was.
+         */
         return <<<JS
 (() => {
   const run = function () {
 $js
   };
 
-  if (document.readyState === 'loading') {
+  const whenReady = window.Craft && window.Craft.whenReady;
+
+  if (typeof whenReady === 'function') {
+    whenReady(() => run.call(document));
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
   } else {
     run.call(document);
@@ -900,10 +915,21 @@ JS;
      */
     private function registerEntry(array &$entries, string $key, Stringable|string $value): void
     {
-        if (array_key_exists($key, $entries)) {
-            unset($entries[$key]);
-        }
-
+        /**
+         * Assigned without unsetting first, so a re-registration keeps the slot
+         * the key already holds. PHP preserves insertion position on assignment
+         * to an existing key; unsetting it first moved the entry to the end.
+         *
+         * That reordering broke dependency order. Craft's own asset chain emits
+         * jQuery before `cp.js`, but a legacy `View::registerAssetBundle()` call
+         * made while a screen renders — a plugin registering its CP bundle from
+         * `getSidebarHtml()`, say — re-registers jQuery through Yii's asset
+         * pipeline, which moved it *after* `cp.js` and left the page throwing
+         * `jQuery is not defined`.
+         *
+         * Last registration still wins for the value; only the position is now
+         * the first one's.
+         */
         $entries[$key] = $value;
     }
 }

@@ -1,0 +1,108 @@
+@charset "utf-8";
+
+/* range inputs */
+
+/* h/t https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/ */
+
+/* h/t https://stackoverflow.com/a/38163892/1688568 */
+
+$trackColor: var(--white);
+$trackHeight: 6px;
+$trackBorderRadius: 3px;
+$trackShadow: inset 0 0 0 1px var(--ui-control-color);
+$thumbColor: var(--ui-control-color);
+$thumbSize: var(--m);
+$thumbShadow: 0 0 0 1px var(--white);
+$thumbBorderRadius: calc(var(--touch-target-size) / 2);
+
+.range-wrapper {
+  max-width: 200px;
+}
+
+input.range {
+  display: block;
+  appearance: none;
+  width: 100%; // for FF
+}
+
+input.range:focus {
+  outline: none;
+}
+
+// Thumb styles
+input.range::-webkit-slider-thumb {
+  border: none;
+  height: $thumbSize;
+  width: $thumbSize;
+  border-radius: $thumbBorderRadius;
+  background: $thumbColor;
+  box-shadow: $thumbShadow;
+  cursor: pointer;
+  appearance: none;
+  margin-block-start: calc((#{$thumbSize} / 2) * -1 + (#{$trackHeight} / 2));
+}
+
+input.range::-moz-range-thumb {
+  border: none;
+  height: $thumbSize;
+  width: $thumbSize;
+  border-radius: $thumbBorderRadius;
+  background: $thumbColor;
+  box-shadow: $thumbShadow;
+  cursor: pointer;
+}
+
+input.range::-ms-thumb {
+  border: none;
+  height: $thumbSize;
+  width: $thumbSize;
+  border-radius: $thumbBorderRadius;
+  background: $thumbColor;
+  box-shadow: $thumbShadow;
+  cursor: pointer;
+}
+
+// Track styles
+input.range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: $trackHeight;
+  cursor: pointer;
+  background: $trackColor;
+  border-radius: $trackBorderRadius;
+  box-shadow: $trackShadow;
+}
+
+input.range::-moz-range-track {
+  width: 100%;
+  height: $trackHeight;
+  cursor: pointer;
+  background: $trackColor;
+  border-radius: $trackBorderRadius;
+  box-shadow: $trackShadow;
+}
+
+input.range::-ms-track {
+  width: 100%;
+  height: $trackHeight;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  border-width: 16px 0;
+  color: transparent;
+}
+
+input.range::-ms-fill-lower {
+  background: $trackColor;
+  border: none;
+  border-radius: $trackBorderRadius;
+}
+
+input.range::-ms-fill-upper {
+  background: $trackColor;
+  border: none;
+  border-radius: $trackBorderRadius;
+}
+
+input.range:focus::-ms-fill-lower {
+  background: $trackColor;
+}

@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
+use Inertia\Testing\AssertableInertia;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
@@ -180,8 +181,13 @@ it('returns inline edit responses for standard control panel edit urls', functio
 
     expect($entry->getCpEditUrl())->toStartWith(cp_url('edit'));
 
+    // The inline editor has no Vue page of its own, so it renders through the
+    // shell's fragment page: its markup arrives as a prop rather than in the
+    // document body.
     get(cp_url("edit/$entry->id-$entry->slug"))
         ->assertOk()
-        ->assertSeeText('Inline Block')
-        ->assertSee('elements/save', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('cp/Screen')
+            ->where('title', 'Inline Block')
+            ->where('content', fn (string $content) => str_contains($content, 'elements/save')));
 });

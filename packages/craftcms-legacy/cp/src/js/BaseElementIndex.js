@@ -3916,7 +3916,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         })
         .appendTo($form);
 
-      const $exportSubmit = new Garnish.MultiFunctionBtn($submitBtn);
+      // Guarded: the modernized Garnish has no MultiFunctionBtn. Without it
+      // the export button just stays a plain button rather than throwing.
+      const $exportSubmit = Garnish.MultiFunctionBtn
+        ? new Garnish.MultiFunctionBtn($submitBtn)
+        : null;
 
       var hud = new Garnish.HUD(this.$exportBtn, $form);
 
@@ -3934,7 +3938,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
 
         submitting = true;
-        $exportSubmit.busyEvent();
+        $exportSubmit?.busyEvent();
 
         var params = this.getViewParams();
         delete params.baseCriteria.offset;
@@ -3974,7 +3978,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
           .finally(() => {
             submitting = false;
-            $exportSubmit.successEvent();
+            $exportSubmit?.successEvent();
           });
       });
     },

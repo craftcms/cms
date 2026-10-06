@@ -1,0 +1,17 @@
+craft-disclosure {
+  --disclosure-icon-transform: rotate(0deg);
+  --disclosure-icon-transform-active: rotate(-90deg);
+  display: contents;
+
+  [aria-expanded='true'] .cp-icon {
+    transform: var(--disclosure-icon-transform);
+  }
+}
+
+craft-disclosure [aria-expanded='false'] .cp-icon {
+  transform: var(--disclosure-icon-transform-active);
+}
+
+body.rtl craft-disclosure {
+  --disclosure-icon-transform-active: rotate(90deg);
+}

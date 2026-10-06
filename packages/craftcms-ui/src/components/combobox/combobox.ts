@@ -271,6 +271,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    this.#syncFormValue();
     // An `aria-labelledby` on the host names a label the consumer renders
     // itself — a table column heading, say — rather than one in the `label`
     // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
@@ -692,6 +693,39 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     );
   }
 
+  /**
+   * Publishes the value for native form submission.
+   *
+   * The host carries the `name` and the class declares `formAssociated`, but a
+   * single-choice combobox never told `ElementInternals` what its value was, so
+   * it contributed nothing to a native POST — a form read with `FormData`, or a
+   * page that posts itself rather than going through an Inertia form, saw the
+   * field as absent and left the old value in place. Multiple choice has its
+   * own hidden inputs; this is the single-choice equivalent.
+   */
+  #syncFormValue() {
+    if (this.multipleChoice) {
+      return;
+    }
+
+    /**
+     * `ElementInternals` is the whole mechanism here, so without it there is
+     * nothing to publish. happy-dom doesn't implement `attachInternals()`, and
+     * this runs from `updated()` on every render — so an unguarded call made
+     * rendering a combobox throw outright in any test using that environment.
+     */
+    if (typeof this.attachInternals !== 'function') {
+      return;
+    }
+
+    this.internals ??= this.attachInternals();
+
+    const omit = !this.name || this.disabled || this.fieldsetDisabled;
+    const value = typeof this.modelValue === 'string' ? this.modelValue : '';
+
+    this.internals.setFormValue(omit ? null : value);
+  }
+
   private syncInputs() {
     if (!this.inputs) {
       this.inputs = document.createElement('span');
@@ -725,7 +759,11 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       this.modelValue = [...this.initialValues];
       this.value = '';
       this.syncInputs();
+
+      return;
     }
+
+    this.#syncFormValue();
   }
 
   /** Tracks whether an ancestor `<fieldset>` has disabled the control. */

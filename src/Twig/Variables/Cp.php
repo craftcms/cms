@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Http\Responses\BridgedScreen;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\View\LegacyScreenFragments;
 use DateTimeInterface;
 use Deprecated;
 use Illuminate\Support\Facades\Cache;
@@ -329,6 +331,59 @@ class Cp extends Component
     public function text(array $config = []): string
     {
         return FormFields::textFromConfig($config)->toHtml();
+    }
+
+    /**
+     * The layout `_layouts/cp` should extend for this render.
+     *
+     * `_layouts/basecp.twig` — the document — unless the response layer has
+     * asked for the screen's fragments instead, in which case the collecting
+     * layout stands in and no document is built.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function screenShell(): string
+    {
+        return app(LegacyScreenFragments::class)->layout();
+    }
+
+    /**
+     * The marker `_layouts/elementindex` puts in its own content block.
+     *
+     * @see BridgedScreen::CONTENT_SENTINEL
+     */
+    public function elementIndexSentinel(): string
+    {
+        return BridgedScreen::CONTENT_SENTINEL;
+    }
+
+    /**
+     * Whether this render is collecting fragments rather than drawing a page.
+     *
+     * A layout asks when the answer changes what it should render — an element
+     * index skips the legacy toolbar and boot JS when the control panel shell
+     * is going to supply its own.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function screenCollecting(): bool
+    {
+        return app(LegacyScreenFragments::class)->enabled();
+    }
+
+    /**
+     * Hands `_layouts/cp`'s captured fragments to the response layer.
+     *
+     * Called by `_layouts/cp-fragments.twig`, which is the only caller there
+     * should ever be.
+     *
+     * @param  array<string, mixed>  $fragments
+     *
+     * @see LegacyScreenFragments
+     */
+    public function collectScreenFragments(array $fragments): void
+    {
+        app(LegacyScreenFragments::class)->collect($fragments);
     }
 
     /**

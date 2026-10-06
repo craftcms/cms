@@ -1,11 +1,11 @@
-import {Validator} from '@lion/ui/form-core.js';
+import { Validator } from "@lion/ui/form-core.js";
 import {
   computed,
   type ComputedRef,
   type InjectionKey,
   type Ref,
   type Slots,
-} from 'vue';
+} from "vue";
 import type {
   CanonicalFormValue,
   FormChange,
@@ -13,26 +13,26 @@ import type {
   FormNodePayload,
   FormValue,
   FormValues,
-} from './types';
-import type {ActionItems} from '@/common/types';
+} from "./types";
+import type { ActionItems } from "@/common/types";
 
 export const FormFailure: InjectionKey<(message: string) => void> =
-  Symbol('FormFailure');
+  Symbol("FormFailure");
 
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
-  'FormControlOverrides'
+  "FormControlOverrides",
 );
 
 /** Modified delta groups as dotted paths, provided to every field beneath. */
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('FormModifiedGroups');
+  Symbol("FormModifiedGroups");
 
 /**
  * Dotted paths of every control changed since the form was last reset. A field
  * holding nested forms badges when one lands at or below it — see FieldNode.
  */
 export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('FormChangedPaths');
+  Symbol("FormChangedPaths");
 
 /**
  * Lets a field's control rewrite the field's "⋮" menu with state only the
@@ -42,21 +42,21 @@ export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
  */
 export const FieldActionItems: InjectionKey<
   Ref<((items: ActionItems) => ActionItems) | undefined>
-> = Symbol('FieldActionItems');
+> = Symbol("FieldActionItems");
 
 /**
  * Whether the surrounding field's label is visually hidden, so controls with
  * their own label chrome (e.g. `craft-select`) can hide theirs too.
  */
 export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
-  Symbol('FieldLabelSrOnly');
+  Symbol("FieldLabelSrOnly");
 
 /** Control paths whose changes have an active Form refresh. */
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('FormRefreshingFields');
+  Symbol("FormRefreshingFields");
 
 class ServerError extends Validator {
-  static override validatorName = 'ServerError';
+  static override validatorName = "ServerError";
 
   override execute(): boolean {
     return true;
@@ -85,7 +85,7 @@ export function controlValueAt(
   values: FormValue,
   // `emptyValue` is typed here and nowhere else: `FormControlPayload` omits it
   // on purpose — see the note there — and this is the only thing that reads it.
-  control: {path: string[]; emptyValue?: unknown}
+  control: { path: string[]; emptyValue?: unknown },
 ): FormValue {
   const value = valueAt(values, control.path);
 
@@ -101,7 +101,7 @@ export function serverErrorValidators(invalid: boolean): Validator[] {
   return invalid
     ? [
         new ServerError(undefined, {
-          getMessage: () => '',
+          getMessage: () => "",
           visibilityDuration: Infinity,
         }),
       ]
@@ -109,7 +109,7 @@ export function serverErrorValidators(invalid: boolean): Validator[] {
 }
 
 export function ignoreModelValueInitialization(
-  callback: (event: Event) => void
+  callback: (event: Event) => void,
 ): (event: Event) => void {
   return (event) => {
     if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
@@ -119,7 +119,7 @@ export function ignoreModelValueInitialization(
 }
 
 export function formChangeFromEvent(
-  change: FormChange | Event
+  change: FormChange | Event,
 ): FormChange | null {
   // A component that doesn't declare `change` lets the listener fall through
   // to its root, so a child component's own `change` payload — a condition
@@ -139,7 +139,7 @@ export function formChangeFromEvent(
 
 function isFormChange(value: unknown): value is FormChange {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
     Array.isArray((value as FormChange).path)
   );
@@ -157,11 +157,11 @@ export function fieldId(path: string[]): string {
   const encoded = path.map((segment) =>
     encodeURIComponent(segment).replace(
       /[!'()*]/g,
-      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
-    )
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+    ),
   );
 
-  return `form-${encoded.join('-')}`;
+  return `form-${encoded.join("-")}`;
 }
 
 /** The id of the control's own input, which sits inside that field. */
@@ -173,13 +173,74 @@ export function inputName(path: string[]): string {
   return `${path[0]}${path
     .slice(1)
     .map((segment) => `[${segment}]`)
-    .join('')}`;
+    .join("")}`;
+}
+
+const ID_CHARACTERS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+function randomId(length = 10): string {
+  let id = "";
+
+  for (let index = 0; index < length; index++) {
+    id += ID_CHARACTERS.charAt(
+      Math.floor(Math.random() * ID_CHARACTERS.length),
+    );
+  }
+
+  return id;
+}
+
+/**
+ * Normalizes a string into an element id.
+ *
+ * A port of `CraftCms\Cms\Support\Html::id()`, which is what builds these ids
+ * server-side — the markup a form renders carries ids the client then has to
+ * address, so the two have to agree character for character.
+ */
+export function elementId(id = ""): string {
+  // Placeholders pass through untouched, e.g. `__NAMESPACE__-fieldId`.
+  if (/^__[A-Z_]+__/.test(id)) {
+    return id;
+  }
+
+  const normalized = id
+    // Drop invalid characters already sitting against a hyphen, so they don't
+    // each become a hyphen of their own below.
+    .replace(/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/g, "")
+    // Collapse whatever invalid characters are left into single hyphens.
+    .replace(/[^A-Za-z0-9_.-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || randomId();
+}
+
+/**
+ * Namespaces an element id.
+ *
+ * Mirrors `InputNamespace::namespaceId()`: the namespace and id are joined and
+ * then normalized **once**, rather than normalized separately and joined. That
+ * distinction matters, because the server builds the id the same way and the
+ * two must match.
+ *
+ * Deliberately not `Craft.namespaceId()`. That lives only in the legacy CP
+ * bundle, so borrowing it made rendering a form node fail outright wherever
+ * that bundle isn't loaded — `Craft.namespaceId is not a function`. It also
+ * normalizes each part separately, so it disagreed with the server for ids the
+ * joining itself affects.
+ */
+export function namespaceId(id: string, namespace?: string | null): string {
+  if (id === "") {
+    return id;
+  }
+
+  return namespace ? elementId(`${namespace}-${id}`) : elementId(id);
 }
 
 export function formTabPanelId(uid: string, scope: string[]): string {
   const id = `form-tab-${uid}`;
 
-  return scope.length ? Craft.namespaceId(id, inputName(scope)) : id;
+  return scope.length ? namespaceId(id, inputName(scope)) : id;
 }
 
 export function valueAt(source: FormValue, path: string[]): FormValue {
@@ -198,7 +259,7 @@ export function valueAt(source: FormValue, path: string[]): FormValue {
 export function setValue(
   source: FormValues,
   path: string[],
-  value: FormValue
+  value: FormValue,
 ): void {
   let target = source;
 
@@ -230,7 +291,7 @@ export function unsetValue(source: FormValue, path: string[]): void {
 
 export function visitControls(
   nodes: FormNodePayload[],
-  visit: (control: FormControlPayload) => void
+  visit: (control: FormControlPayload) => void,
 ): void {
   for (const node of nodes) {
     if (node.control) {
@@ -268,8 +329,8 @@ export function canonicalValue(value: FormValue): CanonicalFormValue {
   // one where the server sent the other has not edited anything. Without
   // this, populating a field on load can read as a change purely because the
   // control's idea of empty differs from the server's.
-  if (value === null || value === undefined || value === '') {
-    return '';
+  if (value === null || value === undefined || value === "") {
+    return "";
   }
 
   if (Array.isArray(value)) {
@@ -290,7 +351,7 @@ export function canonicalValue(value: FormValue): CanonicalFormValue {
   return Object.fromEntries(
     Object.keys(value)
       .sort()
-      .map((key) => [key, canonicalValue(value[key])])
+      .map((key) => [key, canonicalValue(value[key])]),
   );
 }
 
