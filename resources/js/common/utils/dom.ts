@@ -91,6 +91,7 @@ export function firstFocusableWithin(
     if (
       !(child instanceof HTMLElement) ||
       child.hidden ||
+      (child instanceof HTMLInputElement && child.type === 'hidden') ||
       child.hasAttribute('inert') ||
       child.hasAttribute('disabled') ||
       child.getAttribute('aria-hidden') === 'true'

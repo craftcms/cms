@@ -20,7 +20,7 @@ export type TableControlProps = {
   rowIdPrefix?: string;
   defaultValues?: FormValues;
   addRowLabel?: string;
-  includeRowId?: boolean;
+  includeRowId?: boolean | string;
   staticRows?: boolean;
   errors?: Record<string, Record<string, true>>;
 };
