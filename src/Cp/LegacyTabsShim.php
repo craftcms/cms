@@ -24,9 +24,11 @@ use CraftCms\Cms\Cp\Components\Tabs;
  * slotted, never a mix. So a single tab pointing somewhere other than a local
  * anchor returns `null`, and the caller falls back to the legacy strip.
  *
+ * @deprecated Exists only while legacy screens render inside the Inertia shell.
+ *
  * @internal
  *
- * @deprecated Exists only while legacy screens render inside the Inertia shell.
+ * @since 6.0.0
  */
 final class LegacyTabsShim
 {

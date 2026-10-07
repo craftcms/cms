@@ -32,9 +32,11 @@ use CraftCms\Cms\View\Enums\Position;
  *   {@see self::register()} call for that screen; its ready-JS then runs on
  *   `DOMContentLoaded` exactly as it does today.
  *
+ * @deprecated Exists only while legacy screens render inside the Inertia shell.
+ *
  * @internal
  *
- * @deprecated Exists only while legacy screens render inside the Inertia shell.
+ * @since 6.0.0
  */
 final class LegacyReadyShim
 {

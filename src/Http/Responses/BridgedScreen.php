@@ -28,10 +28,11 @@ use function CraftCms\Cms\template;
  * Both paths carry a `bridged` prop naming which one drew the screen, so the
  * header bar can say so under dev mode.
  *
+ * @deprecated Exists only while Craft 5-era screens render inside the Inertia shell.
+ *
  * @internal
  *
  * @since 6.0.0
- * @deprecated Exists only while Craft 5-era screens render inside the Inertia shell.
  */
 final class BridgedScreen
 {

@@ -16,9 +16,11 @@ namespace CraftCms\Cms\Http\ViewModels;
  * with a tidier URL of its own overrides. Here the index's URL is simply the
  * URL being requested, whatever route the plugin registered for it.
  *
+ * @deprecated Exists only while Twig-declared element indexes render through the Vue index.
+ *
  * @internal
  *
- * @deprecated Exists only while Twig-declared element indexes render through the Vue index.
+ * @since 6.0.0
  */
 class LegacyElementIndexViewModel extends ContentIndexViewModel
 {

@@ -27,9 +27,11 @@ use Symfony\Component\HttpFoundation\Response;
  * reaches the collecting layout, so it collects nothing and its response goes
  * through untouched.
  *
+ * @deprecated Exists only while Twig-rendered screens render inside the Inertia shell.
+ *
  * @internal
  *
- * @deprecated Exists only while Twig-rendered screens render inside the Inertia shell.
+ * @since 6.0.0
  */
 readonly class RenderBridgedScreen
 {

@@ -33,9 +33,11 @@ use Illuminate\Container\Attributes\Scoped;
  * and restore `_layouts/cp`'s `{% extends %}` to name `_layouts/basecp.twig`
  * outright.
  *
+ * @deprecated Exists only while Twig-rendered screens render inside the Inertia shell.
+ *
  * @internal
  *
- * @deprecated Exists only while Twig-rendered screens render inside the Inertia shell.
+ * @since 6.0.0
  */
 #[Scoped]
 final class LegacyScreenFragments
