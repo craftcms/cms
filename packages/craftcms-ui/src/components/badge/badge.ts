@@ -44,6 +44,9 @@ export default class CraftBadge extends LitElement {
    */
   @state() private hasLabel = false;
 
+  /** Whether the label is plain text, which can be trimmed to its capitals. */
+  @state() private hasTextLabel = false;
+
   /** Whether anything is slotted into `suffix`. */
   @state() private hasSuffix = false;
 
@@ -84,6 +87,9 @@ export default class CraftBadge extends LitElement {
         (node instanceof Element && !node.hasAttribute('slot')) ||
         (node.nodeType === Node.TEXT_NODE && node.textContent!.trim() !== '')
     );
+    this.hasTextLabel =
+      this.hasLabel &&
+      !children.some((node) => node instanceof Element && !node.slot);
     this.hasSuffix = children.some(
       (node) => node instanceof Element && node.slot === 'suffix'
     );
@@ -123,7 +129,11 @@ export default class CraftBadge extends LitElement {
                 ></craft-indicator>
               </slot>
             </span>`}
-        ${this.hasLabel ? html`<slot></slot>` : nothing}
+        ${this.hasLabel
+          ? html`<slot
+              class="${classMap({'badge__label--text': this.hasTextLabel})}"
+            ></slot>`
+          : nothing}
         ${this.hasSuffix
           ? html`<span class="badge__suffix">
               <slot name="suffix" part="suffix"></slot>
