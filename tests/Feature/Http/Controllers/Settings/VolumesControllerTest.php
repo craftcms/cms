@@ -102,7 +102,7 @@ describe('index', function () {
 });
 
 describe('create / edit', function () {
-    test('create renders a functional form', function () {
+    test('create renders a functional UI', function () {
         get(action([VolumesController::class, 'create']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('title', t('Create a new asset volume'))
@@ -167,7 +167,7 @@ describe('create / edit', function () {
             ->assertJsonPath('formAttributes.action', Url::cpUrl('settings/assets/volumes'));
     });
 
-    test('preserves entered values when the form refreshes', function () {
+    test('preserves entered values when the UI refreshes', function () {
         postJson(action([VolumesController::class, 'renderUi']), [
             'values' => [
                 'volumeId' => null,

@@ -66,7 +66,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
         ->assertOk();
 });
 
-it('includes configured overrides for every site in the form', function () {
+it('includes configured overrides for every site in the UI', function () {
     $site = Site::factory()->create(['name' => 'French']);
     Sites::refreshSites();
     ProjectConfig::set('email', [

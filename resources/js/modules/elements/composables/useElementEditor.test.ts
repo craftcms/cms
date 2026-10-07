@@ -175,7 +175,7 @@ describe('useElementEditor', () => {
     let editor!: ReturnType<typeof useElementEditor>;
 
     // The real field layout, wired the way `ElementEditor` wires it — the
-    // renderer is what holds the unsaved values, so a screen with a `form`
+    // renderer is what holds the unsaved values, so a screen with a `ui`
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
@@ -795,7 +795,7 @@ describe('useElementEditor', () => {
   /** Types into the Title field the way a user would. */
   async function typeTitle(value: string): Promise<void> {
     // The Controls are custom elements; they render their input on the tick
-    // after the Form does.
+    // after the UI does.
     await nextTick();
     titleInput().value = value;
     titleInput().dispatchEvent(new Event('input', {bubbles: true}));
@@ -985,7 +985,7 @@ describe('useElementEditor', () => {
     expect(editor.activity.isStale.value).toBe(true);
   });
 
-  it('omits presentation-only null controls when refreshing an untouched form', async () => {
+  it('omits presentation-only null controls when refreshing an untouched UI', async () => {
     const ui = cardsLayout();
     const {editor} = mount(payload({canAutosave: false, ui}));
     await nextTick();

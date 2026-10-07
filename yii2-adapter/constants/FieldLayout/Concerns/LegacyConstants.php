@@ -169,7 +169,7 @@ trait LegacyConstants
                 ]);
 
                 if ($yiiEvent->static !== $static) {
-                    self::setFormMode($event->ui->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
+                    self::setUiMode($event->ui->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
                 }
             } finally {
                 $legacyEvents->forget($event->fieldLayout, $event->context);
@@ -213,11 +213,11 @@ trait LegacyConstants
     }
 
     /** @param list<Node> $nodes */
-    private static function setFormMode(array $nodes, ControlMode $mode): void
+    private static function setUiMode(array $nodes, ControlMode $mode): void
     {
         foreach ($nodes as $node) {
             $node->getControl()?->mode($mode);
-            self::setFormMode($node->children(), $mode);
+            self::setUiMode($node->children(), $mode);
         }
     }
 }

@@ -20,7 +20,7 @@
     refreshUrl: string;
   }>();
 
-  const formPage = ref<{
+  const uiPage = ref<{
     setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
   }>();
   const baseUrlDirty = ref(
@@ -45,7 +45,7 @@
       return;
     }
 
-    formPage.value?.setValue(
+    uiPage.value?.setValue(
       ['baseUrl'],
       toEnvVar(String(values.name ?? ''), {
         prefix: '$',
@@ -67,7 +67,7 @@
   </LayoutSlot>
 
   <UiPage
-    ref="formPage"
+    ref="uiPage"
     :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl"

@@ -233,7 +233,7 @@ it('forbids duplicating a matrix entry when viewing the source is not authorized
         ->assertForbidden();
 });
 
-it('duplicates an existing matrix entry and returns its form', function () {
+it('duplicates an existing matrix entry and returns its UI', function () {
     $this->fixture['owner'] = MatrixControllerFixture::saveBlocks($this->fixture, [[
         'title' => 'Source Block',
         'innerText' => 'Source text',
@@ -331,7 +331,7 @@ it('forbids rendering matrix blocks when authorization fails', function () {
 
 it('saves a draft owner that holds a block minted before the draft existed', function () {
     // `matrix/create-entry` persists the new block as a draft of its own, owned
-    // by whichever element the form was compiled against. Edit the owner
+    // by whichever element the UI was compiled against. Edit the owner
     // afterwards and it becomes a provisional draft — leaving a block that is
     // already a draft and still primarily owned by the canonical.
     $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture))

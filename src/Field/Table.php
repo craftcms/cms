@@ -482,7 +482,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             inline: $inline,
         ));
         $payload = app(UiResolver::class)->resolve(
-            Ui::make([FormField::make()->control($control)]),
+            Ui::make([UiField::make()->control($control)]),
             $context,
         );
 

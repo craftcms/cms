@@ -141,7 +141,7 @@ Use the payload for durable state needed by later evaluations or by the stage's 
 
 ### Configurable stages
 
-Stage classes use the same configurable-component conventions as other Craft components. Define public settings properties, validation rules, and an optional settings form:
+Stage classes use the same configurable-component conventions as other Craft components. Define public settings properties, validation rules, and an optional settings UI:
 
 ```php
 use CraftCms\Cms\Ui\Controls\Text;

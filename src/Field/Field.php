@@ -312,7 +312,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      * field pointed at a volume that no longer exists, say. Returning a string
      * puts it in the field's warning slot; `null` means nothing to say.
      */
-    public function formWarning(?ElementInterface $element = null): ?string
+    public function uiWarning(?ElementInterface $element = null): ?string
     {
         return null;
     }

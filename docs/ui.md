@@ -1,6 +1,6 @@
 # Control Panel UIs
 
-Craft's Control Panel UI system describes a form once in PHP and renders the resolved payload through either the PHP
+Craft's Control Panel UI system describes a UI once in PHP and renders the resolved payload through either the PHP
 renderer or the Inertia/Vue renderer. It does not own validation, authorization, persistence, routes, requests, CSRF, or
 save actions. Those remain the host controller's responsibility.
 
@@ -167,7 +167,7 @@ and `prepareEditScreen()` customizations are rendered around the native forms.
 
 ### FieldLayout component settings
 
-Field layout components — tabs and layout elements — describe the form shown in the designer's settings slideout by
+Field layout components — tabs and layout elements — describe the UI shown in the designer's settings slideout by
 implementing `settingsNodes()` instead of `settingsHtml()`:
 
 ```php
@@ -192,9 +192,9 @@ neither produces a Node.
 groups — `CustomField` adds its editability conditions this way — and use `conditionGroupNode()` to build a group
 with the standard user/element condition pair.
 
-The settings scope is `settings`, and the form is refreshable: a `discrete` change posts back to
+The settings scope is `settings`, and the UI is refreshable: a `discrete` change posts back to
 `fields/refresh-layout-component-settings`, which rebuilds the component from the posted values and re-resolves the
-form. Use that instead of client-side scripting when one setting should change another's state — hiding a field's
+UI. Use that instead of client-side scripting when one setting should change another's state — hiding a field's
 label, for instance, disables its label Control on the next refresh.
 
 ## Custom Nodes and Controls

@@ -127,7 +127,7 @@ describe('UserGroupSelectControl', () => {
     ]);
   });
 
-  it('makes a newly created group available without reloading the form', async () => {
+  it('makes a newly created group available without reloading the UI', async () => {
     const updates = await mount();
     const createButton = [
       ...container!.querySelectorAll<HTMLElement>('craft-button'),

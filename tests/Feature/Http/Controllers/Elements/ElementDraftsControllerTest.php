@@ -494,7 +494,7 @@ describe('store', function () {
     });
 
     // The legacy `Craft.ElementEditor` reads this response too, and several of
-    // its keys mean something different there — `form` is scoped to the editor’s
+    // its keys mean something different there — `ui` is scoped to the editor’s
     // namespace, `previewTargets` is the raw target list. The screen payload is
     // nested for that reason; this guards the keys it must not have disturbed.
     it('keeps every key the legacy element editor reads', function () {
@@ -534,7 +534,7 @@ describe('store', function () {
             'canonicalUpdatedTimestamp',
         ]);
 
-        // `_afterUpdateFieldLayout()` throws on a falsy `form`, and
+        // `_afterUpdateFieldLayout()` throws on a falsy `ui`, and
         // `modifiedAttributes` is mapped over unguarded.
         expect($response->json('ui'))->toBeArray()
             ->and($response->json('modifiedAttributes'))->toBeArray()

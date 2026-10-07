@@ -119,7 +119,7 @@ async function name(index: number, value: string): Promise<void> {
   await settle();
 }
 
-describe('generated fields Form table', () => {
+describe('generated fields UI table', () => {
   it('preserves identities and submits ordered values while synchronizing card attributes', async () => {
     await mount();
     const card = document.createElement('div');

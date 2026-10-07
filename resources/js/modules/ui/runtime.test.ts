@@ -41,7 +41,7 @@ describe('uiChangeFromEvent', () => {
   });
 
   it('ignores a CustomEvent carrying an unrelated detail', () => {
-    // Request context in `detail` is not a form change.
+    // Request context in `detail` is not a UI change.
     const requestEvent = new CustomEvent('change', {
       detail: {elt: document.createElement('div'), xhr: {}, requestConfig: {}},
     });

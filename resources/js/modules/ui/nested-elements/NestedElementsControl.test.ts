@@ -295,7 +295,7 @@ describe('NestedElementsControl', () => {
     expect(actions.run).not.toHaveBeenCalled();
   });
 
-  it('uses the prepared owner and refreshes its form once after a mutation', async () => {
+  it('uses the prepared owner and refreshes its UI once after a mutation', async () => {
     request.post.mockResolvedValue({data: {}});
     window.confirm = vi.fn().mockReturnValue(true);
     const refresh = vi.fn(async () => {});

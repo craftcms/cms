@@ -12,7 +12,7 @@ function assetsField(string $name = 'Images', string $handle = 'images'): Assets
     return new Assets(['name' => $name, 'handle' => $handle]);
 }
 
-describe('formWarning', function () {
+describe('uiWarning', function () {
     // `_uploadFolder()` re-throws as an `InvalidFsException` carrying a message
     // written for the author, naming the field and the setting at fault. That
     // message is what the field reports.
@@ -22,7 +22,7 @@ describe('formWarning', function () {
         $field->allowUploads = true;
         $field->defaultUploadLocationSource = null;
 
-        expect($field->formWarning())
+        expect($field->uiWarning())
             ->toBe('The Images field’s Default Upload Location setting is set to an invalid volume.');
     });
 
@@ -34,7 +34,7 @@ describe('formWarning', function () {
         // volumes table; either way `_uploadFolder()` never resolves a volume.
         $field->restrictedLocationSource = null;
 
-        expect($field->formWarning())
+        expect($field->uiWarning())
             ->toBe('The Docs field’s Asset Location setting is set to an invalid volume.');
     });
 
@@ -46,7 +46,7 @@ describe('formWarning', function () {
         // misconfiguration to complain about.
         $field->defaultUploadLocationSource = null;
 
-        expect($field->formWarning())->toBeNull();
+        expect($field->uiWarning())->toBeNull();
     });
 });
 

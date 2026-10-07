@@ -50,7 +50,7 @@ it('converts menu-item configs into JSON-safe client descriptors', function () {
             'detail' => ['fieldId' => 7],
         ])
         // IDs are mt_rand()-generated; leaving them in props would make the
-        // payload differ on every render of a refreshable form.
+        // payload differ on every render of a refreshable UI.
         ->and($items[0])->not->toHaveKey('id')
         ->and(json_encode($node->props()))->toBeString();
 });

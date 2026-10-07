@@ -41,7 +41,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     #[Override]
     protected function inputNodes(): array
     {
-        return [Field::make($this->getLabel(), Choice::make('value')->options($this->formOptions($this->options()))->withoutPlaceholder()->value($this->value))];
+        return [Field::make($this->getLabel(), Choice::make('value')->options($this->uiOptions($this->options()))->withoutPlaceholder()->value($this->value))];
     }
 
     #[Override]

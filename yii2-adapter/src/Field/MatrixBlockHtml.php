@@ -33,7 +33,7 @@ class MatrixBlockHtml
                     'entry' => $entry,
                     'isFresh' => $event->fresh,
                     'staticEntries' => $event->staticEntries,
-                    ...$this->formVariables($field, $entry),
+                    ...$this->uiVariables($field, $entry),
                 ]), $event->namespace);
             }
         }
@@ -45,8 +45,8 @@ class MatrixBlockHtml
         ]);
     }
 
-    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
-    private function formVariables(Matrix $field, Entry $entry): array
+    /** @return array{uiPayload: array<string, mixed>, siteName: string|null} */
+    private function uiVariables(Matrix $field, Entry $entry): array
     {
         $namespace = InputNamespace::namespaceInputName("{$field->handle}[entries][uid:{$entry->uid}]");
         $payload = app(FieldLayoutCompiler::class)->compile(
@@ -59,7 +59,7 @@ class MatrixBlockHtml
         );
 
         return [
-            'formPayload' => $payload->jsonSerialize(),
+            'uiPayload' => $payload->jsonSerialize(),
             'siteName' => count($field->getSupportedSitesForElement($entry)) > 1
                 ? t($entry->getOwner()->getSite()->getName(), category: 'site')
                 : null,

@@ -89,7 +89,7 @@ it('ends the breadcrumbs with an unlinked chip for the asset', function () {
         );
 });
 
-it('compiles the field layout into a form payload', function () {
+it('compiles the field layout into a UI payload', function () {
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('ui.nodes')

@@ -39,7 +39,7 @@ class FieldLayoutMixin
     public function createForm(): Closure
     {
         return function(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm {
-            Deprecator::log('FieldLayout-createForm', 'Calling ->createForm on a FieldLayout is deprecated. Craft 6 form rendering should be used instead.');
+            Deprecator::log('FieldLayout-createForm', 'Calling ->createForm on a FieldLayout is deprecated. Craft 6 UI rendering should be used instead.');
 
             $namespace = $config['namespace'] ?? null;
             unset($config['namespace']);

@@ -293,7 +293,7 @@ describe('Legacy HTML UI Control', () => {
     });
   });
 
-  it('renders Form errors owned by a legacy input root', async () => {
+  it('renders UI errors owned by a legacy input root', async () => {
     const {container} = await mount(
       {
         html: '<input name="settings[title]" value="Original">',
@@ -311,7 +311,7 @@ describe('Legacy HTML UI Control', () => {
     ).toContain('Title is invalid.');
   });
 
-  it('refreshes through the shared Form scope protocol', async () => {
+  it('refreshes through the shared UI scope protocol', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn();
     const {container} = await mount(

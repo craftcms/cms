@@ -88,7 +88,7 @@ it('explains why transformers assigned to volumes cannot be deleted', function (
                     && $transformer['deleteDisabledReason'] === 'This Asset Transformer cannot be deleted because it is assigned to a volume.')));
 });
 
-it('renders the standalone transformer form', function () {
+it('renders the standalone transformer UI', function () {
     get(action([AssetTransformersController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page

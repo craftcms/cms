@@ -22,7 +22,7 @@ function sourcesProps(string $type, array $settings = []): array
         }
     }
 
-    throw new RuntimeException('No sources control in the Form.');
+    throw new RuntimeException('No sources control in the UI.');
 }
 
 it('gives the sources field an All option storing a single token', function (string $type) {

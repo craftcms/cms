@@ -82,7 +82,7 @@ function persistedEntryLayout(): FieldLayoutModel
     ]);
 }
 
-it('compiles persisted entry layout intent into a form payload', function () {
+it('compiles persisted entry layout intent into a UI payload', function () {
     $layoutModel = persistedEntryLayout();
     $entry = Entry::factory()
         ->withFieldLayout($layoutModel)
@@ -146,7 +146,7 @@ it('compiles persisted entry layout intent into a form payload', function () {
         ->and($crawler->filter('[data-ui-node="content-note"] strong')->text())->toBe('Editorial note');
 });
 
-it('allows the form-stage event to replace typed nodes without changing persisted intent', function () {
+it('allows the UI-stage event to replace typed nodes without changing persisted intent', function () {
     $layoutModel = persistedEntryLayout();
     $layout = app(Fields::class)->getLayoutById($layoutModel->id);
     $config = $layoutModel->config;
@@ -215,7 +215,7 @@ it('compiles custom fields and shared semantic layout content', function () {
         ->and($crawler->filter('craft-callout[data-ui-node="warning"]')->text())->toContain('Careful');
 });
 
-it('preserves missing persisted form providers without submitting their values', function () {
+it('preserves missing persisted UI providers without submitting their values', function () {
     $missingNodeType = 'Acme\\Forms\\MissingLayoutElement';
     $missingControlType = 'Acme\\Forms\\MissingField';
     actingAs(User::find()->one());

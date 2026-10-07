@@ -145,7 +145,7 @@ function nestedTabsCrawler(): Crawler
     return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
-it('shows the first tab in each nested HTML form independently of its parent', function () {
+it('shows the first tab in each nested HTML UI independently of its parent', function () {
     $crawler = nestedTabsCrawler();
 
     expect($crawler->filter('craft-content-block-input section[data-ui-tab="content"]:not(.hidden)'))->toHaveCount(2)

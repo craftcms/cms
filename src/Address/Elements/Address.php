@@ -655,7 +655,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * The address Form control posts its fields under `address`.
+     * The address UI control posts its fields under `address`.
      *
      * @param  array<string,mixed>  $values
      */

@@ -9,7 +9,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 
 /**
- * Maps every setting in a resolved Assets Form to whether it renders.
+ * Maps every setting in a resolved Assets UI to whether it renders.
  *
  * @param  list<NodePayload>  $nodes
  * @return array<string, bool>

@@ -4,14 +4,14 @@ import type {UiChange, UiPayload} from '@/modules/ui/types';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
-  formProps: ReturnType<
+  uiProps: ReturnType<
     typeof vi.fn<(props: {formActions: Array<{onClick: () => void}>}) => void>
   >;
   save: ReturnType<typeof vi.fn>;
   setValue: ReturnType<typeof vi.fn>;
   change?: (change: UiChange, values: UiPayload['values']) => void;
 }>(() => ({
-  formProps: vi.fn(),
+  uiProps: vi.fn(),
   save: vi.fn(),
   setValue: vi.fn(),
   change: undefined,
@@ -39,7 +39,7 @@ vi.mock('@/pages/Ui.vue', () => ({
     props: ['formActions'],
     setup: (props, {emit, expose}) => {
       state.change = (change, values) => emit('change', change, values);
-      state.formProps({
+      state.uiProps({
         formActions: props.formActions,
       });
       expose({save: state.save, setValue: state.setValue});
@@ -62,7 +62,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.formProps.mockClear();
+  state.uiProps.mockClear();
   state.save.mockReset();
   state.setValue.mockReset();
   state.change = undefined;
@@ -109,7 +109,7 @@ it('saves and starts another field from the ui action', async () => {
   mount();
   await nextTick();
 
-  state.formProps.mock.calls[0]![0].formActions[0]!.onClick();
+  state.uiProps.mock.calls[0]![0].formActions[0]!.onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {addAnother: 1},

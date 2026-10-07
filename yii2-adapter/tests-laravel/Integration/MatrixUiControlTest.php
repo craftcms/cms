@@ -124,7 +124,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     $field = Field::factory()->create([
         'name' => 'Cards',
         'handle' => 'cards',
-        'type' => $plugin ? PluginMatrixFormField::class : LegacyMatrix::class,
+        'type' => $plugin ? PluginMatrixUiField::class : LegacyMatrix::class,
         'settings' => ['entryTypes' => [$entryType->id], 'viewMode' => $viewMode],
     ]);
     $rootField = $field;
@@ -229,6 +229,6 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     'plugin index inside blocks' => [true, LegacyMatrix::VIEW_MODE_INDEX, true],
 ]);
 
-class PluginMatrixFormField extends LegacyMatrix
+class PluginMatrixUiField extends LegacyMatrix
 {
 }

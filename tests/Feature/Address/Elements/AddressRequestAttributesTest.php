@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 
-it('applies the address Form control’s nested fields', function () {
+it('applies the address UI control’s nested fields', function () {
     $address = new Address;
 
     $address->setAttributesFromRequest([

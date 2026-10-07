@@ -667,7 +667,7 @@
   function settingsFor(source: SourceRow): Record<string, unknown> {
     if (!source.key) return {};
 
-    // A heading keyed on load has no Form until it's selected; its text is all
+    // A heading keyed on load has no UI until it's selected; its text is all
     // there is to save.
     if (!source.ui && source.type === 'heading') return {heading: source.label};
 

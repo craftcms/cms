@@ -306,3 +306,140 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
+            Route::post('entry-types/render-ui', [EntryTypesController::class, 'renderUi']);
+            Route::post('entry-types/render-select', [EntryTypesController::class, 'renderSelect']);
+            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
+            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
+        });
+
+        // Fields
+        Route::middleware(RequireAdmin::class)->post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('fields/render-ui', [FieldsController::class, 'renderUi']);
+            Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
+            Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
+            Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);
+            Route::post('fields/render-field-select', [FieldsController::class, 'renderFieldSelect']);
+            Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
+            Route::post('fields/refresh-layout-component-settings', [FieldsController::class, 'refreshLayoutComponentSettings']);
+            Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
+            Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
+            Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
+        });
+
+        // Matrix
+        Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
+        Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
+        Route::post('matrix/render-blocks', [MatrixController::class, 'renderBlocks']);
+
+        // Nested entries
+        Route::post('nested-elements/reorder', [NestedElementsController::class, 'reorder']);
+        Route::post('nested-elements/delete', [NestedElementsController::class, 'destroy']);
+
+        // Asset Indexes
+        Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
+        Route::post('asset-indexes/stop-indexing-session', [AssetIndexesController::class, 'stopIndexingSession']);
+        Route::post('asset-indexes/process-indexing-session', [AssetIndexesController::class, 'processIndexingSession']);
+        Route::post('asset-indexes/indexing-session-overview', [AssetIndexesController::class, 'indexingSessionOverview']);
+        Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
+
+        // Assets
+        Route::post('assets/resolve-upload-conflict', ResolveUploadConflictController::class);
+        Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
+        Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
+        Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);
+        Route::any('assets/show-in-folder', [AssetsActionController::class, 'showInFolder']);
+        Route::post('assets/move-info', [AssetsActionController::class, 'moveInfo']);
+        Route::post('assets/preview-thumb', [AssetsPreviewController::class, 'previewThumb']);
+        Route::post('assets/preview-file', [AssetsPreviewController::class, 'previewFile']);
+        Route::post('assets/create-folder', [AssetsFolderController::class, 'create']);
+        Route::post('assets/delete-folder', [AssetsFolderController::class, 'delete']);
+        Route::post('assets/rename-folder', [AssetsFolderController::class, 'rename']);
+        Route::post('assets/move-folder', [AssetsFolderController::class, 'move']);
+        Route::post('assets/image-editor', [ImageEditorController::class, 'show']);
+        Route::get('assets/edit-image', [ImageEditorController::class, 'editImage']);
+        Route::post('assets/save-image', [ImageEditorController::class, 'save']);
+        Route::post('assets/update-focal-position', [ImageEditorController::class, 'updateFocalPoint']);
+        Route::get('assets/icon/{extension?}', AssetsIconController::class);
+
+        // Preview
+        Route::any('preview/create-token', [PreviewController::class, 'createToken']);
+
+        // Relational fields
+        Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
+
+        // Widgets
+        Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
+        Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
+        Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
+        Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
+        Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
+        Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
+        Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
+        Route::post('dashboard/send-support-request', CraftSupportController::class);
+        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data'])->middleware('can:viewUsers');
+
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+        });
+
+        // Structures
+        Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
+        Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
+
+        // Updates
+        Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
+        Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
+
+        Route::middleware(RequireConfirmedPassword::class)->group(function () {
+            Route::post('users/save-password', [PasswordController::class, 'store']);
+        });
+
+        Route::middleware([RequireEdition::class.':'.Edition::Team->value, 'can:editUsers'])->group(function () {
+            Route::middleware(RequireConfirmedPassword::class)->group(function () {
+                Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
+                Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+            });
+
+            Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+            Route::post('users/enable-user', EnableController::class);
+            Route::post('users/activate-user', [ActivateController::class, 'activate']);
+            Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
+            Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
+            Route::post('users/unlock-user', UnlockController::class);
+            Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
+            Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
+        });
+
+        Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload'])->middleware('throttle:60,1');
+        Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
+        Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
+        Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
+        Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
+
+        // Pluginstore
+        Route::middleware([
+            RequireAdmin::class,
+        ])->group(function () {
+            Route::get('plugin-store/craft-data', [PluginStoreController::class, 'craftData']);
+            Route::post('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
+        });
+
+        Route::allowDuringMaintenance()->prefix('pluginstore/install')->middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('/', [PluginStoreInstallController::class, 'index']);
+            Route::post(PluginStoreInstallController::ACTION_CRAFT_INSTALL, [PluginStoreInstallController::class, 'craftInstall']);
+            Route::post(PluginStoreInstallController::ACTION_ENABLE, [PluginStoreInstallController::class, 'enable']);
+            Route::post(PluginStoreInstallController::ACTION_MIGRATE, [PluginStoreInstallController::class, 'migrate']);
+            Route::post(BaseUpdaterController::ACTION_PRECHECK, [PluginStoreInstallController::class, 'precheck']);
+            Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [PluginStoreInstallController::class, 'recheckComposer']);
+            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [PluginStoreInstallController::class, 'composerInstall']);
+            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [PluginStoreInstallController::class, 'composerRemove']);
+            Route::post(BaseUpdaterController::ACTION_FINISH, [PluginStoreInstallController::class, 'finish']);
+        });
+
+    });
+});

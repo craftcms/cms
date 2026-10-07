@@ -17,7 +17,7 @@
     formActions?: FormAction[];
   }>();
 
-  const formPage = ref<{
+  const uiPage = ref<{
     save(options?: FormSaveOptions): void;
   }>();
   const formActions = computed<FormAction[]>(() => [
@@ -26,7 +26,7 @@
           {
             label: t('Save as a new {type}', {type: props.lowerTypeName}),
             onClick: () =>
-              formPage.value?.save({
+              uiPage.value?.save({
                 data: {saveAsNew: true},
                 preserveState: false,
               }),
@@ -41,7 +41,7 @@
   <MetadataDetails :html="metadataHtml" />
 
   <UiPage
-    ref="formPage"
+    ref="uiPage"
     :ui="ui"
     :submit="submit"
     :form-actions="formActions"

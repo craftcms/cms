@@ -85,7 +85,7 @@ function matrixShapeBlockUids(EntryElement $entry): array
 
 beforeEach(fn () => actingAs(User::findOne()));
 
-it('creates a block when the Form control prefixes both halves of the envelope', function () {
+it('creates a block when the UI control prefixes both halves of the envelope', function () {
     [$entry, $blockType] = matrixShapeFixture();
     $uid = Str::uuid()->toString();
 

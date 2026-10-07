@@ -229,7 +229,7 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
-/** An alternate submission, executed by the Form page's save pipeline. */
+/** An alternate submission, executed by the Ui page's save pipeline. */
 export interface FormSubmissionAction extends Omit<
   ActionItemButton,
   'action' | 'shortcut'

@@ -570,13 +570,13 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
-     * A stable, form-unique key for a field's action nodes.
+     * A stable, UI-unique key for a field's action nodes.
      *
      * Derived from the control's path rather than the layout element's UID:
      * the UID is nullable (fluently-built layouts and the card view designer
      * produce UID-less elements), and one layout element can emit several
      * Fields (see {@see Addresses\LatLongField::uiNode()}). Control paths are
-     * already unique within a form namespace — {@see UiResolver}
+     * already unique within a UI namespace — {@see UiResolver}
      * rejects duplicates — and control-less nodes are scoped by that same
      * namespace.
      */

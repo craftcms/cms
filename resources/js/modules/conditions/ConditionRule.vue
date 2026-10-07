@@ -31,7 +31,7 @@
   const changingType = ref(false);
   const switching = computed(() => isLoading.value && changingType.value);
 
-  const formKey = ref(0);
+  const uiKey = ref(0);
   const typeConfigurator = useTemplateRef('typeConfigurator');
   const latestUiPayload = shallowRef(payload.value.ui);
 
@@ -92,7 +92,7 @@
 
     editor.rules[props.rule.id] = refreshed;
     latestUiPayload.value = refreshed.ui;
-    formKey.value++;
+    uiKey.value++;
 
     editor.changed();
   }
@@ -108,7 +108,7 @@
     >
       <div class="condition-rule__content flex items-start gap-2">
         <TypeConfigurator
-          :key="formKey"
+          :key="uiKey"
           ref="typeConfigurator"
           class="min-w-0 flex-1"
           :types="editor.payload().ruleTypes"

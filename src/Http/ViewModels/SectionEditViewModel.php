@@ -11,6 +11,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\EntryTypeSelect;
 use CraftCms\Cms\Ui\Controls\Handle;
@@ -19,19 +24,14 @@ use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Ui;
-use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiPayload;
-use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\Separator;
-use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Enums\DefaultPlacement;
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Models\Workflow;
 
 use function CraftCms\Cms\t;
@@ -45,3 +45,259 @@ class SectionEditViewModel extends ViewModel
     public function __construct(
         private readonly Section $section,
         private readonly Sites $sites,
+        private readonly UiResolver $uiResolver,
+        public readonly bool $brandNew,
+        private readonly bool $readOnly,
+        private readonly bool $headlessMode,
+        private readonly ?array $values = null,
+    ) {}
+
+    public function ui(): UiPayload
+    {
+        $values = $this->values ?? $this->initialValues();
+        $type = $values['type'] instanceof SectionType
+            ? $values['type']
+            : SectionType::from((string) $values['type']);
+        $handle = Handle::make('handle');
+        $objectTemplateTriggers = $this->objectTemplateTriggers();
+
+        if ($this->brandNew) {
+            $handle->source('name');
+        }
+
+        $typeField = Field::make(
+            t('Section Type'),
+            Choice::make('type')->options(SectionType::asOptions())->reactive(),
+        )->instructions(t('What type of section is this?'));
+
+        if ($this->section->id && $type !== SectionType::Single) {
+            $typeField->warning(t('Changing this may result in data loss.'));
+        }
+
+        $ui = Ui::make([
+            HiddenField::make('sectionId'),
+            Field::make(t('Name'), Text::make('name')->autofocus())
+                ->instructions(t('What this section will be called in the control panel.'))
+                ->required(),
+            Field::make(t('Handle'), $handle)
+                ->instructions(t('How you’ll refer to this section in the templates.'))
+                ->required(),
+            Field::make(
+                t('Enable versioning for entries in this section'),
+                Lightswitch::make('enableVersioning'),
+            ),
+            ...Edition::isAtLeast(Edition::Pro) ? [
+                Field::make(t('Workflow'), Choice::make('workflowId')
+                    ->placeholder(t('No workflow'))
+                    ->options(Workflow::query()->orderBy('name')->pluck('name', 'id')->map(fn (string $name, int $id): array => [
+                        'label' => $name,
+                        'value' => $id,
+                    ])->values()->all()))
+                    ->instructions(t('Drafts in this section must complete the selected workflow before they can be applied.')),
+            ] : [],
+            $typeField,
+            Separator::make('entry-types-separator'),
+            Field::make(t('Entry Types'))
+                ->instructions(t('Choose the types of entries that can be included in this section.'))
+                ->control(EntryTypeSelect::make('entryTypes')
+                    ->allowOverrides()
+                    ->create(! $this->readOnly)),
+            Separator::make('site-settings-separator'),
+            Field::make(t('Site settings'))
+                ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
+                ->control($this->siteSettingsControl($type)),
+        ]);
+
+        if ($this->isMultiSite() && in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
+            $propagation = Field::make(
+                t('Propagation Method'),
+                Choice::make('propagationMethod')->options(PropagationMethod::asOptions()),
+            )->instructions(t('Of the enabled sites above, which sites should entries in this section be saved to?'));
+
+            if ($this->section->id
+                && $this->section->propagationMethod !== PropagationMethod::None
+                && count($this->section->siteSettings) > 1) {
+                $propagation->warning(t('Changing this may result in data loss.'));
+            }
+
+            $ui->add(Group::make('section-propagation-settings', [$propagation])
+                ->dependsOn('type'));
+        }
+
+        if ($type === SectionType::Structure) {
+            $ui->add(Group::make('section-structure-settings', [
+                Separator::make('structure-settings-separator'),
+                Field::make(t('Max Levels'), Number::make('maxLevels')->min(1)->max(32767)->size(5))
+                    ->instructions(t('The maximum number of levels this section can have.')),
+                Field::make(
+                    t('Default {type} Placement', ['type' => t('Entry')]),
+                    Choice::make('defaultPlacement')->options(DefaultPlacement::asOptions()),
+                )->instructions(t('Where new {type} should be placed by default in the structure.', [
+                    'type' => t('entries'),
+                ])),
+            ])->dependsOn('type'));
+        }
+
+        $ui->add(
+            Separator::make('preview-targets-separator'),
+            Field::make(t('Preview Targets'))
+                ->instructions(t('Locations that should be available for previewing entries in this section.'))
+                ->control(Table::make('previewTargets')
+                    ->columns([
+                        'label' => ['heading' => t('Label'), 'type' => 'singleline'],
+                        'urlFormat' => [
+                            'heading' => t('URL Format'),
+                            'type' => 'singleline',
+                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'textExpanderTriggers' => [
+                                ...SelectOptions::getEnvTextExpanderTriggers(true),
+                                ...$objectTemplateTriggers,
+                            ],
+                        ],
+                        'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
+                    ])
+                    ->defaultValues(['refresh' => true])
+                    ->addRowLabel(t('Add a target'))
+                    ->allowAdd()
+                    ->allowDelete()),
+        );
+
+        if (in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
+            $ui->add(Group::make('section-author-settings', [
+                Separator::make('author-settings-separator'),
+                Field::make(t('Min Authors'), Number::make('minAuthors')->min(0)->max(32767)->size(5))
+                    ->instructions(t('The minimum number of authors that entries in this section can have.')),
+                Field::make(t('Max Authors'), Number::make('maxAuthors')->min(0)->max(32767)->size(5))
+                    ->instructions(t('The maximum number of authors that entries in this section can have.')),
+            ])->dependsOn('type'));
+        }
+
+        return $this->uiResolver->resolve($ui, new UiContext(
+            values: $values,
+            errors: $this->section->errors()->getMessages(),
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: ! $this->readOnly,
+        ));
+    }
+
+    /** @return array{method: 'post', url: string} */
+    public function submit(): array
+    {
+        return [
+            'method' => 'post',
+            'url' => action([SectionsController::class, 'store']),
+        ];
+    }
+
+    public function refreshUrl(): ?string
+    {
+        return $this->readOnly
+            ? null
+            : action([SectionsController::class, 'renderUi']);
+    }
+
+    private function isMultiSite(): bool
+    {
+        return $this->sites->isMultiSite();
+    }
+
+    /** @return array<string, mixed> */
+    private function initialValues(): array
+    {
+        $siteSettings = [];
+
+        foreach ($this->sites->getAllSites() as $site) {
+            $settings = $this->section->siteSettings[$site->id] ?? null;
+            $uriFormat = $settings === null ? '' : ($settings->uriFormat ?? '');
+            $homepage = $uriFormat === Element::HOMEPAGE_URI;
+            $siteSettings[$site->handle] = [
+                'enabled' => $this->brandNew || $settings !== null,
+                'siteId' => $site->id,
+                'name' => $site->getName(),
+                'singleHomepage' => $homepage,
+                'singleUri' => $homepage ? '' : $uriFormat,
+                ...($settings ?? new ElementSiteSettings)->toForm(),
+                'enabledByDefault' => $settings === null || $settings->enabledByDefault,
+            ];
+        }
+
+        return [
+            'sectionId' => $this->section->id,
+            'name' => $this->section->name ?? '',
+            'handle' => $this->section->handle ?? '',
+            'type' => $this->section->type ?? SectionType::Channel,
+            'entryTypes' => array_map(
+                EntryTypeSelect::selectionValue(...),
+                $this->section->entryTypes,
+            ),
+            'workflowId' => $this->section->workflowId,
+            'enableVersioning' => $this->section->enableVersioning,
+            'minAuthors' => $this->section->minAuthors,
+            'maxAuthors' => $this->section->maxAuthors ?? '',
+            'maxLevels' => $this->section->maxLevels ?? '',
+            'propagationMethod' => $this->section->propagationMethod,
+            'defaultPlacement' => $this->section->defaultPlacement,
+            'previewTargets' => $this->section->previewTargets ?? [],
+            'sites' => $siteSettings,
+        ];
+    }
+
+    /**
+     * Columns that don't apply to the section type stay as hidden cells, so
+     * their values survive switching the type back.
+     */
+    private function siteSettingsControl(SectionType $type): Table
+    {
+        $single = $type === SectionType::Single;
+        $show = fn (bool $visible, array $column): array => $visible ? $column : [...$column, 'type' => 'hidden'];
+        $urlPlaceholder = $single
+            ? t('Leave blank if the entry doesn’t have a URL')
+            : t('Leave blank if entries don’t have URLs');
+
+        return Table::make('sites')
+            ->keyed()
+            ->columns([
+                'name' => ['heading' => t('Site'), 'type' => 'heading'],
+                'enabled' => $show($this->isMultiSite(), [
+                    'heading' => t('Enabled'),
+                    'type' => 'lightswitch',
+                    'toggle' => ['singleHomepage', 'singleUri', 'uriFormat', 'routeType', 'route', 'enabledByDefault'],
+                ]),
+                'singleHomepage' => $show($single, [
+                    'heading' => t('Homepage'),
+                    'type' => 'checkbox',
+                    'toggle' => ['!singleUri'],
+                ]),
+                'singleUri' => $show($single, [
+                    'heading' => t('URI'),
+                    'type' => 'singleline',
+                    'code' => true,
+                    'placeholder' => $urlPlaceholder,
+                    'info' => t('What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'),
+                ]),
+                'uriFormat' => $show(! $single, [
+                    'heading' => t('Entry URI Format'),
+                    'type' => 'singleline',
+                    'code' => true,
+                    'placeholder' => $urlPlaceholder,
+                    'info' => SelectOptions::getObjectTemplateTip(),
+                    'textExpanderTriggers' => $this->objectTemplateTriggers(),
+                ]),
+                'route' => $show(! $this->headlessMode, [
+                    ...ElementSiteSettings::routeColumn(),
+                    'type' => 'template',
+                    'options' => SelectOptions::getTemplateSuggestions(),
+                ]),
+                'enabledByDefault' => $show(! $single, ['heading' => t('Default Status'), 'type' => 'lightswitch']),
+            ]);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function objectTemplateTriggers(): array
+    {
+        return SelectOptions::getObjectTemplateTextExpanderTriggers(
+            EntryElement::class,
+            array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->section->getEntryTypes()),
+        );
+    }
+}

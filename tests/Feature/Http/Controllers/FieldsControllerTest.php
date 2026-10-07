@@ -179,7 +179,7 @@ it('renders the edit screen read-only without admin changes', function () {
             }));
 });
 
-it('serves the Form page to slideout requests', function (?callable $setUp, bool $hasSidebar) {
+it('serves the Ui page to slideout requests', function (?callable $setUp, bool $hasSidebar) {
     $fieldId = $setUp ? $setUp()->id : null;
 
     $response = $this->getJson(
@@ -230,7 +230,7 @@ it('limits slideout field types to multi-instance fields when requested', functi
         });
 });
 
-it('refreshes the complete field form when its type changes', function () {
+it('refreshes the complete field UI when its type changes', function () {
     $this->postJson(action([FieldsController::class, 'renderUi']), [
         'values' => [
             'fieldId' => null,
@@ -450,7 +450,7 @@ it('saves only the selected Matrix site destination while keeping the URI format
     ]);
 });
 
-it('saves changed Form groups without resetting untouched settings', function () {
+it('saves changed UI groups without resetting untouched settings', function () {
     Fields::saveField($field = Fields::createField([
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -473,7 +473,7 @@ it('saves changed Form groups without resetting untouched settings', function ()
         ->and($saved->initialRows)->toBe(8);
 });
 
-it('saves complete atomic Form groups', function () {
+it('saves complete atomic UI groups', function () {
     Fields::saveField($field = Fields::createField([
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -498,7 +498,7 @@ it('saves complete atomic Form groups', function () {
         ->and($saved->byteLimit)->toBe(25);
 });
 
-it('returns Form setting validation errors at their submitted paths', function () {
+it('returns UI setting validation errors at their submitted paths', function () {
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -509,7 +509,7 @@ it('returns Form setting validation errors at their submitted paths', function (
         ->assertJsonValidationErrors('settings.initialRows');
 });
 
-it('keeps host and Form validation errors at their submitted paths', function () {
+it('keeps host and UI validation errors at their submitted paths', function () {
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
         'name' => '',
@@ -604,7 +604,7 @@ it('validates plugin cell settings before saving a table field', function (array
     'flat settings override nested settings' => [['prefix' => 'Valid', 'settings' => ['prefix' => 'a']], true, ''],
 ]);
 
-it('refreshes a legacy field settings island without returning the outer field metadata form', function () {
+it('refreshes a legacy field settings island without returning the outer field metadata UI', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderUi']), [
         'values' => [
             'type' => Table::class,

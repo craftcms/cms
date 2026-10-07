@@ -4,7 +4,7 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted(() => ({
-  formProps: vi.fn(),
+  uiProps: vi.fn(),
   save: vi.fn(),
 }));
 
@@ -20,7 +20,7 @@ vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     props: ['formActions'],
     setup: (props, {expose}) => {
-      state.formProps({
+      state.uiProps({
         formActions: props.formActions,
       });
       expose({save: state.save});
@@ -43,7 +43,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.formProps.mockClear();
+  state.uiProps.mockClear();
   state.save.mockReset();
   container = document.createElement('div');
   document.body.append(container);
@@ -66,7 +66,7 @@ it('saves the current values as a new entry type', async () => {
   app.mount(container);
   await nextTick();
 
-  state.formProps.mock.calls[0]![0].formActions[0].onClick();
+  state.uiProps.mock.calls[0]![0].formActions[0].onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {saveAsNew: true},

@@ -271,7 +271,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * For misconfiguration the author can't see from the layout — an Assets
      * field pointed at a volume that no longer exists, say.
      */
-    public function formWarning(?ElementInterface $element = null): ?string;
+    public function uiWarning(?ElementInterface $element = null): ?string;
 
     /**
      * Prepare the field value for validation.

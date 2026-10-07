@@ -89,7 +89,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   };
 
   // The legacy statics PHP-emitted flash JS still calls. The storage itself
-  // lives in ./collapsed-blocks, shared with the Form control.
+  // lives in ./collapsed-blocks, shared with the UI control.
   static getCollapsedEntryIds = collapsedBlockIds;
 
   static setCollapsedEntryIds = setCollapsedBlockIds;

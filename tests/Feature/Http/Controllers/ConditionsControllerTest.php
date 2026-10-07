@@ -62,7 +62,7 @@ it('resolves nested and repeated rules into scoped Forms', function () {
     }
 });
 
-it('creates the selected rule with its Form and assets', function () {
+it('creates the selected rule with its UI and assets', function () {
     postJson(action([ConditionsController::class, 'rule']), [
         ...$this->payload,
         'rule' => ['type' => TitleConditionRule::class],

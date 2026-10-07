@@ -18,7 +18,7 @@
     details?: string | null;
   }>();
 
-  const formPage = ref<{
+  const uiPage = ref<{
     save(options?: FormSaveOptions): void;
     setValue(path: string[], value: UiValue, kind?: UiChange['kind']): void;
   }>();
@@ -26,7 +26,7 @@
     {
       label: t('Save and add another'),
       onClick: () =>
-        formPage.value?.save({data: {addAnother: 1}, preserveState: false}),
+        uiPage.value?.save({data: {addAnother: 1}, preserveState: false}),
     },
     ...(props.formActions ?? []),
   ]);
@@ -40,7 +40,7 @@
       props.supportedTranslationMethods[String(values.type)] ?? [];
 
     if (!supported.includes(String(values.translationMethod))) {
-      formPage.value?.setValue(
+      uiPage.value?.setValue(
         ['translationMethod'],
         supported[0] ?? 'none',
         change.kind
@@ -53,7 +53,7 @@
   <MetadataDetails :html="details" />
 
   <UiPage
-    ref="formPage"
+    ref="uiPage"
     :ui="ui"
     :submit="submit"
     :form-actions="formActions"

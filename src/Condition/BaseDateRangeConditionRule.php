@@ -133,7 +133,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     {
         $nodes = [
             Field::make(t('Date Range'), Choice::make('rangeType')
-                ->options($this->formOptions($this->rangeTypeOptions()))
+                ->options($this->uiOptions($this->rangeTypeOptions()))
                 ->withoutPlaceholder()
                 ->value($this->rangeType)
                 ->reactive()),
@@ -148,7 +148,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             array_push($nodes,
                 Field::make(t('Period Value'), Text::make('periodValue')->size(5)->value($this->periodValue)),
                 Field::make(t('Period Type'), Choice::make('periodType')
-                    ->options($this->formOptions($this->periodTypeOptions()))
+                    ->options($this->uiOptions($this->periodTypeOptions()))
                     ->withoutPlaceholder()
                     ->value($this->periodType)),
             );

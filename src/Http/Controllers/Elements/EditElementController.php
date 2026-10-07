@@ -701,13 +701,13 @@ class EditElementController
             ));
         }
 
-        $formContent = match (true) {
+        $uiContent = match (true) {
             $payload === null => null,
             default => Html::tag('craft-entry-field-layout-ui', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
         };
-        $contentHtml = $contentFn($formContent);
+        $contentHtml = $contentFn($uiContent);
         $sidebarHtml = $sidebarFn();
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->acceptsJson()) {

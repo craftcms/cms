@@ -277,7 +277,7 @@ it('prefers submitted nested link settings over persisted flat settings', functi
         ->and($field->linkSettingsShowLabelField)->toBeTrue();
 });
 
-it('passes the editor stats setting to the form control', function (bool $showStats) {
+it('passes the editor stats setting to the UI control', function (bool $showStats) {
     $field = new MarkdownField([
         'name' => 'Body',
         'handle' => 'body',

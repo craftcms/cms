@@ -91,7 +91,7 @@ it('omits Maintain hierarchy and Branch Limit from the Assets field', function (
 });
 
 it('leaves the shared relation field settings order untouched', function () {
-    // Entries still appends its own settings after the base Form (and so after
+    // Entries still appends its own settings after the base UI (and so after
     // the Advanced group) — the same drift Assets had. Recorded as-is so this
     // refactor is provably order-neutral for every other relation field.
     expect(settingsUiOrder(Entries::class))->toBe([

@@ -90,13 +90,13 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
     {
         return [
             Field::make(t('Country'), Choice::make('countryCode')
-                ->options($this->formOptions(Addresses::getCountryList()))
+                ->options($this->uiOptions(Addresses::getCountryList()))
                 ->withoutPlaceholder()
                 ->value($this->countryCode)
                 ->reactive()),
             Field::make($this->getLabel(), Combobox::make('values')
                 ->multiple()
-                ->options($this->formOptions($this->options()))
+                ->options($this->uiOptions($this->options()))
                 ->showAllOnEmpty()
                 ->value($this->getValues())),
         ];

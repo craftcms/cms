@@ -72,11 +72,11 @@ class RecentEntries extends Widget
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $form = Ui::make();
+        $ui = Ui::make();
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $form->add(Field::make(t('Site'))
+            $ui->add(Field::make(t('Site'))
                 ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
                     ->map(fn ($site): array => [
                         'label' => t($site->getName(), category: 'site'),
@@ -86,7 +86,7 @@ class RecentEntries extends Widget
                     ->all())));
         }
 
-        return $form->add(
+        return $ui->add(
             Field::make(t('Section'))
                 ->instructions(t('Which section do you want to pull recent entries from?'))
                 ->control(Choice::make('section')->value($this->section)->options([

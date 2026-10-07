@@ -201,7 +201,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @param  array<int|string, string|array<string, mixed>>  $options
      * @return list<array<string, mixed>>
      */
-    protected function formOptions(array $options): array
+    protected function uiOptions(array $options): array
     {
         return collect($options)
             ->map(fn (string|array $option, int|string $value): array => is_array($option) ? $option : ['value' => (string) $value, 'label' => $option])

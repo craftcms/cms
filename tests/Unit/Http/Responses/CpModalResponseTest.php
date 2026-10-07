@@ -21,7 +21,7 @@ it('accepts markup for html sections', function (string $method, string $propert
     ['errorSummary', 'errorSummary'],
 ]);
 
-it('renders Forms and legacy HTML under the same modal namespace', function () {
+it('renders UIs and legacy HTML under the same modal namespace', function () {
     InputNamespace::set('outer');
 
     $response = new CpModalResponse()
@@ -46,7 +46,7 @@ it('renders Forms and legacy HTML under the same modal namespace', function () {
     ])->and(InputNamespace::get())->toBe('outer');
 });
 
-it('allows a Form to be configured during modal preparation', function () {
+it('allows a UI to be configured during modal preparation', function () {
     $request = Request::create('/', server: ['HTTP_X_CRAFT_CONTAINER_ID' => 'modal']);
     $response = new CpModalResponse()->prepareModal(function (CpModalResponse $response) {
         $response->ui(Ui::make([HiddenField::make('token')]), ['token' => 'prepared']);

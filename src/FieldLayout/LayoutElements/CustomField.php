@@ -434,7 +434,7 @@ class CustomField extends BaseField
     {
         $warnings = array_filter([
             parent::warningText($element, $static),
-            $this->getField()->formWarning($element),
+            $this->getField()->uiWarning($element),
         ]);
 
         return $warnings !== [] ? implode(' ', $warnings) : null;

@@ -254,7 +254,7 @@ interface PluginInterface
     public function getReadOnlySettingsResponse(): mixed;
 
     /**
-     * Returns the plugin settings form.
+     * Returns the plugin settings UI.
      */
     public function settingsUi(UiContext $context = new UiContext): ?Ui;
 

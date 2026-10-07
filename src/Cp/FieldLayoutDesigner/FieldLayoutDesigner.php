@@ -12,12 +12,6 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -25,6 +19,12 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 
@@ -276,8 +276,8 @@ class FieldLayoutDesigner
         $namespace = explode('[', str_replace(']', '', InputNamespace::namespaceInputName($name)));
         array_pop($namespace);
 
-        $payload = app(FormResolver::class)->resolve(
-            Form::make([
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([
                 Field::make(control: Table::make($name)
                     ->columns($cols)
                     ->value($fields)
@@ -287,7 +287,7 @@ class FieldLayoutDesigner
                     ->allowDelete()
                     ->addRowLabel(t('Add a field'))),
             ]),
-            new FormContext(
+            new UiContext(
                 namespace: $namespace,
                 errors: $errors,
                 mode: $config['disabled'] ? ControlMode::Disabled : ControlMode::Editable,

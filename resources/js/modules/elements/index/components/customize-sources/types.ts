@@ -5,7 +5,7 @@ export type SourceType = 'native' | 'custom' | 'heading';
 export interface SourceRow {
   /**
    * Null only for a source whose project config carries no key — the server
-   * can't build a Form for it, and store() can't save it either.
+   * can't build a UI for it, and store() can't save it either.
    */
   key: string | null;
   type: SourceType;

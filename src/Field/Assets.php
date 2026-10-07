@@ -843,7 +843,7 @@ class Assets extends BaseRelationField
         } catch (InvalidFsException|InvalidSubpathException) {
             // A misconfigured location costs the field its upload affordance,
             // not its ability to relate what's already there. What went wrong
-            // reaches the author through {@see formWarning()}.
+            // reaches the author through {@see uiWarning()}.
             return $control;
         }
 
@@ -866,7 +866,7 @@ class Assets extends BaseRelationField
      * default upload location is not a misconfiguration to complain about.
      */
     #[Override]
-    public function formWarning(?ElementInterface $element = null): ?string
+    public function uiWarning(?ElementInterface $element = null): ?string
     {
         if (! $this->allowUploads && ! $this->restrictLocation) {
             return null;

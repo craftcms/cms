@@ -141,7 +141,7 @@ it('rejects unregistered live types and non-JSON-safe properties', function () {
         ->toThrow(InvalidArgumentException::class, 'JSON-safe');
 });
 
-it('rejects registered renderer exceptions without returning a partial PHP form', function () {
+it('rejects registered renderer exceptions without returning a partial PHP UI', function () {
     $broken = new class('broken', 'message') extends Notice
     {
         public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string

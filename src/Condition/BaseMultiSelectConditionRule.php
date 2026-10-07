@@ -116,7 +116,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             return [];
         }
 
-        return [Field::make($this->getLabel(), Combobox::make('values')->multiple()->requireOptionMatch()->showAllOnEmpty()->options($this->formOptions($this->options()))->value(array_map(strval(...), $this->getValues())))];
+        return [Field::make($this->getLabel(), Combobox::make('values')->multiple()->requireOptionMatch()->showAllOnEmpty()->options($this->uiOptions($this->options()))->value(array_map(strval(...), $this->getValues())))];
     }
 
     #[Override]

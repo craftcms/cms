@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Controls;
 
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\NestedUiPayload;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
-use CraftCms\Cms\Ui\NestedFormPayload;
-use CraftCms\Cms\Ui\NodePayload;
-use CraftCms\Cms\Ui\Nodes\Field;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
 
 /**
@@ -273,7 +273,7 @@ class Table extends Control
         );
 
         return $this->props($value) + [
-            'rowTemplate' => new NestedFormPayload(scope: [], refreshable: false, nodes: $template->nodes)->jsonSerialize(),
+            'rowTemplate' => new NestedUiPayload(scope: [], refreshable: false, nodes: $template->nodes)->jsonSerialize(),
         ];
     }
 

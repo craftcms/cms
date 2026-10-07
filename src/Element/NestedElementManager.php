@@ -549,7 +549,7 @@ class NestedElementManager extends Component
      * (entries, addresses, or a plugin's own) gets the same create, edit, reorder, paste, and
      * delete behavior.
      *
-     * @param  string|list<string>  $path  The control path within the owner's form
+     * @param  string|list<string>  $path  The control path within the owner's UI
      * @param  'cards'|'cards-grid'|'index'  $viewMode
      * @param  array<string, mixed>  $config  The cards or index view config
      */

@@ -21,7 +21,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
 
-class FormMoneyConditionRule extends MoneyFieldConditionRule
+class UiMoneyConditionRule extends MoneyFieldConditionRule
 {
     protected function field(): FieldInterface
     {
@@ -51,7 +51,7 @@ it('round trips date control values in their timezone', function () {
 
 it('round trips money input values as decimal condition values', function () {
     $rule = app(Conditions::class)->createConditionRule([
-        'class' => FormMoneyConditionRule::class,
+        'class' => UiMoneyConditionRule::class,
         'fieldUid' => 'a767fd6f-b381-4a60-913f-22a8f7349da8',
         'operator' => 'between',
         'value' => ['value' => '12,50', 'locale' => 'nl-BE', 'currency' => 'EUR'],
@@ -123,7 +123,7 @@ it('includes saved authors in the element selector', function () {
     expect(array_column($selector->control->props['elements'], 'id'))->toBe([$author->id]);
 });
 
-it('provides the current text or number values to the form', function (string $class, string $operator, array $values) {
+it('provides the current text or number values to the UI', function (string $class, string $operator, array $values) {
     $rule = new ElementCondition(Entry::class)->createConditionRule([
         'class' => $class,
         'operator' => $operator,

@@ -92,7 +92,7 @@ it('renders the entry edit screen as an Inertia page', function () {
         );
 });
 
-it('compiles the field layout into a form payload', function () {
+it('compiles the field layout into a UI payload', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -112,7 +112,7 @@ it('points the form at the entry save action', function () {
         );
 });
 
-it('compiles the meta fields into a sidebar form', function () {
+it('compiles the meta fields into a sidebar UI', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -153,7 +153,7 @@ it('includes the parent field for structure entries', function () {
         );
 });
 
-it('saves the meta fields the sidebar form submits', function () {
+it('saves the meta fields the sidebar UI submits', function () {
     post(action(StoreEntryController::class), [
         'entryId' => $this->entry->id,
         'siteId' => $this->entry->siteId,
