@@ -193,6 +193,7 @@
 
   .cp-header-bar__breadcrumbs
     :deep(craft-breadcrumb-item[aria-current='page']) {
+    --c-chip-text: var(--color-slate-700);
     color: var(--color-slate-700);
   }
 </style>
