@@ -14,6 +14,7 @@ describe('themeEntries', () => {
           --c-color-border-quiet,
           var(--c-color-neutral-border-quiet)
         );
+        --text-color-quiet: var(--c-text-quiet);
         --padding-sm: var(--c-spacing-sm);
         --z-index-popover: var(--c-layer-popover);
         --unrelated-thing: 1px;
@@ -41,6 +42,12 @@ describe('themeEntries', () => {
         token: '--c-color-border-quiet',
       },
       {
+        namespace: 'text-color',
+        name: 'quiet',
+        value: 'var(--c-text-quiet)',
+        token: '--c-text-quiet',
+      },
+      {
         namespace: 'padding',
         name: 'sm',
         value: 'var(--c-spacing-sm)',
@@ -66,6 +73,9 @@ describe('themeEntries', () => {
       'quiet',
       'normal',
       'loud',
+    ]);
+    expect(entriesIn('text-color').map((entry) => entry.token)).toEqual([
+      '--c-text-quiet',
     ]);
     expect(entriesIn('padding').map((entry) => entry.token)).toContain(
       '--c-spacing-md'
