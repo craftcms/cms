@@ -1123,7 +1123,8 @@ readonly class FormFields
         $component = Combobox::make()
             ->id($config['id'] ?? null)
             ->name(($config['name'] ?? false) ?: null)
-            ->value($config['value'] ?? null)
+            // A multi-select's selection arrives as `values`, singular `value` otherwise.
+            ->value($multi ? ($config['values'] ?? []) : ($config['value'] ?? null))
             ->options(self::normalizeSelectizeOptions($config['options'] ?? []))
             ->multiple($multi)
             ->disabled((bool) ($config['disabled'] ?? false))

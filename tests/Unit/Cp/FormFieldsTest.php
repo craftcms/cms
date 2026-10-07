@@ -297,3 +297,26 @@ describe('addressFieldsHtml', function () {
             ->and($address->ruleset->getScenario())->toBe($originalScenario);
     });
 });
+
+describe('selectizeHtml', function () {
+    it('posts a multi-select through the legacy input names', function () {
+        $html = FormFields::selectizeHtml([
+            'name' => 'values',
+            'values' => ['live', 'pending'],
+            'options' => [
+                ['value' => 'live', 'label' => 'Live'],
+                ['value' => 'pending', 'label' => 'Pending'],
+                ['value' => 'expired', 'label' => 'Expired'],
+            ],
+            'multi' => true,
+        ]);
+
+        // The sentinel so an empty selection still posts, then one input per
+        // value — the contract `multiselect.twig` rendered, which the legacy
+        // condition rules' `values[]` depends on.
+        expect($html)->toContain('name="values" value')
+            ->and($html)->toContain('name="values[]" value="live"')
+            ->and($html)->toContain('name="values[]" value="pending"')
+            ->and($html)->not->toContain('value="expired"');
+    });
+});

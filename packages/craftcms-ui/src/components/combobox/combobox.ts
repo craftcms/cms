@@ -764,6 +764,12 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   private syncInputs() {
+    // The server renders this span for a multiple-choice combobox, so its
+    // markup posts before this upgrades. Adopting it keeps one set of inputs.
+    this.inputs ??=
+      this.querySelector<HTMLSpanElement>('[data-combobox-inputs]') ??
+      undefined;
+
     if (!this.inputs) {
       this.inputs = document.createElement('span');
       this.inputs.hidden = true;
