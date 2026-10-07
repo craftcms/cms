@@ -1,15 +1,17 @@
 <?php
 
-namespace craft\mcp\oauth;
+namespace craft\oauth;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Db;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
@@ -18,17 +20,16 @@ use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 use yii\db\IntegrityException;
 
-/** The MCP-only OAuth store. */
+/** Resource-bound OAuth client and credential storage. */
 class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryInterface, AuthCodeRepositoryInterface, RefreshTokenRepositoryInterface, ScopeRepositoryInterface
 {
-    public const CLIENTS = '{{%mcp_oauth_clients}}';
-    public const TOKENS = '{{%mcp_oauth_access_tokens}}';
-    public const CODES = '{{%mcp_oauth_auth_codes}}';
-    public const REFRESH = '{{%mcp_oauth_refresh_tokens}}';
+    public function __construct(private Resource $resource)
+    {
+    }
 
     public function getClientEntity(string $clientIdentifier): ?ClientEntityInterface
     {
-        $row = (new Query())->from(self::CLIENTS)->where(['id' => $clientIdentifier, 'revoked' => false])->one();
+        $row = (new Query())->from(Table::OAUTH_CLIENTS)->where(['id' => $clientIdentifier, 'revoked' => false, 'resourceId' => $this->resource->id])->one();
         return $row ? new Client($row) : null;
     }
 
@@ -39,7 +40,7 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function getScopeEntityByIdentifier(string $identifier): ?ScopeEntityInterface
     {
-        if ($identifier !== OAuth::SCOPE) {
+        if (!isset($this->resource->scopes[$identifier])) {
             return null;
         }
 
@@ -50,9 +51,22 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function finalizeScopes(array $scopes, string $grantType, ClientEntityInterface $clientEntity, ?string $userIdentifier = null, ?string $authCodeId = null): array
     {
-        if ($userIdentifier !== null) {
-            OAuth::authorizedUser($userIdentifier);
+        if (!$scopes) {
+            throw OAuthServerException::invalidScope('(empty)');
         }
+
+        foreach ($scopes as $scope) {
+            if (!isset($this->resource->scopes[$scope->getIdentifier()])) {
+                throw OAuthServerException::invalidScope($scope->getIdentifier());
+            }
+        }
+
+        $this->requireClient($clientEntity->getIdentifier());
+        if ($userIdentifier === null) {
+            throw OAuthServerException::accessDenied('An authenticated user is required.');
+        }
+
+        Craft::$app->get('oauth')->authorizedUser($userIdentifier, $this->resource->id);
 
         return $scopes;
     }
@@ -70,7 +84,10 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
     {
-        $this->persist(self::TOKENS, [
+        $this->requireClient($accessTokenEntity->getClient()->getIdentifier());
+
+        $this->persist(Table::OAUTH_ACCESS_TOKENS, [
+            'resourceId' => $this->resource->id,
             'id' => $accessTokenEntity->getIdentifier(),
             'clientId' => $accessTokenEntity->getClient()->getIdentifier(),
             'userId' => $accessTokenEntity->getUserIdentifier(),
@@ -81,12 +98,12 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function revokeAccessToken(string $tokenId): void
     {
-        $this->revoke(self::TOKENS, $tokenId);
+        $this->revoke(Table::OAUTH_ACCESS_TOKENS, $tokenId);
     }
 
     public function isAccessTokenRevoked(string $tokenId): bool
     {
-        return $this->isRevoked(self::TOKENS, $tokenId);
+        return $this->isRevoked(Table::OAUTH_ACCESS_TOKENS, $tokenId);
     }
 
     public function getNewAuthCode(): AuthCodeEntityInterface
@@ -96,7 +113,10 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity): void
     {
-        $this->persist(self::CODES, [
+        $this->requireClient($authCodeEntity->getClient()->getIdentifier());
+
+        $this->persist(Table::OAUTH_AUTH_CODES, [
+            'resourceId' => $this->resource->id,
             'id' => $authCodeEntity->getIdentifier(),
             'clientId' => $authCodeEntity->getClient()->getIdentifier(),
             'userId' => $authCodeEntity->getUserIdentifier(),
@@ -106,12 +126,12 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function revokeAuthCode(string $codeId): void
     {
-        $this->revoke(self::CODES, $codeId);
+        $this->revoke(Table::OAUTH_AUTH_CODES, $codeId);
     }
 
     public function isAuthCodeRevoked(string $codeId): bool
     {
-        return $this->isRevoked(self::CODES, $codeId);
+        return $this->isRevoked(Table::OAUTH_AUTH_CODES, $codeId);
     }
 
     public function getNewRefreshToken(): ?RefreshTokenEntityInterface
@@ -121,21 +141,31 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity): void
     {
-        $this->persist(self::REFRESH, [
+        $accessTokenId = $refreshTokenEntity->getAccessToken()->getIdentifier();
+        $accessToken = (new Query())->from(Table::OAUTH_ACCESS_TOKENS)->where(['id' => $accessTokenId, 'resourceId' => $this->resource->id])->one();
+        if (!$accessToken || !$this->hasResourceScopes($accessToken['scopes'])) {
+            throw OAuthServerException::accessDenied('The access token does not belong to this resource.');
+        }
+
+        $this->requireClient($accessToken['clientId']);
+
+        $this->persist(Table::OAUTH_REFRESH_TOKENS, [
             'id' => $refreshTokenEntity->getIdentifier(),
-            'accessTokenId' => $refreshTokenEntity->getAccessToken()->getIdentifier(),
+            'accessTokenId' => $accessTokenId,
             'expiresAt' => Db::prepareDateForDb($refreshTokenEntity->getExpiryDateTime()),
         ]);
     }
 
     public function revokeRefreshToken(string $tokenId): void
     {
-        $this->revoke(self::REFRESH, $tokenId);
+        $accessTokens = (new Query())->select('id')->from(Table::OAUTH_ACCESS_TOKENS)->where(['resourceId' => $this->resource->id]);
+        Craft::$app->getDb()->createCommand()->update(Table::OAUTH_REFRESH_TOKENS, ['revoked' => true], ['id' => $tokenId, 'accessTokenId' => $accessTokens])->execute();
     }
 
     public function isRefreshTokenRevoked(string $tokenId): bool
     {
-        return $this->isRevoked(self::REFRESH, $tokenId);
+        $row = $this->refreshToken($tokenId);
+        return !$row || $row['revoked'] || !$this->hasResourceScopes($row['scopes']) || !$this->getClientEntity($row['clientId']);
     }
 
     private function persist(string $table, array $row): void
@@ -149,13 +179,17 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     private function revoke(string $table, string $id): void
     {
-        Craft::$app->getDb()->createCommand()->update($table, ['revoked' => true], ['id' => $id])->execute();
+        Craft::$app->getDb()->createCommand()->update($table, ['revoked' => true], ['id' => $id, 'resourceId' => $this->resource->id])->execute();
     }
 
     private function isRevoked(string $table, string $id): bool
     {
-        $row = (new Query())->from($table)->where(['id' => $id])->one();
+        $row = (new Query())->from($table)->where(['id' => $id, 'resourceId' => $this->resource->id])->one();
         if (!$row || $row['revoked']) {
+            return true;
+        }
+
+        if ($table === Table::OAUTH_ACCESS_TOKENS && !$this->hasResourceScopes($row['scopes'])) {
             return true;
         }
 
@@ -164,5 +198,28 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
         }
 
         return false;
+    }
+
+    private function hasResourceScopes(string $scopes): bool
+    {
+        $scopes = json_decode($scopes, true);
+        return is_array($scopes) && $this->resource->allowsScopes($scopes);
+    }
+
+    private function requireClient(string $clientId): void
+    {
+        if (!$this->getClientEntity($clientId)) {
+            throw OAuthServerException::accessDenied('The client does not belong to this resource or has been revoked.');
+        }
+    }
+
+    private function refreshToken(string $id): array|false
+    {
+        return (new Query())
+            ->select(['refresh.revoked', 'access.clientId', 'access.scopes'])
+            ->from(['refresh' => Table::OAUTH_REFRESH_TOKENS])
+            ->innerJoin(['access' => Table::OAUTH_ACCESS_TOKENS], '[[access.id]] = [[refresh.accessTokenId]]')
+            ->where(['refresh.id' => $id, 'access.resourceId' => $this->resource->id])
+            ->one();
     }
 }

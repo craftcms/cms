@@ -4,7 +4,6 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\mcp\oauth\OAuth;
 use craft\mcp\ServerFactory;
 use Mcp\Server\Transport\StdioTransport;
 use yii\console\ExitCode;
@@ -12,11 +11,10 @@ use yii\console\ExitCode;
 class McpController extends Controller
 {
     public ?string $user = null;
-    public bool $force = false;
 
     public function options($actionID): array
     {
-        return [...parent::options($actionID), ...($actionID === 'serve' ? ['user'] : ['force'])];
+        return [...parent::options($actionID), ...($actionID === 'serve' ? ['user'] : [])];
     }
 
     /** Run the MCP server on stdin/stdout as a named Craft user. */
@@ -38,13 +36,5 @@ class McpController extends Controller
 
         Craft::$app->getUser()->setIdentity($user);
         return Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class)->stdio()->run(new StdioTransport(logger: new \craft\mcp\Logger()));
-    }
-
-    /** Generate OAuth signing keys for the authenticated HTTP server. */
-    public function actionGenerateKeys(): int
-    {
-        (new OAuth())->generateKeys($this->force);
-        $this->stdout("MCP OAuth signing keys generated.\n");
-        return ExitCode::OK;
     }
 }

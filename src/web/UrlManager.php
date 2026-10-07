@@ -342,6 +342,13 @@ class UrlManager extends \yii\web\UrlManager
                 $routesService->getProjectConfigRoutes()
             );
 
+            if (Craft::$app->getIsInstalled()) {
+                $mcpSettings = Craft::$app->get('mcp')->getSettings();
+                if ($mcpSettings->publicEnabled) {
+                    $rules = [trim($mcpSettings->publicRoute, '/') => 'mcp/public', ...$rules];
+                }
+            }
+
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
@@ -473,8 +480,33 @@ class UrlManager extends \yii\web\UrlManager
         return match ($request->getPathInfo()) {
             '.well-known/change-password' => $this->_changePasswordRoute(),
             '.well-known/passkey-endpoints' => $this->_passkeyEndpointsRoute(),
-            default => false,
+            default => $this->_oauthMetadataRoute($request),
         };
+    }
+
+    /** Returns the OAuth discovery route for a registered protected resource. */
+    private function _oauthMetadataRoute(Request $request): array|false
+    {
+        $path = $request->getPathInfo();
+        $resourcePrefix = '.well-known/oauth-protected-resource';
+        $serverPrefix = '.well-known/oauth-authorization-server';
+        if ($path !== $resourcePrefix && !str_starts_with($path, $resourcePrefix . '/') && $path !== $serverPrefix && !str_starts_with($path, $serverPrefix . '/')) {
+            return false;
+        }
+
+        $oauth = Craft::$app->getOAuth();
+        foreach ($oauth->getResources() as $id => $resource) {
+            $resourcePath = '/' . trim(parse_url($resource->getResourceUrl(), PHP_URL_PATH) ?? '', '/');
+            $issuerPath = '/' . trim(parse_url($oauth->issuer($id), PHP_URL_PATH) ?? '', '/');
+            if ($path === rtrim($resourcePrefix . $resourcePath, '/')) {
+                return ['oauth/resource', ['resource' => $id]];
+            }
+            if ($path === rtrim($serverPrefix . $issuerPath, '/')) {
+                return ['oauth/metadata', ['resource' => $id]];
+            }
+        }
+
+        return false;
     }
 
     /**

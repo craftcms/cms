@@ -4,7 +4,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\mcp\HttpTransportMiddleware;
-use craft\mcp\oauth\OAuth;
 use craft\mcp\ServerFactory;
 use craft\web\Controller;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -34,16 +33,16 @@ class McpController extends Controller
     public function beforeAction($action): bool
     {
         if ($action->id === 'admin' && !$this->request->getIsOptions()) {
-            $oauth = new OAuth();
+            $oauth = Craft::$app->getOAuth();
             $session = Craft::$app->getUser();
             $session->enableSession = false;
             $session->enableAutoLogin = false;
             $session->setIdentity(null);
 
             try {
-                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals()));
+                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp'));
             } catch (OAuthServerException $exception) {
-                $this->response->getHeaders()->set('WWW-Authenticate', 'Bearer resource_metadata="' . $oauth->resourceMetadataUrl() . '", scope="' . OAuth::SCOPE . '"');
+                $this->response->getHeaders()->set('WWW-Authenticate', 'Bearer resource_metadata="' . $oauth->resourceMetadataUrl('mcp') . '", scope="' . implode(' ', array_keys($oauth->getResource('mcp')->scopes)) . '"');
                 $this->response->setStatusCode(401);
                 $this->response->format = Response::FORMAT_JSON;
                 $this->response->data = ['error' => 'invalid_token', 'error_description' => $exception->getMessage()];

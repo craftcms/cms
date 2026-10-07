@@ -1,12 +1,17 @@
 {% extends '_layouts/basecp.twig' %}
-{% set title = 'Authorize MCP client'|t('app') %}
+{% set title = 'Authorize client'|t('app') %}
 {% set bodyClass = 'login' %}
 
 {% block body %}
   <main class="message-container">
     <h1>{{ title }}</h1>
     <p>{{ '{client} would like to access Craft CMS as you.'|t('app', {client: clientName}) }}</p>
-    <p>{{ 'This client can use Craft MCP to read and change content and settings within your permissions.'|t('app') }}</p>
+    <p>{{ consentDescription }}</p>
+    <ul>
+      {% for description in scopes %}
+        <li>{{ description }}</li>
+      {% endfor %}
+    </ul>
     <form method="post" action="{{ approveAction }}">
       {{ csrfInput() }}
       {{ hiddenInput('authToken', authToken) }}

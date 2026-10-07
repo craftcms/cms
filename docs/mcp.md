@@ -1,6 +1,6 @@
 # MCP in Craft 5
 
-Craft exposes content and configuration through the Model Context Protocol. It uses the official `mcp/sdk` package and `league/oauth2-server` directly.
+Craft exposes content and configuration through the Model Context Protocol. It uses the official `mcp/sdk` package and Craft’s shared [OAuth service](oauth.md).
 
 ## Servers
 
@@ -15,54 +15,29 @@ HTTP requests use the stateless transport for protocol version `2026-07-28`. Sen
 Update Craft and run its database migrations, then generate signing keys:
 
 ```sh
-php craft mcp/generate-keys
+php craft oauth/generate-keys
 ```
 
-This writes `storage/oauth-private.key` and `storage/oauth-public.key` with restrictive permissions. Keep the private key outside the web root. Deploy the same keys to every application node, or configure shared keys as shown below. Keys are generated explicitly, never by an incoming HTTP request.
+Grant the intended users **Use Craft MCP** and control panel access. Configure an MCP client with the authenticated endpoint URL, normally `https://example.com/admin/mcp`. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
 
-Grant the intended users **Use Craft MCP** and control panel access. Configure an MCP client with the authenticated endpoint URL. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
-
-OAuth supports discovery metadata, dynamic registration of public clients, the authorization code grant with S256 PKCE, and rotating refresh tokens. The scope is `mcp:use`. Default lifetimes are one hour for access tokens, 30 days for refresh tokens, and ten minutes for authorization codes. Refreshing revokes the previous access token and refresh token.
-
-Consent is reused while the same client has an unexpired access token covering the requested scopes. `prompt=consent` requests consent again. `prompt=login` requests a fresh login. `prompt=none` returns an OAuth error when login or consent would be needed.
-
-For an endpoint at `https://example.com/admin/mcp`, discovery URLs are:
-
-```text
-https://example.com/.well-known/oauth-protected-resource/admin/mcp
-https://example.com/.well-known/oauth-authorization-server/admin/mcp
-```
-
-The endpoint's full path appears after the well-known prefix, including any installation subdirectory. The web server must forward these origin-root paths to Craft when Craft runs under a subdirectory. Discovery metadata supplies the registration, authorization, and token URLs; clients should use those URLs.
-
-`php craft mcp/generate-keys --force` replaces existing signing keys and invalidates existing access tokens. Existing refresh tokens remain encrypted with a key derived from Craft's `securityKey`; replacing only the signing keys does not revoke refresh tokens.
+MCP uses the OAuth resource ID `mcp` and scope `mcp:use`. Clients discover registration, authorization, and token endpoints through OAuth metadata. See the [OAuth guide](oauth.md) for signing keys, shared configuration, discovery URLs, token lifetimes, and consent behavior.
 
 ## Configuration
 
-Create `config/mcp.php` to configure the transport and OAuth server:
+Create `config/mcp.php` to configure the transport:
 
 ```php
 <?php
 
 return [
-    'endpoint' => 'mcp',
     'instructions' => 'Use the editorial style guide when changing article content.',
-    'privateKey' => '$MCP_PRIVATE_KEY',
-    'publicKey' => '$MCP_PUBLIC_KEY',
-    'accessTokenDuration' => 'PT1H',
-    'refreshTokenDuration' => 'P30D',
-    'authorizationCodeDuration' => 'PT10M',
-    'redirectDomains' => ['https://client.example', 'http://localhost'],
-    'customSchemes' => [],
     'filters' => [],
 ];
 ```
 
-`privateKey` and `publicKey` accept PEM contents or file paths, including Craft aliases. If omitted, Craft uses the generated files under `storage`. The duration values use PHP `DateInterval` syntax.
-
-`redirectDomains` defaults to `['*']`, which permits HTTP and HTTPS registration redirects. Set an explicit list to restrict clients to those origins and optional path prefixes. An HTTP loopback origin permits dynamic ports for local clients. `customSchemes` explicitly permits additional redirect schemes. Registered redirect URIs must match exactly during authorization and token exchange.
-
 `filters` contains Yii action-filter definitions applied to authenticated MCP requests. `instructions` adds site-specific guidance to the instructions returned by `info.get`.
+
+Signing keys, token lifetimes, and client redirect restrictions are configured separately in [`config/oauth.php`](oauth.md#configuration).
 
 ## Public content
 

@@ -34,6 +34,5 @@ return [
             'errorAction' => 'templates/render-error',
         ],
     ],
-    'controllerMap' => ['mcp-oauth' => craft\controllers\McpOAuthController::class],
     'controllerNamespace' => 'craft\\controllers',
 ];

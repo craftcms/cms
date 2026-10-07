@@ -4,12 +4,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\mcp\oauth\OAuth;
-use craft\mcp\oauth\Repositories;
-use craft\mcp\oauth\User as OAuthUser;
+use craft\helpers\UrlHelper;
+use craft\oauth\Repositories;
+use craft\oauth\User as OAuthUser;
 use craft\web\Controller;
 use craft\web\View;
 use DateTime;
@@ -24,9 +25,9 @@ use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
-class McpOAuthController extends Controller
+class OauthController extends Controller
 {
-    protected array|bool|int $allowAnonymous = ['metadata', 'resource', 'register', 'authorize', 'token'];
+    protected array|bool|int $allowAnonymous = true;
 
     public function behaviors(): array
     {
@@ -38,7 +39,7 @@ class McpOAuthController extends Controller
                 'user' => fn() => new IpRateLimitIdentity([
                     'limit' => 60,
                     'window' => 60,
-                    'keyPrefix' => 'mcp-oauth',
+                    'keyPrefix' => 'oauth',
                     'ip' => $this->request->getUserIP() ?? 'unknown',
                 ]),
             ],
@@ -53,19 +54,20 @@ class McpOAuthController extends Controller
         return parent::beforeAction($action);
     }
 
-    public function actionMetadata(): Response
+    public function actionMetadata(string $resource): Response
     {
-        return $this->asJson((new OAuth())->metadata());
+        return $this->asJson(Craft::$app->getOAuth()->metadata($resource));
     }
 
-    public function actionResource(): Response
+    public function actionResource(string $resource): Response
     {
-        return $this->asJson((new OAuth())->protectedResourceMetadata());
+        return $this->asJson(Craft::$app->getOAuth()->protectedResourceMetadata($resource));
     }
 
-    public function actionRegister(): Response
+    public function actionRegister(string $resource): Response
     {
         $this->requirePostRequest();
+        $definition = Craft::$app->getOAuth()->getResource($resource);
         $data = $this->request->getBodyParams();
         $uris = $data['redirect_uris'] ?? null;
         if (!is_array($uris) || !array_is_list($uris) || !$uris || count($uris) > 20) {
@@ -77,7 +79,7 @@ class McpOAuthController extends Controller
             }
         }
 
-        $name = $data['client_name'] ?? $data['name'] ?? (parse_url($uris[0], PHP_URL_HOST) ?: 'MCP Client');
+        $name = $data['client_name'] ?? $data['name'] ?? (parse_url($uris[0], PHP_URL_HOST) ?: 'OAuth Client');
         if (!is_string($name) || trim($name) === '' || mb_strlen($name) > 255) {
             return $this->error('invalid_client_metadata', 'The client name must be between 1 and 255 characters.');
         }
@@ -96,13 +98,14 @@ class McpOAuthController extends Controller
         if (isset($data['response_types']) && $data['response_types'] !== ['code']) {
             return $this->error('invalid_client_metadata', 'Only the code response type is supported.');
         }
-        if (isset($data['scope']) && $data['scope'] !== OAuth::SCOPE) {
-            return $this->error('invalid_client_metadata', 'Only the MCP scope is supported.');
+        if (array_key_exists('scope', $data) && (!is_string($data['scope']) || !$definition->allowsScopes(explode(' ', trim($data['scope']))))) {
+            return $this->error('invalid_client_metadata', 'The requested scopes are not supported by this resource.');
         }
 
         $id = StringHelper::UUID();
-        Craft::$app->getDb()->createCommand()->insert(Repositories::CLIENTS, [
+        Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => $id,
+            'resourceId' => $definition->id,
             'name' => $name,
             'redirectUris' => json_encode($uris, JSON_THROW_ON_ERROR),
             'revoked' => false,
@@ -116,94 +119,106 @@ class McpOAuthController extends Controller
             'grant_types' => ['authorization_code', 'refresh_token'],
             'response_types' => ['code'],
             'redirect_uris' => $uris,
-            'scope' => OAuth::SCOPE,
+            'scope' => implode(' ', array_keys($definition->scopes)),
             'token_endpoint_auth_method' => 'none',
         ]);
     }
 
-    public function actionAuthorize(): Response
+    public function actionAuthorize(string $resource): Response
     {
         if (!$this->request->getIsGet()) {
             throw new MethodNotAllowedHttpException('Get request required.');
         }
-        $oauth = new OAuth();
+        $oauth = Craft::$app->getOAuth();
+        $definition = $oauth->getResource($resource);
         try {
             $request = $this->psrRequest();
             if (($request->getQueryParams()['code_challenge_method'] ?? null) !== 'S256') {
                 throw OAuthServerException::invalidRequest('code_challenge_method', 'Only S256 PKCE is supported.');
             }
-            $authorization = $oauth->server()->validateAuthorizationRequest($request);
+            $authorization = $oauth->server($resource)->validateAuthorizationRequest($request);
+            if (!$authorization->getScopes()) {
+                throw OAuthServerException::invalidScope('(empty)');
+            }
             $prompts = preg_split('/\s+/', trim((string)$this->request->getQueryParam('prompt', '')), flags: PREG_SPLIT_NO_EMPTY);
             $session = Craft::$app->getSession();
             $userSession = Craft::$app->getUser();
+            if (!in_array('accessCp', $definition->permissions, true)) {
+                $general = Craft::$app->getConfig()->getGeneral();
+                $loginPath = $general->getLoginPath() ?: $general->actionTrigger . '/users/login';
+                $userSession->loginUrl = UrlHelper::siteUrl($loginPath);
+            }
+            $promptedLoginKey = 'oauthPromptedLogin:' . $resource;
             if ($userSession->getIsGuest()) {
                 if (in_array('none', $prompts, true)) {
                     return $this->promptError($authorization, 'login_required');
                 }
-                $session->set('mcpOAuthPromptedLogin', true);
+                $session->set($promptedLoginKey, true);
                 $this->requireLogin();
             }
-            if (in_array('login', $prompts, true) && !in_array('none', $prompts, true) && !$session->get('mcpOAuthPromptedLogin', false)) {
+            if (in_array('login', $prompts, true) && !in_array('none', $prompts, true) && !$session->get($promptedLoginKey, false)) {
                 $userSession->logout(false);
-                $session->set('mcpOAuthPromptedLogin', true);
+                $session->set($promptedLoginKey, true);
                 $this->requireLogin();
             }
-            $session->remove('mcpOAuthPromptedLogin');
-            $user = OAuth::authorizedUser((string)$userSession->getId());
+            $session->remove($promptedLoginKey);
+            $user = $oauth->authorizedUser((string)$userSession->getId(), $resource);
             $entity = new OAuthUser();
             $entity->setIdentifier((string)$user->id);
             $authorization->setUser($entity);
 
-            if (!in_array('consent', $prompts, true) && $this->hasConsent($authorization)) {
+            if (!in_array('consent', $prompts, true) && $this->hasConsent($authorization, $resource)) {
                 $authorization->setAuthorizationApproved(true);
-                return $this->psrResponse($oauth->server()->completeAuthorizationRequest($authorization, new PsrResponse()));
+                return $this->psrResponse($oauth->server($resource)->completeAuthorizationRequest($authorization, new PsrResponse()));
             }
             if (in_array('none', $prompts, true)) {
                 return $this->promptError($authorization, 'consent_required');
             }
 
             $authToken = Craft::$app->getSecurity()->generateRandomString(40);
-            $pending = $session->get('mcpOAuthPending', []);
+            $pending = $session->get('oauthPending', []);
             $pending = array_filter($pending, fn(array $item) => $item['expires'] > time());
             if (count($pending) >= 10) {
                 array_shift($pending);
             }
-            $pending[$authToken] = ['request' => serialize($authorization), 'expires' => time() + 600, 'userId' => $user->id];
-            $session->set('mcpOAuthPending', $pending);
+            $pending[$authToken] = ['request' => serialize($authorization), 'expires' => time() + 600, 'userId' => $user->id, 'resourceId' => $definition->id];
+            $session->set('oauthPending', $pending);
 
-            return $this->renderTemplate('mcp/authorize', [
+            return $this->renderTemplate('oauth/authorize', [
                 'clientName' => $authorization->getClient()->getName(),
                 'authToken' => $authToken,
-                'approveAction' => $oauth->url('approve'),
-                'denyAction' => $oauth->url('deny'),
+                'consentDescription' => $definition->consentDescription,
+                'scopes' => array_map(fn($scope) => $definition->scopes[$scope->getIdentifier()], $authorization->getScopes()),
+                'approveAction' => $oauth->url('approve', $resource),
+                'denyAction' => $oauth->url('deny', $resource),
             ], View::TEMPLATE_MODE_CP);
         } catch (OAuthServerException $e) {
             return $this->psrResponse($e->generateHttpResponse(new PsrResponse()));
         }
     }
 
-    public function actionApprove(): Response
+    public function actionApprove(string $resource): Response
     {
-        return $this->completeAuthorization(true);
+        return $this->completeAuthorization(true, $resource);
     }
 
-    public function actionDeny(): Response
+    public function actionDeny(string $resource): Response
     {
-        return $this->completeAuthorization(false);
+        return $this->completeAuthorization(false, $resource);
     }
 
-    public function actionToken(): Response
+    public function actionToken(string $resource): Response
     {
         $this->requirePostRequest();
         try {
             // Serialize issuance so an authorization code or rotating refresh token cannot be redeemed twice concurrently.
             $mutex = Craft::$app->getMutex();
-            $lock = 'mcp-oauth-token';
+            $lock = 'oauth-token-' . $resource;
             if (!$mutex->acquire($lock, 10)) {
                 return $this->error('temporarily_unavailable', 'Token issuance is busy. Try again.', 503);
             }
             try {
-                $response = Craft::$app->getDb()->transaction(fn() => (new OAuth())->server()->respondToAccessTokenRequest($this->psrRequest(), new PsrResponse()));
+                $response = Craft::$app->getDb()->transaction(fn() => Craft::$app->getOAuth()->server($resource)->respondToAccessTokenRequest($this->psrRequest(), new PsrResponse()));
             } finally {
                 $mutex->release($lock);
             }
@@ -213,37 +228,37 @@ class McpOAuthController extends Controller
         }
     }
 
-    private function completeAuthorization(bool $approved): Response
+    private function completeAuthorization(bool $approved, string $resource): Response
     {
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
-        $this->requirePermission('useCraftMcp');
+        $this->requireLogin();
         $session = Craft::$app->getSession();
         $token = $this->request->getRequiredBodyParam('authToken');
-        $pending = $session->get('mcpOAuthPending', []);
+        $pending = $session->get('oauthPending', []);
         $item = is_string($token) ? ($pending[$token] ?? null) : null;
-        if (!$item || $item['expires'] <= time() || $item['userId'] !== Craft::$app->getUser()->getId()) {
+        if (!$item || $item['expires'] <= time() || $item['userId'] !== Craft::$app->getUser()->getId() || ($item['resourceId'] ?? null) !== $resource) {
             throw new BadRequestHttpException('The authorization request has expired or is invalid.');
         }
         unset($pending[$token]);
-        $session->set('mcpOAuthPending', $pending);
+        $session->set('oauthPending', $pending);
 
         try {
-            OAuth::authorizedUser((string)$item['userId']);
+            Craft::$app->getOAuth()->authorizedUser((string)$item['userId'], $resource);
             $authorization = unserialize($item['request']);
-            if (!$authorization instanceof AuthorizationRequestInterface || !(new Repositories())->getClientEntity($authorization->getClient()->getIdentifier())) {
+            if (!$authorization instanceof AuthorizationRequestInterface || !(new Repositories(Craft::$app->getOAuth()->getResource($resource)))->getClientEntity($authorization->getClient()->getIdentifier())) {
                 throw new BadRequestHttpException('The authorization request is invalid.');
             }
             $authorization->setAuthorizationApproved($approved);
-            return $this->psrResponse((new OAuth())->server()->completeAuthorizationRequest($authorization, new PsrResponse()));
+            return $this->psrResponse(Craft::$app->getOAuth()->server($resource)->completeAuthorizationRequest($authorization, new PsrResponse()));
         } catch (OAuthServerException $e) {
             return $this->psrResponse($e->generateHttpResponse(new PsrResponse()));
         }
     }
 
-    private function hasConsent(AuthorizationRequestInterface $request): bool
+    private function hasConsent(AuthorizationRequestInterface $request, string $resource): bool
     {
-        $rows = (new Query())->select(['scopes'])->from(Repositories::TOKENS)->where([
+        $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
+            'resourceId' => $resource,
             'clientId' => $request->getClient()->getIdentifier(),
             'userId' => $request->getUser()->getIdentifier(),
             'revoked' => false,
@@ -276,7 +291,7 @@ class McpOAuthController extends Controller
         if (!$parts || empty($parts['scheme']) || empty($parts['host']) || isset($parts['fragment']) || isset($parts['user']) || isset($parts['pass'])) {
             return false;
         }
-        $config = Craft::$app->getConfig()->getMcp();
+        $config = Craft::$app->getConfig()->getOAuth();
         if (!in_array($parts['scheme'], ['http', 'https'], true)) {
             return in_array($parts['scheme'], $config->customSchemes, true);
         }

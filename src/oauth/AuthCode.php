@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\mcp\oauth;
+namespace craft\oauth;
 
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AuthCodeTrait;

@@ -4,16 +4,14 @@ namespace craft\services;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\UrlHelper;
 use craft\mcp\CapabilityContainer;
 use craft\mcp\CapabilityRegistry;
 use craft\mcp\contentmodel\CheckRegistry;
 use craft\mcp\elements\ElementAdapterRegistry;
-use craft\mcp\oauth\OAuth;
 use craft\mcp\Settings;
-use craft\web\UrlManager;
+use craft\oauth\Resource;
 use yii\base\Component;
-use yii\base\Event;
 
 /** MCP services and plugin extension registries. @since 5.12.0 */
 class Mcp extends Component
@@ -30,40 +28,17 @@ class Mcp extends Component
     private ?CheckRegistry $checks = null;
     private ?CapabilityContainer $container = null;
 
-    public function init(): void
+    /** Returns MCP's protected OAuth resource definition. @since 5.12.0 */
+    public function getOAuthResource(): Resource
     {
-        parent::init();
-
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $endpoint = trim(Craft::$app->getConfig()->getMcp()->endpoint, '/');
-            $event->rules = [
-                ...$this->metadataRules(),
-                $endpoint => 'mcp/admin',
-                "$endpoint/oauth/<action:register|authorize|approve|deny|token>" => 'mcp-oauth/<action>',
-                'settings/mcp' => 'mcp-settings/index',
-                ...$event->rules,
-            ];
-        });
-
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $rules = $this->metadataRules();
-
-            if (Craft::$app->getIsInstalled() && $this->getSettings()->publicEnabled) {
-                $rules[trim($this->getSettings()->publicRoute, '/')] = 'mcp/public';
-            }
-
-            $event->rules = [...$rules, ...$event->rules];
-        });
-    }
-
-    private function metadataRules(): array
-    {
-        $path = trim(parse_url((new OAuth())->resource(), PHP_URL_PATH) ?? '', '/');
-
-        return [
-            '.well-known/oauth-protected-resource/' . $path => 'mcp-oauth/resource',
-            '.well-known/oauth-authorization-server/' . $path => 'mcp-oauth/metadata',
-        ];
+        return new Resource([
+            'id' => 'mcp',
+            'scopes' => ['mcp:use' => 'Use Craft MCP'],
+            'defaultScopes' => ['mcp:use'],
+            'permissions' => ['accessCp', 'useCraftMcp'],
+            'resourceUrl' => fn() => UrlHelper::removeParam(UrlHelper::cpUrl('mcp'), 'site'),
+            'consentDescription' => 'This client can use Craft MCP to read and change content and settings within your permissions.',
+        ]);
     }
 
     public function getSettings(): Settings

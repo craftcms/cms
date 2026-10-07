@@ -1349,6 +1349,12 @@ trait ApplicationTrait
         return $this->get('mutex');
     }
 
+    /** Returns the shared OAuth authorization service. @since 5.12.0 */
+    public function getOAuth(): \craft\services\OAuth
+    {
+        return $this->get('oauth');
+    }
+
     /**
      * Returns the path service.
      *

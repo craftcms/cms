@@ -4,9 +4,8 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Table;
-use craft\mcp\oauth\Repositories;
 
-class m261007_100000_mcp_oauth extends Migration
+class m261007_100000_oauth extends Migration
 {
     public function safeUp(): bool
     {
@@ -16,7 +15,8 @@ class m261007_100000_mcp_oauth extends Migration
 
     public function createTables(): void
     {
-        $this->createTable(Repositories::CLIENTS, [
+        $this->createTable(Table::OAUTH_CLIENTS, [
+            'resourceId' => $this->string(64)->notNull(),
             'id' => $this->string(36)->notNull(),
             'name' => $this->string()->notNull(),
             'redirectUris' => $this->text()->notNull(),
@@ -24,7 +24,8 @@ class m261007_100000_mcp_oauth extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'PRIMARY KEY ([[id]])',
         ]);
-        $this->createTable(Repositories::TOKENS, [
+        $this->createTable(Table::OAUTH_ACCESS_TOKENS, [
+            'resourceId' => $this->string(64)->notNull(),
             'id' => $this->string(100)->notNull(),
             'clientId' => $this->string(36)->notNull(),
             'userId' => $this->integer()->notNull(),
@@ -33,7 +34,8 @@ class m261007_100000_mcp_oauth extends Migration
             'expiresAt' => $this->dateTime()->notNull(),
             'PRIMARY KEY ([[id]])',
         ]);
-        $this->createTable(Repositories::CODES, [
+        $this->createTable(Table::OAUTH_AUTH_CODES, [
+            'resourceId' => $this->string(64)->notNull(),
             'id' => $this->string(100)->notNull(),
             'clientId' => $this->string(36)->notNull(),
             'userId' => $this->integer()->notNull(),
@@ -41,7 +43,7 @@ class m261007_100000_mcp_oauth extends Migration
             'expiresAt' => $this->dateTime()->notNull(),
             'PRIMARY KEY ([[id]])',
         ]);
-        $this->createTable(Repositories::REFRESH, [
+        $this->createTable(Table::OAUTH_REFRESH_TOKENS, [
             'id' => $this->string(100)->notNull(),
             'accessTokenId' => $this->string(100)->notNull(),
             'revoked' => $this->boolean()->notNull()->defaultValue(false),
@@ -49,18 +51,29 @@ class m261007_100000_mcp_oauth extends Migration
             'PRIMARY KEY ([[id]])',
         ]);
 
-        foreach ([Repositories::TOKENS, Repositories::CODES] as $table) {
-            $this->addForeignKey(null, $table, ['clientId'], Repositories::CLIENTS, ['id'], 'CASCADE');
+        foreach ([Table::OAUTH_ACCESS_TOKENS, Table::OAUTH_AUTH_CODES] as $table) {
             $this->addForeignKey(null, $table, ['userId'], Table::USERS, ['id'], 'CASCADE');
             $this->createIndex(null, $table, ['expiresAt']);
         }
-        $this->addForeignKey(null, Repositories::REFRESH, ['accessTokenId'], Repositories::TOKENS, ['id'], 'CASCADE');
-        $this->createIndex(null, Repositories::REFRESH, ['expiresAt']);
+        $this->createResourceIndexes();
+        $this->addForeignKey(null, Table::OAUTH_REFRESH_TOKENS, ['accessTokenId'], Table::OAUTH_ACCESS_TOKENS, ['id'], 'CASCADE');
+        $this->createIndex(null, Table::OAUTH_REFRESH_TOKENS, ['expiresAt']);
+    }
+
+    private function createResourceIndexes(): void
+    {
+        $this->createIndex(null, Table::OAUTH_CLIENTS, ['resourceId', 'id'], true);
+
+        foreach ([Table::OAUTH_ACCESS_TOKENS, Table::OAUTH_AUTH_CODES] as $table) {
+            $this->createIndex(null, $table, ['resourceId', 'clientId']);
+            $this->createIndex(null, $table, ['resourceId', 'userId']);
+            $this->addForeignKey(null, $table, ['resourceId', 'clientId'], Table::OAUTH_CLIENTS, ['resourceId', 'id'], 'CASCADE');
+        }
     }
 
     public function safeDown(): bool
     {
-        foreach ([Repositories::REFRESH, Repositories::CODES, Repositories::TOKENS, Repositories::CLIENTS] as $table) {
+        foreach ([Table::OAUTH_REFRESH_TOKENS, Table::OAUTH_AUTH_CODES, Table::OAUTH_ACCESS_TOKENS, Table::OAUTH_CLIENTS] as $table) {
             $this->dropTableIfExists($table);
         }
         return true;
