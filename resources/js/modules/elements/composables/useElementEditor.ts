@@ -671,7 +671,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     try {
       const ownerId = await slideout!.instance.prepareNestedOwner!();
 
-      if (!ownerId) {
+      // Element types without drafts (e.g. variants) save in place.
+      if (!ownerId || !props.canAutosave) {
         return true;
       }
 
