@@ -2970,9 +2970,9 @@ JS;
      * @return array<string, list<string>>
      */
     #[Override]
-    public function formErrors(): array
+    public function uiErrors(): array
     {
-        $errors = parent::formErrors();
+        $errors = parent::uiErrors();
 
         if (isset($errors['newLocation'])) {
             $errors['newFilename'] = [

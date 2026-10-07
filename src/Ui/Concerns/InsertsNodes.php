@@ -11,8 +11,8 @@ use InvalidArgumentException;
 /**
  * Positional insertion for anything holding an ordered list of nodes.
  *
- * `add()` covers the common case of building a form front to back. This covers
- * the other one: a plugin, or a field that renders a form it didn't author,
+ * `add()` covers the common case of building a UI front to back. This covers
+ * the other one: a plugin, or a field that renders a UI it didn't author,
  * putting something in a particular place in a list it inherited.
  *
  * Implementers own the array; this only reorders it.

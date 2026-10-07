@@ -585,12 +585,12 @@
     scope: string[]
   ): NonNullable<UiControlPayload['uis']>[number] | undefined {
     for (const node of nodes) {
-      for (const form of node.control?.uis ?? []) {
-        if (pathsMatch(form.scope, scope)) {
-          return form;
+      for (const ui of node.control?.uis ?? []) {
+        if (pathsMatch(ui.scope, scope)) {
+          return ui;
         }
 
-        const nested = findNestedUi(form.nodes, scope);
+        const nested = findNestedUi(ui.nodes, scope);
 
         if (nested) {
           return nested;

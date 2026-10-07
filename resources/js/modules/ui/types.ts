@@ -94,7 +94,7 @@ export type UiPayload<
  * Blocks are keyed by nested element identity. Identities the server rendered are bare
  * UUIDs; ones the browser minted itself carry a `uid:` prefix until the next save adopts
  * them. `NestedUiPayload.scope` always ends in the bare UUID, so a control holding a
- * freshly minted block has to look its form up under both.
+ * freshly minted block has to look its UI up under both.
  *
  * @see CraftCms\Cms\Ui\Controls\NestedElementBlocks
  */
@@ -123,7 +123,7 @@ export type UiChange = {
   path: string[];
   scope?: string[];
   refreshable?: boolean;
-  /** Updated form definitions when a control creates nested fields. */
+  /** Updated UI definitions when a control creates nested fields. */
   control?: UiControlPayload<object>;
 };
 

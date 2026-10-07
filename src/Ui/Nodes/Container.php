@@ -16,8 +16,8 @@ abstract class Container implements Node
 {
     use Conditionable;
 
-    // Containers get the same positional API as the form itself, and it is
-    // what lets the form's own search reach a field nested inside one.
+    // Containers get the same positional API as the UI itself, and it is
+    // what lets the UI's own search reach a field nested inside one.
     use InsertsNodes;
 
     /** @param list<Node> $children */

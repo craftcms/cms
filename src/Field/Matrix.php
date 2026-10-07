@@ -2021,7 +2021,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
             // `collapsed` has no column — it only lives for the request. Echoing the
             // posted value back keeps a collapsed block collapsed across an autosave
-            // instead of springing open on the Form the response returns.
+            // instead of springing open on the UI the response returns.
             if (array_key_exists('collapsed', $entryData)) {
                 $entry->collapsed = ! empty($entryData['collapsed']);
             }

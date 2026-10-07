@@ -64,7 +64,7 @@
     }
 
     return Boolean(
-      node.control?.uis?.some((form) => form.nodes.some(nodeHasErrors))
+      node.control?.uis?.some((ui) => ui.nodes.some(nodeHasErrors))
     );
   }
 

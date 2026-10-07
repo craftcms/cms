@@ -137,7 +137,7 @@ it('re-keys rename errors onto the field that posts them', function () {
     $asset = Asset::find()->id($this->asset->id)->one();
     $asset->errors()->add('newLocation', '“exe” is not an allowed file extension.');
 
-    expect($asset->formErrors())
+    expect($asset->uiErrors())
         ->not->toHaveKey('newLocation')
         ->toHaveKey('newFilename');
 });

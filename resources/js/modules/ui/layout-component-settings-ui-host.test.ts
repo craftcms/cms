@@ -84,7 +84,7 @@ it('renders action controls into the field’s actions slot', async () => {
   expect(checkbox?.getAttribute('name')).toBe('settings[labelHidden]');
 });
 
-it('returns settings values unwrapped from the form scope', async () => {
+it('returns settings values unwrapped from the UI scope', async () => {
   const host = mountHost();
   await nextTick();
 
@@ -94,7 +94,7 @@ it('returns settings values unwrapped from the form scope', async () => {
   });
 });
 
-it('prefixes assigned errors with the form scope', async () => {
+it('prefixes assigned errors with the UI scope', async () => {
   const host = mountHost();
   await nextTick();
 

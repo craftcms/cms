@@ -973,7 +973,7 @@ JS,
     }
 
     /**
-     * Returns the element's validation errors keyed the way the editor's Forms
+     * Returns the element's validation errors keyed the way the editor's UIs
      * address them.
      *
      * A Ui matches errors to Controls by path, so an attribute validated
@@ -983,7 +983,7 @@ JS,
      *
      * @return array<string, list<string>>
      */
-    public function formErrors(): array
+    public function uiErrors(): array
     {
         return $this->errors()->getMessages();
     }

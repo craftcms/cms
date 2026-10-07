@@ -59,7 +59,7 @@ readonly class ElementSourceUi
     public function payload(string $elementType, array $source, array $values = [], bool $isNew = false): UiPayload
     {
         if (! isset($source['key']) || $source['key'] === '') {
-            throw new InvalidArgumentException('Element source Forms require a source key.');
+            throw new InvalidArgumentException('Element source UIs require a source key.');
         }
 
         $key = (string) $source['key'];
@@ -387,7 +387,7 @@ readonly class ElementSourceUi
         return [
             'label' => $source['label'] ?? '',
             // Never seed an empty condition: the builder only re-reports its
-            // value once someone edits it, so an untouched Form must post back
+            // value once someone edits it, so an untouched UI must post back
             // a config that already carries its class.
             'condition' => $source['condition'] ?? $elementType::createCondition()->getConfig(),
             'sites' => $this->seedScope($source, 'sites'),

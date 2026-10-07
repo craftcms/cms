@@ -501,7 +501,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         // Each setting is its own overridable chunk, mirroring the blocks Craft 5
         // exposed from `elementfieldsettings.twig`. Nulls are filtered out, so a
-        // subclass can drop or reorder settings without reimplementing the Form.
+        // subclass can drop or reorder settings without reimplementing the UI.
         return Ui::make(array_values(array_filter([
             $this->sourcesField(),
             $this->selectionConditionField(),

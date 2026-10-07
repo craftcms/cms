@@ -246,7 +246,7 @@ class EditElementController
                     $canSave,
                     $response,
                     $containerId,
-                    fn (?string $form) => $this->editorContent($element, $canSave, $form),
+                    fn (?string $uiHtml) => $this->editorContent($element, $canSave, $uiHtml),
                     fn () => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn () => [
                         'additionalSites' => $addlEditableSites,
@@ -777,9 +777,9 @@ JS, [
         $element->prepareEditScreen($response, $containerId);
     }
 
-    private function editorContent(ElementInterface $element, bool $canSave, ?string $form): string
+    private function editorContent(ElementInterface $element, bool $canSave, ?string $uiHtml): string
     {
-        event($event = new ElementEditorContentResolving($element, $form ?? '', ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $uiHtml ?? '', ! $canSave));
 
         return trim($event->html);
     }

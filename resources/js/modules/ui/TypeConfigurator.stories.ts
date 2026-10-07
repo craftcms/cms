@@ -76,7 +76,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Combines a type picker with the dynamic form for configuring the selected type.',
+          'Combines a type picker with the dynamic UI for configuring the selected type.',
       },
     },
   },
@@ -94,11 +94,11 @@ function render(initialType = 'user-review') {
         () =>
           types.find((type) => type.value === selectedType.value)?.label ?? ''
       );
-      const form = computed(() =>
+      const ui = computed(() =>
         selectedType.value === 'user-review' ? userReviewUi : null
       );
 
-      return {args, form, selectedType, selectedTypeLabel, types};
+      return {args, ui, selectedType, selectedTypeLabel, types};
     },
     template: `
       <TypeConfigurator
@@ -106,7 +106,7 @@ function render(initialType = 'user-review') {
         :key="selectedType"
         :types="types"
         :selected-type-label="selectedTypeLabel"
-        :ui="form"
+        :ui="ui"
         @select="selectedType = $event"
       />
     `,

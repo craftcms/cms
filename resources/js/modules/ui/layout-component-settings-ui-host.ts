@@ -95,7 +95,7 @@ export function defineLayoutComponentSettingsUiHost(
         this.#app = null;
       }
 
-      /** The settings values, relative to the component (not the form scope). */
+      /** The settings values, relative to the component (not the UI scope). */
       currentValues(): UiValues {
         const values = this.#renderer.value?.currentValues() ?? {};
         const settings = values.settings;

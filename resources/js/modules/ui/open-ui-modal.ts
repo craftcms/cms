@@ -12,7 +12,7 @@ export interface UiModalOptions {
 }
 
 /**
- * Opens a server-built form in a detached Vue app with registered CP controls.
+ * Opens a server-built UI in a detached Vue app with registered CP controls.
  * The app, host, and registry installation are removed on close or submission.
  */
 export async function openUiModal({

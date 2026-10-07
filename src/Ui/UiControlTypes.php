@@ -45,7 +45,7 @@ use CraftCms\Cms\Ui\Controls\UserGroupSelect;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
- * Registers Control type classes available to Control Panel Forms.
+ * Registers Control type classes available to Control Panel UIs.
  *
  * @extends TypeRegistry<Control>
  *

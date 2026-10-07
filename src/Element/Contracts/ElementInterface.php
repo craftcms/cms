@@ -1623,7 +1623,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function sidebarUi(UiContext $context = new UiContext): ?Ui;
 
     /**
-     * Returns the element's validation errors keyed the way the editor's Forms
+     * Returns the element's validation errors keyed the way the editor's UIs
      * address them.
      *
      * A Ui matches errors to Controls by path, so an attribute validated
@@ -1632,7 +1632,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @return array<string, list<string>>
      */
-    public function formErrors(): array;
+    public function uiErrors(): array;
 
     /**
      * Returns element metadata that should be shown within the editor sidebar.

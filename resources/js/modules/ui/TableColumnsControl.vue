@@ -99,8 +99,8 @@
     },
   }));
   const settingsUi = computed(() =>
-    props.control.uis?.find((form) =>
-      pathsMatch(form.scope, [...props.control.path, activeColumn.value ?? ''])
+    props.control.uis?.find((ui) =>
+      pathsMatch(ui.scope, [...props.control.path, activeColumn.value ?? ''])
     )
   );
   const settingsNodes = computed(
@@ -115,14 +115,14 @@
     () =>
       new Set(
         props.control.uis
-          ?.filter((form) =>
-            rowFields(form.nodes).some(
+          ?.filter((ui) =>
+            rowFields(ui.nodes).some(
               (node) =>
                 node.control &&
                 !metadataProperties.includes(node.control.path.at(-1) ?? '')
             )
           )
-          .map((form) => form.scope.at(-1))
+          .map((ui) => ui.scope.at(-1))
       )
   );
   const renderedSettingPaths = computed(() =>

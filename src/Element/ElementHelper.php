@@ -475,7 +475,7 @@ class ElementHelper
      * posting whichever UUIDs it was originally rendered with, and the nested element
      * fields map those back to the duplicates on the way in — so what gets rendered back
      * out has to keep speaking canonical UUIDs too. Otherwise the browser can't match a
-     * re-rendered nested Form to the block it belongs to.
+     * re-rendered nested UI to the block it belongs to.
      *
      * @param  list<ElementInterface>  $elements
      * @return list<string> The identities, in the same order as `$elements`

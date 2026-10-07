@@ -23,7 +23,7 @@ use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
- * Registers Node type classes available to Control Panel Forms.
+ * Registers Node type classes available to Control Panel UIs.
  *
  * @extends TypeRegistry<Node>
  *

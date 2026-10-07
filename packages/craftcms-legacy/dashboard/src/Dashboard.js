@@ -66,14 +66,14 @@ import './dashboard.scss';
     },
 
     getSettingsUi: function (type, namespace) {
-      const form = this.getTypeInfo(type, 'settingsUi', null);
+      const ui = this.getTypeInfo(type, 'settingsUi', null);
 
-      if (!form) {
+      if (!ui) {
         return null;
       }
 
       return JSON.parse(
-        JSON.stringify(form).replaceAll('__NAMESPACE__', namespace)
+        JSON.stringify(ui).replaceAll('__NAMESPACE__', namespace)
       );
     },
 

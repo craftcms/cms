@@ -820,7 +820,7 @@ class ElementEditViewModel extends ViewModel
             $this->element,
             new UiContext(
                 namespace: [],
-                errors: $this->element->formErrors(),
+                errors: $this->element->uiErrors(),
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
@@ -858,7 +858,7 @@ class ElementEditViewModel extends ViewModel
     {
         return new UiContext(
             namespace: [],
-            errors: $this->element->formErrors(),
+            errors: $this->element->uiErrors(),
             mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
         );
     }

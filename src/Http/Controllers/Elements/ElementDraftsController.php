@@ -249,7 +249,7 @@ class ElementDraftsController
      * from the handful of loose keys the response has always carried.
      *
      * Nested under its own key rather than merged in: the legacy element editor
-     * reads this response too, and several of its keys (`form`,
+     * reads this response too, and several of its keys (`ui`,
      * `previewTargets`) mean something different there.
      *
      * `ui` is dropped — the compiled layout is already on the response at the
