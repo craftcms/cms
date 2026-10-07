@@ -171,24 +171,31 @@ describe('Vue table rows', () => {
     expect(referencedText(input, 'aria-labelledby')).toContain('Required');
   });
 
-  it('keeps new static row identities unique after an earlier row is deleted', async () => {
-    const {mutation} = await mountTable(false, undefined, {includeRowId: true});
-    button('Add a row').click();
-    await settle();
-    const firstId = new FormData(form).get('rows[2][rowId]');
-    button('Delete row 1').click();
-    await settle();
-    button('Add a row').click();
-    await settle();
+  it.each([
+    {includeRowId: true, field: 'rowId'},
+    {includeRowId: 'uid', field: 'uid'},
+  ])(
+    'keeps new $field identities unique after an earlier row is deleted',
+    async ({includeRowId, field}) => {
+      const {mutation} = await mountTable(false, undefined, {includeRowId});
+      button('Add a row').click();
+      await settle();
+      const firstId = new FormData(form).get(`rows[2][${field}]`);
+      expect(firstId).toEqual(expect.any(String));
+      button('Delete row 1').click();
+      await settle();
+      button('Add a row').click();
+      await settle();
 
-    const submitted = new FormData(form);
-    expect(submitted.get('rows[1][rowId]')).toBe(firstId);
-    expect(submitted.get('rows[2][rowId]')).not.toBe(firstId);
-    expect((mutation.value.rows as FormValues[])[1]!.rowId).toBe(firstId);
-    reorder(2, 'up');
-    await settle();
-    expect(new FormData(form).get('rows[2][rowId]')).toBe(firstId);
-  });
+      const submitted = new FormData(form);
+      expect(submitted.get(`rows[1][${field}]`)).toBe(firstId);
+      expect(submitted.get(`rows[2][${field}]`)).not.toBe(firstId);
+      expect((mutation.value.rows as FormValues[])[1]![field]).toBe(firstId);
+      reorder(2, 'up');
+      await settle();
+      expect(new FormData(form).get(`rows[2][${field}]`)).toBe(firstId);
+    }
+  );
 
   it('keeps edits made during submission unsaved until their own save completes', async () => {
     const {mutation, inertiaForm, advanceBaseline} = await mountTable();

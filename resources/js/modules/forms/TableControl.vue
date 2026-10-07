@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, inject, nextTick, onMounted, ref} from 'vue';
@@ -58,6 +59,11 @@
   );
   const autopopulation = useAutopopulation();
   const columns = computed(() => Object.entries(props.control.props.columns));
+  const rowIdField = computed(() =>
+    typeof props.control.props.includeRowId === 'string'
+      ? props.control.props.includeRowId
+      : 'rowId'
+  );
   const autopopulations = computed(() =>
     columns.value.flatMap(([key, column]) => {
       if (!column.autopopulate) return [];
@@ -143,7 +149,10 @@
     }
     const row = createRow(value);
     row.form = props.control.props.rowTemplate;
-    if (props.control.props.includeRowId) row.value.rowId = row.id;
+    const {includeRowId} = props.control.props;
+    if (includeRowId) {
+      row.value[rowIdField.value] = row.id;
+    }
     rows.value.push(row);
     return row;
   }
@@ -428,6 +437,9 @@
             >
               {{ column.heading ?? column.label ?? key }}
               <span v-if="column.required">({{ t('Required') }})</span>
+              <craft-info-icon v-if="column.infoHtml" .disabled="!editable">
+                <span v-html="column.infoHtml" />
+              </craft-info-icon>
             </th>
             <th
               v-if="
@@ -478,11 +490,12 @@
                 v-if="
                   editable &&
                   control.props.includeRowId &&
+                  !control.props.columns[rowIdField] &&
                   key === columns[0]?.[0]
                 "
                 type="hidden"
-                :name="inputName([...control.path, rowKey(index), 'rowId'])"
-                :value="row.value.rowId ?? row.key"
+                :name="inputName([...control.path, rowKey(index), rowIdField])"
+                :value="row.value[rowIdField] ?? row.key"
               />
               <TableCell
                 v-if="fieldFor(fields, key)"

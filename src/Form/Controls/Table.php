@@ -44,7 +44,7 @@ class Table extends Control
 
     private ?string $addRowLabel = null;
 
-    private bool $includeRowId = false;
+    private bool|string $includeRowId = false;
 
     /** @var array<string, mixed> */
     private array $defaultValues = [];
@@ -141,7 +141,8 @@ class Table extends Control
         return $this;
     }
 
-    public function includeRowId(bool $include = true): static
+    /** Includes new row UUIDs under `rowId` or the given field name. */
+    public function includeRowId(bool|string $include = true): static
     {
         $this->includeRowId = $include;
 
