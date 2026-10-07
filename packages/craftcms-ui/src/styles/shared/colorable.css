@@ -324,12 +324,8 @@
   --c-color-neutral-fill-quiet: var(--color-slate-50);
   --c-color-neutral-fill-normal: var(--color-slate-100);
   --c-color-neutral-fill-loud: var(--color-slate-600);
-  --c-color-neutral-border-quiet: color-mix(
-    in srgb,
-    var(--color-slate-400),
-    transparent var(--c-color-border-quiet-transparency)
-  );
-  --c-color-neutral-border-normal: var(--color-slate-600);
+  --c-color-neutral-border-quiet: var(--color-slate-200);
+  --c-color-neutral-border-normal: var(--color-slate-400);
   --c-color-neutral-border-loud: var(--color-slate-800);
   --c-color-neutral-on-quiet: var(--color-slate-800);
   --c-color-neutral-on-normal: var(--color-slate-950);
