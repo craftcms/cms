@@ -84,7 +84,7 @@ function matrixControlSortOrder(EntryElement $owner): array
 }
 
 /** @return list<string> */
-function matrixControlFormScopes(EntryElement $owner): array
+function matrixControlUiScopes(EntryElement $owner): array
 {
     /** @var Matrix $field */
     $field = app(Fields::class)->getFieldByHandle('matrixField');
@@ -132,19 +132,19 @@ it('keeps Matrix block identities stable when a provisional draft duplicates the
 
     // The blocks were duplicated as drafts of their own, which gave them new
     // element UUIDs — but the UI the browser gets back has to keep speaking
-    // the identities the browser posted, or its blocks lose their nested Forms.
+    // the identities the browser posted, or its blocks lose their nested UIs.
     expect(matrixControlSortOrder($draft))->toBe($blockUids)
-        ->and(matrixControlFormScopes($draft))->toBe($blockUids);
+        ->and(matrixControlUiScopes($draft))->toBe($blockUids);
 
     // …and again once the draft is reloaded from the database.
     /** @var EntryElement $reloaded */
     $reloaded = entryQuery()->draftId($draft->draftId)->provisionalDrafts()->status(null)->one();
 
     expect(matrixControlSortOrder($reloaded))->toBe($blockUids)
-        ->and(matrixControlFormScopes($reloaded))->toBe($blockUids);
+        ->and(matrixControlUiScopes($reloaded))->toBe($blockUids);
 });
 
-it('returns a save-draft Form that still identifies the posted Matrix blocks', function () {
+it('returns a save-draft UI that still identifies the posted Matrix blocks', function () {
     actingAs(User::findOne());
 
     [$entry, $blockUids, $matrixEntryType] = matrixIdentityFixture();
@@ -176,11 +176,11 @@ it('returns a save-draft Form that still identifies the posted Matrix blocks', f
         ],
     ])->assertOk();
 
-    // The browser renders its blocks from the Form's values and looks their nested Forms up by
-    // the same identities — anything the response renames is a block it strands without a Form.
+    // The browser renders its blocks from the UI's values and looks their nested UIs up by
+    // the same identities — anything the response renames is a block it strands without a UI.
     expect($response->json('ui.values.fields.matrixField.sortOrder'))->toBe($blockUids)
         ->and(array_keys($response->json('ui.values.fields.matrixField.entries')))->toBe($blockUids)
-        ->and(matrixNestedFormScopes($response->json('ui.nodes')))->toBe(array_map(
+        ->and(matrixNestedUiScopes($response->json('ui.nodes')))->toBe(array_map(
             fn (string $uid): array => ['fields', 'matrixField', 'entries', $uid],
             $blockUids,
         ));
@@ -190,7 +190,7 @@ it('returns a save-draft Form that still identifies the posted Matrix blocks', f
  * @param  list<array<string, mixed>>  $nodes
  * @return list<list<string>>
  */
-function matrixNestedFormScopes(array $nodes): array
+function matrixNestedUiScopes(array $nodes): array
 {
     $scopes = [];
 
@@ -199,7 +199,7 @@ function matrixNestedFormScopes(array $nodes): array
             $scopes[] = $ui['scope'];
         }
 
-        $scopes = [...$scopes, ...matrixNestedFormScopes($node['children'] ?? [])];
+        $scopes = [...$scopes, ...matrixNestedUiScopes($node['children'] ?? [])];
     }
 
     return $scopes;

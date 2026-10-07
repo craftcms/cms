@@ -2257,7 +2257,7 @@ JS, [
                         ->selectionLabel(t('Choose'))
                         ->showSiteMenu()
                         ->limit(1)
-                        ->value(array_filter([$this->parentIdForForm()]))
+                        ->value(array_filter([$this->parentIdForUi()]))
                         ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
                 );
         }
@@ -2335,7 +2335,7 @@ JS, [
      * The entry's current parent id, resolved the same way the legacy Parent
      * meta field resolves it.
      */
-    private function parentIdForForm(): ?int
+    private function parentIdForUi(): ?int
     {
         if ($parentId = $this->getParentId()) {
             return $parentId;

@@ -19,7 +19,7 @@ use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 
-it('declares the replacement Form operations on their public contracts', function () {
+it('declares the replacement UI operations on their public contracts', function () {
     $settingsUi = new ReflectionMethod(ConfigurableComponentInterface::class, 'settingsUi');
     $uiControl = new ReflectionMethod(FieldInterface::class, 'uiControl');
     $uiNode = new ReflectionMethod(FieldLayoutElement::class, 'uiNode');
