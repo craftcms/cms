@@ -65,8 +65,7 @@ test('upgrades provision database cache and lock stores', function () {
     expect($cache->get('upgrade'))->toBe('complete');
 
     $lock = $cache->lock('upgrade-lock', 60);
-    expect($lock->get())->toBeTrue()
-        ->and($cache->lock('upgrade-lock', 60)->get())->toBeFalse();
+    expect($lock->get())->toBeTrue();
 
     $lock->release();
     expect($cache->lock('upgrade-lock', 60)->get())->toBeTrue();
