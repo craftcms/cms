@@ -70,7 +70,13 @@ export async function appendElementHtml(
           ? waitForScript(node, asset.value)
           : null;
 
-      parent.insertBefore(node, before);
+      // `insertBefore(node, null)` appends, but going through `appendChild`
+      // keeps the primitive every caller without a marker already used.
+      if (before) {
+        parent.insertBefore(node, before);
+      } else {
+        parent.appendChild(node);
+      }
 
       if (
         asset &&
