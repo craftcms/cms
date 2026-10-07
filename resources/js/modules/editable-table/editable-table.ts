@@ -702,11 +702,11 @@ export class EditableTable extends Base<EditableTableSettings> {
             // New rows may start with an empty string rather than {value, locale}.
             const moneyValue =
               value instanceof Object && !Array.isArray(value)
-                ? ((value as Record<string, unknown>).value ?? null)
-                : (value ?? null);
+                ? ((value as {value?: string | number | null}).value ?? null)
+                : ((value as string | number | null) ?? null);
             const moneyLocale =
               (value instanceof Object && !Array.isArray(value)
-                ? (value as Record<string, unknown>).locale
+                ? (value as {locale?: string}).locale
                 : undefined) ??
               col.locale ??
               'en-US';
@@ -714,6 +714,8 @@ export class EditableTable extends Base<EditableTableSettings> {
               'craft-input-money'
             ) as CraftInputMoney;
             money.name = `${name}[value]`;
+            money.label = col.heading ?? colId;
+            money.setAttribute('label-sr-only', '');
             money.modelValue = moneyValue === null ? '' : String(moneyValue);
             money.currency = col.currency ?? 'USD';
             money.locale = String(moneyLocale);
@@ -786,12 +788,15 @@ export class EditableTable extends Base<EditableTableSettings> {
                       ? {
                           type: 'optgroup',
                           label: option.label ?? '',
-                          options: option.options.map((groupedOption) => ({
-                            label:
-                              groupedOption.label ??
-                              String(groupedOption.value ?? ''),
-                            value: String(groupedOption.value ?? ''),
-                          })),
+                          options: option.options.map((groupedOption) => {
+                            const value = String(
+                              (groupedOption.value as
+                                | string
+                                | number
+                                | undefined) ?? ''
+                            );
+                            return {label: groupedOption.label ?? value, value};
+                          }),
                         }
                       : {
                           label: option.label ?? String(option.value ?? ''),
