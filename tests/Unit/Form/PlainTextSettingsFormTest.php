@@ -217,7 +217,7 @@ it('uses the payload renderer for the production Plain Text PHP settings form', 
         app(UiResolver::class)->resolve($field->settingsUi($readOnlyContext), $readOnlyContext),
     ));
 
-    expect($editable->filter('[data-form-node="plain-text-field-limit"]'))->toHaveCount(1)
+    expect($editable->filter('[data-ui-node="plain-text-field-limit"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="placeholder"][value="Production value"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="fieldLimit"][aria-invalid="true"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="initialRows"]'))->toHaveCount(0)

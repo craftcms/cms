@@ -1,17 +1,17 @@
-import type {FormChange, FormPayload} from '@/modules/forms/types';
+import type {UiChange, UiPayload} from '@/modules/ui/types';
 import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
-  change?: (change: FormChange, values: FormPayload['values']) => void;
+  change?: (change: UiChange, values: UiPayload['values']) => void;
   setValue: ReturnType<typeof vi.fn>;
 }>(() => ({
   change: undefined,
   setValue: vi.fn(),
 }));
 
-vi.mock('@/pages/Form.vue', async () => {
+vi.mock('@/pages/Ui.vue', async () => {
   const {defineComponent, h} = await import('vue');
 
   return {
@@ -47,7 +47,7 @@ const values = {
     },
   },
 };
-const form: FormPayload = {
+const form: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],

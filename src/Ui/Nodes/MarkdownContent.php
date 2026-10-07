@@ -38,7 +38,7 @@ class MarkdownContent implements Node
                 $node->props['displayInPane'] ? 'pane' : null,
                 "width-{$node->props['width']}",
             ]),
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
         ]);
     }
 

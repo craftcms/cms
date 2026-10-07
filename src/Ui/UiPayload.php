@@ -79,7 +79,7 @@ readonly class UiPayload implements JsonSerializable
     private function findNestedUi(array $nodes, array $scope): ?NestedUiPayload
     {
         foreach ($nodes as $node) {
-            foreach ($node->control->forms ?? [] as $form) {
+            foreach ($node->control->uis ?? [] as $form) {
                 if ($form->scope === $scope) {
                     return $form;
                 }

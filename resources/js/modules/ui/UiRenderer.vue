@@ -1,0 +1,696 @@
+<script setup lang="ts">
+  import {
+    computed,
+    nextTick,
+    onErrorCaptured,
+    onBeforeUnmount,
+    provide,
+    reactive,
+    ref,
+    shallowRef,
+    toRaw,
+    useSlots,
+    watch,
+  } from 'vue';
+  import {useEventListener} from '@vueuse/core';
+  import UiNodeList from './UiNodeList.vue';
+  import {
+    canonical,
+    UiFailure,
+    UiControlStructure,
+    UiControlBehaviors,
+    type UiControlBehavior,
+    UiPending,
+    UiErrors,
+    UiControlOverrides,
+    UiChangedPaths,
+    UiModifiedGroups,
+    UiRefreshingFields,
+    isRecord,
+    pathsMatch,
+    setValue as setPathValue,
+    unsetValue,
+    valueAt,
+    visitControls,
+  } from './runtime';
+  import {useUiValueGroup} from './uiValueGroup';
+  import type {
+    UiChange,
+    UiChangeKind,
+    UiControlPayload,
+    UiNodePayload,
+    UiPayload,
+    UiValue,
+    UiValues,
+    NestedUiPayload,
+  } from './types';
+
+  const props = defineProps<{
+    payload: UiPayload;
+    disabled?: boolean;
+    refresh?: (
+      values: UiPayload['values'],
+      scope?: string[]
+    ) => Promise<UiPayload>;
+    errors?: UiPayload['errors'];
+    /** Delta groups the server reports as modified, as dotted paths. */
+    modified?: string[];
+  }>();
+  const emit = defineEmits<{
+    (
+      event: 'update:mutation',
+      mutation: UiPayload['values'],
+      kind: UiChangeKind
+    ): void;
+    (event: 'change', change: UiChange, values: UiPayload['values']): void;
+    (event: 'update:payload', payload: UiPayload): void;
+  }>();
+  const slots = useSlots();
+  const payload = shallowRef(props.payload);
+  const nodes = computed(() => {
+    if (!props.disabled) return payload.value.nodes;
+
+    const nodes = cloneRaw(payload.value.nodes);
+    visitControls(nodes, (control) =>
+      Object.assign(control, {mode: 'disabled'})
+    );
+
+    return nodes;
+  });
+
+  const root = ref<HTMLElement>();
+  const renderError = ref<string>();
+  const hostForm = computed(() => root.value?.closest('form'));
+  const values = reactive(cloneRaw(props.payload.values));
+  const unregisterValueSource = useUiValueGroup()?.register(values);
+  let baseline = cloneRaw(props.payload.values);
+  const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const refreshVersions = new Map<string, number>();
+  const activeRefreshes = new Map<string, {field: string; request: number}>();
+  const refreshingFields = reactive(new Set<string>());
+  const lastRefreshValues = new Map([
+    [
+      JSON.stringify(props.payload.scope),
+      canonical(valueAt(values, props.payload.scope)),
+    ],
+  ]);
+  const knownControls = new Map<string, UiControlPayload>();
+  const touchedPaths = new Set<string>();
+  /**
+   * Dotted paths changed since the last explicit save or reset. Nested fields
+   * use these to mark changes not yet reported by the server.
+   */
+  const changedPaths = ref(new Set<string>());
+  const controlBehaviors = reactive(
+    new Map<string, {path: string[]; behavior: UiControlBehavior}>()
+  );
+  const nativeSubmitting = ref(false);
+  const submitting = ref(false);
+  let submittedValues: UiValues | undefined;
+  const clearedErrorScopes = reactive(new Map<string, string[]>());
+  const effectiveErrors = computed(() =>
+    (props.errors ?? payload.value.errors).filter(
+      (error) =>
+        ![...clearedErrorScopes.values()].some(
+          (scope) =>
+            error.path.length > scope.length && isWithin(error.path, scope)
+        )
+    )
+  );
+  rememberControls(props.payload.nodes);
+  provide(UiFailure, invalidate);
+  provide(UiControlStructure, synchronizeStructure);
+  provide(UiControlBehaviors, registerControlBehavior);
+  provide(
+    UiPending,
+    computed(() =>
+      Boolean(
+        props.disabled ||
+        nativeSubmitting.value ||
+        submitting.value ||
+        refreshingFields.size
+      )
+    )
+  );
+  provide(UiErrors, {
+    clearChildren: (path) =>
+      clearedErrorScopes.set(JSON.stringify(path), [...path]),
+    childrenCleared: (path) => clearedErrorScopes.has(JSON.stringify(path)),
+  });
+  provide(UiControlOverrides, slots);
+  provide(
+    UiModifiedGroups,
+    computed(() => new Set(props.modified ?? []))
+  );
+  provide(UiChangedPaths, changedPaths);
+  provide(
+    UiRefreshingFields,
+    computed(() => refreshingFields)
+  );
+
+  useEventListener(hostForm, 'submit', (event) => {
+    nativeSubmitting.value = true;
+    queueMicrotask(() => {
+      if (event.defaultPrevented) nativeSubmitting.value = false;
+    });
+    if (renderError.value) {
+      event.preventDefault();
+    }
+  });
+
+  onErrorCaptured((error) => {
+    invalidate(error instanceof Error ? error.message : String(error));
+
+    return false;
+  });
+
+  watch(
+    () => props.payload,
+    (refreshed) => reconcile(refreshed)
+  );
+
+  watch(
+    () => props.errors,
+    () => {
+      clearedErrorScopes.clear();
+    },
+    {flush: 'sync'}
+  );
+
+  watch(
+    () => props.disabled,
+    () => emitMutation()
+  );
+  onBeforeUnmount(() => {
+    refreshTimers.forEach(clearTimeout);
+    unregisterValueSource?.();
+  });
+
+  function onControlChange(change: UiChange): void {
+    recordChange(change);
+    emit('change', change, currentValues());
+  }
+
+  function recordChange(change: UiChange): void {
+    if (change.control && pathsMatch(change.control.path, change.path)) {
+      visitControls(payload.value.nodes, (control) => {
+        if (pathsMatch(control.path, change.path)) {
+          Object.assign(control, change.control);
+        }
+      });
+      rememberControls(payload.value.nodes);
+      emit('update:payload', payload.value);
+    }
+
+    touchedPaths.add(JSON.stringify(change.path));
+
+    // A control can report a change that leaves its value where it started —
+    // rewriting an input's value on reset makes it re-emit, for one. That isn't
+    // a change, and recording it would badge a field nobody touched.
+    if (
+      canonical(valueAt(values, change.path)) !==
+      canonical(valueAt(baseline, change.path))
+    ) {
+      changedPaths.value.add(change.path.join('.'));
+    }
+    emitMutation(change.kind);
+
+    const scope = change.scope ?? payload.value.scope;
+    const key = JSON.stringify(scope);
+
+    if (props.disabled || !props.refresh || !change.refreshable) {
+      return;
+    }
+
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
+    clearTimeout(refreshTimers.get(key));
+
+    if (change.kind === 'discrete') {
+      void requestRefresh(scope, change.path);
+
+      return;
+    }
+
+    refreshTimers.set(
+      key,
+      setTimeout(() => requestRefresh(scope, change.path), 1000)
+    );
+  }
+
+  async function requestRefresh(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<void> {
+    if (props.disabled) return;
+
+    const snapshot = cloneRaw(valueAt(values, scope));
+
+    if (!isRecord(snapshot)) {
+      throw new Error(`UI scope [${scope.join('.')}] must contain an object.`);
+    }
+
+    const key = JSON.stringify(scope);
+    const serialized = groupCanonical(snapshot, scope);
+
+    if (serialized === lastRefreshValues.get(key)) {
+      return;
+    }
+
+    lastRefreshValues.set(key, serialized);
+    const request = (refreshVersions.get(key) ?? 0) + 1;
+    refreshVersions.set(key, request);
+    const field = JSON.stringify(fieldPath);
+    const activeRefresh = activeRefreshes.get(key);
+
+    if (activeRefresh) {
+      refreshingFields.delete(activeRefresh.field);
+    }
+
+    activeRefreshes.set(key, {field, request});
+    refreshingFields.add(field);
+
+    try {
+      const refreshed = await props.refresh!(snapshot, scope);
+
+      if (request === refreshVersions.get(key)) {
+        reconcile(refreshed, scope);
+      }
+    } catch {
+      lastRefreshValues.delete(key);
+      // The current presentation and values are already the last valid state.
+    } finally {
+      if (activeRefreshes.get(key)?.request === request) {
+        activeRefreshes.delete(key);
+        refreshingFields.delete(field);
+      }
+    }
+  }
+
+  function reconcile(
+    refreshed: UiPayload,
+    scope: string[] = payload.value.scope
+  ): void {
+    if (!pathsMatch(refreshed.scope, scope)) {
+      throw new Error(
+        `Refreshed UI scope [${refreshed.scope.join('.')}] does not match [${scope.join('.')}].`
+      );
+    }
+
+    if (!props.errors) {
+      for (const [key, path] of clearedErrorScopes) {
+        if (isWithin(path, scope)) clearedErrorScopes.delete(key);
+      }
+    }
+    renderError.value = undefined;
+    const focusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : undefined;
+    const focusedPath = focusedElement?.closest<HTMLElement>(
+      '[data-ui-control-path]'
+    )?.dataset.uiControlPath;
+
+    mergeMissing(values, refreshed.values);
+    rememberControls(refreshed.nodes);
+    visitControls(refreshed.nodes, (control) => {
+      if (control.mode !== 'editable') {
+        setPathValue(
+          values,
+          control.path,
+          valueAt(refreshed.values, control.path)
+        );
+      }
+    });
+    if (pathsMatch(scope, payload.value.scope)) {
+      payload.value = refreshed;
+    } else {
+      const current = cloneRaw(payload.value);
+      const nested = findNestedUi(current.nodes, scope);
+
+      if (!nested) {
+        throw new Error(
+          `Refreshed UI scope [${scope.join('.')}] was not found.`
+        );
+      }
+
+      nested.nodes = refreshed.nodes;
+      nested.refreshable = refreshed.refreshable;
+      payload.value = {
+        ...current,
+        errors: [
+          ...current.errors.filter((error) => !isWithin(error.path, scope)),
+          ...refreshed.errors,
+        ],
+      };
+    }
+    emit('update:payload', payload.value);
+    emitMutation();
+
+    if (focusedPath) {
+      nextTick(() => {
+        const control = [
+          ...document.querySelectorAll<HTMLElement>('[data-ui-control-path]'),
+        ].find((element) => element.dataset.uiControlPath === focusedPath);
+        const focusTarget = focusedElement?.isConnected
+          ? focusedElement
+          : control?.hasAttribute('data-ui-control-override')
+            ? control.querySelector<HTMLElement>(
+                'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
+              )
+            : control;
+
+        focusTarget?.focus();
+      });
+    }
+  }
+
+  /**
+   * Throws away the unsaved values and seeds the UI again from `source` —
+   * the payload the props already carry, unless one is passed.
+   *
+   * The mirror image of {@link reconcile}, which merges a refreshed payload
+   * *under* what the client is holding because the client owns unsaved values.
+   * That contract describes a refresh; it stops applying the moment the user
+   * asks for those values to be thrown away — discarding a provisional draft,
+   * say — and only the host knows that has happened, so it has to say so.
+   *
+   * Leaves the UI exactly as mounting it would have: nothing touched,
+   * nothing dirty, no refresh in flight.
+   */
+  function resetValues(source: UiPayload = props.payload): void {
+    renderError.value = undefined;
+    refreshTimers.forEach(clearTimeout);
+    refreshTimers.clear();
+    // Dropping the versions abandons any refresh still in flight: it was asked
+    // for with the values being discarded, so its answer describes them too.
+    refreshVersions.clear();
+    activeRefreshes.clear();
+    refreshingFields.clear();
+    lastRefreshValues.clear();
+    lastRefreshValues.set(
+      JSON.stringify(source.scope),
+      canonical(valueAt(source.values, source.scope))
+    );
+    nativeSubmitting.value = false;
+    submitting.value = false;
+    submittedValues = undefined;
+    clearedErrorScopes.clear();
+    touchedPaths.clear();
+    changedPaths.value.clear();
+    knownControls.clear();
+
+    // Replaced in place rather than reassigned: the reactive object is handed
+    // to every Control below, nested UI definitions included.
+    for (const key of Object.keys(values)) {
+      delete values[key];
+    }
+
+    Object.assign(values, cloneRaw(source.values));
+    baseline = cloneRaw(source.values);
+    payload.value = source;
+    rememberControls(source.nodes);
+    emit('update:payload', payload.value);
+    emitMutation();
+  }
+
+  function mutation(includeGroups: string[][] = []): UiPayload['values'] {
+    const included = new Set(includeGroups.map((path) => JSON.stringify(path)));
+    const groups = new Map<string, string[]>();
+    const editablePaths = new Set<string>();
+
+    visitControls(nodes.value, (control) => {
+      if (control.mode === 'editable') {
+        groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+        editablePaths.add(JSON.stringify(control.path));
+      }
+    });
+
+    const result: UiPayload['values'] = {};
+
+    for (const path of groups.values()) {
+      const current = groupValue(values, path, editablePaths);
+      const original = groupValue(baseline, path, editablePaths);
+
+      if (
+        included.has(JSON.stringify(path)) ||
+        groupCanonical(current, path) !== groupCanonical(original, path)
+      ) {
+        if (path.length === 0 && isRecord(current)) {
+          Object.assign(result, current);
+
+          continue;
+        }
+
+        setPathValue(result, path, current);
+      }
+    }
+
+    return result;
+  }
+
+  function emitMutation(kind: UiChangeKind = 'discrete'): void {
+    emit('update:mutation', mutation(), kind);
+  }
+
+  function invalidate(message: string): void {
+    renderError.value ??= message;
+  }
+
+  function advanceBaseline(): void {
+    baseline = submittedValues ?? cloneRaw(values);
+    submittedValues = undefined;
+    changedPaths.value = new Set(
+      [...changedPaths.value].filter((path) => {
+        const segments = path.split('.');
+        return (
+          groupCanonical(valueAt(values, segments), segments) !==
+          groupCanonical(valueAt(baseline, segments), segments)
+        );
+      })
+    );
+    emitMutation();
+  }
+
+  function currentValues(): UiPayload['values'] {
+    const groups = new Map<string, string[]>();
+    const controlPaths = new Set<string>();
+
+    visitControls(payload.value.nodes, (control) => {
+      groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      controlPaths.add(JSON.stringify(control.path));
+    });
+
+    const result: UiPayload['values'] = {};
+
+    for (const path of groups.values()) {
+      const value = groupValue(values, path, controlPaths);
+
+      if (path.length === 0 && isRecord(value)) {
+        Object.assign(result, value);
+
+        continue;
+      }
+
+      if (value !== undefined) {
+        setPathValue(result, path, value);
+      }
+    }
+
+    return result;
+  }
+
+  function setValue(
+    path: string[],
+    value: UiValue,
+    kind: UiChange['kind'] = 'discrete'
+  ): void {
+    setPathValue(values, path, value);
+    recordChange({kind, path});
+  }
+
+  defineExpose({
+    advanceBaseline,
+    setSubmitting,
+    currentValues,
+    mutation,
+    resetValues,
+    setValue,
+    canSubmit: () => !renderError.value,
+  });
+
+  function registerControlBehavior(
+    path: string[],
+    behavior: UiControlBehavior
+  ): () => void {
+    const key = JSON.stringify(path);
+    controlBehaviors.set(key, {path, behavior});
+    return () => controlBehaviors.delete(key);
+  }
+
+  function setSubmitting(value: boolean): void {
+    if (value && !submitting.value) submittedValues = cloneRaw(values);
+    submitting.value = value;
+  }
+
+  function synchronizeStructure(
+    control: Pick<UiControlPayload, 'path'>,
+    uis: NestedUiPayload[]
+  ): void {
+    if (
+      canonical(knownControls.get(JSON.stringify(control.path))?.uis ?? []) ===
+      canonical(uis)
+    ) {
+      return;
+    }
+
+    for (const [key, known] of knownControls) {
+      if (
+        known.path.length > control.path.length &&
+        isWithin(known.path, control.path)
+      ) {
+        knownControls.delete(key);
+      }
+    }
+    const current = cloneRaw(payload.value);
+    visitControls(current.nodes, (candidate) => {
+      if (pathsMatch(candidate.path, control.path)) candidate.uis = uis;
+    });
+    payload.value = current;
+    rememberControls(current.nodes);
+  }
+
+  function groupCanonical(value: UiValue, path: string[]): string {
+    const comparisons: UiValue[] = [];
+    for (const {path: controlPath, behavior} of controlBehaviors.values()) {
+      if (behavior.comparisonValue && isWithin(controlPath, path)) {
+        comparisons.push([
+          controlPath,
+          behavior.comparisonValue(
+            valueAt(value, controlPath.slice(path.length))
+          ),
+        ]);
+      }
+    }
+    return canonical([value, comparisons]);
+  }
+
+  function rememberControls(nodes: UiNodePayload[]): void {
+    visitControls(nodes, (control) =>
+      knownControls.set(JSON.stringify(control.path), control)
+    );
+  }
+
+  function findNestedUi(
+    nodes: UiNodePayload[],
+    scope: string[]
+  ): NonNullable<UiControlPayload['uis']>[number] | undefined {
+    for (const node of nodes) {
+      for (const form of node.control?.uis ?? []) {
+        if (pathsMatch(form.scope, scope)) {
+          return form;
+        }
+
+        const nested = findNestedUi(form.nodes, scope);
+
+        if (nested) {
+          return nested;
+        }
+      }
+
+      const nested = findNestedUi(node.children ?? [], scope);
+
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  function groupValue(
+    source: UiPayload['values'],
+    groupPath: string[],
+    editablePaths: Set<string>
+  ): UiValue {
+    const value = cloneRaw(valueAt(source, groupPath));
+
+    if (
+      knownControls.get(JSON.stringify(groupPath))?.omitNullValue &&
+      value == null
+    ) {
+      return undefined;
+    }
+
+    for (const [key, control] of knownControls) {
+      if (
+        (!editablePaths.has(key) ||
+          (control.omitNullValue && valueAt(source, control.path) == null)) &&
+        control.path
+          .slice(0, groupPath.length)
+          .every((segment, index) => segment === groupPath[index])
+      ) {
+        unsetValue(value, control.path.slice(groupPath.length));
+      }
+    }
+
+    return value;
+  }
+
+  function mergeMissing(target: UiValues, source: UiValues): void {
+    for (const [key, value] of Object.entries(source)) {
+      if (!(key in target)) {
+        target[key] = cloneRaw(value);
+
+        continue;
+      }
+
+      if (isRecord(target[key]) && isRecord(value)) {
+        mergeMissing(target[key], value);
+      }
+    }
+  }
+
+  function cloneRaw<T extends UiValue>(value: T): T {
+    // SAFETY: unwrap removes Vue proxies without changing the recursive value
+    // tree represented by T.
+    return structuredClone(unwrap(value)) as T;
+  }
+
+  function unwrap(value: UiValue): UiValue {
+    const raw = toRaw(value);
+
+    if (Array.isArray(raw)) {
+      return raw.map(unwrap);
+    }
+
+    if (isRecord(raw)) {
+      return Object.fromEntries(
+        Object.entries(raw).map(([key, value]) => [key, unwrap(value)])
+      );
+    }
+
+    return raw;
+  }
+
+  function isWithin(path: string[], scope: string[]): boolean {
+    return scope.every((segment, index) => path[index] === segment);
+  }
+</script>
+
+<template>
+  <!-- UI Renderer -->
+  <span ref="root" hidden></span>
+  <p v-if="renderError" role="alert">{{ renderError }}</p>
+  <template v-else>
+    <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
+      <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
+    </ul>
+    <UiNodeList
+      :nodes="nodes"
+      :values="values"
+      :errors="effectiveErrors"
+      :touched-paths="touchedPaths"
+      :scope="payload.scope"
+      :refreshable="payload.refreshable"
+      @change="onControlChange"
+    />
+  </template>
+</template>

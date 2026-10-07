@@ -36,7 +36,7 @@ it('renders sanitized non-interactive template content', function () {
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
-    expect($crawler->filter('[data-form-node="template-test"][inert].width-50'))->toHaveCount(1)
+    expect($crawler->filter('[data-ui-node="template-test"][inert].width-50'))->toHaveCount(1)
         ->and($crawler->filter('.template-content')->text())->toBe('Display only')
         ->and($crawler->filter('form, input, button, script'))->toHaveCount(0)
         ->and(HtmlStack::headHtml(false))->not->toContain('template-content')

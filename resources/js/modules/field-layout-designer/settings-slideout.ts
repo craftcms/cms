@@ -1,4 +1,4 @@
-import type {FormPayload, FormValues} from '@/modules/forms/types';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 export {canUseVueSlideout} from '@/common/slideouts';
@@ -7,21 +7,21 @@ export interface OpenLayoutSettingsOptions {
   title: string;
   triggerElement?: HTMLElement | null;
   /** Identifies the component being edited, for the refresh request. */
-  requestData: () => FormValues;
+  requestData: () => UiValues;
   /** Persists the settings. Rejects with the request error on a failure. */
-  apply: (values: FormValues) => Promise<void>;
+  apply: (values: UiValues) => Promise<void>;
 }
 
 interface LayoutSettingsResponse {
-  form: FormPayload;
+  form: UiPayload;
   headHtml?: string;
   bodyHtml?: string;
 }
 
 export interface LayoutSettingsContext {
-  payload: FormPayload;
-  requestData: () => FormValues;
-  apply: (values: FormValues) => Promise<void>;
+  payload: UiPayload;
+  requestData: () => UiValues;
+  apply: (values: UiValues) => Promise<void>;
 }
 
 const contexts = new Map<string, LayoutSettingsContext>();

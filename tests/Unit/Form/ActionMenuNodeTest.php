@@ -114,7 +114,7 @@ it('renders a craft-action-menu with declarative action items in the HTML fallba
     );
 
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
-    $menu = $crawler->filter('craft-field craft-action-menu[data-form-node="field-actions:label:menu"]');
+    $menu = $crawler->filter('craft-field craft-action-menu[data-ui-node="field-actions:label:menu"]');
     $item = $menu->filter('craft-action-item');
 
     expect($menu->count())->toBe(1)

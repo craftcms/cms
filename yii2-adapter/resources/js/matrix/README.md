@@ -11,7 +11,7 @@ the shared controller module pattern:
   collapse/expand with preview text and localStorage persistence, the block
   action menu, enable/disable/move/duplicate/copy/delete, and conditional
   field-layout updates (`elements/update-field-layout`). Form tabs are owned by
-  `FormRenderer`.
+  `UiRenderer`.
 - `support.ts` — `WeakMap` registries replacing the legacy
   `$container.data('matrix')` / `$container.data('entry')`.
 - `index.ts` — assigns `window.Craft.MatrixInput`

@@ -5,15 +5,15 @@
    *
    * Each source's settings are a Form payload built by
    * `ElementSourcesController::show()` and namespaced at `sources.<key>`, so a
-   * FormRenderer per source produces exactly the shape `store()` reads back.
+   * UiRenderer per source produces exactly the shape `store()` reads back.
    */
   import {computed, nextTick, ref, watch} from 'vue';
   import {actionClient, t, type ReorderMove} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import ModalForm from '@/common/components/ModalForm.vue';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormChange, FormPayload} from '@/modules/forms/types';
-  import {pathsMatch, valueAt, visitControls} from '@/modules/forms/runtime';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiChange, UiPayload} from '@/modules/ui/types';
+  import {pathsMatch, valueAt, visitControls} from '@/modules/ui/runtime';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
@@ -48,8 +48,8 @@
   }>();
 
   type Renderer = {
-    currentValues(): FormPayload['values'];
-    setValue(path: string[], value: FormPayload['values'][string]): void;
+    currentValues(): UiPayload['values'];
+    setValue(path: string[], value: UiPayload['values'][string]): void;
   };
 
   const {announce} = useAnnouncer();
@@ -76,7 +76,7 @@
    * worked on, so it's where the index lands after saving.
    */
   const lastEdited = ref<string | null>(null);
-  const errors = ref<Record<string, FormPayload['errors']>>({});
+  const errors = ref<Record<string, UiPayload['errors']>>({});
   const renderers = new Map<string, Renderer>();
 
   /**
@@ -214,7 +214,7 @@
   async function fetchForm(
     sourceKey: string,
     type: SourceType
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await actionClient.post(
       ElementSourcesController.form().url,
       {
@@ -242,8 +242,8 @@
    */
   function onChange(
     source: SourceRow,
-    change: FormChange,
-    values: FormPayload['values']
+    change: UiChange,
+    values: UiPayload['values']
   ): void {
     const leaf = change.path.at(-1);
 
@@ -288,9 +288,9 @@
 
   async function refresh(
     source: SourceRow,
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = []
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await actionClient.post(
       ElementSourcesController.form().url,
       {
@@ -787,7 +787,7 @@
   }
 
   function setErrors(next: Record<string, string | string[]>): void {
-    const byKey: Record<string, FormPayload['errors']> = {};
+    const byKey: Record<string, UiPayload['errors']> = {};
 
     for (const [path, messages] of Object.entries(next)) {
       const segments = path.split('.');
@@ -926,7 +926,7 @@
               v-if="source.mounted && source.form && source.key"
               v-show="source.key === selectedKey"
             >
-              <FormRenderer
+              <UiRenderer
                 :ref="(el) => setRenderer(source.key!, el)"
                 :payload="source.form"
                 :errors="errors[source.key!] ?? []"

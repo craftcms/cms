@@ -418,7 +418,7 @@ it('badges a block’s own field when that block was edited through a draft', fu
             $statuses[implode('.', $node['control']['path'] ?? ['?'])] = $node['props']['status'];
         }
 
-        foreach ($node['control']['forms'] ?? [] as $form) {
+        foreach ($node['control']['uis'] ?? [] as $form) {
             foreach ($form['nodes'] ?? [] as $child) {
                 $collect($child);
             }

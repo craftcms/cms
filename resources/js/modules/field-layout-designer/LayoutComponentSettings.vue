@@ -11,11 +11,11 @@
   import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload, FormValues} from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload, UiValues} from '@/modules/ui/types';
   import {takeLayoutSettingsContext} from './settings-slideout';
 
-  type FormErrors = Record<string, string | string[]>;
+  type UiErrors = Record<string, string | string[]>;
 
   const props = defineProps<{
     contextId: string;
@@ -24,12 +24,10 @@
   const context = takeLayoutSettingsContext(props.contextId);
 
   const slideout = useSlideout();
-  const payload = shallowRef<FormPayload>(context.payload);
-  const errors = shallowRef<FormPayload['errors']>(
-    context.payload.errors ?? []
-  );
+  const payload = shallowRef<UiPayload>(context.payload);
+  const errors = shallowRef<UiPayload['errors']>(context.payload.errors ?? []);
   const renderer = ref<{
-    currentValues(): FormPayload['values'];
+    currentValues(): UiPayload['values'];
   } | null>(null);
 
   /**
@@ -46,7 +44,7 @@
     onSave: save,
   }));
 
-  function settingsValues(values: FormPayload['values']): FormValues {
+  function settingsValues(values: UiPayload['values']): UiValues {
     const settings = values.settings;
     return settings instanceof Object &&
       !Array.isArray(settings) &&
@@ -55,7 +53,7 @@
       : {};
   }
 
-  function currentValues(): FormValues {
+  function currentValues(): UiValues {
     return settingsValues(renderer.value?.currentValues() ?? {});
   }
 
@@ -63,7 +61,7 @@
     form.settings = JSON.stringify(currentValues());
   }
 
-  function setErrors(next: FormErrors): void {
+  function setErrors(next: UiErrors): void {
     const scope = payload.value.scope ?? [];
 
     errors.value = Object.entries(next).map(([path, messages]) => ({
@@ -94,9 +92,9 @@
   }
 
   async function refresh(
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = payload.value.scope ?? []
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await Craft.sendActionRequest(
       'POST',
       'fields/refresh-layout-component-settings',
@@ -120,7 +118,7 @@
 </script>
 
 <template>
-  <FormRenderer
+  <UiRenderer
     ref="renderer"
     :payload="payload"
     :errors="errors"

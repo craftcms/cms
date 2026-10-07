@@ -159,7 +159,7 @@ it('renders the complete legacy Table settings Form with its namespace and effec
         ? $field->getSettingsHtml()
         : $field->getReadOnlySettingsHtml(), 'plugin[settings]');
     $crawler = new Crawler($html);
-    $host = $crawler->filter('craft-field-settings-form');
+    $host = $crawler->filter('craft-field-settings-ui');
     $pluginInput = $crawler->filter('input[name="plugin[settings][pluginOption]"]');
     $payload = json_decode($host->attr('data-payload'), true);
     $columns = $payload['nodes'][0]['control'];
@@ -177,9 +177,9 @@ it('renders the complete legacy Table settings Form with its namespace and effec
         ->and($columns['deltaGroup'])->toBe(['settings', 'columns'])
         ->and($columns['mode'])->toBe($mode->value)
         ->and($defaults['mode'])->toBe($mode->value)
-        ->and($defaults['forms'][0]['nodes'][0]['control']['mode'])->toBe($mode->value);
+        ->and($defaults['uis'][0]['nodes'][0]['control']['mode'])->toBe($mode->value);
 
-    $editablePayload = json_decode(new Crawler($field->getSettingsHtml())->filter('craft-field-settings-form')->attr('data-payload'), true);
+    $editablePayload = json_decode(new Crawler($field->getSettingsHtml())->filter('craft-field-settings-ui')->attr('data-payload'), true);
 
     expect($editablePayload['nodes'][0]['control']['mode'])->toBe(ControlMode::Editable->value);
 })->with([ControlMode::Editable, ControlMode::ReadOnly]);

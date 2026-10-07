@@ -1908,7 +1908,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * The `<craft-entry-field-layout-form>` this editor drives, looked up on
+     * The `<craft-entry-field-layout-ui>` this editor drives, looked up on
      * first use rather than when the editor is constructed.
      *
      * The host isn't necessarily in the document yet at construction: on a
@@ -1933,7 +1933,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.formHost = this.$contentContainer.find(
-        'craft-entry-field-layout-form'
+        'craft-entry-field-layout-ui'
       )[0];
 
       return this.formHost;

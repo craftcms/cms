@@ -1,4 +1,4 @@
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
@@ -30,7 +30,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const form: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],

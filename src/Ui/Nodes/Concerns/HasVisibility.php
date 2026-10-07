@@ -16,7 +16,7 @@ namespace CraftCms\Cms\Ui\Nodes\Concerns;
  * Visibility is evaluated server-side while the Ui is built, so it updates on
  * the Ui's next refresh rather than instantly. For settings driven by a
  * lightswitch in the same Ui that round trip is ~100ms (see
- * `FormRenderer.vue`); a client-side predicate would be the next step if that
+ * `UiRenderer.vue`); a client-side predicate would be the next step if that
  * proves too slow.
  *
  * Hidden Nodes render with both the `hidden` attribute — which also removes

@@ -52,9 +52,9 @@ function nestedControlsContext(): UiContext
 it('resolves nested Form scopes recursively with one ancestor atomic group', function () {
     $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
-    $entryForm = $matrix->forms[0];
+    $entryForm = $matrix->uis[0];
     $contentBlock = $entryForm->nodes[1]->control;
-    $contentBlockForm = $contentBlock->forms[0];
+    $contentBlockForm = $contentBlock->uis[0];
     $body = $contentBlockForm->nodes[0]->control;
 
     expect($matrix->component)->toBe('craft:nested-element-blocks')
@@ -96,7 +96,7 @@ it('mounts an isolated nested control with its values, scopes, and validation er
         ),
     );
     $crawler = new Crawler('<form>'.app(UiHtmlRenderer::class)->render($payload).'</form>');
-    $host = $crawler->filter('craft-entry-field-layout-form[data-field-path]');
+    $host = $crawler->filter('craft-entry-field-layout-ui[data-field-path]');
     $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 
     expect($crawler->filter('form form'))->toHaveCount(0)
@@ -110,13 +110,13 @@ it('mounts an isolated nested control with its values, scopes, and validation er
         ])
         ->and($form['values']['settings']['matrix']['sortOrder'])->toBe(['block-a'])
         ->and($form['nodes'][0]['control']['component'])->toBe('craft:nested-element-blocks')
-        ->and($form['nodes'][0]['control']['forms'][0]['scope'])->toBe(['settings', 'matrix', 'entries', 'block-a'])
+        ->and($form['nodes'][0]['control']['uis'][0]['scope'])->toBe(['settings', 'matrix', 'entries', 'block-a'])
         ->and($form['errors'])->toBe([[
             'path' => ['settings', 'matrix', 'entries', 'block-a', 'content', 'body'],
             'messages' => ['Body is invalid.'],
         ]])
         ->and($form['globalErrors'])->toBe([])
-        ->and($host->filter('input[data-form-field-name]')->attr('name'))->toBe('settings[matrix]')
+        ->and($host->filter('input[data-ui-field-name]')->attr('name'))->toBe('settings[matrix]')
         ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
 });
 
@@ -148,17 +148,17 @@ function nestedTabsCrawler(): Crawler
 it('shows the first tab in each nested HTML form independently of its parent', function () {
     $crawler = nestedTabsCrawler();
 
-    expect($crawler->filter('craft-content-block-input section[data-form-tab="content"]:not(.hidden)'))->toHaveCount(2)
-        ->and($crawler->filter('craft-content-block-input section[data-form-tab="details"].hidden'))->toHaveCount(2)
-        ->and($crawler->filter('section[data-form-tab="content"]:not(.hidden) input[name="settings[hero][body]"][value="Hero body"]'))->toHaveCount(1)
-        ->and($crawler->filter('section[data-form-tab="content"]:not(.hidden) input[name="settings[footer][body]"][value="Footer body"]'))->toHaveCount(1)
+    expect($crawler->filter('craft-content-block-input section[data-ui-tab="content"]:not(.hidden)'))->toHaveCount(2)
+        ->and($crawler->filter('craft-content-block-input section[data-ui-tab="details"].hidden'))->toHaveCount(2)
+        ->and($crawler->filter('section[data-ui-tab="content"]:not(.hidden) input[name="settings[hero][body]"][value="Hero body"]'))->toHaveCount(1)
+        ->and($crawler->filter('section[data-ui-tab="content"]:not(.hidden) input[name="settings[footer][body]"][value="Footer body"]'))->toHaveCount(1)
         ->and($crawler->filter('section#settings-form-tab-content:not(.hidden)'))->toHaveCount(1)
         ->and($crawler->filter('section#settings-form-tab-settings.hidden input[value="Page title"]'))->toHaveCount(1);
 });
 
 it('gives nested HTML tab panels distinct IDs across instances and their parent', function () {
     $crawler = nestedTabsCrawler();
-    $ids = $crawler->filter('section[data-form-tab]')->extract(['id']);
+    $ids = $crawler->filter('section[data-ui-tab]')->extract(['id']);
 
     expect($ids)->toHaveCount(6)
         ->and(array_unique($ids))->toHaveCount(6)
@@ -171,16 +171,16 @@ it('gives nested HTML tab panels distinct IDs across instances and their parent'
 it('declares which Controls hold nested forms', function () {
     $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
-    $contentBlock = $matrix->forms[0]->nodes[1]->control;
-    $heading = $matrix->forms[0]->nodes[0]->control;
+    $contentBlock = $matrix->uis[0]->nodes[1]->control;
+    $heading = $matrix->uis[0]->nodes[0]->control;
 
     // A change inside one of these marks the field holding it, so the browser
     // has to be told which they are. Leaf Controls ship nothing.
-    expect($matrix->nestsForms)->toBeTrue()
-        ->and($matrix->jsonSerialize())->toHaveKey('nestsForms', true)
-        ->and($contentBlock->nestsForms)->toBeTrue()
-        ->and($heading->nestsForms)->toBeFalse()
-        ->and($heading->jsonSerialize())->not->toHaveKey('nestsForms');
+    expect($matrix->nestsUis)->toBeTrue()
+        ->and($matrix->jsonSerialize())->toHaveKey('nestsUis', true)
+        ->and($contentBlock->nestsUis)->toBeTrue()
+        ->and($heading->nestsUis)->toBeFalse()
+        ->and($heading->jsonSerialize())->not->toHaveKey('nestsUis');
 });
 
 it('uses explicit empty canonical values', function () {

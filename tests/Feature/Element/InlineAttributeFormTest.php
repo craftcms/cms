@@ -31,7 +31,7 @@ function inlineAttributePayload(string $html): array
 
     expect($crawler->filter('input, textarea, select')->count())->toBe(0);
 
-    return json_decode($crawler->filter('craft-inline-attribute-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    return json_decode($crawler->filter('craft-inline-attribute-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 }
 
 it('renders entry dates and slug as namespaced Form controls', function (string $attribute, string $component) {

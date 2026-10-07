@@ -494,7 +494,7 @@ import './dashboard.scss';
 
       if (this.settingsForm) {
         this.settingsHost = document.createElement(
-          'craft-dashboard-widget-settings-form'
+          'craft-dashboard-widget-settings-ui'
         );
         this.settingsHost.payload = structuredClone(this.settingsForm);
         this.settingsHost.widgetType = this.type;

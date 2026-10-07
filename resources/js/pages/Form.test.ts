@@ -9,24 +9,24 @@ import {
   type ComponentPublicInstance,
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
+import type {UiChange, UiPayload, UiValue} from '@/modules/ui/types';
 import FormPage from './Form.vue';
 
 const state = vi.hoisted<{
   layout: ReturnType<typeof vi.fn>;
   post: ReturnType<typeof vi.fn>;
   refresh?: (
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[]
-  ) => Promise<FormPayload>;
+  ) => Promise<UiPayload>;
   submit: ReturnType<
     typeof vi.fn<
-      (action: FormSubmitAction, values: FormPayload['values']) => void
+      (action: FormSubmitAction, values: UiPayload['values']) => void
     >
   >;
   setValue: ReturnType<typeof vi.fn>;
-  change?: (change: FormChange, values: FormPayload['values']) => void;
-  currentValues: FormPayload['values'];
+  change?: (change: UiChange, values: UiPayload['values']) => void;
+  currentValues: UiPayload['values'];
   confirmElevation: ReturnType<typeof vi.fn>;
 }>(() => ({
   layout: vi.fn(),
@@ -45,7 +45,7 @@ interface FormSubmitAction {
 }
 
 type FormPageExposed = ComponentPublicInstance & {
-  setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
+  setValue(path: string[], value: UiValue, kind?: UiChange['kind']): void;
 };
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
@@ -57,7 +57,7 @@ vi.mock('@inertiajs/vue3', () => ({
   usePage: () => ({props: {}}),
   setLayoutProps: state.layout,
   useForm: () => {
-    let transform = (data: FormPayload['values']) => data;
+    let transform = (data: UiPayload['values']) => data;
     const form = {
       errors: {},
       isDirty: false,
@@ -86,7 +86,7 @@ vi.mock('@/modules/auth/elevated-session', () => ({
   elevatedSessionManager: {require: state.confirmElevation},
 }));
 
-vi.mock('@/modules/forms/FormRenderer.vue', () => ({
+vi.mock('@/modules/ui/UiRenderer.vue', () => ({
   default: defineComponent({
     props: ['refresh'],
     emits: ['change', 'update:mutation'],
@@ -105,7 +105,7 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   }),
 }));
 
-const payload: FormPayload = {
+const payload: UiPayload = {
   scope: [],
   refreshable: false,
   nodes: [],
@@ -242,9 +242,9 @@ it('forwards control changes and external value updates', async () => {
   await nextTick();
   if (!page.value) throw new Error('Expected FormPage to mount.');
 
-  const change: FormChange = {kind: 'typing', path: ['name']};
+  const change: UiChange = {kind: 'typing', path: ['name']};
   if (!state.change)
-    throw new Error('Expected the FormRenderer change callback.');
+    throw new Error('Expected the UiRenderer change callback.');
   state.change(change, {name: 'My Site'});
   page.value.setValue(['baseUrl'], '$MY_SITE_URL', 'typing');
 

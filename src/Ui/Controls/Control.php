@@ -161,7 +161,7 @@ abstract class Control implements ControlContract
         return false;
     }
 
-    /** Whether the control renders nested forms. See the contract. */
+    /** Whether the control renders nested uis. See the contract. */
     public function nestsUis(): bool
     {
         return false;
@@ -186,7 +186,7 @@ abstract class Control implements ControlContract
     }
 
     /**
-     * @return list<array{scope: string|list<string>, form: Ui, refreshable: bool}>
+     * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
      */
     public function nestedUis(mixed $value = null): array
     {

@@ -75,7 +75,7 @@ class Table extends Control
             globalErrors: [],
         );
 
-        return Html::tag('craft-table-form', '', [
+        return Html::tag('craft-table-ui', '', [
             'id' => $attributes['id'],
             'name' => $attributes['name'],
             'data-payload' => Json::encode($payload),
@@ -220,13 +220,13 @@ class Table extends Control
             return [];
         }
 
-        $forms = [];
+        $uis = [];
 
         foreach ($value as $key => $row) {
-            $forms[] = ['scope' => [(string) $key], 'form' => $this->rowUi((array) $row, $this->cellOptions[$key] ?? []), 'refreshable' => false];
+            $uis[] = ['scope' => [(string) $key], 'ui' => $this->rowUi((array) $row, $this->cellOptions[$key] ?? []), 'refreshable' => false];
         }
 
-        return $forms;
+        return $uis;
     }
 
     /** @param array<string, array<string, array<string, mixed>>> $cellOptions */

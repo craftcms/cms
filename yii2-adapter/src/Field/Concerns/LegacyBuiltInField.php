@@ -96,7 +96,7 @@ trait LegacyBuiltInField
         $context = new UiContext(namespace: 'settings', mode: $mode, refreshable: $mode === ControlMode::Editable);
         $payload = app(UiResolver::class)->resolve(parent::settingsUi($context), $context);
 
-        return Html::tag('craft-field-settings-form', '', [
+        return Html::tag('craft-field-settings-ui', '', [
             'name' => '__fieldSettings',
             'data-payload' => Json::encode($payload),
             'data-field-type' => TableField::class,

@@ -80,7 +80,7 @@ class Group extends Container
             ->children([new HtmlString($renderer->renderNodes($node->children ?? [], $payload))])
             ->attributes(['slot' => ($node->props['collapsible'] ?? false) ? 'content' : null]);
         $attributes = [
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
             ...self::visibilityAttributes($node->props),
         ];
 
@@ -247,7 +247,7 @@ class Group extends Container
             )
             ->attributes([
                 'class' => isset($props['width']) ? "width-{$props['width']}" : null,
-                'data-form-node' => $node->uid,
+                'data-ui-node' => $node->uid,
             ])
             ->attributes(self::visibilityAttributes($props))
             ->toHtml();

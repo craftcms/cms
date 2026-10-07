@@ -49,7 +49,7 @@ class Callout implements Node
             ->content(new HtmlString($node->props['html']))
             ->attributes([
                 'class' => ["width-{$node->props['width']}"],
-                'data-form-node' => $node->uid,
+                'data-ui-node' => $node->uid,
                 'data-dismissible' => $node->props['dismissible'],
             ])
             ->toHtml();

@@ -134,10 +134,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.inlineInputsReady = Promise.all(
         [
           ...this.$elementContainer[0].querySelectorAll(
-            'craft-inline-attribute-form'
+            'craft-inline-attribute-ui'
           ),
         ].map(async (form) => {
-          await customElements.whenDefined('craft-inline-attribute-form');
+          await customElements.whenDefined('craft-inline-attribute-ui');
           await form.ready;
         })
       ).then(() => {
@@ -169,7 +169,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
-                  $row.find('craft-inline-attribute-form').each((i, form) => {
+                  $row.find('craft-inline-attribute-ui').each((i, form) => {
                     form.errors = data.errors[elementId];
                   });
                   for (const attribute in data.errors[elementId]) {
@@ -301,7 +301,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     if (
       [
         ...this.$elementContainer[0].querySelectorAll(
-          'craft-inline-attribute-form'
+          'craft-inline-attribute-ui'
         ),
       ].some((form) => !form.canSubmit())
     ) {

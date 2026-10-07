@@ -186,8 +186,8 @@ class UiResolver
             mode: $context->mode,
         );
 
-        $forms = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedUiPayload {
-            if (! isset($definition['scope'], $definition['form'], $definition['refreshable']) || ! $definition['form'] instanceof Ui || ! is_bool($definition['refreshable'])) {
+        $uis = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedUiPayload {
+            if (! isset($definition['scope'], $definition['ui'], $definition['refreshable']) || ! $definition['ui'] instanceof Ui || ! is_bool($definition['refreshable'])) {
                 throw new InvalidArgumentException("Nested UI definitions for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
             }
 
@@ -207,7 +207,7 @@ class UiResolver
                         $deltaGroup,
                         $mode === ControlMode::Editable ? null : $mode,
                     ),
-                    $definition['form']->nodes(),
+                    $definition['ui']->nodes(),
                 ),
             );
         }, $control->nestedUis($value));
@@ -219,10 +219,10 @@ class UiResolver
             path: $path,
             mode: $mode,
             deltaGroup: $deltaGroup,
-            forms: $forms,
+            uis: $uis,
             reactive: $control->isReactive(),
             emptyValue: $control->emptyValue(),
-            nestsForms: $control->nestsUis(),
+            nestsUis: $control->nestsUis(),
             omitNullValue: $control->omitNullValue(),
         );
     }

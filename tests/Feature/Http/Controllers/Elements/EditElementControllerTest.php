@@ -232,7 +232,7 @@ it('returns a json editor payload for the current element', function () {
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('action', 'elements/save')
             ->where('notice', null)
-            ->where('content', fn (string $content) => str_contains($content, 'craft-entry-field-layout-form')
+            ->where('content', fn (string $content) => str_contains($content, 'craft-entry-field-layout-ui')
                 && str_contains($content, 'elements/save'))
             ->where('deltaNames', fn ($names) => collect($names)
                 ->doesntContain(fn (string $name) => str_ends_with($name, '[title]')))

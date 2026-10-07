@@ -749,7 +749,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * and so the permission checks stay on the server. Behavior travels with each
      * item as a declarative `action` descriptor — the instance-local ones as a
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
-     * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
+     * the invoking element (see `resources/js/modules/ui/nested-elements/NestedElementBlocksControl.vue`).
      *
      * @param  list<EntryType>|null  $creationTypes
      * @return list<array<string, mixed>>

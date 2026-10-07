@@ -19,7 +19,7 @@ it('renders sanitized non-interactive HTML content', function () {
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
-    expect($crawler->filter('[data-form-node="html-test"][inert]'))->toHaveCount(1)
+    expect($crawler->filter('[data-ui-node="html-test"][inert]'))->toHaveCount(1)
         ->and($crawler->filter('p')->text())->toBe('Direct HTML')
         ->and($crawler->filter('form, input, script'))->toHaveCount(0);
 });

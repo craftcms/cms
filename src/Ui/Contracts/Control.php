@@ -45,7 +45,7 @@ interface Control
     public function omitNullValue(): bool;
 
     /**
-     * Returns whether the control renders nested forms — Matrix blocks, a
+     * Returns whether the control renders nested uis — Matrix blocks, a
      * content block.
      *
      * A change anywhere inside one marks the control holding it as modified,
@@ -131,7 +131,7 @@ interface Control
     /**
      * Returns Forms owned by this Control, scoped relative to its path.
      *
-     * @return list<array{scope: string|list<string>, form: Ui, refreshable: bool}>
+     * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
      */
     public function nestedUis(mixed $value = null): array;
 }

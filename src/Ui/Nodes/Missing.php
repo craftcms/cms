@@ -31,7 +31,7 @@ class Missing implements Node
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         return template('_special/missing-component', $node->props + [
-            'attributes' => ['data-form-node' => $node->uid],
+            'attributes' => ['data-ui-node' => $node->uid],
             'formId' => null,
         ]);
     }

@@ -44,7 +44,7 @@ class LegacyHtmlField implements Node
         return Html::tag('div', $html, [
             'id' => $renderer->id($node->control->path),
             'aria' => ['invalid' => $errors === [] ? null : 'true'],
-            'data-form-control-path' => Json::encode($node->control->path),
+            'data-ui-control-path' => Json::encode($node->control->path),
         ]);
     }
 

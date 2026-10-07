@@ -13,20 +13,20 @@
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import type {
-    FormChange,
-    FormChangeKind,
-    FormPayload,
-    FormValue,
-    FormValues,
-  } from '@/modules/forms/types';
-  import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
+    UiChange,
+    UiChangeKind,
+    UiPayload,
+    UiValue,
+    UiValues,
+  } from '@/modules/ui/types';
+  import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
@@ -35,20 +35,22 @@
     /** Server-rendered markup for the details column. */
     metadataHtml?: string;
     /** Controls for the details column, submitted alongside `form`. */
-    sidebarForm?: FormPayload;
+    sidebarForm?: UiPayload;
   }>();
   const emit = defineEmits<{
-    (event: 'change', change: FormChange, values: FormPayload['values']): void;
+    (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
   const inertiaForm = useForm({});
-  const {advanceBaseline, errors, onMutation, renderer} =
-    useInertiaFormRenderer(inertiaForm, () => props.form);
+  const {advanceBaseline, errors, onMutation, renderer} = useInertiaUiRenderer(
+    inertiaForm,
+    () => props.form
+  );
   const {
     advanceBaseline: advanceSidebarBaseline,
     errors: sidebarErrors,
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
-  } = useInertiaFormRenderer(inertiaForm, () => props.sidebarForm ?? null);
+  } = useInertiaUiRenderer(inertiaForm, () => props.sidebarForm ?? null);
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
   const elevatedFields = props.elevatedFields;
 
@@ -182,22 +184,22 @@
 
   function setValue(
     path: string[],
-    value: FormValue,
-    kind: FormChangeKind = 'discrete'
+    value: UiValue,
+    kind: UiChangeKind = 'discrete'
   ): void {
     renderer.value?.setValue(path, value, kind);
   }
 
-  function onChange(change: FormChange, values: FormPayload['values']): void {
+  function onChange(change: UiChange, values: UiPayload['values']): void {
     emit('change', change, values);
   }
 
   defineExpose({save, setValue});
 
   async function refresh(
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = []
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await actionClient.post(props.refreshUrl!, {values, scope});
 
     if (!data.form) {
@@ -207,7 +209,7 @@
     return data.form;
   }
 
-  function currentValues(): FormPayload['values'] {
+  function currentValues(): UiPayload['values'] {
     return {
       ...toRaw(renderer.value?.currentValues() ?? props.form.values),
       ...toRaw(
@@ -216,7 +218,7 @@
     };
   }
 
-  function normalize(value: FormValue): string {
+  function normalize(value: UiValue): string {
     return (
       JSON.stringify(Array.isArray(value) ? [...value].sort() : value) ?? ''
     );
@@ -227,7 +229,7 @@
   <form @submit.prevent="save()">
     <CpContainer>
       <craft-field-group class="py-4">
-        <FormRenderer
+        <UiRenderer
           ref="renderer"
           :payload="form"
           :refresh="refreshUrl ? refresh : undefined"
@@ -242,13 +244,13 @@
           >
             <slot :name="slotName" v-bind="slotProps" />
           </template>
-        </FormRenderer>
+        </UiRenderer>
       </craft-field-group>
     </CpContainer>
     <MetadataDetails :html="metadataHtml">
       <template v-if="sidebarForm" #default>
         <craft-field-group>
-          <FormRenderer
+          <UiRenderer
             ref="sidebarRenderer"
             :payload="sidebarForm"
             :errors="sidebarErrors"

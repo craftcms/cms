@@ -99,7 +99,7 @@ class TableColumns extends Control
     #[\Override]
     public function nestedUis(mixed $value = null): array
     {
-        $forms = [];
+        $uis = [];
 
         foreach (is_array($value) ? $value : [] as $key => $column) {
             $form = $this->columnUi($column);
@@ -107,10 +107,10 @@ class TableColumns extends Control
                 $form->add($node);
             }
 
-            $forms[] = ['scope' => [(string) $key], 'form' => $form, 'refreshable' => true];
+            $uis[] = ['scope' => [(string) $key], 'ui' => $form, 'refreshable' => true];
         }
 
-        return $forms;
+        return $uis;
     }
 
     /** @param array<string, mixed> $column */

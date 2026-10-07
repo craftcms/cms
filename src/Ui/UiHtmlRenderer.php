@@ -136,7 +136,7 @@ class UiHtmlRenderer
             return true;
         }
 
-        return array_any($node->control->forms ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
+        return array_any($node->control->uis ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
     }
 
     public function renderNestedUi(NestedUiPayload $form): string

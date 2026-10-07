@@ -12,7 +12,7 @@ import {
   hudData,
 } from './support';
 import {type ActionMenuItem} from '@craftcms/ui';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
 declare const $: any;
@@ -265,7 +265,7 @@ export class Tab extends Base {
    * Rejects on failure so the Vue settings panel can surface the errors
    * against the fields they belong to.
    */
-  async applyTabSettings(settings: FormValues): Promise<void> {
+  async applyTabSettings(settings: UiValues): Promise<void> {
     if (!settings.name) {
       const message = Craft.t('app', 'You must specify a tab name.');
 

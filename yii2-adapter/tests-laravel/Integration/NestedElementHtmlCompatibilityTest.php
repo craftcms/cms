@@ -94,7 +94,7 @@ it('renders legacy nested field inputs with their owner scope and content', func
     }
 
     if ($viewMode === LegacyMatrix::VIEW_MODE_BLOCKS) {
-        $host = $crawler->filter('craft-entry-field-layout-form[data-payload]');
+        $host = $crawler->filter('craft-entry-field-layout-ui[data-payload]');
         $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
         $control = $form['nodes'][0]['control'];
         expect($host)->toHaveCount(1)
@@ -106,7 +106,7 @@ it('renders legacy nested field inputs with their owner scope and content', func
                 'siteId' => $owner->siteId,
             ])
             ->and($control['mode'])->toBe(in_array($mode, ['editable', 'form']) ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
-            ->and($host->filter('input[data-form-field-name]')->attr('name'))->toBe('fields[nested]')
+            ->and($host->filter('input[data-ui-field-name]')->attr('name'))->toBe('fields[nested]')
             ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
 
         if ($invalid) {

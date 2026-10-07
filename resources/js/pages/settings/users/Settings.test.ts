@@ -1,10 +1,10 @@
 import {createApp, defineComponent, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {
-  FormControlPayload,
-  FormPayload,
-  FormProperties,
-} from '@/modules/forms/types';
+  UiControlPayload,
+  UiPayload,
+  UiProperties,
+} from '@/modules/ui/types';
 import Settings from './Settings.vue';
 
 interface CheckboxGroupElement extends HTMLElement {
@@ -74,7 +74,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const form: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -142,7 +142,7 @@ function mount(): void {
   app.mount(container);
 }
 
-function control(path: string, props: FormProperties): FormControlPayload {
+function control(path: string, props: UiProperties): UiControlPayload {
   return {
     type: 'test',
     component: 'test',
@@ -150,6 +150,6 @@ function control(path: string, props: FormProperties): FormControlPayload {
     path: [path],
     mode: 'editable',
     deltaGroup: [path],
-    forms: [],
+    uis: [],
   };
 }

@@ -80,9 +80,9 @@ class NestedElementBlocks extends Control
             ?? array_shift($path).implode('', array_map(fn (string $segment): string => "[{$segment}]", $path));
         $create = $control->props['create'] ?? null;
 
-        return Html::tag('craft-entry-field-layout-form', Html::hiddenInput($name, '', [
+        return Html::tag('craft-entry-field-layout-ui', Html::hiddenInput($name, '', [
             'disabled' => true,
-            'data-form-field-name' => true,
+            'data-ui-field-name' => true,
         ]), [
             'id' => $attributes['id'],
             'data-payload' => Json::encode($renderer->controlUi($control, $value), JSON_HEX_AMP | JSON_THROW_ON_ERROR),
@@ -282,7 +282,7 @@ class NestedElementBlocks extends Control
         foreach ($value['sortOrder'] as $uid) {
             $uis[] = [
                 'scope' => ['entries', $uid],
-                'form' => $this->uis[$uid],
+                'ui' => $this->uis[$uid],
                 'refreshable' => true,
             ];
         }

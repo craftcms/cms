@@ -26,9 +26,9 @@ it('resolves table cells at concrete paths while keeping row templates outside v
     $table = $payload->nodes[0]->control;
 
     expect($payload->values)->toBe(['settings' => ['rows' => [['name' => 'Ada']]]])
-        ->and($table->forms[0]->scope)->toBe(['settings', 'rows', '0'])
-        ->and($table->forms[0]->nodes[0]->control->path)->toBe(['settings', 'rows', '0', 'name'])
-        ->and($table->forms[0]->nodes[0]->control->deltaGroup)->toBe(['settings', 'rows'])
+        ->and($table->uis[0]->scope)->toBe(['settings', 'rows', '0'])
+        ->and($table->uis[0]->nodes[0]->control->path)->toBe(['settings', 'rows', '0', 'name'])
+        ->and($table->uis[0]->nodes[0]->control->deltaGroup)->toBe(['settings', 'rows'])
         ->and($table->props['rowTemplate']['nodes'][0]['control']['path'])->toBe(['name'])
         ->and($table->props['rowTemplate']['nodes'][0]['control']['props']['placeholder'])->toBe('Enter name')
         ->and($payload->errors)->toBe([
@@ -43,7 +43,7 @@ it('resolves money columns in reusable tables with their row input paths', funct
             'amount' => ['heading' => 'Amount', 'type' => 'money', 'currency' => 'EUR', 'locale' => 'nl-BE', 'showCurrency' => false],
         ])->value([['amount' => '']])->allowAdd()),
     ]), new UiContext(namespace: 'settings'));
-    $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
 
     expect($cell->component)->toBe('craft:money')
         ->and($cell->path)->toBe(['settings', 'prices', '0', 'amount'])
@@ -61,7 +61,7 @@ it('preserves nested and flat groups in reusable table select columns', function
             ]],
         ])->value([['status' => 'review']])),
     ]), new UiContext);
-    $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
     $crawler = new Crawler(app(UiHtmlRenderer::class)->renderControl($cell, $payload->values, 'status', false, false));
 
     expect($cell->props['options'])->toEqual([
@@ -84,7 +84,7 @@ it('resolves implicit option groups for reusable table combobox columns', functi
         ])->value([['address' => '$SYSTEM_EMAIL']])),
     ]), new UiContext);
 
-    expect($payload->nodes[0]->control->forms[0]->nodes[0]->control->props['options'])->toEqual([
+    expect($payload->nodes[0]->control->uis[0]->nodes[0]->control->props['options'])->toEqual([
         ['type' => 'optgroup', 'label' => 'Environment', 'options' => [
             ['label' => 'System email', 'value' => '$SYSTEM_EMAIL'],
             ['label' => '0', 'value' => '0'],
@@ -101,7 +101,7 @@ it('applies table modes to concrete cells and reusable row templates', function 
     ]);
     $table = app(UiResolver::class)->resolve($form, new UiContext)->nodes[0]->control;
 
-    expect($table->forms[0]->nodes[0]->control->mode)->toBe($mode)
+    expect($table->uis[0]->nodes[0]->control->mode)->toBe($mode)
         ->and($table->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe($mode->value);
 })->with([ControlMode::ReadOnly, ControlMode::Disabled]);
 
@@ -115,7 +115,7 @@ it('resolves column controls for an empty editor without adding a column to subm
     $control = $payload->nodes[0]->control;
 
     expect($payload->values)->toBe(['settings' => ['columns' => []]])
-        ->and($control->forms)->toBe([])
+        ->and($control->uis)->toBe([])
         ->and($control->props['rowTemplate']['nodes'][0]['control']['path'])->toBe(['heading'])
         ->and($control->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe(ControlMode::ReadOnly->value);
 });

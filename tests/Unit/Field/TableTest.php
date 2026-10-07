@@ -134,7 +134,7 @@ it('round-trips money cells through localized row forms and scalar storage', fun
         $payload = app(UiResolver::class)->resolve(Ui::make([
             UiField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
         ]), new UiContext);
-        $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
+        $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
 
         expect($stored)->toBe([['amount' => $expected]])
             ->and($payload->values['prices'][0]['amount'])->toBe(['value' => $amount === '' ? null : $amount, 'locale' => 'nl-BE'])
@@ -200,7 +200,7 @@ it('keeps column handles scalar while rendering validation errors by cell', func
         ->and($rerenderedPayload->values)->toBe($payload->values)
         ->and($rerenderedPayload->nodes[0]->control->props['errors'])->toBe($payload->nodes[0]->control->props['errors']);
 
-    $mountedPayload = json_decode($crawler->filter('craft-table-form')->first()->attr('data-payload'), true);
+    $mountedPayload = json_decode($crawler->filter('craft-table-ui')->first()->attr('data-payload'), true);
     expect($mountedPayload['values']['columns']['first']['handle'])->toBe('invalid-handle')
         ->and($mountedPayload['nodes'][0]['control']['props']['errors']['first'])->toBe(['handle' => true]);
 

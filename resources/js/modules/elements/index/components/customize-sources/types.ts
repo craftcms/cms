@@ -1,4 +1,4 @@
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 
 export type SourceType = 'native' | 'custom' | 'heading';
 
@@ -14,7 +14,7 @@ export interface SourceRow {
   /** Shown under the label — a section's handle, say. */
   handle: string | null;
   page: string;
-  form: FormPayload | null;
+  form: UiPayload | null;
   /** Settings are built on first select and kept, as the legacy modal did. */
   mounted: boolean;
 }
@@ -35,7 +35,7 @@ export interface SourcesResponse {
     heading: string | null;
     handle?: string | null;
     page: string | null;
-    form: FormPayload | null;
+    form: UiPayload | null;
   }>;
 }
 

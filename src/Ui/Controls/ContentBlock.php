@@ -45,7 +45,7 @@ class ContentBlock extends Control
             ]);
         }
 
-        $form = $control->forms[0] ?? null;
+        $form = $control->uis[0] ?? null;
         $content = $form === null
             ? Html::tag('craft-spinner', '', ['label' => t('Loading')])
             : $renderer->renderNestedUi($form);
@@ -119,7 +119,7 @@ class ContentBlock extends Control
 
         return [[
             'scope' => [],
-            'form' => $this->form,
+            'ui' => $this->form,
             'refreshable' => true,
         ]];
     }

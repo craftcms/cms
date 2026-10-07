@@ -1,6 +1,6 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormChange, FormPayload} from '@/modules/forms/types';
+import type {UiChange, UiPayload} from '@/modules/ui/types';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
@@ -9,7 +9,7 @@ const state = vi.hoisted<{
   >;
   save: ReturnType<typeof vi.fn>;
   setValue: ReturnType<typeof vi.fn>;
-  change?: (change: FormChange, values: FormPayload['values']) => void;
+  change?: (change: UiChange, values: UiPayload['values']) => void;
 }>(() => ({
   formProps: vi.fn(),
   save: vi.fn(),
@@ -49,7 +49,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const form: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],

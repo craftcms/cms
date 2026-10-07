@@ -4,7 +4,7 @@ import type {CellContext} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-import type {InlineAttributeFormHost} from '@/modules/forms/inline-attribute-form-host';
+import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 
 export type InlineEditingErrors = Record<
   string | number,
@@ -61,10 +61,10 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     ]);
   }
 
-  function hosts(): InlineAttributeFormHost[] {
+  function hosts(): InlineAttributeUiHost[] {
     return [
-      ...(options.container.value?.querySelectorAll<InlineAttributeFormHost>(
-        'craft-inline-attribute-form'
+      ...(options.container.value?.querySelectorAll<InlineAttributeUiHost>(
+        'craft-inline-attribute-ui'
       ) ?? []),
     ];
   }

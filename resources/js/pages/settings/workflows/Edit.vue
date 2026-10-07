@@ -2,7 +2,7 @@
   import {router} from '@inertiajs/vue3';
   import type {ActionItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import type {FormPayload, FormValue} from '@/modules/forms/types';
+  import type {UiPayload, UiValue} from '@/modules/ui/types';
   import WorkflowStagesInput from '@/modules/workflows/components/WorkflowStagesInput.vue';
   import FormPage from '@/pages/Form.vue';
 
@@ -23,7 +23,7 @@
       url: string;
     } | null;
   }>();
-  const formPayload = props.form as unknown as FormPayload;
+  const uiPayload = props.form as unknown as UiPayload;
   const actions: ActionItem[] = props.deleteAction
     ? [
         {
@@ -40,13 +40,13 @@
 
   useAppLayout({formActions: actions});
 
-  function stages(value: FormValue): WorkflowStage[] {
+  function stages(value: UiValue): WorkflowStage[] {
     return Array.isArray(value) ? (value as WorkflowStage[]) : [];
   }
 </script>
 
 <template>
-  <FormPage :form="formPayload" :submit="submit">
+  <FormPage :form="uiPayload" :submit="submit">
     <template #stages="{value, setValue, editable, errors}">
       <WorkflowStagesInput
         :model-value="stages(value)"

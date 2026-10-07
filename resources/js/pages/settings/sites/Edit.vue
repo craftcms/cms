@@ -6,28 +6,28 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import FormPage from '@/pages/Form.vue';
   import type {
-    FormChange,
-    FormChangeKind,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {pathsMatch} from '@/modules/forms/runtime';
+    UiChange,
+    UiChangeKind,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {pathsMatch} from '@/modules/ui/runtime';
 
   const props = defineProps<{
     site: Site;
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string;
   }>();
 
   const formPage = ref<{
-    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+    setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
   }>();
   const baseUrlDirty = ref(
     Boolean(props.form.values.siteId) || Boolean(props.form.values.baseUrl)
   );
 
-  function onChange(change: FormChange, values: FormPayload['values']): void {
+  function onChange(change: UiChange, values: UiPayload['values']): void {
     if (pathsMatch(change.path, ['baseUrl'])) {
       baseUrlDirty.value = true;
 

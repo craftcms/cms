@@ -21,7 +21,7 @@ class Notice implements Node
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         return Html::tag('p', Html::encode((string) $node->props['message']), [
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
             'data-test-plugin-notice' => true,
         ]);
     }

@@ -4,12 +4,12 @@
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import type {UrlMethodPair} from '@inertiajs/core';
   import type {
-    FormControlOverrideProps,
-    FormControlPayload,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {inputName} from '@/modules/forms/runtime';
+    UiControlOverrideProps,
+    UiControlPayload,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {inputName} from '@/modules/ui/runtime';
   import FormPage from '@/pages/Form.vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';
@@ -24,7 +24,7 @@
   };
 
   defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
@@ -40,7 +40,7 @@
     return Object.hasOwn(modeImageUrls, value);
   }
 
-  function modeImageUrl(value: FormValue): string {
+  function modeImageUrl(value: UiValue): string {
     const mode = String(value);
     if (isTransformMode(mode)) {
       return modeImageUrls[mode];
@@ -49,14 +49,14 @@
     throw new Error(`Unsupported transform mode: ${mode}`);
   }
 
-  function options(control: FormControlPayload): ChoiceOption[] {
+  function options(control: UiControlPayload): ChoiceOption[] {
     // SAFETY: choice controls serialize this documented option shape.
     return control.props.options as ChoiceOption[];
   }
 
   function qualityPickerValue(
-    control: FormControlPayload,
-    quality: FormValue
+    control: UiControlPayload,
+    quality: UiValue
   ): string {
     const numericQuality = Number(quality);
 
@@ -79,7 +79,7 @@
 
   function setQualityPreset(
     value: ChoiceValue | undefined,
-    setValue: FormControlOverrideProps['setValue']
+    setValue: UiControlOverrideProps['setValue']
   ): void {
     const numericValue = Number(value);
 

@@ -8,7 +8,7 @@ import {
 } from 'vue';
 import {router} from '@inertiajs/vue3';
 import jquery from 'jquery';
-import {defineEntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
+import {defineEntryFieldLayoutUiHost} from '@/modules/ui/entry-field-layout-ui-host';
 import {HttpError, http} from '@craftcms/ui/utilities/api/http';
 import {
   afterEach,
@@ -25,9 +25,9 @@ import {
 } from '@/common/composables/screen';
 import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import FormRenderer from '@/modules/forms/FormRenderer.vue';
-import {registerFormComponents} from '@/modules/forms/register';
-import type {FormPayload} from '@/modules/forms/types';
+import UiRenderer from '@/modules/ui/UiRenderer.vue';
+import {registerUiComponents} from '@/modules/ui/register';
+import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
@@ -183,16 +183,16 @@ describe('useElementEditor', () => {
 
         return () =>
           h('form', [
-            editor.formPayload.value
-              ? h(FormRenderer, {
+            editor.uiPayload.value
+              ? h(UiRenderer, {
                   ref: editor.renderer as any,
-                  payload: editor.formPayload.value,
+                  payload: editor.uiPayload.value,
                   errors: editor.errors.value,
                   'onUpdate:mutation': editor.onMutation,
                 })
               : null,
             editor.sidebarPayload.value
-              ? h(FormRenderer, {
+              ? h(UiRenderer, {
                   ref: editor.sidebarRenderer as any,
                   payload: editor.sidebarPayload.value,
                   errors: editor.sidebarErrors.value,
@@ -222,7 +222,7 @@ describe('useElementEditor', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(Shell);
-    registerFormComponents(components);
+    registerUiComponents(components);
     components.install(app);
     app.mount(container);
 
@@ -293,7 +293,7 @@ describe('useElementEditor', () => {
         reactive: false,
       },
     });
-    const form: FormPayload = {
+    const form: UiPayload = {
       scope: [],
       refreshable: true,
       errors: [],
@@ -328,13 +328,13 @@ describe('useElementEditor', () => {
             mode: 'editable',
             path: outer,
             deltaGroup: outer,
-            nestsForms: true,
+            nestsUis: true,
             props: {
               entryTypes: [{value: 'text', label: 'Text'}],
               addLabel: 'Add',
               minEntries: 0,
             },
-            forms: [
+            uis: [
               {
                 scope,
                 refreshable: true,
@@ -352,7 +352,7 @@ describe('useElementEditor', () => {
                       mode: 'editable',
                       path: inner,
                       deltaGroup: outer,
-                      nestsForms: true,
+                      nestsUis: true,
                       props: {
                         entryTypes: [{value: 'text', label: 'Text'}],
                         addLabel: 'Add',
@@ -366,7 +366,7 @@ describe('useElementEditor', () => {
                           entryTypeIds: {text: 4},
                         },
                       },
-                      forms: [],
+                      uis: [],
                     },
                   },
                 ],
@@ -439,8 +439,8 @@ describe('useElementEditor', () => {
         cp: {getCopiedElements: () => [], onCopyElements: () => {}},
       });
       const components = createCpComponentRegistry();
-      registerFormComponents(components);
-      defineEntryFieldLayoutFormHost(components);
+      registerUiComponents(components);
+      defineEntryFieldLayoutUiHost(components);
       vi.stubGlobal('Cp', {$components: components});
       vi.resetModules();
       await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
@@ -448,7 +448,7 @@ describe('useElementEditor', () => {
         vi.unstubAllGlobals();
       });
       const path = ['fields', 'blocks'];
-      const native: FormPayload = {
+      const native: UiPayload = {
         scope: [],
         refreshable: true,
         errors: [],
@@ -465,8 +465,8 @@ describe('useElementEditor', () => {
               path,
               deltaGroup: path,
               mode: 'editable',
-              nestsForms: true,
-              forms: [],
+              nestsUis: true,
+              uis: [],
               props: {
                 entryTypes: [{value: 'text', label: 'Text'}],
                 addLabel: 'Add',
@@ -484,17 +484,17 @@ describe('useElementEditor', () => {
           },
         ],
       };
-      const captured = (ownerId: number): FormPayload => {
+      const captured = (ownerId: number): UiPayload => {
         const inner = structuredClone(native);
         Object.assign(inner.nodes[0]!.control!.props.create!, {
           ownerId,
           ownerIsDerivative: ownerId !== 73,
         });
-        const host = document.createElement('craft-entry-field-layout-form');
+        const host = document.createElement('craft-entry-field-layout-ui');
         host.dataset.fieldPath = JSON.stringify(path);
         host.dataset.payload = JSON.stringify(inner);
         host.innerHTML =
-          '<input type="hidden" name="fields[blocks]" disabled data-form-field-name>';
+          '<input type="hidden" name="fields[blocks]" disabled data-ui-field-name>';
         return {
           ...inner,
           values: {
@@ -541,7 +541,7 @@ describe('useElementEditor', () => {
       ) as HTMLElement & {ready: Promise<void>};
       await legacy.ready;
       await nextTick();
-      const host = container!.querySelector('craft-entry-field-layout-form')!;
+      const host = container!.querySelector('craft-entry-field-layout-ui')!;
       const input = container!.querySelector<HTMLInputElement>(
         'input[name="fields[blocks][extra]"]'
       )!;
@@ -700,7 +700,7 @@ describe('useElementEditor', () => {
   );
 
   /** A one-field layout, the smallest thing that can hold an unsaved value. */
-  function fieldLayout(title: string): FormPayload {
+  function fieldLayout(title: string): UiPayload {
     return {
       scope: [],
       refreshable: false,
@@ -716,7 +716,7 @@ describe('useElementEditor', () => {
             path: ['title'],
             mode: 'editable',
             deltaGroup: ['title'],
-            forms: [],
+            uis: [],
           },
         },
       ],
@@ -726,7 +726,7 @@ describe('useElementEditor', () => {
     };
   }
 
-  function sidebarForm(slug: string, autoGenerate = true): FormPayload {
+  function sidebarForm(slug: string, autoGenerate = true): UiPayload {
     return {
       scope: [],
       refreshable: false,
@@ -745,7 +745,7 @@ describe('useElementEditor', () => {
             path: ['slug'],
             mode: 'editable',
             deltaGroup: ['slug'],
-            forms: [],
+            uis: [],
           },
         },
       ],
@@ -755,7 +755,7 @@ describe('useElementEditor', () => {
     };
   }
 
-  function cardsLayout(): FormPayload {
+  function cardsLayout(): UiPayload {
     return {
       scope: [],
       refreshable: false,
@@ -776,7 +776,7 @@ describe('useElementEditor', () => {
             path: ['fields', 'matrixField'],
             mode: 'editable',
             deltaGroup: ['fields', 'matrixField'],
-            forms: [],
+            uis: [],
             omitNullValue: true,
           },
         },
@@ -998,8 +998,8 @@ describe('useElementEditor', () => {
   });
 
   it('keeps the latest field-layout refresh when responses arrive out of order', async () => {
-    const first = deferred<{data: {form: FormPayload}}>();
-    const second = deferred<{data: {form: FormPayload}}>();
+    const first = deferred<{data: {form: UiPayload}}>();
+    const second = deferred<{data: {form: UiPayload}}>();
     postSpy
       .mockImplementationOnce(() => first.promise)
       .mockImplementationOnce(() => second.promise);
@@ -1017,11 +1017,11 @@ describe('useElementEditor', () => {
     await firstRefresh;
     await nextTick();
 
-    expect(editor.formPayload.value?.values).toEqual({title: 'Latest title'});
+    expect(editor.uiPayload.value?.values).toEqual({title: 'Latest title'});
   });
 
   it('ignores a refresh that predates an authoritative page payload', async () => {
-    const refresh = deferred<{data: {form: FormPayload}}>();
+    const refresh = deferred<{data: {form: UiPayload}}>();
     postSpy.mockImplementationOnce(() => refresh.promise);
     const {editor, page} = mount(
       payload({canAutosave: false, form: fieldLayout('Original title')})
@@ -1038,7 +1038,7 @@ describe('useElementEditor', () => {
     await pendingRefresh;
     await nextTick();
 
-    expect(editor.formPayload.value?.values).toEqual({title: 'Saved title'});
+    expect(editor.uiPayload.value?.values).toEqual({title: 'Saved title'});
   });
 
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {

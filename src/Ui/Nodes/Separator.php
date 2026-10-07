@@ -23,7 +23,7 @@ class Separator implements Node
 
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
-        return Html::tag('hr', '', ['data-form-node' => $node->uid]);
+        return Html::tag('hr', '', ['data-ui-node' => $node->uid]);
     }
 
     public static function make(string $uid): self

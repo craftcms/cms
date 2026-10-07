@@ -43,7 +43,7 @@ class Heading implements Node
 
         return Html::tag('div', $heading.$description, [
             'class' => ['grid', 'gap-1', "width-{$node->props['width']}"],
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
         ]);
     }
 

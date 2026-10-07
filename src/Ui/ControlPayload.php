@@ -19,7 +19,7 @@ readonly class ControlPayload implements JsonSerializable
      * @param  array<string, mixed>  $props
      * @param  list<string>  $path
      * @param  list<string>  $deltaGroup
-     * @param  list<NestedUiPayload>  $forms
+     * @param  list<NestedUiPayload>  $uis
      */
     public function __construct(
         public string $type,
@@ -29,10 +29,10 @@ readonly class ControlPayload implements JsonSerializable
         public array $path,
         public ControlMode $mode,
         public array $deltaGroup,
-        public array $forms = [],
+        public array $uis = [],
         public bool $reactive = false,
         public mixed $emptyValue = null,
-        public bool $nestsForms = false,
+        public bool $nestsUis = false,
         public bool $omitNullValue = false,
     ) {}
 
@@ -48,11 +48,11 @@ readonly class ControlPayload implements JsonSerializable
             'deltaGroup' => $this->deltaGroup,
         ] + ($this->reactive ? ['reactive' => true] : [])
             + ($this->emptyValue === null ? [] : ['emptyValue' => $this->emptyValue])
-            + ($this->nestsForms ? ['nestsForms' => true] : [])
+            + ($this->nestsUis ? ['nestsUis' => true] : [])
             + ($this->omitNullValue ? ['omitNullValue' => true] : [])
-            + ($this->forms === [] ? [] : ['forms' => array_map(
+            + ($this->uis === [] ? [] : ['uis' => array_map(
                 fn (NestedUiPayload $form): array => $form->jsonSerialize(),
-                $this->forms,
+                $this->uis,
             )]);
     }
 }

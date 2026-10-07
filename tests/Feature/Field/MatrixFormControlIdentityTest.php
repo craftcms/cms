@@ -195,7 +195,7 @@ function matrixNestedFormScopes(array $nodes): array
     $scopes = [];
 
     foreach ($nodes as $node) {
-        foreach ($node['control']['forms'] ?? [] as $form) {
+        foreach ($node['control']['uis'] ?? [] as $form) {
             $scopes[] = $form['scope'];
         }
 

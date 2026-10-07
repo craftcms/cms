@@ -48,7 +48,7 @@ trait UpdatesFieldLayout
      */
     protected function fieldLayoutData(ElementInterface $element, ?UiPayload $rootPayload = null): array
     {
-        $requestedScope = $this->requestedFormScope('X-Craft-Form-Scope', $this->fieldLayoutRootScope());
+        $requestedScope = $this->requestedFormScope('X-Craft-Ui-Scope', $this->fieldLayoutRootScope());
         $rootPayload ??= $this->compileFieldLayout($element);
 
         try {
@@ -56,7 +56,7 @@ trait UpdatesFieldLayout
         } catch (InvalidArgumentException $exception) {
             throw new BadRequestHttpException($exception->getMessage(), $exception);
         }
-        $tabs = request()->hasHeader('X-Craft-Form-Root-Scope')
+        $tabs = request()->hasHeader('X-Craft-Ui-Root-Scope')
             ? []
             : app(UiHtmlRenderer::class)->tabMenu($rootPayload);
 
@@ -90,7 +90,7 @@ trait UpdatesFieldLayout
         $namespace = request()->header('X-Craft-Namespace');
 
         return $this->requestedFormScope(
-            'X-Craft-Form-Root-Scope',
+            'X-Craft-Ui-Root-Scope',
             $namespace === null || $namespace === ''
                 ? []
                 : explode('[', str_replace([']', '.'], ['', '['], $namespace)),

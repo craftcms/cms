@@ -271,7 +271,7 @@ The test plugin contains complete reference implementations:
 - `tests/TestClasses/TestPlugin/src/Form/Controls/Slug.php`
 - `tests/TestClasses/TestPlugin/resources/js/NoticeNode.vue`
 - `tests/TestClasses/TestPlugin/resources/js/SlugControl.vue`
-- `tests/TestClasses/TestPlugin/resources/js/register-form-components.ts`
+- `tests/TestClasses/TestPlugin/resources/js/register-ui-components.ts`
 
 Resolution rejects unregistered types and non-JSON-safe properties. Either renderer invalidates the complete Form when a
 registered component is missing, its loader fails, or rendering throws. Do not catch these failures and submit a partial
@@ -321,7 +321,7 @@ For direct implementations, use the relevant adapter contract and trait together
 
 - `LegacySettingsComponent` with `LegacySettingsForm`;
 - `LegacyField` with `LegacyFieldControl` and `LegacySettingsForm`; or
-- an adapter `FieldLayoutElement`, which already uses `LegacyFormNode`.
+- an adapter `FieldLayoutElement`, which already uses `LegacyUiNode`.
 
 The adapter captures legacy HTML once under the host namespace, including registered head and body assets and inline
 initializers. It preserves zero, one, or multiple named input roots and maps editable, read-only, static, and disabled
@@ -351,4 +351,4 @@ Before shipping a plugin Form, verify both renderers where the host supports the
 - loud failure for missing live registrations or renderer exceptions.
 
 Core's reference coverage lives in `tests/Unit/Form`, `tests/Feature/Form`,
-`resources/js/modules/forms/*.test.ts`, and `yii2-adapter/tests-laravel/Legacy/LegacyHtmlFormTest.php`.
+`resources/js/modules/ui/*.test.ts`, and `yii2-adapter/tests-laravel/Legacy/LegacyHtmlFormTest.php`.

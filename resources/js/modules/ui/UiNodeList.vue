@@ -1,0 +1,119 @@
+<script setup lang="ts">
+  import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/button-group/button-group';
+  import '@craftcms/ui/components/icon/icon';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {computed, ref, watch} from 'vue';
+  import UiNode from './UiNode.vue';
+  import {uiTabPanelId, pathsMatch} from './runtime';
+  import type {UiChange, UiNodePayload, UiPayload} from './types';
+
+  const props = defineProps<{
+    nodes: UiNodePayload[];
+    values: UiPayload['values'];
+    errors: UiPayload['errors'];
+    touchedPaths: Set<string>;
+    scope: string[];
+    refreshable: boolean;
+  }>();
+  const emit = defineEmits<{
+    (event: 'change', change: UiChange): void;
+  }>();
+  const tabs = computed(() =>
+    props.nodes.filter(
+      (node): node is UiNodePayload<{label: string}> & {uid: string} =>
+        node.component === 'craft:tab' && node.uid != null
+    )
+  );
+  const activeTab = ref<string | null>(null);
+
+  watch(
+    tabs,
+    (currentTabs) => {
+      if (!currentTabs.some((tab) => tab.uid === activeTab.value)) {
+        activeTab.value = currentTabs[0]?.uid ?? null;
+      }
+    },
+    {immediate: true}
+  );
+
+  function tabPanelId(tab: (typeof tabs.value)[number]): string {
+    return uiTabPanelId(tab.uid, props.scope);
+  }
+
+  function panelAttributes(node: UiNodePayload): {id?: string} {
+    if (tabs.value.length <= 1 || node.component !== 'craft:tab' || !node.uid) {
+      return {};
+    }
+
+    return {id: `${uiTabPanelId(node.uid, props.scope)}-tab`};
+  }
+
+  function nodeHasErrors(node: UiNodePayload): boolean {
+    const controlPath = node.control?.path;
+
+    if (
+      controlPath &&
+      props.errors.some((error) => pathsMatch(error.path, controlPath))
+    ) {
+      return true;
+    }
+
+    if (node.children?.some(nodeHasErrors)) {
+      return true;
+    }
+
+    return Boolean(
+      node.control?.uis?.some((form) => form.nodes.some(nodeHasErrors))
+    );
+  }
+
+  /**
+   * `craft-tabs` owns the selection — clicks, keyboard navigation, and the
+   * overflow menu all resolve to a `selectedIndex` — so the panel visibility
+   * this component drives follows the strip rather than tracking the
+   * interactions itself.
+   */
+  function onSelectionChanged(event: Event): void {
+    const index = (event.target as {selectedIndex?: number} | null)
+      ?.selectedIndex;
+    const tab = index === undefined ? undefined : tabs.value[index];
+
+    if (tab) {
+      activeTab.value = tab.uid;
+    }
+  }
+</script>
+
+<template>
+  <!-- UiNodeList -->
+  <craft-tabs v-if="tabs.length > 1" @craft-tab-show="onSelectionChanged">
+    <craft-tab
+      v-for="tab in tabs"
+      slot="tab"
+      :key="tab.uid"
+      :controls="`${tabPanelId(tab)}-tab`"
+    >
+      {{ tab.props.label }}
+      <craft-icon
+        v-if="nodeHasErrors(tab)"
+        name="circle-exclamation"
+        :label="t('Errors')"
+        slot="suffix"
+      />
+    </craft-tab>
+  </craft-tabs>
+  <UiNode
+    v-for="node in nodes"
+    :key="node.uid ?? node.control?.path.join('.')"
+    :node="node"
+    :initially-hidden="node.component === 'craft:tab' && node.uid !== activeTab"
+    v-bind="panelAttributes(node)"
+    :values="values"
+    :errors="errors"
+    :touched-paths="touchedPaths"
+    :scope="scope"
+    :refreshable="refreshable"
+    @change="emit('change', $event)"
+  />
+</template>

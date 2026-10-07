@@ -10,13 +10,9 @@
   } from 'vue';
   import {t} from '@craftcms/ui';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
-  import TypeConfigurator from '@/modules/forms/TypeConfigurator.vue';
-  import {valueAt} from '@/modules/forms/runtime';
-  import type {
-    FormChange,
-    FormPayload,
-    FormValues,
-  } from '@/modules/forms/types';
+  import TypeConfigurator from '@/modules/ui/TypeConfigurator.vue';
+  import {valueAt} from '@/modules/ui/runtime';
+  import type {UiChange, UiPayload, UiValues} from '@/modules/ui/types';
   import {ConditionEditor, type RuleDraft} from './types';
   import {useConditionRuleRequest} from './useConditionRuleRequest';
 
@@ -37,21 +33,21 @@
 
   const formKey = ref(0);
   const typeConfigurator = useTemplateRef('typeConfigurator');
-  const latestFormPayload = shallowRef(payload.value.form);
+  const latestUiPayload = shallowRef(payload.value.form);
 
   watch(
     () => payload.value.form,
-    (payload) => (latestFormPayload.value = payload)
+    (payload) => (latestUiPayload.value = payload)
   );
 
   editor.registerRule(props.rule.id, {
     snapshot: () => ({
       ...payload.value,
       form: {
-        ...latestFormPayload.value,
+        ...latestUiPayload.value,
         values:
           typeConfigurator.value?.currentValues() ??
-          latestFormPayload.value.values,
+          latestUiPayload.value.values,
       },
     }),
     canSubmit: () => typeConfigurator.value?.canSubmit() ?? true,
@@ -61,28 +57,28 @@
     editor.registerRule(props.rule.id);
   });
 
-  function change(_change: FormChange, values: FormValues): void {
+  function change(_change: UiChange, values: UiValues): void {
     const inputs = valueAt(values, payload.value.form.scope);
 
     editor.rules[props.rule.id] = {
       ...payload.value,
       config: {
         ...payload.value.config,
-        ...(inputs as FormValues),
+        ...(inputs as UiValues),
       },
     };
 
     editor.changed();
   }
 
-  async function refresh(values: FormValues): Promise<FormPayload> {
+  async function refresh(values: UiValues): Promise<UiPayload> {
     changingType.value = false;
 
     const refreshed = await execute({...payload.value.config, ...values});
 
     if (!refreshed) throw new Error('Condition rule refresh did not complete.');
 
-    latestFormPayload.value = refreshed.form;
+    latestUiPayload.value = refreshed.form;
 
     return refreshed.form;
   }
@@ -95,7 +91,7 @@
     if (!refreshed) return;
 
     editor.rules[props.rule.id] = refreshed;
-    latestFormPayload.value = refreshed.form;
+    latestUiPayload.value = refreshed.form;
     formKey.value++;
 
     editor.changed();
@@ -117,10 +113,10 @@
           class="min-w-0 flex-1"
           :types="editor.payload().ruleTypes"
           :selected-type-label="payload.label"
-          :form="payload.form"
+          :ui="payload.form"
           :errors="editor.errors()"
           :disabled="!editor.editable()"
-          :form-disabled="switching"
+          :ui-disabled="switching"
           :refresh="refresh"
           @select="switchType"
           @change="change"

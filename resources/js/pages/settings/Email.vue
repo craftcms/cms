@@ -3,7 +3,7 @@
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
   import FormPage from '@/pages/Form.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import type {UiPayload} from '@/modules/ui/types';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import {messageTargetHeaders} from '@/modules/messages';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -13,7 +13,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     defaultToEmail: string;
   }>();

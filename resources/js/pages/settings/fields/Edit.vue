@@ -4,12 +4,12 @@
   import {computed, ref} from 'vue';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import type {FormAction, FormSaveOptions} from '@/common/types';
-  import {pathsMatch} from '@/modules/forms/runtime';
-  import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
+  import {pathsMatch} from '@/modules/ui/runtime';
+  import type {UiChange, UiPayload, UiValue} from '@/modules/ui/types';
   import FormPage from '@/pages/Form.vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
     supportedTranslationMethods: Record<string, string[]>;
@@ -20,7 +20,7 @@
 
   const formPage = ref<{
     save(options?: FormSaveOptions): void;
-    setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
+    setValue(path: string[], value: UiValue, kind?: UiChange['kind']): void;
   }>();
   const formActions = computed<FormAction[]>(() => [
     {
@@ -31,7 +31,7 @@
     ...(props.formActions ?? []),
   ]);
 
-  function onChange(change: FormChange, values: FormPayload['values']): void {
+  function onChange(change: UiChange, values: UiPayload['values']): void {
     if (!pathsMatch(change.path, ['type'])) {
       return;
     }

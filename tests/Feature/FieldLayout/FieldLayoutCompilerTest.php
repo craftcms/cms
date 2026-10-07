@@ -137,13 +137,13 @@ it('compiles persisted entry layout intent into a form payload', function () {
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $field = $crawler->filter('craft-field[data-layout-element="field-title"]');
 
-    expect($crawler->filter('section[data-form-tab="tab-content"]'))->toHaveCount(1)
+    expect($crawler->filter('section[data-ui-tab="tab-content"]'))->toHaveCount(1)
         ->and($field)->toHaveCount(1)
         ->and($field->attr('class'))->toContain('width-50')
         ->and($field->attr('instructions-position'))->toBe('after')
         ->and($field->text())->toContain('Use sentence case.')
         ->and($field->text())->toContain('This appears publicly.')
-        ->and($crawler->filter('[data-form-node="content-note"] strong')->text())->toBe('Editorial note');
+        ->and($crawler->filter('[data-ui-node="content-note"] strong')->text())->toBe('Editorial note');
 });
 
 it('allows the form-stage event to replace typed nodes without changing persisted intent', function () {
@@ -209,10 +209,10 @@ it('compiles custom fields and shared semantic layout content', function () {
             'variant' => 'warning',
             'dismissible' => false,
         ])
-        ->and($crawler->filter('[data-form-node="heading"] h2')->text())->toBe('Details')
-        ->and($crawler->filter('hr[data-form-node="separator"]'))->toHaveCount(1)
-        ->and($crawler->filter('.line-break[data-form-node="break"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-callout[data-form-node="warning"]')->text())->toContain('Careful');
+        ->and($crawler->filter('[data-ui-node="heading"] h2')->text())->toBe('Details')
+        ->and($crawler->filter('hr[data-ui-node="separator"]'))->toHaveCount(1)
+        ->and($crawler->filter('.line-break[data-ui-node="break"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-callout[data-ui-node="warning"]')->text())->toContain('Careful');
 });
 
 it('preserves missing persisted form providers without submitting their values', function () {

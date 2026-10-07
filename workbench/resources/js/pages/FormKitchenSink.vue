@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload} from '@/modules/ui/types';
 
   defineProps<{
-    stories: Record<string, FormPayload>;
+    stories: Record<string, UiPayload>;
     additionalButtons: string;
   }>();
 </script>
@@ -18,7 +18,7 @@
   <article v-for="(payload, name) in stories" :key="name" class="mb-xl">
     <h2 class="text-lg">{{ name }}</h2>
     <form class="pane" @submit.prevent>
-      <FormRenderer :payload="payload" />
+      <UiRenderer :payload="payload" />
     </form>
   </article>
 </template>

@@ -62,7 +62,7 @@ does not provide a refresh endpoint of its own. Cell Forms are not independently
 - Compatible text cells support tab-separated paste. Enter moves to the next row in the same column; Shift+Enter moves
   back. In multiline cells, use Ctrl+Enter or Cmd+Enter. These features skip static or disabled cells and respect row limits.
 
-PHP-rendered Forms mount the same Vue editor through `<craft-table-form>`, preserving namespaced input names for native
+PHP-rendered Forms mount the same Vue editor through `<craft-table-ui>`, preserving namespaced input names for native
 form submission. The table-column settings editor also uses the shared table editor, with a Configure action for each
 column's cell-type settings.
 

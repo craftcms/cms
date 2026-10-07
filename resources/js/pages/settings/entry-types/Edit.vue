@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import type {FormAction, FormSaveOptions} from '@/common/types';
-  import type {FormPayload} from '@/modules/forms/types';
+  import type {UiPayload} from '@/modules/ui/types';
   import FormPage from '@/pages/Form.vue';
   import {t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {computed, ref} from 'vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
     brandNew: boolean;

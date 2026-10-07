@@ -703,7 +703,7 @@ class EditElementController
 
         $formContent = match (true) {
             $payload === null => null,
-            default => Html::tag('craft-entry-field-layout-form', '', [
+            default => Html::tag('craft-entry-field-layout-ui', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
         };

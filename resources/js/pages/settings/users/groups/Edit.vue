@@ -4,10 +4,10 @@
   import type {ActionItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormPage from '@/pages/Form.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import type {UiPayload} from '@/modules/ui/types';
 
   const props = defineProps<{
-    form: FormPayload;
+    form: UiPayload;
     submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     deleteAction?: {

@@ -19,7 +19,7 @@ import {
   type FieldLayoutHud,
 } from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import type {FormPayload, FormValues} from '@/modules/forms/types';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
 import {Slideout} from '@/modules/slideout';
@@ -31,19 +31,19 @@ declare const Craft: any;
 declare const $: any;
 
 interface LayoutComponentSettingsForm extends HTMLElement {
-  payload: FormPayload;
-  requestData: () => FormValues;
+  payload: UiPayload;
+  requestData: () => UiValues;
 }
 
 interface FieldLayoutSlideoutData {
-  form: FormPayload;
+  form: UiPayload;
   headHtml?: string;
   bodyHtml?: string;
 }
 
 interface FieldLayoutSlideoutSettings {
   triggerElement?: HTMLElement;
-  requestData?: () => FormValues;
+  requestData?: () => UiValues;
 }
 
 type FieldLayoutSettingsSlideout = Slideout & {
@@ -617,9 +617,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
     $fields.className = 'fields';
-    const $form = document.createElement(
-      'craft-layout-component-settings-form'
-    );
+    const $form = document.createElement('craft-layout-component-settings-ui');
     if (!('payload' in $form) || !('requestData' in $form)) {
       throw new Error('Layout component settings form is not registered.');
     }

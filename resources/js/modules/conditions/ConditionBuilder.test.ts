@@ -3,7 +3,7 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type CraftActionMenu from '@craftcms/ui/components/action-menu/action-menu';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import {registerFormComponents} from '@/modules/forms/register';
+import {registerUiComponents} from '@/modules/ui/register';
 import {expandFormData} from '@/common/utils/forms';
 import type {BuilderPayload, RulePayload, GroupConfig} from './types';
 import ConditionBuilder from './ConditionBuilder.vue';
@@ -104,7 +104,7 @@ let form: HTMLFormElement;
 let container: HTMLElement;
 
 const components = createCpComponentRegistry();
-registerFormComponents(components);
+registerUiComponents(components);
 defineConditionBuilderHost(components);
 
 beforeEach(() => {

@@ -162,7 +162,7 @@ readonly class ElementAttributeRenderer
     {
         $payload = app(UiResolver::class)->resolve($form, $context ?? $this->inlineUiContext($errors));
 
-        return Html::tag('craft-inline-attribute-form', '', [
+        return Html::tag('craft-inline-attribute-ui', '', [
             'data-payload' => Json::encode($payload),
         ]);
     }

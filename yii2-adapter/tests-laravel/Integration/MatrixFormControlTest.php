@@ -49,7 +49,7 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
         }
     });
     $html = $field->getInputHtml($owner->getFieldValue('blocks'), $owner);
-    $form = json_decode(new Crawler($html)->filter('craft-entry-field-layout-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $form = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
     $control = $form['nodes'][0]['control'];
 
     expect(array_keys($control['props']['create']['entryTypeIds']))->toBe(['secondChoice', 'firstChoice'])
@@ -169,7 +169,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         : ['fields', 'cards'];
     $html = FieldLayoutForm::fromLayout($global->getFieldLayout(), $global)->render();
     if ($insideBlock) {
-        $blocksForm = json_decode(new Crawler($html)->filter('craft-entry-field-layout-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $blocksForm = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
         $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($blocksForm['nodes']), RecursiveIteratorIterator::SELF_FIRST);
         $control = collect(iterator_to_array($nodes, false))->first(
             fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
@@ -203,7 +203,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     $this->app->forgetInstance(ElementRequest::class);
     $response = $this->postJson(action(UpdateFieldLayoutController::class), $body, [
         'X-Craft-Namespace' => implode('.', $scope),
-        'X-Craft-Form-Root-Scope' => json_encode($scope, JSON_THROW_ON_ERROR),
+        'X-Craft-Ui-Root-Scope' => json_encode($scope, JSON_THROW_ON_ERROR),
     ]);
     $response->assertSuccessful();
     $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($response->json('form.nodes')), RecursiveIteratorIterator::SELF_FIRST);

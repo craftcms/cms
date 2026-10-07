@@ -85,7 +85,7 @@ it('renders collapsible groups through the shared payload and PHP renderer', fun
     expect($payload->nodes[0]->props)->toBe([
         'label' => 'Links',
         'collapsible' => true,
-    ])->and($crawler->filter('craft-disclosure[data-form-node="links"][label="Links"]'))->toHaveCount(1)
+    ])->and($crawler->filter('craft-disclosure[data-ui-node="links"][label="Links"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-disclosure craft-field-group[slot="content"] input[name="settings[url]"]'))->toHaveCount(1);
 });
 

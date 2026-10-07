@@ -39,7 +39,7 @@ class NestedElementFieldHtml
             'name' => $inputName,
         ], $this->renderer);
 
-        return new Crawler($html)->filter('craft-entry-field-layout-form[data-field-path], craft-nested-elements-control')->first()->outerHtml();
+        return new Crawler($html)->filter('craft-entry-field-layout-ui[data-field-path], craft-nested-elements-control')->first()->outerHtml();
     }
 
     /**
@@ -73,7 +73,7 @@ class NestedElementFieldHtml
             }
         }
 
-        foreach ($crawler->filter('craft-entry-field-layout-form[data-field-path]') as $host) {
+        foreach ($crawler->filter('craft-entry-field-layout-ui[data-field-path]') as $host) {
             if (!$host instanceof DOMElement) {
                 continue;
             }
@@ -81,7 +81,7 @@ class NestedElementFieldHtml
             $host->setAttribute('id', $attributes['id']);
             $path = $control->path;
             $name = $attributes['name'] ?? array_shift($path) . implode('', array_map(fn(string $segment): string => "[{$segment}]", $path));
-            foreach (new Crawler($host)->filter('input[data-form-field-name]') as $input) {
+            foreach (new Crawler($host)->filter('input[data-ui-field-name]') as $input) {
                 if ($input instanceof DOMElement) {
                     $input->setAttribute('name', $name);
                 }

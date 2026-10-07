@@ -11,7 +11,7 @@ import {
 } from './support';
 import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
 
@@ -422,7 +422,7 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    settings: FormValues | null = null,
+    settings: UiValues | null = null,
     closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);

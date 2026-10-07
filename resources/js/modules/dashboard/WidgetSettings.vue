@@ -9,8 +9,8 @@
     update,
     refreshSettings,
   } from '@actions/Dashboard/WidgetsController';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload} from '@/modules/ui/types';
   import type {DashboardWidget} from './types';
 
   const messages = useMessages();
@@ -21,7 +21,7 @@
     cancel: [];
   }>();
 
-  const renderer = ref<InstanceType<typeof FormRenderer>>();
+  const renderer = ref<InstanceType<typeof UiRenderer>>();
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
     {}
   ).withAllErrors();
@@ -34,7 +34,7 @@
       ])
     )
   );
-  const formErrors = computed(() =>
+  const uiErrors = computed(() =>
     Object.entries(errors.value).map(([path, messages]) => ({
       path: [...(props.widget.settingsForm?.scope ?? []), ...path.split('.')],
       messages,
@@ -42,9 +42,9 @@
   );
 
   async function refresh(
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = []
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await actionClient.post(refreshSettings.url(), {
       type: props.widget.type,
       settings: values,
@@ -83,12 +83,12 @@
 <template>
   <form @submit.prevent="save">
     <craft-field-group>
-      <FormRenderer
+      <UiRenderer
         v-if="widget.settingsForm"
         ref="renderer"
         :payload="widget.settingsForm"
         :refresh="refresh"
-        :errors="formErrors"
+        :errors="uiErrors"
       />
     </craft-field-group>
     <craft-callout

@@ -44,7 +44,7 @@ class CopyAttribute implements Node
     {
         return Html::tag('craft-copy-attribute', '', [
             'value' => $node->props['value'],
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
         ]);
     }
 

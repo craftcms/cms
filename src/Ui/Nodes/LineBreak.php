@@ -25,7 +25,7 @@ class LineBreak implements Node
     {
         return Html::tag('div', '', [
             'class' => 'line-break',
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
         ]);
     }
 

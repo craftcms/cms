@@ -38,7 +38,7 @@ class Tab extends Container
             'aria' => ['label' => $node->props['label']],
             'data' => [
                 'id' => $renderer->tabId($node, $payload),
-                'form-tab' => $node->uid,
+                'ui-tab' => $node->uid,
                 'layout-tab' => $node->uid,
             ],
         ]);

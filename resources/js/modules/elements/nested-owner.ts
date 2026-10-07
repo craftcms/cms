@@ -1,6 +1,6 @@
 import type {InjectionKey} from 'vue';
-import {pathsMatch, visitControls} from '@/modules/forms/runtime';
-import type {FormPayload} from '@/modules/forms/types';
+import {pathsMatch, visitControls} from '@/modules/ui/runtime';
+import type {UiPayload} from '@/modules/ui/types';
 
 /** The editor that owns a nested field, including when it lives in a slideout. */
 export interface NestedOwnerEditor {
@@ -24,7 +24,7 @@ export interface NestedOwnerContext {
 }
 
 export function nestedOwnerContext(
-  form: FormPayload | null,
+  form: UiPayload | null,
   path: string[]
 ): NestedOwnerContext | null {
   if (!form) {

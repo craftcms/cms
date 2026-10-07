@@ -195,7 +195,7 @@ it('preserves public and protected custom field HTML hooks through inline Form r
         fn() => $entry->getInlineAttributeInputHtml('field:inline-field'),
         'index[element-42][fields]',
     );
-    $payload = json_decode(new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $payload = json_decode(new Crawler($html)->filter('craft-inline-attribute-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
     $input = new Crawler($payload['nodes'][0]['control']['props']['fragment']['html'])->filter('input');
 
     expect($input->attr('name'))->toBe('index[element-42][fields][body]')
@@ -423,7 +423,7 @@ it('preserves nullable settings and renderer-native static output on built-in al
     ])->getStaticHtml(null, $entry);
 
     expect($html)->toContain('Entries can only be created after the entry has been saved.')
-        ->not->toContain('data-form-matrix-add');
+        ->not->toContain('data-ui-matrix-add');
 })->with([
     'cards' => Matrix::VIEW_MODE_CARDS,
     'cards grid' => Matrix::VIEW_MODE_CARDS_GRID,

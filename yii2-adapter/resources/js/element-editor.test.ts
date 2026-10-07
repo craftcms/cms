@@ -10,8 +10,8 @@ import {
   ScreenPropsStoreKey,
   type ScreenPageProps,
 } from '@/common/composables/screen';
-import {registerFormComponents} from '@/modules/forms/register';
-import type {FormPayload} from '@/modules/forms/types';
+import {registerUiComponents} from '@/modules/ui/register';
+import type {UiPayload} from '@/modules/ui/types';
 import EditPage from '@/pages/elements/Edit.vue';
 import './element-editor';
 
@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 it('autosaves and submits custom HTML inputs together with native field edits', async () => {
-  const form: FormPayload = {
+  const form: UiPayload = {
     scope: [],
     refreshable: false,
     nodes: [
@@ -75,7 +75,7 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
           path: ['fields', 'body'],
           mode: 'editable',
           deltaGroup: ['fields', 'body'],
-          forms: [],
+          uis: [],
         },
       },
     ],
@@ -139,7 +139,7 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
         );
     },
   });
-  registerFormComponents(cpComponentRegistry);
+  registerUiComponents(cpComponentRegistry);
   cpComponentRegistry.install(app);
   container = document.createElement('div');
   document.body.append(container);

@@ -32,7 +32,7 @@ class TemplateContent implements Node
     {
         return Html::tag('div', $node->props['html'], [
             'class' => ["width-{$node->props['width']}"],
-            'data-form-node' => $node->uid,
+            'data-ui-node' => $node->uid,
             'inert' => true,
         ]);
     }
