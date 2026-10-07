@@ -330,7 +330,7 @@ describe('Vue table rows', () => {
     expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
   });
 
-  it('locks row structure for native submission and leaves cancelled submissions editable', async () => {
+  it('locks row structure for native submission and leaves canceled submissions editable', async () => {
     await mountTable();
     const cancel = (event: Event) => event.preventDefault();
     form.addEventListener('submit', cancel);

@@ -49,7 +49,7 @@ export default css`
   /*
     Non-modal dialogs get no \`::backdrop\` — that pseudo only paints for the
     top layer — so one is rendered instead. \`show()\` also leaves the dialog in
-    normal flow, hence the fixed positioning to centre it.
+    normal flow, hence the fixed positioning to center it.
   */
   .backdrop {
     position: fixed;

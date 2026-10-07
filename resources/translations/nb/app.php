@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Kan utnyttes til å avsløre sensitivt innhold gjennom informasjonslekkasjeangrep.',
     'Can contain Markdown formatting.' => 'Kan inneholde Markdown-formatering.',
     'Cancel' => 'Avbryt',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Finner ikke indekseringsøkten, eller det er ingenting å vurdere.',
     'Canton' => 'Canton',
     'Can’t run Craft CMS' => 'Kan ikke kjøre Craft CMS',

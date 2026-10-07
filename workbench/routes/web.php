@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Workbench\App\Http\Controllers\FormKitchenSinkController;
+use Workbench\App\Http\Controllers\LayoutSlotsDemoController;
 
 Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
     ->prefix('{cpTrigger}/{actionTrigger}')
@@ -21,4 +22,6 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->whereIn('type', ['controls', 'nodes'])
             ->whereIn('renderer', ['vue', 'html'])
             ->name('workbench.forms.show');
+        Route::get('workbench/layout-slots', LayoutSlotsDemoController::class)
+            ->name('workbench.layout-slots');
     });

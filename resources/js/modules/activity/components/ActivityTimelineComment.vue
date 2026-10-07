@@ -212,6 +212,7 @@
     data-activity-comment
     :actor="event.actor"
     :impersonator="event.impersonator"
+    :origin="event.origin"
     :description-html="event.description.html"
     :description-text="event.description.text"
     :html="comment.html"

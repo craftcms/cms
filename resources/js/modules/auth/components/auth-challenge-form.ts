@@ -232,7 +232,7 @@ export abstract class CraftAuthChallengeForm extends LitElement {
    *
    * Call this instead of `customElements.define()`. It defines the custom
    * element (guarded against double-registration) and records the class so that
-   * Craft's login challenge component recognises it as a native method and
+   * Craft's login challenge component recognizes it as a native method and
    * renders it directly instead of falling back to the legacy JS form handler.
    *
    * @param tagName      - The custom element tag name, e.g. `'craft-totp-form'`.

@@ -44,13 +44,6 @@ use function CraftCms\Cms\currentUserElement;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * Asks for the nav tree to be sent again, although the client already has
-     * it — by a visit following something that changed what the nav lists,
-     * such as saving an element type's sources.
-     */
-    public const string REFRESH_NAV_HEADER = 'X-Craft-Refresh-Nav';
-
-    /**
      * Marks that the `app` view composer has been bound for this request.
      *
      * @see self::handle()
@@ -229,27 +222,10 @@ class HandleInertiaRequests extends Middleware
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
-                // Sent on the first response and not again: the tree is the
-                // same on every page, so re-serialising it into each one is
-                // pure weight. It carries no selection for that reason — the
-                // front end marks the trail from the URL it's on — and no
-                // badge counts, which are volatile and ride along below.
-                // Keyed by site: the tree now lists only the sources that run
-                // on the site the CP is working with, so it's cached per site
-                // on the client and re-sent the first time each one is opened,
-                // rather than once for the whole session.
-                //
-                // Left empty while a Craft update is pending: the tree is built
-                // from sections, volumes and the rest, which a migration that
-                // hasn't run yet may not have added columns for — and the
-                // updater screen is the one that has to render for the user to
-                // run it. The key changes with it, so the real tree is sent
-                // once the update is through.
-                'nav' => $updatePending
-                    ? Inertia::once(fn (): array => [])->as('craft.nav.pending')
-                    : Inertia::once(fn () => $nav->getTree())
-                        ->as('craft.nav.'.($nav->navSiteId() ?? 'all'))
-                        ->fresh($request->headers->has(self::REFRESH_NAV_HEADER)),
+                // Rebuild on each visit so plugins and nav listeners can
+                // respond to the current request. Keep the updater independent
+                // of tables or columns that pending migrations may add.
+                'nav' => fn (): array => $updatePending ? [] : $nav->getTree(),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.

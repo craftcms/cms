@@ -13,9 +13,9 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * Set `label` and `help-text` as attributes for plain text, or slot them when
  * they need markup. Change `type` to get any of the native input types —
  * `craft-input-date` and `craft-input-time` are exactly that, with the type
- * fixed and a little behaviour added.
+ * fixed and a little behavior added.
  *
- * A bare input is unlabelled; either give it a `label`, or wrap it in
+ * A bare input is unlabeled; either give it a `label`, or wrap it in
  * `craft-field`, which supplies the label and error handling for you.
  *
  * @slot input - The native input. Supplied by the component; you rarely touch

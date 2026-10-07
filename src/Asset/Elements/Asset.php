@@ -564,13 +564,26 @@ class Asset extends Element
     protected static function defineSources(string $context): array
     {
         $sources = [];
-        $user = currentUserElement();
-        $volumeIds = in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])
+        $forNavigation = $context === ElementSources::CONTEXT_NAVIGATION;
+        $user = $forNavigation ? null : currentUserElement();
+        $volumeIds = in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL, ElementSources::CONTEXT_NAVIGATION])
             ? Volumes::getViewableVolumeIds()
             : Volumes::getAllVolumeIds();
 
         foreach ($volumeIds as $volumeId) {
             $folder = Folders::getRootFolderByVolumeId($volumeId);
+
+            if ($forNavigation) {
+                $volume = $folder->getVolume();
+                $sources[] = [
+                    'key' => "volume:$volume->uid",
+                    'label' => t($folder->name, category: 'site'),
+                    'data' => ['volume-handle' => $volume->handle],
+                ];
+
+                continue;
+            }
+
             $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
@@ -579,10 +592,21 @@ class Asset extends Element
             $context !== ElementSources::CONTEXT_SETTINGS &&
             ! app()->runningInConsole()
         ) {
-            $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
-            $sources[] = [
+            $source = [
                 'key' => 'temp',
                 'label' => t('Temporary Uploads'),
+                'data' => ['volume-handle' => false],
+            ];
+
+            if ($forNavigation) {
+                $sources[] = $source;
+
+                return $sources;
+            }
+
+            $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
+            $sources[] = [
+                ...$source,
                 'hasThumbs' => true,
                 'criteria' => ['folderId' => $temporaryUploadFolder->id],
                 'defaultSort' => ['dateCreated', 'desc'],

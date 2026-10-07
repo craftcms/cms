@@ -5,7 +5,7 @@ import * as CheckboxIndeterminateStories from './checkbox-indeterminate.stories'
 
 # Checkbox Indeterminate
 
-`<craft-checkbox-indeterminate>` is a parent checkbox that summarises the ones nested under it.
+`<craft-checkbox-indeterminate>` is a parent checkbox that summarizes the ones nested under it.
 
 <Canvas of={CheckboxIndeterminateStories.Default} sourceState="shown" />
 
@@ -13,7 +13,7 @@ It is checked when every child is, unchecked when none are, and indeterminate wh
 
 ## The Third State
 
-Indeterminate is a summary, not a value. The parent never posts an indeterminate value; only the children it summarises post anything at all.
+Indeterminate is a summary, not a value. The parent never posts an indeterminate value; only the children it summarizes post anything at all.
 
 That is why this is a different component from a [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs) with `indeterminate` set. The plain checkbox exposes the state so you can drive it yourself; this one derives it, so the parent cannot fall out of step with its children.
 

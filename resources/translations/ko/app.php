@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Can be exploited to reveal sensitive content by information disclosure attacks.',
     'Can contain Markdown formatting.' => '마크다운 서식을 포함할 수 없습니다.',
     'Cancel' => '취소',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => '인덱싱 세션을 찾을 수 없거나 검토할 항목이 없습니다.',
     'Canton' => '구역',
     'Can’t run Craft CMS' => 'Craft CMS를 실행할 수 없습니다',

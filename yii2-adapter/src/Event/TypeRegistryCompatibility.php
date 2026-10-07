@@ -12,7 +12,15 @@ use yii\base\Event;
 /** @internal */
 class TypeRegistryCompatibility
 {
-    /** @param class-string<Event> $eventClass */
+    /**
+     * Mirrors a Craft 5 `registerXTypes` event onto a Craft 6 type registry.
+     *
+     * The event fires on the registry's first read, not here. Craft 5 fired
+     * these from the getters, so handlers may assume request state — a user,
+     * a site — that boot doesn't have.
+     *
+     * @param  class-string<Event>  $eventClass
+     */
     public static function reconcile(
         TypeRegistry $registry,
         Component $component,
@@ -24,12 +32,14 @@ class TypeRegistryCompatibility
             return;
         }
 
-        $types = $registry->types();
-        $event = new $eventClass([$attribute => $types->all()]);
-        $component->trigger($eventName, $event);
-        $transformedTypes = collect($event->{$attribute});
+        $registry->defer(static function() use ($registry, $component, $eventName, $attribute, $eventClass) {
+            $types = $registry->types();
+            $event = new $eventClass([$attribute => $types->all()]);
+            $component->trigger($eventName, $event);
+            $transformedTypes = collect($event->{$attribute});
 
-        $registry->remove(...$types->diff($transformedTypes));
-        $registry->register(...$transformedTypes->diff($types));
+            $registry->remove(...$types->diff($transformedTypes));
+            $registry->register(...$transformedTypes->diff($types));
+        });
     }
 }

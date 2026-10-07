@@ -92,7 +92,7 @@ export async function moveAssets(
       );
 
       // A forced/renamed move shouldn't clash again; if it somehow does, count
-      // it as cancelled rather than looping.
+      // it as canceled rather than looping.
       if (data.conflict) {
         cancelled++;
         continue;

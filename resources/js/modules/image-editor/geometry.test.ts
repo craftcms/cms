@@ -133,14 +133,14 @@ it('finds no handle in the middle of the rectangle', () => {
   expect(hitTestHandle({x: 320, y: 220}, clipper)).toBeNull();
 });
 
-it('swaps width and height about the centre when it already fits', () => {
+it('swaps width and height about the center when it already fits', () => {
   // A 300x200 crop sitting well inside a 600x400 image.
   const clipper = {left: 320, top: 220, width: 300, height: 200};
   const turned = transposeRectangle(clipper, image);
 
   expect(turned.width).toBe(200);
   expect(turned.height).toBe(300);
-  // Centre is preserved, so the crop stays where the user framed it.
+  // Center is preserved, so the crop stays where the user framed it.
   expect(turned.left + turned.width / 2).toBeCloseTo(320, 10);
   expect(turned.top + turned.height / 2).toBeCloseTo(220, 10);
 });
@@ -167,7 +167,7 @@ it('shrinks a turned rectangle that would leave the image', () => {
   expect(turned.height).toBeLessThan(560);
 });
 
-it('keeps a turned rectangle centred where it was', () => {
+it('keeps a turned rectangle centered where it was', () => {
   const clipper = {left: 200, top: 150, width: 500, height: 200};
   const turned = transposeRectangle(clipper, image);
 

@@ -16,6 +16,56 @@ use stdClass;
 #[Singleton]
 class LaravelMigrations
 {
+    public function ensurePassportTables(): void
+    {
+        if (! Schema::hasTable(Table::OAUTH_AUTH_CODES)) {
+            Schema::create(Table::OAUTH_AUTH_CODES, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->foreignId('user_id')->index();
+                $table->foreignUuid('client_id');
+                $table->text('scopes')->nullable();
+                $table->boolean('revoked');
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_ACCESS_TOKENS)) {
+            Schema::create(Table::OAUTH_ACCESS_TOKENS, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->foreignUuid('client_id');
+                $table->string('name')->nullable();
+                $table->text('scopes')->nullable();
+                $table->boolean('revoked');
+                $table->timestamps();
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_REFRESH_TOKENS)) {
+            Schema::create(Table::OAUTH_REFRESH_TOKENS, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->char('access_token_id', 80)->index();
+                $table->boolean('revoked');
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_CLIENTS)) {
+            Schema::create(Table::OAUTH_CLIENTS, function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->nullableMorphs('owner');
+                $table->string('name');
+                $table->string('secret')->nullable();
+                $table->string('provider')->nullable();
+                $table->text('redirect_uris');
+                $table->text('grant_types');
+                $table->boolean('revoked');
+                $table->timestamps();
+            });
+        }
+    }
+
     public function ensureNotificationsTable(): void
     {
         if (Schema::hasTable('notifications')) {

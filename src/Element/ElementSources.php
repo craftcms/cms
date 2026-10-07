@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -26,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
@@ -49,6 +53,8 @@ class ElementSources
     public const string CONTEXT_FIELD = 'field';
 
     public const string CONTEXT_INDEX = 'index';
+
+    public const string CONTEXT_NAVIGATION = 'navigation';
 
     public const string CONTEXT_MODAL = 'modal';
 
@@ -152,6 +158,15 @@ class ElementSources
         ?string $page = null,
         ?int $siteId = null,
     ): Collection {
+        // Source listeners expect the full index metadata and the existing context.
+        if ($context === self::CONTEXT_NAVIGATION && (
+            ! in_array($elementType, [Entry::class, Asset::class], true) ||
+            isset($this->sources[$elementType][self::CONTEXT_INDEX]) ||
+            Event::hasListeners(ElementSourcesResolving::class)
+        )) {
+            $context = self::CONTEXT_INDEX;
+        }
+
         $sources = $this
             ->sources($elementType, $context)
             ->unless(
@@ -164,7 +179,7 @@ class ElementSources
             isset($sources[0]['page']) &&
             // ignore if there's only one page and it has a blank name; otherwise there's no way to fix
             // (https://github.com/craftcms/cms/issues/18321)
-            ($sources[0]['page'] !== '' || count($this->getPages($elementType)) !== 1)
+            ($sources[0]['page'] !== '' || count($this->getPages($elementType, $context)) !== 1)
         ) {
             $pageNameId = $this->pageNameId($page);
             $sources = $sources->filter(fn (array $source) => (
@@ -222,7 +237,7 @@ class ElementSources
                 }
 
                 if ($source['type'] === self::TYPE_CUSTOM) {
-                    if ($context === self::CONTEXT_INDEX && ! $this->showCustomSource($source)) {
+                    if (in_array($context, [self::CONTEXT_INDEX, self::CONTEXT_NAVIGATION], true) && ! $this->showCustomSource($source)) {
                         continue;
                     }
 
@@ -384,10 +399,10 @@ class ElementSources
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @return Collection<int,string>
      */
-    public function getPages(string $elementType): Collection
+    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX): Collection
     {
         $pages = [];
-        foreach ($this->getSources($elementType) as $source) {
+        foreach ($this->getSources($elementType, $context) as $source) {
             // divide all sources into pages
             if (isset($source['page'])) {
                 $pages[$source['page']][] = $source;

@@ -119,9 +119,7 @@
                 [
                   h('craft-indicator', {
                     variant: row.original.enabled ? 'success' : 'empty',
-                    appearance: row.original.enabled
-                      ? 'outline-fill'
-                      : 'outline',
+                    appearance: row.original.enabled ? 'solid' : 'outline',
                   }),
                   h('span', getValue()),
                 ]

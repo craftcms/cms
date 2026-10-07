@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Információkiadási támadásokkal érzékeny tartalmak feltárására használható.',
     'Can contain Markdown formatting.' => 'Tartalmazhat Markdown formázást.',
     'Cancel' => 'Mégse',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Az indexelési munkamenet nem található, vagy nincs semmi felülvizsgálni való.',
     'Canton' => 'Kanton',
     'Can’t run Craft CMS' => 'Craft CMS nem futtatható',
