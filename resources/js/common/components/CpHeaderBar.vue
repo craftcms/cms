@@ -157,7 +157,8 @@
     grid-template-rows: repeat(2, auto);
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
-    box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    box-shadow: var(--shadow-xs), var(--shadow-lg);
     position: relative;
     z-index: var(--c-layer-overlay);
 

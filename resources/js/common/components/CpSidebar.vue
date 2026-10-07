@@ -3,7 +3,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
-  import {computed, nextTick, useTemplateRef, watch} from 'vue';
+  import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
+  import {useResizeObserver} from '@vueuse/core';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {type CraftData} from '@/common/composables/useCraftData';
   import {usePage} from '@inertiajs/vue3';
@@ -35,6 +36,19 @@
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
+  // Whether the nav overflows its body, so the footer can show it's floating
+  // above more of it. Watching the nav as well as the body catches branches
+  // expanding, which grow the nav without resizing the body.
+  const body = useTemplateRef<HTMLElement>('body');
+  const scrolling = ref(false);
+  useResizeObserver(
+    () => (body.value ? [body.value, ...body.value.children] : []),
+    () => {
+      scrolling.value =
+        !!body.value && body.value.scrollHeight > body.value.clientHeight;
+    }
+  );
+
   // The item re-renders as a different element when the nav collapses, which
   // would otherwise drop focus to the page.
   async function toggleCollapsed() {
@@ -54,7 +68,10 @@
     class="cp-sidebar"
     :data-visibility="sidebar.visibility"
     :data-mode="sidebar.mode"
-    :class="{'cp-sidebar--collapsed': collapsed}"
+    :class="{
+      'cp-sidebar--collapsed': collapsed,
+      'cp-sidebar--scrolling': scrolling,
+    }"
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
@@ -71,7 +88,7 @@
       >
       </craft-button>
     </div>
-    <div class="cp-sidebar__body">
+    <div ref="body" class="cp-sidebar__body">
       <!-- Floating, the sidebar overlays the page and there's nowhere for a
         flyout to go, so every branch expands in place instead. -->
       <MainNav
@@ -104,7 +121,6 @@
     flex-direction: column;
     inset-block-start: 0;
     flex: 0 0 auto;
-    border-inline-end: 1px solid var(--c-color-border-quiet);
     overflow: clip;
   }
 
@@ -172,8 +188,11 @@
     min-height: var(--cp-footer-height);
     position: sticky;
     z-index: 1;
+    border-block-start: 1px solid transparent;
     inset-block-end: var(--cp-debug-bar-height, 0px);
-    background-color: var(--c-surface-sunken);
-    border-block-start: 1px solid var(--c-color-border-quiet);
+  }
+
+  .cp-sidebar--scrolling .cp-sidebar__footer {
+    border-block-start-color: var(--c-color-border-quiet);
   }
 </style>

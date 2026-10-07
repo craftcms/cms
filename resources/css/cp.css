@@ -140,6 +140,57 @@ Temporary holding for cp-pane styles until craft-pane is a thing
 }
 
 /**
+Body: the inset panel a page's content sits in, beside the global nav
+ */
+.cp-body {
+  --cp-body-inset: var(--c-spacing-md);
+  --cp-body-border-width: 1px;
+  margin-block: var(--cp-body-inset);
+  margin-inline-end: var(--cp-body-inset);
+  background-color: var(--c-surface-default);
+  border: var(--cp-body-border-width) solid var(--c-color-neutral-border-quiet);
+  border-radius: var(--c-radius-xl);
+  box-shadow: var(--shadow-xs), var(--shadow-lg);
+  overflow: clip;
+}
+
+/*
+ * Edge to edge once the details panel stops sharing the row and hovers over the
+ * content instead. That fold is measured on .cp-body, which can't query its own
+ * width, so these query the shell around it: the fold's 880px (1130px beside a
+ * secondary nav) plus the 50px tab rail and the panel's two border pixels. The
+ * border goes transparent rather than away, so the panel's width doesn't move
+ * when it flips. Keep in step with the fold queries in PageScreen.vue.
+ */
+@container cp-shell (width < 932px) {
+  .cp-body {
+    --cp-body-inset: 0px;
+    border-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* The docked global sidebar keeps a dividing line beside the panel. */
+@media (width >= var(--breakpoint-lg)) {
+  @container cp-shell (width < 932px) {
+    .cp-body {
+      border-inline-start-color: var(--c-color-neutral-border-quiet);
+    }
+  }
+
+  @container cp-shell (width < 1182px) {
+    .cp-body:has(.cp-content--sidebar.cp-content--details) {
+      --cp-body-inset: 0px;
+      border-color: transparent;
+      border-inline-start-color: var(--c-color-neutral-border-quiet);
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+/**
 Sidebar metadata
  */
 .cp-metadata-list {
