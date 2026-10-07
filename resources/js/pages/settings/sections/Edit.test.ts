@@ -41,7 +41,8 @@ const values = {
       singleHomepage: false,
       singleUri: '',
       uriFormat: '',
-      template: '',
+      routeType: 'template',
+      route: '',
       enabledByDefault: true,
     },
   },
@@ -82,7 +83,8 @@ it('generates new section site settings from the name', async () => {
         ...values.sites.default,
         singleUri: 'news',
         uriFormat: 'news/{slug}',
-        template: 'news/_entry.twig',
+        routeType: 'template',
+        route: 'news/_entry.twig',
       },
     },
     'typing'
@@ -103,10 +105,6 @@ async function mount(brandNew: boolean): Promise<void> {
     submit: {method: 'post', url: '/sections'},
     refreshUrl: '/sections/form',
     brandNew,
-    homepageUri: '__home__',
-    templateOptions: [],
-    isMultiSite: false,
-    headlessMode: false,
   });
   app.mount(container);
   await nextTick();

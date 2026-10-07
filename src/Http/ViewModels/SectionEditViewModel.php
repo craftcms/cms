@@ -25,7 +25,6 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
@@ -49,7 +48,7 @@ class SectionEditViewModel extends ViewModel
         private readonly FormResolver $formResolver,
         public readonly bool $brandNew,
         private readonly bool $readOnly,
-        public readonly bool $headlessMode,
+        private readonly bool $headlessMode,
         private readonly ?array $values = null,
     ) {}
 
@@ -98,15 +97,15 @@ class SectionEditViewModel extends ViewModel
             ] : [],
             $typeField,
             Separator::make('entry-types-separator'),
-            Heading::make('entry-types-heading', t('Entry Types'))
-                ->description(t('Choose the types of entries that can be included in this section.')),
-            Field::make(control: EntryTypeSelect::make('entryTypes')
-                ->allowOverrides()
-                ->create(! $this->readOnly)),
+            Field::make(t('Entry Types'))
+                ->instructions(t('Choose the types of entries that can be included in this section.'))
+                ->control(EntryTypeSelect::make('entryTypes')
+                    ->allowOverrides()
+                    ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
-            Heading::make('site-settings-heading', t('Site settings'))
-                ->description(t('Choose which sites this section should be available in, and configure the site-specific settings.')),
-            Field::make(control: $this->siteSettingsControl()),
+            Field::make(t('Site settings'))
+                ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
+                ->control($this->siteSettingsControl($type)),
         ]);
 
         if ($this->isMultiSite() && in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
@@ -141,24 +140,26 @@ class SectionEditViewModel extends ViewModel
 
         $form->add(
             Separator::make('preview-targets-separator'),
-            Heading::make('preview-targets-heading', t('Preview Targets'))
-                ->description(t('Locations that should be available for previewing entries in this section.')),
-            Field::make(control: Table::make('previewTargets')
-                ->columns([
-                    'label' => ['heading' => t('Label'), 'type' => 'singleline'],
-                    'urlFormat' => [
-                        'heading' => t('URL Format'),
-                        'type' => 'singleline',
-                        'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
-                        'textExpanderTriggers' => [
-                            ...SelectOptions::getEnvTextExpanderTriggers(true),
-                            ...$objectTemplateTriggers,
+            Field::make(t('Preview Targets'))
+                ->instructions(t('Locations that should be available for previewing entries in this section.'))
+                ->control(Table::make('previewTargets')
+                    ->columns([
+                        'label' => ['heading' => t('Label'), 'type' => 'singleline'],
+                        'urlFormat' => [
+                            'heading' => t('URL Format'),
+                            'type' => 'singleline',
+                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'textExpanderTriggers' => [
+                                ...SelectOptions::getEnvTextExpanderTriggers(true),
+                                ...$objectTemplateTriggers,
+                            ],
                         ],
-                    ],
-                    'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
-                ])
-                ->allowAdd()
-                ->allowDelete()),
+                        'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
+                    ])
+                    ->defaultValues(['refresh' => true])
+                    ->addRowLabel(t('Add a target'))
+                    ->allowAdd()
+                    ->allowDelete()),
         );
 
         if (in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
@@ -195,18 +196,7 @@ class SectionEditViewModel extends ViewModel
             : action([SectionsController::class, 'renderForm']);
     }
 
-    public function homepageUri(): string
-    {
-        return Element::HOMEPAGE_URI;
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function templateOptions(): array
-    {
-        return SelectOptions::getTemplateSuggestions();
-    }
-
-    public function isMultiSite(): bool
+    private function isMultiSite(): bool
     {
         return $this->sites->isMultiSite();
     }
@@ -219,12 +209,13 @@ class SectionEditViewModel extends ViewModel
         foreach ($this->sites->getAllSites() as $site) {
             $settings = $this->section->siteSettings[$site->id] ?? null;
             $uriFormat = $settings === null ? '' : ($settings->uriFormat ?? '');
+            $homepage = $uriFormat === Element::HOMEPAGE_URI;
             $siteSettings[$site->handle] = [
                 'enabled' => $this->brandNew || $settings !== null,
                 'siteId' => $site->id,
                 'name' => $site->getName(),
-                'singleHomepage' => false,
-                'singleUri' => $uriFormat,
+                'singleHomepage' => $homepage,
+                'singleUri' => $homepage ? '' : $uriFormat,
                 ...($settings ?? new ElementSiteSettings)->toForm(),
                 'enabledByDefault' => $settings === null || $settings->enabledByDefault,
             ];
@@ -251,23 +242,53 @@ class SectionEditViewModel extends ViewModel
         ];
     }
 
-    private function siteSettingsControl(): Table
+    /**
+     * Columns that don't apply to the section type stay as hidden cells, so
+     * their values survive switching the type back.
+     */
+    private function siteSettingsControl(SectionType $type): Table
     {
+        $single = $type === SectionType::Single;
+        $show = fn (bool $visible, array $column): array => $visible ? $column : [...$column, 'type' => 'hidden'];
+        $urlPlaceholder = $single
+            ? t('Leave blank if the entry doesn’t have a URL')
+            : t('Leave blank if entries don’t have URLs');
+
         return Table::make('sites')
             ->keyed()
             ->columns([
                 'name' => ['heading' => t('Site'), 'type' => 'heading'],
-                'enabled' => ['heading' => t('Enabled'), 'type' => 'lightswitch'],
-                'singleHomepage' => ['heading' => t('Homepage'), 'type' => 'checkbox'],
-                'singleUri' => ['heading' => t('URI'), 'type' => 'singleline'],
-                'uriFormat' => [
+                'enabled' => $show($this->isMultiSite(), [
+                    'heading' => t('Enabled'),
+                    'type' => 'lightswitch',
+                    'toggle' => ['singleHomepage', 'singleUri', 'uriFormat', 'routeType', 'route', 'enabledByDefault'],
+                ]),
+                'singleHomepage' => $show($single, [
+                    'heading' => t('Homepage'),
+                    'type' => 'checkbox',
+                    'toggle' => ['!singleUri'],
+                ]),
+                'singleUri' => $show($single, [
+                    'heading' => t('URI'),
+                    'type' => 'singleline',
+                    'code' => true,
+                    'placeholder' => $urlPlaceholder,
+                    'info' => t('What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'),
+                ]),
+                'uriFormat' => $show(! $single, [
                     'heading' => t('Entry URI Format'),
                     'type' => 'singleline',
+                    'code' => true,
+                    'placeholder' => $urlPlaceholder,
                     'info' => SelectOptions::getObjectTemplateTip(),
                     'textExpanderTriggers' => $this->objectTemplateTriggers(),
-                ],
-                'route' => ElementSiteSettings::routeColumn(),
-                'enabledByDefault' => ['heading' => t('Default Status'), 'type' => 'lightswitch'],
+                ]),
+                'route' => $show(! $this->headlessMode, [
+                    ...ElementSiteSettings::routeColumn(),
+                    'type' => 'template',
+                    'options' => SelectOptions::getTemplateSuggestions(),
+                ]),
+                'enabledByDefault' => $show(! $single, ['heading' => t('Default Status'), 'type' => 'lightswitch']),
             ]);
     }
 

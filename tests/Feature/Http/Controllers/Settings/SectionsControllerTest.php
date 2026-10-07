@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\Http\ViewModels\SectionEditViewModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigPaths;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -161,6 +164,79 @@ it('refreshes the fields that depend on the section type', function () {
         ->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors'])
         ->and($paths($single->json('form.nodes')))
         ->not->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors']);
+});
+
+function sectionFormControl(array $nodes, string $path): array
+{
+    return collect(flattenFormNodes($nodes))->first(fn (array $node) => ($node['control']['path'] ?? null) === [$path])['control'];
+}
+
+it('shows the site settings columns for the section type', function () {
+    $columns = fn (string $type) => sectionFormControl(postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(['type' => $type]),
+        'scope' => [],
+    ])->assertOk()->json('form.nodes'), 'sites')['props']['columns'];
+
+    $channel = $columns(SectionType::Channel->value);
+    $single = $columns(SectionType::Single->value);
+
+    expect($channel['uriFormat']['type'])->toBe('singleline')
+        ->and($channel['enabledByDefault']['type'])->toBe('lightswitch')
+        ->and($channel['singleHomepage']['type'])->toBe('hidden')
+        ->and($channel['singleUri']['type'])->toBe('hidden')
+        ->and($single['singleHomepage']['type'])->toBe('checkbox')
+        ->and($single['singleHomepage']['toggle'])->toBe(['!singleUri'])
+        ->and($single['singleUri']['type'])->toBe('singleline')
+        ->and($single['uriFormat']['type'])->toBe('hidden')
+        ->and($single['enabledByDefault']['type'])->toBe('hidden')
+        // Single-site installs have nothing to enable or disable.
+        ->and($channel['enabled']['type'])->toBe('hidden')
+        ->and($channel['route']['type'])->toBe('template')
+        ->and($channel['route']['options'][0]['type'])->toBe('optgroup');
+});
+
+it('lets each site be enabled in multi-site installs', function () {
+    Site::factory()->create();
+    app(SitesService::class)->refreshSites();
+
+    $enabled = sectionFormControl(postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(),
+        'scope' => [],
+    ])->assertOk()->json('form.nodes'), 'sites')['props']['columns']['enabled'];
+
+    expect($enabled['type'])->toBe('lightswitch')
+        ->and($enabled['toggle'])->toContain('uriFormat', 'route', 'enabledByDefault');
+});
+
+it('checks the homepage box for a single saved at the homepage URI', function () {
+    $section = $this->sections->getSectionById(Section::first()->id);
+    $section->type = SectionType::Single;
+    foreach ($section->getSiteSettings() as $siteSettings) {
+        $siteSettings->uriFormat = Element::HOMEPAGE_URI;
+    }
+
+    $values = new SectionEditViewModel(
+        $section,
+        app(SitesService::class),
+        app(FormResolver::class),
+        brandNew: false,
+        readOnly: false,
+        headlessMode: false,
+    )->form()->values['sites'];
+
+    expect(collect($values)->first())
+        ->toMatchArray(['singleHomepage' => true, 'singleUri' => '']);
+});
+
+it('defaults new preview targets to auto-refresh', function () {
+    $previewTargets = sectionFormControl(postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(),
+        'scope' => [],
+    ])->assertOk()->json('form.nodes'), 'previewTargets');
+
+    expect($previewTargets['props']['defaultValues']['refresh'])->toBeTrue()
+        ->and($previewTargets['props']['allowAdd'])->toBeTrue()
+        ->and($previewTargets['props']['addRowLabel'])->toBe(t('Add a target'));
 });
 
 it('rejects an invalid section type when refreshing', function () {
