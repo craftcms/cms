@@ -229,6 +229,42 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
+  it.each(['metaKey', 'ctrlKey'] as const)(
+    'only submits %s+S while the element is editable',
+    async (modifier) => {
+      const {page} = mount(payload({readOnly: true}));
+      const save = interceptSave();
+      onTestFinished(save.restore);
+      await nextTick();
+
+      const shortcut = () => {
+        const event = new KeyboardEvent('keydown', {
+          key: 's',
+          [modifier]: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(true);
+      };
+
+      shortcut();
+      expect(save.calls()).toBe(0);
+
+      page.props = payload({readOnly: false});
+      await nextTick();
+
+      shortcut();
+      expect(save.calls()).toBe(1);
+      expect(save.last().url).toBe('/actions/entries/save-entry');
+
+      page.props = payload({readOnly: true});
+      await nextTick();
+
+      shortcut();
+      expect(save.calls()).toBe(1);
+    }
+  );
+
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',

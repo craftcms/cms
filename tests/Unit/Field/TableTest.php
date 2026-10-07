@@ -284,6 +284,36 @@ it('rejects unregistered cell types submitted as new column settings', function 
         ->and($field->columns['col1']['type'])->toBe(ScaledTableCell::class);
 });
 
+it('renders registered cells and their validation feedback in inline HTML inputs', function () {
+    app(TableCellTypes::class)->register(ScaledTableCell::class);
+    $field = new Table([
+        'handle' => 'details',
+        'columns' => [
+            'col1' => ['heading' => 'Quantity', 'handle' => 'quantity', 'type' => ScaledTableCell::class, 'factor' => 10],
+        ],
+    ]);
+    $element = new class extends Entry
+    {
+        public function getLanguage(): string
+        {
+            return 'en-US';
+        }
+    };
+    $element->errors()->add('details.0.col1', 'Quantity must be positive.');
+    $element->errors()->add('title', 'Unrelated title error.');
+    $rows = $field->normalizeValue([['col1' => -25]], $element);
+    $html = $field->getInlineInputHtml($rows, $element);
+    $input = new Crawler($html);
+    $payload = json_decode($input->filter('craft-table-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($input->filter('craft-table-form')->attr('name'))->toBe('details')
+        ->and($payload['values']['details'][0]['col1'])->toBe(-25)
+        ->and($payload['errors'])->toBe([
+            ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
+        ])
+        ->and($payload['globalErrors'])->toBe([]);
+});
+
 class ScaledTableCell extends TableCell
 {
     public int $factor = 1;

@@ -21,7 +21,7 @@ export type TableControlProps = {
   hiddenRows?: string[];
   defaultValues?: FormValues;
   addRowLabel?: string;
-  includeRowId?: boolean;
+  includeRowId?: boolean | string;
   staticRows?: boolean;
   errors?: Record<string, Record<string, true>>;
 };

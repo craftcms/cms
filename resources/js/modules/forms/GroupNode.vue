@@ -154,7 +154,10 @@
     position: relative;
   }
 
-  .group-fields-loading {
+  /* Dims the fields rather than the group: in Chrome, changing a
+     container-type group's opacity inside a fieldset while the spinner is
+     added can leave the group's children without layout boxes. */
+  .group-fields-loading > :deep(*) {
     opacity: 0.5;
   }
 
