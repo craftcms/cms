@@ -299,7 +299,7 @@ describe('addressFieldsHtml', function () {
 });
 
 describe('selectizeHtml', function () {
-    it('posts a multi-select through the legacy input names', function () {
+    it('keeps the native multiple select, which posts an array', function () {
         $html = FormFields::selectizeHtml([
             'name' => 'values',
             'values' => ['live', 'pending'],
@@ -311,12 +311,23 @@ describe('selectizeHtml', function () {
             'multi' => true,
         ]);
 
-        // The sentinel so an empty selection still posts, then one input per
-        // value — the contract `multiselect.twig` rendered, which the legacy
-        // condition rules' `values[]` depends on.
-        expect($html)->toContain('name="values" value')
-            ->and($html)->toContain('name="values[]" value="live"')
-            ->and($html)->toContain('name="values[]" value="pending"')
-            ->and($html)->not->toContain('value="expired"');
+        // `values[]` is the name legacy condition rules post under, and it has
+        // to be on the control whether or not anything is selected.
+        expect($html)->toContain('name="values[]"')
+            ->and($html)->toContain('<option value="live" selected>')
+            ->and($html)->toContain('<option value="pending" selected>')
+            ->and($html)->not->toContain('<option value="expired" selected>')
+            ->and($html)->not->toContain('<craft-combobox');
+    });
+
+    it('renders a single select as a combobox', function () {
+        $html = FormFields::selectizeHtml([
+            'name' => 'status',
+            'value' => 'live',
+            'options' => [['value' => 'live', 'label' => 'Live']],
+        ]);
+
+        expect($html)->toContain('<craft-combobox')
+            ->and($html)->toContain('name="status"');
     });
 });
