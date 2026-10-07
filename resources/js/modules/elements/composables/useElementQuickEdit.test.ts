@@ -140,7 +140,7 @@ describe('useElementQuickEdit', () => {
       const event = dblclick(pick(row));
 
       expect(openSlideout).not.toHaveBeenCalled();
-      // The control's own behaviour has to survive untouched.
+      // The control's own behavior has to survive untouched.
       expect(event.defaultPrevented).toBe(false);
     });
 

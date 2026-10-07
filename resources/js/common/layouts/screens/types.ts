@@ -37,7 +37,7 @@ export interface ScreenProps {
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
   /**
-   * Caps the content column's width and centres it in the space it has, with
+   * Caps the content column's width and centers it in the space it has, with
    * the footer's rule kept to the content: `true` for the default
    * (`--cp-content-max-width`, 960px), or any CSS length. Full pages only; a
    * slideout is narrow already.
@@ -68,7 +68,7 @@ export interface ScreenEmits {
  * owns end to end, `content-` for regions inside the primary content area.
  * Unprefixed names sit inside `content-header` or apply to every level.
  *
- * A slideout has no room for some of these (`breadcrumbs`, `content-sidebar`,
+ * A slideout has no room for some of these (`context-menu`, `content-sidebar`,
  * `subnav-actions`, `page-footer`). `SlideoutScreen` still renders their
  * outlets, hidden, so a page written for full-page use doesn't drop teleported
  * content on the floor when it opens in a slideout.
@@ -84,8 +84,6 @@ export interface ScreenSlots {
    * `contentNotice`.
    */
   'content-notices'?: () => any;
-  /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
-  breadcrumbs?: () => any;
   /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
   'context-menu'?: () => any;
   /** Replaces the page header (the title). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
@@ -115,8 +113,11 @@ export interface ScreenSlots {
   'content-actions'?: () => any;
   /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
-  /** Replaces the save button while keeping the form action menu. Craft 5: `block submitButton`. */
-  'submit-button'?: () => any;
+  /**
+   * Replaces the Save button while keeping its action menu. Defaults to the
+   * response's `primaryAction()`, then a Save button. Craft 5: `block submitButton`.
+   */
+  'primary-action'?: () => any;
   /** Replaces the default form error summary. Craft 5: `errorSummary`. */
   'error-summary'?: () => any;
   /** Tabs above the content. Craft 5: `tabs`. */

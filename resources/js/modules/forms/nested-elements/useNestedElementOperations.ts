@@ -13,7 +13,7 @@ import type {
   NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
-import {craft} from '@/modules/matrix/interop';
+import {craft} from '@/modules/matrix/clipboard';
 import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
 import {
   canOpenElement,
@@ -43,6 +43,7 @@ export interface LegacyElementEditorSlideout {
   ): void;
   elementEditor: {
     settings: {
+      canCreateDrafts?: boolean;
       draftId?: number | null;
       saveParams?: Record<string, unknown> | null;
     };
@@ -335,7 +336,10 @@ export function useNestedElementOperations(
       prepareNestedOwner
         ? async (slideout) => {
             const preparedOwnerId = await prepareNestedOwner();
-            if (!preparedOwnerId) {
+            if (
+              !preparedOwnerId ||
+              !slideout.elementEditor.settings.canCreateDrafts
+            ) {
               return;
             }
 

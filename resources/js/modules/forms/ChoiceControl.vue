@@ -50,7 +50,7 @@
     allMode?: 'singleValue' | 'eachValue';
     sortable?: boolean;
     /**
-     * Label for the leading blank option. Absent leaves it unlabelled; `false`
+     * Label for the leading blank option. Absent leaves it unlabeled; `false`
      * means the control has no valid empty state and shouldn't offer one.
      */
     placeholder?: string | false;
@@ -323,6 +323,7 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
+    :label="fieldLabelSrOnly ? label : undefined"
     :label-sr-only="fieldLabelSrOnly || undefined"
     :name="
       editable

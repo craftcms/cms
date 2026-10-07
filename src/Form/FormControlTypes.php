@@ -36,6 +36,7 @@ use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
 use CraftCms\Cms\Form\Controls\Slug;
 use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Controls\TableColumns;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Controls\Time;
@@ -85,6 +86,7 @@ class FormControlTypes extends TypeRegistry
         Range::class,
         Slug::class,
         Table::class,
+        TableColumns::class,
         Text::class,
         Textarea::class,
         Time::class,

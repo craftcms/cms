@@ -12,7 +12,7 @@ import {navFixture, selectFixtureItem} from './nav.fixture';
  * never enter the nav at all — so these stories exist to settle the
  * interaction before the navigation map's shape is committed to.
  *
- * `Trail` is the proposed behaviour. `AllFlyouts` and `AllInline` are the two
+ * `Trail` is the proposed behavior. `AllFlyouts` and `AllInline` are the two
  * halves it's built from, kept so they can be compared against it.
  */
 const meta: Meta<typeof ActionList> = {
@@ -58,7 +58,7 @@ const render = (args: Record<string, unknown>) => ({
 });
 
 /**
- * The proposed behaviour: you're on `Blog`, so `Content › Entries › Channels`
+ * The proposed behavior: you're on `Blog`, so `Content › Entries › Channels`
  * is expanded down the sidebar and your place in it is visible without
  * hovering anything. Every other branch — `Administration`, `Commerce`,
  * `Settings` — flyouts on hover, so getting anywhere else is one gesture and

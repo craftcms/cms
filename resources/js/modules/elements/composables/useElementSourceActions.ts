@@ -31,7 +31,7 @@ export interface ElementSourceActionsOptions {
  *
  * Selecting a source isn't a navigation: it's a partial visit that leaves the
  * source list and the publishable sections alone and keeps the list's scroll
- * and state. So these are buttons carrying the behaviour rather than links,
+ * and state. So these are buttons carrying the behavior rather than links,
  * which is also what lets the same descriptors render as a secondary nav on a
  * page and as a plain list inside the selector modal.
  */
@@ -97,7 +97,7 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
     }) => {
       // A completed visit finishes before Vue receives the new page props, so
       // the watcher below releases the highlight once `activeSource` catches
-      // up. The key guard means a superseded (cancelled) visit from rapid
+      // up. The key guard means a superseded (canceled) visit from rapid
       // switching won't clear the highlight for a newer selection.
       if (!visit.completed && pendingSource.value === key) {
         pendingSource.value = null;
@@ -168,7 +168,7 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
    * Each heading absorbs the sources that follow it, until the next one.
    * Sources before the first heading stay at the top level, as do the ones
    * under a blank heading — `ElementSources` emits one to separate a run
-   * without labelling it.
+   * without labeling it.
    */
   const actions = computed<ActionItems>(() => {
     const result: ActionItems = [];

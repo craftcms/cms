@@ -55,7 +55,7 @@ describe('craft-disclosure', () => {
   });
 
   /** `state` is reflected, so a consumer can start it closed from markup. */
-  it('honours a collapsed state set on the host', async () => {
+  it('honors a collapsed state set on the host', async () => {
     const {element, target} = await createExternal({state: 'collapsed'});
 
     expect(target.dataset.state).toBe('collapsed');

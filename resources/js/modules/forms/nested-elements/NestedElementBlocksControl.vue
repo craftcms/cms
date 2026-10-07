@@ -10,6 +10,10 @@
   import '@craftcms/ui/components/spinner/spinner';
   import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
+  import {
+    createEntry,
+    renderBlocks,
+  } from '@/actions/CraftCms/Cms/Http/Controllers/MatrixController';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import {
     computed,
@@ -23,7 +27,6 @@
     useId,
     watch,
   } from 'vue';
-  import '@/modules/matrix';
   import {
     collapsedBlockId,
     isBlockCollapsed,
@@ -37,10 +40,12 @@
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
   import {
     MATRIX_SELECTION_ACTION,
+    matrixField,
+    syncSelectionMenu,
     selectionMenuItem,
     withoutStraySeparators,
   } from '@/modules/matrix/selection-menu';
-  import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
+  import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
@@ -141,7 +146,12 @@
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: NestedElementValue, kind: 'discrete'): void;
+    (
+      event: 'update:value',
+      value: NestedElementValue,
+      kind: 'discrete',
+      definition?: FormControlPayload<NestedElementBlocksProps>
+    ): void;
     (event: 'change', change: FormChange): void;
   }>();
   const matrixHost = ref<HTMLElement>();
@@ -157,7 +167,7 @@
   const created = shallowRef(new Map<string, NestedFormPayload>());
   /**
    * Presentation for those same blocks. Without it a block the server has just
-   * minted renders as a blank card — no entry type colour, no icon, no menu —
+   * minted renders as a blank card — no entry type color, no icon, no menu —
    * until the next save brings the field's own copy round.
    */
   const createdBlocks = shallowRef(new Map<string, BlockPresentation>());
@@ -274,13 +284,6 @@
         )
       : catalog;
   });
-  const entryTypes = computed(() =>
-    creationTypes.value.map((type, index) => ({
-      id: index + 1,
-      handle: type.value,
-      name: type.label,
-    }))
-  );
   const createChoices = computed(() =>
     creationTypes.value.map((type) => ({
       ...type,
@@ -288,14 +291,8 @@
     }))
   );
 
-  const settings = computed(() =>
-    JSON.stringify({
-      formControl: true,
-      maxEntries: props.control.props.maxEntries,
-    })
-  );
   /**
-   * Rebuilds `craft-matrix-input` whenever the block list changes.
+   * Rebuilds the field whenever the block list changes.
    *
    * Heavy-handed, and deliberately so: a block can hold a control that
    * relocates its own light DOM — a Lion overlay behind an action menu, say —
@@ -364,29 +361,6 @@
     }
 
     return anchors;
-  }
-
-  function sync(event?: Event): void {
-    const value = structuredClone(toRaw(props.value));
-    const source =
-      event?.currentTarget instanceof HTMLElement
-        ? event.currentTarget
-        : matrixHost.value;
-    const entries = [
-      ...(source?.querySelectorAll<HTMLElement>('[data-matrix-block]') ?? []),
-    ];
-    value.sortOrder = entries.map((entry) => entry.dataset.id!);
-    value.entries = Object.fromEntries(
-      entries.map((entry) => {
-        const uid = entry.dataset.id!;
-
-        return [
-          uid,
-          value.entries[uid] ?? {type: entry.dataset.type ?? '', enabled: true},
-        ];
-      })
-    );
-    emit('update:value', value, 'discrete');
   }
 
   /**
@@ -538,6 +512,7 @@
       }
     }
     collapsedTick.value++;
+    void initializeMinimumEntries();
 
     // A block that opens folded up still needs its summary, and its fields are
     // rendered but hidden — so they're there to read once Vue has laid them out.
@@ -550,6 +525,36 @@
       collapsedTick.value++;
     });
   });
+
+  async function initializeMinimumEntries(): Promise<void> {
+    const types = creationTypes.value;
+    const minimum = props.control.props.minEntries ?? 0;
+    if (
+      !props.editable ||
+      !props.control.props.create ||
+      types.length !== 1 ||
+      props.errors.some((error) =>
+        props.control.path.every(
+          (segment, index) => error.path[index] === segment
+        )
+      )
+    ) {
+      return;
+    }
+
+    try {
+      while (
+        matrixHost.value?.isConnected &&
+        props.value.sortOrder.length < minimum &&
+        canAdd.value &&
+        !busy.value
+      ) {
+        await addBlock(types[0]!.value, undefined, undefined, false);
+      }
+    } catch {
+      // addBlock has already reported the failure to the user.
+    }
+  }
 
   /**
    * The card frame — selection, the select checkbox, drag-sort and the reorder
@@ -576,7 +581,8 @@
   async function addBlock(
     entryType: string,
     beforeUid?: string,
-    duplicateUid?: string
+    duplicateUid?: string,
+    reveal = true
   ): Promise<void> {
     if (!canAdd.value || busy.value) {
       return;
@@ -600,7 +606,8 @@
             type: entryType,
           },
         ],
-        index
+        index,
+        reveal
       );
 
       return;
@@ -619,25 +626,21 @@
       if (duplicateUid !== undefined && duplicate === undefined) {
         throw new Error(t('Couldn’t duplicate {type}.', {type: t('entry')}));
       }
+      const {data} = await actionClient.post<CreatedBlock>(createEntry.url(), {
+        fieldId: create.fieldId,
+        entryTypeId:
+          duplicateUid === undefined
+            ? create.entryTypeIds[entryType]
+            : (block(duplicateUid)?.data?.['type-id'] ??
+              create.entryTypeIds[entryType]),
+        ownerId,
+        ownerElementType: create.ownerElementType,
+        siteId: create.siteId,
+        path: props.control.path,
+        ...(duplicate === undefined ? {} : {duplicate}),
+      });
 
-      const {data} = await actionClient.post<CreatedBlock>(
-        'matrix/create-entry',
-        {
-          fieldId: create.fieldId,
-          entryTypeId:
-            duplicateUid === undefined
-              ? create.entryTypeIds[entryType]
-              : (block(duplicateUid)?.data?.['type-id'] ??
-                create.entryTypeIds[entryType]),
-          ownerId,
-          ownerElementType: create.ownerElementType,
-          siteId: create.siteId,
-          path: props.control.path,
-          ...(duplicate === undefined ? {} : {duplicate}),
-        }
-      );
-
-      await insertBlocks([data], index);
+      await insertBlocks([data], index, reveal);
     } catch (error) {
       messages.error(
         duplicateUid === undefined
@@ -770,7 +773,7 @@
       }
 
       const {data} = await actionClient.post<{blocks: CreatedBlock[]}>(
-        'matrix/render-blocks',
+        renderBlocks.url(),
         {
           entryIds: pasted.map((element) => element.id),
           siteId: create.siteId,
@@ -802,7 +805,7 @@
   }
 
   /**
-   * Deferred a tick on purpose. Changing sortOrder re-keys `craft-matrix-input`,
+   * Deferred a tick on purpose. Changing sortOrder rebuilds the field,
    * which tears the whole subtree down and rebuilds it — and the button that was
    * clicked lives in there. Doing that while its click is still dispatching
    * leaves Vue patching against DOM a Lion overlay inside a block has already
@@ -810,7 +813,8 @@
    */
   async function insertBlocks(
     blocks: ReadonlyArray<CreatedBlock | {uid: string; type: string}>,
-    index: number
+    index: number,
+    reveal = true
   ): Promise<void> {
     await nextTick();
 
@@ -848,15 +852,32 @@
     createdBlocks.value = presentations;
     // The rebuild this sets off would otherwise be held in place; `revealBlock`
     // is about to scroll somewhere better.
-    scrollingToBlock = true;
-    emit('update:value', next, 'discrete');
+    scrollingToBlock = reveal;
+    emit('update:value', next, 'discrete', {
+      ...props.control,
+      forms: [
+        ...new Map(
+          [...(props.control.forms ?? []), ...forms.values()].map((form) => [
+            JSON.stringify(form.scope),
+            form,
+          ])
+        ).values(),
+      ],
+      props: {
+        ...props.control.props,
+        blocks: {
+          ...Object.fromEntries(presentations),
+          ...props.control.props.blocks,
+        },
+      },
+    });
 
     for (const added of blocks) {
       highlightBlock(added.uid);
     }
 
     // A paste lands several at once; the first is where the group starts.
-    if (blocks[0]) {
+    if (reveal && blocks[0]) {
       await revealBlock(blocks[0].uid);
     }
 
@@ -941,11 +962,6 @@
     return block(uid)?.icon ?? null;
   }
 
-  /**
-   * `[data-matrix-block]` stays the direct child of the blocks container: the legacy
-   * `craft-matrix-input` still finds its entries through it, and `sync()` reads
-   * the identity back off `data-id`.
-   */
   function blockAttrs(uid: string): Record<string, unknown> {
     const presentation = block(uid);
 
@@ -1213,7 +1229,7 @@
       return {
         ...item,
         ...(bulk && BULK_LABEL[name] ? {label: BULK_LABEL[name]()} : {}),
-        // Craft 5 relabelled paste with what was actually on the clipboard.
+        // Craft 5 relabeled paste with what was actually on the clipboard.
         ...(name === 'paste' && pasteable.value.length
           ? {
               label: t('Paste {type} above', {
@@ -1321,7 +1337,7 @@
     const trigger = detail.trigger;
     const owned =
       trigger instanceof HTMLElement &&
-      trigger.closest('craft-matrix-input') === matrixHost.value;
+      trigger.closest('[data-matrix-field]') === matrixHost.value;
 
     if (!owned) {
       return;
@@ -1425,12 +1441,12 @@
   }
 
   function fromOwnField(trigger: unknown): boolean {
-    const field = matrixHost.value?.closest('craft-field');
+    const field = matrixHost.value ? matrixField(matrixHost.value) : null;
 
     return (
       Boolean(field) &&
       trigger instanceof HTMLElement &&
-      trigger.closest('craft-field') === field
+      matrixField(trigger) === field
     );
   }
 
@@ -1504,6 +1520,21 @@
     };
   });
 
+  watch(
+    [selectionState, matrixHost],
+    () => {
+      const field = matrixHost.value?.closest('craft-field');
+      if (
+        field?.parentElement?.matches(
+          'craft-entry-field-layout-form[data-field-path]'
+        )
+      ) {
+        syncSelectionMenu(matrixField(matrixHost.value!)!);
+      }
+    },
+    {flush: 'post'}
+  );
+
   if (fieldActionItems) {
     fieldActionItems.value = (items) =>
       withoutStraySeparators(
@@ -1544,24 +1575,12 @@
 </script>
 
 <template>
-  <craft-matrix-input
-    ref="matrixHost"
-    :key="key"
-    form-control
-    :entry-types="JSON.stringify(entryTypes)"
-    :input-name-prefix="inputName(control.path)"
-    :settings="settings"
-    :min-entries="control.props.minEntries ?? 0"
-    @form-change="sync"
-  >
+  <div ref="matrixHost" :key="key" class="form-control" data-matrix-field>
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <div :id="matrixId" data-matrix-field>
+    <div :id="matrixId">
       <span role="status" class="sr-only" data-status-message>{{
         statusMessage
       }}</span>
-      <!-- `data-matrix-blocks` sits on the list itself: the legacy
-           `craft-matrix-input` finds its entries with `:scope > [data-matrix-block]`,
-           so a wrapper between the two hides every block from it. -->
       <SelectableCardList
         role="list"
         data-matrix-blocks
@@ -1612,6 +1631,7 @@
           <ActionMenu
             v-if="editable"
             :actions="blockActions(uid)"
+            :flush="false"
             :label="
               t('{type} actions', {
                 type: entryType(uid)?.label ?? uid,
@@ -1631,6 +1651,15 @@
               type="hidden"
               :name="`${inputName(control.path)}[entries][${id}][type]`"
               :value="value.entries[id]?.type ?? ''"
+            />
+            <input
+              v-for="state in ['enabled', 'enabledForSite', 'collapsed']"
+              :key="state"
+              type="hidden"
+              :name="`${inputName(control.path)}[entries][${id}][${state}]`"
+              :value="
+                (value.entries[id]?.[state] ?? state !== 'collapsed') ? '1' : ''
+              "
             />
           </template>
           <div data-matrix-block-fields>
@@ -1675,5 +1704,5 @@
         </craft-button>
       </div>
     </div>
-  </craft-matrix-input>
+  </div>
 </template>

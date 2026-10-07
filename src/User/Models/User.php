@@ -25,6 +25,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\HasApiTokens;
 use Override;
 
 /**
@@ -34,7 +36,7 @@ use Override;
     'password',
     'rememberToken',
 ])]
-class User extends BaseModel implements CraftUser
+class User extends BaseModel implements CraftUser, OAuthenticatable
 {
     use Authenticatable;
     use Authorizable;
@@ -42,6 +44,7 @@ class User extends BaseModel implements CraftUser
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
     }
     use ConfirmsPasswords;
+    use HasApiTokens;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;

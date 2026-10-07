@@ -1,7 +1,7 @@
 /**
  * Shared open/close timing for overlays that appear on hover.
  *
- * Four behaviours, none of which an overlay can implement alone:
+ * Four behaviors, none of which an overlay can implement alone:
  *
  * - **Warm-up.** The first hover waits, so brushing past something on the way
  *   somewhere else doesn't flash an overlay open. Once one has opened the
@@ -14,10 +14,10 @@
  *   after their own close delay, which is what stops two flyouts overlapping
  *   while you sweep down a list.
  * - **Safe area.** An overlay opens *beside* its trigger, so reaching it means
- *   travelling diagonally across whatever sits between the two. A hover that
+ *   traveling diagonally across whatever sits between the two. A hover that
  *   lands in the triangle from where the pointer left the trigger out to the
  *   overlay's near edge counts as still on the way there, so the group holds
- *   it rather than acting on it, and crossing a neighbour doesn't shut the
+ *   it rather than acting on it, and crossing a neighbor doesn't shut the
  *   thing you're aiming at. The hold expires. `graceDelay` caps how long the
  *   group believes the aim, or a pointer that came to rest inside the
  *   triangle would never get the item it stopped on.
@@ -275,7 +275,7 @@ export class HoverIntentGroup {
    * Everything open that isn't `member` or one of its ancestors goes now.
    *
    * Without the ancestor check this would close the parent whose flyout the
-   * pointer just travelled through to reach the child.
+   * pointer just traveled through to reach the child.
    */
   #closeSiblingsOf(member: HoverIntentMember): void {
     for (const [other, state] of this.#members) {
@@ -294,9 +294,9 @@ export class HoverIntentGroup {
   }
 
   /**
-   * Whether the pointer is still travelling towards this member's overlay. It
+   * Whether the pointer is still traveling towards this member's overlay. It
    * has to be inside the safe area, and there for less than `graceDelay`. A
-   * pointer that still hasn't arrived by then isn't travelling anywhere.
+   * pointer that still hasn't arrived by then isn't traveling anywhere.
    */
   #graceHolds(member: HoverIntentMember, state: MemberState): boolean {
     const {exit} = state;

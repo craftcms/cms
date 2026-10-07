@@ -13,7 +13,6 @@ use craft\controllers\UsersController;
 use craft\db\Connection;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\NestedElementManager;
 use craft\events\EditionChangeEvent;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
@@ -50,7 +49,7 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\View\TemplateCacheCollectors;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\IdentityWrapper;
@@ -73,7 +72,7 @@ readonly class EventCompatibility
         Element::registerEvents();
         Asset::registerEvents();
         Entry::registerEvents();
-        NestedElementManager::registerEvents();
+        new NestedElementManagerEventCompatibility()->boot();
         \craft\elements\User::registerEvents();
 
         /**
@@ -160,8 +159,9 @@ readonly class EventCompatibility
                 return;
             }
 
-            /** @var User $user */
-            $user = $event->user;
+            // The guard may hold the user model rather than its element, and
+            // IdentityWrapper copies an element's public properties.
+            $user = $event->user instanceof CraftUser ? $event->user->asElement() : $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
@@ -170,8 +170,9 @@ readonly class EventCompatibility
                 return;
             }
 
-            /** @var User $user */
-            $user = $event->user;
+            // The guard may hold the user model rather than its element, and
+            // IdentityWrapper copies an element's public properties.
+            $user = $event->user instanceof CraftUser ? $event->user->asElement() : $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 

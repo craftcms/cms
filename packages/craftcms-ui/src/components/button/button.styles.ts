@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -431,8 +432,8 @@ export default css`
     content: '';
     display: block;
     position: absolute;
-    /* Physical on purpose: paired with the translate below to centre the
-       sizer, which the logical properties would push off-centre in RTL. */
+    /* Physical on purpose: paired with the translate below to center the
+       sizer, which the logical properties would push off-center in RTL. */
     /* stylelint-disable liberty/use-logical-spec */
     top: 50%;
     left: 50%;
@@ -581,5 +582,15 @@ export default css`
   :host([href][size~='zero']:not([disabled])) .link,
   :host([href][icon]:not([disabled])) .link {
     padding-inline: 0;
+  }
+
+  .label--text {
+    display: block;
+    ${trimmedTextBoxStyles}
+  }
+
+  :host([flush]) .label--text {
+    text-box: normal;
+    padding-block: 0;
   }
 `;

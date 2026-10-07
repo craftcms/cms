@@ -10,11 +10,11 @@ It is built on [Lion's input](https://lion.js.org/components/input/overview/), s
 
 <Canvas of={InputStories.Default} sourceState="shown" />
 
-Everything on this page applies to the controls that extend it — [Input Date](?path=/docs/form-controls-text-controls-input-date--docs), [Input Time](?path=/docs/form-controls-text-controls-input-time--docs), Input Money, Input Copy, and the rest — which add behaviour on top rather than replacing any of it.
+Everything on this page applies to the controls that extend it — [Input Date](?path=/docs/form-controls-text-controls-input-date--docs), [Input Time](?path=/docs/form-controls-text-controls-input-time--docs), Input Money, Input Copy, and the rest — which add behavior on top rather than replacing any of it.
 
-## Labelling
+## Labeling
 
-A bare input is unlabelled.
+A bare input is unlabeled.
 Give it a label one of two ways: the `label` attribute for plain text, or the `label` slot when it needs markup.
 The same pairing applies to `help-text`.
 
@@ -26,7 +26,7 @@ The same pairing applies to `help-text`.
 </craft-input>
 ```
 
-Inside a form, wrapping in `craft-field` is usually better than labelling the input directly — the field owns the label, instructions, and error presentation for the whole row.
+Inside a form, wrapping in `craft-field` is usually better than labeling the input directly — the field owns the label, instructions, and error presentation for the whole row.
 
 ## Width
 
@@ -54,7 +54,7 @@ Setting `maxlength` caps the value _and_ shrinks the control to the expected cha
 
 <Canvas of={InputStories.Monospace} sourceState="shown" />
 
-`center` centre-aligns the value, for short numeric fields where a left-aligned value looks stranded:
+`center` center-aligns the value, for short numeric fields where a left-aligned value looks stranded:
 
 <Canvas of={InputStories.Centered} sourceState="shown" />
 
@@ -83,7 +83,7 @@ Two types have components of their own, because they need more than the native f
 
 ## Accessibility
 
-Lion wires the label, help text, and validation feedback to the input with `aria-labelledby` and `aria-describedby`, so a labelled input is announced correctly without further work.
+Lion wires the label, help text, and validation feedback to the input with `aria-labelledby` and `aria-describedby`, so a labeled input is announced correctly without further work.
 
 The thing to watch is an input with no label at all.
 Nothing stops you rendering one, and it is not announced as anything — so either set `label`, slot one, or wrap the control in `craft-field`.

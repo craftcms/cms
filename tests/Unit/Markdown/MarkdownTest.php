@@ -61,6 +61,23 @@ describe('Markdown', function () {
         );
     });
 
+    it('preserves indented markup when indented code is disabled without changing default rendering', function (string $flavor) {
+        $markdown = "<div>\n    <div class=\"info\">\n        First paragraph.\n\n        Second paragraph.\n    </div>\n</div>";
+
+        $html = $this->markdown->convert($markdown, new MarkdownOptions(flavor: $flavor, indentedCode: false));
+
+        expect($html)
+            ->not->toContain('<pre><code>')
+            ->and(substr_count($html, '</div>'))->toBe(2)
+            ->and($this->markdown->parse($markdown, $flavor))->toContain('<pre><code>');
+    })->with(['original', 'pre-encoded', 'gfm', 'gfm-comment', 'extra']);
+
+    it('renders fenced code when indented code is disabled', function (string $flavor) {
+        $html = $this->markdown->convert("Text\n\n```\ncode line\n```", new MarkdownOptions(flavor: $flavor, indentedCode: false));
+
+        expect($html)->toContain('<pre><code>code line');
+    })->with(['original', 'pre-encoded', 'gfm', 'gfm-comment', 'extra']);
+
     it('supports extending flavors with lazy callables', function () {
         $calls = 0;
 

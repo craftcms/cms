@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {EditableTable, Row} from './editable-table';
+import type {EditableTableRow} from './types';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -77,39 +78,133 @@ it('initializes text cells without the legacy NiceText behavior', () => {
   instance.destroy();
 });
 
-it('renders autosuggest cells as comboboxes', async () => {
-  vi.stubGlobal('$', $);
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
-  vi.stubGlobal('Craft', {
-    hasMousePointerEvents: () => true,
-    inArray: <T>(value: T, values: T[]) => values.includes(value),
-  });
-
-  const row = EditableTable.createRow(
-    'site-uid',
-    {
-      fromEmail: {
-        type: 'autosuggest',
-        heading: 'System Email Address',
-        options: [{label: 'Environment', value: '$SYSTEM_EMAIL'}],
+it.each([
+  {
+    kind: 'flat',
+    options: [{label: 'Environment', value: '$SYSTEM_EMAIL'}],
+    expectedOptions: [{label: 'Environment', value: '$SYSTEM_EMAIL'}],
+  },
+  {
+    kind: 'grouped',
+    options: [
+      {
+        label: 'Environment',
+        options: [{label: 'System email', value: '$SYSTEM_EMAIL'}, {value: 0}],
       },
-    },
-    'siteOverrides',
-    {fromEmail: '$SYSTEM_EMAIL'}
-  );
-  document.body.append(row[0]);
-  const combobox = row[0]?.querySelector('craft-combobox');
-  if (!combobox) throw new Error('Expected the autosuggest combobox.');
-  await combobox.updateComplete;
+      {label: 'Literal address', value: 'admin@example.com'},
+    ],
+    expectedOptions: [
+      {
+        type: 'optgroup',
+        label: 'Environment',
+        options: [
+          {label: 'System email', value: '$SYSTEM_EMAIL'},
+          {label: '0', value: '0'},
+        ],
+      },
+      {label: 'Literal address', value: 'admin@example.com'},
+    ],
+  },
+])(
+  'renders autosuggest cells with $kind combobox options',
+  async ({options, expectedOptions}) => {
+    vi.stubGlobal('$', $);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+    vi.stubGlobal('Craft', {
+      hasMousePointerEvents: () => true,
+      inArray: <T>(value: T, values: T[]) => values.includes(value),
+    });
 
-  expect(combobox.name).toBe('siteOverrides[site-uid][fromEmail]');
-  expect(combobox.label).toBe('System Email Address');
-  expect(combobox.modelValue).toBe('$SYSTEM_EMAIL');
-  expect(combobox.options).toEqual([
-    {label: 'Environment', value: '$SYSTEM_EMAIL'},
-  ]);
-  expect(combobox.showAllOnEmpty).toBe(true);
-});
+    const row = EditableTable.createRow(
+      'site-uid',
+      {
+        fromEmail: {
+          type: 'autosuggest',
+          heading: 'System Email Address',
+          options,
+        },
+      },
+      'siteOverrides',
+      {fromEmail: '$SYSTEM_EMAIL'}
+    );
+    document.body.append(row[0]);
+    const combobox = row[0]?.querySelector('craft-combobox');
+    if (!combobox) throw new Error('Expected the autosuggest combobox.');
+    await combobox.updateComplete;
+
+    expect(combobox.name).toBe('siteOverrides[site-uid][fromEmail]');
+    expect(combobox.label).toBe('System Email Address');
+    expect(combobox.options).toEqual(expectedOptions);
+    expect(combobox.modelValue).toBe('$SYSTEM_EMAIL');
+    expect(combobox.showAllOnEmpty).toBe(true);
+  }
+);
+
+it.each<{
+  kind: string;
+  values: EditableTableRow;
+  expectedValue: string;
+  expectedLocale: string;
+}>([
+  {
+    kind: 'saved',
+    values: {amount: {value: 12.5, locale: 'fr-BE'}},
+    expectedValue: '12.5',
+    expectedLocale: 'fr-BE',
+  },
+  {
+    kind: 'new',
+    values: {amount: ''},
+    expectedValue: '',
+    expectedLocale: 'nl-BE',
+  },
+])(
+  'renders a $kind money cell with its amount and submission locale',
+  async ({values, expectedValue, expectedLocale}) => {
+    vi.stubGlobal('$', $);
+    vi.stubGlobal('Craft', {
+      inArray: (value: unknown, values: unknown[]) => values.includes(value),
+    });
+
+    const row = EditableTable.createRow(
+      '0',
+      {
+        amount: {
+          type: 'money',
+          heading: 'Amount',
+          currency: 'EUR',
+          locale: 'nl-BE',
+          decimals: 3,
+          decimalSeparator: ',',
+          groupSeparator: '.',
+          showCurrency: false,
+          clearable: false,
+        },
+      },
+      'prices',
+      values
+    );
+    document.body.append(row[0]);
+    const money = document.querySelector('craft-input-money');
+    if (!money) throw new Error('Expected the money input.');
+    await money.updateComplete;
+
+    expect(money.name).toBe('prices[0][amount][value]');
+    expect(money.modelValue).toBe(expectedValue);
+    expect(money.currency).toBe('EUR');
+    expect(money.locale).toBe(expectedLocale);
+    expect(money.decimals).toBe(3);
+    expect(money.decimalSeparator).toBe(',');
+    expect(money.groupSeparator).toBe('.');
+    expect(money.showCurrency).toBe(false);
+    expect(money.clearable).toBe(false);
+    expect(money.label).toBe('Amount');
+    expect(money.hasAttribute('label-sr-only')).toBe(true);
+    const locale = row[0].querySelector('input[type="hidden"]');
+    expect(locale?.name).toBe('prices[0][amount][locale]');
+    expect(locale?.value).toBe(expectedLocale);
+  }
+);
 
 it.each(['autosuggest', 'template', 'singleline', 'multiline'])(
   'renders %s cells with accessible text expanders when configured',

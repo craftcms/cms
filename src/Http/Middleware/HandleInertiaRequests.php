@@ -44,11 +44,11 @@ use function CraftCms\Cms\currentUserElement;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * Asks for the nav tree to be sent again, although the client already has
-     * it — by a visit following something that changed what the nav lists,
-     * such as saving an element type's sources.
+     * Marks that the `app` view composer has been bound for this request.
+     *
+     * @see self::handle()
      */
-    public const string REFRESH_NAV_HEADER = 'X-Craft-Refresh-Nav';
+    private const string APP_COMPOSER_BOUND = '_craft_app_view_composer_bound';
 
     #[Override]
     public function handle(Request $request, Closure $next)
@@ -56,12 +56,33 @@ class HandleInertiaRequests extends Middleware
         $htmlStack = app(HtmlStack::class);
 
         app(InternalAssetRegistry::class)->register(CpAsset::class);
-        View::composer('app', function ($view) use ($htmlStack) {
-            $view->with([
-                'headHtml' => $htmlStack->headHtml(),
-                'bodyHtml' => $htmlStack->bodyHtml(),
-            ]);
-        });
+        /**
+         * Bound once per request, not once per run of this middleware.
+         *
+         * `headHtml()` and `bodyHtml()` drain as they render, and a composer
+         * bound twice fires twice against the same stack: the first call takes
+         * the assets, the second finds the stack empty and overwrites them with
+         * empty strings. That's not hypothetical — the Yii2 adapter's legacy
+         * action bridge re-dispatches through the router, so every middleware
+         * here runs a second time, and every bridged screen was shipping a
+         * document with no jQuery, Garnish or `cp.js` at all. Controls that
+         * delegate to legacy JS were inert as a result.
+         *
+         * The flag lives on the request because the bridge's internal request is
+         * a duplicate of this one and inherits its attributes, while a container
+         * binding would persist between requests under a long-lived worker and
+         * disable the composer for good after the first.
+         */
+        if (! $request->attributes->getBoolean(self::APP_COMPOSER_BOUND)) {
+            $request->attributes->set(self::APP_COMPOSER_BOUND, true);
+
+            View::composer('app', function ($view) use ($htmlStack) {
+                $view->with([
+                    'headHtml' => $htmlStack->headHtml(),
+                    'bodyHtml' => $htmlStack->bodyHtml(),
+                ]);
+            });
+        }
 
         $response = parent::handle($request, $next);
 
@@ -196,27 +217,10 @@ class HandleInertiaRequests extends Middleware
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
-                // Sent on the first response and not again: the tree is the
-                // same on every page, so re-serialising it into each one is
-                // pure weight. It carries no selection for that reason — the
-                // front end marks the trail from the URL it's on — and no
-                // badge counts, which are volatile and ride along below.
-                // Keyed by site: the tree now lists only the sources that run
-                // on the site the CP is working with, so it's cached per site
-                // on the client and re-sent the first time each one is opened,
-                // rather than once for the whole session.
-                //
-                // Left empty while a Craft update is pending: the tree is built
-                // from sections, volumes and the rest, which a migration that
-                // hasn't run yet may not have added columns for — and the
-                // updater screen is the one that has to render for the user to
-                // run it. The key changes with it, so the real tree is sent
-                // once the update is through.
-                'nav' => $updatePending
-                    ? Inertia::once(fn (): array => [])->as('craft.nav.pending')
-                    : Inertia::once(fn () => $nav->getTree())
-                        ->as('craft.nav.'.($nav->navSiteId() ?? 'all'))
-                        ->fresh($request->headers->has(self::REFRESH_NAV_HEADER)),
+                // Rebuild on each visit so plugins and nav listeners can
+                // respond to the current request. Keep the updater independent
+                // of tables or columns that pending migrations may add.
+                'nav' => fn (): array => $updatePending ? [] : $nav->getTree(),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.

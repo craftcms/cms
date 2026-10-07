@@ -71,6 +71,7 @@
     "postcss-html": "catalog:",
     "postcss-lit": "catalog:",
     "postcss-scss": "catalog:",
+    "remark-gfm": "catalog:",
     "storybook": "catalog:",
     "stylelint": "catalog:",
     "stylelint-use-logical-spec": "catalog:",

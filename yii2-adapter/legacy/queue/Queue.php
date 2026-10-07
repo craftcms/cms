@@ -232,7 +232,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @return string
      * @since 5.2.0
      */
-    public function getJobId(): string
+    /**
+     * Nullable because it only has a value while Yii's queue is the thing running
+     * the job: it's populated from that queue's `ExecEvent` (see above). Under the
+     * Laravel worker a legacy job arrives via `LegacyJobWrapper`, that event never
+     * fires, and the promise of a `string` here was a lie that took down every
+     * batched job on its second item.
+     */
+    public function getJobId(): ?string
     {
         return $this->_executingJobId;
     }

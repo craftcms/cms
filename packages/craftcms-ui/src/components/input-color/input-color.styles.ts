@@ -17,6 +17,11 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
+  .input-group__before,
+  .input-group__after {
+    display: contents;
+  }
+
   .input-color__control {
     display: flex;
     align-items: center;

@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Információkiadási támadásokkal érzékeny tartalmak feltárására használható.',
     'Can contain Markdown formatting.' => 'Tartalmazhat Markdown formázást.',
     'Cancel' => 'Mégse',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Az indexelési munkamenet nem található, vagy nincs semmi felülvizsgálni való.',
     'Canton' => 'Kanton',
     'Can’t run Craft CMS' => 'Craft CMS nem futtatható',
@@ -603,6 +603,7 @@ return [
     'Deselect All' => 'Minden kiválasztás visszavonása',
     'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Asztal',
+    'Details' => 'Details',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Meghatározza, hogy a felhasználó melyik webhelyről kapja a vezérlőpulton keresztül küldött e-maileket.',
     'Developer Response' => 'Fejlesztő válasza',
     'Development Settings' => 'Fejlesztési beállítások',
@@ -2238,11 +2239,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => 'Hello {{user.friendlyName|e}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>',
+<{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',

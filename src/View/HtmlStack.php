@@ -766,8 +766,8 @@ class HtmlStack
      *
      * Position-keyed properties (`js`, `scripts`, `jsFiles`, `html`) are merged per-position.
      * Flat-keyed properties (`cssFiles`, `css`, `jsImports`, `metaTags`, `linkTags`) are
-     * merged by key, with overwritten entries moved to the end to reflect the latest
-     * registration order. Icons are deduplicated and appended.
+     * merged by key, with overwritten entries keeping the position of their first
+     * registration. Icons are deduplicated and appended.
      *
      * @param  array<string, mixed>  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
      */
@@ -845,7 +845,8 @@ class HtmlStack
                     Html::script($this->loadJs()),
                 ]),
             )
-            ->map(fn (string|Stringable $part) => (string) $part);
+            ->map(fn (string|Stringable $part) => (string) $part)
+            ->values();
     }
 
     private function dispatchAssetsRenderingEvent(): void
@@ -896,16 +897,27 @@ JS;
     }
 
     /**
-     * Keeps overwritten entries in their latest registration order.
+     * Keeps overwritten entries in the position of their first registration.
      *
      * @param  array<string, Stringable|string>  $entries
      */
     private function registerEntry(array &$entries, string $key, Stringable|string $value): void
     {
-        if (array_key_exists($key, $entries)) {
-            unset($entries[$key]);
-        }
-
+        /**
+         * Assigned without unsetting first, so a re-registration keeps the slot
+         * the key already holds. PHP preserves insertion position on assignment
+         * to an existing key; unsetting it first moved the entry to the end.
+         *
+         * That reordering broke dependency order. Craft's own asset chain emits
+         * jQuery before `cp.js`, but a legacy `View::registerAssetBundle()` call
+         * made while a screen renders — a plugin registering its CP bundle from
+         * `getSidebarHtml()`, say — re-registers jQuery through Yii's asset
+         * pipeline, which moved it *after* `cp.js` and left the page throwing
+         * `jQuery is not defined`.
+         *
+         * Last registration still wins for the value; only the position is now
+         * the first one's.
+         */
         $entries[$key] = $value;
     }
 }

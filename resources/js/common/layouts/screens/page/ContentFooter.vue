@@ -3,13 +3,15 @@
    * The row below the content: whatever the page puts in `content-footer`
    * (pagination, meta info), then the form's save controls.
    */
-  import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
+  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
-  import type {ActionItem, FormSaveOptions} from '@/common/types';
+  import type {FormSaveOptions} from '@/common/types';
+  import {formActionItems as buildFormActionItems} from '../formActionItems';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from '../types';
 
   const props = withDefaults(
@@ -25,9 +27,12 @@
         readOnly: boolean;
         form: InertiaForm<any> | null;
         defaultFormActions: Array<DefaultFormAction>;
+        /** The response's `primaryAction()` button, rendered server-side. */
+        primaryActionHtml?: string | null;
         /**
-         * Keeps the row, rule included, within the content's container, for a
-         * centered column where a full-width rule would overshoot the content.
+         * Keeps the row within the content's column, for a constrained content
+         * view: the footer's rule still spans the pane, but the save controls
+         * line up with the content above them.
          */
         contained?: boolean;
       }
@@ -39,34 +44,29 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  const slots =
-    defineSlots<
-      Pick<
-        ScreenSlots,
-        'content-footer' | 'additional-buttons' | 'submit-button'
-      >
-    >();
+  defineSlots<
+    Pick<
+      ScreenSlots,
+      'content-footer' | 'additional-buttons' | 'primary-action'
+    >
+  >();
 
-  const formActionItems = computed(() => [
-    ...props.defaultFormActions.map(defaultFormActionItem),
-    ...(props.formActions ?? []),
-  ]);
-
-  function defaultFormActionItem(action: DefaultFormAction): ActionItem {
-    if (action === 'saveAndContinueEditing') {
-      return {
-        label: t('Save and continue editing'),
-        onClick: () => emit('save', {redirect: false}),
-        shortcut: 'S',
-      };
-    }
-
-    throw new Error(`Unknown default form action: ${action}`);
-  }
+  const formActionItems = computed(() =>
+    buildFormActionItems(
+      props.defaultFormActions,
+      props.formActions,
+      (options) => emit('save', options)
+    )
+  );
 </script>
 
 <template>
-  <div class="content-footer">
+  <div
+    :class="{
+      'content-footer': true,
+      'content-footer--contained': contained,
+    }"
+  >
     <div class="flex gap-2 items-center justify-between">
       <FormActions
         v-if="form"
@@ -78,8 +78,20 @@
         :read-only="readOnly"
         :save-disabled="saveDisabled"
       >
-        <template v-if="slots['submit-button']" #submit-button>
-          <slot name="submit-button"></slot>
+        <template #primary-action>
+          <LayoutSlotOutlet name="primary-action">
+            <slot name="primary-action">
+              <DynamicHtmlRenderer
+                v-if="primaryActionHtml"
+                :html="primaryActionHtml"
+              />
+              <PrimaryActionButton
+                v-else
+                :form="form!"
+                :label="submitButtonLabel"
+              />
+            </slot>
+          </LayoutSlotOutlet>
         </template>
       </FormActions>
 
@@ -95,3 +107,17 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  /*
+   * The footer pads itself by the container padding, so the row's share of the
+   * content's max width is that width less the padding on both sides.
+   */
+  .content-footer--contained {
+    inline-size: 100%;
+    max-inline-size: calc(
+      var(--cp-content-max-width) - var(--cp-container-padding) * 2
+    );
+    margin-inline: auto;
+  }
+</style>

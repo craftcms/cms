@@ -13,6 +13,7 @@ readonly class MarkdownOptions
         public ?string $flavor = null,
         public bool $inlineOnly = false,
         public bool $allowUnsafeLinks = false,
+        public bool $indentedCode = true,
     ) {}
 
     public function cacheKey(): string
@@ -21,6 +22,7 @@ readonly class MarkdownOptions
             $this->resolvedFlavor(),
             $this->inlineOnly ? 'inline' : 'block',
             $this->allowUnsafeLinks ? 'unsafe' : 'safe',
+            $this->indentedCode ? 'indented-code' : 'no-indented-code',
         ]);
     }
 

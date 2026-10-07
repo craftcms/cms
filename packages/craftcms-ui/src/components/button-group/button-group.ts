@@ -3,6 +3,9 @@ import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement} from 'lit';
 import styles from './button-group.styles.js';
 
+const START_ATTRIBUTE = 'data-button-group-start';
+const END_ATTRIBUTE = 'data-button-group-end';
+
 /**
  * @summary Wrapper component used to group a set of buttons together.
  * When `name` is set, the selected value is submitted with the form. Set
@@ -43,11 +46,28 @@ export default class CraftButtonGroup extends LitElement {
   /** Whether multiple buttons can be selected. */
   @property({reflect: true, type: Boolean}) multiple = false;
 
+  /**
+   * Re-marks the ends when a child is shown or hidden, which changes which
+   * one is visibly first or last without firing `slotchange`.
+   */
+  private _childObserver = new MutationObserver(() => this._markEnds());
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._childObserver.observe(this, {
+      childList: true,
+      attributes: true,
+      attributeFilter: ['hidden', 'style', 'class'],
+      subtree: true,
+    });
+  }
+
   override firstUpdated(changed: PropertyValues) {
     super.firstUpdated(changed);
     if (this.name) {
       this._setupRadioMode();
     }
+    this._markEnds();
   }
 
   override updated(changed: PropertyValues) {
@@ -66,6 +86,53 @@ export default class CraftButtonGroup extends LitElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this._handleClick);
+    this._childObserver.disconnect();
+  }
+
+  /**
+   * Marks the first and last visible children, so only those get rounded
+   * outer corners. `:first-child` and `:last-child` can't be used: a group
+   * can open with hidden inputs, or with an empty placeholder a framework
+   * renders and later fills.
+   */
+  private _markEnds() {
+    const visible = Array.from(this.children).filter((child) =>
+      this._isVisible(child)
+    );
+    const first = visible[0];
+    const last = visible[visible.length - 1];
+
+    for (const child of Array.from(this.children)) {
+      child.toggleAttribute(START_ATTRIBUTE, child === first);
+      child.toggleAttribute(END_ATTRIBUTE, child === last);
+    }
+  }
+
+  private _isVisible(element: Element): boolean {
+    if (
+      element instanceof HTMLTemplateElement ||
+      element instanceof HTMLScriptElement ||
+      element instanceof HTMLStyleElement ||
+      (element instanceof HTMLInputElement && element.type === 'hidden') ||
+      (element instanceof HTMLElement && element.hidden)
+    ) {
+      return false;
+    }
+
+    const display = getComputedStyle(element).display;
+    if (display === 'none') {
+      return false;
+    }
+
+    // A `display: contents` wrapper has no box of its own; it only shows
+    // what's inside it.
+    if (display === 'contents') {
+      return Array.from(element.children).some((child) =>
+        this._isVisible(child)
+      );
+    }
+
+    return true;
   }
 
   private _setupRadioMode() {
@@ -179,6 +246,7 @@ export default class CraftButtonGroup extends LitElement {
     if (this.name) {
       this._syncChildren();
     }
+    this._markEnds();
   }
 }
 

@@ -47,11 +47,11 @@
         <DynamicHtmlRenderer :html="item.html" />
       </template>
       <template v-else-if="item.href">
-        <CpLink :href="item.href" underline>{{ item.label }}</CpLink>
+        <CpLink :href="item.href">
+          <span class="text-box-trim">{{ item.label }}</span>
+        </CpLink>
       </template>
-      <template v-else>
-        {{ item.label }}
-      </template>
+      <span v-else class="text-box-trim">{{ item.label }}</span>
       <ActionMenu
         v-if="item.items?.length"
         slot="suffix"
@@ -78,4 +78,13 @@
   </craft-breadcrumbs>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  craft-breadcrumb-item > .cp-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Prevent action menu buttons from looking like they take up extra space */
+  craft-action-menu > craft-button[slot='invoker'] {
+    margin-inline: -3px;
+  }
+</style>

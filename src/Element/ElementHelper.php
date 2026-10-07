@@ -279,8 +279,8 @@ class ElementHelper
             ->status(null)
             ->trashed(null)
             ->asArray()
-            ->select(['siteId', 'enabled'])
-            ->pluck('enabled', 'siteId')
+            ->select(['siteId', 'elements_sites.enabled as enabledForSite'])
+            ->pluck('enabledForSite', 'siteId')
             ->map(fn ($enabled) => (bool) $enabled)
             ->all();
     }

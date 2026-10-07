@@ -24,6 +24,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -91,7 +92,6 @@ class Plugin extends Module implements PluginInterface
     public function __construct($id, $parent = null, array $config = [])
     {
         $this->handle = $id;
-        $this->version = $this->getVersion();
 
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call t() or Plugin::getInstance().
@@ -135,6 +135,33 @@ class Plugin extends Module implements PluginInterface
         }
 
         parent::__construct($id, $parent, $config);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * `$version` holds the Composer manifest's version and shadows Yii's own
+     * private store, so this reads the property rather than `parent`.
+     *
+     * @deprecated 6.0.0 read the `$version` property instead.
+     */
+    public function getVersion(): string
+    {
+        Deprecator::log('Plugin-getVersion', 'Calling ->getVersion() on a plugin is deprecated. The $version property should be used instead — Craft 6 plugins do not have this method.');
+
+        return $this->version;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @deprecated 6.0.0 assign to the `$version` property instead.
+     */
+    public function setVersion($version): void
+    {
+        Deprecator::log('Plugin-setVersion', 'Calling ->setVersion() on a plugin is deprecated. The $version property should be assigned instead — Craft 6 plugins do not have this method.');
+
+        $this->version = is_scalar($version) ? (string)$version : (string)call_user_func($version, $this);
     }
 
     /**
@@ -204,7 +231,12 @@ class Plugin extends Module implements PluginInterface
             return;
         }
 
-        $model->setAttributes($settings);
+        /**
+         * Not safe-only: these are the plugin's own stored settings, not user
+         * input, and an attribute without a validation rule would otherwise be
+         * dropped on load while saving fine.
+         */
+        $model->setAttributes($settings, false);
     }
 
     /**
@@ -212,7 +244,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
-        $response = $this->getFormSettingsResponse();
+        $route = $this->settingsUrlRule();
+
+        $response = $route !== null
+            ? Craft::$app->runAction($route)
+            : $this->getFormSettingsResponse();
 
         if ($response instanceof \craft\web\Response) {
             $response->send();
@@ -220,6 +256,29 @@ class Plugin extends Module implements PluginInterface
         }
 
         return $response;
+    }
+
+    /**
+     * Returns the route a `registerCpUrlRules` handler claimed for this plugin's
+     * settings path, if any.
+     *
+     * Craft 6 resolves `settings/plugins/<handle>` itself, before URL rules are
+     * consulted, so a rule that would have taken precedence is honoured here.
+     */
+    private function settingsUrlRule(): ?string
+    {
+        $path = 'settings/plugins/' . $this->handle;
+
+        foreach (Craft::$app->getUrlManager()->getCpUrlRules() as $pattern => $route) {
+            // A pattern may carry a verb prefix, as in `GET settings/plugins/foo`.
+            $pattern = preg_replace('/^[A-Z,]+ /', '', (string)$pattern);
+
+            if ($pattern === $path && is_string($route)) {
+                return $route;
+            }
+        }
+
+        return null;
     }
 
     public function settingsForm(FormContext $context = new FormContext()): ?Form

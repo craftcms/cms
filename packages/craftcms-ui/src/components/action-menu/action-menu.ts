@@ -33,7 +33,7 @@ export type {
 /**
  * An action menu built on craft-popover.
  *
- * The web component is the single source of truth for action-menu behaviour.
+ * The web component is the single source of truth for action-menu behavior.
  * It supports two mutually-compatible modes:
  *
  * 1. **Slot-based** (default / backwards compatible): the consumer slots their
@@ -262,7 +262,7 @@ export default class CraftActionMenu extends CraftPopover {
       // shadow boundaries without nesting them inside the items' internal
       // (already interactive) buttons/links — and a search input isn't valid
       // inside a `menu` either. Native button/link semantics are the
-      // semantically-safe fallback; the *keyboard behaviour* still follows
+      // semantically-safe fallback; the *keyboard behavior* still follows
       // the APG menu pattern (see `_onContentKeydown`).
       firstContent.setAttribute('role', 'none');
     }
@@ -524,7 +524,11 @@ export default class CraftActionMenu extends CraftPopover {
         heading.setAttribute('role', 'presentation');
         // Styled like a nav heading.
         Object.assign(heading.style, {
-          padding: 'var(--c-spacing-xs) var(--c-spacing-md)',
+          paddingBlock: 'var(--c-spacing-xs)',
+          // Inline start where the items' labels do: past their 1px border,
+          // inline padding, and the label's own margin.
+          paddingInline:
+            'calc(var(--c-spacing-sm) * 2 + 1px) var(--c-spacing-md)',
           fontSize: 'var(--c-text-sm)',
           fontWeight: 'bold',
         });
@@ -660,6 +664,20 @@ export default class CraftActionMenu extends CraftPopover {
       const node = this._renderItem(action);
       if (node) {
         content.appendChild(node);
+      }
+    }
+
+    // Set headings off from the items above them, as the global nav's group
+    // headings are. Inline, like the rest of their styling, so it's decided
+    // here rather than by a :first-child rule the shadow root can't apply.
+    let followsItem = false;
+    for (const child of content.children) {
+      if (child.classList.contains('action-menu__heading')) {
+        (child as HTMLElement).style.marginBlockStart = followsItem
+          ? 'var(--c-spacing-md)'
+          : '';
+      } else if (child.tagName === 'CRAFT-ACTION-ITEM') {
+        followsItem = true;
       }
     }
 
@@ -921,7 +939,7 @@ export default class CraftActionMenu extends CraftPopover {
    * Keyboard navigation between items (WAI-ARIA APG menu pattern, adapted):
    *
    * - ArrowDown/ArrowUp move to the next/previous navigable item and *wrap*
-   *   at the ends (the APG-recommended behaviour).
+   *   at the ends (the APG-recommended behavior).
    * - Home/End jump to the first/last navigable item.
    * - In searchable mode, printable characters and Backspace return focus to
    *   the search input and apply the keystroke there, so filtering continues

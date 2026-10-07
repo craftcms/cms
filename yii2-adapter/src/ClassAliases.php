@@ -441,7 +441,7 @@ class ClassAliases
         class_alias(\CraftCms\Yii2Adapter\FieldLayout\FieldLayoutFormTab::class, FieldLayoutFormTab::class);
         class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutTab::class, FieldLayoutTab::class);
         class_alias(\CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface::class, FieldLayoutProviderInterface::class);
-        class_alias(\CraftCms\Yii2Adapter\FieldLayout\FieldLayout::class, FieldLayout::class);
+        class_alias(\CraftCms\Cms\FieldLayout\FieldLayout::class, FieldLayout::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\BaseField::class, BaseField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField::class, BaseNativeField::class);
         class_alias(\CraftCms\Yii2Adapter\FieldLayout\LayoutElements\BaseUiElement::class, BaseUiElement::class);

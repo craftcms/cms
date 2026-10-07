@@ -4,6 +4,7 @@ import {dirname, join} from 'path';
 import {fileURLToPath} from 'url';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
+import remarkGfm from 'remark-gfm';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,7 +30,13 @@ const config: StorybookConfig = {
   ],
   addons: [
     getAbsolutePath('@storybook/addon-themes'),
-    getAbsolutePath('@storybook/addon-docs'),
+    {
+      name: getAbsolutePath('@storybook/addon-docs'),
+      // GitHub-flavored Markdown, so docs can use tables.
+      options: {
+        mdxPluginOptions: {mdxCompileOptions: {remarkPlugins: [remarkGfm]}},
+      },
+    },
     getAbsolutePath('@storybook/addon-a11y'),
   ],
   framework: {

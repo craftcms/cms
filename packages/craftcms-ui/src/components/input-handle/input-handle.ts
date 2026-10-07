@@ -4,7 +4,7 @@ import CraftInput from '@src/components/input/input.js';
 
 /**
  * @summary A handle input — `craft-input` in a monospace face, with the
- * browser's autocorrection and auto-capitalisation turned off.
+ * browser's autocorrection and auto-capitalization turned off.
  *
  * Handles are typed exactly and read character by character, so the two
  * conveniences a browser applies to prose actively get in the way. Everything
@@ -25,7 +25,7 @@ export default class CraftInputHandle extends CraftInput {
 
   /**
    * Whether the browser may autocorrect the value. Off here, unlike on
-   * `craft-input`. Serialised as `on`/`off` rather than as a bare boolean
+   * `craft-input`. Serialized as `on`/`off` rather than as a bare boolean
    * attribute, matching the native attribute it drives.
    */
   @property({

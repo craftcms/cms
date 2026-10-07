@@ -71,15 +71,11 @@ describe('NestedElementBlocksControl', () => {
   let container: HTMLElement | undefined;
 
   afterEach(() => {
-    try {
-      app?.unmount();
-    } catch {
-      // `craft-matrix-input` relocates its own light DOM, which trips Vue's
-      // unmount under happy-dom. Not what these tests are about.
-    }
+    app?.unmount();
     container?.remove();
     app = undefined;
     container = undefined;
+    vi.unstubAllGlobals();
   });
 
   const control = (): FormControlPayload =>
@@ -114,6 +110,7 @@ describe('NestedElementBlocksControl', () => {
     owner = undefined;
     errors = [];
     captureErrors = false;
+    vi.stubGlobal('Craft', {});
     fieldActions = undefined;
     menus.length = 0;
     localStorage.clear();
@@ -261,6 +258,41 @@ describe('NestedElementBlocksControl', () => {
     ]);
   });
 
+  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
+    const state = mount(
+      {
+        entries: {existing: {type: 'existingType', collapsed: true}},
+        sortOrder: ['existing'],
+      },
+      {
+        entryTypes: [
+          {value: 'existingType', label: 'Existing Type'},
+          {value: 'first', label: 'First'},
+          {value: 'second', label: 'Second'},
+        ],
+        createEntryTypes: ['second', 'first'],
+        blocks: {existing: {label: 'Existing content'}},
+      }
+    );
+    await nextTick();
+    const buttons = [
+      ...container!.querySelectorAll<HTMLElement>('[data-form-matrix-add]'),
+    ];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Add Second',
+      'Add First',
+    ]);
+    expect(container!.textContent).toContain('Existing content');
+    invoke('existing', 'Add Second above');
+    await nextTick();
+    const value = state.value as {
+      entries: Record<string, {type: string}>;
+      sortOrder: string[];
+    };
+    expect(value.sortOrder.at(-1)).toBe('existing');
+    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
+  });
+
   it('remembers a collapsed block in storage rather than the value', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
@@ -351,7 +383,7 @@ describe('NestedElementBlocksControl', () => {
     ).toBe('Saved label');
   });
 
-  it('carries the entry type icon and colour into the block header', async () => {
+  it('carries the entry type icon and color into the block header', async () => {
     mount(
       {
         entries: {'block-a': {type: 'newType', enabled: true}},
@@ -691,11 +723,21 @@ describe('NestedElementBlocksControl', () => {
           blocks: {
             'block-a': {
               actions: serverActions('block-a'),
-              data: {'element-id': 12, 'owner-id': 7, 'site-id': 1},
+              data: {
+                'element-id': 12,
+                'owner-id': 7,
+                'site-id': 1,
+                'type-id': 9,
+              },
             },
             'block-b': {
               actions: serverActions('block-b'),
-              data: {'element-id': 13, 'owner-id': 7, 'site-id': 1},
+              data: {
+                'element-id': 13,
+                'owner-id': 7,
+                'site-id': 1,
+                'type-id': 9,
+              },
             },
           },
           ...props,
@@ -809,7 +851,7 @@ describe('NestedElementBlocksControl', () => {
         await vi.waitFor(() => expect(emitted).toHaveLength(1));
 
         expect(action.post).toHaveBeenCalledWith(
-          'matrix/create-entry',
+          expect.stringMatching(/\/matrix\/create-entry$/),
           expect.objectContaining({
             duplicate: prepared ? 112 : 12,
             ownerId: prepared ? 107 : 7,
@@ -857,7 +899,7 @@ describe('NestedElementBlocksControl', () => {
           nodes: [],
         },
         values: {},
-        // Without this the new block is a blank card — no colour, no icon, no
+        // Without this the new block is a blank card — no color, no icon, no
         // menu — until the next save brings the field's own copy round.
         block: {
           label: 'Entry 20',
@@ -1018,7 +1060,7 @@ describe('NestedElementBlocksControl', () => {
       expect(invoker()!.disabled).toBe(false);
     });
 
-    it('carries each entry type’s own icon and colour', async () => {
+    it('carries each entry type’s own icon and color', async () => {
       mount({entries: {}, sortOrder: []}, {entryTypes: types(2)});
       await nextTick();
 
@@ -1377,7 +1419,7 @@ describe('NestedElementBlocksControl', () => {
     });
   });
 
-  it('summarises a folded-up block from its fields when it has no label', async () => {
+  it('summarizes a folded-up block from its fields when it has no label', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
       sortOrder: ['block-a'],
@@ -1671,14 +1713,17 @@ describe('NestedElementBlocksControl', () => {
     await vi.waitFor(() => expect(emitted).toHaveLength(1));
     await nextTick();
 
-    expect(action.post).toHaveBeenCalledWith('matrix/create-entry', {
-      fieldId: 33,
-      entryTypeId: 25,
-      ownerId: 1568,
-      ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-      siteId: 1,
-      path: ['fields', 'pageBuilder'],
-    });
+    expect(action.post).toHaveBeenCalledWith(
+      expect.stringMatching(/\/matrix\/create-entry$/),
+      {
+        fieldId: 33,
+        entryTypeId: 25,
+        ownerId: 1568,
+        ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        siteId: 1,
+        path: ['fields', 'pageBuilder'],
+      }
+    );
 
     // The server's identity is used as-is — no `uid:` prefix to reconcile later.
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([uid]);
@@ -1770,11 +1815,14 @@ describe('NestedElementBlocksControl', () => {
       fieldId: 3,
       siteId: 1,
     });
-    expect(action.post).toHaveBeenCalledWith('matrix/render-blocks', {
-      entryIds: [201],
-      siteId: 1,
-      path: ['fields', 'pageBuilder'],
-    });
+    expect(action.post).toHaveBeenCalledWith(
+      expect.stringMatching(/\/matrix\/render-blocks$/),
+      {
+        entryIds: [201],
+        siteId: 1,
+        path: ['fields', 'pageBuilder'],
+      }
+    );
   });
 
   it.each([
@@ -1850,7 +1898,7 @@ describe('NestedElementBlocksControl', () => {
       if (outcome === 'saved') {
         await vi.waitFor(() => expect(emitted).toHaveLength(1));
         expect(action.post).toHaveBeenCalledWith(
-          'matrix/create-entry',
+          expect.stringMatching(/\/matrix\/create-entry$/),
           expect.objectContaining({ownerId: 107})
         );
       } else {

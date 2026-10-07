@@ -49,7 +49,7 @@ export default css`
   /*
     Non-modal dialogs get no \`::backdrop\` — that pseudo only paints for the
     top layer — so one is rendered instead. \`show()\` also leaves the dialog in
-    normal flow, hence the fixed positioning to centre it.
+    normal flow, hence the fixed positioning to center it.
   */
   .backdrop {
     position: fixed;
@@ -74,7 +74,7 @@ export default css`
     block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
-    border-radius: var(--c-radius-xl);
+    border-radius: var(--c-radius-lg);
     box-shadow: var(--c-shadow-lg);
     overflow: hidden;
   }

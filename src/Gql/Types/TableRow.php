@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Types;
 
 use CraftCms\Cms\Field\Table as TableField;
+use CraftCms\Cms\Field\TableCellTypes;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -28,19 +31,27 @@ class TableRow extends ObjectType
     /**
      * @param  bool  $includeHandles  Whether columns also should be present by their field handles.
      * @param  array<string, TableColumn>  $columns
-     * @return array<string, Type&OutputType>
+     * @return array<string, Type&(OutputType|InputType)>
      */
-    public static function prepareRowFieldDefinition(array $columns, bool $includeHandles = true): array
+    public static function prepareRowFieldDefinition(array $columns, bool $includeHandles = true, bool $input = false): array
     {
         $contentFields = [];
 
         foreach ($columns as $columnKey => $columnDefinition) {
-            $cellType = match ($columnDefinition['type']) {
-                'date', 'time' => DateTime::getType(),
-                'number' => Number::getType(),
-                'lightswitch' => Type::boolean(),
-                default => Type::string(),
-            };
+            $cell = app(TableCellTypes::class)->create($columnDefinition);
+            if ($input) {
+                $cellType = $cell->gqlInputType();
+
+                if (! $cellType instanceof InputType) {
+                    throw new InvalidArgumentException('Table cell types must provide a GraphQL type for the requested direction.');
+                }
+            } else {
+                $cellType = $cell->gqlType();
+
+                if (! $cellType instanceof OutputType) {
+                    throw new InvalidArgumentException('Table cell types must provide a GraphQL type for the requested direction.');
+                }
+            }
 
             $contentFields[$columnKey] = $cellType;
 

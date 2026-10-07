@@ -143,7 +143,7 @@ const FIT_TOLERANCE = 1;
  *       <div slot="panel">…</div>
  *     </craft-tabs>
  *
- * This replaces the overflow behaviour rather than combining with it: tabs that
+ * This replaces the overflow behavior rather than combining with it: tabs that
  * share the width always fit, so nothing collapses into the menu, and a label
  * with no room left shrinks (wrapping, then clipping) in place. Inline
  * placements are unaffected — their tabs already span the strip.
@@ -203,7 +203,7 @@ const FIT_TOLERANCE = 1;
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
  *   Defaults to `--c-spacing-lg`.
  * @cssproperty --c-tabs-tab-gap - Space between adjacent tabs. Defaults to
- *   `--c-spacing-md`.
+ *   `--c-spacing-lg`, or `--c-spacing-md` on the inline placements.
  * @cssproperty --c-tabs-border - Color of the rule along the tab strip.
  *   Defaults to `--c-color-neutral-border-quiet`.
  * @cssproperty --c-tabs-font-size - Font size of the tab strip, and so the

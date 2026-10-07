@@ -1,9 +1,10 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
     display: inline-flex;
-    padding-inline: var(--c-tab-spacing-inline, 1em);
+    padding-inline: var(--c-tab-spacing-inline, 0);
     padding-block: var(--c-tab-spacing-block, 0.5em);
     position: relative;
     cursor: pointer;
@@ -41,8 +42,35 @@ export default css`
   :host([selected])::after {
     background-color: var(
       --c-tab-border-active,
-      var(--c-color-accent-border-loud)
+      var(--c-color-accent-fill-loud)
     );
+  }
+
+  :host([selected]) {
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
+  /* A hidden copy of the label in the selected weight reserves its width,
+     so selecting a tab doesn't shift the strip. */
+  .tab__label {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .tab__text {
+    display: block;
+    ${trimmedTextBoxStyles}
+  }
+
+  .tab__label::after {
+    content: attr(data-text);
+    block-size: 0;
+    overflow: hidden;
+    visibility: hidden;
+    user-select: none;
+    pointer-events: none;
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
 
   /*

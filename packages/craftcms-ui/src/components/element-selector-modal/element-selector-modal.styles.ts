@@ -62,7 +62,7 @@ export default css`
 
   /*
     Kept in the accessibility tree when the title is hidden: the <dialog> is
-    labelled by it, so removing it would leave the dialog unnamed.
+    labeled by it, so removing it would leave the dialog unnamed.
   */
   .title--hidden {
     position: absolute;

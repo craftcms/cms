@@ -155,7 +155,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
    * while it is open — and the close button alongside it.
    *
    * The heading is rendered even when `show-title` is off, because the dialog is
-   * labelled by it; it is only taken out of flow.
+   * labeled by it; it is only taken out of flow.
    */
   protected override renderHeader(): TemplateResult {
     return html`

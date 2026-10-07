@@ -1,0 +1,792 @@
+/**
+ * MatrixEntry — modern TypeScript port of the legacy `Craft.MatrixInput.Entry`.
+ *
+ * The per-block (`[data-matrix-block]`) controller: collapse/expand (with the preview-text
+ * summary and localStorage persistence), the block action menu, enable/disable,
+ * move/duplicate/copy/paste/delete.
+ */
+
+import {Base, hasAttr} from '@craftcms/garnish';
+import {t} from '@craftcms/ui';
+import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
+import {animationDuration, MatrixInput} from './matrix-input';
+import {blockPreviewParts} from '@/modules/matrix/preview-text';
+import {containerMatrixEntries} from './support';
+import {
+  type LegacyDisclosureMenu,
+  craft,
+  jqData,
+  legacyGarnish,
+  setJqData,
+} from './interop';
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | {[key: string]: JsonValue};
+
+/**
+ * A part of a block, whether it sits directly under the block or inside the
+ * `craft-card` frame supplied by a compatibility caller. Scoped to
+ * that one level either way, so a nested Matrix inside the block keeps its own
+ * titlebar, fields and inputs to itself.
+ */
+function blockPart<T extends Element = HTMLElement>(
+  container: HTMLElement,
+  selector: string
+): T | null {
+  return container.querySelector<T>(
+    `:scope > ${selector}, :scope > craft-card > ${selector}`
+  );
+}
+
+export class MatrixEntry extends Base {
+  /** The entry controller for a `[data-matrix-block]` container, if one was booted. */
+  static forContainer(container: Element): MatrixEntry | undefined {
+    return containerMatrixEntries.get(container);
+  }
+
+  matrix: MatrixInput;
+  container: HTMLElement;
+  titlebar: HTMLElement | null;
+  fieldsContainer: HTMLElement | null;
+  previewContainer: HTMLElement | null;
+  actionMenu: HTMLElement | null = null;
+  collapsedInput: HTMLInputElement | null = null;
+
+  actionDisclosure: LegacyDisclosureMenu | null = null;
+  uiLabel: string | null = null;
+
+  isNew: boolean;
+  id: string | null;
+
+  collapsed = false;
+
+  constructor(matrix: MatrixInput, container: HTMLElement) {
+    super();
+
+    this.matrix = matrix;
+    this.container = container;
+    this.titlebar = blockPart(container, '[data-matrix-block-titlebar]');
+    this.previewContainer =
+      this.titlebar?.querySelector('[data-matrix-block-preview]') ?? null;
+    this.fieldsContainer = blockPart(container, '[data-matrix-block-fields]');
+    const formHost =
+      this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
+        'craft-entry-field-layout-form'
+      );
+    if (formHost) {
+      formHost.requestMetadata = () => ({
+        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        elementId: null,
+        canonicalId: null,
+        draftId: null,
+        revisionId: null,
+        provisional: null,
+        elementUid:
+          this.matrix.elementEditor?.getDraftElementUid(
+            this.container.dataset.uid
+          ) ?? this.container.dataset.uid,
+        fieldId: this.matrix.settings!.fieldId,
+        ownerId: this.matrix.settings!.ownerId,
+        siteId: this.matrix.settings!.siteId,
+        typeId: this.container.dataset.typeId,
+        sortOrder:
+          Array.from(this.container.parentElement?.children ?? []).indexOf(
+            this.container
+          ) + 1,
+      });
+    }
+
+    containerMatrixEntries.set(container, this);
+    // PHP-emitted snippets (expand/collapse-all) read `$(block).data('entry')`.
+    setJqData(container, 'entry', this);
+
+    this.id = container.dataset.id ?? null;
+    this.isNew = !this.id || this.id.startsWith('new');
+
+    const actionMenuBtn = blockPart<HTMLElement>(
+      this.container,
+      '[data-matrix-block-actions] > [data-matrix-block-menu]'
+    );
+    if (actionMenuBtn) {
+      this.actionDisclosure =
+        jqData(actionMenuBtn, 'disclosureMenu') ||
+        new (legacyGarnish().DisclosureMenu)(actionMenuBtn);
+      this.actionMenu = this.actionDisclosure.$container[0] ?? null;
+    }
+
+    this.uiLabel = container.dataset.uiLabel ?? null;
+
+    this.actionDisclosure?.on('show', () => this.prepareActionMenu());
+    this.actionDisclosure?.on('hide', () => {
+      this.container.classList.remove('active');
+    });
+
+    for (const option of this.actionMenuOptions()) {
+      this.addListener(option, 'activate', (event) => {
+        if (
+          !(event instanceof Event) ||
+          !(event.target instanceof HTMLElement)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        this.onActionSelect(event.target);
+      });
+    }
+
+    // Was this entry already collapsed?
+    if (hasAttr(container, 'data-collapsed')) {
+      this.collapse();
+    }
+
+    if (this.titlebar) {
+      // (Legacy used the Garnish `doubletap` event; `dblclick` covers both
+      // double-click and double-tap in modern browsers.)
+      this.addListener(this.titlebar, 'dblclick', (event) => {
+        if (
+          !(event instanceof Event) ||
+          !(event.target instanceof HTMLElement)
+        ) {
+          return;
+        }
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!event.target.closest('.tab-label')) {
+          event.preventDefault();
+          this.toggle();
+        }
+      });
+    }
+  }
+
+  /** Reads a JSON-ish data attribute the way jQuery `.data()` did. */
+  private dataJson(name: string): JsonValue {
+    const raw = this.container.getAttribute(`data-${name}`);
+    if (raw === null) {
+      return null;
+    }
+    try {
+      // SAFETY: JSON.parse can only produce values represented by JsonValue.
+      return JSON.parse(raw) as JsonValue;
+    } catch {
+      return raw;
+    }
+  }
+
+  private actionMenuOptions(): HTMLElement[] {
+    return Array.from(
+      this.actionMenu?.querySelectorAll<HTMLElement>('button[data-action]') ??
+        []
+    );
+  }
+
+  /** Show/hide/relabel the action menu items for the current state. */
+  private prepareActionMenu(): void {
+    this.container.classList.add('active');
+    const hideActions: string[] = [];
+    const targets = this.actionTargets();
+    const every = (attribute: string): boolean =>
+      targets.every((target) => target.hasAttribute(attribute));
+    const some = (attribute: string): boolean =>
+      targets.some((target) => target.hasAttribute(attribute));
+
+    hideActions.push(this.collapsed ? 'collapse' : 'expand');
+    hideActions.push(every('data-disabled') ? 'disable' : 'enable');
+    const globallyDisabled = every('data-disabled-global');
+    const anyGloballyDisabled = some('data-disabled-global');
+    const disabledForSite = every('data-disabled-site');
+    hideActions.push(
+      anyGloballyDisabled || disabledForSite
+        ? 'disableForSite'
+        : 'enableForSite'
+    );
+    hideActions.push(globallyDisabled ? 'disableGlobally' : 'enableGlobally');
+    if (anyGloballyDisabled) {
+      hideActions.push('disableForSite', 'enableForSite');
+    }
+
+    if (!this.previousBlock()) {
+      hideActions.push('moveUp');
+    }
+    if (!this.nextBlock()) {
+      hideActions.push('moveDown');
+    }
+    if (!this.matrix.canAddMoreEntries()) {
+      hideActions.push('add', 'duplicate');
+    }
+
+    const buttons = this.actionMenuOptions();
+    for (const button of buttons) {
+      const action = button.getAttribute('data-action') ?? '';
+      if (hideActions.includes(action)) {
+        this.actionDisclosure?.hideItem(button);
+      } else {
+        this.actionDisclosure?.showItem(button);
+      }
+    }
+
+    const bulk = this.bulkActionMode();
+    const site = this.container.dataset.siteName ?? '';
+    const labels = {
+      collapse: bulk ? t('Collapse selected blocks') : t('Collapse'),
+      expand: bulk ? t('Expand selected blocks') : t('Expand'),
+      disable: bulk
+        ? t('Disable selected {type}', {type: t('blocks')})
+        : t('Disable'),
+      enable: bulk
+        ? t('Enable selected {type}', {type: t('blocks')})
+        : t('Enable'),
+      disableForSite: bulk
+        ? t('Disable selected {type} for {site}', {
+            type: t('blocks'),
+            site,
+          })
+        : t('Disable for {site}', {site}),
+      enableForSite: bulk
+        ? t('Enable selected {type} for {site}', {
+            type: t('blocks'),
+            site,
+          })
+        : t('Enable for {site}', {site}),
+      disableGlobally: bulk
+        ? t('Disable selected {type} globally', {type: t('blocks')})
+        : t('Disable globally'),
+      enableGlobally: bulk
+        ? t('Enable selected {type} globally', {type: t('blocks')})
+        : t('Enable globally'),
+      duplicate: bulk
+        ? t('Duplicate selected {type}', {type: t('blocks')})
+        : t('Duplicate'),
+      copy: bulk ? t('Copy selected {type}', {type: t('blocks')}) : t('Copy'),
+      delete: bulk
+        ? t('Delete selected {type}', {type: t('blocks')})
+        : t('Delete'),
+    } satisfies Record<string, string>;
+    for (const button of buttons) {
+      const action = button.getAttribute('data-action') ?? '';
+      const actionLabel = Object.entries(labels).find(
+        ([name]) => name === action
+      )?.[1];
+      if (actionLabel) {
+        const label = button.querySelector(':scope > .menu-item-label');
+        if (label) {
+          label.textContent = actionLabel;
+        }
+      }
+    }
+
+    const pasteBtn = buttons.find(
+      (button) => button.getAttribute('data-action') === 'paste'
+    );
+    if (pasteBtn) {
+      const copiedElements = craft().cp.getCopiedElements();
+      const showPasteButton =
+        copiedElements.length && this.matrix.canPaste(copiedElements);
+      if (showPasteButton) {
+        this.actionDisclosure?.showItem(pasteBtn);
+        const label = pasteBtn.querySelector(':scope > .menu-item-label');
+        if (label) {
+          label.textContent =
+            copiedElements.length === 1
+              ? t('Paste {type} above', {type: t('block')})
+              : t('Paste {type} above', {type: t('blocks')});
+        }
+      } else {
+        this.actionDisclosure?.hideItem(pasteBtn);
+      }
+    }
+  }
+
+  private previousBlock(): HTMLElement | null {
+    const prev = this.container.previousElementSibling;
+    return prev instanceof HTMLElement && prev.hasAttribute('data-matrix-block')
+      ? prev
+      : null;
+  }
+
+  private nextBlock(): HTMLElement | null {
+    const next = this.container.nextElementSibling;
+    return next instanceof HTMLElement && next.hasAttribute('data-matrix-block')
+      ? next
+      : null;
+  }
+
+  toggle(): void {
+    if (this.collapsed) {
+      this.expand();
+    } else {
+      this.collapse(true);
+    }
+  }
+
+  collapse(animate?: boolean): void {
+    if (this.collapsed) {
+      return;
+    }
+
+    this.container.setAttribute('data-collapsed', '');
+    this.container.classList.add('collapsed');
+
+    if (this.previewContainer) {
+      this.previewContainer.innerHTML = this.previewHtml();
+    }
+
+    const fields = this.fieldsContainer;
+    const finishCollapse = () => {
+      if (this.previewContainer) {
+        this.previewContainer.style.display = '';
+      }
+      if (fields) {
+        fields.style.display = 'none';
+        fields.style.opacity = '';
+      }
+      this.container.style.height = '30px';
+    };
+
+    if (animate && animationDuration()) {
+      fields?.animate([{opacity: 1}, {opacity: 0}], {
+        duration: animationDuration(),
+      });
+      const heightAnimation = this.container.animate(
+        [
+          {height: `${this.container.getBoundingClientRect().height}px`},
+          {height: '30px'},
+        ],
+        {duration: animationDuration()}
+      );
+      heightAnimation.finished.then(finishCollapse).catch(() => {});
+    } else {
+      finishCollapse();
+    }
+
+    // Remember that?
+    if (!this.isNew) {
+      MatrixInput.rememberCollapsedEntryId(this.id!);
+    }
+
+    this.setCollapsedInput('1');
+    this.collapsed = true;
+    this.matrix.syncFieldMenu();
+  }
+
+  previewHtml(): string {
+    if (this.uiLabel) {
+      return escapeHtml(this.uiLabel);
+    }
+
+    if (!this.fieldsContainer) {
+      return '';
+    }
+
+    return blockPreviewParts(this.fieldsContainer)
+      .map((part) => escapeHtml(part))
+      .join(' <span>|</span> ');
+  }
+
+  expand(): void {
+    if (!this.collapsed) {
+      return;
+    }
+
+    this.container.removeAttribute('data-collapsed');
+    this.container.classList.remove('collapsed');
+
+    const fields = this.fieldsContainer;
+
+    const collapsedContainerHeight =
+      this.container.getBoundingClientRect().height;
+    this.container.style.height = 'auto';
+    if (fields) {
+      fields.style.display = '';
+    }
+    const expandedContainerHeight =
+      this.container.getBoundingClientRect().height;
+    this.container.style.height = `${collapsedContainerHeight}px`;
+
+    fields?.animate([{opacity: 0}, {opacity: 1}], {
+      duration: animationDuration(),
+    });
+
+    const finishExpand = () => {
+      if (this.previewContainer) {
+        this.previewContainer.innerHTML = '';
+      }
+      this.container.style.height = 'auto';
+      this.container.dispatchEvent(new Event('scroll'));
+    };
+
+    const heightAnimation = this.container.animate(
+      [
+        {height: `${collapsedContainerHeight}px`},
+        {height: `${expandedContainerHeight}px`},
+      ],
+      {duration: animationDuration()}
+    );
+    heightAnimation.finished.then(finishExpand).catch(() => {});
+
+    // Remember that?
+    if (!this.isNew) {
+      MatrixInput.forgetCollapsedEntryId(this.id!);
+    }
+
+    this.setCollapsedInput('');
+    this.collapsed = false;
+    this.matrix.syncFieldMenu();
+  }
+
+  /**
+   * Posts the collapsed state, so a block folded up before saving comes back
+   * folded up.
+   *
+   * Saved blocks can use localStorage; new blocks need an input until they have
+   * a stable ID.
+   */
+  private setCollapsedInput(value: string): void {
+    this.collapsedInput ??= blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[collapsed]"]'
+    );
+
+    if (!this.collapsedInput) {
+      this.collapsedInput = document.createElement('input');
+      this.collapsedInput.type = 'hidden';
+      this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
+      this.container.append(this.collapsedInput);
+    }
+
+    this.collapsedInput.value = value;
+  }
+
+  override disable(): void {
+    this.setStatus('enabled', false);
+  }
+
+  override enable(): void {
+    this.setStatus('enabled', true);
+  }
+
+  disableForSite(): void {
+    this.setStatus('enabledForSite', false);
+  }
+
+  enableForSite(): void {
+    this.setStatus('enabledForSite', true);
+  }
+
+  disableGlobally(): void {
+    this.setStatus('enabled', false);
+  }
+
+  enableGlobally(): void {
+    this.setStatus('enabled', true);
+  }
+
+  private setStatus(
+    attribute: 'enabled' | 'enabledForSite',
+    enabled: boolean
+  ): void {
+    if (
+      attribute === 'enabledForSite' &&
+      this.container.hasAttribute('data-disabled-global')
+    ) {
+      return;
+    }
+
+    const input = blockPart<HTMLInputElement>(
+      this.container,
+      `input[name$="[${attribute}]"]`
+    );
+    if (input) {
+      input.value = enabled ? '1' : '';
+    }
+
+    this.container.toggleAttribute(
+      attribute === 'enabled' ? 'data-disabled-global' : 'data-disabled-site',
+      !enabled
+    );
+
+    const disabled =
+      this.container.hasAttribute('data-disabled-global') ||
+      this.container.hasAttribute('data-disabled-site');
+    this.container.toggleAttribute('data-disabled', disabled);
+    this.container.classList.toggle('disabled-entry', disabled);
+
+    const status = blockPart<HTMLElement>(
+      this.container,
+      '[data-matrix-block-actions] > .status'
+    );
+    if (status) {
+      const label =
+        this.container.dataset.siteName &&
+        this.container.hasAttribute('data-disabled-global')
+          ? t('Disabled globally')
+          : this.container.dataset.siteName &&
+              this.container.hasAttribute('data-disabled-site')
+            ? t('Disabled for {site}', {
+                site: this.container.dataset.siteName,
+              })
+            : t('Disabled');
+      status.title = label;
+      const accessibleLabel = status.querySelector(
+        '.sr-only, .visually-hidden'
+      );
+      if (accessibleLabel) {
+        accessibleLabel.textContent = label;
+      }
+    }
+
+    if (disabled) {
+      this.collapse(true);
+    } else {
+      this.expand();
+    }
+  }
+
+  moveUp(): void {
+    this.matrix.trigger('beforeMoveEntryUp', {entry: this});
+    const prev = this.previousBlock();
+    if (prev) {
+      prev.before(this.container);
+      this.matrix.entrySelect?.resetItemOrder();
+    }
+    this.matrix.trigger('moveEntryUp', {entry: this});
+  }
+
+  moveDown(): void {
+    this.matrix.trigger('beforeMoveEntryDown', {entry: this});
+    const next = this.nextBlock();
+    if (next) {
+      next.after(this.container);
+      this.matrix.entrySelect?.resetItemOrder();
+    }
+    this.matrix.trigger('moveEntryDown', {entry: this});
+  }
+
+  duplicate(): void {
+    const type = this.container.dataset.type ?? '';
+    const elementEditor = this.matrix.elementEditor;
+    this.matrix.addEntry(type, this.nextBlock(), true, {
+      duplicate: elementEditor?.getDraftElementId(this.id) || this.id,
+    });
+  }
+
+  bulkActionMode(): boolean {
+    return (
+      (this.matrix.entrySelect?.totalSelected ?? 0) > 1 &&
+      (this.matrix.entrySelect?.isSelected(this.container) ?? false)
+    );
+  }
+
+  private actionTargets(): HTMLElement[] {
+    return this.bulkActionMode()
+      ? Array.from(this.matrix.entrySelect?.getSelectedItems() ?? [])
+      : [this.container];
+  }
+
+  onActionSelect(option: HTMLElement): void {
+    switch (option.getAttribute('data-action')) {
+      case 'collapse': {
+        if (this.bulkActionMode()) {
+          this.matrix.collapseSelectedEntries();
+        } else {
+          this.collapse(true);
+        }
+        break;
+      }
+
+      case 'expand': {
+        if (this.bulkActionMode()) {
+          this.matrix.expandSelectedEntries();
+        } else {
+          this.expand();
+        }
+        break;
+      }
+
+      case 'disable': {
+        if (this.bulkActionMode()) {
+          this.matrix.disableSelectedEntries();
+        } else {
+          this.disable();
+        }
+        break;
+      }
+
+      case 'disableForSite': {
+        if (this.bulkActionMode()) {
+          this.matrix.disableSelectedEntriesForSite();
+        } else {
+          this.disableForSite();
+        }
+        break;
+      }
+
+      case 'enableForSite': {
+        if (this.bulkActionMode()) {
+          this.matrix.enableSelectedEntriesForSite();
+        } else {
+          this.enableForSite();
+        }
+        break;
+      }
+
+      case 'disableGlobally': {
+        if (this.bulkActionMode()) {
+          this.matrix.disableSelectedEntriesGlobally();
+        } else {
+          this.disableGlobally();
+        }
+        break;
+      }
+
+      case 'enableGlobally': {
+        if (this.bulkActionMode()) {
+          this.matrix.enableSelectedEntriesGlobally();
+        } else {
+          this.enableGlobally();
+        }
+        break;
+      }
+
+      case 'enable': {
+        if (this.bulkActionMode()) {
+          this.matrix.enableSelectedEntries();
+        } else {
+          this.enable();
+          this.expand();
+        }
+        break;
+      }
+
+      case 'moveUp': {
+        this.moveUp();
+        break;
+      }
+
+      case 'moveDown': {
+        this.moveDown();
+        break;
+      }
+
+      case 'editEntryType': {
+        new Craft.CpScreenSlideout(
+          Craft.getCpUrl(
+            `settings/entry-types/${this.container.dataset.typeId}`
+          )
+        );
+        break;
+      }
+
+      case 'add': {
+        const type = option.getAttribute('data-type') ?? '';
+        this.matrix.addEntry(type, this.container);
+        break;
+      }
+
+      case 'duplicate': {
+        if (this.bulkActionMode()) {
+          this.matrix.duplicateSelectedEntries();
+        } else {
+          this.duplicate();
+        }
+        break;
+      }
+
+      case 'copy': {
+        const entries = this.bulkActionMode()
+          ? Array.from(this.matrix.entrySelect?.getSelectedItems() ?? [])
+              .map((item) => MatrixEntry.forContainer(item))
+              .filter((entry): entry is MatrixEntry => !!entry)
+          : [this];
+
+        craft().cp.copyElements(
+          entries.map((entry) => ({
+            type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            id:
+              entry.matrix.elementEditor?.getDraftElementId(entry.id) ||
+              entry.id,
+            draftId: entry.dataJson('draft-id'),
+            revisionId: entry.dataJson('revision-id'),
+            fieldId: entry.matrix.settings!.fieldId,
+            ownerId: entry.matrix.settings!.ownerId,
+            siteId: entry.matrix.settings!.siteId,
+          }))
+        );
+        break;
+      }
+
+      case 'paste': {
+        this.matrix.pasteEntries(this.container);
+        break;
+      }
+
+      case 'delete': {
+        if (this.bulkActionMode()) {
+          if (
+            confirm(
+              t('Are you sure you want to delete the selected {type}?', {
+                type:
+                  craft().elementTypeNames[
+                    'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                  ]?.[3] ?? t('blocks'),
+              })
+            )
+          ) {
+            this.matrix.deleteSelectedEntries();
+          }
+        } else {
+          this.selfDestruct();
+        }
+        break;
+      }
+    }
+
+    this.actionDisclosure?.hide();
+  }
+
+  selfDestruct(): void {
+    this.destroy();
+
+    // Remove any inputs from the form data
+    for (const el of this.container.querySelectorAll('[name]')) {
+      el.removeAttribute('name');
+    }
+
+    const height = this.container.getBoundingClientRect().height;
+    const animation = this.container.animate(
+      [
+        {opacity: 1, marginBottom: '0px'},
+        {opacity: 0, marginBottom: `${-height}px`},
+      ],
+      {duration: animationDuration()}
+    );
+    animation.finished
+      .catch(() => {})
+      .finally(() => {
+        this.container.remove();
+        this.matrix.updateAddEntryBtn();
+        this.matrix.trigger('entryDeleted', {$entry: this.container});
+      });
+  }
+
+  override destroy(): void {
+    this.actionDisclosure?.hide();
+
+    this.actionDisclosure?.destroy();
+    this.actionDisclosure = null;
+
+    containerMatrixEntries.delete(this.container);
+    setJqData(this.container, 'entry', null);
+
+    // alert any nested inputs that we're getting deleted (bubbles like the
+    // legacy jQuery trigger; listeners filter with `target === currentTarget`)
+    this.container.dispatchEvent(new Event('delete', {bubbles: true}));
+
+    super.destroy();
+  }
+}

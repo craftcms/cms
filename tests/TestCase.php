@@ -154,7 +154,7 @@ class TestCase extends Orchestra
 
     protected function connectionsToTransact(): array
     {
-        if (config('database.default') === 'sqlite') {
+        if (DB::connection()->getDriverName() === 'sqlite') {
             return [config('database.default')];
         }
 

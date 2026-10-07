@@ -436,7 +436,10 @@
       take focus or be matched by the menu's item selector. -->
     <div
       v-else-if="action.kind === 'heading'"
-      class="action-list__heading"
+      :class="{
+        'action-list__heading': true,
+        'action-list__heading--marked': selectable,
+      }"
       role="presentation"
     >
       {{ action.label }}
@@ -448,7 +451,7 @@
       the descriptor owns its click (see `ownsClick`). The element keeps its
       `href`, so the anchor in its shadow root still gives real link semantics;
       `CpLink` adds the handler on the host that cancels the navigation in
-      favour of a visit. -->
+      favor of a visit. -->
     <component
       v-else-if="action.kind === 'link' && action.onClick"
       v-bind="action.attrs"
@@ -496,8 +499,27 @@
      `::slotted()` rule can't reach inside the slotted content. */
   .action-list__heading {
     padding-block: var(--c-spacing-xs);
-    padding-inline: var(--c-spacing-md);
+    /* Starts where the items' labels do: past their 1px border, inline
+       padding, and the label's own margin. */
+    padding-inline: calc(var(--c-spacing-sm) * 2 + 1px) var(--c-spacing-md);
     font-size: var(--c-text-sm);
     font-weight: bold;
+  }
+
+  /* Set off from the items above it, as the global nav's group headings are.
+     Keyed on a preceding item rather than :first-child, since a searchable
+     menu prepends its search input. */
+  craft-action-item ~ .action-list__heading {
+    margin-block-start: var(--c-spacing-md);
+  }
+
+  /* Past the checkmark column too, when the items have one. It's 1lh wide at
+     the items' font size rather than the heading's smaller one, so the spacer
+     takes theirs. */
+  .action-list__heading--marked::before {
+    content: '';
+    display: inline-block;
+    font-size: var(--c-text-base);
+    inline-size: 1lh;
   }
 </style>

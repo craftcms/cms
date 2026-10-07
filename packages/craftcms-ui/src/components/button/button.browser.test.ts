@@ -46,7 +46,7 @@ async function mountHidden(label: string | null): Promise<{
   return {button, container};
 }
 
-it('does not flag a labelled button that was hidden when it first rendered', async () => {
+it('does not flag a labeled button that was hidden when it first rendered', async () => {
   const {button, container} = await mountHidden('Cropping Rectangle');
 
   expect(isFlagged(button)).toBe(false);
@@ -204,7 +204,7 @@ describe('flush', () => {
 });
 
 describe('icon spacing', () => {
-  async function mountLabelled(
+  async function mountLabeled(
     attrs: Record<string, string>,
     dir: 'ltr' | 'rtl' = 'ltr'
   ): Promise<{icon: DOMRect; label: DOMRect}> {
@@ -233,13 +233,13 @@ describe('icon spacing', () => {
   }
 
   it('leaves a gap after a prefix icon', async () => {
-    const {icon, label} = await mountLabelled({icon: 'pen'});
+    const {icon, label} = await mountLabeled({icon: 'pen'});
 
     expect(label.left - icon.right).toBeCloseTo(6, 0);
   });
 
   it('leaves a gap before a suffix icon', async () => {
-    const {icon, label} = await mountLabelled({
+    const {icon, label} = await mountLabeled({
       icon: 'pen',
       'icon-position': 'suffix',
     });
@@ -248,7 +248,7 @@ describe('icon spacing', () => {
   });
 
   it('keeps the gap between them right to left', async () => {
-    const {icon, label} = await mountLabelled({icon: 'pen'}, 'rtl');
+    const {icon, label} = await mountLabeled({icon: 'pen'}, 'rtl');
 
     expect(icon.left - label.right).toBeCloseTo(6, 0);
   });
@@ -407,7 +407,7 @@ describe('[disabled]', () => {
   });
 
   it('keeps the variant’s own fill rather than repainting it', async () => {
-    // Lion's own disabled rule paints a flat grey; the variants override it, so
+    // Lion's own disabled rule paints a flat gray; the variants override it, so
     // muting is what has to carry the state.
     const {enabled, disabled} = await mountPair('fill');
 
@@ -469,5 +469,51 @@ describe('craft-button link keyboard focus', () => {
 
     await userEvent.tab();
     expect(document.activeElement).toBe(after);
+  });
+});
+
+describe('text box', () => {
+  async function mount(content: string): Promise<CraftButton> {
+    document.body.innerHTML = `<craft-button>${content}</craft-button>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it('centers a text label on its capitals without changing the button’s height', async () => {
+    const button = await mount('Save');
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+    const style = getComputedStyle(label);
+    const box = button.getBoundingClientRect();
+    const rect = label.getBoundingClientRect();
+    const capTop = rect.top + parseFloat(style.paddingTop);
+    const capBottom = rect.bottom - parseFloat(style.paddingBottom);
+    const context = document.createElement('canvas').getContext('2d')!;
+    context.font = style.font;
+    const capHeight = context.measureText('H').actualBoundingBoxAscent;
+
+    expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+    expect(capTop - box.top).toBeCloseTo(box.bottom - capBottom, 0);
+    expect(box.height).toBeCloseTo(
+      parseFloat(getComputedStyle(button).minHeight),
+      0
+    );
+  });
+
+  it('still trims a text label that carries screen-reader-only text', async () => {
+    const button = await mount(
+      'View <span class="sr-only">Opens in a new window</span>'
+    );
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+
+    expect(getComputedStyle(label).textBoxTrim).toBe('trim-both');
+  });
+
+  it('leaves a label holding elements laid out as before', async () => {
+    const button = await mount('<span>Save</span> <span>all</span>');
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+
+    expect(getComputedStyle(label).display).toBe('contents');
   });
 });

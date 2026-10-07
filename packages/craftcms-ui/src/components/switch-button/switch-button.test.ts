@@ -58,7 +58,7 @@ describe('craft-switch-button', () => {
     expect(element.getAttribute('aria-checked')).toBe('true');
   });
 
-  it('reflects indeterminate so the stylesheet can centre the thumb', async () => {
+  it('reflects indeterminate so the stylesheet can center the thumb', async () => {
     const element = await createSwitchButton({indeterminate: ''});
 
     expect(element.indeterminate).toBe(true);

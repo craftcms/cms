@@ -55,7 +55,7 @@ export default css`
   .tabs__tab-group {
     flex: 1;
     min-width: 0;
-    gap: var(--c-tabs-tab-gap, var(--c-spacing-md));
+    gap: var(--c-tabs-tab-gap, var(--c-spacing-lg));
   }
 
   /*
@@ -87,10 +87,10 @@ export default css`
     flex: 1 1 0;
     min-width: 0;
     /* The label sits in the middle of the share it was given rather than
-       against its leading edge, and wrapped lines centre with it. */
+       against its leading edge, and wrapped lines center with it. */
     justify-content: center;
     text-align: center;
-    /* Centred on the cross axis too. A label with no room left wraps, which
+    /* Centered on the cross axis too. A label with no room left wraps, which
        makes that tab taller and stretches the rest of the row to match it;
        without this their single lines would sit against the top of the space
        they were stretched into while the wrapped one sat in the middle. */
@@ -165,6 +165,8 @@ export default css`
     --c-tab-indicator-inset-block-end: 0;
     --c-tab-indicator-block-size: auto;
     --c-tab-indicator-inline-size: calc(2rem / 16);
+    /* Stacked tabs sit closer together than a row of them. */
+    --c-tabs-tab-gap: var(--c-spacing-md);
   }
 
   :host(:is([placement='inline-start'], [placement='inline-end'])) .tabs {

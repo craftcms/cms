@@ -207,7 +207,9 @@ class Install extends Migration
             });
         }
 
-        app(LaravelMigrations::class)->ensureNotificationsTable();
+        $laravelMigrations = app(LaravelMigrations::class);
+        $laravelMigrations->ensureNotificationsTable();
+        $laravelMigrations->ensurePassportTables();
     }
 
     /**

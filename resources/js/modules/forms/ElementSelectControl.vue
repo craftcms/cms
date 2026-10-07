@@ -778,6 +778,7 @@
               <ActionMenu
                 v-if="menuActions(element.id, index).length"
                 :actions="menuActions(element.id, index)"
+                flush="inline-start"
               />
             </template>
           </ElementList>

@@ -18,7 +18,7 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  * what stops "All" from clearing them again, leaving a toggle that takes
  * several clicks to come back around.
  *
- * @slot - The child `craft-checkbox`es this one summarises.
+ * @slot - The child `craft-checkbox`es this one summarizes.
  * @slot label - The checkbox's label.
  */
 export default class CraftCheckboxIndeterminate extends SsrChoiceInputMixin(

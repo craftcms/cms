@@ -1,16 +1,11 @@
 import {Validator} from '@lion/ui/form-core.js';
-import {
-  computed,
-  type ComputedRef,
-  type InjectionKey,
-  type Ref,
-  type Slots,
-} from 'vue';
+import {type InjectionKey, type Ref, type Slots} from 'vue';
 import type {
   CanonicalFormValue,
   FormChange,
   FormControlPayload,
   FormNodePayload,
+  NestedFormPayload,
   FormValue,
   FormValues,
 } from './types';
@@ -18,6 +13,29 @@ import type {ActionItems} from '@/common/types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
+
+export const FormPending: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('FormPending');
+
+export const FormErrors: InjectionKey<{
+  clearChildren(path: string[]): void;
+  childrenCleared(path: string[]): boolean;
+}> = Symbol('FormErrors');
+
+export type FormControlBehavior = {
+  comparisonValue: (value: FormValue) => FormValue;
+};
+
+export const FormControlBehaviors: InjectionKey<
+  (path: string[], behavior: FormControlBehavior) => () => void
+> = Symbol('FormControlBehaviors');
+
+export const FormControlStructure: InjectionKey<
+  (
+    control: Pick<FormControlPayload, 'path'>,
+    forms: NestedFormPayload[]
+  ) => void
+> = Symbol('FormControlStructure');
 
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
   'FormControlOverrides'
@@ -186,10 +204,14 @@ export function valueAt(source: FormValue, path: string[]): FormValue {
   let value = source;
 
   for (const segment of path) {
-    if (!isRecord(value)) {
+    if (Array.isArray(value)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(segment)) return undefined;
+      value = value[Number(segment)];
+    } else if (isRecord(value)) {
+      value = value[segment];
+    } else {
       return undefined;
     }
-    value = value[segment];
   }
 
   return value;
@@ -200,31 +222,56 @@ export function setValue(
   path: string[],
   value: FormValue
 ): void {
-  let target = source;
+  let target: FormValues | FormValue[] = source;
 
-  path.forEach((segment, index) => {
+  for (let index = 0; index < path.length; index++) {
+    const segment = path[index]!;
+
+    if (Array.isArray(target)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(segment)) {
+        throw new Error(`Form array path [${segment}] must be a row index.`);
+      }
+      const rowIndex = Number(segment);
+
+      if (index === path.length - 1) {
+        target[rowIndex] = value;
+        return;
+      }
+
+      const child: FormValue = target[rowIndex];
+      if (Array.isArray(child) || isRecord(child)) {
+        target = child;
+      } else {
+        target[rowIndex] = {};
+        target = target[rowIndex];
+      }
+      continue;
+    }
+
     if (index === path.length - 1) {
       target[segment] = value;
-
       return;
     }
 
-    if (!isRecord(target[segment])) {
+    const child: FormValue = target[segment];
+    if (Array.isArray(child) || isRecord(child)) {
+      target = child;
+    } else {
       target[segment] = {};
+      target = target[segment];
     }
-    target = target[segment];
-  });
+  }
 }
 
 export function unsetValue(source: FormValue, path: string[]): void {
-  if (!isRecord(source) || path.length === 0) {
-    return;
-  }
-
+  if (path.length === 0) return;
   const parent = valueAt(source, path.slice(0, -1));
+  const segment = path.at(-1)!;
 
-  if (isRecord(parent)) {
-    delete parent[path.at(-1)!];
+  if (Array.isArray(parent) && /^(0|[1-9][0-9]*)$/.test(segment)) {
+    parent[Number(segment)] = undefined;
+  } else if (isRecord(parent)) {
+    delete parent[segment];
   }
 }
 

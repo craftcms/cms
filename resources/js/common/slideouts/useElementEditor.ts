@@ -445,7 +445,8 @@ export function useElementEditor(
         panel.nestedOwnerId = await panel.prepareNestedOwner();
       }
 
-      if (panel?.nestedOwnerId) {
+      // Element types without drafts (e.g. variants) save in place.
+      if (panel?.nestedOwnerId && instance.settings.canCreateDrafts) {
         if (!instance.settings.draftId) {
           await instance.saveDraft();
         }

@@ -7,6 +7,8 @@ save actions. Those remain the host controller's responsibility.
 Use this system for Control Panel settings and element-editing interfaces. It is not a site-form API and it does not
 render an HTML `<form>` element.
 
+For row editing, table cell types, and plugin extensions, see [Editable tables](editable-tables.md).
+
 ## Form boundaries
 
 A `Form` contains an ordered tree of `Node` objects. A `Field` Node contains one `Control`. Structural Nodes contain

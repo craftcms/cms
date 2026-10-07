@@ -223,6 +223,39 @@ it('returns snapshots that cannot mutate stored types', function () {
     expect($registry->types())->not()->toContain(RegistryUtilityType::class);
 });
 
+it('runs deferred callbacks on the first read', function () {
+    $registry = app(UtilityTypes::class);
+    $runs = 0;
+
+    $registry->defer(function (UtilityTypes $registry) use (&$runs) {
+        $runs++;
+        $registry->register(RegistryUtilityType::class);
+    });
+
+    expect($runs)->toBe(0);
+    expect($registry->types())->toContain(RegistryUtilityType::class)
+        ->and($runs)->toBe(1);
+
+    $registry->types();
+
+    expect($runs)->toBe(1);
+});
+
+it('lets a deferred callback read the registry without re-entering itself', function () {
+    $registry = app(UtilityTypes::class);
+    $seen = null;
+
+    $registry->defer(function (UtilityTypes $registry) use (&$seen) {
+        $seen = $registry->types();
+        $registry->register(RegistryUtilityType::class);
+    });
+
+    $types = $registry->types();
+
+    expect($seen)->not()->toContain(RegistryUtilityType::class)
+        ->and($types)->toContain(RegistryUtilityType::class);
+});
+
 it('does not instantiate registered types', function () {
     RegistryUtilityType::$instances = 0;
 

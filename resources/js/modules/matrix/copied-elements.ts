@@ -1,5 +1,5 @@
 import {computed, shallowRef, type ComputedRef} from 'vue';
-import {craft, type CopiedElementInfo} from './interop';
+import {craft, type CopiedElementInfo} from './clipboard';
 
 /**
  * What's on the CP's element clipboard, kept live.

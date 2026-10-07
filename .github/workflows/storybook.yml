@@ -32,12 +32,18 @@ jobs:
   # output. The deploy jobs only run once this succeeds, so we never publish a
   # Storybook built from assets that don't compile. Results are cached and
   # restored by the parallel deploy jobs below.
+  #
+  # The cache is saved under a key unique to this run, and restored by the
+  # content-hash prefix. A fixed key let a run cancelled mid-save (by
+  # cancel-in-progress) hold the reservation, so the next run couldn't save,
+  # and its deploy jobs restored nothing and failed to find Storybook.
   build-assets:
     name: 'Build assets'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
+      cache-prefix: ${{ steps.cache-key.outputs.prefix }}
       deploy-branch: ${{ steps.branch.outputs.value }}
     steps:
       - name: Checkout code
@@ -60,11 +66,15 @@ jobs:
         # Keep this separate from frontend CI so deployment jobs do not race
         # another workflow saving the same cache.
         run: |
-          echo "value=storybook-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          prefix="storybook-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}-"
+          echo "prefix=$prefix" >> "$GITHUB_OUTPUT"
+          echo "value=${prefix}${{ github.run_id }}-${{ github.run_attempt }}" >> "$GITHUB_OUTPUT"
 
+      # Any earlier run with the same inputs will do; a match skips the
+      # install and build steps, and the save at the end.
       - name: Restore install + build + generated cache
         id: cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
@@ -78,14 +88,15 @@ jobs:
             resources/js/wayfinder
             resources/js/generated
           key: ${{ steps.cache-key.outputs.value }}
+          restore-keys: ${{ steps.cache-key.outputs.prefix }}
 
       - parallel:
           - name: Install Composer dependencies
-            if: steps.cache.outputs.cache-hit != 'true'
+            if: steps.cache.outputs.cache-matched-key == ''
             run: composer install --no-interaction --no-progress
 
           - name: Install frontend dependencies
-            if: steps.cache.outputs.cache-hit != 'true'
+            if: steps.cache.outputs.cache-matched-key == ''
             # pnpm won't expand env vars in credentials coming from the project
             # .npmrc, so the Font Awesome token goes in the user-level one.
             run: |
@@ -95,26 +106,43 @@ jobs:
               CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Copy icons
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-matched-key == ''
         run: composer copy-icons
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
       - name: Build @craftcms/garnish
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-matched-key == ''
         run: vp run build:garnish
 
       - name: Build @craftcms/ui
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-matched-key == ''
         run: vp run build:ui
 
       - name: Generate TypeScript types
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-matched-key == ''
         run: vp run generate:types
 
       - name: Generate Wayfinder routes
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-matched-key == ''
         run: vp run generate:wayfinder
+
+      - name: Save install + build + generated cache
+        if: steps.cache.outputs.cache-matched-key == ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/craftcms-ui/dist
+            packages/craftcms-garnish/dist
+            vendor
+            cms-assets/resources/icons
+            resources/js/actions
+            resources/js/routes
+            resources/js/wayfinder
+            resources/js/generated
+          key: ${{ steps.cache-key.outputs.value }}
 
       - name: Determine deploy branch
         id: branch
@@ -143,8 +171,10 @@ jobs:
           cache: true
           run-install: false
 
+      # This run's own cache, or the earlier one build-assets matched. A miss
+      # means nothing is installed, so fail here rather than at the build.
       - name: Restore install + build + generated cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
@@ -158,6 +188,8 @@ jobs:
             resources/js/wayfinder
             resources/js/generated
           key: ${{ needs.build-assets.outputs.cache-key }}
+          restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
+          fail-on-cache-miss: true
 
       - name: Build Storybook
         run: vp run @craftcms/ui#build:storybook
@@ -190,8 +222,10 @@ jobs:
           cache: true
           run-install: false
 
+      # This run's own cache, or the earlier one build-assets matched. A miss
+      # means nothing is installed, so fail here rather than at the build.
       - name: Restore install + build + generated cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
@@ -205,6 +239,8 @@ jobs:
             resources/js/wayfinder
             resources/js/generated
           key: ${{ needs.build-assets.outputs.cache-key }}
+          restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
+          fail-on-cache-miss: true
 
       - name: Build Storybook
         # build-assets already ran the transformer and Wayfinder, and their

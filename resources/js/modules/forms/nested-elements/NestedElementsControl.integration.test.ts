@@ -272,7 +272,9 @@ describe('NestedElementsControl', () => {
     expect(
       indexRequests().filter((request) => Number(request.p ?? 1) === 2)
     ).toHaveLength(destinationReadsBeforeFailedMove);
-  });
+    // Five page loads and three moves: ~0.4s locally, but ~5s on a shared CI
+    // runner, right at the default limit.
+  }, 15_000);
 
   it('resets paging after the first create save and a toolbar paste', async () => {
     const {root, ownerRefresh, pasteElements, submitElement} = mount();
