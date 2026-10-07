@@ -248,6 +248,9 @@ export default class CraftTabs extends LionTabs {
    * Only the block placements divide a width; an inline strip runs down the
    * block axis, where its tabs already span it, so this does nothing there.
    */
+  @property({type: Boolean, reflect: true, attribute: 'equal-width'})
+  equalWidth = false;
+
   /**
    * Whether the selected tab is mirrored in `location.hash`, on by default.
    *
@@ -264,9 +267,6 @@ export default class CraftTabs extends LionTabs {
     converter: {fromAttribute: (value: string | null) => value !== 'false'},
   })
   syncLocationHash = true;
-
-  @property({type: Boolean, reflect: true, attribute: 'equal-width'})
-  equalWidth = false;
 
   /**
    * Which axis the tab strip runs along: `horizontal` or `vertical`.
