@@ -15,7 +15,7 @@ describe('TextControl', () => {
 
   it('applies native text input behavior', async () => {
     const control = reactive<FormControlPayload>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
       component: 'craft:text',
       props: {
         autofocus: true,

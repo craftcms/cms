@@ -108,7 +108,7 @@ trait InsertsNodes
             }
         }
 
-        throw new InvalidArgumentException("No form node matches [$target].");
+        throw new InvalidArgumentException("No UI node matches [$target].");
     }
 
     /** Whether this node, or anything beneath it, answers to the target. */

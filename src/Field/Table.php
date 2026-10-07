@@ -13,18 +13,6 @@ use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
-use CraftCms\Cms\Ui\Contracts\Control;
-use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Controls\Number;
-use CraftCms\Cms\Ui\Controls\Table as TableControl;
-use CraftCms\Cms\Ui\Controls\TableColumns;
-use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Ui;
-use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiResolver;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
-use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
@@ -34,6 +22,18 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\TableColumns;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
@@ -189,7 +189,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $defaultColumns = $this->controlColumns(editableHeadings: true);
         $columnsControl = TableColumns::make('columns')
             ->cellTypes($types)
-            ->columnForms($columnForms)
+            ->columnUis($columnForms)
             ->errors($this->columnErrors)
             ->value($this->columns)
             ->reactive();
@@ -198,11 +198,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return Ui::make([
-            FormField::make(t('Columns'))
+            UiField::make(t('Columns'))
                 ->instructions(t('Define the columns your table should have.'))
                 ->control($columnsControl),
             Group::make('table-default-values', [
-                FormField::make(t('Default Values'))
+                UiField::make(t('Default Values'))
                     ->instructions(t('Define the default values for the field.'))
                     ->control(TableControl::make('defaults')
                         ->columns($defaultColumns)
@@ -212,7 +212,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->includeRowId($this->staticRows)
                         ->value($this->controlValues($this->defaults ?? []))
                         ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
-                FormField::make(t('Default Row Values'))
+                UiField::make(t('Default Row Values'))
                     ->instructions(t('Define the default values for new rows.'))
                     ->control(TableControl::make('defaultRowValues')
                         ->columns($defaultColumns)
@@ -221,16 +221,16 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->value($this->controlValues([$this->defaultRowValues]))
                         ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
             ])->dependsOn('settings.columns'),
-            FormField::make(t('Static Rows'))
+            UiField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
                 ->control(Lightswitch::make('staticRows')->value($this->staticRows)),
-            FormField::make(t('Min Rows'))
+            UiField::make(t('Min Rows'))
                 ->instructions(t('The minimum number of rows the field is allowed to have.'))
                 ->control(Number::make('minRows')->min(0)->value($this->minRows)),
-            FormField::make(t('Max Rows'))
+            UiField::make(t('Max Rows'))
                 ->instructions(t('The maximum number of rows the field is allowed to have.'))
                 ->control(Number::make('maxRows')->min(0)->value($this->maxRows)),
-            FormField::make(t('Add Row Label'))
+            UiField::make(t('Add Row Label'))
                 ->instructions(t('Insert the button label for adding a new row to the table.'))
                 ->control(Text::make('addRowLabel')->value($this->addRowLabel)),
         ]);

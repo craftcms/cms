@@ -28,7 +28,7 @@ use CraftCms\Cms\Ui\Controls\Date as DateControl;
 use CraftCms\Cms\Ui\Controls\DateTime as DateTimeControl;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use DateTimeInterface;
@@ -179,20 +179,20 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
 
         return Ui::make([
-            FormField::make()
+            UiField::make()
                 ->control(Choice::make('dateTime')
                     ->presentation(ChoicePresentation::Radios)
                     ->options($options)
                     ->value($dateTime)),
-            FormField::make(t('Minute Increment'))
+            UiField::make(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->control(Choice::make('minuteIncrement')->options(self::minuteIncrementOptions())->value($this->minuteIncrement)),
-            FormField::make(t('Show Time Zone'))
+            UiField::make(t('Show Time Zone'))
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->control(Lightswitch::make('showTimeZone')->value($this->showTimeZone)),
-            FormField::make(t('Min Date'))
+            UiField::make(t('Min Date'))
                 ->control(DateControl::make('min')->value($this->min?->format('Y-m-d'))),
-            FormField::make(t('Max Date'))
+            UiField::make(t('Max Date'))
                 ->control(DateControl::make('max')->value($this->max?->format('Y-m-d'))),
         ]);
     }

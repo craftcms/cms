@@ -26,7 +26,7 @@ use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number as NumberControl;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
@@ -99,26 +99,26 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         }
 
         return Ui::make([
-            FormField::make(t('Min Value'), NumberControl::make('min')->step('any')->value($this->min)),
-            FormField::make(t('Max Value'), NumberControl::make('max')->step('any')->value($this->max)),
-            FormField::make(t('Step Size'), NumberControl::make('step')->step('any')->value($this->step)),
-            FormField::make(t('Decimal Points'), NumberControl::make('decimals')->min(0)->value($this->decimals)),
-            FormField::make(t('Size'), NumberControl::make('size')->min(1)->value($this->size)),
-            FormField::make(t('Default Value'), NumberControl::make('defaultValue')->step('any')->value($this->defaultValue)),
-            FormField::make(t('Prefix Text'))
+            UiField::make(t('Min Value'), NumberControl::make('min')->step('any')->value($this->min)),
+            UiField::make(t('Max Value'), NumberControl::make('max')->step('any')->value($this->max)),
+            UiField::make(t('Step Size'), NumberControl::make('step')->step('any')->value($this->step)),
+            UiField::make(t('Decimal Points'), NumberControl::make('decimals')->min(0)->value($this->decimals)),
+            UiField::make(t('Size'), NumberControl::make('size')->min(1)->value($this->size)),
+            UiField::make(t('Default Value'), NumberControl::make('defaultValue')->step('any')->value($this->defaultValue)),
+            UiField::make(t('Prefix Text'))
                 ->instructions(t('Text that should be shown before the input.'))
                 ->control(Text::make('prefix')->value($this->prefix)),
-            FormField::make(t('Suffix Text'))
+            UiField::make(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
                 ->control(Text::make('suffix')->value($this->suffix)),
-            FormField::make(t('Preview Format'))
+            UiField::make(t('Preview Format'))
                 ->instructions(t('How field values will be formatted within element indexes.'))
                 ->control(Choice::make('previewFormat')->options([
                     ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
                     ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
                     ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
                 ])->value($this->previewFormat)),
-            FormField::make(t('Preview Currency'))
+            UiField::make(t('Preview Currency'))
                 ->control(Choice::make('previewCurrency')->options($currencies)->value($this->previewCurrency)),
         ]);
     }

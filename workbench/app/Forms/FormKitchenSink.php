@@ -121,7 +121,7 @@ class FormKitchenSink
     public function stories(string $type, string $slug, ?string $countryCode = null): ?array
     {
         $component = self::component($type, $slug);
-        $forms = $this->forms($component, $countryCode);
+        $forms = $this->uis($component, $countryCode);
 
         if ($forms === null) {
             return null;
@@ -141,7 +141,7 @@ class FormKitchenSink
     }
 
     /** @return array<string, Ui>|null */
-    private function forms(?string $component, ?string $countryCode): ?array
+    private function uis(?string $component, ?string $countryCode): ?array
     {
         if ($component === Address::class) {
             return [
@@ -413,14 +413,14 @@ class FormKitchenSink
             return [
                 'Empty' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->forms(['example-block' => $form])),
+                    ->uis(['example-block' => $form])),
                 'Populated' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->forms(['example-block' => $form])
+                    ->uis(['example-block' => $form])
                     ->value($value)),
                 'Entry limits' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->forms(['example-block' => $form])
+                    ->uis(['example-block' => $form])
                     ->minEntries(1)
                     ->maxEntries(1)
                     ->value($value)),

@@ -192,7 +192,7 @@ describe('NestedElementsControl', () => {
     root = document.createElement('div');
     document.body.append(root);
     const control = reactive<FormControlPayload<NestedElementsProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElements',
       component: 'craft:nested-elements',
       mode: 'editable',
       deltaGroup: ['fields', 'cards'],

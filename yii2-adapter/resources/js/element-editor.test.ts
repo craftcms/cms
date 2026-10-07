@@ -65,11 +65,11 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
     refreshable: false,
     nodes: [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Body', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
           props: {inputType: 'text'},
           path: ['fields', 'body'],

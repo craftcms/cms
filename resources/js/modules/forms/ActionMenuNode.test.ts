@@ -36,7 +36,7 @@ describe('ActionMenuNode', () => {
 
   it('passes the server descriptors through to craft-action-menu', async () => {
     const node = {
-      type: 'CraftCms\\Cms\\Form\\Nodes\\ActionMenu',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\ActionMenu',
       component: 'craft:action-menu',
       uid: 'field-actions:fields.body:menu',
       props: {

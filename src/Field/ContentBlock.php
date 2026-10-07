@@ -37,7 +37,7 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\ContentBlock as ContentBlockControl;
 use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
@@ -148,7 +148,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $layout = $this->getFieldLayout();
 
         return Ui::make([
-            FormField::make(t('Field Layout'))
+            UiField::make(t('Field Layout'))
                 ->control(FieldLayoutDesigner::make('fieldLayout')
                     ->elementType(ContentBlockElement::class)
                     ->customizableTabs(false)
@@ -157,7 +157,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                         'type' => $layout->type,
                         ...($layout->getConfig() ?? []),
                     ])),
-            FormField::make(t('View Mode'))
+            UiField::make(t('View Mode'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
                     ->options([

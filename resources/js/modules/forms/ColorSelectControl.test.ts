@@ -30,7 +30,7 @@ describe('ColorSelectControl', () => {
       blankLabel: string;
       colors: string[];
     }> = {
-      type: 'CraftCms\\Cms\\Form\\Controls\\ColorSelect',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\ColorSelect',
       component: 'craft:color-select',
       props: {
         allowTransparent: true,

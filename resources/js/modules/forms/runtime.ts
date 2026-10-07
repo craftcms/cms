@@ -164,7 +164,7 @@ function isFormChange(value: unknown): value is FormChange {
 }
 
 /**
- * The id of the field wrapping a control, mirroring `FormHtmlRenderer::id()`
+ * The id of the field wrapping a control, mirroring `UiHtmlRenderer::id()`
  * so both renderers agree on how a path becomes an id.
  *
  * PHP uses `rawurlencode`, which differs from `encodeURIComponent` on `!'()*` —

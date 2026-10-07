@@ -26,7 +26,7 @@ class TableColumns extends Control
     private array $cellTypes = [];
 
     /** @var array<string, Ui> */
-    private array $columnForms = [];
+    private array $columnUis = [];
 
     /** @var array<string, array<string, true>> */
     private array $errors = [];
@@ -49,10 +49,10 @@ class TableColumns extends Control
         return $this;
     }
 
-    /** @param array<string, Ui> $columnForms */
-    public function columnForms(array $columnForms): static
+    /** @param array<string, Ui> $columnUis */
+    public function columnUis(array $columnUis): static
     {
-        $this->columnForms = $columnForms;
+        $this->columnUis = $columnUis;
 
         return $this;
     }
@@ -72,7 +72,7 @@ class TableColumns extends Control
     }
 
     #[\Override]
-    public function nestsForms(): bool
+    public function nestsUis(): bool
     {
         return true;
     }
@@ -97,13 +97,13 @@ class TableColumns extends Control
     }
 
     #[\Override]
-    public function nestedForms(mixed $value = null): array
+    public function nestedUis(mixed $value = null): array
     {
         $forms = [];
 
         foreach (is_array($value) ? $value : [] as $key => $column) {
             $form = $this->columnUi($column);
-            foreach (($this->columnForms[$key] ?? null)?->nodes() ?? [] as $node) {
+            foreach (($this->columnUis[$key] ?? null)?->nodes() ?? [] as $node) {
                 $form->add($node);
             }
 

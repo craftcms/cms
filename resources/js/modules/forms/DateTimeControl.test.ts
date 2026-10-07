@@ -53,7 +53,7 @@ describe('DateTimeControl', () => {
 
   const control = (props: Record<string, unknown> = {}) =>
     ({
-      type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\DateTime',
       component: 'craft:date-time',
       props: {
         showDate: true,

@@ -34,7 +34,7 @@ use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Link as LinkControl;
 use CraftCms\Cms\Ui\Controls\Number;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\InputObjectType;
@@ -175,13 +175,13 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make($this->linkSettingsNodes())->add(
-            FormField::make(t('Max Length'))
+            UiField::make(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
                 ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
         )->when(
             Cms::config()->enableGql,
             fn (Ui $form): Ui => $form->add(
-                FormField::make(t('GraphQL Mode'))
+                UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
                         ['label' => t('URL only'), 'value' => 'url'],

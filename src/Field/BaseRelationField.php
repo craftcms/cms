@@ -57,7 +57,7 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -522,7 +522,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
      */
-    protected function sourcesField(bool $reactive = false): FormField
+    protected function sourcesField(bool $reactive = false): UiField
     {
         $elementType = static::elementType();
         $sourceOptions = array_map(fn (array $option): array => [
@@ -534,7 +534,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         ]);
 
         if (! $this->allowMultipleSources) {
-            return FormField::make(t('Source'))
+            return UiField::make(t('Source'))
                 ->instructions($instructions)
                 ->control(Choice::make('source')
                     ->options($sourceOptions)
@@ -559,7 +559,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             },
         ));
 
-        return FormField::make(t('Sources'))
+        return UiField::make(t('Sources'))
             ->instructions($instructions)
             ->control(Choice::make('sources')
                 ->multiple()
@@ -575,7 +575,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * Returns the selection condition builder, or `null` if the element type has no condition.
      */
-    protected function selectionConditionField(): ?FormField
+    protected function selectionConditionField(): ?UiField
     {
         $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
 
@@ -585,7 +585,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
         $elementType = static::elementType();
 
-        return FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
+        return UiField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
             ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ])))
@@ -603,9 +603,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * their Ui entirely, the way Craft 5’s `Assets/settings.twig` never
      * rendered the `maintainHierarchy` block. Return `null` to drop it.
      */
-    protected function maintainHierarchyField(): ?FormField
+    protected function maintainHierarchyField(): ?UiField
     {
-        return FormField::make(t('Maintain hierarchy'))
+        return UiField::make(t('Maintain hierarchy'))
             ->instructions(t('Whether the structure of the related {type} should be maintained.', [
                 'type' => static::elementType()::pluralLowerDisplayName(),
             ]))
@@ -616,7 +616,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * Returns the “Min Relations” / “Max Relations” settings, or nothing when
      * the field type doesn’t support limits.
      *
-     * @return list<FormField>
+     * @return list<UiField>
      */
     protected function limitFields(): array
     {
@@ -627,10 +627,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $pluralType = static::elementType()::pluralLowerDisplayName();
 
         return [
-            FormField::make(t('Min Relations'))
+            UiField::make(t('Min Relations'))
                 ->instructions(t('The minimum number of {type} that may be selected.', ['type' => $pluralType]))
                 ->control(Number::make('minRelations')->min(0)->value($this->minRelations)),
-            FormField::make(t('Max Relations'))
+            UiField::make(t('Max Relations'))
                 ->instructions(t('The maximum number of {type} that may be selected.', ['type' => $pluralType]))
                 ->control(Number::make('maxRelations')->min(0)->value($this->maxRelations)),
         ];
@@ -640,9 +640,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * Returns the “Branch Limit” setting, which only applies to structured
      * sources. Return `null` to drop it.
      */
-    protected function branchLimitField(): ?FormField
+    protected function branchLimitField(): ?UiField
     {
-        return FormField::make(t('Branch Limit'))
+        return UiField::make(t('Branch Limit'))
             ->instructions(t('Limit the number of selectable {type} branches.', [
                 'type' => static::elementType()::lowerDisplayName(),
             ]))
@@ -652,12 +652,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * Returns the “Default {Type} Placement” setting.
      */
-    protected function defaultPlacementField(): FormField
+    protected function defaultPlacementField(): UiField
     {
         $elementType = static::elementType();
         $pluralType = $elementType::pluralLowerDisplayName();
 
-        return FormField::make(t('Default {type} Placement', ['type' => $elementType::displayName()]))
+        return UiField::make(t('Default {type} Placement', ['type' => $elementType::displayName()]))
             ->instructions(t('Where new {type} should be placed by default in the field.', ['type' => $pluralType]))
             ->control(Choice::make('defaultPlacement')->options([
                 ['label' => t('Before other {type}', ['type' => $pluralType]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
@@ -668,7 +668,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * Returns the “View Mode” setting, or `null` when there’s only one supported mode.
      */
-    protected function viewModeField(): ?FormField
+    protected function viewModeField(): ?UiField
     {
         $viewModes = [];
         foreach ($this->supportedViewModes() as $value => $label) {
@@ -683,7 +683,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             return null;
         }
 
-        return FormField::make(t('View Mode'))
+        return UiField::make(t('View Mode'))
             ->instructions(t('Choose how the field should look for authors.'))
             ->control(Choice::make('viewMode')
                 ->presentation(ChoicePresentation::Radios)
@@ -694,9 +694,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * Returns the “‘Add’ Button Label” setting.
      */
-    protected function selectionLabelField(): FormField
+    protected function selectionLabelField(): UiField
     {
-        return FormField::make(t('“Add” Button Label'))
+        return UiField::make(t('“Add” Button Label'))
             ->instructions(t('The text label for {type} selection buttons.', [
                 'type' => static::elementType()::lowerDisplayName(),
             ]))
@@ -706,20 +706,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * Returns the “Show the search input” setting.
      */
-    protected function showSearchInputField(): FormField
+    protected function showSearchInputField(): UiField
     {
-        return FormField::make(t('Show the search input'))
+        return UiField::make(t('Show the search input'))
             ->control(Lightswitch::make('showSearchInput')->value($this->showSearchInput));
     }
 
     /**
      * Returns the “Validate related {type}” setting.
      */
-    protected function validateRelatedElementsField(): FormField
+    protected function validateRelatedElementsField(): UiField
     {
         $pluralType = static::elementType()::pluralLowerDisplayName();
 
-        return FormField::make(t('Validate related {type}', ['type' => $pluralType]))
+        return UiField::make(t('Validate related {type}', ['type' => $pluralType]))
             ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
                 'type' => $pluralType,
             ]))
@@ -733,7 +733,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         $elementType = static::elementType();
         $advanced = Group::make('relation-advanced-settings', [
-            FormField::make(t('Allow self relations'))
+            UiField::make(t('Allow self relations'))
                 ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', [
                     'type' => $elementType::lowerDisplayName(),
                 ]))
@@ -751,7 +751,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             // the refresh and the switch can be turned back on.
             $useTargetSite = ! empty($this->targetSiteId);
             $targetSiteNodes = [
-                FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
+                UiField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
                     ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId))
                     ->visible($useTargetSite),
             ];
@@ -759,13 +759,13 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             // The inverse of the picker above: relating from one fixed site
             // leaves nothing for a site menu to switch between.
             if (static::canShowSiteMenu()) {
-                $targetSiteNodes[] = FormField::make(t('Show the site menu'))
+                $targetSiteNodes[] = UiField::make(t('Show the site menu'))
                     ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu))
                     ->visible(! $useTargetSite);
             }
 
             $advanced->add(
-                FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
+                UiField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
                     ->control(Lightswitch::make('useTargetSite')
                         ->value($useTargetSite)
                         ->reactive()),

@@ -22,7 +22,7 @@ describe('SlugControl', () => {
 
   it('applies inherited text input behavior', async () => {
     const control = reactive<FormControlPayload<SlugControlProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Slug',
       component: 'craft:slug',
       props: {
         maxLength: 64,
@@ -80,7 +80,7 @@ describe('SlugControl', () => {
       slugWordSeparator: '-',
     });
     const control = reactive<FormControlPayload<SlugControlProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Slug',
       component: 'craft:slug',
       props: {source: ['title'], autoGenerate: false},
       path: ['slug'],
@@ -118,7 +118,7 @@ describe('SlugControl', () => {
 
   it('offers regeneration when auto-generation is disabled after saving', async () => {
     const control = reactive<FormControlPayload<SlugControlProps>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Slug',
       component: 'craft:slug',
       props: {source: ['title']},
       path: ['slug'],

@@ -32,7 +32,7 @@ class UiHtmlRenderer
     }
 
     /** Builds the isolated Ui used to mount a native control in an HTML field. */
-    public function controlForm(ControlPayload $control, mixed $value): UiPayload
+    public function controlUi(ControlPayload $control, mixed $value): UiPayload
     {
         foreach (array_reverse($control->path) as $segment) {
             $value = [$segment => $value];
@@ -139,10 +139,10 @@ class UiHtmlRenderer
         return array_any($node->control->forms ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
     }
 
-    public function renderNestedForm(NestedUiPayload $form): string
+    public function renderNestedUi(NestedUiPayload $form): string
     {
         if ($this->payload === null) {
-            throw new RuntimeException('Nested Forms can only be rendered within a Form payload.');
+            throw new RuntimeException('Nested UI definitions can only be rendered within a UI payload.');
         }
 
         return $this->renderNodes($form->nodes, $this->payload->forScope($form->scope));
@@ -154,14 +154,14 @@ class UiHtmlRenderer
         $identity = $node->uid ?? implode('.', $node->control->path);
 
         if ($this->nodeTypes->types()->doesntContain($type)) {
-            throw new InvalidArgumentException("Form Node type [{$type}] with component [{$node->component}] at [{$identity}] is not registered.");
+            throw new InvalidArgumentException("UI Node type [{$type}] with component [{$node->component}] at [{$identity}] is not registered.");
         }
 
         try {
             return $type::renderHtml($node, $payload, $this);
         } catch (Throwable $exception) {
             throw new RuntimeException(
-                "Failed to render Form Node [{$type}] with component [{$node->component}] at [{$identity}]: {$exception->getMessage()}",
+                "Failed to render UI Node [{$type}] with component [{$node->component}] at [{$identity}]: {$exception->getMessage()}",
                 previous: $exception,
             );
         }
@@ -192,14 +192,14 @@ class UiHtmlRenderer
         $identity = implode('.', $control->path);
 
         if ($this->controlTypes->types()->doesntContain($type)) {
-            throw new InvalidArgumentException("Form Control type [{$type}] with component [{$control->component}] at [{$identity}] is not registered.");
+            throw new InvalidArgumentException("UI Control type [{$type}] with component [{$control->component}] at [{$identity}] is not registered.");
         }
 
         try {
             return $type::renderHtml($control, $value, $attributes, $this);
         } catch (Throwable $exception) {
             throw new RuntimeException(
-                "Failed to render Form Control [{$type}] with component [{$control->component}] at [{$identity}]: {$exception->getMessage()}",
+                "Failed to render UI Control [{$type}] with component [{$control->component}] at [{$identity}]: {$exception->getMessage()}",
                 previous: $exception,
             );
         }

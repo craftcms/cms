@@ -49,7 +49,7 @@ describe('ChoiceControl', () => {
   ): Promise<void> {
     emitted = [];
     const control = reactive<FormControlPayload<any>>({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
       component: 'craft:choice',
       props: {options, multiple: true, presentation: 'checkboxes', ...props},
       path: ['settings', 'sites'],

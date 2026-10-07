@@ -30,7 +30,7 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\ColorRule;
@@ -336,7 +336,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }, $this->options ?: [['label' => '', 'value' => '']]);
 
         return Ui::make([
-            FormField::make($this->optionsSettingLabel())
+            UiField::make($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
                 ->control(Table::make('options')
                     ->columns($columns)
@@ -347,7 +347,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ])->when(
             static::$allowCustomOptions,
             fn (Ui $form): Ui => $form->add(
-                FormField::make(t('Allow custom options'))
+                UiField::make(t('Allow custom options'))
                     ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
             ),
         );

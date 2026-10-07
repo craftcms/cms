@@ -55,7 +55,7 @@ class NestedElementBlocks extends Control
     private ?array $createEntryTypes = null;
 
     /** @var array<string, Ui> */
-    private array $forms = [];
+    private array $uis = [];
 
     /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>, error?: bool}> */
     private array $blocks = [];
@@ -85,7 +85,7 @@ class NestedElementBlocks extends Control
             'data-form-field-name' => true,
         ]), [
             'id' => $attributes['id'],
-            'data-payload' => Json::encode($renderer->controlForm($control, $value), JSON_HEX_AMP | JSON_THROW_ON_ERROR),
+            'data-payload' => Json::encode($renderer->controlUi($control, $value), JSON_HEX_AMP | JSON_THROW_ON_ERROR),
             'data-field-path' => Json::encode($control->path),
             'data-owner' => $create === null ? null : Json::encode([
                 'elementType' => $create['ownerElementType'],
@@ -138,16 +138,16 @@ class NestedElementBlocks extends Control
         return $this;
     }
 
-    /** @param array<string, Ui> $forms */
-    public function forms(array $forms): static
+    /** @param array<string, Ui> $uis */
+    public function uis(array $uis): static
     {
-        foreach ($forms as $uid => $form) {
+        foreach ($uis as $uid => $form) {
             if (! is_string($uid) || $uid === '' || ! $form instanceof Ui) {
-                throw new InvalidArgumentException('Matrix Forms require non-empty string identities and Form values.');
+                throw new InvalidArgumentException('Matrix UI definitions require non-empty string identities and Ui values.');
             }
         }
 
-        $this->forms = $forms;
+        $this->uis = $uis;
 
         return $this;
     }
@@ -239,7 +239,7 @@ class NestedElementBlocks extends Control
     }
 
     #[\Override]
-    public function nestsForms(): bool
+    public function nestsUis(): bool
     {
         return true;
     }
@@ -274,20 +274,20 @@ class NestedElementBlocks extends Control
     }
 
     #[\Override]
-    public function nestedForms(mixed $value = null): array
+    public function nestedUis(mixed $value = null): array
     {
         $value = $this->validatedValue($value);
-        $forms = [];
+        $uis = [];
 
         foreach ($value['sortOrder'] as $uid) {
-            $forms[] = [
+            $uis[] = [
                 'scope' => ['entries', $uid],
-                'form' => $this->forms[$uid],
+                'form' => $this->uis[$uid],
                 'refreshable' => true,
             ];
         }
 
-        return $forms;
+        return $uis;
     }
 
     /** @return NestedElementBlocksValue */
@@ -308,8 +308,8 @@ class NestedElementBlocks extends Control
                 throw new InvalidArgumentException('Matrix entries require ordered identities and registered types.');
             }
 
-            if (! isset($this->forms[$uid])) {
-                throw new InvalidArgumentException("Matrix entry [{$uid}] requires a nested Form.");
+            if (! isset($this->uis[$uid])) {
+                throw new InvalidArgumentException("Matrix entry [{$uid}] requires a nested Ui.");
             }
         }
 

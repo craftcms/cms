@@ -110,7 +110,7 @@ it('reaches a field nested two containers deep', function () {
 it('throws when nothing matches', function () {
     Ui::make([insertionField('title')])
         ->insertBefore('nope', insertionField('x'));
-})->throws(InvalidArgumentException::class, 'No form node matches [nope].');
+})->throws(InvalidArgumentException::class, 'No UI node matches [nope].');
 
 it('is a no-op when given no nodes', function () {
     $form = Ui::make([insertionField('title')]);

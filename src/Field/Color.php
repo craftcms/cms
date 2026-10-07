@@ -20,7 +20,7 @@ use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Color as ColorControl;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Table;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\ColorRule;
@@ -123,7 +123,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make([
-            FormField::make(t('Palette'))
+            UiField::make(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
                 ->control(Table::make('palette')
                     ->columns([
@@ -135,7 +135,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowDelete()
                     ->allowReorder()
                     ->value($this->palette)),
-            FormField::make(t('Allow custom colors'))
+            UiField::make(t('Allow custom colors'))
                 ->control(Lightswitch::make('allowCustomColors')->value($this->allowCustomColors)),
         ]);
     }

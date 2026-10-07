@@ -23,7 +23,7 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
@@ -103,7 +103,7 @@ class Entries extends BaseRelationField
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return parent::settingsUi($context)->add(
-            FormField::make(t('Show unpermitted sections'))
+            UiField::make(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedSections')->value($this->showUnpermittedSections)),
         );

@@ -706,11 +706,11 @@ describe('useElementEditor', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Title', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
             component: 'craft:text',
             props: {inputType: 'text'},
             path: ['title'],
@@ -732,11 +732,11 @@ describe('useElementEditor', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Slug', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Slug',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Slug',
             component: 'craft:slug',
             props: {
               source: ['title'],
@@ -761,11 +761,11 @@ describe('useElementEditor', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Cards', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElements',
             component: 'craft:nested-elements',
             props: {
               viewMode: 'cards',

@@ -36,7 +36,7 @@ class UiResolver
         $this->controlPathIndex = [];
         $this->nodeUidIndex = [];
         $this->values = [];
-        $namespace = $this->normalizePath($context->namespace, 'Form context');
+        $namespace = $this->normalizePath($context->namespace, 'UI context');
         $nodes = array_map(
             fn (Node $node): NodePayload => $this->resolveNode($node, $context, $namespace),
             $form->nodes(),
@@ -78,22 +78,22 @@ class UiResolver
             : implode('.', [...$namespace, $controlIdentity]);
 
         if ($this->nodeTypes->types()->doesntContain($type)) {
-            throw new InvalidArgumentException("Form Node type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
+            throw new InvalidArgumentException("UI Node type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
         }
 
         $children = $node->children();
         $props = $node->props();
-        $this->ensureJsonSafe($props, "Form Node [{$type}] with component [{$component}] at [{$identity}] properties");
+        $this->ensureJsonSafe($props, "UI Node [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($control === null) {
             if ($uid === null || $uid === '') {
-                throw new InvalidArgumentException("Form Node [{$type}] with component [{$component}] at [{$identity}] requires a stable UID.");
+                throw new InvalidArgumentException("UI Node [{$type}] with component [{$component}] at [{$identity}] requires a stable UID.");
             }
 
             $scopedUid = Json::encode([...$namespace, $uid], JSON_THROW_ON_ERROR);
 
             if (isset($this->nodeUidIndex[$scopedUid])) {
-                throw new InvalidArgumentException("Duplicate Node UID [{$uid}] for Form Node [{$type}] with component [{$component}].");
+                throw new InvalidArgumentException("Duplicate Node UID [{$uid}] for UI Node [{$type}] with component [{$component}].");
             }
 
             $this->nodeUidIndex[$scopedUid] = true;
@@ -141,12 +141,12 @@ class UiResolver
         $component = $control->component();
         $path = [...$namespace, ...$this->normalizePath(
             $control->path(),
-            "Form Control [{$type}] with component [{$component}] at [unknown]",
+            "UI Control [{$type}] with component [{$component}] at [unknown]",
         )];
         $identity = implode('.', $path);
 
         if ($this->controlTypes->types()->doesntContain($type)) {
-            throw new InvalidArgumentException("Form Control type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
+            throw new InvalidArgumentException("UI Control type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
         }
 
         $value = $this->has($context->values, $path)
@@ -154,7 +154,7 @@ class UiResolver
             : $control->getValue();
         $mode = $inheritedMode ?? ($context->mode === ControlMode::Editable ? $control->getMode() : $context->mode);
         $props = $control->resolveProps($value, $mode);
-        $this->ensureJsonSafe($props, "Form Control [{$type}] with component [{$component}] at [{$identity}] properties");
+        $this->ensureJsonSafe($props, "UI Control [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($path === []) {
             throw new InvalidArgumentException("Control [{$type}] requires a path; component [{$component}], identity [unknown].");
@@ -171,7 +171,7 @@ class UiResolver
             ? $path
             : [...$namespace, ...$this->normalizePath(
                 $deltaGroup,
-                "Form Control [{$type}] with component [{$component}] at [{$identity}] delta group",
+                "UI Control [{$type}] with component [{$component}] at [{$identity}] delta group",
             )]);
 
         if (array_slice($path, 0, count($deltaGroup)) !== $deltaGroup) {
@@ -188,12 +188,12 @@ class UiResolver
 
         $forms = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedUiPayload {
             if (! isset($definition['scope'], $definition['form'], $definition['refreshable']) || ! $definition['form'] instanceof Ui || ! is_bool($definition['refreshable'])) {
-                throw new InvalidArgumentException("Nested Forms for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
+                throw new InvalidArgumentException("Nested UI definitions for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
             }
 
             $scope = [...$path, ...$this->normalizePath(
                 $definition['scope'],
-                "Nested Form for Control [{$type}] with component [{$component}] at [{$identity}]",
+                "Nested UI definition for Control [{$type}] with component [{$component}] at [{$identity}]",
             )];
 
             return new NestedUiPayload(
@@ -210,7 +210,7 @@ class UiResolver
                     $definition['form']->nodes(),
                 ),
             );
-        }, $control->nestedForms($value));
+        }, $control->nestedUis($value));
 
         return new ControlPayload(
             type: $type,
@@ -222,7 +222,7 @@ class UiResolver
             forms: $forms,
             reactive: $control->isReactive(),
             emptyValue: $control->emptyValue(),
-            nestsForms: $control->nestsForms(),
+            nestsForms: $control->nestsUis(),
             omitNullValue: $control->omitNullValue(),
         );
     }
@@ -237,7 +237,7 @@ class UiResolver
         $globalErrors = $context->globalErrors;
 
         foreach ($context->errors as $path => $messages) {
-            $absolutePath = [...$namespace, ...$this->normalizePath((string) $path, 'Form error')];
+            $absolutePath = [...$namespace, ...$this->normalizePath((string) $path, 'UI error')];
             $messages = is_array($messages) ? array_values($messages) : [$messages];
 
             $ownerPath = $this->owningControlPath($absolutePath);

@@ -48,7 +48,7 @@ class ContentBlock extends Control
         $form = $control->forms[0] ?? null;
         $content = $form === null
             ? Html::tag('craft-spinner', '', ['label' => t('Loading')])
-            : $renderer->renderNestedForm($form);
+            : $renderer->renderNestedUi($form);
         $remove = $editable
             ? Button::make()
                 ->label($control->props['clearLabel'])
@@ -101,20 +101,20 @@ class ContentBlock extends Control
     }
 
     #[\Override]
-    public function nestsForms(): bool
+    public function nestsUis(): bool
     {
         return true;
     }
 
     #[\Override]
-    public function nestedForms(mixed $value = null): array
+    public function nestedUis(mixed $value = null): array
     {
         if ($value === null) {
             return [];
         }
 
         if ($this->form === null) {
-            throw new InvalidArgumentException('Non-empty Content Block Controls require a nested Form.');
+            throw new InvalidArgumentException('Non-empty Content Block Controls require a nested Ui.');
         }
 
         return [[

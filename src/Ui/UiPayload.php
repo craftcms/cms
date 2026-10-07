@@ -53,10 +53,10 @@ readonly class UiPayload implements JsonSerializable
             return $this;
         }
 
-        $nested = $this->findNestedForm($this->nodes, $scope);
+        $nested = $this->findNestedUi($this->nodes, $scope);
 
         if ($nested === null) {
-            throw new InvalidArgumentException(sprintf('Form scope [%s] was not found.', implode('.', $scope)));
+            throw new InvalidArgumentException(sprintf('UI scope [%s] was not found.', implode('.', $scope)));
         }
 
         return new self(
@@ -76,7 +76,7 @@ readonly class UiPayload implements JsonSerializable
      * @param  list<NodePayload>  $nodes
      * @param  list<string>  $scope
      */
-    private function findNestedForm(array $nodes, array $scope): ?NestedUiPayload
+    private function findNestedUi(array $nodes, array $scope): ?NestedUiPayload
     {
         foreach ($nodes as $node) {
             foreach ($node->control->forms ?? [] as $form) {
@@ -84,14 +84,14 @@ readonly class UiPayload implements JsonSerializable
                     return $form;
                 }
 
-                $nested = $this->findNestedForm($form->nodes, $scope);
+                $nested = $this->findNestedUi($form->nodes, $scope);
 
                 if ($nested !== null) {
                     return $nested;
                 }
             }
 
-            $nested = $this->findNestedForm($node->children ?? [], $scope);
+            $nested = $this->findNestedUi($node->children ?? [], $scope);
 
             if ($nested !== null) {
                 return $nested;

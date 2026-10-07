@@ -24,7 +24,7 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Money as MoneyControl;
 use CraftCms\Cms\Ui\Controls\Number;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
@@ -160,18 +160,18 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return Ui::make([
-            FormField::make(t('Currency'))
+            UiField::make(t('Currency'))
                 ->required()
                 ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),
-            FormField::make(t('Default Value'))
+            UiField::make(t('Default Value'))
                 ->control(Number::make('defaultValue')->step('any')->value($this->decimalSetting($this->defaultValue))),
-            FormField::make(t('Min Value'))
+            UiField::make(t('Min Value'))
                 ->control(Number::make('min')->step('any')->value($this->decimalSetting($this->min))),
-            FormField::make(t('Max Value'))
+            UiField::make(t('Max Value'))
                 ->control(Number::make('max')->step('any')->value($this->decimalSetting($this->max))),
-            FormField::make(t('Show Currency'))
+            UiField::make(t('Show Currency'))
                 ->control(Lightswitch::make('showCurrency')->value($this->showCurrency)),
-            FormField::make(t('Size'))
+            UiField::make(t('Size'))
                 ->control(Number::make('size')->min(1)->value($this->size)),
         ]);
     }

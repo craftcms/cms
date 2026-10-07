@@ -491,7 +491,7 @@ describe('Vue table rows', () => {
 
 function payload(keyed: boolean): FormPayload {
   const control = {
-    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+    type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
     component: 'craft:text',
     props: {},
     path: ['title'],
@@ -499,7 +499,7 @@ function payload(keyed: boolean): FormPayload {
     deltaGroup: ['title'],
   };
   const node = {
-    type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
     component: 'craft:field',
     props: {label: 'Title'},
     control,
@@ -516,11 +516,11 @@ function payload(keyed: boolean): FormPayload {
     },
     nodes: [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Rows'},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
           component: 'craft:table',
           nestsForms: true,
           path: ['rows'],

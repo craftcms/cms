@@ -61,11 +61,11 @@ function payload(values: FormValues): FormPayload {
     globalErrors: [],
     nodes: [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Columns'},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\TableColumns',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\TableColumns',
           component: 'craft:table-columns',
           mode: 'editable',
           path: ['columns'],
@@ -87,11 +87,11 @@ function payload(values: FormValues): FormPayload {
               ...(select && key === 'col1'
                 ? [
                     {
-                      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
                       component: 'craft:field',
                       props: {label: 'Empty option label'},
                       control: {
-                        type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                         component: 'craft:text',
                         path: ['columns', 'col1', 'emptyLabel'],
                         deltaGroup: ['columns'],

@@ -301,7 +301,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function formControl(FieldContext $context): Control
     {
-        throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
+        throw new LogicException(sprintf('%s does not provide a UI Control.', static::class));
     }
 
     /**

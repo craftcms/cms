@@ -18,7 +18,7 @@ describe('TextareaControl', () => {
       render: () =>
         h(TextareaControl, {
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Textarea',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Textarea',
             component: 'craft:textarea',
             props: {
               textExpanderTriggers: [

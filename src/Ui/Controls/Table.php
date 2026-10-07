@@ -208,13 +208,13 @@ class Table extends Control
     }
 
     #[\Override]
-    public function nestsForms(): bool
+    public function nestsUis(): bool
     {
         return $this->hasColumns();
     }
 
     #[\Override]
-    public function nestedForms(mixed $value = null): array
+    public function nestedUis(mixed $value = null): array
     {
         if (! is_array($value) || ! $this->hasColumns()) {
             return [];

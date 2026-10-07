@@ -65,7 +65,7 @@ function tableCellForms(
       scope,
       refreshable: false,
       nodes: cells.map((cell) => ({
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: cell.key, labelSrOnly: true},
         control: {
@@ -477,11 +477,11 @@ describe('FormRenderer', () => {
     };
     nested.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Content', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
           component: 'craft:nested-element-blocks',
           props: {
             entryTypes: [{value: 'text', label: 'Text'}],
@@ -498,7 +498,7 @@ describe('FormRenderer', () => {
               refreshable: true,
               nodes: [
                 {
-                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
                   component: 'craft:field',
                   props: {
                     label: 'Heading',
@@ -506,7 +506,7 @@ describe('FormRenderer', () => {
                     required: false,
                   },
                   control: {
-                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                     component: 'craft:text',
                     props: {inputType: 'text'},
                     path: [...blockScope, 'heading'],
@@ -560,11 +560,11 @@ describe('FormRenderer', () => {
     };
     nested.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Content', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
           component: 'craft:nested-element-blocks',
           props: {
             entryTypes: [{value: 'text', label: 'Text'}],
@@ -582,7 +582,7 @@ describe('FormRenderer', () => {
               refreshable: true,
               nodes: [
                 {
-                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
                   component: 'craft:field',
                   props: {
                     label: 'Heading',
@@ -590,7 +590,7 @@ describe('FormRenderer', () => {
                     required: false,
                   },
                   control: {
-                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                     component: 'craft:text',
                     props: {inputType: 'text'},
                     path: [...blockScope, 'heading'],
@@ -687,11 +687,11 @@ describe('FormRenderer', () => {
       name: string,
       props: FormPayload['nodes'][number]['props']
     ): FormPayload['nodes'][number] => ({
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: name, ...props},
       control: {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
         component: 'craft:choice',
         props: {
           options: [{label: 'is one of', value: 'in'}],
@@ -731,11 +731,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'System Status', required: true},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Combobox',
             component: 'craft:combobox',
             props: {
               options: [
@@ -771,11 +771,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
             component: 'craft:table',
             props: {
               columns: {
@@ -813,7 +813,7 @@ describe('FormRenderer', () => {
       [
         {
           key: 'fromEmail',
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
           props: {
             textExpanderTriggers: [
@@ -853,11 +853,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
             component: 'craft:table',
             props: {columns: {label: {type: 'singleline'}}},
             path: ['details'],
@@ -884,11 +884,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
             component: 'craft:table',
             props: {
               columns: {
@@ -923,7 +923,7 @@ describe('FormRenderer', () => {
       [
         {
           key: 'handle',
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
         },
       ]
@@ -961,11 +961,11 @@ describe('FormRenderer', () => {
       scope: [],
       refreshable: false,
       nodes: ['name', 'summary'].map((path) => ({
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: path},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Combobox',
           component: 'craft:combobox',
           props: {options: []},
           path: [path],
@@ -1037,11 +1037,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Mode', required: true},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
             component: 'craft:choice',
             props: {options: []},
             path: ['mode'],
@@ -1104,11 +1104,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Preview Targets'},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
             component: 'craft:table',
             props: {columns: {}},
             path: ['previewTargets'],
@@ -1181,11 +1181,11 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\HiddenField',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\HiddenField',
           component: 'craft:hidden-field',
           props: {},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Hidden',
             component: 'craft:hidden',
             props: {},
             path: ['siteId'],
@@ -1236,7 +1236,7 @@ describe('FormRenderer', () => {
       conditionRules: {operator: 'and', rules: []},
     };
     condition.nodes[0]!.control = {
-      type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\ConditionBuilder',
       component: 'craft:condition-builder',
       props: {
         builder: {
@@ -1294,13 +1294,13 @@ describe('FormRenderer', () => {
       refreshable: false,
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Tab',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
           component: 'craft:tab',
           props: {label: 'Content'},
           uid: 'tab-content',
           children: [
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
               component: 'craft:field',
               props: {
                 label: 'Headline',
@@ -1317,7 +1317,7 @@ describe('FormRenderer', () => {
                 statusLabel: 'This field has been modified.',
               },
               control: {
-                type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                 component: 'craft:text',
                 props: {},
                 path: ['title'],
@@ -1326,7 +1326,7 @@ describe('FormRenderer', () => {
               },
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\MarkdownContent',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\MarkdownContent',
               component: 'craft:markdown-content',
               props: {
                 html: '<p><strong>Editorial note</strong></p>',
@@ -1337,7 +1337,7 @@ describe('FormRenderer', () => {
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\TemplateContent',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\TemplateContent',
               component: 'craft:template-content',
               props: {
                 html: '<p><strong>Template note</strong></p>',
@@ -1347,7 +1347,7 @@ describe('FormRenderer', () => {
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Heading',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Heading',
               component: 'craft:heading',
               props: {
                 content: 'Details',
@@ -1359,21 +1359,21 @@ describe('FormRenderer', () => {
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Separator',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Separator',
               component: 'craft:separator',
               props: {},
               uid: 'separator',
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\LineBreak',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\LineBreak',
               component: 'craft:line-break',
               props: {},
               uid: 'line-break',
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Callout',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Callout',
               component: 'craft:callout',
               props: {
                 html: '<p><strong>Careful</strong></p>',
@@ -1387,7 +1387,7 @@ describe('FormRenderer', () => {
               children: [],
             },
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Callout',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Callout',
               component: 'craft:callout',
               props: {
                 html: '<p>Default appearance</p>',
@@ -1401,17 +1401,17 @@ describe('FormRenderer', () => {
           ],
         },
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Tab',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
           component: 'craft:tab',
           props: {label: 'SEO'},
           uid: 'tab-seo',
           children: [
             {
-              type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
               component: 'craft:field',
               props: {label: 'Slug'},
               control: {
-                type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                 component: 'craft:text',
                 props: {},
                 path: ['slug'],
@@ -1580,7 +1580,7 @@ describe('FormRenderer', () => {
     const missing = clonePayload();
     missing.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Missing',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Missing',
         component: 'craft:missing-node',
         props: {
           provider: 'Acme\\Forms\\MissingLayoutElement',
@@ -1597,11 +1597,11 @@ describe('FormRenderer', () => {
         children: [],
       },
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Unavailable field'},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Missing',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Missing',
           component: 'craft:missing-control',
           props: {
             provider: 'Acme\\Forms\\MissingField',
@@ -1918,11 +1918,11 @@ describe('FormRenderer', () => {
       field.control!.reactive = fieldReactive;
       field.children = [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Action',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Action',
           component: 'craft:action',
           props: {},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\Lightswitch',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Lightswitch',
             component: 'craft:lightswitch',
             props: {},
             path: ['settings', 'hidden'],
@@ -1963,11 +1963,11 @@ describe('FormRenderer', () => {
     );
     field.children = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Action',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Action',
         component: 'craft:action',
         props: {},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Hidden',
           component: 'craft:hidden',
           props: {},
           path: ['settings', 'operator'],
@@ -2428,11 +2428,11 @@ describe('FormRenderer', () => {
       },
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Content', instructions: null, required: false},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
             component: 'craft:nested-element-blocks',
             props: {
               entryTypes: [{value: 'text', label: 'Text'}],
@@ -2449,7 +2449,7 @@ describe('FormRenderer', () => {
                 refreshable: false,
                 nodes: [
                   {
-                    type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
                     component: 'craft:field',
                     props: {
                       label: 'Heading',
@@ -2457,7 +2457,7 @@ describe('FormRenderer', () => {
                       required: false,
                     },
                     control: {
-                      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                       component: 'craft:text',
                       props: {inputType: 'text'},
                       path: [...blockScope, 'heading'],
@@ -2505,7 +2505,7 @@ describe('FormRenderer', () => {
     const node = (
       control: FormControlPayload
     ): FormPayload['nodes'][number] => ({
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: control.path.at(-1) ?? ''},
       control,
@@ -2529,7 +2529,7 @@ describe('FormRenderer', () => {
       },
       nodes: [
         node({
-          type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
           component: 'craft:nested-element-blocks',
           props: {
             entryTypes: [{value: 'text', label: 'Text'}],
@@ -2544,7 +2544,7 @@ describe('FormRenderer', () => {
               refreshable: false,
               nodes: [
                 node({
-                  type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                  type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                   component: 'craft:text',
                   props: {inputType: 'text'},
                   path: sibling,
@@ -2552,7 +2552,7 @@ describe('FormRenderer', () => {
                   deltaGroup: ['settings', 'matrix'],
                 }),
                 node({
-                  type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                  type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                   component: 'craft:text',
                   props: {inputType: 'text'},
                   path: nullable,
@@ -2560,7 +2560,7 @@ describe('FormRenderer', () => {
                   deltaGroup: ['settings', 'matrix'],
                 }),
                 node({
-                  type: 'CraftCms\\Cms\\Form\\Controls\\NestedElements',
+                  type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElements',
                   component: 'craft:nested-elements',
                   props: {
                     viewMode: 'cards',
@@ -2658,7 +2658,7 @@ describe('FormRenderer', () => {
       ],
     });
     relational.nodes[0]!.control = {
-      type: 'CraftCms\\Cms\\Form\\Controls\\ElementSelect',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\ElementSelect',
       component: 'craft:element-select',
       props: {
         elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
@@ -3297,12 +3297,12 @@ describe('FormRenderer', () => {
       [
         {
           key: 'name',
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
         },
         {
           key: 'enabled',
-          type: 'CraftCms\\Cms\\Form\\Controls\\Checkbox',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Checkbox',
           component: 'craft:checkbox',
         },
       ]
@@ -3608,7 +3608,7 @@ describe('FormRenderer', () => {
     let mutation: FormPayload['values'] = {};
     const nested = clonePayload();
     const textControl = (uid: string, path: string) => ({
-      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
       component: 'craft:text',
       props: {inputType: 'text'},
       path: ['settings', 'matrix', 'entries', uid, path],
@@ -3617,7 +3617,7 @@ describe('FormRenderer', () => {
       forms: [],
     });
     const fieldNode = (label: string, control: FormControlPayload) => ({
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label, instructions: null, required: false},
       control,
@@ -3643,7 +3643,7 @@ describe('FormRenderer', () => {
     };
     nested.nodes = [
       fieldNode('Content', {
-        type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
         component: 'craft:nested-element-blocks',
         props: {
           entryTypes: [{value: 'text', label: 'Text'}],
@@ -3661,7 +3661,7 @@ describe('FormRenderer', () => {
             nodes: [
               fieldNode('Heading', textControl('block-a', 'heading')),
               fieldNode('Content block', {
-                type: 'CraftCms\\Cms\\Form\\Controls\\ContentBlock',
+                type: 'CraftCms\\Cms\\Ui\\Controls\\ContentBlock',
                 component: 'craft:content-block',
                 props: {
                   addLabel: 'Add content',
@@ -3849,11 +3849,11 @@ describe('FormRenderer', () => {
       globalErrors: [],
       nodes: [
         {
-          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
           props: {label: 'Content'},
           control: {
-            type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+            type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
             component: 'craft:nested-element-blocks',
             props: {
               entryTypes: [{value: 'text', label: 'Text'}],
@@ -3870,11 +3870,11 @@ describe('FormRenderer', () => {
                 refreshable: false,
                 nodes: [
                   {
-                    type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
                     component: 'craft:field',
                     props: {label: 'Heading'},
                     control: {
-                      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
                       component: 'craft:text',
                       props: {inputType: 'text'},
                       path: ['settings', 'matrix', 'entries', uid, 'heading'],
@@ -3909,11 +3909,11 @@ describe('FormRenderer', () => {
     Object.assign(emptyMoney, {errors: [], globalErrors: []});
     emptyMoney.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Price', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Money',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Money',
           component: 'craft:money',
           props: {currency: 'USD', locale: 'en-US', showCurrency: true},
           path: ['settings', 'price'],
@@ -3970,11 +3970,11 @@ describe('FormRenderer', () => {
     Object.assign(emptyText, {errors: [], globalErrors: []});
     emptyText.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Summary', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
           props: {inputType: 'text'},
           path: ['settings', 'summary'],
@@ -4012,11 +4012,11 @@ describe('FormRenderer', () => {
         refreshable: false,
         nodes: [
           {
-            type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
             component: 'craft:field',
             props: {label: 'Permissions'},
             control: {
-              type: 'CraftCms\\Cms\\Form\\Controls\\PermissionTree',
+              type: 'CraftCms\\Cms\\Ui\\Controls\\PermissionTree',
               component: 'craft:permission-tree',
               props: {
                 groups: [
@@ -4169,11 +4169,11 @@ describe('FormRenderer', () => {
     missing.values = {};
     missing.nodes = [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'When', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\DateTime',
           component: 'craft:date-time',
           props: {
             showDate: true,

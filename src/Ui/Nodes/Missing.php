@@ -55,7 +55,7 @@ class Missing implements Node
     {
         $presentation = app(MissingComponents::class)->resolve(
             $this->provider,
-            t('Form Node provider [{provider}] is unavailable.', [
+            t('UI Node provider [{provider}] is unavailable.', [
                 'provider' => $this->provider,
             ]),
         );

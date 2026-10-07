@@ -19,7 +19,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Time as TimeControl;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\TimeRule;
@@ -110,11 +110,11 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ], [5, 10, 15, 30, 60]);
 
         return Ui::make([
-            FormField::make(t('Minute Increment'))
+            UiField::make(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->control(Choice::make('minuteIncrement')->options($increments)->value($this->minuteIncrement)),
-            FormField::make(t('Min Time'), TimeControl::make('min')->value($this->min)),
-            FormField::make(t('Max Time'), TimeControl::make('max')->value($this->max)),
+            UiField::make(t('Min Time'), TimeControl::make('min')->value($this->min)),
+            UiField::make(t('Max Time'), TimeControl::make('max')->value($this->max)),
         ]);
     }
 

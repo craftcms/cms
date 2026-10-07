@@ -23,7 +23,7 @@ function nestedControlsUi(): Ui
         Field::make('Content',
             NestedElementBlocks::make('matrix')
                 ->entryTypes(['text' => 'Text'])
-                ->forms([
+                ->uis([
                     'block-a' => Ui::make([
                         Field::make('Heading', Text::make('heading')),
                         Field::make('Content block', $contentBlock),

@@ -80,7 +80,7 @@ describe('NestedElementBlocksControl', () => {
 
   const control = (): FormControlPayload =>
     ({
-      type: 'CraftCms\\Cms\\Form\\Controls\\NestedElementBlocks',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
       component: 'craft:nested-element-blocks',
       props: {
         entryTypes: [{value: 'newType', label: 'New Type'}],

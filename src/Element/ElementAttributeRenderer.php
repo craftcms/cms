@@ -27,7 +27,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
@@ -141,7 +141,7 @@ readonly class ElementAttributeRenderer
                         inline: true,
                     )));
 
-                    return $this->renderInlineForm(Ui::make([FormField::make(control: $control)]), context: $context);
+                    return $this->renderInlineForm(Ui::make([UiField::make(control: $control)]), context: $context);
                 }
             }
 

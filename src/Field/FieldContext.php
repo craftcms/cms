@@ -17,7 +17,7 @@ readonly class FieldContext
      * @param  string|list<string>  $path
      * @param  mixed  $value  The normalized field value
      * @param  ElementInterface|null  $element  The element being edited
-     * @param  UiContext  $form  The containing Form context
+     * @param  UiContext  $form  The containing UI context
      * @param  ControlMode  $mode  The field's resolved mode
      */
     public function __construct(

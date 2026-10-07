@@ -14,7 +14,7 @@ use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Number;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -60,7 +60,7 @@ it('resolves normalized cell values for their form inputs', function (array $col
     $rows = $field->normalizeValue([['col1' => $value]], null);
     $control = $field->formControl(new FieldContext('details', value: $rows));
     $payload = app(UiResolver::class)->resolve(Ui::make([
-        FormField::make('Details', $control),
+        UiField::make('Details', $control),
     ]), new UiContext);
 
     expect($payload->values['details'][0]['col1'])->toBe($expected);
@@ -132,7 +132,7 @@ it('round-trips money cells through localized row forms and scalar storage', fun
         $normalized = $field->normalizeValueFromRequest([['amount' => ['value' => $amount, 'locale' => 'nl-BE']]], null);
         $stored = $field->serializeValueForDb($normalized, new Entry);
         $payload = app(UiResolver::class)->resolve(Ui::make([
-            FormField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
+            UiField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
         ]), new UiContext);
         $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
 

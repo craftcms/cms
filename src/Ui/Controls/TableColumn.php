@@ -22,7 +22,7 @@ class TableColumn
     {
         if (isset($config['control'])) {
             if (! $config['control'] instanceof ControlContract) {
-                throw new InvalidArgumentException("Table column [{$key}] requires a Form Control.");
+                throw new InvalidArgumentException("Table column [{$key}] requires a UI Control.");
             }
 
             return $config['control']->withPath([$key]);

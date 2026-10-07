@@ -53,7 +53,7 @@ interface Control
      * input. That's how an edit inside a block the server knows nothing about
      * yet — one created in this draft — still shows on the field holding it.
      */
-    public function nestsForms(): bool;
+    public function nestsUis(): bool;
 
     /**
      * Returns the Vue component registry name used to render this control.
@@ -133,5 +133,5 @@ interface Control
      *
      * @return list<array{scope: string|list<string>, form: Ui, refreshable: bool}>
      */
-    public function nestedForms(mixed $value = null): array;
+    public function nestedUis(mixed $value = null): array;
 }

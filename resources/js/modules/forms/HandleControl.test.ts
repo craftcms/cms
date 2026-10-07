@@ -85,11 +85,11 @@ const payload: FormPayload = {
   refreshable: false,
   nodes: [
     {
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: 'Name', instructions: null, required: true},
       control: {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
         component: 'craft:text',
         props: {},
         path: ['settings', 'identity', 'name'],
@@ -98,11 +98,11 @@ const payload: FormPayload = {
       },
     },
     {
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: 'Handle', instructions: null, required: true},
       control: {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Handle',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Handle',
         component: 'craft:handle',
         props: {source: ['name']},
         path: ['settings', 'identity', 'handle'],

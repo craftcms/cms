@@ -96,7 +96,7 @@ function matrixControlFormScopes(EntryElement $owner): array
 
     return array_map(
         fn (array $form): string => array_last($form['scope']),
-        $control->nestedForms($control->getValue()),
+        $control->nestedUis($control->getValue()),
     );
 }
 

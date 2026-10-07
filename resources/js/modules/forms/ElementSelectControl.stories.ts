@@ -18,7 +18,7 @@ type Props = Record<string, unknown>;
 
 function control(props: Props = {}): FormControlPayload<any> {
   return {
-    type: 'CraftCms\\Cms\\Form\\Controls\\ElementSelect',
+    type: 'CraftCms\\Cms\\Ui\\Controls\\ElementSelect',
     component: 'craft:element-select',
     props: {
       elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',

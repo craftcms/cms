@@ -23,11 +23,11 @@ const userReviewForm: FormPayload = {
   refreshable: false,
   nodes: [
     {
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: 'Reviewer group', required: true},
       control: {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Combobox',
         component: 'craft:combobox',
         props: {
           options: [
@@ -41,11 +41,11 @@ const userReviewForm: FormPayload = {
       },
     },
     {
-      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
       props: {label: 'Approvals required', required: true},
       control: {
-        type: 'CraftCms\\Cms\\Form\\Controls\\Number',
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Number',
         component: 'craft:text',
         props: {inputType: 'number', min: 1},
         path: ['settings', 'approvalsRequired'],

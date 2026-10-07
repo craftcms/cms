@@ -25,7 +25,7 @@ type UserGroupSelectProps = {
   }>;
 };
 const control: FormControlPayload<UserGroupSelectProps> = {
-  type: 'CraftCms\\Cms\\Form\\Controls\\UserGroupSelect',
+  type: 'CraftCms\\Cms\\Ui\\Controls\\UserGroupSelect',
   component: 'craft:user-group-select',
   props: {
     canCreate: true,

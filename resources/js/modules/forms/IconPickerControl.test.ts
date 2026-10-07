@@ -14,7 +14,7 @@ describe('IconPickerControl', () => {
 
   it('leaves the label to its Form field', async () => {
     const control: FormControlPayload = {
-      type: 'CraftCms\\Cms\\Form\\Controls\\IconPicker',
+      type: 'CraftCms\\Cms\\Ui\\Controls\\IconPicker',
       component: 'craft:icon-picker',
       props: {freeOnly: false},
       path: ['icon'],

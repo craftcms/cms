@@ -20,7 +20,7 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\Separator;
@@ -66,17 +66,17 @@ class FieldEditViewModel extends ViewModel
         $nodes = [
             HiddenField::make('fieldId'),
             HiddenField::make('oldType')->mode(ControlMode::ReadOnly),
-            FormField::make(t('Name'), Text::make('name')->autofocus())
+            UiField::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this field will be called in the control panel.'))
                 ->required(),
-            FormField::make(t('Handle'), $handle)
+            UiField::make(t('Handle'), $handle)
                 ->instructions(t('How you’ll refer to this field in the templates.'))
                 ->required(),
-            FormField::make(t('Default Instructions'), Textarea::make('instructions'))
+            UiField::make(t('Default Instructions'), Textarea::make('instructions'))
                 ->instructions(t('Helper text to guide the author.')),
-            FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
+            UiField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
-        $typeField = FormField::make(t('Field Type'), Combobox::make('type')
+        $typeField = UiField::make(t('Field Type'), Combobox::make('type')
             ->options($this->fieldTypeOptions())
             ->requireOptionMatch()
             ->reactive())
@@ -96,14 +96,14 @@ class FieldEditViewModel extends ViewModel
         $translationOptions = $this->translationMethodOptions($translationMethods);
 
         if (Sites::isMultiSite() && count($translationOptions) > 1) {
-            $nodes[] = FormField::make(
+            $nodes[] = UiField::make(
                 t('Translation Method'),
                 Choice::make('translationMethod')->options($translationOptions)->reactive(),
             )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
                 $nodes[] = Group::make('field-translation-settings', [
-                    FormField::make(
+                    UiField::make(
                         t('Translation Key Format'),
                         Text::make('translationKeyFormat')
                             ->monospace()

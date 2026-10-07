@@ -15,7 +15,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use Override;
@@ -72,7 +72,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make([
-            FormField::make(t('Placeholder Text'))
+            UiField::make(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->control(Text::make('placeholder')->value($this->placeholder)),
         ]);

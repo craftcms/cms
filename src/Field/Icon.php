@@ -24,7 +24,7 @@ use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\IconPicker;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
@@ -117,13 +117,13 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make([
-            FormField::make(t('Include Pro icons'))
+            UiField::make(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
                 ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
         ])->when(
             Cms::config()->enableGql,
             fn (Ui $form): Ui => $form->add(
-                FormField::make(t('GraphQL Mode'))
+                UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
                         ['label' => t('Name only'), 'value' => 'name'],

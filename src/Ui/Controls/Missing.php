@@ -41,7 +41,7 @@ class Missing extends Control
     {
         $presentation = app(MissingComponents::class)->resolve(
             $this->provider,
-            t('Form Control provider [{provider}] is unavailable.', [
+            t('UI Control provider [{provider}] is unavailable.', [
                 'provider' => $this->provider,
             ]),
         );

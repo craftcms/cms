@@ -154,7 +154,7 @@ it('rejects registered renderer exceptions without returning a partial PHP form'
     $type = $broken::class;
 
     expect(fn () => app(UiHtmlRenderer::class)->render($payload))
-        ->toThrow(RuntimeException::class, "Failed to render Form Node [{$type}] with component [test-plugin:notice] at [broken]: Test plugin renderer failed.");
+        ->toThrow(RuntimeException::class, "Failed to render UI Node [{$type}] with component [test-plugin:notice] at [broken]: Test plugin renderer failed.");
 });
 
 it('reports extension context for invalid definitions', function () {
@@ -171,5 +171,5 @@ it('reports extension context for invalid definitions', function () {
         ->and(fn () => app(UiResolver::class)->resolve(Ui::make([
             Field::make()->control(Slug::make([''])),
         ]), new UiContext))
-        ->toThrow(InvalidArgumentException::class, 'Form Control ['.Slug::class.'] with component [test-plugin:slug] at [unknown] paths must contain non-empty string segments');
+        ->toThrow(InvalidArgumentException::class, 'UI Control ['.Slug::class.'] with component [test-plugin:slug] at [unknown] paths must contain non-empty string segments');
 });

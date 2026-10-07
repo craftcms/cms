@@ -38,7 +38,7 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
@@ -190,13 +190,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make([
-            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+            UiField::make(t('Min {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
-            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+            UiField::make(t('Max {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
-            FormField::make(t('View Mode'))
+            UiField::make(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
