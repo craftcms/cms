@@ -28,7 +28,7 @@ beforeEach(function () {
     loadTestPlugin();
 
     TestPlugin::$useSettings = true;
-    TestPlugin::$useSettingsForm = true;
+    TestPlugin::$useSettingsUi = true;
     TestPlugin::$settingsRequestClass = Request::class;
 });
 
@@ -180,7 +180,7 @@ test('editSettings renders settings validation errors', function () {
         );
 });
 
-test('plugin settings form targets the plugin CP route', function () {
+test('plugin settings UI targets the plugin CP route', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -191,7 +191,7 @@ test('plugin settings form targets the plugin CP route', function () {
         );
 });
 
-test('plugin settings form is refreshable', function () {
+test('plugin settings UI is refreshable', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -234,8 +234,8 @@ test('standard editable settings responses require a settings model', function (
         ->toThrow(LogicException::class, 'must provide a settings model');
 });
 
-test('standard settings responses require a Form', function () {
-    TestPlugin::$useSettingsForm = false;
+test('standard settings responses require a UI', function () {
+    TestPlugin::$useSettingsUi = false;
     $plugin = new class(app()) extends TestPlugin {};
     $plugin->handle = 'test-plugin';
 
@@ -352,7 +352,7 @@ test('respects read-only mode for saveSettings', function () {
         ->assertForbidden();
 });
 
-test('respects read-only mode for settings form refresh', function () {
+test('respects read-only mode for settings UI refresh', function () {
     Cms::config()->allowAdminChanges = false;
 
     postJson(action([PluginsController::class, 'renderSettingsUi'], ['test-plugin']), [

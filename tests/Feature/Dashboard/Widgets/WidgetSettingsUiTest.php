@@ -18,7 +18,7 @@ use CraftCms\Cms\User\Models\UserGroup;
 
 use function Pest\Laravel\actingAs;
 
-it('exposes native widget settings as typed forms', function () {
+it('exposes native widget settings as typed UIs', function () {
     actingAs(User::find()->one());
     UserGroup::factory()->create(['name' => 'Editors']);
     $entryType = EntryType::factory()->create(['name' => 'Article']);
@@ -27,7 +27,7 @@ it('exposes native widget settings as typed forms', function () {
         'type' => SectionType::Channel,
     ]);
 
-    $forms = [
+    $uis = [
         Feed::class => ['url', 'title', 'limit'],
         MyDrafts::class => ['limit'],
         NewUsers::class => ['dateRange', 'userGroupId'],
@@ -35,7 +35,7 @@ it('exposes native widget settings as typed forms', function () {
         RecentEntries::class => ['section', 'limit'],
     ];
 
-    foreach ($forms as $widgetClass => $paths) {
+    foreach ($uis as $widgetClass => $paths) {
         $widget = new $widgetClass;
         $payload = app(UiResolver::class)->resolve(
             $widget->settingsUi(),
@@ -58,7 +58,7 @@ it('exposes native widget settings as typed forms', function () {
     }
 });
 
-it('resolves widget values errors and modes through the shared form seam', function () {
+it('resolves widget values errors and modes through the shared UI system', function () {
     $widget = new Feed([
         'url' => 'https://craftcms.com/news.rss',
         'title' => 'Craft News',

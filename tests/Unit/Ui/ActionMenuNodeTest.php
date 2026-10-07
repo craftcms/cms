@@ -95,12 +95,12 @@ it('resolves into the field’s actions slot as a control-less node', function (
 });
 
 it('rejects two action menus sharing a UID', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('One', Text::make('one'))->actions(ActionMenu::make('dupe', [['label' => 'A']])),
         Field::make('Two', Text::make('two'))->actions(ActionMenu::make('dupe', [['label' => 'B']])),
     ]);
 
-    expect(fn () => app(UiResolver::class)->resolve($form, new UiContext))
+    expect(fn () => app(UiResolver::class)->resolve($ui, new UiContext))
         ->toThrow(InvalidArgumentException::class, 'Duplicate Node UID [dupe]');
 });
 

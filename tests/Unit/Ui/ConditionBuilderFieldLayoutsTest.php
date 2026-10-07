@@ -15,24 +15,24 @@ use Symfony\Component\DomCrawler\Crawler;
 
 it('advertises field layouts on the resolved payload', function () {
     $layout = ['type' => Entry::class, 'tabs' => []];
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Condition', ConditionBuilder::make('elementCondition')
             ->conditionClass(ElementCondition::class)
             ->fieldLayouts([$layout])),
     ]);
 
-    $payload = app(UiResolver::class)->resolve($form, new UiContext);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
 
     expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([$layout]);
 });
 
 it('defaults field layouts to an empty list', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Condition', ConditionBuilder::make('elementCondition')
             ->conditionClass(ElementCondition::class)),
     ]);
 
-    $payload = app(UiResolver::class)->resolve($form, new UiContext);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
 
     expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([]);
 });

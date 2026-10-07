@@ -169,8 +169,8 @@
   }
 
   /**
-   * The server's modified groups, for controls of the element this form is
-   * for. A control inside a nested form inherits its owner's delta group, so it
+   * The server's modified groups, for controls of the element this UI is
+   * for. A control inside a nested UI inherits its owner's delta group, so it
    * would otherwise badge whenever the field holding it changed.
    */
   function modifiedByServer(): boolean {

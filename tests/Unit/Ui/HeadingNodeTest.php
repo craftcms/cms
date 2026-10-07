@@ -10,11 +10,11 @@ use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('renders the configured heading level and defaults to level two', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Heading::make('custom', 'Custom')->level(3)->description('Supporting copy.'),
         Heading::make('default', 'Default'),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->props['level'])->toBe(3)

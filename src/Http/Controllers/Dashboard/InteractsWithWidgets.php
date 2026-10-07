@@ -69,8 +69,8 @@ trait InteractsWithWidgets
             errors: $widget->errors()->getMessages(),
             refreshable: true,
         );
-        $form = $widget->settingsUi($context);
+        $ui = $widget->settingsUi($context);
 
-        return $form === null ? null : app(UiResolver::class)->resolve($form, $context);
+        return $ui === null ? null : app(UiResolver::class)->resolve($ui, $context);
     }
 }

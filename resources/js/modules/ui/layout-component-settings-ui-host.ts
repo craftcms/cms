@@ -14,7 +14,7 @@ type UiRendererInstance = {
   currentValues(): UiPayload['values'];
 };
 
-/** The layout component this settings form is for, as posted to the server. */
+/** The layout component this settings UI is for, as posted to the server. */
 export type LayoutComponentRequestData = {
   uid: string;
   elementType: string;

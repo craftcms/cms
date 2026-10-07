@@ -34,8 +34,8 @@ it('resolves action children with their own control paths', function () {
 });
 
 it('omits hasActions when a field has no actions', function () {
-    $form = Ui::make([Field::make('Label', Text::make('label'))]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext);
+    $ui = Ui::make([Field::make('Label', Text::make('label'))]);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
 
     expect($payload->nodes[0]->props)->not->toHaveKey('hasActions')
         ->and($payload->nodes[0]->children)->toBeNull();

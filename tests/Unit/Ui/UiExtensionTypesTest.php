@@ -42,13 +42,13 @@ it('registers core and plugin Node and Control types separately', function () {
 
 it('builds Node containers from children, configuration closures, and conditions', function () {
     $field = Field::make('Title', Text::make('title'));
-    $form = Ui::make()
+    $ui = Ui::make()
         ->addTab('Array tab', [$field])
         ->addTab('Closure tab', fn (Tab $tab) => $tab->add($field), 'custom-tab')
         ->addGroup('Array group', [$field])
         ->addGroup('Closure group', fn (Group $group) => $group->label('Configured group')->add($field), 'custom-group');
 
-    [$arrayTab, $closureTab, $arrayGroup, $closureGroup] = $form->nodes();
+    [$arrayTab, $closureTab, $arrayGroup, $closureGroup] = $ui->nodes();
     $conditionalGroup = Group::make('conditional')
         ->when(true, fn (Group $group) => $group->add($field))
         ->when(false, fn (Group $group) => $group->add($field))

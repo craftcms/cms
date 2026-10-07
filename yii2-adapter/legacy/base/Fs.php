@@ -59,15 +59,15 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
     #[Override]
     public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
-        $form = Ui::make();
+        $ui = Ui::make();
 
         if ($this->getShowHasUrlSetting()) {
-            $form->add(Field::make(t('Files in this filesystem have public URLs'))
+            $ui->add(Field::make(t('Files in this filesystem have public URLs'))
                 ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
         }
 
         if ($this->hasUrls && $this->getShowUrlSetting()) {
-            $form->add(Field::make(t('Base URL'))
+            $ui->add(Field::make(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem.'))
                 ->required()
                 ->control(Text::make('url')
@@ -77,13 +77,13 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
                 ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
         }
 
-        $legacyForm = $this->legacySettingsUi($context);
+        $legacyUi = $this->legacySettingsUi($context);
 
-        if ($legacyForm !== null) {
-            $form->add(...$legacyForm->nodes());
+        if ($legacyUi !== null) {
+            $ui->add(...$legacyUi->nodes());
         }
 
-        return $form->nodes() === [] ? null : $form;
+        return $ui->nodes() === [] ? null : $ui;
     }
 
     public function getShowHasUrlSetting(): bool

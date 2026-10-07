@@ -44,7 +44,7 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $entries = $this->viewMode === self::VIEW_MODE_BLOCKS ? $this->entriesForForm($value) : [];
+        $entries = $this->viewMode === self::VIEW_MODE_BLOCKS ? $this->entriesForUi($value) : [];
         $control = parent::uiControl(new FieldContext(
             path: ['fields', $this->handle],
             value: $this->viewMode === self::VIEW_MODE_BLOCKS ? new ElementCollection($entries) : $value,

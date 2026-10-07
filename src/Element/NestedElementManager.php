@@ -542,7 +542,7 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Builds the Form control that manages these nested elements outside the owner's form,
+     * Builds the UI control that manages these nested elements outside the owner's form,
      * as cards or an embedded element index.
      *
      * This is what fields and owner screens hand the Vue editor, so every nested element type

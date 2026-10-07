@@ -35,11 +35,11 @@ function attachedTo(FieldLayoutComponent $component): FieldLayoutComponent
 
 it('resolves, encodes and renders settings for every layout component', function (FieldLayoutComponent $component) {
     $context = settingsContext();
-    $form = $component->settingsUi($context);
+    $ui = $component->settingsUi($context);
 
-    expect($form)->not->toBeNull();
+    expect($ui)->not->toBeNull();
 
-    $payload = app(UiResolver::class)->resolve($form, $context);
+    $payload = app(UiResolver::class)->resolve($ui, $context);
 
     expect($payload->scope)->toBe(['settings'])
         ->and(Json::encode($payload))->toBeString()

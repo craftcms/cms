@@ -49,12 +49,12 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
         }
     });
     $html = $field->getInputHtml($owner->getFieldValue('blocks'), $owner);
-    $form = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
-    $control = $form['nodes'][0]['control'];
+    $ui = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $control = $ui['nodes'][0]['control'];
 
     expect(array_keys($control['props']['create']['entryTypeIds']))->toBe(['secondChoice', 'firstChoice'])
         ->and($control['props']['createEntryTypes'] ?? null)->toBe(['secondChoice', 'firstChoice'])
-        ->and($form['values']['fields']['blocks']['entries'])->toHaveCount(1)
+        ->and($ui['values']['fields']['blocks']['entries'])->toHaveCount(1)
         ->and($html)->toContain('Existing content');
 });
 
@@ -169,8 +169,8 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         : ['fields', 'cards'];
     $html = FieldLayoutForm::fromLayout($global->getFieldLayout(), $global)->render();
     if ($insideBlock) {
-        $blocksForm = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
-        $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($blocksForm['nodes']), RecursiveIteratorIterator::SELF_FIRST);
+        $blocksUi = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($blocksUi['nodes']), RecursiveIteratorIterator::SELF_FIRST);
         $control = collect(iterator_to_array($nodes, false))->first(
             fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
         );

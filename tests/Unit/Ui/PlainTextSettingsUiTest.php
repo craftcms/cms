@@ -50,23 +50,23 @@ function plainTextPayload(): UiPayload
 }
 
 it('builds complete and incremental node lists with Conditionable authoring', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('First', Text::make('first')),
     ])->add(
         Field::make('Second', Text::make(['second'])),
-    )->when(true, fn (Ui $form) => $form->add(
+    )->when(true, fn (Ui $ui) => $ui->add(
         Field::make('Conditional', Text::make('conditional')),
-    ))->when(false, fn (Ui $form) => $form->add(
+    ))->when(false, fn (Ui $ui) => $ui->add(
         Field::make('Omitted', Text::make('omitted')),
-    ))->unless(false, fn (Ui $form) => $form->add(
+    ))->unless(false, fn (Ui $ui) => $ui->add(
         Field::make('Unless', Text::make('unless')),
-    ))->unless(true, fn (Ui $form) => $form->add(
+    ))->unless(true, fn (Ui $ui) => $ui->add(
         Field::make('Also omitted', Text::make('alsoOmitted')),
-    ))->when(true, fn (Ui $form) => $form->add(
+    ))->when(true, fn (Ui $ui) => $ui->add(
         Field::make('Third', Text::make('nested.third')),
     ));
 
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
 
     expect($payload->nodes[0])->toBeInstanceOf(NodePayload::class)
         ->and($payload->nodes[0]->control)->toBeInstanceOf(ControlPayload::class)
@@ -156,11 +156,11 @@ it('serializes switch configuration', function () {
 });
 
 it('assigns descendant errors to the longest matching control path', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(Text::make('address')->value([])),
         Field::make()->control(Text::make('address.street')),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         errors: ['address.street.line1' => ['Street is invalid.']],
     ));
@@ -205,7 +205,7 @@ it('renders an accessible editable PHP form with ordinary nested names', functio
         ->and($crawler->filter('[role="alert"]')->text())->toContain('The settings could not be saved.');
 });
 
-it('uses the payload renderer for the production Plain Text PHP settings form', function () {
+it('uses the payload renderer for the production Plain Text PHP settings UI', function () {
     $field = new PlainText(['placeholder' => 'Production value', 'multiline' => false]);
     $field->errors()->add('fieldLimit', 'The field limit is invalid.');
     $editableContext = new UiContext(errors: $field->errors()->getMessages());

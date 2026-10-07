@@ -23,14 +23,14 @@ it('resolves and renders selected, inherited, and nested permissions', function 
             new Permission('editEntries', 'Edit entries'),
         ])),
     ]))];
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Permissions', PermissionTree::make('permissions')
             ->ariaLabel('Permissions')
             ->groups($groups)
             ->lockedPermissions(['editEntries'])
             ->value(['viewEntries'])),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $control = $payload->nodes[0]->control;
     $permissionTree = $crawler->filter('craft-permission-tree');
@@ -42,7 +42,7 @@ it('resolves and renders selected, inherited, and nested permissions', function 
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions]"][value=""]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions][]"][value="viewEntries"]'))->toHaveCount(1);
 
-    $readOnly = app(UiResolver::class)->resolve($form, new UiContext(
+    $readOnly = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         mode: ControlMode::ReadOnly,
     ));

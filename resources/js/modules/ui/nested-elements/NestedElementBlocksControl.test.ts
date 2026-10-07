@@ -1426,7 +1426,7 @@ describe('NestedElementBlocksControl', () => {
     });
     await nextTick();
 
-    // Stand in for the nested form UiNodeList would have rendered.
+    // Stand in for the nested UI UiNodeList would have rendered.
     const fields = container!.querySelector(
       '[data-matrix-block] [data-matrix-block-fields]'
     )!;

@@ -29,10 +29,10 @@ it('resolves user groups while storing their project-config UIDs', function () {
         'description' => null,
     ]);
     UserGroups::shouldReceive('getAllGroups')->twice()->andReturn(collect([$editors, $publishers]));
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('User groups', UserGroupSelect::make('groups'))->required(),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['groups' => [$editors->uid]]],
     ));
@@ -63,7 +63,7 @@ it('resolves user groups while storing their project-config UIDs', function () {
         ->and($combobox->attr('multiple-choice'))->not->toBeNull()
         ->and(json_decode((string) $combobox->attr('model-value'), true))->toBe([$editors->uid]);
 
-    $readOnly = app(UiResolver::class)->resolve($form, new UiContext(
+    $readOnly = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['groups' => [$editors->uid]]],
         mode: ControlMode::ReadOnly,

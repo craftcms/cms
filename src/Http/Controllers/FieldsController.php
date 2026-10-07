@@ -623,9 +623,9 @@ class FieldsController
             refreshable: true,
         );
 
-        $form = $component->settingsUi($context);
+        $ui = $component->settingsUi($context);
 
-        return $form === null ? null : app(UiResolver::class)->resolve($form, $context);
+        return $ui === null ? null : app(UiResolver::class)->resolve($ui, $context);
     }
 
     public function applyLayoutTabSettings(Request $request): Response

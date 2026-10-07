@@ -148,7 +148,7 @@ it('serializes the adapter title class and omits titles disabled by the entry ty
     ])->and($field->uiNode(new FieldLayoutElementContext($entry, new UiContext())))->toBeNull();
 });
 
-it('renders the complete legacy Table settings Form with its namespace and effective mode', function(ControlMode $mode) {
+it('renders the complete legacy Table settings UI with its namespace and effective mode', function(ControlMode $mode) {
     $field = new class(['columns' => ['col1' => ['heading' => 'Status', 'handle' => 'status', 'type' => 'singleline']], 'defaults' => [['col1' => 'Draft']]]) extends Table {
         public function getSettingsHtml(): ?string
         {

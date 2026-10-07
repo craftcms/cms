@@ -153,13 +153,13 @@ it('displays composite values without submitting them in non-editable modes', fu
 ]);
 
 it('preserves keyed Table rows in payloads and PHP submission names', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(Table::make('rows')
             ->keyed()
             ->columns(['name' => ['heading' => 'Name', 'type' => 'singleline']])
             ->value(['site-one' => ['name' => 'Primary']])),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->values['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']])
@@ -170,11 +170,11 @@ it('renders text expanders for text and textarea Controls', function () {
     $triggers = [
         ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'source' => 'users/text-expander-options'],
     ];
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Name', Text::make('name')->textExpanderTriggers($triggers)),
         Field::make('Notes', Textarea::make('notes')->textExpanderTriggers($triggers)),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $input = $crawler->filter('input[name="settings[name]"]');
     $textarea = $crawler->filter('textarea[name="settings[notes]"]');

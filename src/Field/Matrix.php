@@ -570,7 +570,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function getEntryTypesForOwner(ElementInterface $owner): array
     {
         return $this->getEntryTypesForField(
-            $this->entriesForForm($owner->getFieldValue($this->handle)),
+            $this->entriesForUi($owner->getFieldValue($this->handle)),
             $owner,
         );
     }
@@ -582,7 +582,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $this->nestedEntriesControl($context);
         }
 
-        $entries = $this->entriesForForm($context->value);
+        $entries = $this->entriesForUi($context->value);
         $creationTypes = $this->getEntryTypesForField($entries, $context->element);
         $entryTypes = collect([
             ...array_map(fn (Entry $entry): EntryType => $entry->getType(), $entries),
@@ -596,7 +596,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'group' => $type->group,
             ]])
             ->all();
-        $values = $forms = $sortOrder = $blocks = [];
+        $values = $uis = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
@@ -608,7 +608,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            $forms[$uid] = app(FieldLayoutCompiler::class)->ui(
+            $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
                 new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
@@ -622,7 +622,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->elementType(Entry::class)
             ->blocks($blocks)
             ->create($this->createConfig($context->element, $creationTypes))
-            ->uis($forms)
+            ->uis($uis)
             ->siteName($this->localizedSiteName($context->element))
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
@@ -630,7 +630,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** @return list<Entry> */
-    protected function entriesForForm(mixed $value): array
+    protected function entriesForUi(mixed $value): array
     {
         // Include disabled entries and in-memory values retained after validation.
         $entries = array_values(match (true) {

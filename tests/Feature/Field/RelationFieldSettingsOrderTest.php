@@ -10,7 +10,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 
 /**
- * Flattens a resolved settings Form to the setting names in render order.
+ * Flattens a resolved settings UI to the setting names in render order.
  * Group children are prefixed with the group's UID so nesting stays visible.
  *
  * @param  list<NodePayload>  $nodes

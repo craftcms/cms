@@ -118,11 +118,11 @@ class QuickPost extends Widget
             return null;
         }
 
-        $form = Ui::make();
+        $ui = Ui::make();
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $form->add(Field::make(t('Site'))
+            $ui->add(Field::make(t('Site'))
                 ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
                     ->map(fn ($site): array => [
                         'label' => t($site->getName(), category: 'site'),
@@ -135,7 +135,7 @@ class QuickPost extends Widget
         $section = $this->section() ?? $sections[0];
         $entryTypes = $section->getEntryTypes();
 
-        return $form->add(
+        return $ui->add(
             Field::make(t('Section'))
                 ->instructions(t('Which section do you want to save entries to?'))
                 ->control(Choice::make('section')->value($section->id)->options(array_map(

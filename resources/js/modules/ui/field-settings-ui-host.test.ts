@@ -137,7 +137,7 @@ async function settle(form: HTMLFormElement): Promise<void> {
   await nextTick();
 }
 
-it('refreshes the complete namespaced legacy settings form and retains unsaved settings for native submission', async () => {
+it('refreshes the complete namespaced legacy settings UI and retains unsaved settings for native submission', async () => {
   const request = vi
     .spyOn(actionClient, 'post')
     .mockResolvedValue({data: {ui: settingsPayload(true)}});

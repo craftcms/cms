@@ -95,11 +95,11 @@ it('renders legacy nested field inputs with their owner scope and content', func
 
     if ($viewMode === LegacyMatrix::VIEW_MODE_BLOCKS) {
         $host = $crawler->filter('craft-entry-field-layout-ui[data-payload]');
-        $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
-        $control = $form['nodes'][0]['control'];
+        $ui = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $control = $ui['nodes'][0]['control'];
         expect($host)->toHaveCount(1)
-            ->and($form['values']['fields']['nested']['entries'][$nested->uid]['fields']['body'])->toBe('Block body')
-            ->and($form['values']['fields']['nested']['sortOrder'])->toBe([$nested->uid])
+            ->and($ui['values']['fields']['nested']['entries'][$nested->uid]['fields']['body'])->toBe('Block body')
+            ->and($ui['values']['fields']['nested']['sortOrder'])->toBe([$nested->uid])
             ->and($control['props']['create'])->toMatchArray([
                 'fieldId' => $field->id,
                 'ownerId' => $owner->id,
@@ -110,7 +110,7 @@ it('renders legacy nested field inputs with their owner scope and content', func
             ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
 
         if ($invalid) {
-            expect($form['errors'])->toContain(
+            expect($ui['errors'])->toContain(
                 ['path' => ['fields', 'nested', 'entries', $nested->uid, 'title'], 'messages' => ['Please provide a valid title.']],
                 ['path' => ['fields', 'nested', 'entries', $nested->uid, 'fields', 'body'], 'messages' => ['Please provide valid body content.']],
             );

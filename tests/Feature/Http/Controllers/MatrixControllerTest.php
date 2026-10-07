@@ -99,7 +99,7 @@ it('rejects invalid site ids when creating a matrix entry', function () {
 });
 
 it('returns the new block as UI nodes when given a control path', function () {
-    // The Form control renders blocks with UiNodeList, so it asks for nodes
+    // The UI control renders blocks with UiNodeList, so it asks for nodes
     // rather than the rendered block HTML the legacy stack splices in.
     $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'path' => ['fields', 'matrixField'],
@@ -406,7 +406,7 @@ it('badges a block’s own field when that block was edited through a draft', fu
         ->and($compiled[0]->getIsCanonical())->toBeFalse()
         ->and($compiled[0]->isFieldModified('innerText'))->toBeTrue();
 
-    // And the compiled form says so, which is what puts the badge on screen.
+    // And the compiled UI says so, which is what puts the badge on screen.
     $payload = app(FieldLayoutCompiler::class)->compile(
         $draft->getFieldLayout(),
         $draft,
@@ -418,8 +418,8 @@ it('badges a block’s own field when that block was edited through a draft', fu
             $statuses[implode('.', $node['control']['path'] ?? ['?'])] = $node['props']['status'];
         }
 
-        foreach ($node['control']['uis'] ?? [] as $form) {
-            foreach ($form['nodes'] ?? [] as $child) {
+        foreach ($node['control']['uis'] ?? [] as $ui) {
+            foreach ($ui['nodes'] ?? [] as $child) {
                 $collect($child);
             }
         }

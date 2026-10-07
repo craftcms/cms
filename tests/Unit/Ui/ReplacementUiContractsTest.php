@@ -41,7 +41,7 @@ it('does not expose the replaced HTML rendering contracts', function () {
         ->and(class_exists(FieldLayoutForm::class))->toBeFalse();
 });
 
-it('uses a non-PlainText field settings Form through the public contract', function () {
+it('uses a non-PlainText field settings UI through the public contract', function () {
     $field = new class extends Number
     {
         public function settingsUi(UiContext $context = new UiContext): Ui

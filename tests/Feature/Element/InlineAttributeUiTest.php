@@ -34,7 +34,7 @@ function inlineAttributePayload(string $html): array
     return json_decode($crawler->filter('craft-inline-attribute-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 }
 
-it('renders entry dates and slug as namespaced Form controls', function (string $attribute, string $component) {
+it('renders entry dates and slug as namespaced UI controls', function (string $attribute, string $component) {
     $entry = EntryModel::factory()->createElement();
     $entry->postDate = new DateTimeImmutable('2026-05-03 09:17:00', new DateTimeZone(Cms::timezone()));
     $entry->expiryDate = null;

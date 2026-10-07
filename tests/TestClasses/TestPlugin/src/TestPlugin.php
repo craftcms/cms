@@ -36,7 +36,7 @@ class TestPlugin extends Plugin
 {
     public static bool $useSettings = true;
 
-    public static bool $useSettingsForm = true;
+    public static bool $useSettingsUi = true;
 
     public static bool $beforeSaveSettings = true;
 
@@ -329,13 +329,13 @@ class TestPlugin extends Plugin
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
-        if (! self::$useSettingsForm) {
+        if (! self::$useSettingsUi) {
             return null;
         }
 
         return Ui::make([
             Field::make('Foo', Text::make('foo')->reactive()),
-        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Ui $form) => $form->add(
+        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Ui $ui) => $ui->add(
             Group::make('test-plugin-bar', [
                 Field::make('Bar', Text::make('bar')),
             ])->dependsOn('settings.foo'),

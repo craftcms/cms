@@ -159,7 +159,7 @@ function legacyHookLayoutElement(string $uid = 'legacy-element'): LegacyFieldLay
     return new LegacyHookLayoutElement(['uid' => $uid]);
 }
 
-it('registers its private Form types', function() {
+it('registers its private UI types', function() {
     expect(app(UiNodeTypes::class)->types()->contains(LegacyHtmlField::class))->toBeTrue()
         ->and(app(UiControlTypes::class)->types()->contains(LegacyHtmlControl::class))->toBeTrue();
 });
@@ -306,7 +306,7 @@ it('omits null hooks and reports capture failures', function() {
         ->toThrow(\RuntimeException::class, 'plugin failed');
 });
 
-it('implements replacement Form operations through legacy hooks', function() {
+it('implements replacement UI operations through legacy hooks', function() {
     $settings = new LegacySettingsComponent()->settingsUi(new UiContext(
         namespace: 'settings',
         mode: ControlMode::ReadOnly,
@@ -328,10 +328,10 @@ it('implements replacement Form operations through legacy hooks', function() {
         ->toContain('name="nested[block][fields][legacy]"', 'disabled');
 });
 
-it('wraps legacy plugin settings HTML in a Form', function(ControlMode $mode, bool $disabled) {
+it('wraps legacy plugin settings HTML in a UI', function(ControlMode $mode, bool $disabled) {
     $context = new UiContext(namespace: 'settings', mode: $mode);
-    $form = new LegacySettingsPlugin('legacy-settings')->settingsUi($context);
-    $payload = app(UiResolver::class)->resolve($form, $context);
+    $ui = new LegacySettingsPlugin('legacy-settings')->settingsUi($context);
+    $payload = app(UiResolver::class)->resolve($ui, $context);
     $control = $payload->nodes[0]->control;
     $input = new Crawler($control?->props['fragment']['html']);
 
@@ -506,7 +506,7 @@ it('compiles legacy FieldLayout elements into namespaced multi-root HTML islands
         ->and($rendered->filter('[aria-invalid="true"] .error-list')->text())->toContain('Title is invalid.');
 });
 
-it('maps Form modes onto legacy FieldLayout HTML', function(ControlMode $mode, bool $static) {
+it('maps UI modes onto legacy FieldLayout HTML', function(ControlMode $mode, bool $static) {
     $layout = FieldLayout::make(Entry::class)
         ->tab('Content', fn(FieldLayoutTab $tab) => $tab->add(legacyHookLayoutElement()));
     $layout->getTabs()[0]->uid = 'content-tab';

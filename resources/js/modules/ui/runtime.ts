@@ -42,8 +42,8 @@ export const UiModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('UiModifiedGroups');
 
 /**
- * Dotted paths of every control changed since the form was last reset. A field
- * holding nested uis badges when one lands at or below it — see FieldNode.
+ * Dotted paths of every control changed since the UI was last reset. A field
+ * holding nested UIs badges when one lands at or below it — see FieldNode.
  */
 export const UiChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('UiChangedPaths');
@@ -81,7 +81,7 @@ class ServerError extends Validator {
  * The value a control should render with.
  *
  * {@link valueAt} returns undefined when the path isn't in the tree, which
- * happens for a beat inside a nested form: the payload describing a control can
+ * happens for a beat inside a nested UI: the payload describing a control can
  * arrive an emit ahead of the values filling it — a Matrix block the server has
  * just minted, a repeater whose identity the server has just rewritten. A
  * control whose value is a shape would reach into nothing and throw, and a

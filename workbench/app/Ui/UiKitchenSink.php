@@ -121,15 +121,15 @@ class UiKitchenSink
     public function stories(string $type, string $slug, ?string $countryCode = null): ?array
     {
         $component = self::component($type, $slug);
-        $forms = $this->uis($component, $countryCode);
+        $uis = $this->uis($component, $countryCode);
 
-        if ($forms === null) {
+        if ($uis === null) {
             return null;
         }
 
-        return collect($forms)->map(
-            fn (Ui $form, string $name): UiPayload => $this->resolver->resolve(
-                $form,
+        return collect($uis)->map(
+            fn (Ui $ui, string $name): UiPayload => $this->resolver->resolve(
+                $ui,
                 new UiContext(
                     namespace: ['kitchenSink', $type, $slug, Str::slug($name)],
                     errors: $name === 'Feedback' && in_array($component, [Text::class, Field::class], true)
@@ -242,14 +242,14 @@ class UiKitchenSink
         }
 
         if ($component === ContentBlock::class) {
-            $form = Ui::make([
+            $ui = Ui::make([
                 Field::make('Nested text', Text::make('body')->value('Content block value')),
             ]);
 
             return [
-                'Empty' => $this->control('Content block', ContentBlock::make('contentBlock')->ui($form)),
+                'Empty' => $this->control('Content block', ContentBlock::make('contentBlock')->ui($ui)),
                 'Populated' => $this->control('Content block', ContentBlock::make('contentBlock')
-                    ->ui($form)
+                    ->ui($ui)
                     ->value(['body' => 'Content block value'])),
             ];
         }
@@ -399,7 +399,7 @@ class UiKitchenSink
         }
 
         if ($component === NestedElementBlocks::class) {
-            $form = Ui::make([
+            $ui = Ui::make([
                 Field::make('Nested heading', Text::make('heading')->value('Matrix block value')),
             ]);
             $value = [
@@ -413,14 +413,14 @@ class UiKitchenSink
             return [
                 'Empty' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->uis(['example-block' => $form])),
+                    ->uis(['example-block' => $ui])),
                 'Populated' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->uis(['example-block' => $form])
+                    ->uis(['example-block' => $ui])
                     ->value($value)),
                 'Entry limits' => $this->control('Matrix', NestedElementBlocks::make('matrix')
                     ->entryTypes(['text' => 'Text'])
-                    ->uis(['example-block' => $form])
+                    ->uis(['example-block' => $ui])
                     ->minEntries(1)
                     ->maxEntries(1)
                     ->value($value)),
@@ -659,9 +659,9 @@ class UiKitchenSink
             ];
         }
 
-        $form = $this->ui($component);
+        $ui = $this->ui($component);
 
-        return $form === null ? null : ['Default' => $form];
+        return $ui === null ? null : ['Default' => $ui];
     }
 
     private function ui(?string $component): ?Ui

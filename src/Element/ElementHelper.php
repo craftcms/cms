@@ -510,7 +510,7 @@ class ElementHelper
      *
      * Both halves of the envelope may or may not carry the `uid:` prefix, depending on
      * which stack rendered the inputs: `block.twig` writes prefixed `entries` keys but
-     * bare `sortOrder` values, while the Form controls prefix both. The prefix only ever
+     * bare `sortOrder` values, while the UI controls prefix both. The prefix only ever
      * meant "this identity is a UUID, not an element ID", so it's stripped here and
      * callers get one shape to work with.
      *

@@ -32,14 +32,14 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-it('resolves and renders built-in field settings Forms', function (string $type) {
+it('resolves and renders built-in field settings UIs', function (string $type) {
     $field = Fields::createField($type);
     $context = new UiContext(namespace: 'settings', refreshable: true);
-    $form = $field->settingsUi($context);
+    $ui = $field->settingsUi($context);
 
-    expect($form)->not->toBeNull();
+    expect($ui)->not->toBeNull();
 
-    $payload = app(UiResolver::class)->resolve($form, $context);
+    $payload = app(UiResolver::class)->resolve($ui, $context);
 
     expect($payload->nodes)->not->toBeEmpty()
         ->and(json_encode($payload, JSON_THROW_ON_ERROR))->toBeString()

@@ -126,7 +126,7 @@ readonly class SitesController
                 new ActionItem()->label(t('Create a new site')),
             ])
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($site),
+                ...$this->uiProps($site),
                 'site' => $site,
             ]);
     }
@@ -151,7 +151,7 @@ readonly class SitesController
             ])
             ->redirectUrl('settings/sites')
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($siteData),
+                ...$this->uiProps($siteData),
                 'site' => $siteData,
                 'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
             ]);
@@ -247,7 +247,7 @@ readonly class SitesController
     }
 
     /** @return array<string, mixed> */
-    private function formProps(Site $site): array
+    private function uiProps(Site $site): array
     {
         return [
             'ui' => $this->siteUi($this->siteValues($site)),

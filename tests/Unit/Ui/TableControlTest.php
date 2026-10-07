@@ -14,12 +14,12 @@ use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('resolves table cells at concrete paths while keeping row templates outside values and errors', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'control' => Text::make('ignored')->placeholder('Enter name')],
         ])->value([['name' => 'Ada']])->defaultValues(['name' => 'New row'])->allowAdd()),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         errors: ['rows.0.name' => 'A real cell error.', 'rows.__template__.name' => 'An unbound row error.'],
     ));
@@ -94,24 +94,24 @@ it('resolves implicit option groups for reusable table combobox columns', functi
 });
 
 it('applies table modes to concrete cells and reusable row templates', function (ControlMode $mode) {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'type' => 'singleline'],
         ])->value([['name' => 'Ada']])->mode($mode)),
     ]);
-    $table = app(UiResolver::class)->resolve($form, new UiContext)->nodes[0]->control;
+    $table = app(UiResolver::class)->resolve($ui, new UiContext)->nodes[0]->control;
 
     expect($table->uis[0]->nodes[0]->control->mode)->toBe($mode)
         ->and($table->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe($mode->value);
 })->with([ControlMode::ReadOnly, ControlMode::Disabled]);
 
 it('resolves column controls for an empty editor without adding a column to submitted values', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Columns', TableColumns::make('columns')
             ->cellTypes([['label' => 'Text', 'value' => 'singleline']])
             ->value([])->mode(ControlMode::ReadOnly)),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
     $control = $payload->nodes[0]->control;
 
     expect($payload->values)->toBe(['settings' => ['columns' => []]])
@@ -121,13 +121,13 @@ it('resolves column controls for an empty editor without adding a column to subm
 });
 
 it('rejects unregistered controls in an empty table row template', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['control' => TableUnregisteredControl::make('name')],
         ])->value([])),
     ]);
 
-    expect(fn () => app(UiResolver::class)->resolve($form, new UiContext))
+    expect(fn () => app(UiResolver::class)->resolve($ui, new UiContext))
         ->toThrow(InvalidArgumentException::class, 'is not registered');
 });
 

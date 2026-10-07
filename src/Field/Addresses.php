@@ -546,7 +546,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->enabled = (bool) $addressData['enabled'];
             }
 
-            // The Address form control nests the address format fields under an `address` key
+            // The Address UI control nests the address format fields under an `address` key
             if (isset($addressData['address']) && is_array($addressData['address'])) {
                 $addressData += $addressData['address'];
             }

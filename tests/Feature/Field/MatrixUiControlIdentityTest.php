@@ -95,7 +95,7 @@ function matrixControlFormScopes(EntryElement $owner): array
     ));
 
     return array_map(
-        fn (array $form): string => array_last($form['scope']),
+        fn (array $ui): string => array_last($ui['scope']),
         $control->nestedUis($control->getValue()),
     );
 }
@@ -131,7 +131,7 @@ it('keeps Matrix block identities stable when a provisional draft duplicates the
     Elements::saveElement($draft);
 
     // The blocks were duplicated as drafts of their own, which gave them new
-    // element UUIDs — but the Form the browser gets back has to keep speaking
+    // element UUIDs — but the UI the browser gets back has to keep speaking
     // the identities the browser posted, or its blocks lose their nested Forms.
     expect(matrixControlSortOrder($draft))->toBe($blockUids)
         ->and(matrixControlFormScopes($draft))->toBe($blockUids);
@@ -195,8 +195,8 @@ function matrixNestedFormScopes(array $nodes): array
     $scopes = [];
 
     foreach ($nodes as $node) {
-        foreach ($node['control']['uis'] ?? [] as $form) {
-            $scopes[] = $form['scope'];
+        foreach ($node['control']['uis'] ?? [] as $ui) {
+            $scopes[] = $ui['scope'];
         }
 
         $scopes = [...$scopes, ...matrixNestedFormScopes($node['children'] ?? [])];

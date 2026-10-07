@@ -75,7 +75,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
                   refreshable: true,
                 }),
             },
-            'Refresh nested form'
+            'Refresh nested UI'
           ),
     })
   );
@@ -99,7 +99,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
                   refreshable: true,
                 }),
             },
-            'Refresh second nested form'
+            'Refresh second nested UI'
           ),
     })
   );

@@ -12,9 +12,9 @@ use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function visibilityPayload(Ui $form): UiPayload
+function visibilityPayload(Ui $ui): UiPayload
 {
-    return app(UiResolver::class)->resolve($form, new UiContext(
+    return app(UiResolver::class)->resolve($ui, new UiContext(
         values: ['subpath' => 'a/b'],
     ));
 }

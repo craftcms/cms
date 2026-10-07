@@ -764,11 +764,11 @@ JS,
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
         $renderer = app(ElementAttributeRenderer::class);
-        $form = $this->inlineAttributeInputUi($attribute);
+        $ui = $this->inlineAttributeInputUi($attribute);
 
-        return $form === null
+        return $ui === null
             ? $renderer->renderInlineInput($this, $attribute)
-            : $renderer->renderInlineUi($form, $this->errors()->getMessages());
+            : $renderer->renderInlineUi($ui, $this->errors()->getMessages());
     }
 
     /**

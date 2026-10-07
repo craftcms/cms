@@ -49,19 +49,19 @@ function nestedControlsContext(): UiContext
     );
 }
 
-it('resolves nested Form scopes recursively with one ancestor atomic group', function () {
+it('resolves nested UI scopes recursively with one ancestor atomic group', function () {
     $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
-    $entryForm = $matrix->uis[0];
-    $contentBlock = $entryForm->nodes[1]->control;
-    $contentBlockForm = $contentBlock->uis[0];
-    $body = $contentBlockForm->nodes[0]->control;
+    $entryUi = $matrix->uis[0];
+    $contentBlock = $entryUi->nodes[1]->control;
+    $contentBlockUi = $contentBlock->uis[0];
+    $body = $contentBlockUi->nodes[0]->control;
 
     expect($matrix->component)->toBe('craft:nested-element-blocks')
-        ->and($entryForm->scope)->toBe(['settings', 'matrix', 'entries', 'block-a'])
-        ->and($entryForm->refreshable)->toBeTrue()
+        ->and($entryUi->scope)->toBe(['settings', 'matrix', 'entries', 'block-a'])
+        ->and($entryUi->refreshable)->toBeTrue()
         ->and($contentBlock->component)->toBe('craft:content-block')
-        ->and($contentBlockForm->scope)->toBe(['settings', 'matrix', 'entries', 'block-a', 'content'])
+        ->and($contentBlockUi->scope)->toBe(['settings', 'matrix', 'entries', 'block-a', 'content'])
         ->and($body->path)->toBe(['settings', 'matrix', 'entries', 'block-a', 'content', 'body'])
         ->and($body->deltaGroup)->toBe(['settings', 'matrix'])
         ->and($payload->errors)->toBe([[
@@ -97,25 +97,25 @@ it('mounts an isolated nested control with its values, scopes, and validation er
     );
     $crawler = new Crawler('<form>'.app(UiHtmlRenderer::class)->render($payload).'</form>');
     $host = $crawler->filter('craft-entry-field-layout-ui[data-field-path]');
-    $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $ui = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 
     expect($crawler->filter('form form'))->toHaveCount(0)
         ->and($host)->toHaveCount(1)
-        ->and($form['scope'])->toBe(['settings'])
-        ->and(array_keys($form['values']['settings']))->toBe(['matrix'])
-        ->and($form['nodes'])->toHaveCount(1)
-        ->and($form['values']['settings']['matrix']['entries']['block-a'])->toMatchArray([
+        ->and($ui['scope'])->toBe(['settings'])
+        ->and(array_keys($ui['values']['settings']))->toBe(['matrix'])
+        ->and($ui['nodes'])->toHaveCount(1)
+        ->and($ui['values']['settings']['matrix']['entries']['block-a'])->toMatchArray([
             'heading' => 'Welcome',
             'content' => ['body' => 'Nested body'],
         ])
-        ->and($form['values']['settings']['matrix']['sortOrder'])->toBe(['block-a'])
-        ->and($form['nodes'][0]['control']['component'])->toBe('craft:nested-element-blocks')
-        ->and($form['nodes'][0]['control']['uis'][0]['scope'])->toBe(['settings', 'matrix', 'entries', 'block-a'])
-        ->and($form['errors'])->toBe([[
+        ->and($ui['values']['settings']['matrix']['sortOrder'])->toBe(['block-a'])
+        ->and($ui['nodes'][0]['control']['component'])->toBe('craft:nested-element-blocks')
+        ->and($ui['nodes'][0]['control']['uis'][0]['scope'])->toBe(['settings', 'matrix', 'entries', 'block-a'])
+        ->and($ui['errors'])->toBe([[
             'path' => ['settings', 'matrix', 'entries', 'block-a', 'content', 'body'],
             'messages' => ['Body is invalid.'],
         ]])
-        ->and($form['globalErrors'])->toBe([])
+        ->and($ui['globalErrors'])->toBe([])
         ->and($host->filter('input[data-ui-field-name]')->attr('name'))->toBe('settings[matrix]')
         ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
 });
@@ -126,14 +126,14 @@ function nestedTabsCrawler(): Crawler
         Tab::make('content', 'Content', [Field::make('Body', Text::make('body'))]),
         Tab::make('details', 'Details', [Field::make('Summary', Text::make('summary'))]),
     ]);
-    $form = Ui::make([
+    $ui = Ui::make([
         Tab::make('content', 'Content', [
             Field::make('Hero', ContentBlock::make('hero')->ui($nested)),
             Field::make('Footer', ContentBlock::make('footer')->ui($nested)),
         ]),
         Tab::make('settings', 'Settings', [Field::make('Title', Text::make('title'))]),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => [
             'hero' => ['body' => 'Hero body', 'summary' => 'Hero summary'],
@@ -168,7 +168,7 @@ it('gives nested HTML tab panels distinct IDs across instances and their parent'
         ->and($crawler->filter('section#settings-footer-ui-tab-details[aria-label="Details"]'))->toHaveCount(1);
 });
 
-it('declares which Controls hold nested forms', function () {
+it('declares which Controls hold nested UIs', function () {
     $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
     $contentBlock = $matrix->uis[0]->nodes[1]->control;
@@ -184,11 +184,11 @@ it('declares which Controls hold nested forms', function () {
 });
 
 it('uses explicit empty canonical values', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(NestedElementBlocks::make('matrix')->entryTypes(['text' => 'Text'])),
         Field::make()->control(ContentBlock::make('content')),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(namespace: 'settings'));
 
     expect($payload->values)->toBe(['settings' => [
         'matrix' => ['entries' => [], 'sortOrder' => []],

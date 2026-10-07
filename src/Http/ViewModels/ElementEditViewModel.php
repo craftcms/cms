@@ -53,7 +53,7 @@ use function CraftCms\Cms\t;
  * post to the entry store action, assets to their own.
  *
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
- * (the compiled form) are memoized privately since payload methods may be
+ * (the compiled UI) are memoized privately since payload methods may be
  * invoked in any order.
  *
  * @since 6.0.0
@@ -834,7 +834,7 @@ class ElementEditViewModel extends ViewModel
 
     /**
      * The element's meta fields (entry type, slug, parent, post date, status,
-     * notes …) as a second Form, rendered into the editor sidebar.
+     * notes …) as a second UI, rendered into the editor sidebar.
      *
      * Keeping it separate from {@see ui()} lets the two render in different
      * regions while both submit through the same Inertia form.

@@ -65,12 +65,12 @@ trait LegacyBuiltInField
             return $this->tableSettingsHtml($this->tableSettingsMode);
         }
 
-        $form = parent::settingsUi();
-        if ($form === null) {
+        $ui = parent::settingsUi();
+        if ($ui === null) {
             return null;
         }
 
-        $payload = app(UiResolver::class)->resolve($form, new UiContext());
+        $payload = app(UiResolver::class)->resolve($ui, new UiContext());
 
         return app(UiHtmlRenderer::class)->render($payload);
     }

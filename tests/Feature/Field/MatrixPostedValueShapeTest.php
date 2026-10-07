@@ -24,7 +24,7 @@ use function Pest\Laravel\actingAs;
 /**
  * The browser posts a Matrix field as an `{entries, sortOrder}` envelope, but the two
  * control panel stacks don't agree on where the `uid:` prefix goes: `block.twig` writes
- * prefixed `entries` keys and bare `sortOrder` values, while the Form controls prefix
+ * prefixed `entries` keys and bare `sortOrder` values, while the UI controls prefix
  * both. Every shape below is something a real client sends.
  *
  * @see ElementHelper::nestedElementDelta()

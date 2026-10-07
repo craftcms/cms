@@ -78,7 +78,7 @@ it('attaches settings notices to their fields', function () {
         ->assertOk();
 });
 
-it('exposes timezone options through the settings form', function () {
+it('exposes timezone options through the settings UI', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes): bool {

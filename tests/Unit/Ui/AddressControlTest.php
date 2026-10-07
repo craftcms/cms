@@ -11,10 +11,10 @@ use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('derives address fields from the country and current subdivisions', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(Address::make('address')->countryCode('US')),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['address' => [
             'administrativeArea' => 'invalid-state',
@@ -36,10 +36,10 @@ it('derives address fields from the country and current subdivisions', function 
 });
 
 it('renders the canonical address map as nested inputs', function () {
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(Address::make('address')->countryCode('BE')),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['address' => [
             'addressLine1' => 'Museumstraat 1',

@@ -617,12 +617,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
     $fields.className = 'fields';
-    const $form = document.createElement('craft-layout-component-settings-ui');
-    if (!('payload' in $form) || !('requestData' in $form)) {
-      throw new Error('Layout component settings form is not registered.');
+    const $ui = document.createElement('craft-layout-component-settings-ui');
+    if (!('payload' in $ui) || !('requestData' in $ui)) {
+      throw new Error('Layout component settings UI is not registered.');
     }
-    // SAFETY: The registration check above establishes the form element's public contract.
-    const settingsUi = $form as LayoutComponentSettingsUi;
+    // SAFETY: The registration check above establishes the UI element's public contract.
+    const settingsUi = $ui as LayoutComponentSettingsUi;
     settingsUi.payload = data.ui;
     if (settings.requestData) {
       settingsUi.requestData = settings.requestData;

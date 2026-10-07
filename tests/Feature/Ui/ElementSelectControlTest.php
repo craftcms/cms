@@ -44,14 +44,14 @@ it('selects thumbnail modes for each relationship presentation', function (strin
 it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();
     $second = Entry::factory()->title('Second entry')->create();
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make('Related entries',
             ElementSelect::make('related')
                 ->elementType(EntryElement::class)
                 ->selectionLabel('Add an entry'),
         ),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$second->id, $first->id]]],
         errors: ['related' => ['Choose valid entries.']],
@@ -79,10 +79,10 @@ it('resolves and renders ordered element relationships', function () {
 
 it('displays element relationships without submitting them in non-editable modes', function (ControlMode $mode) {
     $entry = Entry::factory()->title('Related entry')->create();
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(ElementSelect::make('related')->elementType(EntryElement::class)),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$entry->id]]],
         mode: $mode,
@@ -99,14 +99,14 @@ it('displays element relationships without submitting them in non-editable modes
 
 it('keeps current values when picker criteria change', function () {
     $entry = Entry::factory()->title('Existing entry')->create();
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')
                 ->elementType(EntryElement::class)
                 ->criteria(['id' => 999999]),
         ),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$entry->id]]],
     ));
@@ -118,12 +118,12 @@ it('keeps current values when picker criteria change', function () {
 
 it('resolves non-empty modern relationship values', function (Closure $createElement) {
     $element = $createElement();
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')->elementType($element::class),
         ),
     ]);
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$element->getId()]]],
     ));
@@ -144,13 +144,13 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
 it('resolves JSON-safe props for every element type', function (Closure $createElement) {
     $this->actingAs(UserModel::first());
     $element = $createElement();
-    $form = Ui::make([
+    $ui = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')->elementType($element::class),
         ),
     ]);
 
-    $payload = app(UiResolver::class)->resolve($form, new UiContext(
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$element->getId()]]],
     ));

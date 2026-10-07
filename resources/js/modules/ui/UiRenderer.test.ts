@@ -454,12 +454,12 @@ describe('UiRenderer', () => {
   });
 
   /**
-   * A control inside a nested form belongs to a different element, and inherits
+   * A control inside a nested UI belongs to a different element, and inherits
    * its owner's delta group. Badging on that would mean adding one Matrix block
    * lit up every field in every block, since all of them answer to the field
    * that holds them.
    */
-  it('leaves a nested form’s fields clean when their owner’s field is modified', async () => {
+  it('leaves a nested UI’s fields clean when their owner’s field is modified', async () => {
     const nested = clonePayload();
     const group = ['settings', 'matrix'];
     const blockScope = [...group, 'entries', 'block-a'];
@@ -3696,7 +3696,7 @@ describe('UiRenderer', () => {
         required(nested.nodes[0], 'Expected the Matrix field node.').control,
         'Expected the Matrix control.'
       ).uis?.[0],
-      'Expected the first nested form.'
+      'Expected the first nested UI.'
     );
     required(
       firstUi.nodes[0],

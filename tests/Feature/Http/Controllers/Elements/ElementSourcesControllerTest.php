@@ -25,21 +25,21 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 /** @return list<list<string>> */
-function controlPaths(array $form): array
+function controlPaths(array $ui): array
 {
-    return array_map(fn (array $control) => $control['path'], uiControls($form));
+    return array_map(fn (array $control) => $control['path'], uiControls($ui));
 }
 
 /** @return array<string, mixed>|null */
-function control(array $form, array $path): ?array
+function control(array $ui, array $path): ?array
 {
-    return collect(uiControls($form))->firstWhere('path', $path);
+    return collect(uiControls($ui))->firstWhere('path', $path);
 }
 
 /** @return array<string, mixed> */
-function controlProps(array $form, array $path): array
+function controlProps(array $ui, array $path): array
 {
-    return control($form, $path)['props'] ?? [];
+    return control($ui, $path)['props'] ?? [];
 }
 
 /** @return array<string, mixed> */
@@ -49,7 +49,7 @@ function sourceValues(array $source): array
 }
 
 /** @return list<array<string, mixed>> */
-function uiControls(array $form): array
+function uiControls(array $ui): array
 {
     $controls = [];
     $walk = function (array $nodes) use (&$walk, &$controls): void {
@@ -61,7 +61,7 @@ function uiControls(array $form): array
             $walk($node['children'] ?? []);
         }
     };
-    $walk($form['nodes'] ?? []);
+    $walk($ui['nodes'] ?? []);
 
     return $controls;
 }
@@ -159,7 +159,7 @@ it('returns fully normalized source customization data', function () {
             ->where('sources.1.page', 'Test Elements')
             ->where('sources.1.ui.scope', ['sources', 'structured'])
             // Everything the modal used to build its fields client-side now
-            // arrives inside each source's Form.
+            // arrives inside each source's UI.
             ->missing('viewModes')
             ->missing('baseSortOptions')
             ->missing('defaultSortOptions')
@@ -259,7 +259,7 @@ it('returns fully normalized source customization data', function () {
         ->toContain('field:'.$field->uid);
 });
 
-it('re-resolves a source Form from posted settings', function () {
+it('re-resolves a source UI from posted settings', function () {
     app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class), [
         [
             'type' => ElementSources::TYPE_NATIVE,
@@ -267,7 +267,7 @@ it('re-resolves a source Form from posted settings', function () {
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'ui']), [
+    $ui = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
@@ -276,7 +276,7 @@ it('re-resolves a source Form from posted settings', function () {
         ],
     ])->assertOk()->json('ui');
 
-    expect(control($form, ['sources', 'structured', 'defaultSort', 'dir'])['mode'])->toBe('disabled');
+    expect(control($ui, ['sources', 'structured', 'defaultSort', 'dir'])['mode'])->toBe('disabled');
 });
 
 it('holds structure order ascending, since the direction control is disabled for it', function () {
@@ -287,7 +287,7 @@ it('holds structure order ascending, since the direction control is disabled for
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'ui']), [
+    $ui = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
@@ -296,7 +296,7 @@ it('holds structure order ascending, since the direction control is disabled for
         ],
     ])->assertOk()->json('ui');
 
-    expect($form['values']['sources']['structured']['defaultSort']['dir'])->toBe('asc');
+    expect($ui['values']['sources']['structured']['defaultSort']['dir'])->toBe('asc');
 });
 
 it('gives each sort attribute its default direction', function () {
@@ -307,13 +307,13 @@ it('gives each sort attribute its default direction', function () {
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'ui']), [
+    $ui = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
     ])->assertOk()->json('ui');
 
-    $options = controlProps($form, ['sources', 'structured', 'defaultSort', 'attr'])['options'];
+    $options = controlProps($ui, ['sources', 'structured', 'defaultSort', 'attr'])['options'];
 
     expect($options)->not->toBeEmpty()
         ->and(collect($options)->every(fn (array $option) => in_array($option['defaultDir'] ?? null, ['asc', 'desc'], true)))->toBeTrue()
@@ -699,7 +699,7 @@ it('records an “all” source scope by omitting the key', function () {
     expect($config['custom:everywhere'])->not->toHaveKeys(['sites', 'userGroups']);
 });
 
-it('normalizes the Form defaultSort shape and an empty source scope', function () {
+it('normalizes the UI defaultSort shape and an empty source scope', function () {
     $projectConfig = app(ProjectConfig::class);
 
     postJson(action([ElementSourcesController::class, 'store']), [
