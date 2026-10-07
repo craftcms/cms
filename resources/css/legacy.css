@@ -96,7 +96,7 @@ Legacy compat styles
   }
 
   table.collapsed tbody [data-title]::before {
-    content: attr(data-title) ": ";
+    content: attr(data-title) ': ';
     font-weight: 700;
     margin-inline-end: 5px;
   }
@@ -173,7 +173,7 @@ Legacy compat styles
   }
 
   .draft-notice .draft-icon::after {
-    content: "";
+    content: '';
     font-size: 0;
     position: absolute;
     inset: -2px;
