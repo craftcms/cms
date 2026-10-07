@@ -245,22 +245,21 @@ it('centers a truncated label on its capitals without clipping its descenders', 
   const truncate = document.querySelector('craft-truncate')!;
   await Promise.all([chip.updateComplete, truncate.updateComplete]);
 
-  const text = document.getElementById('text')!;
-  const range = document.createRange();
-  range.selectNodeContents(text);
-  const textBox = range.getBoundingClientRect();
-  const context = document.createElement('canvas').getContext('2d')!;
-  context.font = getComputedStyle(text).font;
-  const metrics = context.measureText('H');
-  const baseline = textBox.top + metrics.fontBoundingBoxAscent;
-  const capTop = baseline - metrics.actualBoundingBoxAscent;
+  const clip = truncate.shadowRoot!.querySelector<HTMLElement>('.truncate')!;
+  const style = getComputedStyle(clip);
+  const rect = clip.getBoundingClientRect();
+  const capTop = rect.top + parseFloat(style.paddingTop);
+  const capBottom = rect.bottom - parseFloat(style.paddingBottom);
   const body = chip
     .shadowRoot!.querySelector('.cp-chip')!
     .getBoundingClientRect();
-  const clip = truncate
-    .shadowRoot!.querySelector('.truncate')!
-    .getBoundingClientRect();
+  const context = document.createElement('canvas').getContext('2d')!;
+  context.font = style.font;
+  const capHeight = context.measureText('H').actualBoundingBoxAscent;
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById('text')!);
 
-  expect(capTop - body.top).toBeCloseTo(body.bottom - baseline, 0);
-  expect(textBox.bottom).toBeLessThanOrEqual(clip.bottom);
+  expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+  expect(capTop - body.top).toBeCloseTo(body.bottom - capBottom, 0);
+  expect(range.getBoundingClientRect().bottom).toBeLessThanOrEqual(rect.bottom);
 });

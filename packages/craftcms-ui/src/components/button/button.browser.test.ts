@@ -481,25 +481,20 @@ describe('text box', () => {
     return button;
   }
 
-  /** Where the capitals of an element's text start and end, by font metrics. */
-  function capBand(element: Element): {top: number; bottom: number} {
-    const range = document.createRange();
-    range.selectNodeContents(element);
-    const context = document.createElement('canvas').getContext('2d')!;
-    context.font = getComputedStyle(element).font;
-    const metrics = context.measureText('H');
-    const baseline =
-      range.getBoundingClientRect().top + metrics.fontBoundingBoxAscent;
-
-    return {top: baseline - metrics.actualBoundingBoxAscent, bottom: baseline};
-  }
-
   it('centers a text label on its capitals without changing the button’s height', async () => {
     const button = await mount('Save');
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+    const style = getComputedStyle(label);
     const box = button.getBoundingClientRect();
-    const caps = capBand(button);
+    const rect = label.getBoundingClientRect();
+    const capTop = rect.top + parseFloat(style.paddingTop);
+    const capBottom = rect.bottom - parseFloat(style.paddingBottom);
+    const context = document.createElement('canvas').getContext('2d')!;
+    context.font = style.font;
+    const capHeight = context.measureText('H').actualBoundingBoxAscent;
 
-    expect(caps.top - box.top).toBeCloseTo(box.bottom - caps.bottom, 0);
+    expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+    expect(capTop - box.top).toBeCloseTo(box.bottom - capBottom, 0);
     expect(box.height).toBeCloseTo(
       parseFloat(getComputedStyle(button).minHeight),
       0
