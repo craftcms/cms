@@ -190,7 +190,6 @@ class Composer
         ], $command, [
             '--working-dir',
             dirname($jsonPath),
-            '--no-scripts',
             '--no-ansi',
             '--no-interaction',
         ]);
