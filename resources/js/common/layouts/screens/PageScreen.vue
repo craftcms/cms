@@ -32,6 +32,7 @@
     provideScreenContext,
     ScreenContentWidthKey,
     ScreenDetailsOverlayKey,
+    ScreenDetailsRailKey,
     ScreenShellKey,
   } from '@/common/composables/screen';
   import {
@@ -196,6 +197,8 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
+  // The details tab strip renders in the rail beside the panel.
+  provide(ScreenDetailsRailKey, '#cp-details-rail');
 
   const detailsResizer = useDetailsResizer({
     column: () => detailsColumn.value?.$el,
@@ -239,183 +242,209 @@
         <div class="cp-page">
           <div class="cp-page__header"></div>
           <div class="cp-page__main">
-            <slot name="page-main">
-              <main id="main" tabindex="-1">
-                <form
-                  method="post"
-                  @submit.prevent="form && save()"
-                  class="cp-main"
-                >
-                  <div
-                    ref="contentLayout"
-                    class="cp-content"
-                    :class="{
-                      'cp-content--sidebar': hasSidebar,
-                      'cp-content--details': hasDetails,
-                    }"
-                    :style="detailsResizer.style.value"
-                  >
-                    <div
-                      v-show="hasSidebar"
-                      id="content-sidebar"
-                      tabindex="-1"
-                      class="cp-content__sidebar"
+            <div
+              class="cp-body"
+              :class="{
+                'cp-body--sidebar': hasSidebar,
+                'cp-body--details': hasDetails,
+              }"
+            >
+              <!-- Wraps the `page-main` slot, so a page that takes it over still
+              sits in the panel. -->
+              <div class="cp-body__panel">
+                <slot name="page-main">
+                  <main id="main" tabindex="-1">
+                    <form
+                      method="post"
+                      @submit.prevent="form && save()"
+                      class="cp-main"
                     >
-                      <LayoutSlotOutlet name="content-sidebar">
-                        <slot name="content-sidebar">
-                          <!-- The subnav-actions outlet lives inside this fallback, so a page can
-                            teleport `content-sidebar` or `subnav-actions`, never both. -->
-                          <SecondaryNav
-                            :items="navItemActions(subnav)"
-                            :actions="subnavActions"
-                          >
-                            <template #actions>
-                              <LayoutSlotOutlet name="subnav-actions">
-                                <slot name="subnav-actions"></slot>
-                              </LayoutSlotOutlet>
-                            </template>
-                          </SecondaryNav>
-                        </slot>
-                      </LayoutSlotOutlet>
-                    </div>
-
-                    <div
-                      id="content-main"
-                      class="cp-content__main"
-                      :style="contentMainStyle"
-                    >
-                      <LayoutSlotOutlet name="error-summary">
-                        <slot name="error-summary">
-                          <ErrorSummary
-                            v-if="form && form.hasErrors"
-                            :errors="form.errors"
-                          />
-                        </slot>
-                      </LayoutSlotOutlet>
-                      <CalloutReadOnly v-if="readOnly" />
                       <div
+                        ref="contentLayout"
+                        class="cp-content"
                         :class="{
-                          'cp-content-view': true,
-                          'cp-content-view--constrained': contentConstrained,
+                          'cp-content--sidebar': hasSidebar,
+                          'cp-content--details': hasDetails,
                         }"
+                        :style="detailsResizer.style.value"
                       >
-                        <slot name="content-toolbar">
-                          <CpContainer v-show="hasToolbar">
-                            <div
-                              class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
-                            >
-                              <LayoutSlotOutlet name="content-toolbar">
-                                <div class="flex gap-2 items-center">
-                                  <LayoutSlotOutlet name="content-toolbar-meta">
-                                    <slot name="content-toolbar-meta"></slot>
-                                  </LayoutSlotOutlet>
-                                </div>
-
-                                <div class="flex gap-2 items-center">
-                                  <LayoutSlotOutlet
-                                    name="content-toolbar-actions"
-                                  >
-                                    <slot name="content-toolbar-actions"></slot>
-                                  </LayoutSlotOutlet>
-                                </div>
-                              </LayoutSlotOutlet>
-                            </div>
-                          </CpContainer>
-                        </slot>
-
-                        <slot name="content-header">
-                          <div id="cp-content-header" class="pt-lg pb-md">
-                            <CpContainer>
-                              <div class="flex items-center justify-between">
-                                <LayoutSlotOutlet name="title">
-                                  <slot name="title">
-                                    <h1 class="text-xl">{{ pageTitle }}</h1>
-                                  </slot>
-                                </LayoutSlotOutlet>
-
-                                <div class="flex gap-2 items-center">
-                                  <LayoutSlotOutlet name="content-actions">
-                                    <slot name="content-actions"></slot>
-                                  </LayoutSlotOutlet>
-                                </div>
-                              </div>
-                            </CpContainer>
-                          </div>
-                        </slot>
-
-                        <CpContainer v-show="hasTabs">
-                          <div>
-                            <LayoutSlotOutlet name="content-tabs">
-                              <slot name="content-tabs"></slot>
-                            </LayoutSlotOutlet>
-                          </div>
-                        </CpContainer>
-                        <slot></slot>
-                      </div>
-                      <!-- Outside the content view, so its rule spans the pane even when
-                        the view is constrained; the row itself keeps to the content's
-                        column through `contained`. -->
-                      <div
-                        v-show="hasNotices || hasFooter"
-                        class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
-                      >
-                        <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
-                          puts its notices, the legacy element editor's included. -->
                         <div
-                          v-show="hasNotices"
-                          id="content-notice"
-                          class="cp-content__notices"
-                          role="status"
+                          v-show="hasSidebar"
+                          id="content-sidebar"
+                          tabindex="-1"
+                          class="cp-content__sidebar"
                         >
-                          <LayoutSlotOutlet name="content-notices">
-                            <slot name="content-notices"></slot>
+                          <LayoutSlotOutlet name="content-sidebar">
+                            <slot name="content-sidebar">
+                              <!-- The subnav-actions outlet lives inside this fallback, so a page can
+                              teleport `content-sidebar` or `subnav-actions`, never both. -->
+                              <SecondaryNav
+                                :items="navItemActions(subnav)"
+                                :actions="subnavActions"
+                              >
+                                <template #actions>
+                                  <LayoutSlotOutlet name="subnav-actions">
+                                    <slot name="subnav-actions"></slot>
+                                  </LayoutSlotOutlet>
+                                </template>
+                              </SecondaryNav>
+                            </slot>
                           </LayoutSlotOutlet>
                         </div>
-                        <div class="cp-content__footer">
-                          <ContentFooter
-                            v-show="hasFooter"
-                            :read-only="readOnly"
-                            :form="form"
-                            :default-form-actions="defaultFormActions"
-                            :form-actions="formActions"
-                            :form-additional-actions="formAdditionalActions"
-                            :form-additional-buttons="formAdditionalButtons"
-                            :submit-button-label="submitButtonLabel"
-                            :primary-action-html="page.props.primaryAction"
-                            :save-disabled="saveDisabled"
-                            :contained="contentConstrained"
-                            @save="save"
-                          >
-                            <template
-                              v-for="name in footerSlots"
-                              :key="name"
-                              #[name]
-                            >
-                              <slot :name="name"></slot>
-                            </template>
-                          </ContentFooter>
-                        </div>
-                      </div>
-                    </div>
-                    <aside v-show="hasDetails" class="cp-content__details">
-                      <div class="cp-content__details-pane">
-                        <ContentDetails
-                          ref="detailsColumn"
-                          :resizer="detailsResizer"
+
+                        <div
+                          id="content-main"
+                          class="cp-content__main"
+                          :style="contentMainStyle"
                         >
-                          <template
-                            v-if="slots['content-details']"
-                            #content-details
+                          <LayoutSlotOutlet name="error-summary">
+                            <slot name="error-summary">
+                              <ErrorSummary
+                                v-if="form && form.hasErrors"
+                                :errors="form.errors"
+                              />
+                            </slot>
+                          </LayoutSlotOutlet>
+                          <CalloutReadOnly v-if="readOnly" />
+                          <div
+                            :class="{
+                              'cp-content-view': true,
+                              'cp-content-view--constrained':
+                                contentConstrained,
+                            }"
                           >
-                            <slot name="content-details"></slot>
-                          </template>
-                        </ContentDetails>
+                            <slot name="content-toolbar">
+                              <CpContainer v-show="hasToolbar">
+                                <div
+                                  class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
+                                >
+                                  <LayoutSlotOutlet name="content-toolbar">
+                                    <div class="flex gap-2 items-center">
+                                      <LayoutSlotOutlet
+                                        name="content-toolbar-meta"
+                                      >
+                                        <slot
+                                          name="content-toolbar-meta"
+                                        ></slot>
+                                      </LayoutSlotOutlet>
+                                    </div>
+
+                                    <div class="flex gap-2 items-center">
+                                      <LayoutSlotOutlet
+                                        name="content-toolbar-actions"
+                                      >
+                                        <slot
+                                          name="content-toolbar-actions"
+                                        ></slot>
+                                      </LayoutSlotOutlet>
+                                    </div>
+                                  </LayoutSlotOutlet>
+                                </div>
+                              </CpContainer>
+                            </slot>
+
+                            <slot name="content-header">
+                              <div id="cp-content-header" class="pt-lg pb-md">
+                                <CpContainer>
+                                  <div
+                                    class="flex items-center justify-between"
+                                  >
+                                    <LayoutSlotOutlet name="title">
+                                      <slot name="title">
+                                        <h1 class="text-xl">{{ pageTitle }}</h1>
+                                      </slot>
+                                    </LayoutSlotOutlet>
+
+                                    <div class="flex gap-2 items-center">
+                                      <LayoutSlotOutlet name="content-actions">
+                                        <slot name="content-actions"></slot>
+                                      </LayoutSlotOutlet>
+                                    </div>
+                                  </div>
+                                </CpContainer>
+                              </div>
+                            </slot>
+
+                            <CpContainer v-show="hasTabs">
+                              <div>
+                                <LayoutSlotOutlet name="content-tabs">
+                                  <slot name="content-tabs"></slot>
+                                </LayoutSlotOutlet>
+                              </div>
+                            </CpContainer>
+                            <slot></slot>
+                          </div>
+                          <!-- Outside the content view, so its rule spans the pane even when
+                          the view is constrained; the row itself keeps to the content's
+                          column through `contained`. -->
+                          <div
+                            v-show="hasNotices || hasFooter"
+                            class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
+                          >
+                            <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
+                            puts its notices, the legacy element editor's included. -->
+                            <div
+                              v-show="hasNotices"
+                              id="content-notice"
+                              class="cp-content__notices"
+                              role="status"
+                            >
+                              <LayoutSlotOutlet name="content-notices">
+                                <slot name="content-notices"></slot>
+                              </LayoutSlotOutlet>
+                            </div>
+                            <div class="cp-content__footer">
+                              <ContentFooter
+                                v-show="hasFooter"
+                                :read-only="readOnly"
+                                :form="form"
+                                :default-form-actions="defaultFormActions"
+                                :form-actions="formActions"
+                                :form-additional-actions="formAdditionalActions"
+                                :form-additional-buttons="formAdditionalButtons"
+                                :submit-button-label="submitButtonLabel"
+                                :primary-action-html="page.props.primaryAction"
+                                :save-disabled="saveDisabled"
+                                :contained="contentConstrained"
+                                @save="save"
+                              >
+                                <template
+                                  v-for="name in footerSlots"
+                                  :key="name"
+                                  #[name]
+                                >
+                                  <slot :name="name"></slot>
+                                </template>
+                              </ContentFooter>
+                            </div>
+                          </div>
+                        </div>
+                        <aside v-show="hasDetails" class="cp-content__details">
+                          <div class="cp-content__details-pane">
+                            <ContentDetails
+                              ref="detailsColumn"
+                              :resizer="detailsResizer"
+                            >
+                              <template
+                                v-if="slots['content-details']"
+                                #content-details
+                              >
+                                <slot name="content-details"></slot>
+                              </template>
+                            </ContentDetails>
+                          </div>
+                        </aside>
                       </div>
-                    </aside>
-                  </div>
-                </form>
-              </main>
-            </slot>
+                    </form>
+                  </main>
+                </slot>
+              </div>
+              <div
+                v-show="hasDetails"
+                id="cp-details-rail"
+                class="cp-details-rail"
+              ></div>
+            </div>
           </div>
 
           <footer class="cp-page__footer">
@@ -435,7 +464,7 @@
 
 <style scoped lang="postcss">
   /**
-Main App shell
+Shell
  */
   .cp {
     display: grid;
@@ -447,12 +476,7 @@ Main App shell
   }
 
   .cp__main {
-    container: cp-main / inline-size;
-  }
-
-  main,
-  .cp-main {
-    height: 100%;
+    container: cp-shell / inline-size;
   }
 
   /* The top bar keeps its height and the shell takes the rest. */
@@ -488,13 +512,51 @@ Page
   }
 
   /**
-Content
+Body: the inset panel holding `page-main`, and the details tab rail beside it
+ */
+  .cp-body {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-block: var(--cp-body-inset);
+  }
+
+  .cp-body__panel {
+    margin-inline-end: var(--cp-body-inset);
+    background-color: var(--c-surface-default);
+    border: var(--cp-body-border-width) solid
+      var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-xl);
+    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    overflow: clip;
+  }
+
+  /* The tab rail stands in for the trailing inset. */
+  .cp-body--details .cp-body__panel {
+    margin-inline-end: 0;
+  }
+
+  main,
+  .cp-main {
+    height: 100%;
+  }
+
+  .cp-details-rail {
+    position: sticky;
+    inset-block-start: 0;
+    align-self: start;
+    border-block-start: 1px solid transparent;
+  }
+
+  /**
+Content: the secondary nav, content, and details panes
  */
   .cp-content {
-    background-color: var(--c-surface-default);
-    display: grid;
+    /* Sizes the details pane's `cqi` caps to the panel, not the tab rail beside it. */
+    container: cp-content / inline-size;
     height: 100%;
     max-width: 100vw;
+    display: grid;
     /* Three columns at every width; the nav spans them while it's stacked above
        the content, and an area nothing occupies collapses to nothing. */
     grid-template-areas: 'sidebar sidebar sidebar' '. main details';
@@ -506,20 +568,15 @@ Content
     --cp-content-details-track: 0;
     /* Flipped by the fold queries below; `useDetailsOverlay` reads it back. */
     --cp-details-overlay: 0;
-    /* Just the tab rail, for when the panels are folded away. */
-    --cp-content-details-rail: var(--cp-rail-width);
     /* The column is an inline-size container, so it can't size to its contents:
        every state needs a definite width. The resizer overrides this inline. */
-    --cp-content-details-width: clamp(
-      var(--cp-content-details-rail),
-      90vw,
-      calc(400rem / 16)
-    );
+    --cp-content-details-width: min(90vw, calc(400rem / 16));
     /* How far the panel gives before it folds to the rail instead. */
     --cp-content-details-min: calc(280rem / 16);
     /* A floor only matters against a panel; the fold queries drop it back to
        nothing once the panel is overlaying rather than sharing the row. */
     --cp-content-main-min: 0px;
+
     @media (width >= var(--breakpoint-lg)) {
       grid-template-areas: 'sidebar main details';
     }
@@ -542,28 +599,29 @@ Content
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-content--sidebar .cp-content__sidebar {
-    min-width: calc(250rem / 16);
-    border-block-end: 1px solid var(--c-color-border-quiet);
-    padding: var(--c-spacing-md);
-  }
-
-  .cp-content--details:has(.cp-content__details craft-tabs[collapsed]) {
+  .cp-body:has(.cp-details-rail craft-tabs[collapsed]) .cp-content--details {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
-    --cp-content-details-width: var(--cp-content-details-rail) !important;
-    --cp-content-details-track: var(--cp-content-details-rail) !important;
+    --cp-content-details-width: 0px !important;
+    --cp-content-details-track: 0px !important;
     /* Nothing to drag a width against while it's folded to the rail. */
     --resize-handle-display: none;
 
     .cp-content__details {
       border-inline-start: none;
+      box-shadow: none;
     }
   }
 
   .cp-content__sidebar {
     grid-area: sidebar;
     border-inline-end: 1px solid var(--c-color-border-quiet);
+  }
+
+  .cp-content--sidebar .cp-content__sidebar {
+    min-width: calc(250rem / 16);
+    border-block-end: 1px solid var(--c-color-border-quiet);
+    padding: var(--c-spacing-md);
   }
 
   .cp-content__main {
@@ -586,10 +644,11 @@ Content
 
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--cp-body-inset);
     height: calc(
       100dvh - var(--cp-top-bar-visible-height, 0px) -
-        var(--cp-debug-bar-height, 0px)
+        var(--cp-debug-bar-height, 0px) -
+        (var(--cp-body-inset) + var(--cp-body-border-width)) * 2
     );
   }
 
@@ -602,20 +661,42 @@ Content
     min-height: var(--cp-footer-height);
   }
 
+  /**
+Folds
+ */
   /*
  * Below the sum of the content's floor (600px, `.cp-content-view`) and the
  * panel's (280px) one of them would be squeezed past it, so the panel folds to
- * its rail and opens over the content instead. A query condition can't read a
- * custom property, so the sum is written out; keep it in step with the floors
- * and with the wider fold below.
+ * its rail and opens over the content instead. The panel can't query its own
+ * width, so these query the shell: the sum plus the 50px tab rail and the
+ * panel's two border pixels. A query condition can't read a custom property,
+ * so the sum is written out; keep it in step with the floors and with the
+ * wider fold below.
  */
-  @container cp-main (width < 880px) {
+  @container cp-shell (width < 932px) {
+    /* Edge to edge. The border goes transparent rather than away, so the
+       panel's width doesn't move when it flips. */
+    .cp-body {
+      --cp-body-inset: 0px;
+    }
+
+    .cp-body__panel {
+      border-color: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* The border still divides the panel from the tab rail. */
+    .cp-body--details .cp-body__panel {
+      border-inline-end-color: var(--c-color-neutral-border-quiet);
+    }
+
     .cp-content--details {
       --cp-details-overlay: 1;
-      /* Only the rail is beside the content, so it keeps no floor of its own. */
+      /* Nothing else shares the row, so the content keeps no floor of its own. */
       --cp-content-main-min: 0px;
-      /* Only the rail is reserved, so the panel opens over the content. */
-      --cp-content-details-track: var(--cp-content-details-rail) !important;
+      /* No column is reserved, so the panel opens over the content. */
+      --cp-content-details-track: 0px !important;
       /* Past the sidebar variant's tighter cap, which is for sharing the row. */
       --cp-content-details-max: 80cqi !important;
     }
@@ -625,23 +706,43 @@ Content
     .cp-content--details > .cp-content__details {
       inline-size: var(--cp-content-details-width);
       justify-self: end;
+      box-shadow: var(--c-shadow-md);
     }
   }
 
-  /* The same fold 250px sooner, for the one case where a third column shares
-     the row: a secondary nav beside the content, counted from its minimum. */
   @media (width >= var(--breakpoint-lg)) {
-    @container cp-main (width < 1130px) {
+    /* The docked global sidebar keeps a dividing line beside the panel. */
+    @container cp-shell (width < 932px) {
+      .cp-body__panel {
+        border-inline-start-color: var(--c-color-neutral-border-quiet);
+      }
+    }
+
+    /* The same fold 250px sooner, for the one case where a third column shares
+       the row: a secondary nav beside the content, counted from its minimum. */
+    @container cp-shell (width < 1182px) {
+      .cp-body--sidebar.cp-body--details {
+        --cp-body-inset: 0px;
+
+        .cp-body__panel {
+          border-color: transparent;
+          border-inline-color: var(--c-color-neutral-border-quiet);
+          border-radius: 0;
+          box-shadow: none;
+        }
+      }
+
       .cp-content--sidebar.cp-content--details {
         --cp-details-overlay: 1;
         --cp-content-main-min: 0px;
-        --cp-content-details-track: var(--cp-content-details-rail) !important;
+        --cp-content-details-track: 0px !important;
         --cp-content-details-max: 80cqi !important;
       }
 
       .cp-content--sidebar.cp-content--details > .cp-content__details {
         inline-size: var(--cp-content-details-width);
         justify-self: end;
+        box-shadow: var(--c-shadow-md);
       }
     }
   }
@@ -649,7 +750,7 @@ Content
   /* Nothing to drag a column against while the panel overlays the content, so
      the handle goes and opening takes most of the width. The collapsed rule is
      more specific, so the rail still wins until something opens it. */
-  @container cp-main (width < 768px) {
+  @container cp-shell (width < 820px) {
     .cp-content--details {
       --resize-handle-display: none;
       --cp-content-details-max: 90cqi !important;

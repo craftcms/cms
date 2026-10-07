@@ -25,6 +25,7 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
+import EntryTypeSelectControl from './EntryTypeSelectControl.vue';
 import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
 import NestedElementsControl from './nested-elements/NestedElementsControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
@@ -94,6 +95,7 @@ export function registerFormComponents(
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
   components.register('craft:field-select', FieldSelectControl);
+  components.register('craft:entry-type-select', EntryTypeSelectControl);
   components.register(
     'craft:grouped-entry-type-manager',
     GroupedEntryTypeManagerControl

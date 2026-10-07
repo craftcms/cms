@@ -8,6 +8,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
+import type {SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
@@ -91,6 +92,11 @@ export interface ComponentSelectSettings extends GarnishBaseSettings {
   hyperlinks: boolean;
   /** CP screen action for the Create button's slideout, if there is one. */
   createAction: string | null;
+  /**
+   * Whether selected components stay listed in the Choose menu as checked
+   * checkbox items (activating one removes its chip), instead of being hidden.
+   */
+  checkboxOptions: boolean;
   /** Whether the select is read-only (no behavior is wired at all). */
   disabled: boolean;
   /**
@@ -108,7 +114,7 @@ export interface ComponentSelectSettings extends GarnishBaseSettings {
 /**
  * Component select controller — a `@craftcms/garnish` `Base` port of the
  * legacy jQuery `Craft.ComponentSelectInput`, orchestrating the server-rendered
- * markup from `_includes/forms/componentSelect.twig` — a `ul.components` of
+ * markup from the `ComponentSelect` PHP component — a `ul.components` of
  * `li > craft-chip` (each chip carries `data-type`/`data-id` and a hidden
  * input with its value), a Choose `craft-action-menu` (its `[command="--choose-item"]` invoker
  * + `craft-action-item[data-id]` options), and an optional Create button
@@ -472,7 +478,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       input.removeAttribute('name');
     }
 
-    this.#showOption(chip.dataset.id);
+    this.#markOptionDeselected(chip.dataset.id);
     wiredChips.delete(chip);
     this.#select?.removeItems(chip);
 
@@ -539,6 +545,32 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return;
     }
 
+    // Checkbox options toggle in place, leaving the menu open so several can
+    // be picked in one go.
+    if (this.settings.checkboxOptions) {
+      if (option.hasAttribute('checked')) {
+        // No chip yet means its add is still in flight; ignore the click.
+        const chip = this.#chips().find(
+          (chip) => chip.dataset.id === option.dataset.id
+        );
+        if (chip) {
+          this.removeComponent(chip, false);
+        }
+        return;
+      }
+
+      // Check it right away so a quick second click can't add it twice.
+      option.toggleAttribute('checked', true);
+      this.addComponent(
+        option.dataset.type ?? '',
+        option.dataset.id ?? ''
+      ).catch((e: unknown) => {
+        option.removeAttribute('checked');
+        throw e;
+      });
+      return;
+    }
+
     // craft-action-menu only auto-closes for default-slot items; these live in
     // the content container, so close explicitly.
     if (this.#menu) {
@@ -555,7 +587,31 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * (legacy `ComponentSelectInput.init`).
    */
   #handleCreateActivate = (): void => {
-    const slideout = new Craft.CpScreenSlideout(this.settings.createAction);
+    const action = this.settings.createAction ?? '';
+
+    // Action paths still need the legacy slideout, which resolves them itself.
+    if (
+      Craft.openSlideout instanceof Function &&
+      /^(https?:)?\/\//.test(action)
+    ) {
+      void Craft.openSlideout(action, {
+        opener: this.#createBtn,
+        onSaved: ({data, draft}: SlideoutSaveResult) => {
+          const {modelClass, modelId} = data ?? {};
+          if (
+            draft ||
+            typeof modelClass !== 'string' ||
+            (typeof modelId !== 'string' && typeof modelId !== 'number')
+          ) {
+            return;
+          }
+          void this.addComponent(modelClass, modelId, true);
+        },
+      });
+      return;
+    }
+
+    const slideout = new Craft.CpScreenSlideout(action);
 
     slideout.on('submit', (ev: any) => {
       const data = ev.response.data;
@@ -599,7 +655,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   }
 
   /**
-   * One-time wiring for a chip: hide its Choose-menu option, give its `li` a
+   * One-time wiring for a chip: hide (or check) its Choose-menu option, give its `li` a
    * reorder button, and add its action-menu items. WeakSet-guarded so a `li`
    * moved within the list (which re-fires the observer as remove+add) isn't
    * wired twice.
@@ -610,7 +666,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     }
     wiredChips.add(chip);
 
-    this.#hideOption(chip.dataset.id);
+    this.#markOptionSelected(chip.dataset.id);
 
     const li = chip.closest('li');
     if (li && this.settings.sortable) {
@@ -1060,14 +1116,35 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   }
 
   /**
+   * Reflect a component's selection onto its Choose-menu option: checked in
+   * {@link ComponentSelectSettings.checkboxOptions} mode, hidden otherwise.
+   */
+  #markOptionSelected(id: string | number | undefined): void {
+    if (!this.settings.checkboxOptions) {
+      this.#hideOption(id);
+    } else if (id !== undefined) {
+      this.#getOption(id)?.toggleAttribute('checked', true);
+    }
+  }
+
+  #markOptionDeselected(id: string | number | undefined): void {
+    if (!this.settings.checkboxOptions) {
+      this.#showOption(id);
+    } else if (id !== undefined) {
+      this.#getOption(id)?.removeAttribute('checked');
+    }
+  }
+
+  /**
    * Add a Choose-menu option for a newly-created component (the create flow):
    * a `craft-action-item` built client-side from the rendered chip's
    * `data-label`/`data-handle`, replacing the legacy server round-trip
    * (`withMenuItems: true` + `menuId`). `data-keywords` carries the label +
    * handle for the menu's `searchable` filter, matching the server-rendered
-   * options. Starts `hidden` — the component was just selected. Activation
-   * needs no wiring; the boot-time delegated click listener covers it.
-   * (Trade-off vs. server markup: no icon/color.)
+   * options. Starts selected (hidden, or checked in checkbox mode) — the
+   * component was just added. The icon and color are read off the chip's
+   * `icon` attribute and `cp-color-*` class. Activation needs no wiring; the
+   * boot-time delegated click listener covers it.
    */
   #addMenuOption(
     type: string,
@@ -1091,7 +1168,23 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     option.dataset.type = type;
     option.dataset.id = String(id);
     option.dataset.keywords = [label, handle].filter(Boolean).join(' ');
-    option.setAttribute('hidden', '');
+
+    if (this.settings.checkboxOptions) {
+      option.setAttribute('type', 'checkbox');
+      option.setAttribute('checked', '');
+    } else {
+      option.setAttribute('hidden', '');
+    }
+
+    const icon = chip?.getAttribute('icon');
+    if (icon) {
+      option.setAttribute('icon', icon);
+    }
+
+    const color = chip?.className.match(/(?:^|\s)cp-color-([\w-]+)/)?.[1];
+    if (color && color !== 'white') {
+      option.setAttribute('icon-color', color);
+    }
 
     const labelWrap = document.createElement('span');
     labelWrap.className = 'inline-flex flex-col items-start gap-2xs';
@@ -1102,7 +1195,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     if (this.settings.showHandles && handle) {
       const handleEl = document.createElement('span');
-      handleEl.className = 'menu-item-description mt-2xs smalltext light code';
+      handleEl.className =
+        'menu-item-description mt-2xs text-xs font-mono text-quiet';
       handleEl.textContent = handle;
       labelWrap.append(handleEl);
     }
@@ -1132,7 +1226,10 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       const hasVisibleOptions = this.#options().some(
         (option) => !option.hasAttribute('hidden')
       );
-      this.#menu.classList.toggle('hidden', !canAdd || !hasVisibleOptions);
+      // Checkbox menus also deselect, so they stay available at the limit
+      // (picking another option there replaces the last chip).
+      const menuUsable = canAdd || this.settings.checkboxOptions;
+      this.#menu.classList.toggle('hidden', !menuUsable || !hasVisibleOptions);
     }
 
     if (this.#createBtn) {
@@ -1157,6 +1254,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * action button (legacy `focusNextLogicalElement`).
    */
   #focusAfterRemoval(nextLi: HTMLElement | null): void {
+    // Removed from the Choose menu itself (unchecking a checkbox option):
+    // leave focus there so the menu stays open.
+    if (this.#menu?.contains(document.activeElement)) {
+      return;
+    }
+
     const target =
       this.#chipActionButton(nextLi) ??
       (this.#canAddMore() && this.#addBtn

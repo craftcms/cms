@@ -27,6 +27,7 @@ use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Markdown;
@@ -236,7 +237,7 @@ class DatabaseSeeder extends Seeder
             }
         });
 
-        $this->createSection($site, 'Home', SectionType::Single, '__HOME__', [$pageType]);
+        $this->createSection($site, 'Home', SectionType::Single, Element::HOMEPAGE_URI, [$pageType]);
         $this->createSection($site, 'Pages', SectionType::Structure, '{parent.uri}/{slug}', [$pageType]);
         $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType]);
 

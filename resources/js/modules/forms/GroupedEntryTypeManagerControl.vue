@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient} from '@craftcms/ui';
   import type {FormControlPayload, FormValues} from './types';
   import {inputName} from './runtime';
@@ -47,7 +46,7 @@
 </script>
 
 <template>
-  <div ref="host">
-    <DynamicHtmlRenderer :html="html" />
-  </div>
+  <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
+       <template> into child nodes, leaving its content empty. -->
+  <div ref="host" v-html="html"></div>
 </template>
