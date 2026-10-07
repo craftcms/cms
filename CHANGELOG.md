@@ -86,6 +86,8 @@
 - Fixed a bug where element actions couldn’t find a user’s addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Fixed a bug where the “All” option in element indexes’ status menus was missing its gradient indicator. ([#19842](https://github.com/craftcms/cms/pull/19842))
 - Fixed a bug where draft elements’ chips weren’t showing their draft icon.
+- Fixed a race condition where concurrent requests could invalidate the same workflow run and record duplicate activity.
+- Fixed a bug where transaction rollback errors could hide the original element save exception after the database had aborted the transaction.
 - Fixed a bug where users’ breadcrumb chips weren’t getting hyperlinked.
 - Fixed a bug where plugins’ control panel nav items weren’t showing their icons. ([#19794](https://github.com/craftcms/cms/pull/19794))
 - Fixed a bug where invalid route data could be saved to project config. ([#19824](https://github.com/craftcms/cms/pull/19824))
