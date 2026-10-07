@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added support for `money` columns and grouped options in legacy editable tables and Form tables, including a configurable Money cell type for Table fields.
 - Updated control panel navigation to refresh on each server navigation, including items added or removed dynamically by plugins.
 - Reduced database queries when building control panel navigation.
 - Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))

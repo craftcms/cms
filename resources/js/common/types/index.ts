@@ -321,6 +321,7 @@ export type EditableTableCellType =
   | 'template'
   | 'number'
   | 'singleline'
+  | 'money'
   | 'multiline'
   | 'heading'
   | 'html'
