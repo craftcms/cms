@@ -486,7 +486,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $context,
         );
 
-        return Html::tag('craft-table-form', '', [
+        return Html::tag('craft-table-ui', '', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'role' => 'group',

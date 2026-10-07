@@ -304,9 +304,9 @@ it('renders registered cells and their validation feedback in inline HTML inputs
     $rows = $field->normalizeValue([['col1' => -25]], $element);
     $html = $field->getInlineInputHtml($rows, $element);
     $input = new Crawler($html);
-    $payload = json_decode($input->filter('craft-table-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($input->filter('craft-table-form')->attr('name'))->toBe('details')
+    expect($input->filter('craft-table-ui')->attr('name'))->toBe('details')
         ->and($payload['values']['details'][0]['col1'])->toBe(-25)
         ->and($payload['errors'])->toBe([
             ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],

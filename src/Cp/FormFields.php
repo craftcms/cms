@@ -772,7 +772,7 @@ readonly class FormFields
             new FormContext,
         );
 
-        return Html::tag('craft-table-form', '', [
+        return Html::tag('craft-table-ui', '', [
             ...($config['containerAttributes'] ?? []),
             'id' => $config['id'] ?? 'editabletable'.mt_rand(),
             'name' => $config['name'] ?? null,
