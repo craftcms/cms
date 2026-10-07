@@ -233,3 +233,33 @@ it('leaves a link in a truncate outside a chip as it is', async () => {
 
   expect(decoration(document.querySelector('a')!)).toBe('underline');
 });
+
+it('centers a truncated label on its capitals without clipping its descenders', async () => {
+  document.body.innerHTML = `
+    <div style="width: 120px; font: 14px / 1.5 system-ui, sans-serif">
+      <craft-chip>
+        <craft-truncate><span id="text">Typography gyp jumpy quaggy</span></craft-truncate>
+      </craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  const truncate = document.querySelector('craft-truncate')!;
+  await Promise.all([chip.updateComplete, truncate.updateComplete]);
+
+  const clip = truncate.shadowRoot!.querySelector<HTMLElement>('.truncate')!;
+  const style = getComputedStyle(clip);
+  const rect = clip.getBoundingClientRect();
+  const capTop = rect.top + parseFloat(style.paddingTop);
+  const capBottom = rect.bottom - parseFloat(style.paddingBottom);
+  const body = chip
+    .shadowRoot!.querySelector('.cp-chip')!
+    .getBoundingClientRect();
+  const context = document.createElement('canvas').getContext('2d')!;
+  context.font = style.font;
+  const capHeight = context.measureText('H').actualBoundingBoxAscent;
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById('text')!);
+
+  expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+  expect(capTop - body.top).toBeCloseTo(body.bottom - capBottom, 0);
+  expect(range.getBoundingClientRect().bottom).toBeLessThanOrEqual(rect.bottom);
+});
