@@ -169,6 +169,7 @@
       searchable: boolean;
       searchPlaceholder: string | null;
       bordered: boolean;
+      showFooter?: boolean;
     }>;
   }>();
 
@@ -1121,6 +1122,7 @@
         :from="footerFrom"
         :to="footerTo"
         :total="footerTotal"
+        :show-footer="node.props.showFooter"
         :enable-adjust-page-size="isEndpointMode"
         :page-size-options="node.props.perPageOptions"
         :actions="footerActionItems"

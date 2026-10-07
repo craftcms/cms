@@ -84,6 +84,8 @@ class Table implements Node
 
     private bool $bordered = false;
 
+    private bool $showFooter = true;
+
     public function __construct(private readonly string $uid) {}
 
     public static function make(string $uid): self
@@ -373,6 +375,13 @@ class Table implements Node
         return $this;
     }
 
+    public function showFooter(bool $showFooter = true): static
+    {
+        $this->showFooter = $showFooter;
+
+        return $this;
+    }
+
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
         $columns = $node->props['columns'];
@@ -489,6 +498,7 @@ class Table implements Node
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,
+            'showFooter' => $this->showFooter,
         ];
     }
 

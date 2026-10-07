@@ -28,6 +28,7 @@
       from?: number;
       to?: number;
       total?: number;
+      showFooter?: boolean;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
     }>(),
@@ -40,6 +41,7 @@
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
+      showFooter: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
     }
@@ -73,12 +75,13 @@
     emit('action-performed');
   }
 
-  const showFooter = computed(
+  const footerVisible = computed(
     () =>
-      showBulkActions.value ||
-      props.enableAdjustPageSize ||
-      (props.total ?? 0) > 0 ||
-      props.table.getPageCount() > 1
+      props.showFooter &&
+      (showBulkActions.value ||
+        props.enableAdjustPageSize ||
+        (props.total ?? 0) > 0 ||
+        props.table.getPageCount() > 1)
   );
 </script>
 
@@ -96,7 +99,7 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
-        :with-bottom-border="!showFooter"
+        :with-bottom-border="!footerVisible"
         @reorder="(start, end) => emit('reorder', start, end)"
       >
         <template #empty-row v-if="$slots['empty-row']"
@@ -104,7 +107,7 @@
         /></template>
       </DataTable>
     </div>
-    <div class="admin-table__footer" v-if="showFooter">
+    <div class="admin-table__footer" v-if="footerVisible">
       <AdminTableBulkActionsBar
         v-if="showBulkActions"
         :selected-ids="selectedIds"
