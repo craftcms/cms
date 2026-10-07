@@ -140,6 +140,25 @@ test('returns site statuses for unsaved enabled element', function () {
     expect(ElementHelper::siteStatusesForElement($entry))->each->toBeTrue();
 });
 
+test('returns each site status for a saved element', function () {
+    $primarySite = Site::firstOrFail();
+    $secondarySite = Site::factory()->create();
+    $entry = Entry::factory()
+        ->forSection(Section::factory()->withSites($secondarySite)->create())
+        ->createElement();
+
+    $entry->setEnabledForSite([
+        $primarySite->id => true,
+        $secondarySite->id => false,
+    ]);
+    Elements::saveElement($entry);
+
+    $statuses = ElementHelper::siteStatusesForElement($entry);
+
+    expect($statuses[$primarySite->id])->toBeTrue()
+        ->and($statuses[$secondarySite->id])->toBeFalse();
+});
+
 test('detects drafts revisions and outdated derivatives', function () {
     $entry = Entry::factory()->createElement();
     $draft = app(Drafts::class)->createDraft($entry);
