@@ -159,7 +159,7 @@
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
     box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
     position: relative;
-    z-index: var(--c-layer-overlay);
+    z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);

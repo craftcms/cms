@@ -174,6 +174,8 @@
   --z-index-raised: var(--c-layer-raised);
   --z-index-sticky: var(--c-layer-sticky);
   --z-index-sidebar: var(--c-layer-sidebar);
+  --z-index-header: var(--c-layer-header);
+  --z-index-skip-link: var(--c-layer-skip-link);
   --z-index-shade: var(--c-layer-shade);
   --z-index-overlay: var(--c-layer-overlay);
   --z-index-notification: var(--c-layer-notification);
