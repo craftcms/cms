@@ -35,6 +35,8 @@
 - Added admin MCP server instructions, the `CraftCms\Cms\Config\McpConfig::$instructions` setting, and the `CraftCms\Cms\Mcp\Events\CollectingAdminInstructions` event for site and plugin guidance. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Updated admin MCP instructions and tool schemas with separate read and edit sequences, precise draft identifiers, and task-specific workflow and safety guidance. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added pagination continuation metadata to the `elements.list`, `drafts.list`, `revisions.list`, and `search.query` MCP tools. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Updated section edit pages to use the form builder for their entry types, site settings, and preview targets. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Updated component selects, such as entry type selects, to use `<craft-component-select>`, keeping selected entry types listed as checked options. ([#19888](https://github.com/craftcms/cms/pull/19888))
 - Added support for `money` columns and grouped options in legacy editable tables and Form tables, including a configurable Money cell type for Table fields. ([#19870](https://github.com/craftcms/cms/pull/19870))
 
 ### Extensibility
@@ -59,6 +61,11 @@
 - Added a `width` attribute to `<craft-input-date-time>`, along with `CraftCms\Cms\Cp\Components\InputDateTime::width()` and `CraftCms\Cms\Form\Controls\DateTime::fullWidth()`, for stretching date and time inputs across their container. ([#19871](https://github.com/craftcms/cms/pull/19871))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
+- Added `CraftCms\Cms\Cp\Components\ComponentSelect` and `CraftCms\Cms\Cp\Components\EntryTypeSelect`, which the `_includes/forms/componentSelect.twig` and `_includes/forms/entryTypeSelect.twig` templates now render. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Added `CraftCms\Cms\Cp\FormFields::componentSelectFromConfig()` and `entryTypeSelectFromConfig()`. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Added `CraftCms\Cms\Form\Controls\EntryTypeSelect`. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Added the `checkbox-options` attribute to `<craft-component-select>`, which keeps selected options listed as checked items. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Added the `text-quiet` Tailwind utility. ([#19888](https://github.com/craftcms/cms/pull/19888))
 - Updated the Inertia element editor and element chips to show action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Updated `CraftCms\Cms\Cp\FormFields::editableTableHtml()`, `editableTableFieldHtml()`, and the corresponding Twig macros to use form-builder tables. ([#19873](https://github.com/craftcms/cms/pull/19873))
 - Updated `CraftCms\Cms\Entry\EntryTypes::saveEntryType()` to validate entry types and their field layouts by default, with a `$runValidation` argument for bypassing validation. ([#19821](https://github.com/craftcms/cms/pull/19821))
@@ -93,6 +100,13 @@
 - Fixed a bug where nested element slideouts for element types other than entries always used the legacy editor. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Fixed a bug where addresses couldn’t be saved from an element editor slideout. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Fixed a bug where element actions couldn’t find a user’s addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where component select menus weren’t showing components’ icons, colors, handles, or descriptions. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where component selects’ Create buttons didn’t open a slideout when their action was a URL. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where Matrix fields’ entry type settings were missing the “Add Group” button. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where moving, dragging, renaming, or reordering Matrix fields’ entry type groups wasn’t saved. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where entry types added to Matrix fields’ settings could lose their groups. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where saving a section after its settings had refreshed could submit empty site settings rows and cause an error. ([#19888](https://github.com/craftcms/cms/pull/19888))
+- Fixed a bug where templates generated from section settings weren’t saved. ([#19888](https://github.com/craftcms/cms/pull/19888))
 - Fixed a bug where element selector fields in server-rendered control panel forms and slideouts only displayed their labels and instructions. ([#19812](https://github.com/craftcms/cms/pull/19812))
 - Fixed a bug where Link fields displayed the Label input even when `showLabelField` was disabled. ([#19811](https://github.com/craftcms/cms/pull/19811))
 - Fixed a bug where nested HTML forms hid all their tabs and reused tab panel IDs across instances. ([#19816](https://github.com/craftcms/cms/pull/19816))
