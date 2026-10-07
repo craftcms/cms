@@ -151,6 +151,10 @@ export default class CraftInputDateTime extends LitElement {
       min-width: 0;
     }
 
+    :host([width='full']) .inputs {
+      flex: 1 1 auto;
+    }
+
     :host([width='full']) slot[name='inputs']::slotted([data-date-time-part]) {
       flex: 1 1 auto;
     }
