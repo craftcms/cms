@@ -32,10 +32,10 @@ use function CraftCms\Cms\template;
 final class BridgedScreen
 {
     /** The shell's fallback page: it draws server-rendered HTML into the slots. */
-    public const PAGE = 'cp/Screen';
+    public const string PAGE = 'cp/Screen';
 
     /** The generic element index, driven by {@see LegacyElementIndexViewModel}. */
-    public const ELEMENT_INDEX_PAGE = 'cp/ElementIndex';
+    public const string ELEMENT_INDEX_PAGE = 'cp/ElementIndex';
 
     /**
      * Marks `_layouts/elementindex`'s own content block.
@@ -45,7 +45,7 @@ final class BridgedScreen
      * that is. Emitted as a comment so it costs nothing if it ever does reach
      * the browser.
      */
-    public const CONTENT_SENTINEL = '<!--craft-element-index-->';
+    public const string CONTENT_SENTINEL = '<!--craft-element-index-->';
 
     /**
      * The shell wrapped around `$variables`.
@@ -146,6 +146,16 @@ final class BridgedScreen
                 'indexUrl' => $request->url(),
                 'toolbarHtml' => $toolbar !== '' ? $toolbar : null,
                 'bodyClass' => $variables['bodyClass'] ?? null,
+                /**
+                 * A ported index puts its sources in the navigation, which it
+                 * reaches through its own nav item. A Craft 5 screen has none,
+                 * so it carries them itself and the shell draws them in the
+                 * same place — the secondary nav, as the sidebar used to.
+                 */
+                'subnav' => $viewModel->sourceNavItems(),
+                'elementType' => $elementType,
+                'page' => $viewModel->page(),
+                'sourceKey' => $viewModel->source()['key'] ?? null,
             ])
             ->toResponse($request);
     }
@@ -168,7 +178,7 @@ final class BridgedScreen
 
         return LegacyTabsShim::apply($tabs)
             ?? (count($tabs) > 1
-                ? (string) template('_includes/tabs', [
+                ? template('_includes/tabs', [
                     'tabs' => $tabs,
                 ], templateMode: TemplateMode::Cp)
                 : null);

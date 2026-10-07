@@ -16,6 +16,9 @@
    */
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
@@ -29,7 +32,37 @@
     toolbarHtml?: string | null;
     /** Classes the screen put on `<body>`, which its CSS may rely on. */
     bodyClass?: Array<string> | string | null;
+    /** The element type whose sources the nav is showing. */
+    elementType?: string | null;
+    /** The index's page, when the element type splits its sources across more than one. */
+    page?: string | null;
+    /** The source the index is on, so the editor opens on it. */
+    sourceKey?: string | null;
   }>();
+
+  /**
+   * The sources editor, which a ported index reaches through the gear on its
+   * nav item. This screen has no nav item of its own, so it offers the editor
+   * from the secondary nav's own menu — where Craft 5 put it.
+   *
+   * The server refuses anyone else, so the entry is only offered to those it
+   * would accept.
+   */
+  const {currentUser, allowAdminChanges} = useCraftData();
+  const canCustomizeSources = computed(
+    () =>
+      Boolean(props.elementType) &&
+      Boolean(currentUser.value?.admin) &&
+      allowAdminChanges.value
+  );
+
+  function customizeSources(): void {
+    window.Craft?.openCustomizeSourcesModal?.({
+      elementType: props.elementType!,
+      page: props.page ?? null,
+      sourceKey: props.sourceKey ?? null,
+    });
+  }
 
   const route: ElementIndexRoute = {
     url: (query = {}) => appendIndexQuery(props.indexUrl, query),
@@ -72,6 +105,12 @@
 </script>
 
 <template>
+  <LayoutSlot v-if="canCustomizeSources" name="subnav-actions">
+    <craft-action-item icon="gear" @click="customizeSources">
+      {{ t('Customize sources') }}
+    </craft-action-item>
+  </LayoutSlot>
+
   <ElementIndexPage :route="route" :source-href="indexUrl">
     <template v-if="toolbarFragment" #toolbar-actions>
       <HtmlFragmentRenderer :fragment="toolbarFragment" />
