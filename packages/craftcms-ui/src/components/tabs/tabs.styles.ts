@@ -67,6 +67,12 @@ export default css`
     flex: none;
   }
 
+  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
+     selected weight and its width-reserving label copy. */
+  .tabs__tab-group ::slotted([slot='tab'][selected]) {
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
   /*
    * Unless the strip is asked to divide its width evenly, which is the other
    * answer to the same problem: rather than collapsing the tabs that don't
