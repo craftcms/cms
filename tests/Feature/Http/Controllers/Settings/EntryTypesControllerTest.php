@@ -39,6 +39,7 @@ it('requires authentication', function () {
     get(action([EntryTypesController::class, 'create']))->assertRedirect();
     get(action([EntryTypesController::class, 'edit'], [EntryType::first()->id]))->assertRedirect();
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertUnauthorized();
+    postJson(action([EntryTypesController::class, 'renderSelect']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'renderForm']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'store']))->assertUnauthorized();
@@ -57,6 +58,7 @@ it('requires admin changes', function () {
     // Not allowed
     get(action([EntryTypesController::class, 'create']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertForbidden();
+    postJson(action([EntryTypesController::class, 'renderSelect']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'renderForm']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'store']))->assertForbidden();
@@ -282,6 +284,36 @@ it('can delete an entry type', function () {
     deleteJson(action([EntryTypesController::class, 'destroy'], [$newEntryType->id]))->assertOk();
 
     expect(EntryType::count())->toBe(1);
+});
+
+it('renders the entry type select', function () {
+    $entryType = EntryType::first();
+    $other = EntryType::factory()->create([
+        'handle' => 'otherType',
+        'icon' => 'newspaper',
+        'color' => Color::Red->value,
+    ]);
+
+    $html = postJson(action([EntryTypesController::class, 'renderSelect']), [
+        'value' => [['id' => $entryType->id, 'name' => 'Overridden']],
+        'allowOverrides' => true,
+        'create' => true,
+        'name' => 'entryTypes',
+        'disabled' => false,
+    ])
+        ->assertOk()
+        ->assertJsonStructure(['html', 'headHtml', 'bodyHtml'])
+        ->json('html');
+
+    expect($html)
+        ->toContain('<craft-component-select')
+        ->toContain('name="entryTypes[]"')
+        ->toContain('Overridden')
+        ->toContain('command="--create-item"')
+        ->toContainTag('craft-component-select', ['checkbox-options' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $entryType->id, 'type' => 'checkbox', 'checked' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $other->id, 'type' => 'checkbox', 'checked' => false, 'icon' => 'newspaper', 'icon-color' => 'red'])
+        ->toContain('>otherType</span>');
 });
 
 it('can render override settings', function () {

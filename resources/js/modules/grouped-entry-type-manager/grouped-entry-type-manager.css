@@ -1,0 +1,63 @@
+craft-entry-type-manager {
+  display: block;
+
+  .entry-type-groups {
+    display: flex;
+    align-items: start;
+    flex-wrap: wrap;
+    gap: var(--c-spacing-md);
+  }
+
+  .entry-type-group {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--c-pane-radius);
+    border: 1px solid var(--c-input-border-color);
+    margin: 0;
+    padding: var(--c-spacing-md);
+    background-color: var(--c-surface-raised);
+  }
+
+  .entry-type-group--titlebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--c-spacing-lg);
+    margin-block: calc(var(--c-spacing-md) * -1) var(--c-spacing-md);
+    margin-inline: calc(var(--c-spacing-md) * -1);
+    padding: var(--c-spacing-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    font-weight: bold;
+
+    > span {
+      flex: 1;
+    }
+  }
+
+  .entry-type-group--actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--c-spacing-md);
+  }
+
+  .entry-type-group > craft-component-select {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    > .components {
+      flex: 1;
+      /* The height of a single entry type chip, so an empty group still has
+         room to drop into. */
+      min-height: calc(
+        var(--c-spacing-sm) * 4 + var(--c-leading-normal) * 1em + 1.2 * 0.8em
+      );
+    }
+  }
+
+  .entry-type-group--caboose {
+    flex: 1;
+    width: 100%;
+  }
+}

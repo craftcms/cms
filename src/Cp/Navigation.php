@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -477,8 +478,23 @@ readonly class Navigation
         return new NavItem()
             ->label($setting['label'])
             ->href($setting['url'] ?? 'settings/'.$handle)
-            ->icon($setting['iconName'] ?? null)
+            ->icon($this->solidIconName($setting['iconName'] ?? null))
             ->iconSvg($setting['icon'] ?? null);
+    }
+
+    /**
+     * Settings name the light icons drawn large on the settings index; the
+     * nav draws the solid ones, where they exist.
+     */
+    private function solidIconName(?string $icon): ?string
+    {
+        if ($icon === null || ! str_starts_with($icon, 'light/')) {
+            return $icon;
+        }
+
+        $name = substr($icon, strlen('light/'));
+
+        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg")) ? $name : $icon;
     }
 
     /**

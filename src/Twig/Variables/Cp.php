@@ -560,6 +560,24 @@ class Cp extends Component
     }
 
     /**
+     * Renders a component select's HTML from the legacy componentSelect variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function componentSelect(array $config = []): string
+    {
+        return FormFields::componentSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders an entry type select's HTML from the legacy entryTypeSelect variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function entryTypeSelect(array $config = []): string
+    {
+        return FormFields::entryTypeSelectFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a radio's HTML from the legacy radio variables.
      */
     /** @param array<string, mixed> $config */

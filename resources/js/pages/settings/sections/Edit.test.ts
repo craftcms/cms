@@ -1,17 +1,14 @@
-import type {EntryType} from '@/common/types';
 import type {FormChange, FormPayload} from '@/modules/forms/types';
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
   change?: (change: FormChange, values: FormPayload['values']) => void;
   setValue: ReturnType<typeof vi.fn>;
-  setEntryTypes: ReturnType<typeof vi.fn>;
 }>(() => ({
   change: undefined,
   setValue: vi.fn(),
-  setEntryTypes: vi.fn(),
 }));
 
 vi.mock('@/pages/Form.vue', async () => {
@@ -21,77 +18,21 @@ vi.mock('@/pages/Form.vue', async () => {
     default: defineComponent({
       props: ['form'],
       emits: ['change'],
-      setup: (props, {emit, expose, slots}) => {
+      setup: (_props, {emit, expose}) => {
         state.change = (change, values) => emit('change', change, values);
         expose({setValue: state.setValue});
 
-        return () =>
-          h(
-            'div',
-            slots.entryTypes?.({
-              value: props.form.values.entryTypes,
-              setValue: state.setEntryTypes,
-              editable: true,
-            })
-          );
+        return () => h('div');
       },
     }),
   };
 });
 
-vi.mock('@/modules/entry-types/components/EntryTypeSelect.vue', () => ({
-  default: defineComponent({
-    props: ['entryTypes', 'modelValue'],
-    emits: ['update:modelValue'],
-    setup:
-      (props, {emit}) =>
-      () =>
-        h(
-          'button',
-          {
-            onClick: () => emit('update:modelValue', [props.entryTypes[0]]),
-          },
-          props.modelValue.map((entryType: EntryType) => entryType.id).join(',')
-        ),
-  }),
-}));
-
-function entryType(id: number, name: string, handle: string): EntryType {
-  return {
-    id,
-    name,
-    handle,
-    description: null,
-    color: null,
-    uiLabelFormat: '{title}',
-    hasTitleField: true,
-    titleTranslationMethod: {name: 'Site', value: 'site'},
-    titleTranslationKeyFormat: null,
-    titleFormat: null,
-    allowLineBreaksInTitles: false,
-    showSlugField: true,
-    slugTranslationMethod: {name: 'Site', value: 'site'},
-    slugTranslationKeyFormat: null,
-    showStatusField: true,
-    showPostDateField: true,
-    showExpiryDateField: true,
-    uid: `entry-type-${id}`,
-    validateHandleUniqueness: true,
-    group: null,
-    original: null,
-    idAttribute: null,
-  };
-}
-
-const entryTypes = [
-  entryType(1, 'Article', 'article'),
-  entryType(2, 'News', 'news'),
-];
 const values = {
   sectionId: null,
   name: '',
   type: 'channel',
-  entryTypes: [2, 1],
+  entryTypes: [{id: 2}, {id: 1}],
   sites: {
     default: {
       enabled: true,
@@ -100,7 +41,8 @@ const values = {
       singleHomepage: false,
       singleUri: '',
       uriFormat: '',
-      template: '',
+      routeType: 'template',
+      route: '',
       enabledByDefault: true,
     },
   },
@@ -120,7 +62,6 @@ let container: HTMLElement;
 beforeEach(() => {
   state.change = undefined;
   state.setValue.mockReset();
-  state.setEntryTypes.mockReset();
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -142,7 +83,8 @@ it('generates new section site settings from the name', async () => {
         ...values.sites.default,
         singleUri: 'news',
         uriFormat: 'news/{slug}',
-        template: 'news/_entry.twig',
+        routeType: 'template',
+        route: 'news/_entry.twig',
       },
     },
     'typing'
@@ -157,26 +99,12 @@ it('does not generate site settings for an existing section', async () => {
   expect(state.setValue).not.toHaveBeenCalled();
 });
 
-it('adapts entry type IDs to the existing selector', async () => {
-  await mount(true);
-
-  expect(container.querySelector('button')?.textContent).toBe('2,1');
-  container.querySelector('button')?.click();
-
-  expect(state.setEntryTypes).toHaveBeenCalledWith([1], 'discrete');
-});
-
 async function mount(brandNew: boolean): Promise<void> {
   app = createApp(Edit, {
     form,
     submit: {method: 'post', url: '/sections'},
     refreshUrl: '/sections/form',
     brandNew,
-    entryTypes,
-    homepageUri: '__home__',
-    templateOptions: [],
-    isMultiSite: false,
-    headlessMode: false,
   });
   app.mount(container);
   await nextTick();

@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 /** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
 function cpSettings(): Settings
@@ -361,6 +363,38 @@ it('carries a plugin’s own icon into its settings nav item', function () {
     // left the item with the bullet that stands in for a missing one.
     expect($plugin->iconSvg)->toBe('<svg viewBox="0 0 16 16"></svg>')
         ->and($plugin->icon)->toBeNull();
+});
+
+it('draws settings nav items with solid icons', function () {
+    $solidIcon = CmsAssets::resourcesPath('icons/solid/navigation-test-solid.svg');
+    File::ensureDirectoryExists(dirname($solidIcon));
+    File::put($solidIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
+                'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $items = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav[0]->subnav);
+
+    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {
