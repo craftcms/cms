@@ -161,6 +161,31 @@ export const WithSlottedContent: Story = {
 };
 
 /**
+ * `width="full"` stretches the inputs across the container, leaving slotted
+ * content at its own width.
+ */
+export const FullWidth: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <craft-input-date-time
+      slot="input"
+      name="postDate"
+      date-value="2026-08-28"
+      time-value="09:30"
+      width="full"
+    >
+      <craft-button
+        type="button"
+        icon="xmark-large"
+        aria-label="Clear"
+        variant="plain"
+        size="small"
+      ></craft-button>
+    </craft-input-date-time>
+  `,
+};
+
+/**
  * Wrapping in `craft-field` is what supplies the label, help text, and error
  * handling. Every example on this page is wrapped the same way.
  */

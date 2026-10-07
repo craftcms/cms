@@ -56,6 +56,8 @@ class InputDateTime extends ViewComponent
 
     protected ?string $describedBy = null;
 
+    protected ?string $width = null;
+
     protected function tagName(): string
     {
         return 'craft-input-date-time';
@@ -188,6 +190,16 @@ class InputDateTime extends ViewComponent
         return $this;
     }
 
+    /**
+     * Set to `full` to stretch the inputs across the container.
+     */
+    public function width(?string $width): static
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -212,6 +224,7 @@ class InputDateTime extends ViewComponent
             'readonly' => $this->readOnly,
             'required' => $this->required,
             'described-by' => $this->describedBy,
+            'width' => $this->width,
         ];
     }
 
