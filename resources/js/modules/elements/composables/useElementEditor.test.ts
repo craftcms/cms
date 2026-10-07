@@ -1937,6 +1937,32 @@ describe('useElementEditor', () => {
       });
     });
 
+    it('saves draft-less elements in place when the opener prepares an owner draft', async () => {
+      const slideout = handledSlideout();
+      const prepareNestedOwner = vi.fn().mockResolvedValue(73);
+      Object.assign(slideout.instance, {prepareNestedOwner});
+      const request = stubSaveRequest(() => Promise.resolve({data: {}}));
+      const {editor} = mount(
+        payload({
+          canAutosave: false,
+          nestedContext,
+          saveForDerivativeUrl:
+            '/actions/elements/save-nested-element-for-derivative',
+        }),
+        slideout
+      );
+
+      editor.save();
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(prepareNestedOwner).toHaveBeenCalledOnce();
+      expect(postSpy).not.toHaveBeenCalled();
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/entries/save-entry',
+        data: expect.not.objectContaining({newOwnerId: expect.anything()}),
+      });
+    });
+
     it('announces invalid nested elements when a save fails', async () => {
       const displayError = vi.fn();
       vi.stubGlobal('Craft', {cp: {displayError}});
