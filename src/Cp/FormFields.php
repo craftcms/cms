@@ -1118,15 +1118,11 @@ readonly class FormFields
      */
     public static function selectizeFromConfig(array $config): Combobox
     {
-        $multi = (bool) ($config['multi'] ?? false);
-
         $component = Combobox::make()
             ->id($config['id'] ?? null)
             ->name(($config['name'] ?? false) ?: null)
-            // A multi-select's selection arrives as `values`, singular `value` otherwise.
-            ->value($multi ? ($config['values'] ?? []) : ($config['value'] ?? null))
+            ->value($config['value'] ?? null)
             ->options(self::normalizeSelectizeOptions($config['options'] ?? []))
-            ->multiple($multi)
             ->disabled((bool) ($config['disabled'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)

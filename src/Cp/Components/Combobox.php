@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 
@@ -171,34 +170,6 @@ class Combobox extends ViewComponent
         $this->labelledBy = $labelledBy;
 
         return $this;
-    }
-
-    /**
-     * The hidden inputs a multiple-choice combobox posts through.
-     *
-     * `<craft-combobox>` renders these itself once it upgrades — a `name`
-     * sentinel so an empty selection still posts, then one `name[]` per value.
-     * Rendering them here too means the markup posts correctly before that
-     * happens, and the component adopts this span rather than adding a second.
-     */
-    #[\Override]
-    protected function renderSlots(): string
-    {
-        if (! $this->multiple || $this->name === null || $this->isDisabled()) {
-            return parent::renderSlots();
-        }
-
-        $inputs = Html::hiddenInput($this->name, '');
-
-        foreach (is_array($this->value) ? $this->value : [] as $value) {
-            $inputs .= Html::hiddenInput("{$this->name}[]", (string) $value);
-        }
-
-        return Html::tag('span', $inputs, [
-            'slot' => 'native-inputs',
-            'hidden' => true,
-            'data' => ['combobox-inputs' => true],
-        ]).parent::renderSlots();
     }
 
     #[\Override]
