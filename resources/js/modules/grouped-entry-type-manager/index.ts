@@ -2,6 +2,7 @@ import {Group, GroupedEntryTypeManager} from './grouped-entry-type-manager';
 import CraftEntryTypeManager from '@/modules/grouped-entry-type-manager/grouped-entry-type-manager.ce';
 import {defineElement} from '@/common/web-components';
 import {registerCraftGlobals} from '@/common/craft-global';
+import './grouped-entry-type-manager.css';
 
 // Re-expose the Group sub-class on the constructor, as the legacy bundle did
 // (`Craft.GroupedEntryTypeManager.Group`).
