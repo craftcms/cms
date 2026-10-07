@@ -87,6 +87,15 @@ The component's own inputs always lead, so slotted controls stay after the input
 
 <Canvas of={InputDateTimeStories.WithSlottedContent} sourceState="shown" />
 
+## Full Width
+
+By default each input is as wide as its content.
+Set `width="full"` to stretch them across the container instead; slotted content keeps its own width, so a clear button stays beside them:
+
+<Canvas of={InputDateTimeStories.FullWidth} sourceState="shown" />
+
+The inputs still wrap onto separate lines when the container is too narrow to fit them side by side.
+
 ## In a Field
 
 Wrapping in `craft-field` is what supplies the label, help text, and error handling:

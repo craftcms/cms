@@ -58,7 +58,7 @@ function scalarControlsForm(): Form
         Field::make('Range', Range::make('range')->min(1)->max(5)->step(1)),
         Field::make('Date', Date::make('date')->min('2026-01-01')->max('2026-12-31')),
         Field::make('Date and time',
-            DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15),
+            DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15)->fullWidth(),
         ),
         Field::make('Time', Time::make('time')->step(60)),
         Field::make('Color', Color::make('color')->presets(['#ff0000'])),
@@ -106,7 +106,7 @@ it('resolves and renders scalar and choice Controls with canonical values', func
         ->and($crawler->filter('input[type="number"][aria-invalid="true"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="date"][value="2026-08-04"][min="2026-01-01"][max="2026-12-31"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-input-date-time input[type="date"][name="settings[datetime][date]"][value="2026-08-04"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-date-time[width="full"] input[type="date"][name="settings[datetime][date]"][value="2026-08-04"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-date-time input[type="time"][name="settings[datetime][time]"][value="14:30"][step="900"]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[datetime][timezone]"][value="Europe/Brussels"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-date-time input[type="hidden"][name="settings[datetime][locale]"]'))->toHaveCount(1)
