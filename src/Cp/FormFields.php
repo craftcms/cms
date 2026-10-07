@@ -12,6 +12,8 @@ use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\ComponentSelect;
+use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
@@ -1459,10 +1461,90 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
+    /**
+     * Maps the legacy componentSelect config surface onto the
+     * {@see ComponentSelect} component — the PHP twin of the
+     * `_includes/forms/componentSelect` glue template.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function componentSelectFromConfig(array $config): ComponentSelect
+    {
+        return self::configureComponentSelect(ComponentSelect::make(), $config);
+    }
+
+    /**
+     * Maps the legacy entryTypeSelect config surface onto the
+     * {@see EntryTypeSelect} component — the PHP twin of the
+     * `_includes/forms/entryTypeSelect` glue template. Indicators and
+     * descriptions default to on when overrides are allowed.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function entryTypeSelectFromConfig(array $config): EntryTypeSelect
+    {
+        $allowOverrides = (bool) ($config['allowOverrides'] ?? false);
+        $config['showHandles'] = true;
+        $config['showIndicators'] ??= $allowOverrides;
+        $config['showDescription'] ??= $allowOverrides;
+        unset($config['createAction']);
+
+        return self::configureComponentSelect(EntryTypeSelect::make(), $config)
+            ->allowOverrides($allowOverrides)
+            ->includeGroupInValues((bool) ($config['includeGroupInValues'] ?? false))
+            ->create((bool) ($config['create'] ?? false));
+    }
+
+    /**
+     * @template T of ComponentSelect
+     *
+     * @param  T  $select
+     * @param  array<string, mixed>  $config
+     * @return T
+     */
+    private static function configureComponentSelect(ComponentSelect $select, array $config): ComponentSelect
+    {
+        $values = $config['values'] ?? (! empty($config['value']) ? [$config['value']] : []);
+
+        $select
+            ->id($config['id'] ?? null)
+            ->name($config['name'] ?? null)
+            ->inputName($config['inputName'] ?? null)
+            ->renderDefaultInput((bool) ($config['renderDefaultInput'] ?? true))
+            ->values(is_iterable($values) ? $values : [$values])
+            ->limit(isset($config['limit']) ? (int) $config['limit'] : null)
+            ->showHandles((bool) ($config['showHandles'] ?? false))
+            ->showIndicators((bool) ($config['showIndicators'] ?? false))
+            ->showDescription((bool) ($config['showDescription'] ?? false))
+            ->sortable((bool) ($config['sortable'] ?? true))
+            ->selectable((bool) ($config['selectable'] ?? true))
+            ->showActionMenus((bool) ($config['showActionMenus'] ?? true))
+            ->hyperlinks((bool) ($config['hyperlinks'] ?? false))
+            ->searchable(isset($config['withSearchInput']) ? (bool) $config['withSearchInput'] : null)
+            ->createAction($config['createAction'] ?? null)
+            ->checkboxOptions((bool) ($config['checkboxOptions'] ?? false))
+            ->inline((bool) ($config['inline'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+
+        if (isset($config['options'])) {
+            $select->options($config['options']);
+        }
+
+        return $select;
+    }
+
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+        if (! empty($config['jsClass'])) {
+            return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+        }
+
+        return self::entryTypeSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1476,7 +1558,14 @@ readonly class FormFields
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+        if (! empty($config['jsClass'])) {
+            return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+        }
+
+        return self::fieldHtml(
+            fn (array $c): string => self::entryTypeSelectFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */

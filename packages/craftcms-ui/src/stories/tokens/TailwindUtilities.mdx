@@ -5,6 +5,7 @@ import TailwindMeta, {
   Layers,
   Spacing,
   Surfaces,
+  TextColors,
 } from './tailwind.stories';
 
 <Meta of={TailwindMeta} />
@@ -40,6 +41,14 @@ Every `--color-*` name works with each color utility: `bg-`, `text-`, `border-`,
 `border-quiet`, `border-normal` and `border-loud` use the contextual border tokens. They are defined in Tailwind's border-color namespace, which only feeds `border-*` and `divide-*`, so they don't also produce `bg-quiet` or `text-quiet`.
 
 <Canvas of={BorderColors} />
+
+## Text colors
+
+`text-quiet` uses the `--c-text-quiet` token, for secondary text on a surface. It is defined in Tailwind's text-color namespace, which only feeds `text-*`, so it doesn't also produce `bg-quiet` or `border-quiet`, and it doesn't collide with font sizes such as `text-sm`.
+
+For text on a contextual fill, use `text-on-quiet`, `text-on-normal` and `text-on-loud` (from the colors above) with the matching `bg-fill-*`.
+
+<Canvas of={TextColors} />
 
 ## Spacing
 
