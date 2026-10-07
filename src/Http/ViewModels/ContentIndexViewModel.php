@@ -746,7 +746,9 @@ abstract class ContentIndexViewModel extends ViewModel
             $item = new NavItem()
                 ->label($source['label'] ?? $key)
                 ->href($url)
-                ->selected($key === $sourceKey);
+                ->selected($key === $sourceKey)
+                ->status($source['status'] ?? null)
+                ->badgeCount((int) ($source['badgeCount'] ?? 0));
 
             if ($group === null) {
                 $items[] = $item;

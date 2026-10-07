@@ -70,3 +70,13 @@ it('describes an item with no destination as something you cannot follow', () =>
   expect(administration.type).not.toBe('link');
   expect((administration as {disabled?: boolean}).disabled).toBe(true);
 });
+
+it('carries a source’s status across, and leaves it off when there is none', () => {
+  const [draft, all] = navItemActions([
+    node('Draft', {href: '/admin/transfers?source=draft', status: 'blue'}),
+    node('All', {href: '/admin/transfers'}),
+  ]) as ActionItemLink[];
+
+  expect(draft!.status).toBe('blue');
+  expect(all!).not.toHaveProperty('status');
+});
