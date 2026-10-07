@@ -3654,6 +3654,10 @@ class Elements extends Component
                         }
                     }
 
+                    if ($query && $plan->configureQuery !== null) {
+                        ($plan->configureQuery)($query);
+                    }
+
                     // Do we just need the count?
                     if ($plan->count && !$plan->all) {
                         // Just fetch the target elements’ IDs

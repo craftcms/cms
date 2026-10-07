@@ -427,6 +427,10 @@ class Cp extends Component
 
         $label = Craft::t('app', 'System');
 
+        $settings[$label]['mcp'] = [
+            'iconMask' => '@app/icons/light/robot.svg',
+            'label' => Craft::t('app', 'MCP'),
+        ];
         $settings[$label]['general'] = [
             'iconMask' => '@app/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),

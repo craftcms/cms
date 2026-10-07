@@ -80,6 +80,7 @@ class Install extends Migration
         }
 
         $this->createTables();
+        (new m261007_100000_mcp_oauth())->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();

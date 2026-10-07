@@ -11,6 +11,7 @@ use Craft;
 use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
+use craft\config\McpConfig;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -40,6 +41,7 @@ class Config extends Component
     public const CATEGORY_CUSTOM = 'custom';
     public const CATEGORY_DB = 'db';
     public const CATEGORY_GENERAL = 'general';
+    public const CATEGORY_MCP = 'mcp';
 
     /**
      * @var string The application type (`web` or `console`).
@@ -131,6 +133,10 @@ class Config extends Component
                 $configClass = GeneralConfig::class;
                 $envPrefix = 'CRAFT_';
                 break;
+            case self::CATEGORY_MCP:
+                $configClass = McpConfig::class;
+                $envPrefix = 'CRAFT_MCP_';
+                break;
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
         }
@@ -216,6 +222,15 @@ class Config extends Component
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
+    }
+
+    /**
+     * Returns the MCP config settings.
+     * @since 5.12.0
+     */
+    public function getMcp(): McpConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_MCP);
     }
 
     /**

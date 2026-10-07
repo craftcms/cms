@@ -10,7 +10,9 @@ return [
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
+    'bootstrap' => ['mcp'],
     'components' => [
+        'mcp' => ['class' => craft\services\Mcp::class],
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],
