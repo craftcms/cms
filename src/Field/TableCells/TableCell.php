@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field\TableCells;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Control as FormControl;
-use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Control as FormControl;
+use CraftCms\Cms\Ui\Controls\Text;
 use GraphQL\Type\Definition\Type;
 use InvalidArgumentException;
 

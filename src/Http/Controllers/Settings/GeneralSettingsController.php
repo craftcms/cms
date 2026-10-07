@@ -7,20 +7,20 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Contracts\Foundation\MaintenanceMode;
@@ -42,7 +42,7 @@ readonly class GeneralSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private GeneralConfig $generalConfig,
-        private FormResolver $formResolver,
+        private UiResolver $formResolver,
         private MaintenanceMode $maintenanceMode,
     ) {}
 
@@ -133,7 +133,7 @@ readonly class GeneralSettingsController
         Event::dispatch(new MaintenanceModeDisabled);
     }
 
-    private function systemSettingsForm(): FormPayload
+    private function systemSettingsForm(): UiPayload
     {
         $system = $this->projectConfig->get('system') ?? [];
         $timezoneOptions = $this->timezoneOptions();
@@ -141,7 +141,7 @@ readonly class GeneralSettingsController
             ? ControlMode::Editable
             : ControlMode::ReadOnly;
 
-        $form = Form::make([
+        $form = Ui::make([
             Field::make(t('System Name'), Text::make('name')
                 ->mode($settingsMode)
                 ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
@@ -168,7 +168,7 @@ readonly class GeneralSettingsController
                 ])),
         ]);
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->formResolver->resolve($form, new UiContext(
             values: [
                 ...$system,
                 'maintenanceMode' => $this->maintenanceMode->active(),

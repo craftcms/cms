@@ -240,7 +240,7 @@ test('standard settings responses require a Form', function () {
     $plugin->handle = 'test-plugin';
 
     expect(fn () => $plugin->getSettingsResponse())
-        ->toThrow(LogicException::class, 'must return a Form from settingsForm()');
+        ->toThrow(LogicException::class, 'must return a Form from settingsUi()');
 });
 
 test('plugins can override editable and read-only settings responses', function () {

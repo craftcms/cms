@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Form\Concerns;
 
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
 use function CraftCms\Cms\t;
@@ -16,7 +16,7 @@ use function CraftCms\Cms\t;
 /** @phpstan-require-extends \CraftCms\Cms\Condition\BaseConditionRule */
 trait LegacyConditionRuleForm
 {
-    public function getForm(FormContext $context = new FormContext()): Form
+    public function getUi(UiContext $context = new UiContext()): Ui
     {
         $namespace = LegacyHtml::namespace($context->namespace) ?? InputNamespace::get();
         $node = InputNamespace::with(null, fn() => app(LegacyHtml::class)->capture(
@@ -27,7 +27,7 @@ trait LegacyConditionRuleForm
 
         $node?->getControl()->deltaGroupAtNamespace()->expandValues()->reactive();
 
-        return Form::make($node === null ? [] : [$node]);
+        return Ui::make($node === null ? [] : [$node]);
     }
 
     public function getConfig(): array

@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormControlTypes;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormNodeTypes;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\NodePayload;
-use CraftCms\Cms\Form\Nodes\Container;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\Nodes\Container;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Tab;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiControlTypes;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiNodeTypes;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('registers core and plugin Node and Control types separately', function () {
-    $nodeTypes = app(FormNodeTypes::class);
-    $controlTypes = app(FormControlTypes::class);
+    $nodeTypes = app(UiNodeTypes::class);
+    $controlTypes = app(UiControlTypes::class);
     $coreNodeTypes = $nodeTypes->types()->all();
     $coreControlTypes = $controlTypes->types()->all();
 
@@ -42,7 +42,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
 it('builds Node containers from children, configuration closures, and conditions', function () {
     $field = Field::make('Title', Text::make('title'));
-    $form = Form::make()
+    $form = Ui::make()
         ->addTab('Array tab', [$field])
         ->addTab('Closure tab', fn (Tab $tab) => $tab->add($field), 'custom-tab')
         ->addGroup('Array group', [$field])
@@ -75,12 +75,12 @@ it('builds Node containers from children, configuration closures, and conditions
 });
 
 it('renders collapsible groups through the shared payload and PHP renderer', function () {
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Group::make('links', [
             Field::make('URL', Text::make('url')->value('https://craftcms.com')),
         ])->label('Links')->collapsible(),
-    ]), new FormContext(namespace: 'settings'));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    ]), new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->props)->toBe([
         'label' => 'Links',
@@ -90,13 +90,13 @@ it('renders collapsible groups through the shared payload and PHP renderer', fun
 });
 
 it('renders and submits test plugin types through the PHP renderer', function () {
-    new TestPlugin(app())->registerFormTypes(app(FormNodeTypes::class), app(FormControlTypes::class));
+    new TestPlugin(app())->registerFormTypes(app(UiNodeTypes::class), app(UiControlTypes::class));
 
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         new Notice('plugin-notice', 'Provided by the test plugin'),
         Field::make('Slug', Slug::make('slug')->value('custom-value')),
-    ]), new FormContext(namespace: 'settings'));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    ]), new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter('[data-test-plugin-notice]')->text())->toBe('Provided by the test plugin')
         ->and($crawler->filter('[data-test-plugin-control][name="settings[slug]"][value="custom-value"][placeholder="plugin-slug"]'))->toHaveCount(1)
@@ -107,15 +107,15 @@ it('renders and submits test plugin types through the PHP renderer', function ()
 it('rejects unregistered live types and non-JSON-safe properties', function () {
     $notice = new Notice('plugin-notice', 'Unregistered');
 
-    expect(fn () => app(FormResolver::class)->resolve(Form::make([$notice]), new FormContext))
+    expect(fn () => app(UiResolver::class)->resolve(Ui::make([$notice]), new UiContext))
         ->toThrow(InvalidArgumentException::class, Notice::class);
 
-    expect(fn () => app(FormResolver::class)->resolve(Form::make([
+    expect(fn () => app(UiResolver::class)->resolve(Ui::make([
         Field::make()->control(Slug::make('slug')),
-    ]), new FormContext))
+    ]), new UiContext))
         ->toThrow(InvalidArgumentException::class, Slug::class);
 
-    app(FormNodeTypes::class)->register(Notice::class);
+    app(UiNodeTypes::class)->register(Notice::class);
     $invalid = new class('invalid', 'message') extends Notice
     {
         public function props(): array
@@ -123,9 +123,9 @@ it('rejects unregistered live types and non-JSON-safe properties', function () {
             return ['callback' => fn () => null];
         }
     };
-    app(FormNodeTypes::class)->register($invalid::class);
+    app(UiNodeTypes::class)->register($invalid::class);
 
-    expect(fn () => app(FormResolver::class)->resolve(Form::make([$invalid]), new FormContext))
+    expect(fn () => app(UiResolver::class)->resolve(Ui::make([$invalid]), new UiContext))
         ->toThrow(InvalidArgumentException::class, 'JSON-safe');
 
     $invalidFloat = new class('invalid-float', 'message') extends Notice
@@ -135,41 +135,41 @@ it('rejects unregistered live types and non-JSON-safe properties', function () {
             return ['number' => NAN];
         }
     };
-    app(FormNodeTypes::class)->register($invalidFloat::class);
+    app(UiNodeTypes::class)->register($invalidFloat::class);
 
-    expect(fn () => app(FormResolver::class)->resolve(Form::make([$invalidFloat]), new FormContext))
+    expect(fn () => app(UiResolver::class)->resolve(Ui::make([$invalidFloat]), new UiContext))
         ->toThrow(InvalidArgumentException::class, 'JSON-safe');
 });
 
 it('rejects registered renderer exceptions without returning a partial PHP form', function () {
     $broken = new class('broken', 'message') extends Notice
     {
-        public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
+        public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
         {
             throw new RuntimeException('Test plugin renderer failed.');
         }
     };
-    app(FormNodeTypes::class)->register($broken::class);
-    $payload = app(FormResolver::class)->resolve(Form::make([$broken]), new FormContext);
+    app(UiNodeTypes::class)->register($broken::class);
+    $payload = app(UiResolver::class)->resolve(Ui::make([$broken]), new UiContext);
     $type = $broken::class;
 
-    expect(fn () => app(FormHtmlRenderer::class)->render($payload))
+    expect(fn () => app(UiHtmlRenderer::class)->render($payload))
         ->toThrow(RuntimeException::class, "Failed to render Form Node [{$type}] with component [test-plugin:notice] at [broken]: Test plugin renderer failed.");
 });
 
 it('reports extension context for invalid definitions', function () {
-    new TestPlugin(app())->registerFormTypes(app(FormNodeTypes::class), app(FormControlTypes::class));
+    new TestPlugin(app())->registerFormTypes(app(UiNodeTypes::class), app(UiControlTypes::class));
 
-    expect(fn () => app(FormResolver::class)->resolve(Form::make([
+    expect(fn () => app(UiResolver::class)->resolve(Ui::make([
         new Notice('', 'Missing identity'),
-    ]), new FormContext))
+    ]), new UiContext))
         ->toThrow(InvalidArgumentException::class, 'with component [test-plugin:notice] at [unknown] requires a stable UID')
-        ->and(fn () => app(FormResolver::class)->resolve(Form::make([
+        ->and(fn () => app(UiResolver::class)->resolve(Ui::make([
             Field::make()->control(Slug::make([])),
-        ]), new FormContext))
+        ]), new UiContext))
         ->toThrow(InvalidArgumentException::class, 'requires a path; component [test-plugin:slug], identity [unknown]')
-        ->and(fn () => app(FormResolver::class)->resolve(Form::make([
+        ->and(fn () => app(UiResolver::class)->resolve(Ui::make([
             Field::make()->control(Slug::make([''])),
-        ]), new FormContext))
+        ]), new UiContext))
         ->toThrow(InvalidArgumentException::class, 'Form Control ['.Slug::class.'] with component [test-plugin:slug] at [unknown] paths must contain non-empty string segments');
 });

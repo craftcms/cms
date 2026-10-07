@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Workflow\Data;
 
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface;
 use CraftCms\Cms\Workflow\Stages\MissingWorkflowStage;
 
@@ -21,7 +21,7 @@ readonly class WorkflowStageData
         public string $name,
         public string $type,
         public array $settings,
-        public ?FormPayload $settingsForm = null,
+        public ?UiPayload $settingsForm = null,
     ) {}
 
     /** @param array{uid: string, name: string, type: string, settings?: array<string, mixed>} $data */

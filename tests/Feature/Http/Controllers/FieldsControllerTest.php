@@ -16,12 +16,12 @@ use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\TableCell;
 use CraftCms\Cms\Field\TableCellTypes;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -281,8 +281,8 @@ it('uses the saved field type as the compatibility baseline after refresh', func
 
 it('renders composite field settings Controls', function (string $type, string $component, string $action, string $htmlFragment) {
     $field = Fields::createField($type);
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
     $control = collect($payload->nodes)
         ->first(fn ($node) => $node->control?->component === $component)
         ->control;

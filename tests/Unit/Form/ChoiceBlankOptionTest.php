@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -27,12 +27,12 @@ function choiceCrawler(Choice $control, bool $required = false, array $values = 
         $field->required();
     }
 
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([$field]),
-        new FormContext(namespace: 'settings', values: ['settings' => $values]),
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([$field]),
+        new UiContext(namespace: 'settings', values: ['settings' => $values]),
     );
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 /** @return list<string> */

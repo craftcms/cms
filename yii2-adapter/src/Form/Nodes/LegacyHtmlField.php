@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form\Nodes;
 
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use InvalidArgumentException;
 
@@ -19,7 +19,7 @@ class LegacyHtmlField implements Node
     {
     }
 
-    public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
+    public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         if ($node->control === null) {
             throw new InvalidArgumentException('Legacy HTML Field Nodes require a Control payload.');

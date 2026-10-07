@@ -9,17 +9,17 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\PermissionTree;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\CopyAttribute;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Heading;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\PermissionTree;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\UserGroups;
@@ -47,11 +47,11 @@ readonly class SettingsForm
         private Volumes $volumes,
     ) {}
 
-    public function make(): Form
+    public function make(): Ui
     {
         $endpoint = route('craft.cp.mcp.server');
 
-        return Form::make([
+        return Ui::make([
             Heading::make('mcp-connection-heading', t('Connection'))
                 ->description(t('Clients authenticate through Laravel Passport. The authorizing user must have control panel access and the “Use Craft MCP” permission.')),
             Field::make(t('MCP Endpoint'), Text::make('endpoint')->monospace()->mode(ControlMode::ReadOnly))

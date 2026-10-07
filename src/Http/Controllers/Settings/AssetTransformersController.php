@@ -10,12 +10,12 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,7 +38,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         GeneralConfig $generalConfig,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }

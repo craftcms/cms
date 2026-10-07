@@ -14,19 +14,19 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Money as MoneyControl;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Money as MoneyControl;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -152,14 +152,14 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $currencyOptions = [];
         foreach ($this->_isoCurrencies as $currency) {
             $currencyOptions[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
         }
 
-        return Form::make([
+        return Ui::make([
             FormField::make(t('Currency'))
                 ->required()
                 ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),

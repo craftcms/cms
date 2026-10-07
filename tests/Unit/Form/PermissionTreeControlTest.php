@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Form\Controls\PermissionTree;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\PermissionTree;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use Symfony\Component\DomCrawler\Crawler;
@@ -23,15 +23,15 @@ it('resolves and renders selected, inherited, and nested permissions', function 
             new Permission('editEntries', 'Edit entries'),
         ])),
     ]))];
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Permissions', PermissionTree::make('permissions')
             ->ariaLabel('Permissions')
             ->groups($groups)
             ->lockedPermissions(['editEntries'])
             ->value(['viewEntries'])),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $control = $payload->nodes[0]->control;
     $permissionTree = $crawler->filter('craft-permission-tree');
 
@@ -42,11 +42,11 @@ it('resolves and renders selected, inherited, and nested permissions', function 
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions]"][value=""]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions][]"][value="viewEntries"]'))->toHaveCount(1);
 
-    $readOnly = app(FormResolver::class)->resolve($form, new FormContext(
+    $readOnly = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         mode: ControlMode::ReadOnly,
     ));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($readOnly));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($readOnly));
 
     expect($crawler->filter('[name]'))->toHaveCount(0);
 });

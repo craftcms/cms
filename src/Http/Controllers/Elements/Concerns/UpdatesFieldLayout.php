@@ -6,12 +6,12 @@ namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -28,12 +28,12 @@ trait UpdatesFieldLayout
      * autosave rebuilds the whole edit screen payload around it — can compile
      * it once and hand the same payload to {@see fieldLayoutData()}.
      */
-    protected function compileFieldLayout(ElementInterface $element): FormPayload
+    protected function compileFieldLayout(ElementInterface $element): UiPayload
     {
         return app(FieldLayoutCompiler::class)->compile(
             $element->getFieldLayout(),
             $element,
-            new FormContext(
+            new UiContext(
                 namespace: $this->fieldLayoutRootScope(),
                 errors: $element->errors()->getMessages(),
                 mode: Gate::check('save', $element) ? ControlMode::Editable : ControlMode::ReadOnly,
@@ -43,10 +43,10 @@ trait UpdatesFieldLayout
     }
 
     /**
-     * @param  FormPayload|null  $rootPayload  An already-compiled layout to reuse; compiled here when omitted.
+     * @param  UiPayload|null  $rootPayload  An already-compiled layout to reuse; compiled here when omitted.
      * @return array<string, mixed>
      */
-    protected function fieldLayoutData(ElementInterface $element, ?FormPayload $rootPayload = null): array
+    protected function fieldLayoutData(ElementInterface $element, ?UiPayload $rootPayload = null): array
     {
         $requestedScope = $this->requestedFormScope('X-Craft-Form-Scope', $this->fieldLayoutRootScope());
         $rootPayload ??= $this->compileFieldLayout($element);
@@ -58,7 +58,7 @@ trait UpdatesFieldLayout
         }
         $tabs = request()->hasHeader('X-Craft-Form-Root-Scope')
             ? []
-            : app(FormHtmlRenderer::class)->tabMenu($rootPayload);
+            : app(UiHtmlRenderer::class)->tabMenu($rootPayload);
 
         if (count($tabs) > 1) {
             $selectedTab = request()->input('selectedTab');

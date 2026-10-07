@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 
 interface ConfigurableComponentInterface
 {
     /**
-     * Returns the component's renderer-neutral settings Form.
+     * Returns the component's renderer-neutral settings Ui.
      *
-     * Return `null` if the component has no settings Form.
+     * Return `null` if the component has no settings Ui.
      */
-    public function settingsForm(FormContext $context = new FormContext): ?Form;
+    public function settingsUi(UiContext $context = new UiContext): ?Ui;
 
     /**
      * Returns the list of settings attribute names.

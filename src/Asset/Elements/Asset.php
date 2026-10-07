@@ -57,12 +57,6 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
@@ -98,6 +92,12 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
@@ -1350,7 +1350,7 @@ class Asset extends Element
     }
 
     /**
-     * The asset's own action menu items for the Inertia editor — the Form-system
+     * The asset's own action menu items for the Inertia editor — the Ui-system
      * counterpart to the items {@see safeActionMenuItems()} builds with inline
      * jQuery. Everything that opens a legacy modal (the file preview, the image
      * editor, the replace-file uploader) is described here and dispatched by the
@@ -2756,11 +2756,11 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputForm(string $attribute): ?Form
+    protected function inlineAttributeInputUi(string $attribute): ?Ui
     {
         return $attribute === 'alt'
-            ? Form::make([Field::make(control: Textarea::make('alt')->value($this->alt))])
-            : parent::inlineAttributeInputForm($attribute);
+            ? Ui::make([Field::make(control: Textarea::make('alt')->value($this->alt))])
+            : parent::inlineAttributeInputUi($attribute);
     }
 
     /**

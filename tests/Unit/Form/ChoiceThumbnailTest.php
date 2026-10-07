@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 function thumbnailChoiceHtml(array $options): Crawler
 {
-    $context = new FormContext;
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $context = new UiContext;
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('View Mode', Choice::make('viewMode')
             ->presentation(ChoicePresentation::Radios)
             ->options($options)
             ->value('list')),
     ]), $context);
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('renders an option thumbnail above its radio, bound to the same input', function () {

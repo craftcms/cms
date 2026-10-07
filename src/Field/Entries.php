@@ -13,10 +13,6 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -26,6 +22,10 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Override;
@@ -100,9 +100,9 @@ class Entries extends BaseRelationField
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return parent::settingsForm($context)->add(
+        return parent::settingsUi($context)->add(
             FormField::make(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedSections')->value($this->showUnpermittedSections)),

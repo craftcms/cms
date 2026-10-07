@@ -57,14 +57,6 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\DateTime;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Slug;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
@@ -94,6 +86,14 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\Slug;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
@@ -2134,13 +2134,13 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputForm(string $attribute): ?Form
+    protected function inlineAttributeInputUi(string $attribute): ?Ui
     {
         if ($attribute === 'authors') {
             $section = $this->getSection();
             $status = $this->getAttributeStatus('authorIds');
 
-            return Form::make([
+            return Ui::make([
                 Field::make(t('{max, plural, =1{Author} other {Authors}}', [
                     'max' => $section->maxAuthors ?? PHP_INT_MAX,
                 ]), ElementSelect::make('authorIds')
@@ -2166,8 +2166,8 @@ JS, [
         };
 
         return $control === null
-            ? parent::inlineAttributeInputForm($attribute)
-            : Form::make([Field::make(control: $control)]);
+            ? parent::inlineAttributeInputUi($attribute)
+            : Ui::make([Field::make(control: $control)]);
     }
 
     /** @return array<string, array<string, scalar>> */
@@ -2197,7 +2197,7 @@ JS, [
     }
 
     /**
-     * The Form-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
+     * The Ui-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
      * visibility rules so the Inertia editor shows exactly the fields the
      * legacy editor does.
      *

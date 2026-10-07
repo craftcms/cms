@@ -27,17 +27,6 @@ use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
-use CraftCms\Cms\Form\Controls\AssetSelect;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\FieldWidth;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -53,6 +42,17 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Controls\AssetSelect;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -222,7 +222,7 @@ class Assets extends BaseRelationField
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
             'author.username' => t('Author Username'),
@@ -248,7 +248,7 @@ class Assets extends BaseRelationField
         // because assets can’t relate to a structure (Craft 5 never rendered the
         // block), and “Branch Limit” with it — it only ever showed alongside
         // “Maintain hierarchy”, so it was permanently hidden here.
-        return Form::make(array_values(array_filter([
+        return Ui::make(array_values(array_filter([
             FormField::make(t('Restrict assets to a single location'))
                 ->control(Lightswitch::make('restrictLocation')
                     ->value($this->restrictLocation)

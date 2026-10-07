@@ -6,17 +6,17 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Override;
 
 use function CraftCms\Cms\craftAuth;
@@ -110,7 +110,7 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         $sections = self::availableSections();
 
@@ -118,7 +118,7 @@ class QuickPost extends Widget
             return null;
         }
 
-        $form = Form::make();
+        $form = Ui::make();
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {

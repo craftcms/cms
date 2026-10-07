@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Entries;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 
 /**
  * Flattens a resolved settings Form to the setting names in render order.
@@ -44,10 +44,10 @@ function settingNames(array $nodes, string $prefix = ''): array
 /** @return list<string> */
 function settingsFormOrder(string $type): array
 {
-    $context = new FormContext(namespace: 'settings');
+    $context = new UiContext(namespace: 'settings');
 
     return settingNames(
-        app(FormResolver::class)->resolve(Fields::createField($type)->settingsForm($context), $context)->nodes,
+        app(UiResolver::class)->resolve(Fields::createField($type)->settingsUi($context), $context)->nodes,
     );
 }
 

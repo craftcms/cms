@@ -10,7 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -43,7 +43,7 @@ readonly class SectionsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private FormResolver $formResolver,
+        private UiResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }

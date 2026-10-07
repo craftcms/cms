@@ -38,21 +38,6 @@ use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElements;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Table as TableControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -69,6 +54,21 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
+use CraftCms\Cms\Ui\Controls\NestedElements;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
@@ -393,7 +393,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $objectTemplateTip = SelectOptions::getObjectTemplateTip();
         $ownerTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers();
@@ -401,7 +401,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             Entry::class,
             array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->_entryTypes),
         );
-        $form = Form::make([
+        $form = Ui::make([
             FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
@@ -608,10 +608,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+            $forms[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new FormContext(mode: $context->mode === ControlMode::Editable ? $context->form->mode : $context->mode),
+                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->form->mode : $context->mode),
             );
             $sortOrder[] = $uid;
         }

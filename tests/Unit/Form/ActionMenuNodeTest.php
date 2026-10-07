@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\ActionMenu;
-use CraftCms\Cms\Form\Nodes\CopyAttribute;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 /** @param  list<array<string, mixed>>  $items */
-function actionMenuForm(array $items, ?CopyAttribute $chip = null): Form
+function actionMenuUi(array $items, ?CopyAttribute $chip = null): Ui
 {
     $nodes = [ActionMenu::make('field-actions:label:menu', $items)];
 
@@ -22,7 +22,7 @@ function actionMenuForm(array $items, ?CopyAttribute $chip = null): Form
         $nodes[] = $chip;
     }
 
-    return Form::make([
+    return Ui::make([
         Field::make('Label', Text::make('label'))->actions(...$nodes),
     ]);
 }
@@ -42,7 +42,7 @@ it('converts menu-item configs into JSON-safe client descriptors', function () {
     expect($items)->toHaveCount(1)
         ->and($items[0]['label'])->toBe('Field settings')
         ->and($items[0]['icon'])->toBe('gear')
-        // Enums must be unwrapped — FormResolver::ensureJsonSafe() rejects objects.
+        // Enums must be unwrapped — UiResolver::ensureJsonSafe() rejects objects.
         ->and($items[0]['iconColor'])->toBe(Color::Red->value)
         ->and($items[0]['action'])->toBe([
             'type' => 'event',
@@ -81,9 +81,9 @@ it('moves destructive items behind a separator and trims stray rules', function 
 });
 
 it('resolves into the field’s actions slot as a control-less node', function () {
-    $payload = app(FormResolver::class)->resolve(
-        actionMenuForm([['label' => 'Field settings', 'icon' => 'gear']]),
-        new FormContext,
+    $payload = app(UiResolver::class)->resolve(
+        actionMenuUi([['label' => 'Field settings', 'icon' => 'gear']]),
+        new UiContext,
     );
     $field = $payload->nodes[0];
 
@@ -95,25 +95,25 @@ it('resolves into the field’s actions slot as a control-less node', function (
 });
 
 it('rejects two action menus sharing a UID', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('One', Text::make('one'))->actions(ActionMenu::make('dupe', [['label' => 'A']])),
         Field::make('Two', Text::make('two'))->actions(ActionMenu::make('dupe', [['label' => 'B']])),
     ]);
 
-    expect(fn () => app(FormResolver::class)->resolve($form, new FormContext))
+    expect(fn () => app(UiResolver::class)->resolve($form, new UiContext))
         ->toThrow(InvalidArgumentException::class, 'Duplicate Node UID [dupe]');
 });
 
 it('renders a craft-action-menu with declarative action items in the HTML fallback', function () {
-    $payload = app(FormResolver::class)->resolve(
-        actionMenuForm(
+    $payload = app(UiResolver::class)->resolve(
+        actionMenuUi(
             [['label' => 'Copy field handle', 'icon' => 'clipboard', 'action' => ['type' => 'clipboard', 'value' => 'body']]],
             CopyAttribute::make('field-actions:label:handle', 'body'),
         ),
-        new FormContext,
+        new UiContext,
     );
 
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $menu = $crawler->filter('craft-field craft-action-menu[data-form-node="field-actions:label:menu"]');
     $item = $menu->filter('craft-action-item');
 

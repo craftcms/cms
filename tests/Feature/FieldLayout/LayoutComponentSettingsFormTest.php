@@ -13,14 +13,14 @@ use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 
-function settingsContext(): FormContext
+function settingsContext(): UiContext
 {
-    return new FormContext(namespace: 'settings', refreshable: true);
+    return new UiContext(namespace: 'settings', refreshable: true);
 }
 
 function attachedTo(FieldLayoutComponent $component): FieldLayoutComponent
@@ -35,15 +35,15 @@ function attachedTo(FieldLayoutComponent $component): FieldLayoutComponent
 
 it('resolves, encodes and renders settings for every layout component', function (FieldLayoutComponent $component) {
     $context = settingsContext();
-    $form = $component->settingsForm($context);
+    $form = $component->settingsUi($context);
 
     expect($form)->not->toBeNull();
 
-    $payload = app(FormResolver::class)->resolve($form, $context);
+    $payload = app(UiResolver::class)->resolve($form, $context);
 
     expect($payload->scope)->toBe(['settings'])
         ->and(Json::encode($payload))->toBeString()
-        ->and(app(FormHtmlRenderer::class)->render($payload))->toBeString()->not->toBe('');
+        ->and(app(UiHtmlRenderer::class)->render($payload))->toBeString()->not->toBe('');
 })->with([
     'tab' => fn () => attachedTo(new FieldLayoutTab(['name' => 'Content', 'uid' => 'tab-uid'])),
     'heading' => fn () => attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid'])),
@@ -58,11 +58,11 @@ it('separates settings from conditions, and omits the separator when there are n
     $withSettings = attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid']));
     $conditionsOnly = attachedTo(new HorizontalRule(['uid' => 'hr-uid']));
 
-    $withSettingsNodes = app(FormResolver::class)
-        ->resolve($withSettings->settingsForm(settingsContext()), settingsContext())
+    $withSettingsNodes = app(UiResolver::class)
+        ->resolve($withSettings->settingsUi(settingsContext()), settingsContext())
         ->nodes;
-    $conditionsOnlyNodes = app(FormResolver::class)
-        ->resolve($conditionsOnly->settingsForm(settingsContext()), settingsContext())
+    $conditionsOnlyNodes = app(UiResolver::class)
+        ->resolve($conditionsOnly->settingsUi(settingsContext()), settingsContext())
         ->nodes;
 
     $separators = fn (array $nodes) => array_values(array_filter(
@@ -85,8 +85,8 @@ it('treats a classless condition config as no condition', function () {
     expect($component->getUserCondition())->toBeNull()
         ->and($component->getElementCondition())->toBeNull();
 
-    $payload = app(FormResolver::class)->resolve(
-        $component->settingsForm(settingsContext()),
+    $payload = app(UiResolver::class)->resolve(
+        $component->settingsUi(settingsContext()),
         settingsContext(),
     );
 
@@ -95,8 +95,8 @@ it('treats a classless condition config as no condition', function () {
 
 it('builds visibility condition controls at the expected paths', function () {
     $component = attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid']));
-    $payload = app(FormResolver::class)->resolve(
-        $component->settingsForm(settingsContext()),
+    $payload = app(UiResolver::class)->resolve(
+        $component->settingsUi(settingsContext()),
         settingsContext(),
     );
 
@@ -112,7 +112,7 @@ it('builds visibility condition controls at the expected paths', function () {
 it('marks the hide-label action as reactive independently of the label', function () {
     $context = settingsContext();
     $component = attachedTo(new EntryTitleField(['uid' => 'title-field']));
-    $payload = app(FormResolver::class)->resolve($component->settingsForm($context), $context);
+    $payload = app(UiResolver::class)->resolve($component->settingsUi($context), $context);
     $label = $payload->nodes[0];
 
     expect($label->control->reactive)->toBeTrue()

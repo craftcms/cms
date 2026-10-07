@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Database\QueryParam;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Override;
 use RuntimeException;
 

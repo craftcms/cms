@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form\Enums;
 
-use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 
 enum LegacyHtmlMode
 {

@@ -3,31 +3,31 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Color;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Date;
-use CraftCms\Cms\Form\Controls\DateTime;
-use CraftCms\Cms\Form\Controls\Money;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Range;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Controls\Time;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Color;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Date;
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\Money;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Range;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Controls\Time;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function scalarControlsForm(): Form
+function scalarControlsUi(): Ui
 {
-    return Form::make([
+    return Ui::make([
         Field::make('Summary',
             Textarea::make('summary')->rows(4)->maxLength(120)->placeholder('<write>'),
         ),
@@ -70,7 +70,7 @@ function scalarControlsForm(): Form
 
 function scalarControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawler
 {
-    $payload = app(FormResolver::class)->resolve(scalarControlsForm(), new FormContext(
+    $payload = app(UiResolver::class)->resolve(scalarControlsUi(), new UiContext(
         namespace: 'settings',
         values: ['settings' => [
             'summary' => '<script>alert(1)</script>',
@@ -89,7 +89,7 @@ function scalarControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawl
         mode: $mode,
     ));
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('resolves and renders scalar and choice Controls with canonical values', function () {
@@ -145,13 +145,13 @@ it('serializes text input behavior', function () {
 });
 
 it('serializes field notice markdown as HTML', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([
             Field::make('Name', Text::make('name'))
                 ->tip('Read the [docs](https://craftcms.com).')
                 ->warning('Use **care**.'),
         ]),
-        new FormContext,
+        new UiContext,
     );
 
     $tip = new Crawler($payload->nodes[0]->props['tipHtml']);
@@ -163,19 +163,19 @@ it('serializes field notice markdown as HTML', function () {
 });
 
 it('resolves and renders hidden values', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([HiddenField::make('siteId')]),
-        new FormContext(values: ['siteId' => 42]),
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([HiddenField::make('siteId')]),
+        new UiContext(values: ['siteId' => 42]),
     );
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->values)->toBe(['siteId' => 42])
         ->and($crawler->filter('input[type="hidden"][name="siteId"][value="42"]'))->toHaveCount(1);
 });
 
 it('renders combobox options through the web component', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([Field::make()->control(Combobox::make('path')
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([Field::make()->control(Combobox::make('path')
             ->limit(10)
             ->clearable()
             ->requireOptionMatch()
@@ -186,9 +186,9 @@ it('renders combobox options through the web component', function () {
                     ['label' => '<Root>', 'value' => '@root'],
                 ]],
             ]))]),
-        new FormContext(namespace: 'settings', values: ['settings' => ['path' => '@root']]),
+        new UiContext(namespace: 'settings', values: ['settings' => ['path' => '@root']]),
     );
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     $combobox = $crawler->filter('craft-combobox[name="settings[path]"][model-value="@root"]');
 
@@ -252,11 +252,11 @@ it('renders choice presentations through CP components', function (ChoicePresent
         ])
         ->multiple($multiple)
         ->presentation($presentation);
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([Field::make()->control($choice)]),
-        new FormContext(namespace: 'settings', values: ['settings' => ['choice' => $multiple ? ['one'] : 'one']]),
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([Field::make()->control($choice)]),
+        new UiContext(namespace: 'settings', values: ['settings' => ['choice' => $multiple ? ['one'] : 'one']]),
     );
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter($group))->toHaveCount(1)
         ->and($crawler->filter($option))->toHaveCount($expectedOptions);
@@ -272,12 +272,12 @@ it('renders choice presentations through CP components', function (ChoicePresent
 
 function renderChoice(Choice $choice, mixed $value): Crawler
 {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([Field::make()->control($choice)]),
-        new FormContext(namespace: 'settings', values: ['settings' => ['choice' => $value]]),
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([Field::make()->control($choice)]),
+        new UiContext(namespace: 'settings', values: ['settings' => ['choice' => $value]]),
     );
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('only serializes sortable when set', function () {
@@ -325,7 +325,7 @@ it('renders sortable choices selected-first inside the sortable wrapper', functi
 });
 
 it('uses scalar and choice Controls in built-in field settings', function () {
-    $payload = app(FormResolver::class)->resolve(new PlainText()->settingsForm(), new FormContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve(new PlainText()->settingsUi(), new UiContext(namespace: 'settings'));
     $components = collect($payload->nodes)
         ->flatMap(fn ($node) => $node->children === null ? [$node] : [$node, ...$node->children])
         ->map(fn ($node) => $node->control?->component)

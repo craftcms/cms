@@ -6,8 +6,8 @@ namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\FieldContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
 use RuntimeException;

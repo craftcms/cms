@@ -5,11 +5,11 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -25,7 +25,7 @@ it('renders sanitized non-interactive template content', function () {
             'templateMode' => TemplateMode::Site->value,
             'width' => 50,
         ]);
-        $context = new FormContext;
+        $context = new UiContext;
         $node = $element->formNode(new FieldLayoutElementContext(null, $context));
     } finally {
         $templatesPath === null
@@ -33,8 +33,8 @@ it('renders sanitized non-interactive template content', function () {
             : Aliases::set('@templates', $templatesPath);
     }
 
-    $payload = app(FormResolver::class)->resolve(Form::make([$node]), $context);
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter('[data-form-node="template-test"][inert].width-50'))->toHaveCount(1)
         ->and($crawler->filter('.template-content')->text())->toBe('Display only')

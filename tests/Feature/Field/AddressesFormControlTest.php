@@ -8,9 +8,9 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\FieldContext;
-use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\Controls\NestedElements;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;

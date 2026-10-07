@@ -16,10 +16,6 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -31,6 +27,10 @@ use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
@@ -43,7 +43,7 @@ use function CraftCms\Cms\t;
 /**
  * The shared Inertia payload for an element edit screen.
  *
- * The element's field layout is compiled to a {@see FormPayload} through the
+ * The element's field layout is compiled to a {@see UiPayload} through the
  * same {@see FieldLayoutCompiler} the legacy editor and the slideouts use, so
  * both renderers stay in sync; everything page-shaped (titles, crumbs, the save
  * target, and the sidebar islands) lives here. Tabs belong to the Form renderer.
@@ -76,11 +76,11 @@ class ElementEditViewModel extends ViewModel
         crumbs as protected elementCrumbs;
     }
 
-    private ?FormPayload $form = null;
+    private ?UiPayload $form = null;
 
     private bool $formResolved = false;
 
-    private ?FormPayload $sidebarForm = null;
+    private ?UiPayload $sidebarForm = null;
 
     private bool $sidebarFormResolved = false;
 
@@ -123,7 +123,7 @@ class ElementEditViewModel extends ViewModel
      * paying for the same work twice. Takes an argument, so {@see ViewModel}
      * leaves it out of the payload.
      */
-    public function withForm(?FormPayload $form): static
+    public function withForm(?UiPayload $form): static
     {
         $this->form = $form;
         $this->formResolved = true;
@@ -800,7 +800,7 @@ class ElementEditViewModel extends ViewModel
      * The compiled field layout. `null` when the element has no field layout —
      * the page then renders its sidebar islands alone.
      */
-    public function form(): ?FormPayload
+    public function form(): ?UiPayload
     {
         if ($this->formResolved) {
             return $this->form;
@@ -818,7 +818,7 @@ class ElementEditViewModel extends ViewModel
         return $this->form = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
             $fieldLayout,
             $this->element,
-            new FormContext(
+            new UiContext(
                 namespace: [],
                 errors: $this->element->formErrors(),
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
@@ -839,24 +839,24 @@ class ElementEditViewModel extends ViewModel
      * Keeping it separate from {@see form()} lets the two render in different
      * regions while both submit through the same Inertia form.
      */
-    public function sidebarForm(): ?FormPayload
+    public function sidebarForm(): ?UiPayload
     {
         if ($this->sidebarFormResolved) {
             return $this->sidebarForm;
         }
 
         $this->sidebarFormResolved = true;
-        $context = $this->sidebarFormContext();
-        $form = $this->element->sidebarForm($context);
+        $context = $this->sidebarUiContext();
+        $form = $this->element->sidebarUi($context);
 
         return $this->sidebarForm = $form === null
             ? null
-            : app(FormResolver::class)->resolve($form, $context);
+            : app(UiResolver::class)->resolve($form, $context);
     }
 
-    private function sidebarFormContext(): FormContext
+    private function sidebarUiContext(): UiContext
     {
-        return new FormContext(
+        return new UiContext(
             namespace: [],
             errors: $this->element->formErrors(),
             mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,

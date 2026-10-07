@@ -8,13 +8,13 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Form\Controls\Address as AddressControl;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Address as AddressControl;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +42,7 @@ class FormKitchenSinkController
 
     public function __construct(
         private readonly FormKitchenSink $kitchenSink,
-        private readonly FormHtmlRenderer $htmlRenderer,
+        private readonly UiHtmlRenderer $htmlRenderer,
         private readonly Addresses $addresses,
     ) {}
 
@@ -91,7 +91,7 @@ class FormKitchenSinkController
         }
 
         return $response->contentHtml(collect($stories)
-            ->map(fn (FormPayload $story, string $name): string => Html::tag('article',
+            ->map(fn (UiPayload $story, string $name): string => Html::tag('article',
                 Html::tag('h2', Html::encode($name), ['class' => 'text-lg']).
                 Html::tag('form', $this->htmlRenderer->render($story), ['class' => 'pane']),
                 ['class' => 'mb-xl'],
@@ -103,7 +103,7 @@ class FormKitchenSinkController
         string $type,
         string $component,
         string $renderer,
-        FormPayload $payload,
+        UiPayload $payload,
         ?string $countryCode,
     ): CpScreenResponse {
         $label = Str::headline(class_basename(FormKitchenSink::component($type, $component)));

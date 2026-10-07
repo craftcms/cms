@@ -8,11 +8,11 @@ use CraftCms\Cms\Dashboard\Widgets\NewUsers;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 
@@ -37,9 +37,9 @@ it('exposes native widget settings as typed forms', function () {
 
     foreach ($forms as $widgetClass => $paths) {
         $widget = new $widgetClass;
-        $payload = app(FormResolver::class)->resolve(
-            $widget->settingsForm(),
-            new FormContext(namespace: 'settings'),
+        $payload = app(UiResolver::class)->resolve(
+            $widget->settingsUi(),
+            new UiContext(namespace: 'settings'),
         );
         $nodes = flattenFormNodes(array_map(
             fn ($node): array => $node->jsonSerialize(),
@@ -65,7 +65,7 @@ it('resolves widget values errors and modes through the shared form seam', funct
         'limit' => 12,
     ]);
 
-    $payload = app(FormResolver::class)->resolve($widget->settingsForm(), new FormContext(
+    $payload = app(UiResolver::class)->resolve($widget->settingsUi(), new UiContext(
         namespace: 'settings',
         errors: ['url' => ['Enter a valid feed URL.']],
         mode: ControlMode::ReadOnly,

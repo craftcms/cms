@@ -14,16 +14,16 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch as LightswitchControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch as LightswitchControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Override;
@@ -115,9 +115,9 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
+        return Ui::make([
             FormField::make(t('Default Value'))
                 ->control(LightswitchControl::make('default')->value($this->default)),
             FormField::make(t('OFF Label'))

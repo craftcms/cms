@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 
 /**
  * @since 6.0.0
@@ -18,18 +18,18 @@ use CraftCms\Cms\Support\Html;
 class ConditionRuleRenderer
 {
     public function __construct(
-        private readonly FormResolver $resolver,
-        private readonly FormHtmlRenderer $renderer,
+        private readonly UiResolver $resolver,
+        private readonly UiHtmlRenderer $renderer,
     ) {}
 
     public function render(ConditionRuleInterface $rule): string
     {
-        return $this->renderForm($rule->getForm());
+        return $this->renderUi($rule->getUi());
     }
 
-    public function renderForm(Form $form): string
+    public function renderUi(Ui $form): string
     {
-        $payload = $this->resolver->resolve($form, new FormContext(refreshable: true));
+        $payload = $this->resolver->resolve($form, new UiContext(refreshable: true));
         $html = '';
 
         foreach ($payload->nodes as $node) {

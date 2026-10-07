@@ -21,16 +21,16 @@ use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -130,7 +130,7 @@ readonly class ElementAttributeRenderer
                         }
                     }
 
-                    $context = $this->inlineFormContext([
+                    $context = $this->inlineUiContext([
                         $field->handle => $element->errors()->get("field:$field->handle"),
                     ]);
                     $control = InputNamespace::with(null, fn () => $field->formControl(new FieldContext(
@@ -141,7 +141,7 @@ readonly class ElementAttributeRenderer
                         inline: true,
                     )));
 
-                    return $this->renderInlineForm(Form::make([FormField::make(control: $control)]), context: $context);
+                    return $this->renderInlineForm(Ui::make([FormField::make(control: $control)]), context: $context);
                 }
             }
 
@@ -152,15 +152,15 @@ readonly class ElementAttributeRenderer
     }
 
     /**
-     * The table's HTML transport carries Form data, not generated inputs. The
+     * The table's HTML transport carries Ui data, not generated inputs. The
      * active Twig namespace is resolved now because Vue mounts after that scope
      * has ended. Plugin HTML continues through the existing HTML hook chain.
      *
      * @param  array<string, list<string>>  $errors
      */
-    public function renderInlineForm(Form $form, array $errors = [], ?FormContext $context = null): string
+    public function renderInlineForm(Ui $form, array $errors = [], ?UiContext $context = null): string
     {
-        $payload = app(FormResolver::class)->resolve($form, $context ?? $this->inlineFormContext($errors));
+        $payload = app(UiResolver::class)->resolve($form, $context ?? $this->inlineUiContext($errors));
 
         return Html::tag('craft-inline-attribute-form', '', [
             'data-payload' => Json::encode($payload),
@@ -168,9 +168,9 @@ readonly class ElementAttributeRenderer
     }
 
     /** @param array<string, list<string>> $errors */
-    private function inlineFormContext(array $errors): FormContext
+    private function inlineUiContext(array $errors): UiContext
     {
-        return new FormContext(
+        return new UiContext(
             namespace: preg_split('/[\[\]]+/', InputNamespace::get() ?? '', flags: PREG_SPLIT_NO_EMPTY),
             errors: $errors,
         );

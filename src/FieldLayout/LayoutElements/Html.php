@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use InvalidArgumentException;
 use Override;
 

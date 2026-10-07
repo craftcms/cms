@@ -3,7 +3,7 @@
   "refreshable": false,
   "nodes": [
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+      "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
       "component": "craft:field",
       "props": {
         "label": "UI Mode",
@@ -12,7 +12,7 @@
         "instructionsHtml": "How the field should be presented in the control panel."
       },
       "control": {
-        "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+        "type": "CraftCms\\Cms\\Ui\\Controls\\Choice",
         "component": "craft:choice",
         "props": {
           "options": [
@@ -28,7 +28,7 @@
       }
     },
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+      "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
       "component": "craft:field",
       "props": {
         "label": "Placeholder Text",
@@ -37,7 +37,7 @@
         "instructionsHtml": "The text that will be shown if the field doesn’t have a value."
       },
       "control": {
-        "type": "CraftCms\\Cms\\Form\\Controls\\Text",
+        "type": "CraftCms\\Cms\\Ui\\Controls\\Text",
         "component": "craft:text",
         "props": [],
         "path": ["settings", "placeholder"],
@@ -46,7 +46,7 @@
       }
     },
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+      "type": "CraftCms\\Cms\\Ui\\Nodes\\Group",
       "component": "craft:group",
       "props": {
         "label": "Field Limit",
@@ -56,7 +56,7 @@
       "uid": "plain-text-field-limit",
       "children": [
         {
-          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
           "component": "craft:field",
           "props": {
             "label": "Maximum",
@@ -64,7 +64,7 @@
             "required": false
           },
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+            "type": "CraftCms\\Cms\\Ui\\Controls\\Number",
             "component": "craft:number",
             "props": {"inputType": "number", "min": 1, "size": 3},
             "path": ["settings", "fieldLimit"],
@@ -73,11 +73,11 @@
           }
         },
         {
-          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
           "component": "craft:field",
           "props": {"label": "Unit", "instructions": null, "required": false},
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+            "type": "CraftCms\\Cms\\Ui\\Controls\\Choice",
             "component": "craft:choice",
             "props": {
               "options": [
@@ -95,13 +95,13 @@
       ]
     },
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+      "type": "CraftCms\\Cms\\Ui\\Nodes\\Group",
       "component": "craft:group",
       "props": {"label": null},
       "uid": "plain-text-behavior",
       "children": [
         {
-          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
           "component": "craft:field",
           "props": {
             "label": "Use a monospaced font",
@@ -109,7 +109,7 @@
             "required": false
           },
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",
+            "type": "CraftCms\\Cms\\Ui\\Controls\\Lightswitch",
             "component": "craft:lightswitch",
             "props": [],
             "path": ["settings", "code"],
@@ -118,7 +118,7 @@
           }
         },
         {
-          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
           "component": "craft:field",
           "props": {
             "label": "Allow line breaks",
@@ -126,7 +126,7 @@
             "required": false
           },
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",
+            "type": "CraftCms\\Cms\\Ui\\Controls\\Lightswitch",
             "component": "craft:lightswitch",
             "props": [],
             "path": ["settings", "multiline"],
@@ -138,7 +138,7 @@
       ]
     },
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+      "type": "CraftCms\\Cms\\Ui\\Nodes\\Group",
       "component": "craft:group",
       "props": {
         "label": null,
@@ -147,7 +147,7 @@
       "uid": "plain-text-multiline-settings",
       "children": [
         {
-          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "type": "CraftCms\\Cms\\Ui\\Nodes\\Field",
           "component": "craft:field",
           "props": {
             "label": "Initial Rows",
@@ -155,7 +155,7 @@
             "required": false
           },
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+            "type": "CraftCms\\Cms\\Ui\\Controls\\Number",
             "component": "craft:number",
             "props": {"inputType": "number", "min": 1},
             "path": ["settings", "initialRows"],

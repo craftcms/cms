@@ -7,22 +7,22 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\UserGroups;
 use InvalidArgumentException;
@@ -30,10 +30,10 @@ use InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**
- * Builds the settings Form for a single element index source, as shown in the
+ * Builds the settings Ui for a single element index source, as shown in the
  * “Customize sources” modal.
  *
- * Each source's Form is namespaced at `sources.<key>`, so a Control at
+ * Each source's Ui is namespaced at `sources.<key>`, so a Control at
  * `label` posts as `sources[<key>][label]` — the shape
  * {@see ElementSourcesController::store()}
  * reads.
@@ -47,7 +47,7 @@ readonly class ElementSourceForm
         private Fields $fields,
         private UserGroups $userGroups,
         private Sites $sites,
-        private FormResolver $resolver,
+        private UiResolver $resolver,
     ) {}
 
     /**
@@ -56,7 +56,7 @@ readonly class ElementSourceForm
      * @param  array<string, mixed>  $values  posted settings; seeded from $source when empty
      * @param  bool  $isNew  whether the source has yet to be saved
      */
-    public function payload(string $elementType, array $source, array $values = [], bool $isNew = false): FormPayload
+    public function payload(string $elementType, array $source, array $values = [], bool $isNew = false): UiPayload
     {
         if (! isset($source['key']) || $source['key'] === '') {
             throw new InvalidArgumentException('Element source Forms require a source key.');
@@ -72,8 +72,8 @@ readonly class ElementSourceForm
         }
 
         return $this->resolver->resolve(
-            $this->form($elementType, $source, $values, $isNew),
-            new FormContext(
+            $this->ui($elementType, $source, $values, $isNew),
+            new UiContext(
                 namespace: ['sources', $key],
                 values: ['sources' => [$key => $values]],
                 refreshable: true,
@@ -82,7 +82,7 @@ readonly class ElementSourceForm
     }
 
     /**
-     * A config for a source the client just invented, so its Form can be built
+     * A config for a source the client just invented, so its Ui can be built
      * before it exists in project config.
      *
      * @return array<string, mixed>
@@ -102,9 +102,9 @@ readonly class ElementSourceForm
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $values
      */
-    private function form(string $elementType, array $source, array $values, bool $isNew): Form
+    private function ui(string $elementType, array $source, array $values, bool $isNew): Ui
     {
-        return Form::make(array_values(array_filter(match ($source['type'] ?? ElementSources::TYPE_NATIVE) {
+        return Ui::make(array_values(array_filter(match ($source['type'] ?? ElementSources::TYPE_NATIVE) {
             ElementSources::TYPE_HEADING => $this->headingNodes(),
             ElementSources::TYPE_CUSTOM => $this->customNodes($elementType, $source, $values, $isNew),
             default => $this->nativeNodes($elementType, $source, $values),

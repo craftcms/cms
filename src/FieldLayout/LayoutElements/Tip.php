@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\UiContext;
 use InvalidArgumentException;
 use Override;
 
@@ -86,7 +86,7 @@ class Tip extends BaseUiElement
     }
 
     #[Override]
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         return [
             Field::make($this->_isTip() ? t('Tip') : t('Warning'), Textarea::make('tip')

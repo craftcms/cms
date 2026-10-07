@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Ui\UiPayload;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
@@ -19,6 +19,6 @@ readonly class ConditionRulePayload
         public string $label,
         public ?string $hint,
         public bool $showHint,
-        public FormPayload $form,
+        public UiPayload $form,
     ) {}
 }

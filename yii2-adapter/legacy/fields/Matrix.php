@@ -17,7 +17,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Field\MatrixEntrySaveCompatibility;
@@ -69,7 +69,7 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
                 $form = app(FieldLayoutCompiler::class)->compile(
                     $entry->getFieldLayout(),
                     $entry,
-                    new FormContext(errors: $entry->errors()->getMessages(), mode: $this->legacyInputMode),
+                    new UiContext(errors: $entry->errors()->getMessages(), mode: $this->legacyInputMode),
                 );
                 if ($form->globalErrors !== []) {
                     $path = "fields.{$this->handle}";

@@ -25,13 +25,6 @@ use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Controls\ConditionBuilder as ConditionBuilderControl;
-use CraftCms\Cms\Form\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
-use CraftCms\Cms\Form\Controls\FieldSelect as FieldSelectControl;
-use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -40,6 +33,13 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder as ConditionBuilderControl;
+use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
+use CraftCms\Cms\Ui\Controls\FieldSelect as FieldSelectControl;
+use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -615,17 +615,17 @@ class FieldsController
     }
 
     /** @param array<string, mixed> $values */
-    private function layoutComponentSettingsPayload(FieldLayoutComponent $component, array $values = []): ?FormPayload
+    private function layoutComponentSettingsPayload(FieldLayoutComponent $component, array $values = []): ?UiPayload
     {
-        $context = new FormContext(
+        $context = new UiContext(
             namespace: 'settings',
             values: $values === [] ? [] : ['settings' => $values],
             refreshable: true,
         );
 
-        $form = $component->settingsForm($context);
+        $form = $component->settingsUi($context);
 
-        return $form === null ? null : app(FormResolver::class)->resolve($form, $context);
+        return $form === null ? null : app(UiResolver::class)->resolve($form, $context);
     }
 
     public function applyLayoutTabSettings(Request $request): Response

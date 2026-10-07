@@ -14,19 +14,19 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\IconPicker;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\IconPicker;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Override;
 
@@ -114,15 +114,15 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
+        return Ui::make([
             FormField::make(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
                 ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
         ])->when(
             Cms::config()->enableGql,
-            fn (Form $form): Form => $form->add(
+            fn (Ui $form): Ui => $form->add(
                 FormField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],

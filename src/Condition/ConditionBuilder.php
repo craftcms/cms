@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Throwable;
 
 /**
@@ -17,7 +17,7 @@ use Throwable;
  */
 readonly class ConditionBuilder
 {
-    public function __construct(private Conditions $conditions, private FormResolver $forms) {}
+    public function __construct(private Conditions $conditions, private UiResolver $forms) {}
 
     /**
      * @param  array<string, mixed>  $value
@@ -83,7 +83,7 @@ readonly class ConditionBuilder
 
     public function resolveRule(ConditionRuleInterface $rule, bool $editable = true): ConditionRulePayload
     {
-        $context = new FormContext(
+        $context = new UiContext(
             namespace: ['_conditionRules', $rule->uid],
             mode: $editable ? ControlMode::Editable : ControlMode::Disabled,
             refreshable: true,
@@ -94,7 +94,7 @@ readonly class ConditionBuilder
             label: $rule->getLabel(),
             hint: $rule->getLabelHint(),
             showHint: $rule->showLabelHint(),
-            form: $this->forms->resolve($rule->getForm($context), $context),
+            form: $this->forms->resolve($rule->getUi($context), $context),
         );
     }
 

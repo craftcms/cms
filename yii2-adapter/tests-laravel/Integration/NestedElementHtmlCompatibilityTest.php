@@ -20,15 +20,15 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Symfony\Component\DomCrawler\Crawler;
@@ -70,7 +70,7 @@ it('renders legacy nested field inputs with their owner scope and content', func
         $value->setResultOverride([$nested]);
     }
     if (in_array($mode, ['readOnly', 'disabled', 'form'])) {
-        $context = new FormContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
+        $context = new UiContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
         $control = $field->formControl(new FieldContext(
             path: ['fields', 'nested'],
             value: $value,
@@ -78,8 +78,8 @@ it('renders legacy nested field inputs with their owner scope and content', func
             form: $context,
             inline: $inline,
         ));
-        $payload = app(FormResolver::class)->resolve(Form::make([FormField::make()->control($control)]), $context);
-        $html = app(FormHtmlRenderer::class)->render($payload);
+        $payload = app(UiResolver::class)->resolve(Ui::make([FormField::make()->control($control)]), $context);
+        $html = app(UiHtmlRenderer::class)->render($payload);
     } else {
         $html = InputNamespace::namespaceInputs(fn(): string => match (true) {
             $mode === 'static' => $field->getStaticHtml($value, $owner),

@@ -11,21 +11,21 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 
 it('declares the replacement Form operations on their public contracts', function () {
-    $settingsForm = new ReflectionMethod(ConfigurableComponentInterface::class, 'settingsForm');
+    $settingsForm = new ReflectionMethod(ConfigurableComponentInterface::class, 'settingsUi');
     $formControl = new ReflectionMethod(FieldInterface::class, 'formControl');
     $formNode = new ReflectionMethod(FieldLayoutElement::class, 'formNode');
 
-    expect($settingsForm->getParameters()[0]->getType()->getName())->toBe(FormContext::class)
-        ->and((string) $settingsForm->getReturnType())->toBe('?'.Form::class)
+    expect($settingsForm->getParameters()[0]->getType()->getName())->toBe(UiContext::class)
+        ->and((string) $settingsForm->getReturnType())->toBe('?'.Ui::class)
         ->and($formControl->getParameters()[0]->getType()->getName())->toBe(FieldContext::class)
         ->and((string) $formControl->getReturnType())->toBe(Control::class)
         ->and($formNode->getParameters()[0]->getType()->getName())->toBe(FieldLayoutElementContext::class)
@@ -44,10 +44,10 @@ it('does not expose the replaced HTML rendering contracts', function () {
 it('uses a non-PlainText field settings Form through the public contract', function () {
     $field = new class extends Number
     {
-        public function settingsForm(FormContext $context = new FormContext): Form
+        public function settingsUi(UiContext $context = new UiContext): Ui
         {
-            return Form::make([
-                Field::make()->control(CraftCms\Cms\Form\Controls\Number::make('decimals')),
+            return Ui::make([
+                Field::make()->control(CraftCms\Cms\Ui\Controls\Number::make('decimals')),
             ]);
         }
     };

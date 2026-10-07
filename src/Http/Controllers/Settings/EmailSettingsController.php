@@ -8,18 +8,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Heading;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Requests\EmailSettingsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -27,6 +15,18 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -47,7 +47,7 @@ readonly class EmailSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private Sites $sites,
-        private FormResolver $formResolver,
+        private UiResolver $formResolver,
     ) {}
 
     public function index(GeneralConfig $generalConfig): CpScreenResponse
@@ -115,7 +115,7 @@ readonly class EmailSettingsController
         return $this->asSuccess(t('Email sent successfully! Check your inbox.'));
     }
 
-    private function emailSettingsForm(GeneralConfig $generalConfig): FormPayload
+    private function emailSettingsForm(GeneralConfig $generalConfig): UiPayload
     {
         $environmentOptions = SelectOptions::getEnvSuggestions();
         $environmentTextExpanderTriggers = SelectOptions::getEnvTextExpanderTriggers();
@@ -129,7 +129,7 @@ readonly class EmailSettingsController
             t('Learn more'),
             'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
         );
-        $form = Form::make([
+        $form = Ui::make([
             Field::make(t('System Email Address'), Text::make('fromEmail')
                 ->textExpanderTriggers($environmentTextExpanderTriggers))
                 ->instructions(t('The email address Craft CMS will use when sending email.'))
@@ -151,7 +151,7 @@ readonly class EmailSettingsController
                 ->tip($environmentTip),
         ])->when(
             $this->sites->isMultiSite(),
-            fn (Form $form): Form => $form->add(
+            fn (Ui $form): Ui => $form->add(
                 Separator::make('site-overrides-separator'),
                 Heading::make('site-overrides-heading', t('Site Overrides'))
                     ->description(t('Override the default email settings on a per-site basis. Blank values will use the defaults above.')),
@@ -169,7 +169,7 @@ readonly class EmailSettingsController
                 ->tip($environmentTip),
         );
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->formResolver->resolve($form, new UiContext(
             values: $this->emailSettingsValues(),
             mode: $generalConfig->allowAdminChanges ? ControlMode::Editable : ControlMode::ReadOnly,
         ));

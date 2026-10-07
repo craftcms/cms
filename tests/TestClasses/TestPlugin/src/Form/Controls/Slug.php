@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Input;
-use CraftCms\Cms\Form\ControlPayload;
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 
 class Slug extends Control
 {
-    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
+    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return Input::make()
             ->id($attributes['id'])

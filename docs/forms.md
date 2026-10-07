@@ -11,18 +11,18 @@ For row editing, table cell types, and plugin extensions, see [Editable tables](
 
 ## Form boundaries
 
-A `Form` contains an ordered tree of `Node` objects. A `Field` Node contains one `Control`. Structural Nodes contain
+A `Ui` contains an ordered tree of `Node` objects. A `Field` Node contains one `Control`. Structural Nodes contain
 other Nodes, and a Control may own nested Forms for editors such as Matrix and Content Block.
 
-Resolve a Form with an explicit `FormContext`:
+Resolve a Form with an explicit `UiContext`:
 
 ```php
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 
-$payload = app(FormResolver::class)->resolve(
-    $component->settingsForm($context),
-    new FormContext(
+$payload = app(UiResolver::class)->resolve(
+    $component->settingsUi($context),
+    new UiContext(
         namespace: 'settings',
         values: $submittedValues,
         errors: $errors,
@@ -33,7 +33,7 @@ $payload = app(FormResolver::class)->resolve(
 The payload contains JSON-safe definitions, canonical values, path-addressed errors, and global errors. It contains no
 callbacks, raw HTML, JavaScript, asset metadata, authorization policy, or persistence behavior.
 
-`FormContext` accepts namespaces and Control paths as segment lists or dot strings. Resolution normalizes them to
+`UiContext` accepts namespaces and Control paths as segment lists or dot strings. Resolution normalizes them to
 absolute segment paths. Pathless Nodes need an explicit stable UID; do not derive it from array position or generate it
 while rendering.
 
@@ -41,17 +41,17 @@ while rendering.
 
 ### Plugin settings
 
-Plugins override `Plugin::settingsForm()` for their standard settings page:
+Plugins override `Plugin::settingsUi()` for their standard settings page:
 
 ```php
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\Nodes\Field;
 
-public function settingsForm(FormContext $context = new FormContext): ?Form
+public function settingsUi(UiContext $context = new UiContext): ?Ui
 {
-    return Form::make([
+    return Ui::make([
         Field::make(
             t('API key', category: 'my-plugin'),
             Text::make('apiKey'),
@@ -67,17 +67,17 @@ response and bypass the standard Form page.
 
 ### Component settings
 
-Implement `ConfigurableComponentInterface::settingsForm()` instead of `getSettingsHtml()`:
+Implement `ConfigurableComponentInterface::settingsUi()` instead of `getSettingsHtml()`:
 
 ```php
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\Nodes\Field;
 
-public function settingsForm(FormContext $context = new FormContext): ?Form
+public function settingsUi(UiContext $context = new UiContext): ?Ui
 {
-    return Form::make([
+    return Ui::make([
         Field::make(
             t('API key', category: 'my-plugin'),
             Text::make('apiKey')->value($this->apiKey),
@@ -95,8 +95,8 @@ Implement `FieldInterface::formControl()` instead of `getInputHtml()`:
 
 ```php
 use CraftCms\Cms\Field\FieldContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Text;
 
 public function formControl(FieldContext $context): Control
 {
@@ -115,8 +115,8 @@ Implement `FieldLayoutElement::formNode()` instead of `formHtml()`:
 
 ```php
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 
 public function formNode(FieldLayoutElementContext $context): ?Node
 {
@@ -136,7 +136,7 @@ renders the elements as cards or an embedded element index outside the owner's f
 a slideout, reordering, pasting, duplicating, and deleting them, including preparing the owner's draft first:
 
 ```php
-use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Control;
 
 public function formControl(FieldContext $context): Control
 {
@@ -160,7 +160,7 @@ Control's props, passing `savedNestedOwner()` as its `owner` so changes apply to
 re-renders afterwards (see `pages/users/Addresses.vue`).
 
 Nested element types use the shared Inertia element editor automatically. They supply their field layout and
-`sidebarForm()`, and can extend `ElementEditViewModel` through `ElementInterface::editViewModelClass()` when they
+`sidebarUi()`, and can extend `ElementEditViewModel` through `ElementInterface::editViewModelClass()` when they
 need additional payload or a different save action. `ElementEditorPayloadResolving` lets listeners modify the
 prepared payload for edit screens and autosave responses. With the Yii adapter installed, existing editor HTML events
 and `prepareEditScreen()` customizations are rendered around the native forms.
@@ -171,11 +171,11 @@ Field layout components — tabs and layout elements — describe the form shown
 implementing `settingsNodes()` instead of `settingsHtml()`:
 
 ```php
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\Nodes\Field;
 
-protected function settingsNodes(FormContext $context): array
+protected function settingsNodes(UiContext $context): array
 {
     return [
         Field::make(t('Heading'), Text::make('heading')->value($this->heading)),
@@ -184,7 +184,7 @@ protected function settingsNodes(FormContext $context): array
 ```
 
 Return a list of Nodes with paths relative to the component's config, so a Control at `heading` posts back as the
-component's `heading` setting. `FieldLayoutComponent::settingsForm()` is `final`: it composes `settingsNodes()` and
+component's `heading` setting. `FieldLayoutComponent::settingsUi()` is `final`: it composes `settingsNodes()` and
 `conditionalSettingsNodes()`, separating them with a `Separator` Node when both are present, and returns `null` when
 neither produces a Node.
 
@@ -202,8 +202,8 @@ label, for instance, disables its label Control on the next refresh.
 Use a core Node or Control when one already has the required value shape and behavior. A plugin-specific type is needed
 only when both renderers require new semantics.
 
-A custom Node implements `CraftCms\Cms\Form\Contracts\Node`. A custom Control can extend
-`CraftCms\Cms\Form\Controls\Control`. Each type must provide:
+A custom Node implements `CraftCms\Cms\Ui\Contracts\Node`. A custom Control can extend
+`CraftCms\Cms\Ui\Controls\Control`. Each type must provide:
 
 - a stable PHP class identity;
 - a unique Vue component registry key;
@@ -211,7 +211,7 @@ A custom Node implements `CraftCms\Cms\Form\Contracts\Node`. A custom Control ca
 - a PHP `renderHtml()` implementation; and
 - a Vue component with equivalent values, modes, errors, submission, and accessibility behavior.
 
-Container Nodes can extend `CraftCms\Cms\Form\Nodes\Container`, which provides stable UID storage, ordered children,
+Container Nodes can extend `CraftCms\Cms\Ui\Nodes\Container`, which provides stable UID storage, ordered children,
 fluent and conditional child addition, and the standard no-Control behavior.
 
 ### Field actions
@@ -220,8 +220,8 @@ A `Field` Node can carry action Nodes in its heading, rendered into `<craft-fiel
 toggle, a copy-value button, a settings menu:
 
 ```php
-use CraftCms\Cms\Form\Controls\Checkbox;
-use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Ui\Controls\Checkbox;
+use CraftCms\Cms\Ui\Nodes\Action;
 
 Field::make(t('Label'), Text::make('label'))
     ->actions(Action::make(
@@ -236,12 +236,12 @@ field chrome.
 Register the PHP types during plugin boot:
 
 ```php
-use CraftCms\Cms\Form\FormControlTypes;
-use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Ui\UiControlTypes;
+use CraftCms\Cms\Ui\UiNodeTypes;
 
 public function boot(
-    FormNodeTypes $nodeTypes,
-    FormControlTypes $controlTypes,
+    UiNodeTypes $nodeTypes,
+    UiControlTypes $controlTypes,
 ): void {
     $nodeTypes->register(Notice::class);
     $controlTypes->register(Slug::class);
@@ -310,11 +310,11 @@ error and invalidates the Form.
 Legacy HTML compatibility belongs exclusively to `craftcms/yii2-adapter`.
 
 Yii-era plugin classes keep their protected `settingsHtml()` hook; the adapter captures it into the plugin's
-`settingsForm()`.
+`settingsUi()`.
 
 Plugins that extend the adapter's Yii-era component, field, or FieldLayout element classes keep their existing
 `getSettingsHtml()`, `getInputHtml()`, `getStaticHtml()`, and `formHtml()` overrides. The adapter implements the modern
-`settingsForm()`, `formControl()`, and `formNode()` contracts with private Legacy HTML islands. Normal PHP method
+`settingsUi()`, `formControl()`, and `formNode()` contracts with private Legacy HTML islands. Normal PHP method
 overriding still allows a plugin to provide a native modern implementation instead.
 
 For direct implementations, use the relevant adapter contract and trait together:

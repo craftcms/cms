@@ -9,19 +9,6 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
@@ -32,6 +19,19 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +55,7 @@ readonly class SitesController
         GeneralConfig $generalConfig,
         private Sites $sites,
         private SiteGroups $siteGroups,
-        private FormResolver $formResolver,
+        private UiResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -260,7 +260,7 @@ readonly class SitesController
     }
 
     /** @param array<string, mixed> $values */
-    private function siteForm(array $values): FormPayload
+    private function siteForm(array $values): UiPayload
     {
         $siteId = $values['siteId'] ?? null;
         $site = $siteId ? $this->sites->getSiteById((int) $siteId) : new Site;
@@ -363,7 +363,7 @@ readonly class SitesController
             ])->dependsOn('hasUrls');
         }
 
-        return $this->formResolver->resolve(Form::make($nodes), new FormContext(
+        return $this->formResolver->resolve(Ui::make($nodes), new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,

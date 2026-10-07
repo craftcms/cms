@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form;
 
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\ControlPayload;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use DOMElement;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -20,8 +20,8 @@ use Symfony\Component\DomCrawler\Crawler;
 class NestedElementFieldHtml
 {
     public function __construct(
-        private readonly FormResolver $resolver,
-        private readonly FormHtmlRenderer $renderer,
+        private readonly UiResolver $resolver,
+        private readonly UiHtmlRenderer $renderer,
     ) {
     }
 
@@ -29,8 +29,8 @@ class NestedElementFieldHtml
     public function render(Control $control, string $inputId, string $inputName, ControlMode $mode, array $errors = []): string
     {
         $payload = $this->resolver->resolve(
-            Form::make([Field::make()->control($control)]),
-            new FormContext(mode: $mode, errors: $errors),
+            Ui::make([Field::make()->control($control)]),
+            new UiContext(mode: $mode, errors: $errors),
         );
         $control = $payload->nodes[0]->control;
 
@@ -43,11 +43,11 @@ class NestedElementFieldHtml
     }
 
     /**
-     * Legacy fragments are captured before nested Form scopes have been resolved.
+     * Legacy fragments are captured before nested Ui scopes have been resolved.
      *
      * @param array<string, mixed> $attributes
      */
-    public function rebase(string $html, ControlPayload $control, array $attributes, FormHtmlRenderer $renderer): string
+    public function rebase(string $html, ControlPayload $control, array $attributes, UiHtmlRenderer $renderer): string
     {
         if (!str_contains($html, '<craft-nested-elements-control') && !str_contains($html, 'data-field-path')) {
             return $html;

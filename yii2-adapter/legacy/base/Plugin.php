@@ -14,9 +14,6 @@ use Craft;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\web\View;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Plugin\Concerns\HasEditions;
 use CraftCms\Cms\Plugin\Concerns\HasSettings;
 use CraftCms\Cms\Plugin\Concerns\Installable;
@@ -28,6 +25,9 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
@@ -281,7 +281,7 @@ class Plugin extends Module implements PluginInterface
         return null;
     }
 
-    public function settingsForm(FormContext $context = new FormContext()): ?Form
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
         $mode = match ($context->mode) {
             ControlMode::Editable => LegacyHtmlMode::Editable,
@@ -302,7 +302,7 @@ class Plugin extends Module implements PluginInterface
             ->deltaGroupAtNamespace()
             ->expandValues();
 
-        return $node === null ? null : Form::make([$node]);
+        return $node === null ? null : Ui::make([$node]);
     }
 
     /**

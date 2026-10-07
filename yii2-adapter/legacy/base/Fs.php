@@ -14,14 +14,14 @@ namespace craft\base;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
 use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
 use Override;
@@ -43,7 +43,7 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
 {
     use FsTrait;
     use LegacySettingsForm {
-        settingsForm as private legacySettingsForm;
+        settingsUi as private legacySettingsUi;
     }
 
     public const CONFIG_MIMETYPE = 'mimetype';
@@ -57,9 +57,9 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
     public const VISIBILITY_PUBLIC = 'public';
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext()): ?Form
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
-        $form = Form::make();
+        $form = Ui::make();
 
         if ($this->getShowHasUrlSetting()) {
             $form->add(Field::make(t('Files in this filesystem have public URLs'))
@@ -77,7 +77,7 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
                 ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
         }
 
-        $legacyForm = $this->legacySettingsForm($context);
+        $legacyForm = $this->legacySettingsUi($context);
 
         if ($legacyForm !== null) {
             $form->add(...$legacyForm->nodes());

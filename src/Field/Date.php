@@ -13,15 +13,6 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Date as DateControl;
-use CraftCms\Cms\Form\Controls\DateTime as DateTimeControl;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
@@ -31,6 +22,15 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Date as DateControl;
+use CraftCms\Cms\Ui\Controls\DateTime as DateTimeControl;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use DateTimeInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Query\Builder;
@@ -165,7 +165,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $dateTime = match (true) {
             $this->showDate && ! $this->showTime => 'showDate',
@@ -178,7 +178,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             ['label' => t('Show date and time'), 'value' => 'showBoth'],
         ];
 
-        return Form::make([
+        return Ui::make([
             FormField::make()
                 ->control(Choice::make('dateTime')
                     ->presentation(ChoicePresentation::Radios)

@@ -54,7 +54,7 @@ describe('WorkflowStagesInput', () => {
 
   function mount(
     stages: WorkflowStage[],
-    errors: CraftCms.Cms.Form.FormPayload['errors'] = []
+    errors: CraftCms.Cms.Ui.UiPayload['errors'] = []
   ) {
     const updates: WorkflowStage[][] = [];
     const modelValue = shallowRef(stages);

@@ -8,11 +8,11 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSourceForm;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Ui\Controls\Choice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,7 +60,7 @@ readonly class ElementSourcesController
 
     /**
      * Returns the settings Form for a single source — for one the client just
-     * added, and for {@see FormPayload} refreshes.
+     * added, and for {@see UiPayload} refreshes.
      */
     public function form(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceForm $sourceForm): JsonResponse
     {

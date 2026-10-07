@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Contracts;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
-use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use GraphQL\Type\Definition\Type;
 

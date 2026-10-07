@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\TableColumns;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\TableColumns;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('resolves table cells at concrete paths while keeping row templates outside values and errors', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'control' => Text::make('ignored')->placeholder('Enter name')],
         ])->value([['name' => 'Ada']])->defaultValues(['name' => 'New row'])->allowAdd()),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         errors: ['rows.0.name' => 'A real cell error.', 'rows.__template__.name' => 'An unbound row error.'],
     ));
@@ -38,11 +38,11 @@ it('resolves table cells at concrete paths while keeping row templates outside v
 });
 
 it('resolves money columns in reusable tables with their row input paths', function () {
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('Prices', Table::make('prices')->columns([
             'amount' => ['heading' => 'Amount', 'type' => 'money', 'currency' => 'EUR', 'locale' => 'nl-BE', 'showCurrency' => false],
         ])->value([['amount' => '']])->allowAdd()),
-    ]), new FormContext(namespace: 'settings'));
+    ]), new UiContext(namespace: 'settings'));
     $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
 
     expect($cell->component)->toBe('craft:money')
@@ -52,7 +52,7 @@ it('resolves money columns in reusable tables with their row input paths', funct
 });
 
 it('preserves nested and flat groups in reusable table select columns', function () {
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'status' => ['heading' => 'Status', 'type' => 'select', 'options' => [
                 ['label' => 'Editorial', 'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Review', 'value' => 'review']]],
@@ -60,9 +60,9 @@ it('preserves nested and flat groups in reusable table select columns', function
                 ['label' => 'Archived', 'value' => 'archived'],
             ]],
         ])->value([['status' => 'review']])),
-    ]), new FormContext);
+    ]), new UiContext);
     $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->renderControl($cell, $payload->values, 'status', false, false));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->renderControl($cell, $payload->values, 'status', false, false));
 
     expect($cell->props['options'])->toEqual([
         ['label' => 'Draft', 'value' => 'draft', 'group' => 'Editorial'],
@@ -75,14 +75,14 @@ it('preserves nested and flat groups in reusable table select columns', function
 });
 
 it('resolves implicit option groups for reusable table combobox columns', function () {
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'address' => ['heading' => 'Address', 'type' => 'autosuggest', 'options' => [
                 ['label' => 'Environment', 'options' => [['label' => 'System email', 'value' => '$SYSTEM_EMAIL'], ['value' => 0]]],
                 ['label' => 'Literal address', 'value' => 'admin@example.com'],
             ]],
         ])->value([['address' => '$SYSTEM_EMAIL']])),
-    ]), new FormContext);
+    ]), new UiContext);
 
     expect($payload->nodes[0]->control->forms[0]->nodes[0]->control->props['options'])->toEqual([
         ['type' => 'optgroup', 'label' => 'Environment', 'options' => [
@@ -94,24 +94,24 @@ it('resolves implicit option groups for reusable table combobox columns', functi
 });
 
 it('applies table modes to concrete cells and reusable row templates', function (ControlMode $mode) {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'type' => 'singleline'],
         ])->value([['name' => 'Ada']])->mode($mode)),
     ]);
-    $table = app(FormResolver::class)->resolve($form, new FormContext)->nodes[0]->control;
+    $table = app(UiResolver::class)->resolve($form, new UiContext)->nodes[0]->control;
 
     expect($table->forms[0]->nodes[0]->control->mode)->toBe($mode)
         ->and($table->props['rowTemplate']['nodes'][0]['control']['mode'])->toBe($mode->value);
 })->with([ControlMode::ReadOnly, ControlMode::Disabled]);
 
 it('resolves column controls for an empty editor without adding a column to submitted values', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Columns', TableColumns::make('columns')
             ->cellTypes([['label' => 'Text', 'value' => 'singleline']])
             ->value([])->mode(ControlMode::ReadOnly)),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
     $control = $payload->nodes[0]->control;
 
     expect($payload->values)->toBe(['settings' => ['columns' => []]])
@@ -121,13 +121,13 @@ it('resolves column controls for an empty editor without adding a column to subm
 });
 
 it('rejects unregistered controls in an empty table row template', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['control' => TableUnregisteredControl::make('name')],
         ])->value([])),
     ]);
 
-    expect(fn () => app(FormResolver::class)->resolve($form, new FormContext))
+    expect(fn () => app(UiResolver::class)->resolve($form, new UiContext))
         ->toThrow(InvalidArgumentException::class, 'is not registered');
 });
 

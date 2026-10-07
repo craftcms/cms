@@ -7,49 +7,49 @@ namespace Workbench\App\Forms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Address;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Color;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Controls\ContentBlock;
-use CraftCms\Cms\Form\Controls\Date;
-use CraftCms\Cms\Form\Controls\DateTime;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\IconPicker;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Link;
-use CraftCms\Cms\Form\Controls\Markdown;
-use CraftCms\Cms\Form\Controls\Missing as MissingControl;
-use CraftCms\Cms\Form\Controls\Money;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\PermissionTree;
-use CraftCms\Cms\Form\Controls\Range;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Controls\Time;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Heading;
-use CraftCms\Cms\Form\Nodes\LineBreak;
-use CraftCms\Cms\Form\Nodes\MarkdownContent;
-use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
-use CraftCms\Cms\Form\Nodes\Separator;
-use CraftCms\Cms\Form\Nodes\Tab;
-use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Address;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Color;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Controls\ContentBlock;
+use CraftCms\Cms\Ui\Controls\Date;
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\IconPicker;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Link;
+use CraftCms\Cms\Ui\Controls\Markdown;
+use CraftCms\Cms\Ui\Controls\Missing as MissingControl;
+use CraftCms\Cms\Ui\Controls\Money;
+use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\PermissionTree;
+use CraftCms\Cms\Ui\Controls\Range;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Controls\Time;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\LineBreak;
+use CraftCms\Cms\Ui\Nodes\MarkdownContent;
+use CraftCms\Cms\Ui\Nodes\Missing as MissingNode;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Tab;
+use CraftCms\Cms\Ui\Nodes\TemplateContent;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 
@@ -110,14 +110,14 @@ class FormKitchenSink
         ],
     ];
 
-    public function __construct(private readonly FormResolver $resolver) {}
+    public function __construct(private readonly UiResolver $resolver) {}
 
     public static function component(string $type, string $slug): ?string
     {
         return self::COMPONENTS[$type][$slug] ?? null;
     }
 
-    /** @return array<string, FormPayload>|null */
+    /** @return array<string, UiPayload>|null */
     public function stories(string $type, string $slug, ?string $countryCode = null): ?array
     {
         $component = self::component($type, $slug);
@@ -128,9 +128,9 @@ class FormKitchenSink
         }
 
         return collect($forms)->map(
-            fn (Form $form, string $name): FormPayload => $this->resolver->resolve(
+            fn (Ui $form, string $name): UiPayload => $this->resolver->resolve(
                 $form,
-                new FormContext(
+                new UiContext(
                     namespace: ['kitchenSink', $type, $slug, Str::slug($name)],
                     errors: $name === 'Feedback' && in_array($component, [Text::class, Field::class], true)
                         ? ['text' => ['This is an example validation error.']]
@@ -140,7 +140,7 @@ class FormKitchenSink
         )->all();
     }
 
-    /** @return array<string, Form>|null */
+    /** @return array<string, Ui>|null */
     private function forms(?string $component, ?string $countryCode): ?array
     {
         if ($component === Address::class) {
@@ -242,14 +242,14 @@ class FormKitchenSink
         }
 
         if ($component === ContentBlock::class) {
-            $form = Form::make([
+            $form = Ui::make([
                 Field::make('Nested text', Text::make('body')->value('Content block value')),
             ]);
 
             return [
-                'Empty' => $this->control('Content block', ContentBlock::make('contentBlock')->form($form)),
+                'Empty' => $this->control('Content block', ContentBlock::make('contentBlock')->ui($form)),
                 'Populated' => $this->control('Content block', ContentBlock::make('contentBlock')
-                    ->form($form)
+                    ->ui($form)
                     ->value(['body' => 'Content block value'])),
             ];
         }
@@ -331,7 +331,7 @@ class FormKitchenSink
         if ($component === Handle::class) {
             return [
                 'Default' => $this->control('Handle', Handle::make('handle')->value('exampleHandle')),
-                'Generated' => Form::make([
+                'Generated' => Ui::make([
                     Field::make('Name', Text::make('name')->value('Example handle')),
                     Field::make('Handle', Handle::make('handle')->source('name')->value('exampleHandle')),
                 ]),
@@ -399,7 +399,7 @@ class FormKitchenSink
         }
 
         if ($component === NestedElementBlocks::class) {
-            $form = Form::make([
+            $form = Ui::make([
                 Field::make('Nested heading', Text::make('heading')->value('Matrix block value')),
             ]);
             $value = [
@@ -534,7 +534,7 @@ class FormKitchenSink
                     ->size(6)
                     ->dir('rtl')
                     ->value('123456')),
-                'Feedback' => Form::make([
+                'Feedback' => Ui::make([
                     Field::make('Text', Text::make('text')->placeholder('Plain text')->value('Text value'))
                         ->instructions('Includes instructions, a tip, a warning, and an error.')
                         ->required()
@@ -569,22 +569,22 @@ class FormKitchenSink
 
         if ($component === Callout::class) {
             return [
-                'Info' => Form::make([
+                'Info' => Ui::make([
                     Callout::make('callout-info', 'This is an **informational** callout.'),
                 ]),
-                'Success' => Form::make([
+                'Success' => Ui::make([
                     Callout::make('callout-success', 'This is a **success** callout.')->variant('success'),
                 ]),
-                'Warning' => Form::make([
+                'Warning' => Ui::make([
                     Callout::make('callout-warning', 'This is a **warning** callout.')->variant('warning'),
                 ]),
-                'Danger' => Form::make([
+                'Danger' => Ui::make([
                     Callout::make('callout-danger', 'This is a **danger** callout.')->variant('danger'),
                 ]),
-                'Dismissible' => Form::make([
+                'Dismissible' => Ui::make([
                     Callout::make('callout-dismissible', 'This callout can be dismissed.')->dismissible(),
                 ]),
-                'Plain with custom icon' => Form::make([
+                'Plain with custom icon' => Ui::make([
                     Callout::make('callout-plain', 'This is a **plain** callout with a custom icon.')
                         ->appearance('plain')
                         ->icon('flask'),
@@ -594,18 +594,18 @@ class FormKitchenSink
 
         if ($component === Field::class) {
             return [
-                'Default' => Form::make([
+                'Default' => Ui::make([
                     Field::make('Field', Text::make('text')->value('Field value')),
                 ]),
-                'Required' => Form::make([
+                'Required' => Ui::make([
                     Field::make('Field', Text::make('text')->value('Field value'))->required(),
                 ]),
-                'Instructions after' => Form::make([
+                'Instructions after' => Ui::make([
                     Field::make('Field', Text::make('text')->value('Field value'))
                         ->instructions('Instructions shown after the control.')
                         ->instructionsPosition('after'),
                 ]),
-                'Feedback' => Form::make([
+                'Feedback' => Ui::make([
                     Field::make('Field', Text::make('text')->value('Field value'))
                         ->instructions('Field instructions')
                         ->tip('Example tip')
@@ -616,13 +616,13 @@ class FormKitchenSink
 
         if ($component === Group::class) {
             return [
-                'Fieldset' => Form::make([
+                'Fieldset' => Ui::make([
                     Group::make('group-fieldset', [
                         MarkdownContent::make('group-fieldset-content', 'Content inside the **Group** node.')
                             ->displayInPane(false),
                     ])->label('Group node'),
                 ]),
-                'Collapsible' => Form::make([
+                'Collapsible' => Ui::make([
                     Group::make('group-collapsible', [
                         MarkdownContent::make('group-collapsible-content', 'Content inside the **Group** node.')
                             ->displayInPane(false),
@@ -633,10 +633,10 @@ class FormKitchenSink
 
         if ($component === Heading::class) {
             return [
-                'Default' => Form::make([
+                'Default' => Ui::make([
                     Heading::make('heading-default', 'Default heading'),
                 ]),
-                'Levels' => Form::make([
+                'Levels' => Ui::make([
                     Heading::make('heading-level-1', 'Level 1')->level(1),
                     Heading::make('heading-level-2', 'Level 2')->level(2),
                     Heading::make('heading-level-3', 'Level 3')->level(3),
@@ -649,22 +649,22 @@ class FormKitchenSink
 
         if ($component === MarkdownContent::class) {
             return [
-                'Pane' => Form::make([
+                'Pane' => Ui::make([
                     MarkdownContent::make('markdown-content-pane', 'This is the **Markdown Content** node.'),
                 ]),
-                'Plain' => Form::make([
+                'Plain' => Ui::make([
                     MarkdownContent::make('markdown-content-plain', 'This is the **Markdown Content** node.')
                         ->displayInPane(false),
                 ]),
             ];
         }
 
-        $form = $this->form($component);
+        $form = $this->ui($component);
 
         return $form === null ? null : ['Default' => $form];
     }
 
-    private function form(?string $component): ?Form
+    private function ui(?string $component): ?Ui
     {
         return match ($component) {
             GroupedEntryTypeManager::class => $this->control(
@@ -675,20 +675,20 @@ class FormKitchenSink
                 'Missing control',
                 MissingControl::make('missingControl')->provider('workbench/missing-control'),
             ),
-            LineBreak::class => Form::make([
+            LineBreak::class => Ui::make([
                 Heading::make('before-line-break', 'Before line break')->width(50),
                 LineBreak::make('line-break-node'),
                 Heading::make('after-line-break', 'After line break')->width(50),
             ]),
-            MissingNode::class => Form::make([
+            MissingNode::class => Ui::make([
                 MissingNode::make('missing-node', 'workbench/missing-node'),
             ]),
-            Separator::class => Form::make([
+            Separator::class => Ui::make([
                 Heading::make('before-separator', 'Before separator'),
                 Separator::make('separator-node'),
                 Heading::make('after-separator', 'After separator'),
             ]),
-            Tab::class => Form::make([
+            Tab::class => Ui::make([
                 Tab::make('first-tab', 'First tab', [
                     MarkdownContent::make('first-tab-content', 'First tab content')->displayInPane(false),
                 ]),
@@ -696,7 +696,7 @@ class FormKitchenSink
                     MarkdownContent::make('second-tab-content', 'Second tab content')->displayInPane(false),
                 ]),
             ]),
-            TemplateContent::class => Form::make([
+            TemplateContent::class => Ui::make([
                 TemplateContent::make(
                     'template-content-node',
                     '<p>This is the <strong>Template Content</strong> node.</p>',
@@ -706,8 +706,8 @@ class FormKitchenSink
         };
     }
 
-    private function control(string $label, Control $control): Form
+    private function control(string $label, Control $control): Ui
     {
-        return Form::make([Field::make($label, $control)]);
+        return Ui::make([Field::make($label, $control)]);
     }
 }

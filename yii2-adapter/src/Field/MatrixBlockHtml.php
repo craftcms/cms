@@ -8,9 +8,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
@@ -52,7 +52,7 @@ class MatrixBlockHtml
         $payload = app(FieldLayoutCompiler::class)->compile(
             $entry->getFieldLayout(),
             $entry,
-            new FormContext(
+            new UiContext(
                 namespace: explode('[', str_replace(']', '', $namespace)),
                 errors: $entry->errors()->getMessages(),
             ),

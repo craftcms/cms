@@ -20,12 +20,12 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Event;
@@ -410,7 +410,7 @@ it('badges a block’s own field when that block was edited through a draft', fu
     $payload = app(FieldLayoutCompiler::class)->compile(
         $draft->getFieldLayout(),
         $draft,
-        new FormContext,
+        new UiContext,
     );
     $statuses = [];
     $collect = function (array $node) use (&$collect, &$statuses): void {

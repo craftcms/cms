@@ -24,8 +24,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
-use CraftCms\Cms\Form\FormControlTypes;
-use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -37,6 +35,8 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
+use CraftCms\Cms\Ui\UiControlTypes;
+use CraftCms\Cms\Ui\UiNodeTypes;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\UtilityTypes;
 use CraftCms\Cms\View\TemplateMode;
@@ -158,8 +158,8 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
         $this->app->singleton(Conditions::class, LegacyConditions::class);
-        $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
-        $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
+        $this->callAfterResolving(UiNodeTypes::class, fn(UiNodeTypes $types) => $types->register(LegacyHtmlField::class));
+        $this->callAfterResolving(UiControlTypes::class, fn(UiControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
          * Load the legacy fallback route from booted() so it registers after
          * the CMS package's own Route::fallback(), ensuring that unmatched

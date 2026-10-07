@@ -3,29 +3,29 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\RequestedSite;
-use CraftCms\Cms\Form\Controls\Slug;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Ui\Controls\Slug;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('resolves and renders an editable slug with its source settings', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([
             Field::make('Title', Text::make('title')),
             Field::make('Slug', Slug::make('slug')->source('title')->charMap(['ø' => 'oe'])),
         ]),
-        new FormContext(values: [
+        new UiContext(values: [
             'title' => 'Smørrebrød',
             'slug' => 'smoerrebroed',
         ]),
     );
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $bodyHtml = HtmlStack::bodyHtml();
 
     expect($payload->nodes[1]->control?->props)->toBe([
@@ -62,20 +62,20 @@ it('derives the character map from its language unless one is set', function () 
 });
 
 it('can expose its source without automatically generating', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([
             Field::make('Title', Text::make('title')),
             Field::make('Slug', Slug::make('slug')
                 ->source('title')
                 ->charMap([])
                 ->autoGenerate(false)),
         ]),
-        new FormContext(values: [
+        new UiContext(values: [
             'title' => 'Updated title',
             'slug' => 'established-slug',
         ]),
     );
-    app(FormHtmlRenderer::class)->render($payload);
+    app(UiHtmlRenderer::class)->render($payload);
 
     expect($payload->nodes[1]->control?->props['autoGenerate'])->toBeFalse()
         ->and(HtmlStack::bodyHtml())->not->toContain('new Craft.SlugGenerator');

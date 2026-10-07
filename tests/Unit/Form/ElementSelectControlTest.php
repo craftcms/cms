@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 
 it('uses an empty ordered list as its canonical default', function () {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([
             Field::make()->control(ElementSelect::make('related')->elementType(Entry::class)),
         ]),
-        new FormContext(namespace: 'settings'),
+        new UiContext(namespace: 'settings'),
     );
 
     expect($payload->values)->toBe(['settings' => ['related' => []]]);
 });
 
 it('uses one public Control for modern element relationship types', function (string $elementType, string $customElement) {
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([
             Field::make()->control(
                 ElementSelect::make('related')
                     ->elementType($elementType)
@@ -34,7 +34,7 @@ it('uses one public Control for modern element relationship types', function (st
                     ->showSiteMenu(),
             ),
         ]),
-        new FormContext(namespace: 'settings', values: ['settings' => ['related' => []]]),
+        new UiContext(namespace: 'settings', values: ['settings' => ['related' => []]]),
     );
 
     expect($payload->nodes[0]->control->props)->toMatchArray([

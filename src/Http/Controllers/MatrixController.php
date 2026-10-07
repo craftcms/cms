@@ -16,11 +16,11 @@ use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\NestedFormPayload;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\NestedUiPayload;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -207,13 +207,13 @@ readonly class MatrixController
         $payload = app(FieldLayoutCompiler::class)->compile(
             $entry->getFieldLayout(),
             $entry,
-            new FormContext(namespace: $scope, refreshable: true),
+            new UiContext(namespace: $scope, refreshable: true),
         );
 
         return [
             'uid' => $entry->uid,
             'type' => $entry->getType()->handle,
-            'form' => new NestedFormPayload(
+            'form' => new NestedUiPayload(
                 scope: $scope,
                 refreshable: true,
                 nodes: $payload->nodes,

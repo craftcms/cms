@@ -12,18 +12,18 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -134,9 +134,9 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
+        return Ui::make([
             FormField::make(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
                 ->control(Choice::make('uiMode')->value($this->uiMode)->options([
@@ -173,7 +173,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                         ->value($this->multiline)
                         ->reactive()),
             ]),
-        ])->when($this->multiline, fn (Form $form) => $form->add(
+        ])->when($this->multiline, fn (Ui $form) => $form->add(
             Group::make('plain-text-multiline-settings', [
                 FormField::make(t('Initial Rows'))
                     ->control(Number::make('initialRows')

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
 use Exception;
 use League\Uri\Uri;
 

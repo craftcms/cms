@@ -17,8 +17,6 @@ use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
@@ -36,6 +34,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -692,7 +692,7 @@ class EditElementController
             $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
                 $fieldLayout,
                 $element,
-                new FormContext(
+                new UiContext(
                     namespace: InputNamespace::get() ?? [],
                     errors: $element->errors()->getMessages(),
                     mode: $canSave ? ControlMode::Editable : ControlMode::ReadOnly,

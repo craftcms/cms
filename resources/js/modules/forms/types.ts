@@ -1,6 +1,6 @@
 import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 
-type GeneratedFormPayload = CraftCms.Cms.Form.FormPayload;
+type GeneratedFormPayload = CraftCms.Cms.Ui.UiPayload;
 type GeneratedFormNodePayload = GeneratedFormPayload['nodes'][number];
 type GeneratedFormControlPayload = NonNullable<
   GeneratedFormNodePayload['control']
@@ -98,7 +98,7 @@ export type FormPayload<
  * them. `NestedFormPayload.scope` always ends in the bare UUID, so a control holding a
  * freshly minted block has to look its form up under both.
  *
- * @see CraftCms\Cms\Form\Controls\NestedElementBlocks
+ * @see CraftCms\Cms\Ui\Controls\NestedElementBlocks
  */
 export type NestedElementValue = {
   entries: {[uid: string]: NestedElementEntryValue};

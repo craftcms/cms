@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Enums\AllOptionMode;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\AllOptionMode;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 function sourcesChoice(?callable $configure = null, ?array $value = null): Crawler
@@ -27,13 +27,13 @@ function sourcesChoice(?callable $configure = null, ?array $value = null): Crawl
         $configure($control);
     }
 
-    $context = new FormContext;
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([Field::make('Sources', $control)]),
+    $context = new UiContext;
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([Field::make('Sources', $control)]),
         $context,
     );
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('renders no select-all by default', function () {
@@ -97,8 +97,8 @@ it('takes a custom token', function () {
 });
 
 it('only advertises the label when the option is enabled', function () {
-    $props = fn (?callable $configure): array => app(FormResolver::class)->resolve(
-        Form::make([Field::make('Sources', (function () use ($configure) {
+    $props = fn (?callable $configure): array => app(UiResolver::class)->resolve(
+        Ui::make([Field::make('Sources', (function () use ($configure) {
             $c = Choice::make('sources')->multiple()->presentation(ChoicePresentation::Checkboxes)
                 ->options([['label' => 'Uploads', 'value' => 'volume:uploads']]);
             if ($configure) {
@@ -107,7 +107,7 @@ it('only advertises the label when the option is enabled', function () {
 
             return $c;
         })())]),
-        new FormContext,
+        new UiContext,
     )->nodes[0]->control->props;
 
     expect($props(null))->not->toHaveKey('allLabel')

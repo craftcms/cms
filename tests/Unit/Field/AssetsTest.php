@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\FieldContext;
-use CraftCms\Cms\Form\Controls\AssetSelect;
+use CraftCms\Cms\Ui\Controls\AssetSelect;
 
 /** An Assets field with nothing configured beyond its identity. */
 function assetsField(string $name = 'Images', string $handle = 'images'): Assets

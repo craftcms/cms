@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;

@@ -15,7 +15,7 @@
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
   type ChoiceValue = boolean | number | string;
-  type ChoicePresentation = CraftCms.Cms.Form.Enums.ChoicePresentation;
+  type ChoicePresentation = CraftCms.Cms.Ui.Enums.ChoicePresentation;
   type ChoiceOption = {
     label: string;
     labelHtml?: string;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes;
 
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
 
 class Notice implements Node
 {
@@ -18,7 +18,7 @@ class Notice implements Node
         private readonly string $message,
     ) {}
 
-    public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
+    public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         return Html::tag('p', Html::encode((string) $node->props['message']), [
             'data-form-node' => $node->uid,

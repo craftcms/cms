@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Form\Concerns;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
 
 /** @phpstan-require-implements ConfigurableComponentInterface */
 trait LegacySettingsForm
 {
-    public function settingsForm(FormContext $context = new FormContext()): ?Form
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
         $node = app(LegacyHtml::class)->settings(
             component: $this,
@@ -31,6 +31,6 @@ trait LegacySettingsForm
             ->deltaGroupAtNamespace()
             ->expandValues();
 
-        return $node === null ? null : Form::make([$node]);
+        return $node === null ? null : Ui::make([$node]);
     }
 }

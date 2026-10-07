@@ -16,9 +16,9 @@ use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\NativeFields;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Yii2Adapter\FieldLayout\LegacyFormEvents;
 use Deprecated;
 use Generator;
@@ -163,7 +163,7 @@ trait LegacyConstants
                         $ordered[] = $node;
                     }
                 }
-                $event->form = Form::make([
+                $event->form = Ui::make([
                     ...$ordered,
                     ...array_filter($nodes, fn(Node $node) => !in_array($node->uid(), $tabUids, true)),
                 ]);

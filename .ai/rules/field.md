@@ -10,4 +10,4 @@ Nested element fields (Matrix, Addresses) post an `{entries, sortOrder}` delta e
 
 Never parse that envelope by hand — call `ElementHelper::nestedElementDelta($value)`, which returns `['delta', 'uids', 'entries', 'sortOrder']` with the prefix stripped from both halves. Hand-rolled parsing is what let a prefixed `sortOrder` silently drop every new Matrix block.
 
-Identities are bare UUIDs everywhere inside PHP, including `NestedFormPayload.scope`. When you need the raw POST key back (e.g. `setFieldParamNamespace()`), re-add `ElementHelper::NESTED_ELEMENT_UID_PREFIX` rather than keeping an un-normalized copy around.
+Identities are bare UUIDs everywhere inside PHP, including `NestedUiPayload.scope`. When you need the raw POST key back (e.g. `setFieldParamNamespace()`), re-add `ElementHelper::NESTED_ELEMENT_UID_PREFIX` rather than keeping an un-normalized copy around.

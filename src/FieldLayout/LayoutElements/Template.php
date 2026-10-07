@@ -6,16 +6,16 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Extensions\CpExtension;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\TemplateContent;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\View\TemplateMode;
 use InvalidArgumentException;
 use Override;
@@ -96,7 +96,7 @@ class Template extends BaseUiElement
     }
 
     #[Override]
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         return [
             Field::make(t('Template'), Combobox::make('template')

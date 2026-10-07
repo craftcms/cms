@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function visibilityPayload(Form $form): FormPayload
+function visibilityPayload(Ui $form): UiPayload
 {
-    return app(FormResolver::class)->resolve($form, new FormContext(
+    return app(UiResolver::class)->resolve($form, new UiContext(
         values: ['subpath' => 'a/b'],
     ));
 }
 
 it('omits the hidden prop while a node is visible', function () {
-    $payload = visibilityPayload(Form::make([
+    $payload = visibilityPayload(Ui::make([
         Field::make('Subpath', Text::make('subpath')),
         Field::make('Explicit', Text::make('other'))->visible(),
     ]));
@@ -32,7 +32,7 @@ it('omits the hidden prop while a node is visible', function () {
 it('keeps a hidden field resolved, with its value intact', function () {
     // The whole reason hiding isn't the same as omitting: an omitted node drops
     // its value from the payload, so it stops posting and the setting resets.
-    $payload = visibilityPayload(Form::make([
+    $payload = visibilityPayload(Ui::make([
         Field::make('Subpath', Text::make('subpath'))->visible(false),
     ]));
 
@@ -42,7 +42,7 @@ it('keeps a hidden field resolved, with its value intact', function () {
 });
 
 it('treats hidden(true) and visible(false) the same', function () {
-    $payload = visibilityPayload(Form::make([
+    $payload = visibilityPayload(Ui::make([
         Field::make('A', Text::make('a'))->hidden(),
         Field::make('B', Text::make('b'))->visible(false),
     ]));
@@ -52,10 +52,10 @@ it('treats hidden(true) and visible(false) the same', function () {
 });
 
 it('renders a hidden field with both the attribute and the class', function () {
-    $payload = visibilityPayload(Form::make([
+    $payload = visibilityPayload(Ui::make([
         Field::make('Subpath', Text::make('subpath'))->hidden(),
     ]));
-    $field = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-field');
+    $field = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('craft-field');
 
     expect($field->attr('hidden'))->not->toBeNull()
         ->and($field->attr('class'))->toContain('hidden')
@@ -66,15 +66,15 @@ it('renders a hidden field with both the attribute and the class', function () {
 it('hides a group in either appearance, keeping its children resolved', function () {
     $children = fn (): array => [Field::make('Subpath', Text::make('subpath'))];
 
-    $section = visibilityPayload(Form::make([
+    $section = visibilityPayload(Ui::make([
         Group::make('section', $children())->label('Section')->hidden(),
     ]));
-    $field = visibilityPayload(Form::make([
+    $field = visibilityPayload(Ui::make([
         Group::make('as-field', $children())->asField()->label('As field')->hidden(),
     ]));
 
-    $sectionHtml = new Crawler(app(FormHtmlRenderer::class)->render($section));
-    $fieldHtml = new Crawler(app(FormHtmlRenderer::class)->render($field));
+    $sectionHtml = new Crawler(app(UiHtmlRenderer::class)->render($section));
+    $fieldHtml = new Crawler(app(UiHtmlRenderer::class)->render($field));
 
     expect($sectionHtml->filter('fieldset')->attr('hidden'))->not->toBeNull()
         ->and($fieldHtml->filter('craft-field[fieldset]')->attr('hidden'))->not->toBeNull()

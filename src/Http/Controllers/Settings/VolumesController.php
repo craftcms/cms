@@ -13,13 +13,13 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\VolumeEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -75,14 +75,14 @@ class VolumesController extends BaseAssetSettingsController
         ]);
     }
 
-    public function create(Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    public function create(Volumes $volumes, UiResolver $formResolver): CpScreenResponse
     {
         abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
 
         return $this->editScreen(new Volume, $volumes, $formResolver);
     }
 
-    public function edit(Volumes $volumes, FormResolver $formResolver, int $volumeId): CpScreenResponse
+    public function edit(Volumes $volumes, UiResolver $formResolver, int $volumeId): CpScreenResponse
     {
         $volume = $volumes->getVolumeById($volumeId);
 
@@ -91,7 +91,7 @@ class VolumesController extends BaseAssetSettingsController
         return $this->editScreen($volume, $volumes, $formResolver);
     }
 
-    public function renderForm(Request $request, Volumes $volumes, FormResolver $formResolver): JsonResponse
+    public function renderForm(Request $request, Volumes $volumes, UiResolver $formResolver): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -178,7 +178,7 @@ class VolumesController extends BaseAssetSettingsController
         return $this->asSuccess();
     }
 
-    private function editScreen(Volume $volume, Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    private function editScreen(Volume $volume, Volumes $volumes, UiResolver $formResolver): CpScreenResponse
     {
         $isNewVolume = $volume->id === null;
         $title = $isNewVolume

@@ -11,7 +11,7 @@
     CraftCms.Cms.Http.ViewModels.WorkflowEditViewModel['stageTypes'][number];
 
   const props = defineProps<{
-    form: CraftCms.Cms.Form.FormPayload;
+    form: CraftCms.Cms.Ui.UiPayload;
     stageTypes: StageType[];
     submit: {
       method: 'patch' | 'post';

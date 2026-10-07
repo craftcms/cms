@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Checkbox;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Action;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Checkbox;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Action;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function actionsForm(): Form
+function actionsUi(): Ui
 {
-    return Form::make([
+    return Ui::make([
         Field::make('Label', Text::make('label'))
             ->actions(Action::make(Checkbox::make('labelHidden')->label('Hide'))),
     ]);
 }
 
 it('resolves action children with their own control paths', function () {
-    $payload = app(FormResolver::class)->resolve(actionsForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve(actionsUi(), new UiContext);
     $field = $payload->nodes[0];
 
     expect($field->props['hasActions'])->toBeTrue()
@@ -34,15 +34,15 @@ it('resolves action children with their own control paths', function () {
 });
 
 it('omits hasActions when a field has no actions', function () {
-    $form = Form::make([Field::make('Label', Text::make('label'))]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext);
+    $form = Ui::make([Field::make('Label', Text::make('label'))]);
+    $payload = app(UiResolver::class)->resolve($form, new UiContext);
 
     expect($payload->nodes[0]->props)->not->toHaveKey('hasActions')
         ->and($payload->nodes[0]->children)->toBeNull();
 });
 
 it('binds values and errors to the action control, not the field control', function () {
-    $payload = app(FormResolver::class)->resolve(actionsForm(), new FormContext(
+    $payload = app(UiResolver::class)->resolve(actionsUi(), new UiContext(
         values: ['label' => 'Heading', 'labelHidden' => true],
         errors: ['labelHidden' => 'Nope.'],
     ));
@@ -56,10 +56,10 @@ it('binds values and errors to the action control, not the field control', funct
 });
 
 it('renders actions into the field’s actions slot', function () {
-    $payload = app(FormResolver::class)->resolve(actionsForm(), new FormContext(
+    $payload = app(UiResolver::class)->resolve(actionsUi(), new UiContext(
         values: ['labelHidden' => true],
     ));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $action = $crawler->filter('craft-field [slot="actions"]');
 
     expect($action)->toHaveCount(1)

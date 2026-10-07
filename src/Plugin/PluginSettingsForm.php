@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use LogicException;
 
 /**
@@ -18,9 +18,9 @@ use LogicException;
  */
 readonly class PluginSettingsForm
 {
-    public function __construct(private FormResolver $formResolver) {}
+    public function __construct(private UiResolver $formResolver) {}
 
-    public function render(PluginInterface $plugin, bool $readOnly = false): FormPayload
+    public function render(PluginInterface $plugin, bool $readOnly = false): UiPayload
     {
         $settings = $plugin->getSettings();
 
@@ -40,7 +40,7 @@ readonly class PluginSettingsForm
      * @param  array<string, mixed>  $values
      * @param  list<string>  $scope
      */
-    public function refresh(PluginInterface $plugin, array $values, array $scope): FormPayload
+    public function refresh(PluginInterface $plugin, array $values, array $scope): UiPayload
     {
         $settings = $plugin->getSettings()?->validationData() ?? [];
         $settings = $scope === ['settings']
@@ -54,19 +54,19 @@ readonly class PluginSettingsForm
      * @param  array<string, mixed>  $values
      * @param  array<string, string|list<string>>  $errors
      */
-    private function resolve(PluginInterface $plugin, array $values, array $errors = [], bool $readOnly = false): FormPayload
+    private function resolve(PluginInterface $plugin, array $values, array $errors = [], bool $readOnly = false): UiPayload
     {
-        $context = new FormContext(
+        $context = new UiContext(
             namespace: 'settings',
             values: ['settings' => $values],
             errors: $errors,
             mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $readOnly,
         );
-        $form = $plugin->settingsForm($context);
+        $form = $plugin->settingsUi($context);
 
         if ($form === null) {
-            throw new LogicException("Plugin [{$plugin->handle}] must return a Form from settingsForm().");
+            throw new LogicException("Plugin [{$plugin->handle}] must return a Form from settingsUi().");
         }
 
         return $this->formResolver->resolve($form, $context);

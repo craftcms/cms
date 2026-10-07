@@ -36,18 +36,6 @@ use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -61,6 +49,18 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -497,12 +497,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         // Each setting is its own overridable chunk, mirroring the blocks Craft 5
         // exposed from `elementfieldsettings.twig`. Nulls are filtered out, so a
         // subclass can drop or reorder settings without reimplementing the Form.
-        return Form::make(array_values(array_filter([
+        return Ui::make(array_values(array_filter([
             $this->sourcesField(),
             $this->selectionConditionField(),
             $this->maintainHierarchyField(),
@@ -600,7 +600,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * Returns the “Maintain hierarchy” setting.
      *
      * Field types that can’t relate to a structure (e.g. Assets) omit this from
-     * their Form entirely, the way Craft 5’s `Assets/settings.twig` never
+     * their Ui entirely, the way Craft 5’s `Assets/settings.twig` never
      * rendered the `maintainHierarchy` block. Return `null` to drop it.
      */
     protected function maintainHierarchyField(): ?FormField

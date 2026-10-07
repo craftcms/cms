@@ -16,7 +16,6 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\UpdatesFieldLayout;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
@@ -258,7 +258,7 @@ class ElementDraftsController
      *
      * @return array<string, mixed>
      */
-    private function editScreenData(ElementInterface $element, ?FormPayload $form): array
+    private function editScreenData(ElementInterface $element, ?UiPayload $form): array
     {
         $viewModel = $element::editViewModelClass();
 

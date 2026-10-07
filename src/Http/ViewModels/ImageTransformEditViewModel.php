@@ -6,23 +6,6 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Color;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
@@ -31,6 +14,23 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\Images;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Color;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -43,14 +43,14 @@ class ImageTransformEditViewModel extends ViewModel
     public function __construct(
         private readonly ImageTransform $transform,
         private readonly Images $images,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $formResolver,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function form(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
         $mode = (string) $values['mode'];
@@ -60,7 +60,7 @@ class ImageTransformEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = Form::make([
+        $form = Ui::make([
             HiddenField::make('transformId'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
@@ -137,7 +137,7 @@ class ImageTransformEditViewModel extends ViewModel
             }
         }
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->formResolver->resolve($form, new UiContext(
             values: $values,
             errors: $this->transform->errors()->getMessages(),
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,

@@ -11,17 +11,17 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Time as TimeControl;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Time as TimeControl;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\TimeRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
@@ -102,14 +102,14 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $increments = array_map(fn (int $increment): array => [
             'label' => (string) $increment,
             'value' => $increment,
         ], [5, 10, 15, 30, 60]);
 
-        return Form::make([
+        return Ui::make([
             FormField::make(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->control(Choice::make('minuteIncrement')->options($increments)->value($this->minuteIncrement)),

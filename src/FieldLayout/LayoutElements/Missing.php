@@ -8,8 +8,8 @@ use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\Missing as MissingNode;
 use InvalidArgumentException;
 
 /**

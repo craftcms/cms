@@ -6,13 +6,13 @@ use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
@@ -44,20 +44,20 @@ it('selects thumbnail modes for each relationship presentation', function (strin
 it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();
     $second = Entry::factory()->title('Second entry')->create();
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Related entries',
             ElementSelect::make('related')
                 ->elementType(EntryElement::class)
                 ->selectionLabel('Add an entry'),
         ),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$second->id, $first->id]]],
         errors: ['related' => ['Choose valid entries.']],
     ));
     $control = $payload->nodes[0]->control;
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($control->component)->toBe('craft:element-select')
         // Identity only; the payload also carries what the chip's own action
@@ -79,15 +79,15 @@ it('resolves and renders ordered element relationships', function () {
 
 it('displays element relationships without submitting them in non-editable modes', function (ControlMode $mode) {
     $entry = Entry::factory()->title('Related entry')->create();
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(ElementSelect::make('related')->elementType(EntryElement::class)),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$entry->id]]],
         mode: $mode,
     ));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter('craft-chip'))->toHaveCount(1)
         ->and($crawler->filter('input[name], select[name], textarea[name]'))->toHaveCount(0)
@@ -99,18 +99,18 @@ it('displays element relationships without submitting them in non-editable modes
 
 it('keeps current values when picker criteria change', function () {
     $entry = Entry::factory()->title('Existing entry')->create();
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')
                 ->elementType(EntryElement::class)
                 ->criteria(['id' => 999999]),
         ),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$entry->id]]],
     ));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->control->props['elements'][0]['id'])->toBe($entry->id)
         ->and($crawler->filter("input[value=\"{$entry->id}\"]"))->toHaveCount(1);
@@ -118,12 +118,12 @@ it('keeps current values when picker criteria change', function () {
 
 it('resolves non-empty modern relationship values', function (Closure $createElement) {
     $element = $createElement();
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')->elementType($element::class),
         ),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$element->getId()]]],
     ));
@@ -144,13 +144,13 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
 it('resolves JSON-safe props for every element type', function (Closure $createElement) {
     $this->actingAs(UserModel::first());
     $element = $createElement();
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(
             ElementSelect::make('related')->elementType($element::class),
         ),
     ]);
 
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => ['related' => [$element->getId()]]],
     ));
@@ -170,10 +170,10 @@ it('renders a scalar element selection without changing list selection semantics
     }
 
     $value = $single ? $entry->id : [$entry->id];
-    $payload = app(FormResolver::class)->resolve(Form::make([
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('Replacement', $control),
-    ]), new FormContext(values: ['replacement' => $value]));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    ]), new UiContext(values: ['replacement' => $value]));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $settings = json_decode($crawler->filter('craft-entry-select-input')->attr('settings'), true);
     $name = $single ? 'replacement' : 'replacement[]';
 

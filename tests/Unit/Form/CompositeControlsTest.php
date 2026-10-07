@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Address;
-use CraftCms\Cms\Form\Controls\IconPicker;
-use CraftCms\Cms\Form\Controls\Link;
-use CraftCms\Cms\Form\Controls\Markdown;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Address;
+use CraftCms\Cms\Ui\Controls\IconPicker;
+use CraftCms\Cms\Ui\Controls\Link;
+use CraftCms\Cms\Ui\Controls\Markdown;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function compositeControlsForm(): Form
+function compositeControlsUi(): Ui
 {
-    return Form::make([
+    return Ui::make([
         Field::make('Body',
             Markdown::make('body')
                 ->rows(6)
@@ -59,7 +59,7 @@ function compositeControlsForm(): Form
 
 function compositeControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawler
 {
-    $payload = app(FormResolver::class)->resolve(compositeControlsForm(), new FormContext(
+    $payload = app(UiResolver::class)->resolve(compositeControlsUi(), new UiContext(
         namespace: 'settings',
         values: ['settings' => [
             'body' => '<script>alert(1)</script> **Safe**',
@@ -81,11 +81,11 @@ function compositeControlsCrawler(ControlMode $mode = ControlMode::Editable): Cr
         mode: $mode,
     ));
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('resolves documented composite Control shapes and properties', function () {
-    $payload = app(FormResolver::class)->resolve(compositeControlsForm(), new FormContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve(compositeControlsUi(), new UiContext(namespace: 'settings'));
     $controls = collect($payload->nodes)->mapWithKeys(fn ($node) => [
         $node->control->component => $node->control,
     ]);
@@ -153,14 +153,14 @@ it('displays composite values without submitting them in non-editable modes', fu
 ]);
 
 it('preserves keyed Table rows in payloads and PHP submission names', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(Table::make('rows')
             ->keyed()
             ->columns(['name' => ['heading' => 'Name', 'type' => 'singleline']])
             ->value(['site-one' => ['name' => 'Primary']])),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->values['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']])
         ->and(json_decode($crawler->filter('craft-table-form')->attr('data-payload'), true)['values']['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']]);
@@ -170,12 +170,12 @@ it('renders text expanders for text and textarea Controls', function () {
     $triggers = [
         ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'source' => 'users/text-expander-options'],
     ];
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Name', Text::make('name')->textExpanderTriggers($triggers)),
         Field::make('Notes', Textarea::make('notes')->textExpanderTriggers($triggers)),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $input = $crawler->filter('input[name="settings[name]"]');
     $textarea = $crawler->filter('textarea[name="settings[notes]"]');
     $expanders = $crawler->filter('craft-text-expander');

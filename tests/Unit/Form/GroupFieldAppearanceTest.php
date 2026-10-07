@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\FieldWidth;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 function locationGroup(): Group
@@ -29,10 +29,10 @@ function locationGroup(): Group
 
 function renderGroup(Group $group): Crawler
 {
-    $context = new FormContext;
-    $payload = app(FormResolver::class)->resolve(Form::make([$group]), $context);
+    $context = new UiContext;
+    $payload = app(UiResolver::class)->resolve(Ui::make([$group]), $context);
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('renders a section as a fieldset with a legend by default', function () {
@@ -61,10 +61,10 @@ it('renders a craft-field in fieldset mode with asField()', function () {
 });
 
 it('keeps child control paths at the surrounding namespace in either appearance', function () {
-    $context = new FormContext(namespace: 'settings');
+    $context = new UiContext(namespace: 'settings');
     $paths = fn (Group $group): array => array_map(
         fn ($node): array => $node->control->path,
-        app(FormResolver::class)->resolve(Form::make([$group]), $context)->nodes[0]->children,
+        app(UiResolver::class)->resolve(Ui::make([$group]), $context)->nodes[0]->children,
     );
     $expected = [
         ['settings', 'restrictedLocationSource'],
@@ -76,9 +76,9 @@ it('keeps child control paths at the surrounding namespace in either appearance'
 });
 
 it('drops collapsible in field appearance', function () {
-    $context = new FormContext;
-    $payload = app(FormResolver::class)->resolve(
-        Form::make([locationGroup()->collapsible()->asField()]),
+    $context = new UiContext;
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([locationGroup()->collapsible()->asField()]),
         $context,
     );
 

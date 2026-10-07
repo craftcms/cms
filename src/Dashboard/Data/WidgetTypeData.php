@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Data;
 
-use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Ui\UiPayload;
 
 /**
  * @since 6.0.0
@@ -16,6 +16,6 @@ readonly class WidgetTypeData
         public string $name,
         public ?int $maxColspan,
         public bool $selectable,
-        public ?FormPayload $settingsForm,
+        public ?UiPayload $settingsForm,
     ) {}
 }

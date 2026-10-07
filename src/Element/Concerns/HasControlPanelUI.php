@@ -25,14 +25,6 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -46,6 +38,14 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
@@ -764,7 +764,7 @@ JS,
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
         $renderer = app(ElementAttributeRenderer::class);
-        $form = $this->inlineAttributeInputForm($attribute);
+        $form = $this->inlineAttributeInputUi($attribute);
 
         return $form === null
             ? $renderer->renderInlineInput($this, $attribute)
@@ -776,7 +776,7 @@ JS,
      * ElementAttributeRenderer. HTML overrides and the resolving event still run
      * through getInlineAttributeInputHtml() before this default implementation.
      */
-    protected function inlineAttributeInputForm(string $attribute): ?Form
+    protected function inlineAttributeInputUi(string $attribute): ?Ui
     {
         return null;
     }
@@ -806,7 +806,7 @@ JS,
         return $event->html;
     }
 
-    public function sidebarForm(FormContext $context = new FormContext): ?Form
+    public function sidebarUi(UiContext $context = new UiContext): ?Ui
     {
         $static = $context->mode === ControlMode::ReadOnly || $context->mode === ControlMode::Disabled;
 
@@ -825,11 +825,11 @@ JS,
                 );
         }
 
-        return $nodes === [] ? null : Form::make($nodes);
+        return $nodes === [] ? null : Ui::make($nodes);
     }
 
     /**
-     * The status Node(s) for the sidebar Form.
+     * The status Node(s) for the sidebar Ui.
      *
      * On a single-site install (or an element supported by one site) this is a
      * lone `enabled` switch. Otherwise it mirrors the legacy editor: a global
@@ -960,8 +960,8 @@ JS,
     }
 
     /**
-     * Returns the editor sidebar's element-type-specific meta fields as Form
-     * Nodes. The Form-system counterpart to {@see metaFieldsHtml()}; element
+     * Returns the editor sidebar's element-type-specific meta fields as Ui
+     * Nodes. The Ui-system counterpart to {@see metaFieldsHtml()}; element
      * types override this alongside their HTML implementation until the legacy
      * editor is retired.
      *
@@ -976,7 +976,7 @@ JS,
      * Returns the element's validation errors keyed the way the editor's Forms
      * address them.
      *
-     * A Form matches errors to Controls by path, so an attribute validated
+     * A Ui matches errors to Controls by path, so an attribute validated
      * under one name but posted under another — an asset's `newLocation` versus
      * its `newFilename` field — needs remapping here, or its messages never
      * reach the field that produced them.

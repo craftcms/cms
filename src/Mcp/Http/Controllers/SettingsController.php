@@ -6,15 +6,15 @@ namespace CraftCms\Cms\Mcp\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Mcp\SettingsForm;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,7 +29,7 @@ readonly class SettingsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private FormResolver $formResolver,
+        private UiResolver $formResolver,
         private ProjectConfig $projectConfig,
         private SettingsForm $settingsForm,
     ) {}
@@ -61,7 +61,7 @@ readonly class SettingsController
             ...$settings->toArray(),
             'endpoint' => route('craft.cp.mcp.server'),
         ];
-        $form = $this->formResolver->resolve($this->settingsForm->make(), new FormContext(
+        $form = $this->formResolver->resolve($this->settingsForm->make(), new UiContext(
             values: $values,
             errors: $settings->errors()->getMessages(),
             mode: $mode,

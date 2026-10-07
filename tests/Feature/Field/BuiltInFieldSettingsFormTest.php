@@ -26,24 +26,24 @@ use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\Field\Users;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('resolves and renders built-in field settings Forms', function (string $type) {
     $field = Fields::createField($type);
-    $context = new FormContext(namespace: 'settings', refreshable: true);
-    $form = $field->settingsForm($context);
+    $context = new UiContext(namespace: 'settings', refreshable: true);
+    $form = $field->settingsUi($context);
 
     expect($form)->not->toBeNull();
 
-    $payload = app(FormResolver::class)->resolve($form, $context);
+    $payload = app(UiResolver::class)->resolve($form, $context);
 
     expect($payload->nodes)->not->toBeEmpty()
         ->and(json_encode($payload, JSON_THROW_ON_ERROR))->toBeString()
-        ->and(app(FormHtmlRenderer::class)->render($payload))->toBeString();
+        ->and(app(UiHtmlRenderer::class)->render($payload))->toBeString();
 })->with([
     'addresses' => Addresses::class,
     'assets' => Assets::class,
@@ -73,9 +73,9 @@ it('resolves and renders built-in field settings Forms', function (string $type)
 
 it('preserves the rel advanced field label markup', function () {
     $field = Fields::createField(Link::class);
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $relOption = $crawler->filter('input[value="rel"]')->ancestors()->filter('craft-checkbox')->first();
 
     expect($relOption->filter('label code')->text())->toBe('rel');

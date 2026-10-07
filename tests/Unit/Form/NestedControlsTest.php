@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Controls\ContentBlock;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Tab;
+use CraftCms\Cms\Ui\Controls\ContentBlock;
+use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Tab;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
-function nestedControlsForm(): Form
+function nestedControlsUi(): Ui
 {
-    $contentBlock = ContentBlock::make('content')->form(Form::make([
+    $contentBlock = ContentBlock::make('content')->ui(Ui::make([
         Field::make('Body', Text::make('body')),
     ]));
 
-    return Form::make([
+    return Ui::make([
         Field::make('Content',
             NestedElementBlocks::make('matrix')
                 ->entryTypes(['text' => 'Text'])
                 ->forms([
-                    'block-a' => Form::make([
+                    'block-a' => Ui::make([
                         Field::make('Heading', Text::make('heading')),
                         Field::make('Content block', $contentBlock),
                     ]),
@@ -33,9 +33,9 @@ function nestedControlsForm(): Form
     ]);
 }
 
-function nestedControlsContext(): FormContext
+function nestedControlsContext(): UiContext
 {
-    return new FormContext(
+    return new UiContext(
         namespace: 'settings',
         values: ['settings' => ['matrix' => [
             'entries' => ['block-a' => [
@@ -50,7 +50,7 @@ function nestedControlsContext(): FormContext
 }
 
 it('resolves nested Form scopes recursively with one ancestor atomic group', function () {
-    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
     $entryForm = $matrix->forms[0];
     $contentBlock = $entryForm->nodes[1]->control;
@@ -71,7 +71,7 @@ it('resolves nested Form scopes recursively with one ancestor atomic group', fun
 });
 
 it('returns a nested Form payload for a dependent refresh scope', function () {
-    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $scope = ['settings', 'matrix', 'entries', 'block-a'];
     $nested = $payload->forScope($scope);
 
@@ -86,16 +86,16 @@ it('mounts an isolated nested control with its values, scopes, and validation er
     $context = nestedControlsContext();
     $values = $context->values;
     $values['settings']['other'] = 'Unrelated owner text';
-    $payload = app(FormResolver::class)->resolve(
-        nestedControlsForm()->add(Field::make('Other', Text::make('other'))),
-        new FormContext(
+    $payload = app(UiResolver::class)->resolve(
+        nestedControlsUi()->add(Field::make('Other', Text::make('other'))),
+        new UiContext(
             namespace: $context->namespace,
             values: $values,
             errors: [...$context->errors, 'other' => ['Other is invalid.']],
             globalErrors: ['Owner is invalid.'],
         ),
     );
-    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+    $crawler = new Crawler('<form>'.app(UiHtmlRenderer::class)->render($payload).'</form>');
     $host = $crawler->filter('craft-entry-field-layout-form[data-field-path]');
     $form = json_decode($host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
 
@@ -122,18 +122,18 @@ it('mounts an isolated nested control with its values, scopes, and validation er
 
 function nestedTabsCrawler(): Crawler
 {
-    $nested = Form::make([
+    $nested = Ui::make([
         Tab::make('content', 'Content', [Field::make('Body', Text::make('body'))]),
         Tab::make('details', 'Details', [Field::make('Summary', Text::make('summary'))]),
     ]);
-    $form = Form::make([
+    $form = Ui::make([
         Tab::make('content', 'Content', [
-            Field::make('Hero', ContentBlock::make('hero')->form($nested)),
-            Field::make('Footer', ContentBlock::make('footer')->form($nested)),
+            Field::make('Hero', ContentBlock::make('hero')->ui($nested)),
+            Field::make('Footer', ContentBlock::make('footer')->ui($nested)),
         ]),
         Tab::make('settings', 'Settings', [Field::make('Title', Text::make('title'))]),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(
         namespace: 'settings',
         values: ['settings' => [
             'hero' => ['body' => 'Hero body', 'summary' => 'Hero summary'],
@@ -142,7 +142,7 @@ function nestedTabsCrawler(): Crawler
         ]],
     ));
 
-    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
 it('shows the first tab in each nested HTML form independently of its parent', function () {
@@ -169,7 +169,7 @@ it('gives nested HTML tab panels distinct IDs across instances and their parent'
 });
 
 it('declares which Controls hold nested forms', function () {
-    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $payload = app(UiResolver::class)->resolve(nestedControlsUi(), nestedControlsContext());
     $matrix = $payload->nodes[0]->control;
     $contentBlock = $matrix->forms[0]->nodes[1]->control;
     $heading = $matrix->forms[0]->nodes[0]->control;
@@ -184,11 +184,11 @@ it('declares which Controls hold nested forms', function () {
 });
 
 it('uses explicit empty canonical values', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make()->control(NestedElementBlocks::make('matrix')->entryTypes(['text' => 'Text'])),
         Field::make()->control(ContentBlock::make('content')),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
 
     expect($payload->values)->toBe(['settings' => [
         'matrix' => ['entries' => [], 'sortOrder' => []],

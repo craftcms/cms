@@ -29,7 +29,7 @@ use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\Field\Users;
-use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Control;
 
 it('provides a Form Control for every built-in field type', function (string $fieldType) {
     $field = match ($fieldType) {

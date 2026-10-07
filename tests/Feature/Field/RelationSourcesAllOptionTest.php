@@ -5,16 +5,16 @@ declare(strict_types=1);
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Entries;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 
 /** @return array<string, mixed> The resolved `sources` control props. */
 function sourcesProps(string $type, array $settings = []): array
 {
     $field = Fields::createField(['type' => $type, 'settings' => $settings]);
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
     foreach (flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)) as $node) {
         if (($node['control']['path'] ?? null) === ['settings', 'sources']) {
@@ -55,8 +55,8 @@ it('round-trips a field set to all sources', function (string $type) {
 
     expect($field->sources)->toBe(BaseRelationField::ALL_SOURCES);
 
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
     expect($payload->values['settings']['sources'])->toBe([BaseRelationField::ALL_SOURCES]);
 })->with(['assets' => Assets::class, 'entries' => Entries::class]);
@@ -64,8 +64,8 @@ it('round-trips a field set to all sources', function (string $type) {
 it('leaves single-source fields alone', function () {
     $field = Fields::createField(Assets::class);
     $field->allowMultipleSources = false;
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
     $source = collect(flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)))
         ->first(fn (array $node): bool => ($node['control']['path'] ?? null) === ['settings', 'source']);

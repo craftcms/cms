@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form\Controls;
 
-use CraftCms\Cms\Form\ControlPayload;
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlFragment;
 use CraftCms\Cms\View\HtmlStack;
@@ -21,7 +21,7 @@ class LegacyHtmlControl extends Control
 
     private bool $expandValues = false;
 
-    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
+    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $fragment = $control->props['fragment'] ?? null;
 

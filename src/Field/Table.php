@@ -13,18 +13,18 @@ use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Table as TableControl;
-use CraftCms\Cms\Form\Controls\TableColumns;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\TableColumns;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Cms\Ui\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
@@ -173,7 +173,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $columnForms = [];
         $types = [];
@@ -181,7 +181,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $types[] = ['value' => $identity, 'label' => $label];
         }
         foreach ($this->columns as $id => $column) {
-            $form = $this->cellType($column)->settingsForm(new FormContext(values: $column));
+            $form = $this->cellType($column)->settingsUi(new UiContext(values: $column));
             if ($form !== null) {
                 $columnForms[$id] = $form;
             }
@@ -197,7 +197,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $columnsControl->mode(ControlMode::ReadOnly);
         }
 
-        return Form::make([
+        return Ui::make([
             FormField::make(t('Columns'))
                 ->instructions(t('Define the columns your table should have.'))
                 ->control($columnsControl),
@@ -473,7 +473,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             fn (string $attribute): bool => $attribute === $this->handle || str_starts_with($attribute, "$this->handle."),
             ARRAY_FILTER_USE_KEY,
         );
-        $context = new FormContext(errors: $errors);
+        $context = new UiContext(errors: $errors);
         $control = $this->formControl(new FieldContext(
             path: $this->handle,
             value: $value,
@@ -481,8 +481,8 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             form: $context,
             inline: $inline,
         ));
-        $payload = app(FormResolver::class)->resolve(
-            Form::make([FormField::make()->control($control)]),
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([FormField::make()->control($control)]),
             $context,
         );
 

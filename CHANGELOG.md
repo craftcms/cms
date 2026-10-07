@@ -84,6 +84,7 @@
 - Moved legacy nested element HTML rendering and Yii event compatibility into `craftcms/yii2-adapter`. ([#19804](https://github.com/craftcms/cms/pull/19804))
 - Deprecated the editable table `initJs` option and number column `locale` option. Tables now mount automatically, and number columns submit unformatted values. ([#19873](https://github.com/craftcms/cms/pull/19873))
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
+- Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods.
 - Deprecated `craft\base\Plugin::getVersion()` and `setVersion()`. The `$version` property should be used instead. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Removed `Cp.$axios`.
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))

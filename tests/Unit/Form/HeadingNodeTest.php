@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('renders the configured heading level and defaults to level two', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Heading::make('custom', 'Custom')->level(3)->description('Supporting copy.'),
         Heading::make('default', 'Default'),
     ]);
-    $payload = app(FormResolver::class)->resolve($form, new FormContext);
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $payload = app(UiResolver::class)->resolve($form, new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->props['level'])->toBe(3)
         ->and($crawler->filter('[data-form-node="custom"] h3')->text())->toBe('Custom')

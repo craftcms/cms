@@ -5,34 +5,34 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('advertises field layouts on the resolved payload', function () {
     $layout = ['type' => Entry::class, 'tabs' => []];
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Condition', ConditionBuilder::make('elementCondition')
             ->conditionClass(ElementCondition::class)
             ->fieldLayouts([$layout])),
     ]);
 
-    $payload = app(FormResolver::class)->resolve($form, new FormContext);
+    $payload = app(UiResolver::class)->resolve($form, new UiContext);
 
     expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([$layout]);
 });
 
 it('defaults field layouts to an empty list', function () {
-    $form = Form::make([
+    $form = Ui::make([
         Field::make('Condition', ConditionBuilder::make('elementCondition')
             ->conditionClass(ElementCondition::class)),
     ]);
 
-    $payload = app(FormResolver::class)->resolve($form, new FormContext);
+    $payload = app(UiResolver::class)->resolve($form, new UiContext);
 
     expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([]);
 });

@@ -17,8 +17,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Money;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
 
 class FormMoneyConditionRule extends MoneyFieldConditionRule
@@ -43,7 +43,7 @@ it('round trips date control values in their timezone', function () {
         'endDate' => ['date' => '2026-09-09', 'timezone' => 'Europe/Brussels'],
     ]);
     $rule->condition = new ElementCondition(Entry::class);
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
 
     expect($payload->values['startDate']['date'])->toBe('2026-09-08');
     expect($rule->getConfig()['startDate'])->toBe('2026-09-08T00:00:00+02:00');
@@ -60,7 +60,7 @@ it('round trips money input values as decimal condition values', function () {
 
     expect($rule->getConfig()['value'])->toBe('12.50');
     expect($rule->getConfig()['maxValue'])->toBe('20.75');
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
 
     expect((float) $payload->values['value'])->toBe(12.5);
     expect((float) $payload->values['maxValue'])->toBe(20.75);
@@ -71,7 +71,7 @@ it('preserves the country and custom administrative areas', function () {
         'countryCode' => 'US',
         'values' => ['CA', 'Custom region'],
     ]);
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
 
     expect($payload->values['countryCode'])->toBe('US');
     expect($payload->values['values'])->toBe(['CA', 'Custom region']);
@@ -94,7 +94,7 @@ it('keeps disabled related elements selected when rendering a condition', functi
     $rule = new RelatedToConditionRule;
     $rule->condition = new ElementCondition(Entry::class);
     $rule->setElementIds([$entry->id]);
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
     $selector = array_find($payload->nodes, fn ($node) => $node->control?->component === 'craft:element-select');
 
     expect(array_column($selector->control->props['elements'], 'id'))->toBe([$entry->id]);
@@ -117,7 +117,7 @@ it('includes saved authors in the element selector', function () {
     $rule = new EntryCondition(Entry::class)->createConditionRule(AuthorConditionRule::class);
     $rule->setElementIds([$author->id]);
 
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
     $selector = array_find($payload->nodes, fn ($node) => $node->control?->component === 'craft:element-select');
 
     expect(array_column($selector->control->props['elements'], 'id'))->toBe([$author->id]);
@@ -130,7 +130,7 @@ it('provides the current text or number values to the form', function (string $c
         ...$values,
     ]);
 
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
 
     expect($payload->values)->toMatchArray(['operator' => $operator, ...$values]);
 })->with([
@@ -144,7 +144,7 @@ it('omits text values for empty operators', function (string $operator) {
         'operator' => $operator,
     ]);
 
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
 
     expect($payload->values)->not->toHaveKey('value');
 })->with(['empty', 'notempty']);
@@ -155,7 +155,7 @@ it('visually hides condition rule field labels', function () {
         'operator' => '=',
         'value' => 'Foo',
     ]);
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
     $fields = array_filter($payload->nodes, fn ($node) => $node->component === 'craft:field');
 
     expect($fields)->not->toBeEmpty();
@@ -169,7 +169,7 @@ it('keeps condition rule date field labels visible', function () {
         'rangeType' => 'range',
     ]);
     $rule->condition = new ElementCondition(Entry::class);
-    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($rule->getUi(), new UiContext);
     $labelSrOnly = fn (string $path) => array_find(
         $payload->nodes,
         fn ($node) => $node->control?->path === [$path],
