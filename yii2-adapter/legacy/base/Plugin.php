@@ -53,7 +53,7 @@ class Plugin extends Module implements PluginInterface
     use PluginTrait;
     use HasEditions;
     use HasSettings {
-        getSettingsResponse as private getFormSettingsResponse;
+        getSettingsResponse as private getUiSettingsResponse;
     }
     use Installable;
 
@@ -248,7 +248,7 @@ class Plugin extends Module implements PluginInterface
 
         $response = $route !== null
             ? Craft::$app->runAction($route)
-            : $this->getFormSettingsResponse();
+            : $this->getUiSettingsResponse();
 
         if ($response instanceof \craft\web\Response) {
             $response->send();

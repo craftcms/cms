@@ -15,19 +15,19 @@ interface Node
      *
      * Implementations should delegate nested nodes and controls back to the
      * supplied renderer so type validation, values, errors, and shared markup
-     * remain consistent across the complete form.
+     * remain consistent across the complete UI.
      *
      * @param  NodePayload  $node  The resolved node payload, including its props, control, and children.
-     * @param  UiPayload  $payload  The complete resolved form payload containing current values and errors.
-     * @param  UiHtmlRenderer  $renderer  The renderer coordinating the complete fallback form.
+     * @param  UiPayload  $payload  The complete resolved UI payload containing current values and errors.
+     * @param  UiHtmlRenderer  $renderer  The renderer coordinating the complete fallback UI.
      */
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string;
 
     /**
      * Returns the Vue component registry name used to render this node.
      *
-     * The component must be registered before the form is mounted and accept
-     * the resolved node, form values, and errors supplied by UiNode.
+     * The component must be registered before the UI is mounted and accept
+     * the resolved node, UI values, and errors supplied by UiNode.
      */
     public function component(): string;
 

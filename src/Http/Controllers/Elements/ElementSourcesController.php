@@ -46,7 +46,7 @@ readonly class ElementSourcesController
                     'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
                     // ElementSources synthesizes a keyless blank heading as a
                     // separator. Nothing can address it by Control path and
-                    // store() can't save it, so it gets no Form.
+                    // store() can't save it, so it gets no UI.
                     'ui' => ($source['key'] ?? '') !== ''
                         ? $sourceUi->payload($elementType, $source)
                         : null,
@@ -59,7 +59,7 @@ readonly class ElementSourcesController
     }
 
     /**
-     * Returns the settings Form for a single source — for one the client just
+     * Returns the settings UI for a single source — for one the client just
      * added, and for {@see UiPayload} refreshes.
      */
     public function ui(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceUi $sourceUi): JsonResponse
@@ -236,7 +236,7 @@ readonly class ElementSourcesController
     }
 
     /**
-     * Accepts the Form's `['attr' => …, 'dir' => …]` and the legacy
+     * Accepts the UI's `['attr' => …, 'dir' => …]` and the legacy
      * `[attr, dir]` list alike.
      */
     private function defaultSort(mixed $defaultSort): mixed

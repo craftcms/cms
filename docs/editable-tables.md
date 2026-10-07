@@ -8,10 +8,10 @@ There are two related APIs:
 | API | Purpose |
 | --- | --- |
 | `CraftCms\Cms\Field\Table` | A content field with configurable columns, cell normalization, validation, search, and GraphQL support. |
-| `CraftCms\Cms\Ui\Controls\Table` | A reusable table editor for a PHP-defined Form, including component settings. Its columns contain Form controls. |
+| `CraftCms\Cms\Ui\Controls\Table` | A reusable table editor for a PHP-defined UI, including component settings. Its columns contain UI controls. |
 
-Register a **table cell type** to add an option to the Table field's column type selector. Supply a **Form control**
-directly when building a table inside your own settings Form.
+Register a **table cell type** to add an option to the Table field's column type selector. Supply a **UI control**
+directly when building a table inside your own settings UI.
 
 ## Rows and columns
 
@@ -45,24 +45,24 @@ stored cell data. Dropdowns use the configured default option, or the first opti
 
 ## Rendering and editing
 
-The Table field asks each cell type for a Form control. The reusable Table control builds a nested Form for each row and
+The Table field asks each cell type for a UI control. The reusable Table control builds a nested UI for each row and
 resolves a row template for rows added in the browser. Cells therefore use the same controls, modes, and error handling
 as other Control Panel fields.
 
-The current implementation adds, deletes, and reorders rows locally. These operations emit a Form mutation; they do not
-require a server request to construct every new row. A host can refresh a reactive Form after a mutation, but the table
-does not provide a refresh endpoint of its own. Cell Forms are not independently refreshable.
+The current implementation adds, deletes, and reorders rows locally. These operations emit a UI mutation; they do not
+require a server request to construct every new row. A host can refresh a reactive UI after a mutation, but the table
+does not provide a refresh endpoint of its own. Cell UIs are not independently refreshable.
 
 - Adding a row uses the configured default row values. The field's default rows separately define its initial value.
 - Minimum and maximum row counts constrain the row controls. The host must still validate submitted data on the server.
 - Static rows follow the field's default rows, retain a `rowId`, and cannot be added, removed, or reordered by the editor.
 - Reordering supports dragging and the handle's move-up/down menu. Values and input paths follow the new row order.
-- Adding, deleting, and reordering are blocked while submission or a Form refresh is pending. Changing row structure
+- Adding, deleting, and reordering are blocked while submission or a UI refresh is pending. Changing row structure
   clears stale cell errors rather than moving index-addressed errors onto a different row.
 - Compatible text cells support tab-separated paste. Enter moves to the next row in the same column; Shift+Enter moves
   back. In multiline cells, use Ctrl+Enter or Cmd+Enter. These features skip static or disabled cells and respect row limits.
 
-PHP-rendered Forms mount the same Vue editor through `<craft-table-ui>`, preserving namespaced input names for native
+PHP-rendered UIs mount the same Vue editor through `<craft-table-ui>`, preserving namespaced input names for native
 form submission. The table-column settings editor also uses the shared table editor, with a Configure action for each
 column's cell-type settings.
 
@@ -179,7 +179,7 @@ $columns = [
 
 Cell settings can also be stored directly on the column, such as `'minimum' => 1`. A top-level setting takes precedence
 over the corresponding value in `settings`. Only attributes declared by the component's `settingsAttributes()` are
-applied. Registration is required before Craft resolves the field's columns or their settings Forms.
+applied. Registration is required before Craft resolves the field's columns or their settings UIs.
 
 ## Value lifecycle
 
@@ -203,12 +203,12 @@ representation together.
 
 ## Custom editors and settings tables
 
-Reusing an existing Form control requires only PHP registration of the cell type. If it needs a new editor, return a
-custom Form control and follow the [custom Node and Control registration](forms.md#custom-nodes-and-controls) guide.
-That includes registering the PHP control type and its Vue component, loading plugin assets before the Form mounts,
+Reusing an existing UI control requires only PHP registration of the cell type. If it needs a new editor, return a
+custom UI control and follow the [custom Node and Control registration](ui.md#custom-nodes-and-controls) guide.
+That includes registering the PHP control type and its Vue component, loading plugin assets before the UI mounts,
 and preserving editable, read-only, disabled, validation, and accessibility behavior.
 
-A reusable Form Table accepts controls directly:
+A reusable UI Table accepts controls directly:
 
 ```php
 use CraftCms\Cms\Ui\Controls\Number;
@@ -216,7 +216,7 @@ use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\Nodes\Field;
 
-$form = Ui::make([
+$ui = Ui::make([
     Field::make('Quantities', Table::make('quantities')
         ->columns([
             'quantity' => [
@@ -233,7 +233,7 @@ $form = Ui::make([
 
 For this API, a column's `control` is rebound to its cell path. Its supported shorthand `type` values are resolved by
 `TableColumn`; registering a class in `TableCellTypes` does not add a shorthand to that resolver. Supply a control
-directly for custom editors. The settings Form's host owns normalization, validation, and saving; it does not run the
+directly for custom editors. The settings UI's host owns normalization, validation, and saving; it does not run the
 Table content field's cell lifecycle automatically.
 
 ## Unavailable plugins

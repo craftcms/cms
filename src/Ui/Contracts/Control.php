@@ -23,7 +23,7 @@ interface Control
      * @param  ControlPayload  $control  The resolved control payload, including its props, path, and mode.
      * @param  mixed  $value  The current value at the control's resolved path.
      * @param  array<string, mixed>  $attributes  Common HTML attributes computed from the field and control state.
-     * @param  UiHtmlRenderer  $renderer  The renderer coordinating the complete fallback form.
+     * @param  UiHtmlRenderer  $renderer  The renderer coordinating the complete fallback UI.
      */
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string;
 
@@ -41,11 +41,11 @@ interface Control
      */
     public function emptyValue(): mixed;
 
-    /** Whether a null value is presentation-only and should be omitted from form mutations. */
+    /** Whether a null value is presentation-only and should be omitted from UI mutations. */
     public function omitNullValue(): bool;
 
     /**
-     * Returns whether the control renders nested uis — Matrix blocks, a
+     * Returns whether the control renders nested UIs — Matrix blocks, a
      * content block.
      *
      * A change anywhere inside one marks the control holding it as modified,
@@ -58,7 +58,7 @@ interface Control
     /**
      * Returns the Vue component registry name used to render this control.
      *
-     * The component must be registered before the form is mounted and accept
+     * The component must be registered before the UI is mounted and accept
      * the control props emitted by the matching implementation.
      */
     public function component(): string;

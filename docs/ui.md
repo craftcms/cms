@@ -319,8 +319,8 @@ overriding still allows a plugin to provide a native modern implementation inste
 
 For direct implementations, use the relevant adapter contract and trait together:
 
-- `LegacySettingsComponent` with `LegacySettingsForm`;
-- `LegacyField` with `LegacyFieldControl` and `LegacySettingsForm`; or
+- `LegacySettingsComponent` with `LegacySettingsUi`;
+- `LegacyField` with `LegacyFieldControl` and `LegacySettingsUi`; or
 - an adapter `FieldLayoutElement`, which already uses `LegacyUiNode`.
 
 The adapter captures legacy HTML once under the host namespace, including registered head and body assets and inline

@@ -52,7 +52,7 @@ class ActionMenu implements Node
         // Item IDs are generated with `mt_rand()` and only matter to the HTML
         // path (where `ElementHtml` keys chip behavior off their prefixes).
         // Leaving them in `props()` would make the payload differ on every
-        // render, which reads as a change to a refreshable form.
+        // render, which reads as a change to a refreshable UI.
         foreach ($items as &$item) {
             unset($item['id']);
         }
