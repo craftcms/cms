@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing.
+- Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
