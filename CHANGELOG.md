@@ -76,6 +76,7 @@
 - Added `CraftCms\Cms\Search\Events\KeywordsIndexing::$layoutElementUid`. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - The user Addresses screen now uses the shared nested element manager, including duplicating, deleting, and the element index view for users with many addresses. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
+- Fixed a bug where pressing <kbd>Cmd/Ctrl</kbd>+<kbd>S</kbd> on read-only element edit pages submitted a save request. ([#19865](https://github.com/craftcms/cms/pull/19865))
 - Fixed a bug where element autosaves could continue after the editor was closed. ([#19817](https://github.com/craftcms/cms/pull/19817))
 - Fixed a bug where creating, duplicating, or pasting Matrix blocks could modify their canonical owner instead of its draft. ([#19818](https://github.com/craftcms/cms/pull/19818))
 - Fixed a bug where searching or clearing a search on element indexes moved keyboard focus away from the search input. ([#19785](https://github.com/craftcms/cms/pull/19785))
