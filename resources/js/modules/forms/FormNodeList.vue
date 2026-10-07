@@ -107,7 +107,6 @@
     v-for="node in nodes"
     :key="node.uid ?? node.control?.path.join('.')"
     :node="node"
-    slot="panel"
     :initially-hidden="node.component === 'craft:tab' && node.uid !== activeTab"
     v-bind="panelAttributes(node)"
     :values="values"
