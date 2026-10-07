@@ -412,6 +412,13 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
         }
       }
     }
+
+    this.announceChange();
+  }
+
+  /** Chip values are rewritten in place, which fires no event of its own. */
+  announceChange(): void {
+    this.container?.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   syncChipSort(): void {
@@ -662,6 +669,8 @@ export class Group extends Base {
     for (const chip of this.chips()) {
       setChipGroupValue(chip, name);
     }
+
+    this.manager.announceChange();
   }
 
   /** The select tears itself down on disconnect. */
