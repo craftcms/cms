@@ -29,6 +29,12 @@ export const ActionMenu = defineAsyncComponent(
 
 export type {ActionItem, ActionItemLink} from './common/types';
 
+/**
+ * Lets a plugin's page configure the control panel shell around it — its
+ * secondary nav, most usefully, so an index can put its own sources there.
+ */
+export {useAppLayout} from './common/composables/useAppLayout';
+
 export {
   appendIndexQuery,
   type ElementIndexRoute,

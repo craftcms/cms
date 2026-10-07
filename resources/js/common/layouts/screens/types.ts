@@ -34,6 +34,12 @@ export interface ScreenProps {
    */
   subnavActions?: Array<ActionItem>;
   /**
+   * The secondary nav itself, for a page whose nav comes from its own props
+   * rather than the server's `subnav` page prop — an element index listing its
+   * sources, typically. Takes precedence over that prop when set.
+   */
+  subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
+  /**
    * Renders the screen as a page-level form with its own save button, for
    * screens that post natively rather than through an Inertia form — a
    * bridged legacy screen, typically. Craft 5: `fullPageForm`.

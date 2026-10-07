@@ -108,7 +108,9 @@
 
   // Page chrome from props and shared page data.
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-  const subnav = computed(() => page.props.subnav ?? []);
+  // A page that knows its own nav — an index listing its sources — sets it
+  // through `useAppLayout`; everything else takes the server's page prop.
+  const subnav = computed(() => props.subnav ?? page.props.subnav ?? []);
 
   // The secondary nav's trail joins the crumbs, so location reads the same
   // with or without the nav on screen, and each level brings its switcher. The
