@@ -1,8 +1,12 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
 import type {Table} from '@tanstack/vue-table';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {LegacyAdminTableRow} from '@/modules/admin-table/types/legacy';
 
-const captured: {table: Table<any> | null} = {table: null};
+const captured: {
+  table: Table<CraftTableFeatures, LegacyAdminTableRow> | null;
+} = {table: null};
 
 // Stands in for the real table so the assertions can be about what the shim
 // derived — columns, rows, the delete cell — rather than how it's drawn.

@@ -5,6 +5,7 @@
    */
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui/utilities/translate';
   import CpContainer from '@/common/components/CpContainer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
