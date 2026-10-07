@@ -23,12 +23,15 @@ use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Process as ProcessRunner;
 use Laravel\Prompts\Concerns\Colors;
 use Override;
 use Symfony\Component\Process\Process;
 use Throwable;
 
 use function Illuminate\Filesystem\join_paths;
+use function Illuminate\Support\artisan_binary;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -64,7 +67,7 @@ class UpdateCommand extends Command
 
     private Plugins $plugins;
 
-    public function handle(Plugins $plugins, Composer $composer, Updates $updates): int
+    public function handle(Plugins $plugins, Composer $composer): int
     {
         $this->composer = $composer;
         $this->plugins = $plugins;
@@ -107,14 +110,45 @@ class UpdateCommand extends Command
             return self::FAILURE;
         }
 
+        $refreshed = false;
         $this->components->task(
             'Updating license info',
-            fn () => $updates->getUpdates(true),
+            function () use (&$refreshed) {
+                return $refreshed = $this->refreshLicenseInfo();
+            },
         );
+
+        if (! $refreshed) {
+            $this->components->warn('Run `php craft update/info` to retry the license refresh.');
+        }
 
         $this->components->success('Update complete!');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Refreshes the license info in a fresh process, so Craftnet receives the
+     * versions that were just installed rather than the ones this process loaded.
+     */
+    private function refreshLicenseInfo(): bool
+    {
+        try {
+            Cache::forget(Updates::class);
+
+            ProcessRunner::forever()->run([
+                PHP::executable() ?? 'php',
+                base_path(artisan_binary()),
+                'craft:update:info',
+                '--no-interaction',
+            ])->throw();
+
+            return true;
+        } catch (Throwable $e) {
+            report($e);
+
+            return false;
+        }
     }
 
     /**
