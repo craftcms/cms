@@ -17,7 +17,7 @@ parameters:
         - src
         - config
     parallel:
-		  maximumNumberOfProcesses: 4
+        maximumNumberOfProcesses: 4
     excludePaths:
         analyse:
             - src/Support/Facades
