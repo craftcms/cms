@@ -8,6 +8,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
+import type {SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
@@ -586,7 +587,31 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * (legacy `ComponentSelectInput.init`).
    */
   #handleCreateActivate = (): void => {
-    const slideout = new Craft.CpScreenSlideout(this.settings.createAction);
+    const action = this.settings.createAction ?? '';
+
+    // Action paths still need the legacy slideout, which resolves them itself.
+    if (
+      Craft.openSlideout instanceof Function &&
+      /^(https?:)?\/\//.test(action)
+    ) {
+      void Craft.openSlideout(action, {
+        opener: this.#createBtn,
+        onSaved: ({data, draft}: SlideoutSaveResult) => {
+          const {modelClass, modelId} = data ?? {};
+          if (
+            draft ||
+            typeof modelClass !== 'string' ||
+            (typeof modelId !== 'string' && typeof modelId !== 'number')
+          ) {
+            return;
+          }
+          void this.addComponent(modelClass, modelId, true);
+        },
+      });
+      return;
+    }
+
+    const slideout = new Craft.CpScreenSlideout(action);
 
     slideout.on('submit', (ev: any) => {
       const data = ev.response.data;
