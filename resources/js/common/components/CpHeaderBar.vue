@@ -44,10 +44,25 @@
     toggleButton.value = (el as HTMLElement | null) ?? null;
   }
 
-  const page = usePage<{craft: CraftData}>();
+  const page = usePage<{
+    craft: CraftData;
+    bridged?: 'screen' | 'elementIndex';
+  }>();
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+
+  /**
+   * Which bridge drew this screen, for the badge below. Only the two bridged
+   * pages set it, so a ported page shows nothing.
+   */
+  const bridged = computed(() =>
+    page.props.bridged === 'screen'
+      ? t('Bridged screen')
+      : page.props.bridged === 'elementIndex'
+        ? t('Bridged index')
+        : null
+  );
   const generalSettingsUrl = computed(() =>
     generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
   );
@@ -85,6 +100,13 @@
           <craft-badge fill="warning">
             <craft-icon name="code" slot="prefix"></craft-icon>
             {{ t('Dev Mode') }}
+          </craft-badge>
+        </template>
+
+        <template v-if="devMode && bridged">
+          <craft-badge fill="violet">
+            <craft-icon name="bridge" slot="prefix"></craft-icon>
+            {{ bridged }}
           </craft-badge>
         </template>
 
@@ -183,6 +205,8 @@
 
   .cp-header-bar__indicators {
     grid-area: indicators;
+    display: flex;
+    gap: var(--c-spacing-sm);
   }
 
   .cp-header-bar__breadcrumbs {

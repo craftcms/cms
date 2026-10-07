@@ -1114,6 +1114,13 @@ class CpScreenResponse implements Responsable
                         'tabs' => $this->tabs,
                     ], templateMode: TemplateMode::Cp)
                     : null);
+
+            /**
+             * Names the fragment screen for the header bar, which badges it
+             * under dev mode. A screen with an `inertiaPage()` leaves this
+             * unset, so the badge marks exactly what's still unported.
+             */
+            $templateProps['bridged'] = 'screen';
         }
 
         /**

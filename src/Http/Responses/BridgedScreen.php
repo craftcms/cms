@@ -25,8 +25,12 @@ use function CraftCms\Cms\template;
  * From here they're the same thing: server-rendered strings for the shell's
  * slots.
  *
+ * Both paths carry a `bridged` prop naming which one drew the screen, so the
+ * header bar can say so under dev mode.
+ *
  * @internal
  *
+ * @since 6.0.0
  * @deprecated Exists only while Craft 5-era screens render inside the Inertia shell.
  */
 final class BridgedScreen
@@ -92,7 +96,7 @@ final class BridgedScreen
 
         return Inertia::render(self::PAGE)
             ->with($variables)
-            ->with(['screen' => ['mode' => 'page']])
+            ->with(['screen' => ['mode' => 'page'], 'bridged' => 'screen'])
             ->toResponse($request);
     }
 
@@ -156,6 +160,7 @@ final class BridgedScreen
                 'elementType' => $elementType,
                 'page' => $viewModel->page(),
                 'sourceKey' => $viewModel->source()['key'] ?? null,
+                'bridged' => 'elementIndex',
             ])
             ->toResponse($request);
     }
