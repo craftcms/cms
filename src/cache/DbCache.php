@@ -38,7 +38,8 @@ class DbCache extends YiiDbCache
 
         try {
             // Make sure the table exists
-            $table = $this->db->getTableSchema($this->cacheTable);
+            // (outside of any query cache scope, since caching the introspection query would call setValue() again)
+            $table = $this->db->noCache(fn() => $this->db->getTableSchema($this->cacheTable));
             if (!$table) {
                 throw new InvalidConfigException(sprintf(
                     'The `%s` table doesn’t exist. Run the `setup/db-cache-table` command to create it.',
