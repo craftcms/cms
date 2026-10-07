@@ -104,6 +104,7 @@
 - Fixed a bug where HTML 5 apostrophe entities could be double-encoded in control panel form attributes. ([#19832](https://github.com/craftcms/cms/pull/19832))
 - Fixed inconsistent handling of owner-specific Matrix entry types when creating, rendering, and duplicating entries. ([#19819](https://github.com/craftcms/cms/pull/19819))
 - Fixed a bug where apostrophes in lightswitch labels were displayed as HTML entities. ([#19830](https://github.com/craftcms/cms/pull/19830))
+- Fixed a bug where control panel form fields and groups received tab-only attributes, which logged Vue warnings and gave groups a stray `slot` attribute. ([#19874](https://github.com/craftcms/cms/pull/19874))
 
 ## 6.0.0-alpha.19 - 2026-10-01
 
