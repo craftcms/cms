@@ -1,22 +1,20 @@
-{% extends '_layouts/basecp.twig' %}
+{% extends '_layouts/message.twig' %}
 {% set title = 'Authorize client'|t('app') %}
-{% set bodyClass = 'login' %}
 
-{% block body %}
-  <main class="message-container">
-    <h1>{{ title }}</h1>
-    <p>{{ '{client} would like to access Craft CMS as you.'|t('app', {client: clientName}) }}</p>
-    <p>{{ consentDescription }}</p>
-    <ul>
-      {% for description in scopes %}
-        <li>{{ description }}</li>
-      {% endfor %}
-    </ul>
-    <form method="post" action="{{ approveAction }}">
-      {{ csrfInput() }}
-      {{ hiddenInput('authToken', authToken) }}
-      <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
-      <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>
-    </form>
-  </main>
+{% block message %}
+  <h1>{{ title }}</h1>
+  <p>{{ '{client} would like to access Craft CMS as you.'|t('app', {client: clientName}) }}</p>
+  <p>{{ consentDescription }}</p>
+  <p><strong>{{ 'Scopes:'|t('app') }}</strong></p>
+  <ul class="bullets" style="padding-inline-start: 0; list-style-position: inside;">
+    {% for description in scopes %}
+      <li>{{ description }}</li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="{{ approveAction }}" class="buttons">
+    {{ csrfInput() }}
+    {{ hiddenInput('authToken', authToken) }}
+    <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
+    <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>
+  </form>
 {% endblock %}
