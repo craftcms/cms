@@ -195,6 +195,19 @@ it('shows the site settings columns for the section type', function () {
         ->and($channel['route']['options'][0]['type'])->toBe('optgroup');
 });
 
+it('keeps the table rows when refreshing', function () {
+    $form = postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues([
+            'previewTargets' => [['label' => 'Page', 'urlFormat' => '{url}', 'refresh' => true]],
+        ]),
+        'scope' => [],
+    ])->assertOk()->json('form.nodes');
+
+    // Saving submits only the values of controls in these row forms.
+    expect(sectionFormControl($form, 'sites')['forms'][0]['scope'])->toBe(['sites', 'default'])
+        ->and(sectionFormControl($form, 'previewTargets')['forms'][0]['scope'])->toBe(['previewTargets', '0']);
+});
+
 it('lets each site be enabled in multi-site installs', function () {
     Site::factory()->create();
     app(SitesService::class)->refreshSites();

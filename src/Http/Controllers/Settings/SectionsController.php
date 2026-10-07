@@ -105,14 +105,15 @@ readonly class SectionsController
 
     public function renderForm(Request $request, Sites $sites, Sections $sections): JsonResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'values' => ['required', 'array'],
             'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
             'values.type' => ['required', Rule::enum(SectionType::class)],
             'values.workflowId' => ['nullable', 'integer', Rule::exists(Workflow::class, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
-        $values = $data['values'];
+        // Validated output drops the keys without rules, which is every other value.
+        $values = $request->array('values');
         $section = empty($values['sectionId'])
             ? new SectionData(['type' => SectionType::Channel])
             : $sections->getSectionById((int) $values['sectionId']);
