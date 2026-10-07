@@ -2285,6 +2285,7 @@ JS, [
                     ->control(
                         DateTime::make('postDate')
                             ->showTime()
+                            ->fullWidth()
                             // Stored times aren't constrained to a picker step, and
                             // the screen submits natively — a coarser increment
                             // would make any off-step value fail validation and
@@ -2300,6 +2301,7 @@ JS, [
                     ->control(
                         DateTime::make('expiryDate')
                             ->showTime()
+                            ->fullWidth()
                             // Stored times aren't constrained to a picker step, and
                             // the screen submits natively — a coarser increment
                             // would make any off-step value fail validation and
@@ -2481,6 +2483,7 @@ JS, [
                     'id' => 'postDate',
                     'name' => 'postDate',
                     'value' => $this->postDate,
+                    'width' => 'full',
                     'errors' => $this->errors()->get('postDate'),
                     'disabled' => $static,
                 ]);
@@ -2494,6 +2497,7 @@ JS, [
                     'id' => 'expiryDate',
                     'name' => 'expiryDate',
                     'value' => $this->expiryDate,
+                    'width' => 'full',
                     'errors' => $this->errors()->get('expiryDate'),
                     'disabled' => $static,
                 ]);
