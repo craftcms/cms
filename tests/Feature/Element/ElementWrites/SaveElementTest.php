@@ -424,6 +424,29 @@ it('saves a new localized element across all supported sites', function (bool $r
     }
 })->with(['ordinary' => false, 'reentrant' => true]);
 
+it('preserves the save exception when the database has rolled back the entire transaction', function () {
+    $element = new TestSaveElementActionElement;
+    $element->siteId = Sites::getPrimarySite()->id;
+    $element->title = 'Aborted save';
+    $failure = new RuntimeException('The database aborted the save transaction');
+    $element->beforePropagation = function () use ($failure): void {
+        DB::connection()->getPdo()->rollBack();
+
+        throw $failure;
+    };
+
+    $caught = null;
+    try {
+        $this->writes->saveElement($element, updateSearchIndex: false);
+    } catch (Throwable $exception) {
+        $caught = $exception;
+    }
+
+    expect($caught?->getMessage())->toBe($failure->getMessage())
+        ->and($caught)->toBe($failure)
+        ->and(DB::connection()->transactionLevel())->toBe(0);
+});
+
 it('stores generated field values after save', function () {
     $listeners = count(Event::getListeners(ElementLifecyclePropagated::class));
     $element = new TestSaveElementActionElement;

@@ -317,7 +317,7 @@ it('renders a disabled field layout designer when admin changes are disabled', f
     ])->assertOk();
 });
 
-it('renders root field layout input names that can be expanded as post data', function () {
+it('renders field layout and generated field values at their root submission paths', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
         'value' => [],
         'elementType' => Entry::class,
@@ -329,8 +329,10 @@ it('renders root field layout input names that can be expanded as post data', fu
     ])->assertOk();
     $crawler = new Crawler($response->json('html'));
 
+    $generatedFields = json_decode($crawler->filter('craft-generated-fields-table')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
     expect($crawler->filter('[data-config-input][name="fieldLayout"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-generated-fields-table[name="generatedFields"]'))->toHaveCount(1);
+        ->and($generatedFields['nodes'][0]['control']['path'])->toBe(['generatedFields']);
 });
 
 it('rejects non-condition classes from the condition builder endpoint', function () {

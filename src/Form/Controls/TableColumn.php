@@ -53,6 +53,10 @@ class TableColumn
             default => throw new InvalidArgumentException("Unknown Table column type [{$type}] at [{$key}]."),
         };
 
+        if (($control instanceof Checkbox || $control instanceof Lightswitch) && isset($config['value'])) {
+            $control->checkedValue($config['value']);
+        }
+
         if ($control instanceof Text || $control instanceof Textarea || $control instanceof Combobox) {
             $control->placeholder($config['placeholder'] ?? null);
         }

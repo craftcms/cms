@@ -10,7 +10,7 @@ import {
 import type {FormChangeKind, FormPayload, FormValue} from './types';
 import {pathsMatch, visitControls} from './runtime';
 
-interface FormRendererInstance {
+export interface FormRendererInstance {
   advanceBaseline(): void;
   setSubmitting?(submitting: boolean): void;
   currentValues(): FormPayload['values'];
