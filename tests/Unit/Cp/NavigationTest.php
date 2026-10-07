@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 /** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
 function cpSettings(): Settings
@@ -364,11 +366,16 @@ it('carries a plugin’s own icon into its settings nav item', function () {
 });
 
 it('draws settings nav items with solid icons', function () {
+    $solidIcon = CmsAssets::resourcesPath('icons/solid/navigation-test-solid.svg');
+    File::ensureDirectoryExists(dirname($solidIcon));
+    File::put($solidIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+
     $settings = Mockery::mock(Settings::class, [
         'all' => [
             'System' => [
-                'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
-                'legacy' => ['label' => 'Legacy', 'iconName' => 'light/globe'],
+                'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
+                'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
             ],
         ],
     ]);
@@ -387,8 +394,7 @@ it('draws settings nav items with solid icons', function () {
 
     $items = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav[0]->subnav);
 
-    // `globe` has no solid version, so it keeps the light one.
-    expect($items->pluck('icon')->all())->toBe(['plug', 'light/globe']);
+    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {
