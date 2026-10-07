@@ -53,6 +53,13 @@ They are mapped per utility rather than through `--spacing-*`: Tailwind reads `-
 
 Semantic z-index layers, lowest to highest. Use these for anything that stacks against other parts of the page. A component lifting one of its own parts over another can keep a small local value instead.
 
+Layers fall into two tiers:
+
+- **Page chrome** (`z-sticky`, `z-sidebar`, `z-header`) sits below `z-skip-link`. The global skip links must never be covered when focused, so nothing persistent goes above them.
+- **Modal layers** start at `z-shade`. They may cover the global skip links, as the rest of the page is out of reach while they're open.
+
+Other skip links don't set a layer. They stack with whatever contains them.
+
 Slideouts, HUDs and legacy modals share `z-overlay` and are ordered by their place in the document. Native modal `<dialog>` elements sit in the browser's top layer and need no layer at all. Named layers have no negative form (`-z-popover` isn't generated).
 
 <Canvas of={Layers} />

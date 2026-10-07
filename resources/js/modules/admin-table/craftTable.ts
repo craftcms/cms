@@ -58,3 +58,20 @@ const craftTableHook = createTableHook({
  * defaults already applied, so a table only supplies what's its own.
  */
 export const useCraftTable = craftTableHook.useAppTable;
+
+const headerIdPrefixes = new WeakMap<object, string>();
+let nextHeaderIdPrefix = 0;
+
+/**
+ * The id of a table's column header cell. Scoped to the table, so several
+ * tables on one page can share column ids without their headers colliding.
+ */
+export function tableHeaderId(table: object, columnId: string): string {
+  let prefix = headerIdPrefixes.get(table);
+  if (prefix === undefined) {
+    prefix = `table-${nextHeaderIdPrefix++}`;
+    headerIdPrefixes.set(table, prefix);
+  }
+
+  return `${prefix}-header-${columnId}`;
+}

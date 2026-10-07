@@ -61,8 +61,9 @@ CP Styles
   --cp-debug-bar-height: calc(33rem / 16);
 }
 
+/* Above all persistent page chrome; see the layer tokens. */
 .skip-link--global {
-  z-index: calc(var(--cp-sidebar-z-index) + 1);
+  z-index: var(--c-layer-skip-link);
 }
 
 .visually-hidden {

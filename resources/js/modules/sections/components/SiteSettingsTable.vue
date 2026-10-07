@@ -78,7 +78,6 @@
         meta: {
           trackSize: '80px',
         },
-        label: t('Enabled'),
       }),
       columnHelper.checkbox('singleHomepage', {
         header: () => h('craft-icon', {name: 'home', label: t('Homepage')}),

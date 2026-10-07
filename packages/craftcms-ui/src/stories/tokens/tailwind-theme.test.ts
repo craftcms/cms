@@ -83,4 +83,22 @@ describe('themeEntries', () => {
     ]);
     expect(entriesIn('color').length).toBeGreaterThan(0);
   });
+
+  it('maps every layer token, so the Layers story lists them all', () => {
+    const tokens = readFileSync(
+      join(import.meta.dirname, '../../styles/shared/tokens.css'),
+      'utf8'
+    );
+    const layerTokens = [...tokens.matchAll(/(--c-layer-[\w-]+)\s*:/g)].map(
+      ([, token]) => token
+    );
+    const mappedTokens = themeEntries(
+      readFileSync(join(import.meta.dirname, '../../../tailwind.css'), 'utf8')
+    )
+      .filter((entry) => entry.namespace === 'z-index')
+      .map((entry) => entry.token);
+
+    expect(layerTokens).toContain('--c-layer-skip-link');
+    expect(mappedTokens).toEqual(expect.arrayContaining(layerTokens));
+  });
 });

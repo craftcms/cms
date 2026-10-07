@@ -160,7 +160,7 @@
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
     box-shadow: var(--shadow-xs), var(--shadow-lg);
     position: relative;
-    z-index: var(--c-layer-overlay);
+    z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
