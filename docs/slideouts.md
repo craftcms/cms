@@ -306,7 +306,7 @@ teleports work the same way in both.
 
 ### Slots a slideout has no room for
 
-`breadcrumbs`, `context-menu`, `title`, `title-badge`, `sidebar`, `subnav-actions` and `footer` are
+`context-menu`, `title`, `content-toolbar`, `content-sidebar`, `subnav-actions` and `page-footer` are
 still rendered as **hidden outlets** in a slideout, so a page written for a full page doesn't throw
 or lose teleported content — that content is simply not shown.
 

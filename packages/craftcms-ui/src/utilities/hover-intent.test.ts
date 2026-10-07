@@ -67,13 +67,13 @@ function tree() {
 /** A trigger whose overlay sits to its right, plus the row between the two. */
 function aimedTree() {
   const trigger = document.createElement('div');
-  const neighbour = document.createElement('div');
+  const neighbor = document.createElement('div');
 
-  document.body.append(trigger, neighbour);
+  document.body.append(trigger, neighbor);
 
   return {
     trigger: member(trigger, box(100, 200, 0, 100)),
-    neighbour: member(neighbour),
+    neighbor: member(neighbor),
   };
 }
 
@@ -243,61 +243,61 @@ describe('bookkeeping', () => {
 });
 
 describe('safe area', () => {
-  it('holds a neighbour hovered on the way to an open overlay', () => {
-    const {trigger, neighbour} = aimedTree();
+  it('holds a neighbor hovered on the way to an open overlay', () => {
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
 
     movePointer(60, 40);
-    group.requestOpen(neighbour);
+    group.requestOpen(neighbor);
     vi.advanceTimersByTime(200);
 
-    expect(neighbour.open).toBe(false);
+    expect(neighbor.open).toBe(false);
     expect(trigger.open).toBe(true);
   });
 
-  it('lets the neighbour through once the pointer leaves the triangle', () => {
-    const {trigger, neighbour} = aimedTree();
+  it('lets the neighbor through once the pointer leaves the triangle', () => {
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
     movePointer(60, 40);
-    group.requestOpen(neighbour);
+    group.requestOpen(neighbor);
 
     movePointer(20, 300);
 
-    expect(neighbour.open).toBe(true);
+    expect(neighbor.open).toBe(true);
     expect(trigger.open).toBe(false);
   });
 
-  it('opens the neighbour anyway once the grace runs out', () => {
-    const {trigger, neighbour} = aimedTree();
+  it('opens the neighbor anyway once the grace runs out', () => {
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
     movePointer(60, 40);
-    group.requestOpen(neighbour);
+    group.requestOpen(neighbor);
     vi.advanceTimersByTime(300);
 
     expect(trigger.open).toBe(false);
-    expect(neighbour.open).toBe(true);
+    expect(neighbor.open).toBe(true);
   });
 
   it('hands over at once when the pointer is nowhere near the triangle', () => {
-    const {trigger, neighbour} = aimedTree();
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
     movePointer(10, 400);
-    group.requestOpen(neighbour);
+    group.requestOpen(neighbor);
 
     expect(trigger.open).toBe(false);
-    expect(neighbour.open).toBe(true);
+    expect(neighbor.open).toBe(true);
   });
 
   it('gives no grace to an overlay with nothing to measure', () => {
@@ -314,36 +314,36 @@ describe('safe area', () => {
   });
 
   it('drops a held hover the pointer moved on from', () => {
-    const {trigger, neighbour} = aimedTree();
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
     movePointer(60, 40);
-    group.requestOpen(neighbour);
-    group.requestClose(neighbour);
+    group.requestOpen(neighbor);
+    group.requestClose(neighbor);
 
     movePointer(20, 300);
     vi.advanceTimersByTime(500);
 
-    expect(neighbour.open).toBe(false);
+    expect(neighbor.open).toBe(false);
     expect(trigger.open).toBe(false);
   });
 
   it('spares the trigger the pointer doubles back into', () => {
-    const {trigger, neighbour} = aimedTree();
+    const {trigger, neighbor} = aimedTree();
 
     group.requestOpen(trigger, {immediate: true});
     movePointer(10, 10);
     group.requestClose(trigger);
     movePointer(60, 40);
-    group.requestOpen(neighbour);
+    group.requestOpen(neighbor);
 
-    group.requestClose(neighbour);
+    group.requestClose(neighbor);
     group.requestOpen(trigger);
     vi.advanceTimersByTime(500);
 
     expect(trigger.open).toBe(true);
-    expect(neighbour.open).toBe(false);
+    expect(neighbor.open).toBe(false);
   });
 });

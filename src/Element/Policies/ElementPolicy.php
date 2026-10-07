@@ -167,6 +167,12 @@ class ElementPolicy
         User $user,
         ElementContainerFieldInterface $field,
     ): ?bool {
+        // Without drafts, a nested element is saved in place rather than through
+        // its owner, so the element type's own policy decides.
+        if (! $element::hasDrafts()) {
+            return null;
+        }
+
         if (! $authorized = $field->canSaveElement($element, $user)) {
             return $authorized;
         }

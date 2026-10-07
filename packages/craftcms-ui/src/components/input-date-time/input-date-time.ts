@@ -113,6 +113,12 @@ export default class CraftInputDateTime extends LitElement {
   @property({type: Boolean, attribute: 'force-round-time'})
   forceRoundTime = false;
 
+  /**
+   * Set to `full` to stretch the inputs across the container. Slotted
+   * content, such as a clear button, keeps its own width.
+   */
+  @property({reflect: true}) width?: 'full';
+
   /** Disables every input the component owns. */
   @property({type: Boolean}) disabled = false;
 
@@ -133,7 +139,11 @@ export default class CraftInputDateTime extends LitElement {
       display: flex;
       flex-flow: row wrap;
       align-items: center;
-      gap: var(--c-spacing-xs);
+      gap: var(--c-spacing-md);
+    }
+
+    :host([width='full']) ::slotted([data-date-time-part]) {
+      flex: 1 1 auto;
     }
   `;
 

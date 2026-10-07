@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\TableCells\Email;
 use CraftCms\Cms\Field\TableCells\Heading;
 use CraftCms\Cms\Field\TableCells\Lightswitch;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
+use CraftCms\Cms\Field\TableCells\Money;
 use CraftCms\Cms\Field\TableCells\Multiline;
 use CraftCms\Cms\Field\TableCells\Number;
 use CraftCms\Cms\Field\TableCells\Select;
@@ -41,6 +42,7 @@ class TableCellTypes extends TypeRegistry
         'email' => Email::class,
         'heading' => Heading::class,
         'lightswitch' => Lightswitch::class,
+        'money' => Money::class,
         'multiline' => Multiline::class,
         'number' => Number::class,
         'singleline' => Singleline::class,

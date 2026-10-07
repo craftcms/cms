@@ -28,7 +28,7 @@ describe('craft-indicator', () => {
     expect(dot(await createIndicator())).toBeTruthy();
   });
 
-  /** A recognised variant resolves to that variant's fill token. */
+  /** A recognized variant resolves to that variant's fill token. */
   it('resolves a status variant to its token', async () => {
     const element = await createIndicator({fill: 'success'});
 
@@ -46,8 +46,8 @@ describe('craft-indicator', () => {
     );
   });
 
-  /** Anything else is passed through as a CSS colour. */
-  it('passes an arbitrary colour straight through', async () => {
+  /** Anything else is passed through as a CSS color. */
+  it('passes an arbitrary color straight through', async () => {
     const element = await createIndicator({fill: '#2c61de'});
 
     expect(dot(element).getAttribute('style')).toContain('#2c61de');
@@ -87,7 +87,7 @@ describe('craft-indicator', () => {
   });
 
   /**
-   * An unlabelled dot is decoration beside the thing it marks, so it is not
+   * An unlabeled dot is decoration beside the thing it marks, so it is not
    * announced as an unnamed image.
    */
   it('is not an image without a label', async () => {

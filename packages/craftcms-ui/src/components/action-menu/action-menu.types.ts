@@ -71,7 +71,7 @@ export interface ActionMenuItemLink extends ActionMenuItemInteractiveBase {
 }
 
 /**
- * A labelled group of items, rendered as a heading followed by its members.
+ * A labeled group of items, rendered as a heading followed by its members.
  *
  * Groups are one level deep: `items` may not contain further groups. The
  * members render as siblings of ungrouped items so keyboard navigation and the

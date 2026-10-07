@@ -383,7 +383,7 @@ describe('NestedElementBlocksControl', () => {
     ).toBe('Saved label');
   });
 
-  it('carries the entry type icon and colour into the block header', async () => {
+  it('carries the entry type icon and color into the block header', async () => {
     mount(
       {
         entries: {'block-a': {type: 'newType', enabled: true}},
@@ -899,7 +899,7 @@ describe('NestedElementBlocksControl', () => {
           nodes: [],
         },
         values: {},
-        // Without this the new block is a blank card — no colour, no icon, no
+        // Without this the new block is a blank card — no color, no icon, no
         // menu — until the next save brings the field's own copy round.
         block: {
           label: 'Entry 20',
@@ -1060,7 +1060,7 @@ describe('NestedElementBlocksControl', () => {
       expect(invoker()!.disabled).toBe(false);
     });
 
-    it('carries each entry type’s own icon and colour', async () => {
+    it('carries each entry type’s own icon and color', async () => {
       mount({entries: {}, sortOrder: []}, {entryTypes: types(2)});
       await nextTick();
 
@@ -1419,7 +1419,7 @@ describe('NestedElementBlocksControl', () => {
     });
   });
 
-  it('summarises a folded-up block from its fields when it has no label', async () => {
+  it('summarizes a folded-up block from its fields when it has no label', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
       sortOrder: ['block-a'],

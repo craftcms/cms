@@ -73,6 +73,11 @@ export default css`
     align-items: center;
   }
 
+  .card__label-text,
+  .card__label::slotted(:is(h1, h2, h3, h4, h5, h6, label)) {
+    text-box: trim-both cap alphabetic;
+  }
+
   .card__actions {
     display: flex;
     gap: var(--c-spacing-sm);

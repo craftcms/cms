@@ -11,7 +11,7 @@ import {Appearance} from '@src/constants/appearances';
  *
  * Most of the time you want `craft-status`, which covers the fixed vocabulary
  * of object states. Reach for this when the dot means something that
- * vocabulary does not cover, since it takes any palette colour or CSS colour.
+ * vocabulary does not cover, since it takes any palette color or CSS color.
  *
  * @since 1.0
  */
@@ -31,8 +31,8 @@ export default class CraftIndicator extends LitElement {
         width: var(--_size);
         border-radius: var(--c-radius-full);
         background: var(--_fill);
-        /* Longhands, so a fill that isn't a colour (a gradient, say) only
-           drops the border's colour rather than the whole border, and the dot
+        /* Longhands, so a fill that isn't a color (a gradient, say) only
+           drops the border's color rather than the whole border, and the dot
            keeps its size. */
         border-width: 1px;
         border-style: solid;
@@ -72,7 +72,7 @@ export default class CraftIndicator extends LitElement {
   size: 'md' | 'lg' = 'md';
 
   /**
-   * The dot's colour. A status variant (`success`, `warning`, `danger`,
+   * The dot's color. A status variant (`success`, `warning`, `danger`,
    * `info`) or a palette swatch resolves to the matching `--c-color-*` token;
    * any other value — a hex code, `rgb()`, a custom property — is used
    * verbatim.
@@ -84,7 +84,7 @@ export default class CraftIndicator extends LitElement {
 
   /**
    * Accessible name, exposed as `aria-label`. Set it whenever the dot is not
-   * purely decorative — a status conveyed by colour alone is conveyed to
+   * purely decorative — a status conveyed by color alone is conveyed to
    * nobody who cannot see it.
    */
   @property()
@@ -93,7 +93,7 @@ export default class CraftIndicator extends LitElement {
   /**
    * How the dot is drawn: `solid` is filled with no outline, `outline-fill` is
    * filled with a subtle outline (white on a black dot), and `outline` is a
-   * hollow ring over a transparent centre.
+   * hollow ring over a transparent center.
    *
    * Defaults to `outline-fill` for white and black fills, which would
    * otherwise disappear against a light or dark surface, and `solid` for

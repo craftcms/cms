@@ -22,6 +22,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
@@ -29,14 +30,11 @@ use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
@@ -48,7 +46,6 @@ use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
@@ -467,9 +464,38 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
+        if ($this->columns === []) {
+            return '';
+        }
 
-        return $this->inlineInputHtml($value, $element);
+        $errors = array_filter(
+            $element?->errors()->getMessages() ?? [],
+            fn (string $attribute): bool => $attribute === $this->handle || str_starts_with($attribute, "$this->handle."),
+            ARRAY_FILTER_USE_KEY,
+        );
+        $context = new FormContext(errors: $errors);
+        $control = $this->formControl(new FieldContext(
+            path: $this->handle,
+            value: $value,
+            element: $element,
+            form: $context,
+            inline: $inline,
+        ));
+        $payload = app(FormResolver::class)->resolve(
+            Form::make([FormField::make()->control($control)]),
+            $context,
+        );
+
+        return Html::tag('craft-table-form', '', [
+            'id' => $this->getInputId(),
+            'name' => $this->handle,
+            'role' => 'group',
+            'aria' => [
+                'labelledby' => $this->getLabelId(),
+                'describedby' => $this->describedBy,
+            ],
+            'data-payload' => Json::encode($payload),
+        ]);
     }
 
     /** @return list<Closure> */
@@ -803,82 +829,5 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             ['value' => $cell->serializeValue($value)],
             ['value' => $rules],
         )->errors()->get('value');
-    }
-
-    /**
-     * Returns the field's input HTML.
-     */
-    private function inlineInputHtml(mixed $value, ?ElementInterface $element): string
-    {
-        if (empty($this->columns)) {
-            return '';
-        }
-
-        // Translate the column headings and dropdown option labels,
-        // and configure number columns with the active formatting locale
-        $columns = [];
-        $locale = I18N::getFormattingLocale()->id;
-
-        foreach ($this->columns as $colId => $column) {
-            if (! empty($column['heading'])) {
-                $column['heading'] = t($column['heading'], category: 'site');
-            }
-            if (! empty($column['options'])) {
-                array_walk($column['options'], function (&$option) {
-                    $option['label'] = t($option['label'], category: 'site');
-                });
-            }
-            if ($column['type'] === 'number') {
-                $column['locale'] = $locale;
-            }
-            $columns[$colId] = $column;
-        }
-
-        if (! is_array($value)) {
-            $value = [];
-        }
-
-        // Explicitly set each cell value to an array with a 'value' key
-        $checkForErrors = $element && $element->errors()->has($this->handle);
-        foreach ($value as &$row) {
-            foreach ($columns as $colId => $col) {
-                if (isset($row[$colId])) {
-                    $hasErrors = $checkForErrors && $this->cellErrors($col, $row[$colId]) !== [];
-                    $row[$colId] = [
-                        'value' => match ($col['type']) {
-                            'heading' => Html::encode($row[$colId]),
-                            default => $row[$colId],
-                        },
-                        'hasErrors' => $hasErrors,
-                    ];
-                }
-            }
-        }
-        unset($row);
-
-        // Make sure the value contains at least the minimum number of rows
-        if ($this->minRows) {
-            for ($i = count($value); $i < $this->minRows; $i++) {
-                $value[] = [];
-            }
-        }
-
-        return template('_includes/forms/editableTable', [
-            'id' => $this->getInputId(),
-            'name' => $this->handle,
-            'cols' => $columns,
-            'rows' => $value,
-            'defaultValues' => $this->defaultRowValues,
-            'minRows' => $this->minRows,
-            'maxRows' => $this->maxRows,
-            'static' => false,
-            'staticRows' => $this->staticRows,
-            'allowAdd' => true,
-            'allowDelete' => true,
-            'allowReorder' => true,
-            'addRowLabel' => t($this->addRowLabel, category: 'site'),
-            'describedBy' => $this->describedBy,
-            'includeRowId' => $this->staticRows,
-        ]);
     }
 }

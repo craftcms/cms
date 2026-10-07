@@ -157,9 +157,10 @@
     grid-template-rows: repeat(2, auto);
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
-    box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    box-shadow: var(--shadow-xs), var(--shadow-lg);
     position: relative;
-    z-index: var(--c-layer-overlay);
+    z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
@@ -186,7 +187,14 @@
   }
 
   .cp-header-bar__breadcrumbs {
+    --c-text-link: var(--c-text-default);
     grid-area: breadcrumbs;
     overflow: auto;
+  }
+
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item[aria-current='page']) {
+    --c-chip-text: var(--color-slate-700);
+    color: var(--color-slate-700);
   }
 </style>

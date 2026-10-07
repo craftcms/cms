@@ -243,7 +243,7 @@ export function useResizableBox({
       onBeforeDragStart: () => {
         // Sync, unlike onDragStart, so we measure what was on screen when the
         // drag threshold was crossed, and discount the distance already
-        // travelled so the box doesn't jump by it.
+        // traveled so the box doesn't jump by it.
         const size = measured();
         const box = el();
         startWidth = size.width;

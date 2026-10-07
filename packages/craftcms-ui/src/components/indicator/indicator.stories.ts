@@ -94,7 +94,7 @@ export const Swatches: Story = {
 };
 
 /**
- * Anything the browser accepts as a colour works too — a hex value, an `rgba()`,
+ * Anything the browser accepts as a color works too — a hex value, an `rgba()`,
  * even a gradient. Prefer the variant and swatch names, which stay in step with
  * the rest of the palette.
  */

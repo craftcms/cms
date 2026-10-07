@@ -51,7 +51,7 @@ describe('DateTimeControl', () => {
     container = undefined;
   });
 
-  const control = () =>
+  const control = (props: Record<string, unknown> = {}) =>
     ({
       type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
       component: 'craft:date-time',
@@ -61,6 +61,7 @@ describe('DateTimeControl', () => {
         showTimeZone: true,
         locale: 'en-US',
         minuteIncrement: 15,
+        ...props,
       },
       path: ['fields', 'date'],
       mode: 'editable',
@@ -68,13 +69,13 @@ describe('DateTimeControl', () => {
       forms: [],
     }) as unknown as FormControlPayload;
 
-  function mount(value: unknown): void {
+  function mount(value: unknown, props: Record<string, unknown> = {}): void {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
       setup: () => () =>
         h(DateTimeControl, {
-          control: control(),
+          control: control(props),
           value,
           editable: true,
           required: false,
@@ -98,8 +99,8 @@ describe('DateTimeControl', () => {
     expect(input!.dateValue).toBe('');
     expect(input!.timeValue).toBe('');
     expect(
-      container!.querySelector('craft-button[aria-label="Clear"]')
-    ).toBeNull();
+      container!.querySelector('craft-button[aria-label="Clear"]')!.classList
+    ).toContain('invisible');
   });
 
   it('renders the value it was given', async () => {
@@ -114,7 +115,25 @@ describe('DateTimeControl', () => {
     expect(input.dateValue).toBe('2026-08-07');
     expect(input.timeValue).toBe('14:30');
     expect(
-      container!.querySelector('craft-button[aria-label="Clear"]')
-    ).not.toBeNull();
+      container!.querySelector('craft-button[aria-label="Clear"]')!.classList
+    ).not.toContain('invisible');
+  });
+
+  it('stretches the inputs when the control asks for full width', async () => {
+    mount({}, {fullWidth: true});
+    await nextTick();
+
+    expect(
+      container!.querySelector('craft-input-date-time')!.getAttribute('width')
+    ).toBe('full');
+  });
+
+  it('leaves the inputs at their own width by default', async () => {
+    mount({});
+    await nextTick();
+
+    expect(
+      container!.querySelector('craft-input-date-time')!.hasAttribute('width')
+    ).toBe(false);
   });
 });

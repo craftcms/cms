@@ -1,15 +1,12 @@
 <script setup lang="ts">
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {ButtonVariant} from '@craftcms/ui';
   import type {InertiaForm} from '@inertiajs/vue3';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import FormActionButtons from '@/common/components/FormActionButtons.vue';
-  import {
-    PRIMARY_SUBMITTER,
-    useFormSubmitter,
-  } from '@/common/composables/useFormSubmitter';
+  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
   import type {ActionItem, ActionItemButton} from '@/common/types';
 
-  const props = defineProps<{
+  defineProps<{
     form: InertiaForm<any>;
     actionItems?: Array<ActionItem>;
     additionalActions?: Array<ActionItem>;
@@ -21,25 +18,16 @@
   }>();
 
   defineSlots<{
-    /** Replaces the default submit button while keeping the action menu. */
-    'submit-button'?: () => any;
+    /** Replaces the Save button while keeping the action menu. */
+    'primary-action'?: () => any;
   }>();
-
-  const submitter = useFormSubmitter(() => props.form);
 </script>
 
 <template>
   <div v-if="!readOnly" class="flex items-center justify-between gap-2">
     <craft-button-group v-if="!saveDisabled && actionItems?.length">
-      <slot name="submit-button">
-        <craft-button
-          type="submit"
-          :variant="ButtonVariant.Primary"
-          :loading="submitter.isSubmitting(PRIMARY_SUBMITTER)"
-          :disabled="form.processing"
-        >
-          {{ submitLabel ?? t('Save') }}
-        </craft-button>
+      <slot name="primary-action">
+        <PrimaryActionButton :form="form" :label="submitLabel" />
       </slot>
       <ActionMenu icon="chevron-down" :actions="actionItems">
         <template #invoker="{label}">
@@ -55,15 +43,8 @@
       </ActionMenu>
     </craft-button-group>
 
-    <slot v-else-if="!saveDisabled" name="submit-button">
-      <craft-button
-        type="submit"
-        :variant="ButtonVariant.Primary"
-        :loading="submitter.isSubmitting(PRIMARY_SUBMITTER)"
-        :disabled="form.processing"
-      >
-        {{ submitLabel ?? t('Save') }}
-      </craft-button>
+    <slot v-else-if="!saveDisabled" name="primary-action">
+      <PrimaryActionButton :form="form" :label="submitLabel" />
     </slot>
     <FormActionButtons
       v-if="additionalButtons?.length"

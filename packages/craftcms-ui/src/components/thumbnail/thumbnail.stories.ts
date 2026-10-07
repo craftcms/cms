@@ -57,7 +57,7 @@ export const Default: Story = {
   args: {},
 };
 
-// Side by side, so the chequerboard reads as a property of the left thumbnail
+// Side by side, so the checkerboard reads as a property of the left thumbnail
 // rather than as part of the image itself.
 export const Checkered: Story = {
   render: () => html`

@@ -127,6 +127,7 @@
     "playwright": "^1.59.1",
     "plop": "^4.0.5",
     "recursive-copy": "^2.0.14",
+    "remark-gfm": "catalog:",
     "rimraf": "^6.1.3",
     "storybook": "catalog:",
     "typescript": "catalog:",

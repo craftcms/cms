@@ -51,6 +51,6 @@ There is no hidden input behind them, and `form.reset()` puts back the value the
 
 ## Not the whole legacy surface
 
-`createTextInput` returns a native `<input>` rather than a custom element, because that is what the rest of the CP's text inputs are built from. It renders markup only. The behaviour the legacy `Craft.ui.createTextInput` layered on top — the placeholder animation and characters-left counter from `Garnish.NiceText`, the password wrapper, the mobile autofocus suppression — stays in the legacy shim that wraps this function's result.
+`createTextInput` returns a native `<input>` rather than a custom element, because that is what the rest of the CP's text inputs are built from. It renders markup only. The behavior the legacy `Craft.ui.createTextInput` layered on top — the placeholder animation and characters-left counter from `Garnish.NiceText`, the password wrapper, the mobile autofocus suppression — stays in the legacy shim that wraps this function's result.
 
 Reach for [Utilities](?path=/docs/javascript-api-utilities--docs) for the smaller pieces the factory itself is built from, including `createButton`.

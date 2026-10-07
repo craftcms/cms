@@ -60,6 +60,13 @@ describe('DataTable', () => {
       .map((row) => row.textContent?.trim().slice(0, 20) ?? '');
   }
 
+  function sortButton(root: Element, label: string): HTMLButtonElement | null {
+    const header = [...root.querySelectorAll('th')].find((th) =>
+      th.textContent?.includes(label)
+    );
+    return header?.querySelector('button') ?? null;
+  }
+
   it('marks no row selected to begin with', () => {
     const {root} = mount();
 
@@ -265,12 +272,10 @@ describe('DataTable', () => {
     app.mount(container);
     await nextTick();
 
-    const sortButton = container.querySelector<HTMLButtonElement>(
-      '#header-title button'
-    )!;
-    sortButton.focus();
-    sortButton.click();
-    expect(document.activeElement).toBe(sortButton);
+    const titleButton = sortButton(container, 'Title')!;
+    titleButton.focus();
+    titleButton.click();
+    expect(document.activeElement).toBe(titleButton);
 
     // Simulates the reload cycle a real server-side sort causes.
     loading.value = true;
@@ -290,7 +295,7 @@ describe('DataTable', () => {
     await nextTick();
     await nextTick();
 
-    const restoredButton = container.querySelector('#header-title button');
+    const restoredButton = sortButton(container, 'Title');
     expect(restoredButton).not.toBeNull();
     expect(document.activeElement).toBe(restoredButton);
   });
@@ -324,5 +329,52 @@ describe('DataTable', () => {
     const spinner = container.querySelector('craft-spinner');
     expect(document.activeElement).not.toBe(spinner);
     expect(spinner?.textContent?.trim()).toBe('Loading');
+  });
+
+  it('returns focus to the sorted table when another table shares its columns', async () => {
+    const firstTable = createSampleTable();
+    const secondTable = createSampleTable();
+    const loading = ref(false);
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h('div', [
+          h('section', {class: 'first'}, [
+            h(DataTable, {
+              table: firstTable,
+              selection: useElementIndexSelection(firstTable, {
+                selectable: false,
+                readOnly: false,
+              }),
+            } as never),
+          ]),
+          h('section', {class: 'second'}, [
+            h(DataTable, {
+              table: secondTable,
+              selection: useElementIndexSelection(secondTable, {
+                selectable: false,
+                readOnly: false,
+              }),
+              loading: loading.value,
+            } as never),
+          ]),
+        ]),
+    });
+    app.mount(container);
+    await nextTick();
+
+    const second = container.querySelector('.second')!;
+    sortButton(second, 'Title')!.focus();
+
+    loading.value = true;
+    await nextTick();
+    await nextTick();
+    loading.value = false;
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(sortButton(second, 'Title'));
   });
 });

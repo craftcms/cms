@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -51,6 +52,7 @@ export default css`
   .nav-item__action-item {
     text-decoration: none;
     color: inherit;
+    ${trimmedTextBoxStyles}
 
     &::after {
       content: '';
@@ -304,7 +306,7 @@ export default css`
   /*
    * Without that indent nothing says the stand-ins belong to the icon above
    * them, so a rule runs down beside them: the width of the active indicator,
-   * and pulled clear of the column the same way, so the icons stay centred on
+   * and pulled clear of the column the same way, so the icons stay centered on
    * the rail and the two line up when a child is the current page.
    *
    * Not on a group — its children are already inside the branch's own subnav,

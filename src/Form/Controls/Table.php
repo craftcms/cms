@@ -44,13 +44,16 @@ class Table extends Control
 
     private ?string $addRowLabel = null;
 
-    private bool $includeRowId = false;
+    private bool|string $includeRowId = false;
 
     /** @var array<string, mixed> */
     private array $defaultValues = [];
 
     /** @var array<string, array<string, true>> */
     private array $errors = [];
+
+    /** @var array<string, array<string, array<string, mixed>>> */
+    private array $cellOptions = [];
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
@@ -141,7 +144,8 @@ class Table extends Control
         return $this;
     }
 
-    public function includeRowId(bool $include = true): static
+    /** Includes new row UUIDs under `rowId` or the given field name. */
+    public function includeRowId(bool|string $include = true): static
     {
         $this->includeRowId = $include;
 
@@ -171,12 +175,20 @@ class Table extends Control
         return $defaults;
     }
 
-    /** @param array<string, mixed> $row */
-    public function rowForm(array $row): Form
+    /**
+     * @param  array<string, mixed>  $row
+     * @param  array<string, array<string, mixed>>  $cellOptions
+     */
+    public function rowForm(array $row, array $cellOptions = []): Form
     {
         $form = Form::make();
 
         foreach ($this->columns as $key => $column) {
+            $column = array_replace($column, $cellOptions[$key] ?? []);
+            if (($column['type'] ?? null) === 'html' || ($column['html'] ?? false)) {
+                continue;
+            }
+
             $control = TableColumn::control((string) $key, $column);
             if ($control instanceof Control) {
                 $control->value($row[$key] ?? $this->rowDefaults()[$key] ?? null);
@@ -211,10 +223,18 @@ class Table extends Control
         $forms = [];
 
         foreach ($value as $key => $row) {
-            $forms[] = ['scope' => [(string) $key], 'form' => $this->rowForm((array) $row), 'refreshable' => false];
+            $forms[] = ['scope' => [(string) $key], 'form' => $this->rowForm((array) $row, $this->cellOptions[$key] ?? []), 'refreshable' => false];
         }
 
         return $forms;
+    }
+
+    /** @param array<string, array<string, array<string, mixed>>> $cellOptions */
+    public function cellOptions(array $cellOptions): static
+    {
+        $this->cellOptions = $cellOptions;
+
+        return $this;
     }
 
     /** @param array<string, mixed> $defaultValues */

@@ -67,7 +67,7 @@
   /**
    * Whether this modal opened over another. The one beneath already dims the
    * page, so a second shade would only darken it further; this one's overlay
-   * still catches clicks, just without the colour.
+   * still catches clicks, just without the color.
    */
   const isNested = computed(() => openModals.indexOf(stackId) > 0);
 

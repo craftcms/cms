@@ -17,7 +17,7 @@ export default css`
     display: inline-flex;
     border-radius: var(--_radius);
     align-items: center;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
 
     border-width: var(--c-chip-border-width, 1px);
@@ -25,10 +25,24 @@ export default css`
     overflow: clip;
   }
 
-  .cp-chip__body ::slotted(a) {
+  /*
+   * A label link: no underline until it's hovered. ::slotted() only reaches a
+   * link slotted straight into the chip; one nested a level down (inside a
+   * craft-truncate, as element chips render it) gets the same treatment
+   * through the custom properties, which it inherits and craft-truncate
+   * applies to its own slotted links.
+   */
+  :host {
+    --c-truncate-link-decoration: none;
+    --c-truncate-link-hover-decoration: underline;
+  }
+
+  .cp-chip__body::slotted(a) {
     text-decoration: none;
-    font-weight: bold;
-    display: flex;
+  }
+
+  .cp-chip__body::slotted(a:hover) {
+    text-decoration: underline;
   }
 
   .cp-chip input[type='checkbox'] {
@@ -72,12 +86,12 @@ export default css`
   }
 
   /*
-   * Without an author-chosen colour the chip stamps data-color="white", whose
-   * fill, border, and text are all static colours — they stay light in dark
+   * Without an author-chosen color the chip stamps data-color="white", whose
+   * fill, border, and text are all static colors — they stay light in dark
    * mode. A default chip takes the theme-aware surface instead, paired with
    * the same text and border tokens craft-pane uses on that surface, so the
    * three move together. Scoped to the two filled tiers so outline and plain
-   * stay transparent, and to the stamped colour so a variant still fills with
+   * stay transparent, and to the stamped color so a variant still fills with
    * its own.
    */
   :host([data-color='white'][appearance~='fill']) .cp-chip,
@@ -170,8 +184,8 @@ export default css`
   }
 
   .cp-chip__suffix {
-    padding: calc(var(--_chip-spacing) / 2);
-    padding-inline-start: var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-inline: var(--_chip-spacing);
     display: flex;
   }
 

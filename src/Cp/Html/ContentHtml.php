@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Markdown\MarkdownOptions;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
@@ -65,6 +66,6 @@ readonly class ContentHtml
 
     public function parseMarkdown(string $text, string $flavor = 'gfm-comment'): string
     {
-        return Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags($text), $flavor));
+        return Html::decodeDoubles(Markdown::convert(Html::encodeInvalidTags($text), new MarkdownOptions(flavor: $flavor, indentedCode: false)));
     }
 }

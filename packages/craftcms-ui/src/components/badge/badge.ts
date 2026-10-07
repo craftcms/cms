@@ -39,10 +39,13 @@ export default class CraftBadge extends LitElement {
 
   /**
    * Whether the default slot holds a label, as opposed to the badge being a
-   * bare indicator. A labelled badge takes a control's height, so it lines up
+   * bare indicator. A labeled badge takes a control's height, so it lines up
    * with the buttons and inputs it sits beside.
    */
   @state() private hasLabel = false;
+
+  /** Whether the label is plain text, which can be trimmed to its capitals. */
+  @state() private hasTextLabel = false;
 
   /** Whether anything is slotted into `suffix`. */
   @state() private hasSuffix = false;
@@ -57,7 +60,7 @@ export default class CraftBadge extends LitElement {
 
   /**
    * Read before the first render, so an empty region never renders and a
-   * labelled badge never renders a frame at the wrong height.
+   * labeled badge never renders a frame at the wrong height.
    */
   override connectedCallback(): void {
     super.connectedCallback();
@@ -84,6 +87,9 @@ export default class CraftBadge extends LitElement {
         (node instanceof Element && !node.hasAttribute('slot')) ||
         (node.nodeType === Node.TEXT_NODE && node.textContent!.trim() !== '')
     );
+    this.hasTextLabel =
+      this.hasLabel &&
+      !children.some((node) => node instanceof Element && !node.slot);
     this.hasSuffix = children.some(
       (node) => node instanceof Element && node.slot === 'suffix'
     );
@@ -110,7 +116,7 @@ export default class CraftBadge extends LitElement {
           badge: true,
           'badge--small': this.size === Size.Small,
           'badge--large': this.size === Size.Large,
-          'badge--labelled': this.hasLabel,
+          'badge--labeled': this.hasLabel,
         })}"
       >
         ${this.noPrefix
@@ -123,7 +129,11 @@ export default class CraftBadge extends LitElement {
                 ></craft-indicator>
               </slot>
             </span>`}
-        ${this.hasLabel ? html`<slot></slot>` : nothing}
+        ${this.hasLabel
+          ? html`<slot
+              class="${classMap({'badge__label--text': this.hasTextLabel})}"
+            ></slot>`
+          : nothing}
         ${this.hasSuffix
           ? html`<span class="badge__suffix">
               <slot name="suffix" part="suffix"></slot>

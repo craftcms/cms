@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Can be exploited to reveal sensitive content by information disclosure attacks.',
     'Can contain Markdown formatting.' => 'สามารถมีการจัดรูปแบบ Markdown',
     'Cancel' => 'ยกเลิก',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'ไม่พบเซสชันการจัดทำดัชนี หรือไม่มีรายการที่ต้องตรวจสอบ',
     'Canton' => 'ตำบล',
     'Can’t run Craft CMS' => 'ไม่สามารถเรียกใช้งาน Craft CMS ได้',
