@@ -75,8 +75,8 @@ export function useTableRows(props: {
         ...props.control.path,
         keyed.value ? row.key : String(index),
       ];
-      const concrete = props.control.uis?.find((form) =>
-        pathsMatch(form.scope, scope)
+      const concrete = props.control.uis?.find((ui) =>
+        pathsMatch(ui.scope, scope)
       );
       if (concrete) row.ui = concrete;
     }
@@ -98,8 +98,8 @@ export function useTableRows(props: {
 
   const uis = computed(() =>
     rows.value.flatMap((_, index) => {
-      const form = rowUi(index);
-      return form ? [form] : [];
+      const ui = rowUi(index);
+      return ui ? [ui] : [];
     })
   );
 
@@ -107,10 +107,10 @@ export function useTableRows(props: {
     const row = rows.value[index];
     if (!row) return undefined;
 
-    const form = row.ui ?? props.control.props.rowTemplate;
-    return form
+    const ui = row.ui ?? props.control.props.rowTemplate;
+    return ui
       ? bindUiScope(
-          form,
+          ui,
           [...props.control.path, keyed.value ? row.key : String(index)],
           props.control.deltaGroup
         )
