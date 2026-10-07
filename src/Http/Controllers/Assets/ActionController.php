@@ -184,11 +184,10 @@ readonly class ActionController
     public function showInFolder(Request $request): Response
     {
         $request->validate([
-            'assetId' => ['required'],
+            'assetId' => ['required', 'integer'],
         ]);
 
-        $assetId = $request->input('assetId');
-        $asset = Asset::findOne($assetId);
+        $asset = Asset::findOne($assetId = $request->integer('assetId'));
 
         abort_if($asset === null, 400, "Invalid asset ID: $assetId");
 

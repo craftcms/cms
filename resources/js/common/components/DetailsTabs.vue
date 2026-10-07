@@ -4,11 +4,14 @@
    * the rail. Tabs render either a named slot or a component, so a page can
    * mix its own markup with registered tabs.
    */
-  import {t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import type {Component} from 'vue';
-  import {useScreenDetailsOverlay} from '@/common/composables/screen';
+  import {
+    useScreenDetailsOverlay,
+    useScreenDetailsRail,
+  } from '@/common/composables/screen';
+  import DetailsTabPanel from './DetailsTabPanel.vue';
 
   export interface DetailsTab {
     id: string;
@@ -52,6 +55,17 @@
   );
 
   /**
+   * Where the strip goes when the shell keeps it apart from the panels. The
+   * panels then stay here as plain sections, which the strip drives in its
+   * external-panel mode.
+   */
+  const rail = useScreenDetailsRail();
+
+  function panelId(tab: DetailsTab): string {
+    return `${props.idPrefix}-${tab.id}-panel`;
+  }
+
+  /**
    * The column folds to its tab rail once the shell overlays it. The width that
    * happens at is the shell's call, so this follows the flag rather than
    * measuring.
@@ -61,7 +75,12 @@
    */
   const overlaid = useScreenDetailsOverlay();
   const tabsElement = useTemplateRef<
-    HTMLElement & {selectedIndex: number; open(): void; close(): void}
+    HTMLElement & {
+      selectedIndex: number;
+      open(): void;
+      close(): void;
+      refresh(): void;
+    }
   >('tabs');
   const selectedTabId = shallowRef<string | null>(
     props.syncLocationHash && window.location.hash
@@ -121,6 +140,18 @@
     {flush: 'post'}
   );
 
+  // Panels added after the strip wired the rest aren't wired yet.
+  watch(
+    visibleTabs,
+    async () => {
+      if (rail) {
+        await nextTick();
+        tabsElement.value?.refresh();
+      }
+    },
+    {flush: 'post'}
+  );
+
   function onSelectedChanged(event: Event): void {
     const selectedIndex = (event.target as {selectedIndex?: number} | null)
       ?.selectedIndex;
@@ -164,7 +195,45 @@
 </script>
 
 <template>
+  <template v-if="rail">
+    <Teleport defer :to="rail">
+      <craft-tabs
+        ref="tabs"
+        class="details-tabs__rail"
+        placement="inline-end"
+        collapsible
+        @craft-tab-show="onSelectedChanged"
+      >
+        <craft-tab
+          v-for="tab in visibleTabs"
+          :id="`${idPrefix}-${tab.id}`"
+          :key="tab.id"
+          slot="tab"
+          :controls="panelId(tab)"
+        >
+          <craft-icon :name="tab.icon" :label="tab.label" />
+        </craft-tab>
+      </craft-tabs>
+    </Teleport>
+    <div class="details-tabs__panels">
+      <section
+        v-for="tab in visibleTabs"
+        :id="panelId(tab)"
+        :key="tab.id"
+        class="hidden"
+      >
+        <DetailsTabPanel
+          :tab="tab"
+          :component-props="componentProps?.(tab, selectedTabId) ?? {}"
+          @close="tabsElement?.close()"
+        >
+          <slot v-if="tab.slot" :name="tab.slot" />
+        </DetailsTabPanel>
+      </section>
+    </div>
+  </template>
   <craft-tabs
+    v-else
     ref="tabs"
     placement="inline-end"
     collapsible
@@ -179,47 +248,13 @@
       <craft-icon :name="tab.icon" :label="tab.label" />
     </craft-tab>
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
-      <div
-        class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
+      <DetailsTabPanel
+        :tab="tab"
+        :component-props="componentProps?.(tab, selectedTabId) ?? {}"
+        @close="tabsElement?.close()"
       >
-        <div class="flex items-center gap-1">
-          <h3 class="text-md/4">{{ tab.label }}</h3>
-        </div>
-
-        <div class="flex items-center gap-1">
-          <span v-if="tab.statusData" class="flex items-center gap-1">
-            <craft-status
-              :status="tab.statusData.indicator"
-              :label="tab.statusData.label"
-            ></craft-status>
-            <span class="text-xs/4 text-neutral-text-quiet">
-              {{ tab.statusData.label }}
-            </span>
-          </span>
-          <component
-            :is="tab.headerActionsComponent"
-            v-if="tab.headerActionsComponent"
-            v-bind="componentProps?.(tab, selectedTabId) ?? {}"
-          />
-          <craft-button
-            type="button"
-            icon="xmark-large"
-            :aria-label="t('Close {tab}', {tab: tab.label})"
-            variant="plain"
-            size="small"
-            @click="tabsElement?.close()"
-            flush="inline-end"
-          ></craft-button>
-        </div>
-      </div>
-      <slot v-if="tab.slot" :name="tab.slot" />
-      <div v-else class="p-lg">
-        <component
-          v-if="tab.component"
-          :is="tab.component"
-          v-bind="componentProps?.(tab, selectedTabId) ?? {}"
-        />
-      </div>
+        <slot v-if="tab.slot" :name="tab.slot" />
+      </DetailsTabPanel>
     </div>
   </craft-tabs>
 </template>
@@ -240,6 +275,21 @@
     background-color: var(--c-surface-sunken);
   }
 
+  /* The rail sits on the page background, and holds no panels. */
+  .details-tabs__rail::part(strip) {
+    border-inline-start: none;
+    background-color: transparent;
+  }
+
+  .details-tabs__rail::part(panels) {
+    display: none;
+  }
+
+  .details-tabs__panels {
+    block-size: 100%;
+    overflow-y: auto;
+  }
+
   craft-tab {
     display: grid;
     width: var(--c-size-touch-target);
@@ -252,7 +302,7 @@
     border: 1px solid var(--c-color-border-quiet);
   }
 
-  craft-tab[selected='true'] {
+  craft-tab[aria-selected='true'] {
     border-color: var(--c-color-accent-border-normal);
     background-color: var(--c-color-accent-fill-quiet);
     color: var(--c-color-accent-on-quiet);

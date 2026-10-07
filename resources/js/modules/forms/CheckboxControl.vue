@@ -36,7 +36,7 @@
     :name="editable ? inputName(control.path) : ''"
     :label="control.props.label ?? label"
     .checked="Boolean(value)"
-    .value="String(control.props.checkedValue ?? '1')"
+    .choiceValue="String(control.props.checkedValue ?? '1')"
     :disabled="!editable"
     :required="editable && required"
     .validators="serverErrorValidators(invalid)"
