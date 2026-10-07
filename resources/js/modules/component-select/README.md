@@ -3,8 +3,10 @@
 A TypeScript port of the legacy jQuery `Craft.ComponentSelectInput`
 (`packages/craftcms-legacy/cp/src/js/ComponentSelectInput.js`) onto the modern
 **`@craftcms/garnish`** `Base`, exposed as the self-booting
-`<craft-component-select>` custom element. It powers
-`_includes/forms/componentSelect.twig` and is orchestrated by
+`<craft-component-select>` custom element. Its markup is rendered server-side by
+the `ComponentSelect` PHP component (`src/Cp/Components/ComponentSelect.php`,
+plus the `EntryTypeSelect` subclass), which the `_includes/forms/componentSelect`
+and `_includes/forms/entryTypeSelect` templates delegate to. It is orchestrated by
 [`<craft-entry-type-manager>`](../grouped-entry-type-manager/grouped-entry-type-manager.ts)
 for the Matrix field settings' grouped entry type UI.
 
@@ -154,24 +156,19 @@ it survives a disconnect/reconnect and chip adoption across selects.
 ### Default: on, but no checkbox
 
 The `selectable` attribute defaults to **`true`**, matching the legacy
-`Craft.ComponentSelectInput` default (`selectable: true`) — the task's "keep
-behavior identical to legacy defaults." Legacy achieved this via a *split* the
-template preserves: the JS class defaulted `selectable: true` (selection always
-on) while the Twig rendered chips with **no** checkbox affordance by default
-(`checkbox: selectable ?? false`, with the Twig `selectable` var undefined). The
-template reproduces both from the one caller-facing `selectable` var by reading
-it with two different fallbacks — `selectable ?? true` for the element's
-`selectable` attribute, `selectable ?? false` for the chip `checkbox` — so an
-explicit value drives both, while absence gives selection-on + checkbox-off.
-Pass `selectable: false` to the Twig (or `selectable="false"` on the element) to
-turn selection off; pass `selectable: true` to also render chip checkboxes.
+`Craft.ComponentSelectInput` default (`selectable: true`). Chips never render a
+checkbox affordance: the old template passed a `checkbox` option to `chip()`,
+which `ElementHtml::chipHtml()` ignores. Call `selectable(false)` on the PHP
+component (`selectable: false` in the Twig, or `selectable="false"` on the
+element) to turn selection off.
 
 The legacy `addItemsToActionMenus` setting stays folded into always-on.
 
 ## Checkbox options (`checkboxOptions`)
 
 By default a selected component's Choose-menu option is `hidden`. With
-`checkboxOptions: true` in the Twig (`checkbox-options` on the element), the
+`checkboxOptions()` on the PHP component (`checkboxOptions: true` in the Twig,
+`checkbox-options` on the element), the
 options render as `craft-action-item type="checkbox"` instead: selected ones
 stay listed and `checked`, and activating a checked option removes its chip.
 The menu stays open while options are toggled. At the `limit` it stays

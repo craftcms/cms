@@ -310,10 +310,10 @@ it('renders the entry type select', function () {
         ->toContain('name="entryTypes[]"')
         ->toContain('Overridden')
         ->toContain('command="--create-item"')
-        ->toContain('checkbox-options')
-        ->and($html)->toMatch(sprintf('/<craft-action-item type="checkbox" checked [^>]*data-id="%s"/', $entryType->id))
-        ->and($html)->toMatch(sprintf('/<craft-action-item type="checkbox" icon="newspaper" icon-color="red" [^>]*data-id="%s"/', $other->id))
-        ->and($html)->toContain('>otherType</span>');
+        ->toContainTag('craft-component-select', ['checkbox-options' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $entryType->id, 'type' => 'checkbox', 'checked' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $other->id, 'type' => 'checkbox', 'checked' => false, 'icon' => 'newspaper', 'icon-color' => 'red'])
+        ->toContain('>otherType</span>');
 });
 
 it('can render override settings', function () {

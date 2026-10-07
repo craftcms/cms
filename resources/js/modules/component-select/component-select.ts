@@ -113,7 +113,7 @@ export interface ComponentSelectSettings extends GarnishBaseSettings {
 /**
  * Component select controller — a `@craftcms/garnish` `Base` port of the
  * legacy jQuery `Craft.ComponentSelectInput`, orchestrating the server-rendered
- * markup from `_includes/forms/componentSelect.twig` — a `ul.components` of
+ * markup from the `ComponentSelect` PHP component — a `ul.components` of
  * `li > craft-chip` (each chip carries `data-type`/`data-id` and a hidden
  * input with its value), a Choose `craft-action-menu` (its `[command="--choose-item"]` invoker
  * + `craft-action-item[data-id]` options), and an optional Create button

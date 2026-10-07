@@ -65,7 +65,7 @@
             return Number(value);
           }
 
-          // SAFETY: With overrides allowed, entryTypeSelect.twig renders each
+          // SAFETY: With overrides allowed, the EntryTypeSelect component renders each
           // chip's hidden value as an `{id, name?, handle?, description?}` JSON object.
           return JSON.parse(value) as FormValue;
         });

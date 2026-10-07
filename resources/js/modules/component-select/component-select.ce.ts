@@ -8,7 +8,7 @@ import {
 /**
  * `<craft-component-select>` — a light-DOM progressive-enhancement port of the
  * legacy `Craft.ComponentSelectInput` (jQuery/Garnish). It wraps the
- * server-rendered markup from `_includes/forms/componentSelect.twig` and boots
+ * server-rendered markup from the `ComponentSelect` PHP component and boots
  * a {@link ComponentSelect} controller around it (see that file for the
  * behavior). This element is a `ControllerElement` facade: it owns attribute
  * parsing and is the public API surface consumers use — `selectedIds`,

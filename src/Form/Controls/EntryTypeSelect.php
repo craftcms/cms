@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Components\EntryTypeSelect as EntryTypeSelectComponent;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Form\ControlPayload;
@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 
 /**
  * An entry type picker, backed by the server-rendered
- * `_includes/forms/entryTypeSelect` component select.
+ * {@see EntryTypeSelectComponent}.
  *
  * The value is a list of entry type IDs, or — when overrides are allowed —
  * a list of `{id, name?, handle?, description?}` configs.
@@ -53,20 +53,22 @@ class EntryTypeSelect extends Control
         )));
         $namespace = $name === null ? null : self::parentInputName($name);
 
-        return InputNamespace::namespaceInputs(fn (): string => FormFields::entryTypeSelectHtml([
-            'id' => 'entry-types',
-            'name' => ($name === null ? 'entryTypes' : self::leafName($name)).'[]',
-            'values' => $entryTypes,
-            'allowOverrides' => $allowOverrides,
-            'create' => $create && ! $disabled,
-            'disabled' => $disabled,
-            'checkboxOptions' => true,
-        ]), $namespace);
+        return InputNamespace::namespaceInputs(fn (): string => EntryTypeSelectComponent::make()
+            ->id('entry-types')
+            ->name(($name === null ? 'entryTypes' : self::leafName($name)).'[]')
+            ->values($entryTypes)
+            ->allowOverrides($allowOverrides)
+            ->showIndicators($allowOverrides)
+            ->showDescription($allowOverrides)
+            ->create($create && ! $disabled)
+            ->disabled($disabled)
+            ->checkboxOptions()
+            ->toHtml(), $namespace);
     }
 
     /**
      * Returns the value an entry type's chip posts, matching the hidden input
-     * `_includes/forms/entryTypeSelect` renders when overrides are allowed.
+     * {@see EntryTypeSelectComponent} renders when overrides are allowed.
      *
      * @return array<string, int|string|null>
      */
