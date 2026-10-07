@@ -3805,7 +3805,7 @@ abstract class Element extends Component implements ElementInterface, AllowableI
 
     private function canSaveNestedElement(User $user): ?bool
     {
-        if (!$this instanceof NestedElementInterface) {
+        if (!$this instanceof NestedElementInterface || !static::hasDrafts()) {
             return null;
         }
 
