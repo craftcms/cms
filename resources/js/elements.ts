@@ -36,6 +36,11 @@ export type {ActionItem, ActionItemLink} from './common/types';
 export {useAppLayout} from './common/composables/useAppLayout';
 
 export {
+  useCustomizeSources,
+  type CustomizeSourcesTarget,
+} from './modules/elements/index/composables/useCustomizeSources';
+
+export {
   appendIndexQuery,
   type ElementIndexRoute,
   type IndexQueryParams,

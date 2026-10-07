@@ -16,9 +16,8 @@
    */
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import useCraftData from '@/common/composables/useCraftData';
-  import {t} from '@craftcms/ui/utilities/translate';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {useCustomizeSources} from '@/modules/elements/index/composables/useCustomizeSources';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
@@ -40,29 +39,13 @@
     sourceKey?: string | null;
   }>();
 
-  /**
-   * The sources editor, which a ported index reaches through the gear on its
-   * nav item. This screen has no nav item of its own, so it offers the editor
-   * from the secondary nav's own menu — where Craft 5 put it.
-   *
-   * The server refuses anyone else, so the entry is only offered to those it
-   * would accept.
-   */
-  const {currentUser, allowAdminChanges} = useCraftData();
-  const canCustomizeSources = computed(
-    () =>
-      Boolean(props.elementType) &&
-      Boolean(currentUser.value?.admin) &&
-      allowAdminChanges.value
-  );
+  const subnavActions = useCustomizeSources(() => ({
+    elementType: props.elementType,
+    page: props.page,
+    sourceKey: props.sourceKey,
+  }));
 
-  function customizeSources(): void {
-    window.Craft?.openCustomizeSourcesModal?.({
-      elementType: props.elementType!,
-      page: props.page ?? null,
-      sourceKey: props.sourceKey ?? null,
-    });
-  }
+  useAppLayout(() => ({subnavActions: subnavActions.value}));
 
   const route: ElementIndexRoute = {
     url: (query = {}) => appendIndexQuery(props.indexUrl, query),
@@ -105,12 +88,6 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="canCustomizeSources" name="subnav-actions">
-    <craft-action-item icon="gear" @click="customizeSources">
-      {{ t('Customize sources') }}
-    </craft-action-item>
-  </LayoutSlot>
-
   <ElementIndexPage :route="route" :source-href="indexUrl">
     <template v-if="toolbarFragment" #toolbar-actions>
       <HtmlFragmentRenderer :fragment="toolbarFragment" />
