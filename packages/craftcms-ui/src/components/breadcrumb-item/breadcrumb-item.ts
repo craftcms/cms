@@ -44,14 +44,14 @@ export default class CraftBreadcrumbItem extends LitElement {
     .label {
       display: inline-flex;
       align-items: center;
-      font-weight: 400;
+      font-weight: var(--font-weight-medium);
       color: inherit;
       text-decoration: none;
     }
 
     /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
     :host([aria-current='page']) .label {
-      font-weight: var(--font-weight-semibold);
+      font-weight: var(--font-weight-light);
     }
 
     a.label:hover {

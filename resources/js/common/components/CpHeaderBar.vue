@@ -186,7 +186,13 @@
   }
 
   .cp-header-bar__breadcrumbs {
+    --c-text-link: var(--c-text-default);
     grid-area: breadcrumbs;
     overflow: auto;
+  }
+
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item[aria-current='page']) {
+    color: var(--color-slate-700);
   }
 </style>
