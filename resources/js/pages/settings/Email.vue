@@ -2,7 +2,7 @@
   import {ButtonVariant, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
   import type {UiPayload} from '@/modules/ui/types';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import {messageTargetHeaders} from '@/modules/messages';
@@ -13,7 +13,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
-    form: UiPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     defaultToEmail: string;
   }>();
@@ -32,7 +32,7 @@
 
 <template>
   <div class="grid gap-3">
-    <FormPage :form="form" :submit="submit" />
+    <UiPage :ui="ui" :submit="submit" />
 
     <CpContainer>
       <craft-pane appearance="raised">

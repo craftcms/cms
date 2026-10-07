@@ -43,14 +43,14 @@ class ImageTransformEditViewModel extends ViewModel
     public function __construct(
         private readonly ImageTransform $transform,
         private readonly Images $images,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): UiPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
         $mode = (string) $values['mode'];
@@ -60,7 +60,7 @@ class ImageTransformEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = Ui::make([
+        $ui = Ui::make([
             HiddenField::make('transformId'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
@@ -73,7 +73,7 @@ class ImageTransformEditViewModel extends ViewModel
             )->required(),
         ]);
 
-        $form->add(
+        $ui->add(
             Group::make('image-transform-mode-settings', [
                 $mode === ImageTransformMode::Letterbox->value
                     ? Field::make(t('Fill Color'), Color::make('fill'))
@@ -111,7 +111,7 @@ class ImageTransformEditViewModel extends ViewModel
 
         foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
             if (! $this->assetTransformDrivers->has($transformer->driver)) {
-                $form->add(Group::make("asset-transformer-{$transformer->uid}", [
+                $ui->add(Group::make("asset-transformer-{$transformer->uid}", [
                     Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This Asset Transformer’s driver is unavailable.')),
                 ])->label((string) $transformer->name));
 
@@ -132,12 +132,12 @@ class ImageTransformEditViewModel extends ViewModel
             }, array_values($this->assetTransformers->parameterFields($transformer)));
 
             if ($fields !== []) {
-                $form->add(Group::make("asset-transformer-{$transformer->uid}", $fields)
+                $ui->add(Group::make("asset-transformer-{$transformer->uid}", $fields)
                     ->label((string) $transformer->name));
             }
         }
 
-        return $this->formResolver->resolve($form, new UiContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,
             errors: $this->transform->errors()->getMessages(),
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
@@ -158,7 +158,7 @@ class ImageTransformEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([ImageTransformsController::class, 'renderForm']);
+            : action([ImageTransformsController::class, 'renderUi']);
     }
 
     /** @return array<string, mixed> */

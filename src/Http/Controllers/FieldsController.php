@@ -191,7 +191,7 @@ class FieldsController
         return $response;
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -245,7 +245,7 @@ class FieldsController
         );
 
         return new JsonResponse([
-            'form' => $request->boolean('settingsOnly') ? $viewModel->settingsForm() : $viewModel->form(),
+            'ui' => $request->boolean('settingsOnly') ? $viewModel->settingsUi() : $viewModel->ui(),
         ]);
     }
 
@@ -590,7 +590,7 @@ class FieldsController
         $component = $this->fieldLayoutComponent($request);
 
         return new JsonResponse([
-            'form' => $this->layoutComponentSettingsPayload($component),
+            'ui' => $this->layoutComponentSettingsPayload($component),
             'headHtml' => $this->HtmlStack->headHtml(),
             'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
@@ -608,7 +608,7 @@ class FieldsController
         $scope = $request->array('scope');
 
         return new JsonResponse([
-            'form' => $scope === [] ? $payload : $payload->forScope($scope),
+            'ui' => $scope === [] ? $payload : $payload->forScope($scope),
             'headHtml' => $this->HtmlStack->headHtml(),
             'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);

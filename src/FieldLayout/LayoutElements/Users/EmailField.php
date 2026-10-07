@@ -87,7 +87,7 @@ class EmailField extends TextField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         $element = $context->element;
 
@@ -99,7 +99,7 @@ class EmailField extends TextField
             return null;
         }
 
-        return parent::formControl($context);
+        return parent::uiControl($context);
     }
 
     #[Override]

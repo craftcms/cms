@@ -173,7 +173,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                         ->value($this->multiline)
                         ->reactive()),
             ]),
-        ])->when($this->multiline, fn (Ui $form) => $form->add(
+        ])->when($this->multiline, fn (Ui $ui) => $ui->add(
             Group::make('plain-text-multiline-settings', [
                 UiField::make(t('Initial Rows'))
                     ->control(Number::make('initialRows')
@@ -184,7 +184,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $control = $this->multiline
             ? Textarea::make($context->path)->rows($this->initialRows)

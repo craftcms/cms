@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Mcp\Settings;
-use CraftCms\Cms\Mcp\SettingsForm;
+use CraftCms\Cms\Mcp\SettingsUi;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -29,9 +29,9 @@ readonly class SettingsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private UiResolver $formResolver,
+        private UiResolver $uiResolver,
         private ProjectConfig $projectConfig,
-        private SettingsForm $settingsForm,
+        private SettingsUi $settingsUi,
     ) {}
 
     public function index(Settings $settings): CpScreenResponse
@@ -61,7 +61,7 @@ readonly class SettingsController
             ...$settings->toArray(),
             'endpoint' => route('craft.cp.mcp.server'),
         ];
-        $form = $this->formResolver->resolve($this->settingsForm->make(), new UiContext(
+        $ui = $this->uiResolver->resolve($this->settingsUi->make(), new UiContext(
             values: $values,
             errors: $settings->errors()->getMessages(),
             mode: $mode,
@@ -74,9 +74,9 @@ readonly class SettingsController
                 new ActionItem()->label(t('MCP')),
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('Form', [
+            ->inertiaPage('Ui', [
                 'readOnly' => ! $this->generalConfig->allowAdminChanges,
-                'form' => $form,
+                'ui' => $ui,
                 'submit' => [
                     'method' => 'post',
                     'url' => route('craft.cp.settings.mcp.store'),

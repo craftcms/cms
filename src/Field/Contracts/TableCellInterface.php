@@ -13,7 +13,7 @@ use GraphQL\Type\Definition\Type;
 
 interface TableCellInterface extends ComponentInterface, ConfigurableComponentInterface, Validatable
 {
-    public function formControl(TableCellContext $context): Control;
+    public function uiControl(TableCellContext $context): Control;
 
     public function normalizeValue(mixed $value, bool $fromRequest = false): mixed;
 

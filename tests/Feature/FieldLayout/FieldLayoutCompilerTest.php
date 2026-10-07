@@ -10,7 +10,7 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -151,9 +151,9 @@ it('allows the form-stage event to replace typed nodes without changing persiste
     $layout = app(Fields::class)->getLayoutById($layoutModel->id);
     $config = $layoutModel->config;
 
-    Event::listen(FieldLayoutFormResolving::class, function (FieldLayoutFormResolving $event) {
-        $nodes = $event->form->nodes();
-        $event->form = Ui::make([
+    Event::listen(FieldLayoutUiResolving::class, function (FieldLayoutUiResolving $event) {
+        $nodes = $event->ui->nodes();
+        $event->ui = Ui::make([
             $nodes[1],
             MarkdownContent::make('injected-note', 'Injected'),
         ]);

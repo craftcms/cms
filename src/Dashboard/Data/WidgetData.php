@@ -28,6 +28,6 @@ readonly class WidgetData
         public ?string $component,
         public ?array $data,
         public HtmlFragment $fragment,
-        public ?UiPayload $settingsForm,
+        public ?UiPayload $settingsUi,
     ) {}
 }

@@ -15,7 +15,7 @@ readonly class FieldLayoutElementContext
 {
     public function __construct(
         public ?ElementInterface $element,
-        public UiContext $form,
+        public UiContext $ui,
         public ControlMode $mode = ControlMode::Editable,
     ) {}
 }

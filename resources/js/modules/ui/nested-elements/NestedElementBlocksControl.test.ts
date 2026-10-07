@@ -818,7 +818,7 @@ describe('NestedElementBlocksControl', () => {
           data: {
             uid: 'block-c',
             type: 'newType',
-            form: {
+            ui: {
               scope: ['fields', 'pageBuilder', 'entries', 'block-c'],
               nodes: [],
             },
@@ -894,7 +894,7 @@ describe('NestedElementBlocksControl', () => {
       data: {
         uid: 'block-b',
         type: 'newType',
-        form: {
+        ui: {
           scope: ['fields', 'pageBuilder', 'entries', 'block-b'],
           nodes: [],
         },
@@ -945,7 +945,7 @@ describe('NestedElementBlocksControl', () => {
         data: {
           uid: 'block-b',
           type: 'newType',
-          form: {
+          ui: {
             scope: ['fields', 'pageBuilder', 'entries', 'block-b'],
             nodes: [],
           },
@@ -1047,7 +1047,7 @@ describe('NestedElementBlocksControl', () => {
         data: {
           uid,
           type: 'type-0',
-          form: {
+          ui: {
             scope: ['fields', 'pageBuilder', 'entries', uid],
             refreshable: true,
             nodes: [],
@@ -1671,7 +1671,7 @@ describe('NestedElementBlocksControl', () => {
       data: {
         uid,
         type: 'newType',
-        form: {
+        ui: {
           scope: ['fields', 'pageBuilder', 'entries', uid],
           refreshable: true,
           nodes: [],
@@ -1772,7 +1772,7 @@ describe('NestedElementBlocksControl', () => {
           {
             uid: 'pasted-block',
             type: 'newType',
-            form: {
+            ui: {
               scope: ['fields', 'pageBuilder', 'entries', 'pasted-block'],
               refreshable: true,
               nodes: [],
@@ -1847,7 +1847,7 @@ describe('NestedElementBlocksControl', () => {
         data: {
           uid: 'new-block',
           type: 'newType',
-          form: {
+          ui: {
             scope: ['fields', 'pageBuilder', 'entries', 'new-block'],
             refreshable: true,
             nodes: [],

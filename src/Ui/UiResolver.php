@@ -31,7 +31,7 @@ class UiResolver
     ) {}
 
     /** @throws JsonException */
-    public function resolve(Ui $form, UiContext $context): UiPayload
+    public function resolve(Ui $ui, UiContext $context): UiPayload
     {
         $this->controlPathIndex = [];
         $this->nodeUidIndex = [];
@@ -39,7 +39,7 @@ class UiResolver
         $namespace = $this->normalizePath($context->namespace, 'UI context');
         $nodes = array_map(
             fn (Node $node): NodePayload => $this->resolveNode($node, $context, $namespace),
-            $form->nodes(),
+            $ui->nodes(),
         );
         [$errors, $globalErrors] = $this->resolveErrors($context, $namespace);
 

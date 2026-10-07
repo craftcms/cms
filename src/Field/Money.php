@@ -213,7 +213,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof MoneyLibrary
             ? MoneyHelper::toNumber($context->value)

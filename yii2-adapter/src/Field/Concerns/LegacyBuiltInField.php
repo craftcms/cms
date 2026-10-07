@@ -16,19 +16,19 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
 
 trait LegacyBuiltInField
 {
     private ControlMode $tableSettingsMode = ControlMode::Editable;
 
     use LegacyFieldControl {
-        formControl as private legacyFormControl;
+        uiControl as private legacyUiControl;
     }
     use LegacyFieldHtml {
         getStaticHtml as private legacyStaticHtml;
     }
-    use LegacySettingsForm {
+    use LegacySettingsUi {
         settingsUi as private legacySettingsUi;
     }
 
@@ -43,20 +43,20 @@ trait LegacyBuiltInField
         return parent::settingsUi($context);
     }
 
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         if (static::class !== self::class) {
             $previousMode = $this->legacyInputMode;
-            $this->legacyInputMode = $context->form->mode === ControlMode::Editable ? $context->mode : $context->form->mode;
+            $this->legacyInputMode = $context->ui->mode === ControlMode::Editable ? $context->mode : $context->ui->mode;
 
             try {
-                return $this->legacyFormControl($context);
+                return $this->legacyUiControl($context);
             } finally {
                 $this->legacyInputMode = $previousMode;
             }
         }
 
-        return parent::formControl($context);
+        return parent::uiControl($context);
     }
 
     public function getSettingsHtml(): ?string
@@ -118,11 +118,11 @@ trait LegacyBuiltInField
         }
 
         $context = new UiContext(mode: ControlMode::ReadOnly);
-        $control = parent::formControl(new FieldContext(
+        $control = parent::uiControl(new FieldContext(
             path: $this->handle,
             value: $value,
             element: $element,
-            form: $context,
+            ui: $context,
             mode: ControlMode::ReadOnly,
         ));
         $payload = app(UiResolver::class)->resolve(

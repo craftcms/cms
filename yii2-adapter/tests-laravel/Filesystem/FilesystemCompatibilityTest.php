@@ -16,7 +16,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
-use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToListContents;
 

@@ -67,9 +67,9 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     abstract public function selectorHtml(): string;
 
-    abstract public function formNode(FieldLayoutElementContext $context): ?Node;
+    abstract public function uiNode(FieldLayoutElementContext $context): ?Node;
 
-    public function formMode(?ElementInterface $element): ControlMode
+    public function uiMode(?ElementInterface $element): ControlMode
     {
         return ControlMode::Editable;
     }

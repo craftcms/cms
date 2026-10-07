@@ -47,7 +47,7 @@ readonly class EmailSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private Sites $sites,
-        private UiResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {}
 
     public function index(GeneralConfig $generalConfig): CpScreenResponse
@@ -60,7 +60,7 @@ readonly class EmailSettingsController
             ])
             ->redirectUrl('settings')
             ->inertiaPage('settings/Email', [
-                'form' => $this->emailSettingsForm($generalConfig),
+                'ui' => $this->emailSettingsUi($generalConfig),
                 'submit' => [
                     'method' => 'post',
                     'url' => action([self::class, 'store']),
@@ -115,7 +115,7 @@ readonly class EmailSettingsController
         return $this->asSuccess(t('Email sent successfully! Check your inbox.'));
     }
 
-    private function emailSettingsForm(GeneralConfig $generalConfig): UiPayload
+    private function emailSettingsUi(GeneralConfig $generalConfig): UiPayload
     {
         $environmentOptions = SelectOptions::getEnvSuggestions();
         $environmentTextExpanderTriggers = SelectOptions::getEnvTextExpanderTriggers();
@@ -129,7 +129,7 @@ readonly class EmailSettingsController
             t('Learn more'),
             'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
         );
-        $form = Ui::make([
+        $ui = Ui::make([
             Field::make(t('System Email Address'), Text::make('fromEmail')
                 ->textExpanderTriggers($environmentTextExpanderTriggers))
                 ->instructions(t('The email address Craft CMS will use when sending email.'))
@@ -151,7 +151,7 @@ readonly class EmailSettingsController
                 ->tip($environmentTip),
         ])->when(
             $this->sites->isMultiSite(),
-            fn (Ui $form): Ui => $form->add(
+            fn (Ui $ui): Ui => $ui->add(
                 Separator::make('site-overrides-separator'),
                 Heading::make('site-overrides-heading', t('Site Overrides'))
                     ->description(t('Override the default email settings on a per-site basis. Blank values will use the defaults above.')),
@@ -169,7 +169,7 @@ readonly class EmailSettingsController
                 ->tip($environmentTip),
         );
 
-        return $this->formResolver->resolve($form, new UiContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $this->emailSettingsValues(),
             mode: $generalConfig->allowAdminChanges ? ControlMode::Editable : ControlMode::ReadOnly,
         ));

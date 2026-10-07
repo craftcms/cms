@@ -42,7 +42,7 @@ readonly class GeneralSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private GeneralConfig $generalConfig,
-        private UiResolver $formResolver,
+        private UiResolver $uiResolver,
         private MaintenanceMode $maintenanceMode,
     ) {}
 
@@ -55,9 +55,9 @@ readonly class GeneralSettingsController
                 new ActionItem()->label(t('General Settings')),
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('Form', [
+            ->inertiaPage('Ui', [
                 'readOnly' => false,
-                'form' => $this->systemSettingsForm(),
+                'ui' => $this->systemSettingsUi(),
                 'submit' => [
                     'method' => 'post',
                     'url' => action([self::class, 'store']),
@@ -133,7 +133,7 @@ readonly class GeneralSettingsController
         Event::dispatch(new MaintenanceModeDisabled);
     }
 
-    private function systemSettingsForm(): UiPayload
+    private function systemSettingsUi(): UiPayload
     {
         $system = $this->projectConfig->get('system') ?? [];
         $timezoneOptions = $this->timezoneOptions();
@@ -141,7 +141,7 @@ readonly class GeneralSettingsController
             ? ControlMode::Editable
             : ControlMode::ReadOnly;
 
-        $form = Ui::make([
+        $ui = Ui::make([
             Field::make(t('System Name'), Text::make('name')
                 ->mode($settingsMode)
                 ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
@@ -168,7 +168,7 @@ readonly class GeneralSettingsController
                 ])),
         ]);
 
-        return $this->formResolver->resolve($form, new UiContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: [
                 ...$system,
                 'maintenanceMode' => $this->maintenanceMode->active(),

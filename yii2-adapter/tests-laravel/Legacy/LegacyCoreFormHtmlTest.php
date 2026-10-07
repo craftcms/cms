@@ -99,7 +99,7 @@ it('captures legacy entry title inputs while retaining the core title type', fun
     $entry->shouldReceive('getAttributeStatus')->andReturn(null);
     $field = new LegacyEntryTitleField(['uid' => 'title', 'name' => 'headline']);
     $context = new UiContext(namespace: ['nested']);
-    $node = $field->formNode(new FieldLayoutElementContext($entry, $context));
+    $node = $field->uiNode(new FieldLayoutElementContext($entry, $context));
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
     $html = new Crawler($payload->nodes[0]->control->props['fragment']['html']);
 
@@ -121,7 +121,7 @@ it('captures plugin title overrides once in every form mode', function(ControlMo
         }
     };
     $context = new UiContext(namespace: ['nested'], mode: $mode);
-    $node = $field->formNode(new FieldLayoutElementContext(null, $context));
+    $node = $field->uiNode(new FieldLayoutElementContext(null, $context));
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
     $control = $payload->nodes[0]->control;
     $input = new Crawler($control->props['fragment']['html'])->filter('input');
@@ -145,7 +145,7 @@ it('serializes the adapter title class and omits titles disabled by the entry ty
         'uid' => 'title',
         'name' => 'headline',
         'required' => false,
-    ])->and($field->formNode(new FieldLayoutElementContext($entry, new UiContext())))->toBeNull();
+    ])->and($field->uiNode(new FieldLayoutElementContext($entry, new UiContext())))->toBeNull();
 });
 
 it('renders the complete legacy Table settings Form with its namespace and effective mode', function(ControlMode $mode) {

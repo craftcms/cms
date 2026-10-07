@@ -155,7 +155,7 @@ class EntryTypesController
         return $response;
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -181,11 +181,11 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
-            'form' => new EntryTypeEditViewModel(
+            'ui' => new EntryTypeEditViewModel(
                 new EntryType,
                 brandNew: ! isset($data['values']['entryTypeId']),
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 

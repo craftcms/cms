@@ -109,7 +109,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      *
-     * @see FieldInterface::formControl()
+     * @see FieldInterface::uiControl()
      */
     public ?string $describedBy = null;
 
@@ -299,7 +299,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return 'i-cursor';
     }
 
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         throw new LogicException(sprintf('%s does not provide a UI Control.', static::class));
     }

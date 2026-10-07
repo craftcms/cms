@@ -346,7 +346,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ->value($rows)),
         ])->when(
             static::$allowCustomOptions,
-            fn (Ui $form): Ui => $form->add(
+            fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('Allow custom options'))
                     ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
             ),
@@ -354,7 +354,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $options = collect($this->translatedOptions(true, $context->value, $context->element))
             ->filter(fn (array $option): bool => array_key_exists('value', $option))
@@ -365,11 +365,11 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return Choice::make($context->path)
             ->options($options)
             ->multiple(static::$multi)
-            ->presentation($this->formPresentation())
+            ->presentation($this->uiPresentation())
             ->value($this->encodeValue($context->value));
     }
 
-    protected function formPresentation(): ChoicePresentation
+    protected function uiPresentation(): ChoicePresentation
     {
         return static::$multi ? ChoicePresentation::Checkboxes : ChoicePresentation::Select;
     }

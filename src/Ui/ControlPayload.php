@@ -51,7 +51,7 @@ readonly class ControlPayload implements JsonSerializable
             + ($this->nestsUis ? ['nestsUis' => true] : [])
             + ($this->omitNullValue ? ['omitNullValue' => true] : [])
             + ($this->uis === [] ? [] : ['uis' => array_map(
-                fn (NestedUiPayload $form): array => $form->jsonSerialize(),
+                fn (NestedUiPayload $ui): array => $ui->jsonSerialize(),
                 $this->uis,
             )]);
     }

@@ -14,13 +14,13 @@ const stageTypes = [
     type,
     label: 'User Review',
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-    settingsForm: null,
+    settingsUi: null,
   },
   {
     type: 'plugin\\AutomatedStage',
     label: 'Automated review',
     settings: {rule: 'passing'},
-    settingsForm: null,
+    settingsUi: null,
   },
 ];
 
@@ -30,7 +30,7 @@ function stage(uid: string, name: string): WorkflowStage {
     name,
     type,
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-    settingsForm: null,
+    settingsUi: null,
   };
 }
 
@@ -129,7 +129,7 @@ describe('WorkflowStagesInput', () => {
         name: 'Review',
         type,
         settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-        settingsForm: null,
+        settingsUi: null,
       },
     ]);
 

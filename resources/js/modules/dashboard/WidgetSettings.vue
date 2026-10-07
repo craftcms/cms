@@ -36,7 +36,7 @@
   );
   const uiErrors = computed(() =>
     Object.entries(errors.value).map(([path, messages]) => ({
-      path: [...(props.widget.settingsForm?.scope ?? []), ...path.split('.')],
+      path: [...(props.widget.settingsUi?.scope ?? []), ...path.split('.')],
       messages,
     }))
   );
@@ -50,18 +50,18 @@
       settings: values,
       namespace: scope.join('.'),
     });
-    if (!data.form) {
-      throw new Error('The widget did not return a Form payload.');
+    if (!data.ui) {
+      throw new Error('The widget did not return a UI payload.');
     }
 
-    return data.form;
+    return data.ui;
   }
 
   async function save() {
     if (form.processing) return;
 
     const values = renderer.value?.currentValues() ?? {};
-    const namespace = props.widget.settingsForm?.scope[0];
+    const namespace = props.widget.settingsUi?.scope[0];
 
     try {
       const data = await form
@@ -84,9 +84,9 @@
   <form @submit.prevent="save">
     <craft-field-group>
       <UiRenderer
-        v-if="widget.settingsForm"
+        v-if="widget.settingsUi"
         ref="renderer"
-        :payload="widget.settingsForm"
+        :payload="widget.settingsUi"
         :refresh="refresh"
         :errors="uiErrors"
       />

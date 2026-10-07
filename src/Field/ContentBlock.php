@@ -389,7 +389,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $control = ContentBlockControl::make($context->path);
 

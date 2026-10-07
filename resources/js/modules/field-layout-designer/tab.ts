@@ -240,8 +240,8 @@ export class Tab extends Base {
 
   applySettings(): void {
     const $container = this.slideout.$container[0];
-    const settingsForm = this.slideout.settingsForm;
-    const settings = settingsForm?.currentValues() ?? {};
+    const settingsUi = this.slideout.settingsUi;
+    const settings = settingsUi?.currentValues() ?? {};
 
     // update the UI
     const $submitBtn = $container.querySelector('button[type=submit]');

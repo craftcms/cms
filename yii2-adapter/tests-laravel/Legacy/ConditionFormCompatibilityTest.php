@@ -120,7 +120,7 @@ it('scopes legacy plugin inputs and refreshes through the condition Form', funct
     $rule = new LegacyTitleInputRule();
     $rule->condition = new ElementCondition(Entry::class);
     $payload = app(\CraftCms\Cms\Condition\ConditionBuilder::class)->resolveRule($rule);
-    $control = $payload->form->nodes[0]->control;
+    $control = $payload->ui->nodes[0]->control;
 
     expect($control->props['fragment']['html'])->toContain("name=\"_conditionRules[{$rule->uid}][value]\"")
         ->and($control->props['expandValues'])->toBeTrue()

@@ -4,7 +4,7 @@
   import {t, toEnvVar} from '@craftcms/ui';
   import {ref} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
   import type {
     UiChange,
     UiChangeKind,
@@ -15,7 +15,7 @@
 
   const props = defineProps<{
     site: Site;
-    form: UiPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string;
   }>();
@@ -24,7 +24,7 @@
     setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
   }>();
   const baseUrlDirty = ref(
-    Boolean(props.form.values.siteId) || Boolean(props.form.values.baseUrl)
+    Boolean(props.ui.values.siteId) || Boolean(props.ui.values.baseUrl)
   );
 
   function onChange(change: UiChange, values: UiPayload['values']): void {
@@ -66,9 +66,9 @@
     </craft-badge>
   </LayoutSlot>
 
-  <FormPage
+  <UiPage
     ref="formPage"
-    :form="form"
+    :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl"
     @change="onChange"

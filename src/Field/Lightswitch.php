@@ -139,7 +139,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return LightswitchControl::make($context->path)
             ->onLabel(t($this->onLabel, category: 'site'))

@@ -98,14 +98,14 @@ it('rejects invalid site ids when creating a matrix entry', function () {
         ->assertJsonPath('message', 'Invalid owner ID, element type, or site ID.');
 });
 
-it('returns the new block as form nodes when given a control path', function () {
-    // The Form control renders blocks with FormNodeList, so it asks for nodes
+it('returns the new block as UI nodes when given a control path', function () {
+    // The Form control renders blocks with UiNodeList, so it asks for nodes
     // rather than the rendered block HTML the legacy stack splices in.
     $response = postJson(action([MatrixController::class, 'createEntry']), MatrixControllerFixture::payload($this->fixture, [
         'path' => ['fields', 'matrixField'],
     ]))
         ->assertOk()
-        ->assertJsonStructure(['uid', 'type', 'form' => ['scope', 'refreshable', 'nodes'], 'values']);
+        ->assertJsonStructure(['uid', 'type', 'ui' => ['scope', 'refreshable', 'nodes'], 'values']);
 
     $entry = MatrixControllerFixture::entries($this->fixture)->sole();
 
@@ -118,9 +118,9 @@ it('returns the new block as form nodes when given a control path', function () 
     // blocks by — no `uid:` prefix, nothing for the browser to reconcile.
     expect($response->json('uid'))->toBe($entry->uid)
         ->and($response->json('type'))->toBe($this->fixture['entryType']->handle)
-        ->and($response->json('form.scope'))
+        ->and($response->json('ui.scope'))
         ->toBe(['fields', 'matrixField', 'entries', $entry->uid])
-        ->and($response->json('form.nodes'))->not->toBeEmpty()
+        ->and($response->json('ui.nodes'))->not->toBeEmpty()
         ->and($response->json('values'))->not->toBeEmpty();
     ;
 });
@@ -245,7 +245,7 @@ it('duplicates an existing matrix entry and returns its form', function () {
         'duplicate' => $source->id,
     ]))
         ->assertOk()
-        ->assertJsonStructure(['uid', 'form', 'values']);
+        ->assertJsonStructure(['uid', 'ui', 'values']);
 
     $entries = MatrixControllerFixture::entries($this->fixture);
     $duplicate = $entries->first(fn (EntryElement $entry) => $entry->id !== $source->id);
@@ -392,7 +392,7 @@ it('badges a block’s own field when that block was edited through a draft', fu
     expect($block->getIsCanonical())->toBeFalse()
         ->and($block->isFieldModified('innerText'))->toBeTrue();
 
-    // What `Matrix::formControl()` actually compiles each block against.
+    // What `Matrix::uiControl()` actually compiles each block against.
     $value = $draft->getFieldValue($this->fixture['field']->handle);
     $compiled = (clone $value)
         ->drafts(null)
@@ -488,7 +488,7 @@ it('only creates event-added types for eligible authorized owners', function () 
         ->and($created->getOwnerId())->toBe($ownerId);
 
     $this->fixture['field']->viewMode = Matrix::VIEW_MODE_BLOCKS;
-    $control = $this->fixture['field']->formControl(new FieldContext(
+    $control = $this->fixture['field']->uiControl(new FieldContext(
         path: ['fields', 'matrixField'],
         value: $this->fixture['owner']->getFieldValue('matrixField'),
         element: $this->fixture['owner'],
@@ -536,7 +536,7 @@ it('renders and duplicates event-added entry types absent from creation choices'
         ->assertJsonPath("blocks.0.values.fields.matrixField.entries.{$entry->uid}.fields.innerText", 'Retained content');
 
     $this->fixture['field']->viewMode = Matrix::VIEW_MODE_BLOCKS;
-    $control = $this->fixture['field']->formControl(new FieldContext(
+    $control = $this->fixture['field']->uiControl(new FieldContext(
         path: ['fields', 'matrixField'],
         value: $this->fixture['owner']->getFieldValue('matrixField'),
         element: $this->fixture['owner'],

@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 it('autosaves and submits custom HTML inputs together with native field edits', async () => {
-  const form: UiPayload = {
+  const ui: UiPayload = {
     scope: [],
     refreshable: false,
     nodes: [
@@ -91,8 +91,8 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
     draftId: null,
     isProvisionalDraft: false,
     canAutosave: true,
-    form,
-    sidebarForm: null,
+    ui,
+    sidebarUi: null,
     saveParams: {entryId: 12, siteId: 1},
     saveUrl: '/actions/entries/save-entry',
     applyDraftUrl: '/actions/elements/apply-draft',

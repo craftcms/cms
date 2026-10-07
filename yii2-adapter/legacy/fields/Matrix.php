@@ -21,7 +21,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Field\MatrixEntrySaveCompatibility;
-use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
+use CraftCms\Yii2Adapter\Ui\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
 
@@ -45,7 +45,7 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $entries = $this->viewMode === self::VIEW_MODE_BLOCKS ? $this->entriesForForm($value) : [];
-        $control = parent::formControl(new FieldContext(
+        $control = parent::uiControl(new FieldContext(
             path: ['fields', $this->handle],
             value: $this->viewMode === self::VIEW_MODE_BLOCKS ? new ElementCollection($entries) : $value,
             element: $element,
@@ -66,17 +66,17 @@ class Matrix extends \CraftCms\Cms\Field\Matrix implements LegacyField
                     continue;
                 }
 
-                $form = app(FieldLayoutCompiler::class)->compile(
+                $ui = app(FieldLayoutCompiler::class)->compile(
                     $entry->getFieldLayout(),
                     $entry,
                     new UiContext(errors: $entry->errors()->getMessages(), mode: $this->legacyInputMode),
                 );
-                if ($form->globalErrors !== []) {
+                if ($ui->globalErrors !== []) {
                     $path = "fields.{$this->handle}";
-                    $errors[$path] = array_merge($errors[$path] ?? [], $form->globalErrors);
+                    $errors[$path] = array_merge($errors[$path] ?? [], $ui->globalErrors);
                 }
 
-                foreach ($form->errors as $error) {
+                foreach ($ui->errors as $error) {
                     $path = ['fields', $this->handle, 'entries', $identities[$index], ...$error['path']];
                     $errors[implode('.', $path)] = $error['messages'];
                 }

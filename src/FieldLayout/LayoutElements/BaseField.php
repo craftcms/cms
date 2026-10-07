@@ -414,9 +414,9 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
-        $control = $this->formControl($context);
+        $control = $this->uiControl($context);
 
         if ($control === null) {
             return null;
@@ -448,7 +448,7 @@ abstract class BaseField extends FieldLayoutElement
             )
             ->layoutUid($this->uid)
             ->width($this->width)
-            ->actions(...$this->formActionNodes($context, $control));
+            ->actions(...$this->uiActionNodes($context, $control));
     }
 
     /**
@@ -458,10 +458,10 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @return list<Node>
      */
-    protected function formActionNodes(FieldLayoutElementContext $context, Control $control): array
+    protected function uiActionNodes(FieldLayoutElementContext $context, Control $control): array
     {
         $nodes = [];
-        $uidPrefix = $this->formActionsUid($control);
+        $uidPrefix = $this->uiActionsUid($control);
 
         $items = $this->resolveActionMenuItems($context);
         if ($items !== []) {
@@ -575,12 +575,12 @@ abstract class BaseField extends FieldLayoutElement
      * Derived from the control's path rather than the layout element's UID:
      * the UID is nullable (fluently-built layouts and the card view designer
      * produce UID-less elements), and one layout element can emit several
-     * Fields (see {@see Addresses\LatLongField::formNode()}). Control paths are
+     * Fields (see {@see Addresses\LatLongField::uiNode()}). Control paths are
      * already unique within a form namespace — {@see UiResolver}
      * rejects duplicates — and control-less nodes are scoped by that same
      * namespace.
      */
-    protected function formActionsUid(Control $control): string
+    protected function uiActionsUid(Control $control): string
     {
         $path = $control->path();
 
@@ -595,7 +595,7 @@ abstract class BaseField extends FieldLayoutElement
         return $user?->isAdmin() && $user->getPreference('showFieldHandles');
     }
 
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         return null;
     }

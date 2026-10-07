@@ -53,7 +53,7 @@ class UserGroupsController extends BaseUserSettingsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
@@ -85,7 +85,7 @@ class UserGroupsController extends BaseUserSettingsController
             ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'form' => $this->form($group, $userPermissions, true),
+                'ui' => $this->ui($group, $userPermissions, true),
                 'submit' => $this->submit(),
             ]);
     }
@@ -113,7 +113,7 @@ class UserGroupsController extends BaseUserSettingsController
             ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'form' => $this->form($group, $userPermissions),
+                'ui' => $this->ui($group, $userPermissions),
                 'submit' => $this->submit(),
                 'elevatedFields' => ['permissions'],
                 'deleteAction' => $this->readOnly ? null : [
@@ -204,7 +204,7 @@ class UserGroupsController extends BaseUserSettingsController
         return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
     }
 
-    private function form(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): UiPayload
+    private function ui(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): UiPayload
     {
         $handle = Handle::make('handle');
         $values = $group->getConfig(true);
@@ -213,7 +213,7 @@ class UserGroupsController extends BaseUserSettingsController
             $handle->source('name');
         }
 
-        return $this->formResolver->resolve(Ui::make([
+        return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('id'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),

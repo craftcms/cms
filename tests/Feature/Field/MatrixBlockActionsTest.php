@@ -81,7 +81,7 @@ function matrixActionsControl(EntryElement $owner): NestedElementBlocks
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
 
     /** @var NestedElementBlocks $control */
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
         element: $owner,
@@ -164,7 +164,7 @@ it('keeps single-site status actions when the field does not propagate blocks', 
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
     $field->propagationMethod = PropagationMethod::None;
     /** @var NestedElementBlocks $control */
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
         element: $owner,

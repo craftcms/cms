@@ -17,7 +17,7 @@ use Throwable;
  */
 readonly class ConditionBuilder
 {
-    public function __construct(private Conditions $conditions, private UiResolver $forms) {}
+    public function __construct(private Conditions $conditions, private UiResolver $uiResolver) {}
 
     /**
      * @param  array<string, mixed>  $value
@@ -94,7 +94,7 @@ readonly class ConditionBuilder
             label: $rule->getLabel(),
             hint: $rule->getLabelHint(),
             showHint: $rule->showLabelHint(),
-            form: $this->forms->resolve($rule->getUi($context), $context),
+            ui: $this->uiResolver->resolve($rule->getUi($context), $context),
         );
     }
 

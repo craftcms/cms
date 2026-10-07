@@ -198,7 +198,7 @@ class ElementDraftsController
             // Attributes only, the way Craft 5 sends them: an attribute is its
             // own delta group, so the editor can badge it by name. A custom
             // field's badge is decided per element when its layout is compiled
-            // — see `BaseField::formNode()` — which is what keeps a block's
+            // — see `BaseField::uiNode()` — which is what keeps a block's
             // fields answering to the block rather than to its owner.
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
@@ -210,12 +210,12 @@ class ElementDraftsController
             $previewTargets = $element->getPreviewTargets();
             // Compiled once and shared: the edit screen payload adopts it as
             // its own, and `fieldLayoutData()` scopes it for the response.
-            $form = $this->compileFieldLayout($element);
+            $ui = $this->compileFieldLayout($element);
             // Built before `fieldLayoutData()` drains the HTML stack, so
             // whatever the sidebar and metadata register still lands in
             // `headHtml`/`bodyHtml`.
-            $screen = $this->editScreenData($element, $form);
-            $data += $this->fieldLayoutData($element, $form);
+            $screen = $this->editScreenData($element, $ui);
+            $data += $this->fieldLayoutData($element, $ui);
             $data += [
                 'docTitle' => $docTitle,
                 'title' => $title,
@@ -252,18 +252,18 @@ class ElementDraftsController
      * reads this response too, and several of its keys (`form`,
      * `previewTargets`) mean something different there.
      *
-     * `form` is dropped — the compiled layout is already on the response at the
+     * `ui` is dropped — the compiled layout is already on the response at the
      * top level, scoped to whatever the request asked for, and shipping it
      * twice would double the size of every keystroke's autosave.
      *
      * @return array<string, mixed>
      */
-    private function editScreenData(ElementInterface $element, ?UiPayload $form): array
+    private function editScreenData(ElementInterface $element, ?UiPayload $ui): array
     {
         $viewModel = $element::editViewModelClass();
 
         // Saving got this far, so the user can save this element.
-        $data = new $viewModel($element, $this->request, true)->withForm($form)->toArray();
+        $data = new $viewModel($element, $this->request, true)->withUi($ui)->toArray();
 
         event($event = new ElementEditorPayloadResolving(
             $element,
@@ -271,7 +271,7 @@ class ElementDraftsController
             $this->request->header('X-Craft-Container-Id') ?? $this->request->input('editorContainerId', 'main-form'),
         ));
 
-        unset($event->data['form']);
+        unset($event->data['ui']);
 
         return $event->data;
     }

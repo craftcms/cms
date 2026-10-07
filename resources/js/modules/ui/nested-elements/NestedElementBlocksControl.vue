@@ -112,7 +112,7 @@
   type CreatedBlock = {
     uid: string;
     type: string;
-    form: NestedUiPayload;
+    ui: NestedUiPayload;
     values: UiValues;
     block: BlockPresentation;
   };
@@ -161,7 +161,7 @@
    * UI definitions for blocks the server minted since the last full payload. They're
    * dropped as soon as that payload catches up and carries them itself.
    */
-  // `shallowRef`, not `ref`: a form payload's values are a recursive type that
+  // `shallowRef`, not `ref`: a ui payload's values are a recursive type that
   // Vue can't unwrap for deep reactivity, and both maps are replaced wholesale
   // rather than written into.
   const created = shallowRef(new Map<string, NestedUiPayload>());
@@ -216,17 +216,17 @@
   const uis = computed(() => {
     const map = new Map<string, NestedUiPayload>();
 
-    for (const [uid, form] of created.value) {
-      map.set(uid, form);
+    for (const [uid, ui] of created.value) {
+      map.set(uid, ui);
     }
 
-    for (const form of props.control.uis ?? []) {
+    for (const ui of props.control.uis ?? []) {
       // Entries added client-side are keyed with a `uid:` prefix, which the
       // server strips before saving — so their uis come back scoped to the
       // bare UUID while the block is still keyed with the prefix.
-      const uid = form.scope.at(-1)!;
-      map.set(uid, form);
-      map.set(`${NESTED_ELEMENT_UID_PREFIX}${uid}`, form);
+      const uid = ui.scope.at(-1)!;
+      map.set(uid, ui);
+      map.set(`${NESTED_ELEMENT_UID_PREFIX}${uid}`, ui);
     }
 
     return map;
@@ -297,7 +297,7 @@
    * Heavy-handed, and deliberately so: a block can hold a control that
    * relocates its own light DOM — a Lion overlay behind an action menu, say —
    * and patching the list around one of those throws `insertBefore` on null,
-   * which takes the whole form down. Tearing the field down and building it
+   * which takes the whole ui down. Tearing the field down and building it
    * again is the way past that until those controls can survive a patch.
    *
    * The cost is that the field leaves the document for a frame, so
@@ -306,7 +306,7 @@
   const key = computed(() =>
     JSON.stringify([
       props.value.sortOrder,
-      props.control.uis?.map((form) => form.scope),
+      props.control.uis?.map((ui) => ui.scope),
       props.editable,
     ])
   );
@@ -365,7 +365,7 @@
 
   /**
    * Collapsed blocks live in localStorage, not the value — it's a view
-   * preference, and posting it would mark the form dirty just for collapsing
+   * preference, and posting it would mark the ui dirty just for collapsing
    * something. Craft 5 did the same. `collapsedTick` re-reads storage after a
    * write, since a plain module read isn't reactive.
    */
@@ -444,7 +444,7 @@
         return;
       }
 
-      const known = new Set(serverUis.map((form) => form.scope.at(-1)));
+      const known = new Set(serverUis.map((ui) => ui.scope.at(-1)));
       const next = new Map(
         [...created.value].filter(([uid]) => !known.has(uid))
       );
@@ -568,8 +568,8 @@
   /**
    * Adds a block, letting the server mint it the way Craft 5 did: the button
    * shows a loading state while `matrix/create-entry` persists the entry as a
-   * draft and hands back its form nodes, which render through UiNodeList like
-   * any other form. The identity is the server's, so nothing has to be
+   * draft and hands back its ui nodes, which render through UiNodeList like
+   * any other ui. The identity is the server's, so nothing has to be
    * reconciled when the next save comes around.
    *
    * `duplicate` names an existing element to copy the new block from — the same
@@ -746,7 +746,7 @@
    * Pastes the clipboard in above `beforeUid`, or at the end.
    *
    * `Craft.cp` duplicates the copied elements onto this field and owner and hands
-   * back the new ones; `matrix/render-blocks` then returns their form nodes, the
+   * back the new ones; `matrix/render-blocks` then returns their ui nodes, the
    * same shape a newly minted block comes back in.
    */
   async function pasteBlocks(beforeUid?: string): Promise<void> {
@@ -809,7 +809,7 @@
    * which tears the whole subtree down and rebuilds it — and the button that was
    * clicked lives in there. Doing that while its click is still dispatching
    * leaves Vue patching against DOM a Lion overlay inside a block has already
-   * moved, which throws `insertBefore` on null and takes the form down with it.
+   * moved, which throws `insertBefore` on null and takes the ui down with it.
    */
   async function insertBlocks(
     blocks: ReadonlyArray<CreatedBlock | {uid: string; type: string}>,
@@ -825,14 +825,14 @@
     blocks.forEach((added, offset) => {
       let values: UiValues = {};
 
-      if ('form' in added) {
-        uis.set(added.uid, added.form);
+      if ('ui' in added) {
+        uis.set(added.uid, added.ui);
         presentations.set(added.uid, added.block);
         // The block's own field values ride along in the same emit. Writing them
         // straight into `values` wouldn't survive: the Control's value is written
         // back wholesale at its own path, which would drop anything under the
         // block that wasn't part of it.
-        const blockValues = valueAt(added.values as UiValue, added.form.scope);
+        const blockValues = valueAt(added.values as UiValue, added.ui.scope);
         values = isRecord(blockValues) ? blockValues : {};
       }
 
@@ -854,9 +854,9 @@
       ...props.control,
       uis: [
         ...new Map(
-          [...(props.control.uis ?? []), ...uis.values()].map((form) => [
-            JSON.stringify(form.scope),
-            form,
+          [...(props.control.uis ?? []), ...uis.values()].map((ui) => [
+            JSON.stringify(ui.scope),
+            ui,
           ])
         ).values(),
       ],
@@ -885,7 +885,7 @@
    * Brings a block that has just appeared into view and puts the cursor in it.
    *
    * Deferred past the render that adds it — and past the one that swaps its
-   * spinner for the form, which is what there is to focus.
+   * spinner for the ui, which is what there is to focus.
    */
   async function revealBlock(uid: string): Promise<void> {
     await nextTick();
@@ -1562,11 +1562,11 @@
     );
   }
 
-  function nestedChange(change: UiChange, form: NestedUiPayload): void {
+  function nestedChange(change: UiChange, ui: NestedUiPayload): void {
     emit('change', {
       ...change,
-      scope: form.scope,
-      refreshable: form.refreshable && change.refreshable,
+      scope: ui.scope,
+      refreshable: ui.refreshable && change.refreshable,
     });
   }
 </script>

@@ -15,10 +15,10 @@ export type ConditionConfig = {
 
 export type RulePayload = Omit<
   CraftCms.Cms.Condition.ConditionRulePayload,
-  'config' | 'form'
+  'config' | 'ui'
 > & {
   config: RuleConfig & {uid: string};
-  form: UiPayload;
+  ui: UiPayload;
 };
 
 export type BuilderPayload = Omit<

@@ -393,7 +393,7 @@ export function defineEntryFieldLayoutUiHost(
           {headers}
         );
 
-        if (!response.form) {
+        if (!response.ui) {
           throw new Error('The Entry FieldLayout did not return a UI payload.');
         }
 
@@ -410,8 +410,8 @@ export function defineEntryFieldLayoutUiHost(
         editor?.handleDismissibleTips?.();
 
         return this.#fieldPath
-          ? isolateFieldUi(response.form, this.#fieldPath, scope)
-          : response.form;
+          ? isolateFieldUi(response.ui, this.#fieldPath, scope)
+          : response.ui;
       }
 
       #invalidateRefreshes(): void {

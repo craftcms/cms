@@ -16,7 +16,7 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   default: defineComponent({render: () => h('div')}),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     props: ['formActions'],
     setup: (props, {expose}) => {
@@ -30,7 +30,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: UiPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -56,9 +56,9 @@ afterEach(() => {
 
 it('saves the current values as a new entry type', async () => {
   app = createApp(Edit, {
-    form,
+    ui,
     submit: {method: 'post', url: '/actions/entry-types/store'},
-    refreshUrl: '/actions/entry-types/render-form',
+    refreshUrl: '/actions/entry-types/render-ui',
     brandNew: false,
     lowerTypeName: 'entry',
     metadataHtml: null,

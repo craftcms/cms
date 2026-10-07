@@ -384,11 +384,11 @@ async function mount(
     refreshable: options.refreshable ?? false,
     nodes: [
       {
-        type: 'CraftCms\\Yii2Adapter\\Form\\Nodes\\LegacyHtmlField',
+        type: 'CraftCms\\Yii2Adapter\\Ui\\Nodes\\LegacyHtmlField',
         component: 'craft-legacy:html-field',
         props: {},
         control: {
-          type: 'CraftCms\\Yii2Adapter\\Form\\Controls\\LegacyHtmlControl',
+          type: 'CraftCms\\Yii2Adapter\\Ui\\Controls\\LegacyHtmlControl',
           component: 'craft-legacy:html',
           props: {
             fragment,

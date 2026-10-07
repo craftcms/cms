@@ -111,7 +111,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $columns = $this->controlColumns($context->element?->getLanguage());
         $missing = $this->hasMissingCellTypes();
@@ -149,7 +149,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     continue;
                 }
                 $value = $normalize ? $cell->normalizeValue($row[$id]) : $row[$id];
-                $row[$id] = $cell->formControl(new TableCellContext([$id], $value))->getValue();
+                $row[$id] = $cell->uiControl(new TableCellContext([$id], $value))->getValue();
             }
         }
 
@@ -165,7 +165,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 $column['type'] = 'singleline';
             }
             $column['heading'] = t($column['heading'] ?? '', category: 'site', locale: $locale);
-            $column['control'] = $this->cellType($column)->formControl(new TableCellContext('value', locale: $locale));
+            $column['control'] = $this->cellType($column)->uiControl(new TableCellContext('value', locale: $locale));
             $columns[$id] = $column;
         }
 
@@ -175,21 +175,21 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $columnForms = [];
+        $columnUis = [];
         $types = [];
         foreach (self::typeOptions() as $identity => $label) {
             $types[] = ['value' => $identity, 'label' => $label];
         }
         foreach ($this->columns as $id => $column) {
-            $form = $this->cellType($column)->settingsUi(new UiContext(values: $column));
-            if ($form !== null) {
-                $columnForms[$id] = $form;
+            $ui = $this->cellType($column)->settingsUi(new UiContext(values: $column));
+            if ($ui !== null) {
+                $columnUis[$id] = $ui;
             }
         }
         $defaultColumns = $this->controlColumns(editableHeadings: true);
         $columnsControl = TableColumns::make('columns')
             ->cellTypes($types)
-            ->columnUis($columnForms)
+            ->columnUis($columnUis)
             ->errors($this->columnErrors)
             ->value($this->columns)
             ->reactive();
@@ -474,11 +474,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             ARRAY_FILTER_USE_KEY,
         );
         $context = new UiContext(errors: $errors);
-        $control = $this->formControl(new FieldContext(
+        $control = $this->uiControl(new FieldContext(
             path: $this->handle,
             value: $value,
             element: $element,
-            form: $context,
+            ui: $context,
             inline: $inline,
         ));
         $payload = app(UiResolver::class)->resolve(

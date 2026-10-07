@@ -99,7 +99,7 @@ class Markdown extends BaseUiElement
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted Markdown FieldLayout elements require stable UIDs.');

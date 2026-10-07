@@ -107,11 +107,11 @@ export function defineDashboardWidgetSettingsUiHost(
           }
         );
 
-        if (!data.form) {
+        if (!data.ui) {
           throw new Error('The widget did not return a UI payload.');
         }
 
-        return data.form;
+        return data.ui;
       }
     }
   );

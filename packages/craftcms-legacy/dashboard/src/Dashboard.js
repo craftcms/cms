@@ -65,8 +65,8 @@ import './dashboard.scss';
       }
     },
 
-    getSettingsForm: function (type, namespace) {
-      const form = this.getTypeInfo(type, 'settingsForm', null);
+    getSettingsUi: function (type, namespace) {
+      const form = this.getTypeInfo(type, 'settingsUi', null);
 
       if (!form) {
         return null;
@@ -102,9 +102,9 @@ import './dashboard.scss';
               settingsNamespace
             )
           : null;
-      const settingsForm =
+      const settingsUi =
         typeof responseData === 'undefined'
-          ? this.getSettingsForm(type, settingsNamespace)
+          ? this.getSettingsUi(type, settingsNamespace)
           : null;
       const $gridItem = $(
         '<div class="item" data-colspan="1" style="display: block">'
@@ -174,7 +174,7 @@ import './dashboard.scss';
         )
         .appendTo($gridItem);
 
-      if (settingsForm || settingsHtml) {
+      if (settingsUi || settingsHtml) {
         $container.addClass('flipped');
         $container.children('.front').addClass('hidden');
       } else {
@@ -193,7 +193,7 @@ import './dashboard.scss';
             }
           : $.noop,
         undefined,
-        settingsForm
+        settingsUi
       );
 
       // Append the new widget after the last one
@@ -213,7 +213,7 @@ import './dashboard.scss';
       if (typeof responseData !== 'undefined') {
         $container.removeClass('loading');
         widget.update(responseData);
-      } else if (!settingsForm && !settingsHtml) {
+      } else if (!settingsUi && !settingsHtml) {
         const data = {
           type: type,
         };
@@ -392,7 +392,7 @@ import './dashboard.scss';
 
     totalCols: null,
     settingsHtml: null,
-    settingsForm: null,
+    settingsUi: null,
     initSettingsFn: null,
     showingSettings: false,
 
@@ -403,7 +403,7 @@ import './dashboard.scss';
       settingsHtml,
       initSettingsFn,
       storedSettings,
-      settingsForm
+      settingsUi
     ) {
       this.$container = $(container);
       this.storedSettings = storedSettings;
@@ -435,7 +435,7 @@ import './dashboard.scss';
       this.$subtitle = this.$heading.find('> h5');
       this.$bodyContainer = $pane.children('.body');
 
-      this.setSettings(settingsHtml, initSettingsFn, settingsForm);
+      this.setSettings(settingsHtml, initSettingsFn, settingsUi);
 
       if (!this.$container.hasClass('flipped')) {
         this.onShowFront();
@@ -476,12 +476,12 @@ import './dashboard.scss';
       return window.dashboard.getTypeInfo(this.type, property, defaultValue);
     },
 
-    setSettings: function (settingsHtml, initSettingsFn, settingsForm) {
+    setSettings: function (settingsHtml, initSettingsFn, settingsUi) {
       this.settingsHtml = settingsHtml;
       this.initSettingsFn = initSettingsFn;
-      this.settingsForm = settingsForm;
+      this.settingsUi = settingsUi;
 
-      if (this.settingsForm || this.settingsHtml) {
+      if (this.settingsUi || this.settingsHtml) {
         this.$settingsBtn.removeClass('hidden');
       } else {
         this.$settingsBtn.addClass('hidden');
@@ -492,11 +492,11 @@ import './dashboard.scss';
       this.$settingsContainer.empty();
       this.settingsHost = null;
 
-      if (this.settingsForm) {
+      if (this.settingsUi) {
         this.settingsHost = document.createElement(
           'craft-dashboard-widget-settings-ui'
         );
-        this.settingsHost.payload = structuredClone(this.settingsForm);
+        this.settingsHost.payload = structuredClone(this.settingsUi);
         this.settingsHost.widgetType = this.type;
         this.$settingsContainer.append(this.settingsHost);
 
@@ -678,7 +678,7 @@ import './dashboard.scss';
         function () {
           eval(response.info.settingsJs);
         },
-        response.info.settingsForm
+        response.info.settingsUi
       );
     },
 

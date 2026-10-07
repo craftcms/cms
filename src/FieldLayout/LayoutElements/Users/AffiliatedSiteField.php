@@ -64,7 +64,7 @@ class AffiliatedSiteField extends BaseNativeField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         if ($context->element && ! $context->element instanceof User) {
             throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));

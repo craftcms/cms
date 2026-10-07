@@ -38,11 +38,11 @@ it('requires authentication', function () {
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Form')
+            ->component('Ui')
             ->where('craft.maintenanceMode', false)
-            ->where('form.values.name', ProjectConfig::get('system.name'))
-            ->where('form.values.maintenanceMode', false)
-            ->where('form.values.retryDuration', ProjectConfig::get('system.retryDuration'))
+            ->where('ui.values.name', ProjectConfig::get('system.name'))
+            ->where('ui.values.maintenanceMode', false)
+            ->where('ui.values.retryDuration', ProjectConfig::get('system.retryDuration'))
             ->where('submit', [
                 'method' => 'post',
                 'url' => action([GeneralSettingsController::class, 'store']),
@@ -63,7 +63,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
 it('attaches settings notices to their fields', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes): bool {
+            ->where('ui.nodes', function ($nodes): bool {
                 $nodes = collect($nodes);
                 $notices = $nodes->filter(fn (array $node): bool => in_array(
                     $node['control']['path'],
@@ -81,7 +81,7 @@ it('attaches settings notices to their fields', function () {
 it('exposes timezone options through the settings form', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes): bool {
+            ->where('ui.nodes', function ($nodes): bool {
                 $timeZone = collect($nodes)
                     ->first(fn (array $node): bool => $node['control']['path'] === ['timeZone']);
 
@@ -115,9 +115,9 @@ it('can save settings', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('craft.maintenanceMode', true)
-            ->where('form.values.name', 'A new app name')
-            ->where('form.values.retryDuration', 60)
-            ->where('form.values.timeZone', 'America/New_York'))
+            ->where('ui.values.name', 'A new app name')
+            ->where('ui.values.retryDuration', 60)
+            ->where('ui.values.timeZone', 'America/New_York'))
         ->assertOk();
 
     expect(date_default_timezone_get())->toBe('America/New_York');
@@ -219,10 +219,10 @@ it('toggles maintenance mode when admin changes are disabled', function () {
 
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.maintenanceMode', true)
-            ->where('form.values.name', $systemName)
-            ->where('form.values.retryDuration', 60)
-            ->where('form.values.timeZone', $timeZone))
+            ->where('ui.values.maintenanceMode', true)
+            ->where('ui.values.name', $systemName)
+            ->where('ui.values.retryDuration', 60)
+            ->where('ui.values.timeZone', $timeZone))
         ->assertOk();
 
     post(action([GeneralSettingsController::class, 'store']), [

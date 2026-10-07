@@ -180,7 +180,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
         )->when(
             Cms::config()->enableGql,
-            fn (Ui $form): Ui => $form->add(
+            fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
@@ -215,7 +215,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof LinkData
             ? $context->value->serialize()

@@ -12,12 +12,12 @@ const state = vi.hoisted<{
   setValue: vi.fn(),
 }));
 
-vi.mock('@/pages/Form.vue', async () => {
+vi.mock('@/pages/Ui.vue', async () => {
   const {defineComponent, h} = await import('vue');
 
   return {
     default: defineComponent({
-      props: ['form', 'submit', 'refreshUrl'],
+      props: ['ui', 'submit', 'refreshUrl'],
       emits: ['change'],
       setup: (_, {emit, expose}) => {
         state.change = (change, values) => emit('change', change, values);
@@ -44,7 +44,7 @@ const values = {
   baseUrl: '',
   hasUrls: true,
 };
-const form: UiPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -127,9 +127,9 @@ async function mount(siteId: number | null, baseUrl = ''): Promise<void> {
       dateCreated: '2026-01-01T00:00:00Z',
       dateUpdated: '2026-01-01T00:00:00Z',
     } satisfies Site,
-    form: {...form, values: {...values, siteId, baseUrl}},
+    ui: {...ui, values: {...values, siteId, baseUrl}},
     submit: {method: 'post', url: '/settings/sites'},
-    refreshUrl: '/settings/sites/form',
+    refreshUrl: '/settings/sites/ui',
   });
   app.mount(container);
   await nextTick();

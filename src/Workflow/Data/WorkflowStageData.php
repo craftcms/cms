@@ -21,7 +21,7 @@ readonly class WorkflowStageData
         public string $name,
         public string $type,
         public array $settings,
-        public ?UiPayload $settingsForm = null,
+        public ?UiPayload $settingsUi = null,
     ) {}
 
     /** @param array{uid: string, name: string, type: string, settings?: array<string, mixed>} $data */

@@ -70,7 +70,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $options = collect(app(Addresses::class)->getCountryList(app()->getLocale()))
             ->map(fn (string $label, string $value): array => compact('label', 'value'))

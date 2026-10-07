@@ -63,7 +63,7 @@ class AddressField extends BaseField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         if (! $context->element instanceof Address) {
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));

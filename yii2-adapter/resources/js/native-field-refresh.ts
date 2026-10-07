@@ -16,8 +16,8 @@ actionClient.interceptors.response.use((response) => {
     typeof response.config.data !== 'string' ||
     !response.config.headers['X-Craft-Native-Field-Path'] ||
     !isRecord(response.data) ||
-    !isRecord(response.data.form) ||
-    !Array.isArray(response.data.form.nodes)
+    !isRecord(response.data.ui) ||
+    !Array.isArray(response.data.ui.nodes)
   ) {
     return response;
   }
@@ -25,7 +25,7 @@ actionClient.interceptors.response.use((response) => {
   const fieldPath: string[] = JSON.parse(
     String(response.config.headers['X-Craft-Native-Field-Path'])
   );
-  const form = response.data.form as unknown as UiPayload;
+  const form = response.data.ui as unknown as UiPayload;
   const unwrap = (nodes: UiNodePayload[]): void => {
     for (const node of nodes) {
       const control = node.control;

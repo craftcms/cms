@@ -172,7 +172,7 @@ readonly class MatrixController
         }
 
         if (isset($validated['path'])) {
-            return new JsonResponse($this->blockFormResponse($entry, $validated['path'], $field));
+            return new JsonResponse($this->blockUiResponse($entry, $validated['path'], $field));
         }
 
         return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
@@ -194,14 +194,14 @@ readonly class MatrixController
     }
 
     /**
-     * The new block as form nodes, in the same shape the Matrix Control ships its
-     * blocks in — so the browser renders it with FormNodeList like anything else,
+     * The new block as UI nodes, in the same shape the Matrix Control ships its
+     * blocks in — so the browser renders it with UiNodeList like anything else,
      * rather than splicing in server-rendered HTML.
      *
      * @param  list<string>  $path  The Matrix Control's path, e.g. `['fields', 'pageBuilder']`
-     * @return array{uid: string, type: string, form: array<string, mixed>, values: array<string, mixed>, block: array<string, mixed>}
+     * @return array{uid: string, type: string, ui: array<string, mixed>, values: array<string, mixed>, block: array<string, mixed>}
      */
-    private function blockFormResponse(Entry $entry, array $path, Matrix $field): array
+    private function blockUiResponse(Entry $entry, array $path, Matrix $field): array
     {
         $scope = [...$path, 'entries', $entry->uid];
         $payload = app(FieldLayoutCompiler::class)->compile(
@@ -213,7 +213,7 @@ readonly class MatrixController
         return [
             'uid' => $entry->uid,
             'type' => $entry->getType()->handle,
-            'form' => new NestedUiPayload(
+            'ui' => new NestedUiPayload(
                 scope: $scope,
                 refreshable: true,
                 nodes: $payload->nodes,
@@ -274,7 +274,7 @@ readonly class MatrixController
             Gate::authorize('view', $entry);
 
             if (isset($validated['path'])) {
-                $blocks[] = $this->blockFormResponse($entry, $validated['path'], $field);
+                $blocks[] = $this->blockUiResponse($entry, $validated['path'], $field);
             }
         }
 

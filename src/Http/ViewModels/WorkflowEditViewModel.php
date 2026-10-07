@@ -34,13 +34,13 @@ class WorkflowEditViewModel extends ViewModel
     public function __construct(
         private readonly Workflow $workflow,
         private readonly bool $readOnly,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly WorkflowStageTypes $workflowStageTypes,
     ) {}
 
-    public function form(): UiPayload
+    public function ui(): UiPayload
     {
-        return $this->formResolver->resolve(Ui::make([
+        return $this->uiResolver->resolve(Ui::make([
             Field::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this workflow will be called in the control panel.'))
                 ->required(),
@@ -54,7 +54,7 @@ class WorkflowEditViewModel extends ViewModel
         ));
     }
 
-    /** @return list<array{type: string, label: string, settings: array<string, mixed>, settingsForm: UiPayload|null}> */
+    /** @return list<array{type: string, label: string, settings: array<string, mixed>, settingsUi: UiPayload|null}> */
     public function stageTypes(): array
     {
         return $this->workflowStageTypes->types()
@@ -67,7 +67,7 @@ class WorkflowEditViewModel extends ViewModel
                     'type' => $type,
                     'label' => $type::displayName(),
                     'settings' => $stage->getSettings(),
-                    'settingsForm' => $this->settingsForm($stage),
+                    'settingsUi' => $this->settingsUi($stage),
                 ];
             })
             ->values()
@@ -127,23 +127,23 @@ class WorkflowEditViewModel extends ViewModel
             name: $stage->name,
             type: $stage->type,
             settings: $stage->settings,
-            settingsForm: $this->settingsForm($component),
+            settingsUi: $this->settingsUi($component),
         );
     }
 
-    private function settingsForm(WorkflowStageInterface $stage): ?UiPayload
+    private function settingsUi(WorkflowStageInterface $stage): ?UiPayload
     {
         if ($stage instanceof MissingWorkflowStage) {
-            return $this->formResolver->resolve(
+            return $this->uiResolver->resolve(
                 Ui::make([Missing::make('missing-workflow-stage', $stage->expectedType)]),
                 new UiContext(values: $stage->getSettings()),
             );
         }
 
-        $form = $stage->settingsUi(new UiContext(values: $stage->getSettings()));
+        $ui = $stage->settingsUi(new UiContext(values: $stage->getSettings()));
 
-        return $form === null
+        return $ui === null
             ? null
-            : $this->formResolver->resolve($form, new UiContext(values: $stage->getSettings()));
+            : $this->uiResolver->resolve($ui, new UiContext(values: $stage->getSettings()));
     }
 }

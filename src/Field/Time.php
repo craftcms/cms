@@ -119,7 +119,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof DateTimeInterface
             ? $context->value->format('H:i')

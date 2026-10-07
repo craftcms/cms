@@ -141,7 +141,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return ColorControl::make($context->path)
             ->presets(array_values(array_filter(array_column($this->palette, 'color'))))

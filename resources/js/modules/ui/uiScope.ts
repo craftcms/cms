@@ -7,12 +7,12 @@ import type {
 } from './types';
 
 export function bindUiScope(
-  form: NestedUiPayload,
+  ui: NestedUiPayload,
   scope: string[],
   deltaGroup?: string[]
 ): NestedUiPayload {
   function bindPath(path: string[]): string[] {
-    return [...scope, ...path.slice(form.scope.length)];
+    return [...scope, ...path.slice(ui.scope.length)];
   }
 
   function bindNodes(nodes: UiNodePayload[]): UiNodePayload[] {
@@ -36,7 +36,7 @@ export function bindUiScope(
     };
   }
 
-  return {...form, scope, nodes: bindNodes(form.nodes)};
+  return {...ui, scope, nodes: bindNodes(ui.nodes)};
 }
 
 export function scopeUiPayload(

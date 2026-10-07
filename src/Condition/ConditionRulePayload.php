@@ -19,6 +19,6 @@ readonly class ConditionRulePayload
         public string $label,
         public ?string $hint,
         public bool $showHint,
-        public UiPayload $form,
+        public UiPayload $ui,
     ) {}
 }

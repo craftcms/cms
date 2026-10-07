@@ -12,7 +12,7 @@ Several transformers can use the same driver with different settings. For exampl
 driver while targeting different accounts or delivery domains.
 
 Craft stores transformers in Project Config under `assetTransformers`. Manage them under **Settings → Assets → Asset
-Transformers**. Each driver defines its own settings fields with the Control Panel Form system.
+Transformers**. Each driver defines its own settings fields with the Control Panel UI system.
 
 Craft will not delete a transformer while it is the default or is assigned to a volume. Renaming its handle updates the
 default and volume references. If a plugin-provided driver is unavailable, Craft keeps the transformer and its settings in

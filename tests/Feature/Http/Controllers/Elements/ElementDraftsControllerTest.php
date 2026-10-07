@@ -470,7 +470,7 @@ describe('store', function () {
         // no other way to refresh mid-edit.
         $response->assertJsonStructure([
             'screen' => [
-                'sidebarForm',
+                'sidebarUi',
                 'metadataHtml',
                 'statusLabelHtml',
                 'crumbs',
@@ -489,8 +489,8 @@ describe('store', function () {
         // The compiled layout is already on the response, scoped to whatever the
         // request asked for — sending it a second time would double the size of
         // every keystroke’s autosave.
-        expect($response->json('screen'))->not->toHaveKey('form')
-            ->and($response->json('form'))->toBeArray();
+        expect($response->json('screen'))->not->toHaveKey('ui')
+            ->and($response->json('ui'))->toBeArray();
     });
 
     // The legacy `Craft.ElementEditor` reads this response too, and several of
@@ -522,7 +522,7 @@ describe('store', function () {
             'draftElementUids',
             'deltaNames',
             'initialDeltaValues',
-            'form',
+            'ui',
             'tabs',
             'headHtml',
             'bodyHtml',
@@ -536,7 +536,7 @@ describe('store', function () {
 
         // `_afterUpdateFieldLayout()` throws on a falsy `form`, and
         // `modifiedAttributes` is mapped over unguarded.
-        expect($response->json('form'))->toBeArray()
+        expect($response->json('ui'))->toBeArray()
             ->and($response->json('modifiedAttributes'))->toBeArray()
             // The raw target list, not the screen payload’s resolved links.
             ->and($response->json('previewTargets'))->toBeArray();

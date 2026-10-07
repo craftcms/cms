@@ -144,7 +144,7 @@ export function defineNestedElementsControlHost(
         }
 
         const {data: response} = await actionClient.post<{
-          form: UiPayload;
+          ui: UiPayload;
           headHtml?: string;
           bodyHtml?: string;
         }>(UpdateFieldLayoutController.url(), data.toString(), {
@@ -161,7 +161,7 @@ export function defineNestedElementsControlHost(
         }
 
         let refreshed: UiControlPayload<NestedElementsProps> | null = null;
-        visitControls(response.form.nodes, (candidate) => {
+        visitControls(response.ui.nodes, (candidate) => {
           if (
             candidate.component === 'craft:nested-elements' &&
             pathsMatch(candidate.path, control.path)

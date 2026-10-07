@@ -48,7 +48,7 @@ trait UpdatesFieldLayout
      */
     protected function fieldLayoutData(ElementInterface $element, ?UiPayload $rootPayload = null): array
     {
-        $requestedScope = $this->requestedFormScope('X-Craft-Ui-Scope', $this->fieldLayoutRootScope());
+        $requestedScope = $this->requestedUiScope('X-Craft-Ui-Scope', $this->fieldLayoutRootScope());
         $rootPayload ??= $this->compileFieldLayout($element);
 
         try {
@@ -72,7 +72,7 @@ trait UpdatesFieldLayout
         }
 
         return [
-            'form' => $payload,
+            'ui' => $payload,
             'tabs' => $tabHtml,
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
@@ -89,7 +89,7 @@ trait UpdatesFieldLayout
     {
         $namespace = request()->header('X-Craft-Namespace');
 
-        return $this->requestedFormScope(
+        return $this->requestedUiScope(
             'X-Craft-Ui-Root-Scope',
             $namespace === null || $namespace === ''
                 ? []
@@ -101,7 +101,7 @@ trait UpdatesFieldLayout
      * @param  list<string>  $fallback
      * @return list<string>
      */
-    private function requestedFormScope(string $header, array $fallback): array
+    private function requestedUiScope(string $header, array $fallback): array
     {
         $value = request()->header($header);
 

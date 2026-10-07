@@ -46,7 +46,7 @@ class FieldLayoutMixin
 
             if ($config !== []) {
                 throw new InvalidArgumentException(sprintf(
-                    'Legacy FieldLayout form configuration [%s] is incompatible with Form rendering.',
+                    'Legacy FieldLayout form configuration [%s] is incompatible with UI rendering.',
                     implode(', ', array_keys($config)),
                 ));
             }

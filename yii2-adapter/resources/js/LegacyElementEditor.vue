@@ -21,7 +21,7 @@
     () =>
       context.contentReady.value &&
       (context.sidebarReady.value ||
-        (!payload.value.sidebarForm && !payload.value.editorSidebarHtml))
+        (!payload.value.sidebarUi && !payload.value.editorSidebarHtml))
   );
 </script>
 <template>

@@ -10,7 +10,7 @@ import type {UiNodePayload, UiPayload, NestedUiPayload} from './types';
 
 /** Legacy callers namespace the HTML input after the native payload was captured. */
 export function rebaseFieldUi(
-  form: UiPayload,
+  ui: UiPayload,
   original: string[],
   path: string[]
 ): UiPayload {
@@ -41,23 +41,23 @@ export function rebaseFieldUi(
         : {}),
     }));
   const values: UiPayload['values'] = {};
-  setValue(values, path, valueAt(form.values, original));
+  setValue(values, path, valueAt(ui.values, original));
 
   return {
-    ...form,
-    nodes: nodes(form.nodes),
+    ...ui,
+    nodes: nodes(ui.nodes),
     values,
     scope: path.slice(
       0,
-      Math.max(0, path.length - original.length + form.scope.length)
+      Math.max(0, path.length - original.length + ui.scope.length)
     ),
-    errors: form.errors.map((error) => ({...error, path: rebase(error.path)})),
+    errors: ui.errors.map((error) => ({...error, path: rebase(error.path)})),
   };
 }
 
-/** Refresh only the mounted field; the surrounding HTML form owns its other inputs. */
+/** Refresh only the mounted field; the surrounding HTML ui owns its other inputs. */
 export function isolateFieldUi(
-  form: UiPayload,
+  ui: UiPayload,
   path: string[],
   scope?: string[]
 ): UiPayload {
@@ -74,16 +74,16 @@ export function isolateFieldUi(
       }
     }
   };
-  const node = find(form.nodes);
+  const node = find(ui.nodes);
   if (!node?.control) {
     throw new Error('The nested element field is no longer available.');
   }
   const values: UiPayload['values'] = {};
-  setValue(values, path, valueAt(form.values, path));
+  setValue(values, path, valueAt(ui.values, path));
   const isolated = {
-    ...form,
+    ...ui,
     values,
-    errors: form.errors.filter((error) =>
+    errors: ui.errors.filter((error) =>
       path.every((segment, index) => error.path[index] === segment)
     ),
     globalErrors: [],
@@ -96,9 +96,9 @@ export function isolateFieldUi(
   }
   const uis: NestedUiPayload[] = [];
   visitControls(isolated.nodes, (control) => uis.push(...(control.uis ?? [])));
-  const nested = uis.find((form) => pathsMatch(form.scope, scope));
+  const nested = uis.find((ui) => pathsMatch(ui.scope, scope));
   if (!nested) {
-    throw new Error('The nested element form is no longer available.');
+    throw new Error('The nested element ui is no longer available.');
   }
   return {
     ...isolated,
@@ -112,12 +112,12 @@ export function isolateFieldUi(
 }
 
 /** Keep locally created fields until the server's next layout includes them. */
-export function preserveFieldUis(form: UiPayload, previous: UiPayload): void {
+export function preserveFieldUis(ui: UiPayload, previous: UiPayload): void {
   const controls = new Map<string, UiNodePayload['control']>();
   visitControls(previous.nodes, (control) =>
     controls.set(JSON.stringify(control.path), control)
   );
-  visitControls(form.nodes, (control) => {
+  visitControls(ui.nodes, (control) => {
     const before = controls.get(JSON.stringify(control.path));
     if (
       !before ||

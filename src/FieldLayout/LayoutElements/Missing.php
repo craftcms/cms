@@ -24,7 +24,7 @@ class Missing extends FieldLayoutElement implements MissingComponentInterface
         return $this->getPlaceholderHtml();
     }
 
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted missing FieldLayout elements require stable UIDs.');

@@ -8,10 +8,10 @@
     UiValue,
   } from '@/modules/ui/types';
   import {inputName} from '@/modules/ui/runtime';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
 
   const props = defineProps<{
-    form: UiPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
@@ -61,8 +61,8 @@
 </script>
 
 <template>
-  <FormPage
-    :form="form"
+  <UiPage
+    :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl ?? undefined"
     :default-form-actions="[]"
@@ -90,5 +90,5 @@
         </craft-checkbox>
       </craft-checkbox-group>
     </template>
-  </FormPage>
+  </UiPage>
 </template>

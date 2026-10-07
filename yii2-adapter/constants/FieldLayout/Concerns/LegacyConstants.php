@@ -11,8 +11,8 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\NativeFields;
@@ -131,7 +131,7 @@ trait LegacyConstants
 
     public static function registerEvents(): void
     {
-        Event::listen(function(FieldLayoutFormResolving $event) {
+        Event::listen(function(FieldLayoutUiResolving $event) {
             if (!YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM)) {
                 return;
             }
@@ -145,7 +145,7 @@ trait LegacyConstants
             }
 
             try {
-                $nodes = $event->form->nodes();
+                $nodes = $event->ui->nodes();
                 $tabUids = array_map(fn($tab) => $tab->uid, $event->fieldLayout->getTabs());
                 $ordered = [];
 
@@ -163,13 +163,13 @@ trait LegacyConstants
                         $ordered[] = $node;
                     }
                 }
-                $event->form = Ui::make([
+                $event->ui = Ui::make([
                     ...$ordered,
                     ...array_filter($nodes, fn(Node $node) => !in_array($node->uid(), $tabUids, true)),
                 ]);
 
                 if ($yiiEvent->static !== $static) {
-                    self::setFormMode($event->form->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
+                    self::setFormMode($event->ui->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
                 }
             } finally {
                 $legacyEvents->forget($event->fieldLayout, $event->context);

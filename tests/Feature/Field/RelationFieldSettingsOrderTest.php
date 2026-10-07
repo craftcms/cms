@@ -42,7 +42,7 @@ function settingNames(array $nodes, string $prefix = ''): array
 }
 
 /** @return list<string> */
-function settingsFormOrder(string $type): array
+function settingsUiOrder(string $type): array
 {
     $context = new UiContext(namespace: 'settings');
 
@@ -53,7 +53,7 @@ function settingsFormOrder(string $type): array
 
 it('orders the Assets field settings the way Craft 5 did', function () {
     // Mirrors `_components/fieldtypes/Assets/settings.twig` in Craft 5.
-    expect(settingsFormOrder(Assets::class))->toBe([
+    expect(settingsUiOrder(Assets::class))->toBe([
         'restrictLocation',
         // Composed onto one row under an “Asset Location” label. The prefix is
         // this test's tree notation — the setting names themselves are
@@ -85,7 +85,7 @@ it('orders the Assets field settings the way Craft 5 did', function () {
 it('omits Maintain hierarchy and Branch Limit from the Assets field', function () {
     // Craft 5 never rendered the `maintainHierarchy` block for Assets, and kept
     // Branch Limit permanently hidden as a result.
-    expect(settingsFormOrder(Assets::class))
+    expect(settingsUiOrder(Assets::class))
         ->not->toContain('maintainHierarchy')
         ->not->toContain('branchLimit');
 });
@@ -94,7 +94,7 @@ it('leaves the shared relation field settings order untouched', function () {
     // Entries still appends its own settings after the base Form (and so after
     // the Advanced group) — the same drift Assets had. Recorded as-is so this
     // refactor is provably order-neutral for every other relation field.
-    expect(settingsFormOrder(Entries::class))->toBe([
+    expect(settingsUiOrder(Entries::class))->toBe([
         'sources',
         'selectionCondition',
         'maintainHierarchy',

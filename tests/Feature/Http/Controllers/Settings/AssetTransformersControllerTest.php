@@ -92,10 +92,10 @@ it('renders the standalone transformer form', function () {
     get(action([AssetTransformersController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Form')
-            ->where('form.values.driver', 'craft')
+            ->component('Ui')
+            ->where('ui.values.driver', 'craft')
             ->where('submit.url', action([AssetTransformersController::class, 'store']))
-            ->where('refreshUrl', action([AssetTransformersController::class, 'renderForm'])));
+            ->where('refreshUrl', action([AssetTransformersController::class, 'renderUi'])));
 });
 
 it('stores driver settings on the Asset Transformer', function () {

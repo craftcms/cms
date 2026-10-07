@@ -62,11 +62,11 @@ use CraftCms\Cms\Ui\UiNodeTypes;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\Field\Field as LegacyField;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent as LegacySettingsContract;
-use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
-use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
-use CraftCms\Yii2Adapter\Form\LegacyHtml;
-use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent as LegacySettingsContract;
+use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
+use CraftCms\Yii2Adapter\Ui\Nodes\LegacyHtmlField;
 use Mockery;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
@@ -166,9 +166,9 @@ it('registers its private Form types', function() {
 
 it('captures inline field hooks with their namespace and assets', function() {
     $field = new LegacyInlineHookField(['handle' => 'body']);
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'body',
-        form: new UiContext(namespace: ['index', 'element-42', 'fields']),
+        ui: new UiContext(namespace: ['index', 'element-42', 'fields']),
         inline: true,
     ));
     $props = $control->props();
@@ -180,7 +180,7 @@ it('captures inline field hooks with their namespace and assets', function() {
         ->and($props['fragment']['bodyHtml'])->toContain('window.inlineHookLoaded = true;');
 });
 
-it('preserves public and protected custom field HTML hooks through inline Form rendering', function(string $type) {
+it('preserves public and protected custom field HTML hooks through inline UI rendering', function(string $type) {
     $field = new $type(['handle' => 'body', 'uid' => 'inline-field']);
     $layoutElement = Mockery::mock(CustomField::class);
     $layoutElement->shouldReceive('showInForm', 'editable')->andReturn(true);
@@ -312,11 +312,11 @@ it('implements replacement Form operations through legacy hooks', function() {
         mode: ControlMode::ReadOnly,
     ));
     $settingsPayload = app(UiResolver::class)->resolve($settings, new UiContext(namespace: 'settings'));
-    $fieldControl = new LegacyHookField(['handle' => 'legacy'])->formControl(new FieldContext(
+    $fieldControl = new LegacyHookField(['handle' => 'legacy'])->uiControl(new FieldContext(
         path: ['fields', 'legacy'],
         value: 'value',
         element: Mockery::mock(Entry::class),
-        form: new UiContext(namespace: ['nested', 'block']),
+        ui: new UiContext(namespace: ['nested', 'block']),
         mode: ControlMode::Disabled,
     ));
 
@@ -358,11 +358,11 @@ it('preserves legacy hooks on public field aliases', function() {
     }
 
     $field = new LegacyPlainTextField(['handle' => 'legacy']);
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: ['fields', 'legacy'],
         value: 'value',
         element: Mockery::mock(Entry::class),
-        form: new UiContext(),
+        ui: new UiContext(),
     ));
 
     expect(method_exists(ConfigurableComponentInterface::class, 'getSettingsHtml'))->toBeTrue()

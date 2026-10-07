@@ -193,7 +193,7 @@
   }
 
   function optionId(index: number): string {
-    return `form-${props.control.path.join('-')}-${index}`;
+    return `ui-${props.control.path.join('-')}-${index}`;
   }
 
   /**

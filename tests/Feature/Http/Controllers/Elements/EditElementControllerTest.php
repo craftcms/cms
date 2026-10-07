@@ -147,8 +147,8 @@ it('renders the current entry edit screen for each control panel route', functio
             ->where('elementId', $entry->id)
             ->where('readOnly', false)
             ->where('saveUrl', fn (string $url) => str_contains($url, 'entries/save-entry'))
-            ->has('form.nodes')
-            ->has('sidebarForm.nodes')
+            ->has('ui.nodes')
+            ->has('sidebarUi.nodes')
         );
 })->with('editElementEntryRoutes');
 

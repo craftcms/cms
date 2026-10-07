@@ -81,7 +81,7 @@ class TextareaField extends BaseNativeField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         return Textarea::make($this->name ?? $this->attribute())
             ->value($this->value($context->element))

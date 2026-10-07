@@ -141,7 +141,7 @@ class FieldLayoutDesigner
         // control, throwing away the designer's DOM along with any open HUD or
         // menu. Consumers get the type from `$settings['elementType']`, and
         // every path that rebuilds a layout from this config assigns `type`
-        // itself (see `Form\Controls\FieldLayoutDesigner::designerHtml()`).
+        // itself (see `Ui\Controls\FieldLayoutDesigner::designerHtml()`).
 
         return view('c::forms.fld.designer', [
             'designer' => $this,

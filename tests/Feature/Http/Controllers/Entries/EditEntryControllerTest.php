@@ -96,8 +96,8 @@ it('compiles the field layout into a form payload', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('form.nodes')
-            ->where('form.nodes', fn (Collection $nodes) => $nodes
+            ->has('ui.nodes')
+            ->where('ui.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['uid'] ?? null) === 'entry-content'))
             ->etc()
         );
@@ -116,7 +116,7 @@ it('compiles the meta fields into a sidebar form', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', function (Collection $nodes) {
+            ->where('sidebarUi.nodes', function (Collection $nodes) {
                 $paths = $nodes
                     ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
                     ->all();
@@ -147,7 +147,7 @@ it('includes the parent field for structure entries', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+            ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['parentId']))
             ->etc()
         );
@@ -335,7 +335,7 @@ it('renders a provisional draft in the Inertia editor', function () {
             ->where('canonicalId', $this->entry->id)
             ->where('notice', 'Showing your unsaved changes.')
             ->where('applyDraftUrl', fn (string $url) => str_contains($url, 'elements/apply-draft'))
-            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+            ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['slug']
                     && ! array_key_exists('autoGenerate', $node['control']['props'])))
             ->etc()

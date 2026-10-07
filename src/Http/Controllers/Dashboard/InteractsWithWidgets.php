@@ -35,7 +35,7 @@ trait InteractsWithWidgets
             return false;
         }
 
-        $settingsForm = $this->getWidgetSettingsForm($widget, "widget{$widget->id}-settings");
+        $settingsUi = $this->getWidgetSettingsUi($widget, "widget{$widget->id}-settings");
 
         return new WidgetData(
             id: $widget->id,
@@ -49,7 +49,7 @@ trait InteractsWithWidgets
             component: $component,
             data: $data,
             fragment: $fragment,
-            settingsForm: $settingsForm,
+            settingsUi: $settingsUi,
         );
     }
 
@@ -61,7 +61,7 @@ trait InteractsWithWidgets
         return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
     }
 
-    protected function getWidgetSettingsForm(WidgetInterface $widget, string $namespace): ?UiPayload
+    protected function getWidgetSettingsUi(WidgetInterface $widget, string $namespace): ?UiPayload
     {
         $context = new UiContext(
             namespace: $namespace,

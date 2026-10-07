@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  */
 class ContentBlock extends Control
 {
-    private ?Ui $form = null;
+    private ?Ui $ui = null;
 
     private ?string $addLabel = null;
 
@@ -45,10 +45,10 @@ class ContentBlock extends Control
             ]);
         }
 
-        $form = $control->uis[0] ?? null;
-        $content = $form === null
+        $ui = $control->uis[0] ?? null;
+        $content = $ui === null
             ? Html::tag('craft-spinner', '', ['label' => t('Loading')])
-            : $renderer->renderNestedUi($form);
+            : $renderer->renderNestedUi($ui);
         $remove = $editable
             ? Button::make()
                 ->label($control->props['clearLabel'])
@@ -72,9 +72,9 @@ class ContentBlock extends Control
         return 'craft:content-block';
     }
 
-    public function ui(Ui $form): static
+    public function ui(Ui $ui): static
     {
-        $this->form = $form;
+        $this->ui = $ui;
 
         return $this;
     }
@@ -113,13 +113,13 @@ class ContentBlock extends Control
             return [];
         }
 
-        if ($this->form === null) {
+        if ($this->ui === null) {
             throw new InvalidArgumentException('Non-empty Content Block Controls require a nested Ui.');
         }
 
         return [[
             'scope' => [],
-            'ui' => $this->form,
+            'ui' => $this->ui,
             'refreshable' => true,
         ]];
     }

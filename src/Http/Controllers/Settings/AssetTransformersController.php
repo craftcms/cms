@@ -38,7 +38,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         GeneralConfig $generalConfig,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -122,7 +122,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         );
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -150,7 +150,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         ]);
 
         return new JsonResponse([
-            'form' => $this->viewModel($transformer, $values)->form(),
+            'ui' => $this->viewModel($transformer, $values)->ui(),
         ]);
     }
 
@@ -176,7 +176,7 @@ class AssetTransformersController extends BaseAssetSettingsController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Assets'), 'settings/assets')
             ->addCrumb(t('Asset Transformers'), 'settings/assets/transformers')
-            ->inertiaPage('Form', $this->viewModel($transformer))
+            ->inertiaPage('Ui', $this->viewModel($transformer))
             ->redirectUrl('settings/assets/transformers')
             ->unless($this->readOnly, function (CpScreenResponse $response) {
                 $response
@@ -194,7 +194,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         return new AssetTransformerEditViewModel(
             $transformer,
             $this->assetTransformDrivers,
-            $this->formResolver,
+            $this->uiResolver,
             readOnly: $this->readOnly,
             values: $values,
         );

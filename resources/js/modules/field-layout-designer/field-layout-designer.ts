@@ -30,13 +30,13 @@ import {Slideout} from '@/modules/slideout';
 declare const Craft: any;
 declare const $: any;
 
-interface LayoutComponentSettingsForm extends HTMLElement {
+interface LayoutComponentSettingsUi extends HTMLElement {
   payload: UiPayload;
   requestData: () => UiValues;
 }
 
 interface FieldLayoutSlideoutData {
-  form: UiPayload;
+  ui: UiPayload;
   headHtml?: string;
   bodyHtml?: string;
 }
@@ -47,7 +47,7 @@ interface FieldLayoutSlideoutSettings {
 }
 
 type FieldLayoutSettingsSlideout = Slideout & {
-  settingsForm: LayoutComponentSettingsForm;
+  settingsUi: LayoutComponentSettingsUi;
 };
 
 /**
@@ -622,12 +622,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       throw new Error('Layout component settings form is not registered.');
     }
     // SAFETY: The registration check above establishes the form element's public contract.
-    const settingsForm = $form as LayoutComponentSettingsForm;
-    settingsForm.payload = data.form;
+    const settingsUi = $form as LayoutComponentSettingsUi;
+    settingsUi.payload = data.ui;
     if (settings.requestData) {
-      settingsForm.requestData = settings.requestData;
+      settingsUi.requestData = settings.requestData;
     }
-    $fields.appendChild(settingsForm);
+    $fields.appendChild(settingsUi);
     $body.appendChild($fields);
 
     const $footer = document.createElement('div');
@@ -692,6 +692,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     Craft.initUiElements(slideout.$container);
 
-    return Object.assign(slideout, {settingsForm});
+    return Object.assign(slideout, {settingsUi});
   }
 }

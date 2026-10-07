@@ -33,17 +33,17 @@
 
   const formKey = ref(0);
   const typeConfigurator = useTemplateRef('typeConfigurator');
-  const latestUiPayload = shallowRef(payload.value.form);
+  const latestUiPayload = shallowRef(payload.value.ui);
 
   watch(
-    () => payload.value.form,
+    () => payload.value.ui,
     (payload) => (latestUiPayload.value = payload)
   );
 
   editor.registerRule(props.rule.id, {
     snapshot: () => ({
       ...payload.value,
-      form: {
+      ui: {
         ...latestUiPayload.value,
         values:
           typeConfigurator.value?.currentValues() ??
@@ -58,7 +58,7 @@
   });
 
   function change(_change: UiChange, values: UiValues): void {
-    const inputs = valueAt(values, payload.value.form.scope);
+    const inputs = valueAt(values, payload.value.ui.scope);
 
     editor.rules[props.rule.id] = {
       ...payload.value,
@@ -78,9 +78,9 @@
 
     if (!refreshed) throw new Error('Condition rule refresh did not complete.');
 
-    latestUiPayload.value = refreshed.form;
+    latestUiPayload.value = refreshed.ui;
 
-    return refreshed.form;
+    return refreshed.ui;
   }
 
   async function switchType(type: string): Promise<void> {
@@ -91,7 +91,7 @@
     if (!refreshed) return;
 
     editor.rules[props.rule.id] = refreshed;
-    latestUiPayload.value = refreshed.form;
+    latestUiPayload.value = refreshed.ui;
     formKey.value++;
 
     editor.changed();
@@ -113,7 +113,7 @@
           class="min-w-0 flex-1"
           :types="editor.payload().ruleTypes"
           :selected-type-label="payload.label"
-          :ui="payload.form"
+          :ui="payload.ui"
           :errors="editor.errors()"
           :disabled="!editor.editable()"
           :ui-disabled="switching"

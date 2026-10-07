@@ -16,6 +16,6 @@ readonly class WidgetTypeData
         public string $name,
         public ?int $maxColspan,
         public bool $selectable,
-        public ?UiPayload $settingsForm,
+        public ?UiPayload $settingsUi,
     ) {}
 }

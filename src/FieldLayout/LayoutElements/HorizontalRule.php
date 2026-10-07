@@ -55,7 +55,7 @@ HTML;
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted Horizontal Rule FieldLayout elements require stable UIDs.');

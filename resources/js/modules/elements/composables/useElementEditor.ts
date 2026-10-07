@@ -98,8 +98,8 @@ export interface ElementEditPayload {
   docTitle: string;
   crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
-  form: UiPayload | null;
-  sidebarForm: UiPayload | null;
+  ui: UiPayload | null;
+  sidebarUi: UiPayload | null;
   metadataHtml: string | null;
   /** The element's status badge. `null` for element types without statuses. */
   statusLabelHtml: string | null;
@@ -243,16 +243,16 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // The field layout comes back on the response separately from the screen
   // payload — scoped to whatever the request asked for — and applying it is the
   // only way a nested element the save just created (a new Matrix entry or
-  // address) receives its own Form payload. Until it does, the block has
+  // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
-  const savedForm = shallowRef<UiPayload | null>(null);
-  const uiPayload = computed(() => savedForm.value ?? props.form);
-  const sidebarPayload = computed(() => props.sidebarForm);
+  const savedUi = shallowRef<UiPayload | null>(null);
+  const uiPayload = computed(() => savedUi.value ?? props.ui);
+  const sidebarPayload = computed(() => props.sidebarUi);
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
   let nestedElementsReloadPending = false;
 
-  function invalidateFormRefreshes(): void {
+  function invalidateUiRefreshes(): void {
     refreshGeneration++;
   }
 
@@ -424,17 +424,17 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   let reverting = 0;
 
   watch(
-    [() => autosave.form.value, () => autosave.screen.value],
+    [() => autosave.ui.value, () => autosave.screen.value],
     ([form, screen]) => {
       if (!form && !screen) {
         return;
       }
 
-      invalidateFormRefreshes();
+      invalidateUiRefreshes();
       applyingSavedPayload = true;
 
       if (form) {
-        savedForm.value = form;
+        savedUi.value = form;
       }
 
       if (screen) {
@@ -458,9 +458,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   watch(
     () => pageProps(),
     () => {
-      invalidateFormRefreshes();
+      invalidateUiRefreshes();
       draftElementIds.clear();
-      savedForm.value = null;
+      savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
     }
@@ -575,7 +575,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * Resolves with the server's response once it's been applied, or nothing
    * when a newer refresh superseded it.
    */
-  async function refreshForm(
+  async function refreshUi(
     scope: string[] = uiPayload.value?.scope ?? []
   ): Promise<UiValues | undefined> {
     const generation = ++refreshGeneration;
@@ -605,8 +605,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       return;
     }
 
-    if (!response.form) {
-      throw new Error('The Element Editor did not return a Form payload.');
+    if (!response.ui) {
+      throw new Error('The Element Editor did not return a UI payload.');
     }
 
     await appendHeadHtml(response.headHtml);
@@ -619,7 +619,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     // it reconciles it into the layout.
     if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
       applyingSavedPayload = true;
-      savedForm.value = response.form;
+      savedUi.value = response.ui;
       await nextTick();
       applyingSavedPayload = false;
     }
@@ -640,13 +640,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     _values: UiValues,
     scope?: string[]
   ): Promise<UiPayload> {
-    const response = await refreshForm(scope);
+    const response = await refreshUi(scope);
 
     if (!response) {
       throw new Error('A newer refresh superseded this one.');
     }
 
-    return response.form as UiPayload;
+    return response.ui as UiPayload;
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -762,7 +762,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       },
       // A submission supersedes any in-flight draft write.
       onBeforeSave: () => {
-        invalidateFormRefreshes();
+        invalidateUiRefreshes();
         autosave.cancel();
       },
       onSuccess: (data) => {
@@ -858,7 +858,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * flag it.
    */
   async function refreshAfterNestedChange(): Promise<void> {
-    const response = await refreshForm();
+    const response = await refreshUi();
 
     if (response && 'updatedTimestamp' in response) {
       activity.rebase({
@@ -898,7 +898,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       return;
     }
 
-    invalidateFormRefreshes();
+    invalidateUiRefreshes();
 
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
@@ -919,7 +919,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // something that no longer exists — drop it before the reload rather than
       // waiting for the response, or the "unsaved changes" notice it carries
       // goes on shadowing the page props for the length of the round trip.
-      savedForm.value = null;
+      savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
       // The draft the autosave pointer names has just been deleted; leaving it
@@ -1013,7 +1013,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     onBeforeUnmount(removeNavigationGuard);
   }
 
-  onBeforeUnmount(invalidateFormRefreshes);
+  onBeforeUnmount(invalidateUiRefreshes);
   onBeforeUnmount(autosave.cancel);
 
   return {
@@ -1030,7 +1030,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     props,
     renderer,
     nestedOwnerEditor,
-    refreshForm,
+    refreshUi,
     refreshLayout,
     save,
     sidebarErrors,

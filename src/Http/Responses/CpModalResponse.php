@@ -66,10 +66,10 @@ class CpModalResponse implements Responsable
      */
     public $contentHtml;
 
-    public ?Ui $form = null;
+    public ?Ui $ui = null;
 
     /** @var array<string, mixed> */
-    public array $formValues = [];
+    public array $uiValues = [];
 
     /**
      * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
@@ -137,10 +137,10 @@ class CpModalResponse implements Responsable
      *
      * @param  array<string, mixed>  $values
      */
-    public function ui(?Ui $form, array $values = []): self
+    public function ui(?Ui $ui, array $values = []): self
     {
-        $this->form = $form;
-        $this->formValues = $values;
+        $this->ui = $ui;
+        $this->uiValues = $values;
 
         return $this;
     }
@@ -194,9 +194,9 @@ class CpModalResponse implements Responsable
             if ($this->contentHtml) {
                 $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
             }
-            if ($this->form !== null) {
+            if ($this->ui !== null) {
                 $components[] = app(UiHtmlRenderer::class)->render(
-                    app(UiResolver::class)->resolve($this->form, new UiContext(values: $this->formValues)),
+                    app(UiResolver::class)->resolve($this->ui, new UiContext(values: $this->uiValues)),
                 );
             }
             if ($this->action) {

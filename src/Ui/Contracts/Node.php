@@ -27,14 +27,14 @@ interface Node
      * Returns the Vue component registry name used to render this node.
      *
      * The component must be registered before the form is mounted and accept
-     * the resolved node, form values, and errors supplied by FormNode.
+     * the resolved node, form values, and errors supplied by UiNode.
      */
     public function component(): string;
 
     /**
      * Returns the node's stable identity when it does not own a control.
      *
-     * Pathless nodes require a non-empty UID that is unique within the form.
+     * Pathless nodes require a non-empty UID that is unique within the UI.
      * Control-owning nodes may return null because their resolved control path
      * supplies their identity.
      */

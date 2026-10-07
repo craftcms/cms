@@ -92,7 +92,7 @@ class NewUsers extends Widget
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $form = Ui::make([
+        $ui = Ui::make([
             Field::make(t('Date Range'))
                 ->control(Choice::make('dateRange')->value($this->dateRange)->options([
                     ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
@@ -104,7 +104,7 @@ class NewUsers extends Widget
 
         $userGroups = UserGroups::getAllGroups();
 
-        return $form->when($userGroups->isNotEmpty(), fn (Ui $form) => $form->add(
+        return $ui->when($userGroups->isNotEmpty(), fn (Ui $ui) => $ui->add(
             Field::make(t('User Group'))
                 ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
                     ['label' => t('All'), 'value' => ''],

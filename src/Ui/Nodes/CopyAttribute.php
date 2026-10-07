@@ -31,7 +31,7 @@ class CopyAttribute implements Node
     ) {}
 
     /**
-     * @param  string  $uid  Stable and unique within the form — control-less
+     * @param  string  $uid  Stable and unique within the UI — control-less
      *                       nodes are keyed by it.
      * @param  string  $value  The attribute name to show and copy.
      */

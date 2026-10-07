@@ -181,7 +181,7 @@ class Table extends Control
      */
     public function rowUi(array $row, array $cellOptions = []): Ui
     {
-        $form = Ui::make();
+        $ui = Ui::make();
 
         foreach ($this->columns as $key => $column) {
             $column = array_replace($column, $cellOptions[$key] ?? []);
@@ -193,18 +193,18 @@ class Table extends Control
             if ($control instanceof Control) {
                 $control->value($row[$key] ?? $this->rowDefaults()[$key] ?? null);
             }
-            $form->add(Field::make($column['heading'] ?? null, $control)->labelSrOnly()->required($column['required'] ?? false));
+            $ui->add(Field::make($column['heading'] ?? null, $control)->labelSrOnly()->required($column['required'] ?? false));
 
             if (isset($column['prefixSelect'])) {
                 $prefix = $column['prefixSelect'];
-                $form->add(Field::make($prefix['label'], Choice::make([$prefix['key']])
+                $ui->add(Field::make($prefix['label'], Choice::make([$prefix['key']])
                     ->options(TableColumn::options($prefix['options']))
                     ->withoutPlaceholder()
                     ->value($row[$prefix['key']] ?? $this->rowDefaults()[$prefix['key']] ?? null))->labelSrOnly());
             }
         }
 
-        return $form;
+        return $ui;
     }
 
     #[\Override]

@@ -65,9 +65,9 @@ class UsernameField extends TextField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
-        return Cms::config()->useEmailAsUsername ? null : parent::formControl($context);
+        return Cms::config()->useEmailAsUsername ? null : parent::uiControl($context);
     }
 
     #[Override]

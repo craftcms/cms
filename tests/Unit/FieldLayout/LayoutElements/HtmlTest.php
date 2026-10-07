@@ -15,7 +15,7 @@ it('renders sanitized non-interactive HTML content', function () {
         'uid' => 'html-test',
     ]);
     $context = new UiContext;
-    $node = $element->formNode(new FieldLayoutElementContext(null, $context));
+    $node = $element->uiNode(new FieldLayoutElementContext(null, $context));
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 

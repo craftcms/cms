@@ -122,7 +122,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
         ])->when(
             Cms::config()->enableGql,
-            fn (Ui $form): Ui => $form->add(
+            fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
@@ -147,7 +147,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return IconPicker::make($context->path)
             ->freeOnly(! $this->includeProIcons)

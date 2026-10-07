@@ -18,8 +18,8 @@ use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\PluginSettings;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ui\Controls\Slug;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ui\Nodes\Notice;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
@@ -80,7 +80,7 @@ class TestPlugin extends Plugin
 
     public bool $didCallAfterUninstall = false;
 
-    public function registerFormTypes(UiNodeTypes $nodeTypes, UiControlTypes $controlTypes): void
+    public function registerUiTypes(UiNodeTypes $nodeTypes, UiControlTypes $controlTypes): void
     {
         $nodeTypes->register(Notice::class);
         $controlTypes->register(Slug::class);

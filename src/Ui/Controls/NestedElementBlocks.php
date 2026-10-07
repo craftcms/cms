@@ -141,8 +141,8 @@ class NestedElementBlocks extends Control
     /** @param array<string, Ui> $uis */
     public function uis(array $uis): static
     {
-        foreach ($uis as $uid => $form) {
-            if (! is_string($uid) || $uid === '' || ! $form instanceof Ui) {
+        foreach ($uis as $uid => $ui) {
+            if (! is_string($uid) || $uid === '' || ! $ui instanceof Ui) {
                 throw new InvalidArgumentException('Matrix UI definitions require non-empty string identities and Ui values.');
             }
         }

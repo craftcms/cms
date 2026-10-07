@@ -13,7 +13,7 @@ export interface OpenLayoutSettingsOptions {
 }
 
 interface LayoutSettingsResponse {
-  form: UiPayload;
+  ui: UiPayload;
   headHtml?: string;
   bodyHtml?: string;
 }
@@ -63,7 +63,7 @@ export async function openLayoutComponentSettings(
 
   const contextId = `layout-settings-${++nextContextId}`;
   contexts.set(contextId, {
-    payload: data.form,
+    payload: data.ui,
     requestData: options.requestData,
     apply: options.apply,
   });

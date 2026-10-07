@@ -1,6 +1,6 @@
 # Editable tables
 
-Editable tables use the [Control Panel Form system](forms.md). PHP defines the columns and their controls; Vue renders
+Editable tables use the [Control Panel UI system](ui.md). PHP defines the columns and their controls; Vue renders
 the cells and manages row edits. The host form owns saving, authorization, and persistence.
 
 There are two related APIs:
@@ -137,7 +137,7 @@ class Quantity extends Number
 }
 ```
 
-`createControl()` supplies the editor. The base `formControl()` binds the value through `controlValue()`; you do not need
+`createControl()` supplies the editor. The base `uiControl()` binds the value through `controlValue()`; you do not need
 to call `value()` in every cell type. Use `$context->path` rather than constructing an input name. The context also
 provides the current value and an optional locale for translated options or labels.
 

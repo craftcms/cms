@@ -63,7 +63,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return RangeControl::make($context->path)
             ->min($this->min)

@@ -32,7 +32,7 @@ class Html extends FieldLayoutElement
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted HTML FieldLayout elements require stable UIDs.');

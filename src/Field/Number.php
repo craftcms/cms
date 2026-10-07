@@ -124,7 +124,7 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return NumberControl::make($context->path)
             ->min($this->min)

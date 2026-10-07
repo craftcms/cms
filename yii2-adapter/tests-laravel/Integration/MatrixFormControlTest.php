@@ -206,7 +206,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         'X-Craft-Ui-Root-Scope' => json_encode($scope, JSON_THROW_ON_ERROR),
     ]);
     $response->assertSuccessful();
-    $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($response->json('form.nodes')), RecursiveIteratorIterator::SELF_FIRST);
+    $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($response->json('ui.nodes')), RecursiveIteratorIterator::SELF_FIRST);
     $refreshed = collect(iterator_to_array($nodes, false))->first(
         fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
     );

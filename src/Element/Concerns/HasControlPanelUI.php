@@ -768,7 +768,7 @@ JS,
 
         return $form === null
             ? $renderer->renderInlineInput($this, $attribute)
-            : $renderer->renderInlineForm($form, $this->errors()->getMessages());
+            : $renderer->renderInlineUi($form, $this->errors()->getMessages());
     }
 
     /**

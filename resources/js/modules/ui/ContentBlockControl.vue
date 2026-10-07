@@ -50,11 +50,11 @@
     }
   });
 
-  function nestedChange(change: UiChange, form: NestedUiPayload): void {
+  function nestedChange(change: UiChange, ui: NestedUiPayload): void {
     emit('change', {
       ...change,
-      scope: form.scope,
-      refreshable: form.refreshable && change.refreshable,
+      scope: ui.scope,
+      refreshable: ui.refreshable && change.refreshable,
     });
   }
 </script>

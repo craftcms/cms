@@ -75,8 +75,8 @@ function payload(
     draftId: null,
     isProvisionalDraft: false,
     canAutosave: false,
-    form: null,
-    sidebarForm: null,
+    ui: null,
+    sidebarUi: null,
     metadataHtml: undefined,
     statusLabelHtml: undefined,
     saveUrl: '/actions/entries/save-entry',
@@ -293,7 +293,7 @@ describe('useElementEditor', () => {
         reactive: false,
       },
     });
-    const form: UiPayload = {
+    const ui: UiPayload = {
       scope: [],
       refreshable: true,
       errors: [],
@@ -393,7 +393,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValueOnce({
       data: {draftId: 7, draftElementIds: {73: 173, 12: 112}},
     });
-    const {editor, page} = mount(payload({canAutosave: true, form}));
+    const {editor, page} = mount(payload({canAutosave: true, ui}));
     await nextTick();
     const prepared = await editor.nestedOwnerEditor.prepare(inner);
 
@@ -410,7 +410,7 @@ describe('useElementEditor', () => {
         sortOrder: ['owner-block'],
       },
     });
-    expect(editor.renderer.value!.currentValues()).toEqual(form.values);
+    expect(editor.renderer.value!.currentValues()).toEqual(ui.values);
     expect(editor.form.isDirty).toBe(false);
     expect(prepared).toMatchObject({
       ownerId: 173,
@@ -424,7 +424,7 @@ describe('useElementEditor', () => {
     });
     expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(112);
 
-    page.props = payload({canAutosave: true, form});
+    page.props = payload({canAutosave: true, ui});
     await nextTick();
     expect(editor.nestedOwnerEditor.resolveElementId!(12)).toBe(12);
   });
@@ -531,7 +531,7 @@ describe('useElementEditor', () => {
         };
       };
       const {editor} = mount(
-        payload({canAutosave: true, form: captured(73)}),
+        payload({canAutosave: true, ui: captured(73)}),
         null,
         {},
         components
@@ -554,7 +554,7 @@ describe('useElementEditor', () => {
               data: {
                 draftId: 7,
                 draftElementIds: {73: 173},
-                form: captured(173),
+                ui: captured(173),
                 screen: {draftId: 7},
               },
             }
@@ -568,7 +568,7 @@ describe('useElementEditor', () => {
                     blocks: {entries: {created: {title: 'Server default'}}},
                   },
                 },
-                form: {
+                ui: {
                   scope: [...path, 'entries', 'created'],
                   refreshable: true,
                   nodes: [
@@ -726,7 +726,7 @@ describe('useElementEditor', () => {
     };
   }
 
-  function sidebarForm(slug: string, autoGenerate = true): UiPayload {
+  function sidebarUi(slug: string, autoGenerate = true): UiPayload {
     return {
       scope: [],
       refreshable: false,
@@ -807,7 +807,7 @@ describe('useElementEditor', () => {
     onTestFinished(() => {
       vi.useRealTimers();
     });
-    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+    mount(payload({canAutosave: true, ui: fieldLayout('Original')}));
 
     await typeTitle('Unsaved edit');
     app!.unmount();
@@ -834,7 +834,7 @@ describe('useElementEditor', () => {
         });
       }
     );
-    mount(payload({canAutosave: true, form: fieldLayout('Original')}));
+    mount(payload({canAutosave: true, ui: fieldLayout('Original')}));
 
     await typeTitle('Unsaved edit');
     await vi.advanceTimersByTimeAsync(1000);
@@ -856,8 +856,8 @@ describe('useElementEditor', () => {
     });
     mount(
       payload({
-        form: fieldLayout(''),
-        sidebarForm: sidebarForm(''),
+        ui: fieldLayout(''),
+        sidebarUi: sidebarUi(''),
       })
     );
 
@@ -886,15 +886,15 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('First'),
-        screen: {sidebarForm: sidebarForm('first')},
+        ui: fieldLayout('First'),
+        screen: {sidebarUi: sidebarUi('first')},
       },
     });
     mount(
       payload({
         canAutosave: true,
-        form: fieldLayout(''),
-        sidebarForm: sidebarForm(''),
+        ui: fieldLayout(''),
+        sidebarUi: sidebarUi(''),
       })
     );
 
@@ -917,16 +917,16 @@ describe('useElementEditor', () => {
     const {editor} = mount(
       payload({
         canAutosave: false,
-        form: fieldLayout('Original title'),
+        ui: fieldLayout('Original title'),
       })
     );
 
     await typeTitle('Edited title');
     postSpy.mockResolvedValue({
-      data: {form: fieldLayout('Server title')},
+      data: {ui: fieldLayout('Server title')},
     });
 
-    await editor.refreshForm();
+    await editor.refreshUi();
 
     expect(postSpy).toHaveBeenCalledOnce();
     expect(postSpy.mock.calls[0]?.[0]).toContain(
@@ -949,7 +949,7 @@ describe('useElementEditor', () => {
       url.includes('update-field-layout')
         ? {
             data: {
-              form: fieldLayout('Original title'),
+              ui: fieldLayout('Original title'),
               updatedTimestamp: serverStamp,
               canonicalUpdatedTimestamp: 1,
             },
@@ -966,7 +966,7 @@ describe('useElementEditor', () => {
       payload({
         activityUrl: '/actions/elements/recent-activity',
         updatedTimestamps: {element: 1, canonical: 1},
-        form: fieldLayout('Original title'),
+        ui: fieldLayout('Original title'),
       })
     );
     await editor.activity.poll();
@@ -986,34 +986,34 @@ describe('useElementEditor', () => {
   });
 
   it('omits presentation-only null controls when refreshing an untouched form', async () => {
-    const form = cardsLayout();
-    const {editor} = mount(payload({canAutosave: false, form}));
+    const ui = cardsLayout();
+    const {editor} = mount(payload({canAutosave: false, ui}));
     await nextTick();
-    postSpy.mockResolvedValue({data: {form}});
+    postSpy.mockResolvedValue({data: {ui}});
 
-    await editor.refreshForm();
+    await editor.refreshUi();
 
     expect(postSpy).toHaveBeenCalledOnce();
     expect(postSpy.mock.calls[0]?.[1]).not.toHaveProperty('fields');
   });
 
   it('keeps the latest field-layout refresh when responses arrive out of order', async () => {
-    const first = deferred<{data: {form: UiPayload}}>();
-    const second = deferred<{data: {form: UiPayload}}>();
+    const first = deferred<{data: {ui: UiPayload}}>();
+    const second = deferred<{data: {ui: UiPayload}}>();
     postSpy
       .mockImplementationOnce(() => first.promise)
       .mockImplementationOnce(() => second.promise);
     const {editor} = mount(
-      payload({canAutosave: false, form: fieldLayout('Original title')})
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
     );
 
-    const firstRefresh = editor.refreshForm();
-    const secondRefresh = editor.refreshForm();
-    second.resolve({data: {form: fieldLayout('Latest title')}});
+    const firstRefresh = editor.refreshUi();
+    const secondRefresh = editor.refreshUi();
+    second.resolve({data: {ui: fieldLayout('Latest title')}});
     await secondRefresh;
     await nextTick();
 
-    first.resolve({data: {form: fieldLayout('Stale title')}});
+    first.resolve({data: {ui: fieldLayout('Stale title')}});
     await firstRefresh;
     await nextTick();
 
@@ -1021,20 +1021,20 @@ describe('useElementEditor', () => {
   });
 
   it('ignores a refresh that predates an authoritative page payload', async () => {
-    const refresh = deferred<{data: {form: UiPayload}}>();
+    const refresh = deferred<{data: {ui: UiPayload}}>();
     postSpy.mockImplementationOnce(() => refresh.promise);
     const {editor, page} = mount(
-      payload({canAutosave: false, form: fieldLayout('Original title')})
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
     );
 
-    const pendingRefresh = editor.refreshForm();
+    const pendingRefresh = editor.refreshUi();
     page.props = payload({
       canAutosave: false,
-      form: fieldLayout('Saved title'),
+      ui: fieldLayout('Saved title'),
     });
     await nextTick();
 
-    refresh.resolve({data: {form: fieldLayout('Stale title')}});
+    refresh.resolve({data: {ui: fieldLayout('Stale title')}});
     await pendingRefresh;
     await nextTick();
 
@@ -1077,7 +1077,7 @@ describe('useElementEditor', () => {
       payload({
         canAutosave: false,
         draftId: 7,
-        form: fieldLayout('Original title'),
+        ui: fieldLayout('Original title'),
       }),
       slideout
     );
@@ -1104,7 +1104,7 @@ describe('useElementEditor', () => {
       payload({
         canAutosave: true,
         draftId: 7,
-        form: fieldLayout('Original title'),
+        ui: fieldLayout('Original title'),
       }),
       slideout
     );
@@ -1262,7 +1262,7 @@ describe('useElementEditor', () => {
     vi.useFakeTimers();
 
     const {editor, page} = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')})
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
     );
 
     await typeTitle('Edited title');
@@ -1273,7 +1273,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         screen: {
           draftId: 7,
           isProvisionalDraft: true,
@@ -1296,7 +1296,7 @@ describe('useElementEditor', () => {
         // What the visit does: a fresh canonical payload, then the callbacks.
         page.props = payload({
           canAutosave: true,
-          form: fieldLayout('Canonical title'),
+          ui: fieldLayout('Canonical title'),
         });
         void nextTick().then(() => options?.onFinish?.());
       });
@@ -1332,7 +1332,7 @@ describe('useElementEditor', () => {
     const slideout = slideoutController();
     let page!: {props: Record<string, unknown>};
     const mounted = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')}),
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')}),
       slideout
     );
     const editor = mounted.editor;
@@ -1341,7 +1341,7 @@ describe('useElementEditor', () => {
     slideout.reload.mockImplementation(async () => {
       page.props = payload({
         canAutosave: true,
-        form: fieldLayout('Canonical title'),
+        ui: fieldLayout('Canonical title'),
       });
       await nextTick();
     });
@@ -1351,7 +1351,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         screen: {draftId: 7, notice: 'Showing your unsaved changes.'},
       },
     });
@@ -1387,7 +1387,7 @@ describe('useElementEditor', () => {
         canAutosave: true,
         draftId: 7,
         isProvisionalDraft: true,
-        form: fieldLayout('Draft title'),
+        ui: fieldLayout('Draft title'),
       })
     );
 
@@ -1400,7 +1400,7 @@ describe('useElementEditor', () => {
         finish = () => {
           page.props = payload({
             canAutosave: true,
-            form: fieldLayout('Canonical title'),
+            ui: fieldLayout('Canonical title'),
           });
           void nextTick().then(() => options?.onFinish?.());
         };
@@ -1484,7 +1484,7 @@ describe('useElementEditor', () => {
     vi.useFakeTimers();
 
     const {editor, page} = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')})
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
     );
 
     await typeTitle('Edited title');
@@ -1494,7 +1494,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         screen: {
           draftId: 7,
           isProvisionalDraft: true,
@@ -1519,7 +1519,7 @@ describe('useElementEditor', () => {
     // The server answers with the canonical element: no draft, no notice.
     await save.land(
       page,
-      payload({canAutosave: true, form: fieldLayout('Edited title')})
+      payload({canAutosave: true, ui: fieldLayout('Edited title')})
     );
 
     expect(editor.props.notice).toBeUndefined();
@@ -1557,7 +1557,7 @@ describe('useElementEditor', () => {
     vi.useFakeTimers();
 
     const {editor, page} = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')})
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
     );
 
     await typeTitle('Edited title');
@@ -1572,7 +1572,7 @@ describe('useElementEditor', () => {
 
     await save.land(
       page,
-      payload({canAutosave: true, form: fieldLayout('Edited title')})
+      payload({canAutosave: true, ui: fieldLayout('Edited title')})
     );
     await vi.advanceTimersByTimeAsync(5000);
 
@@ -1589,7 +1589,7 @@ describe('useElementEditor', () => {
     const {editor} = mount(
       payload({
         canAutosave: true,
-        form: fieldLayout('Canonical title'),
+        ui: fieldLayout('Canonical title'),
         workflow: {
           current: null,
           draftReviews: [],
@@ -1680,7 +1680,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         screen: {
           draftId: 7,
           isProvisionalDraft: true,
@@ -1691,7 +1691,7 @@ describe('useElementEditor', () => {
     });
 
     const {editor, page} = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')})
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
     );
 
     await editor.autosave.save();
@@ -1703,7 +1703,7 @@ describe('useElementEditor', () => {
     editor.save({redirect: false});
     await save.land(
       page,
-      payload({canAutosave: true, form: fieldLayout('Edited title')})
+      payload({canAutosave: true, ui: fieldLayout('Edited title')})
     );
 
     expect(editor.props.notice).toBeUndefined();
@@ -1721,7 +1721,7 @@ describe('useElementEditor', () => {
     postSpy.mockResolvedValue({
       data: {
         draftId: 7,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         screen: {
           draftId: 7,
           isProvisionalDraft: true,
@@ -1732,7 +1732,7 @@ describe('useElementEditor', () => {
     });
 
     const {editor, page} = mount(
-      payload({canAutosave: true, form: fieldLayout('Canonical title')})
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
     );
 
     await editor.autosave.save();
@@ -1757,7 +1757,7 @@ describe('useElementEditor', () => {
         canAutosave: true,
         draftId: 9,
         isProvisionalDraft: false,
-        form: fieldLayout('Edited title'),
+        ui: fieldLayout('Edited title'),
         workflow: {
           current: {} as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
           draftReviews: [],
@@ -1799,7 +1799,7 @@ describe('useElementEditor', () => {
     const {editor} = mount(
       payload({
         draftId: 9,
-        form: fieldLayout('Reviewed title'),
+        ui: fieldLayout('Reviewed title'),
       })
     );
     const save = interceptSave();

@@ -226,7 +226,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
     .spyOn(craftUi.actionClient, 'post')
     .mockImplementation(async (_action, _data, options) => ({
       data: {
-        form:
+        ui:
           options?.headers?.['X-Craft-Ui-Scope'] === '["editor"]'
             ? payload
             : {
@@ -337,7 +337,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
   if (!options) throw new Error('Expected nested refresh request options.');
   const encodedData = String(data);
   expect(new URLSearchParams(encodedData).get('editor[selectedTab]')).toBe(
-    'editor-form-tab-entry-content'
+    'editor-ui-tab-entry-content'
   );
   expect(Object.fromEntries(new URLSearchParams(encodedData))).toMatchObject({
     'editor[elementType]': 'CraftCms\\Cms\\Entry\\Elements\\Entry',
@@ -380,7 +380,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
   });
   const refreshResponse = (title: string) => ({
     data: {
-      form: refreshedPayload(title),
+      ui: refreshedPayload(title),
       headHtml: '',
       bodyHtml: '',
     },
@@ -435,7 +435,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
   ]);
   secondScope.resolve({
     data: {
-      form: {
+      ui: {
         ...refreshedPayload('Authoritative'),
         scope: ['editor', 'matrix', 'entries', 'block-b'],
       },
@@ -446,7 +446,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
   await vi.advanceTimersByTimeAsync(0);
   firstScope.resolve({
     data: {
-      form: {
+      ui: {
         ...refreshedPayload('Authoritative'),
         scope: ['editor', 'matrix', 'entries', 'block-c'],
         nodes: [
@@ -499,7 +499,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
   host.querySelector<HTMLButtonElement>('[data-nested-refresh]')!.click();
   newerDescendant.resolve({
     data: {
-      form: {
+      ui: {
         ...refreshedPayload('Newer descendant'),
         scope: ['editor', 'matrix', 'entries', 'block-d'],
         nodes: [],
@@ -515,7 +515,7 @@ it('submits Entry UI values and preserves refresh context', async () => {
 
   olderRoot.resolve({
     data: {
-      form: refreshedPayload('Older root'),
+      ui: refreshedPayload('Older root'),
       headHtml: '',
       bodyHtml: '<script>older-root</script>',
     },

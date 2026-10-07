@@ -16,7 +16,7 @@ use CraftCms\Cms\Ui\UiResolver;
 use function CraftCms\Cms\t;
 
 /**
- * Edits Table column metadata and the settings Forms provided by cell types.
+ * Edits Table column metadata and the settings UIs provided by cell types.
  *
  * @since 6.0.0
  */
@@ -102,12 +102,12 @@ class TableColumns extends Control
         $uis = [];
 
         foreach (is_array($value) ? $value : [] as $key => $column) {
-            $form = $this->columnUi($column);
+            $ui = $this->columnUi($column);
             foreach (($this->columnUis[$key] ?? null)?->nodes() ?? [] as $node) {
-                $form->add($node);
+                $ui->add($node);
             }
 
-            $uis[] = ['scope' => [(string) $key], 'ui' => $form, 'refreshable' => true];
+            $uis[] = ['scope' => [(string) $key], 'ui' => $ui, 'refreshable' => true];
         }
 
         return $uis;

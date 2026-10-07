@@ -22,8 +22,8 @@ use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
 use Override;
 use yii\base\InvalidConfigException;
 
@@ -42,7 +42,7 @@ use function CraftCms\Cms\t;
 abstract class Fs extends SavableComponent implements FsInterface, LegacySettingsComponent
 {
     use FsTrait;
-    use LegacySettingsForm {
+    use LegacySettingsUi {
         settingsUi as private legacySettingsUi;
     }
 

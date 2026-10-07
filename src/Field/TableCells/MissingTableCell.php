@@ -21,7 +21,7 @@ class MissingTableCell extends TableCell implements MissingComponentInterface
         return false;
     }
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return Missing::make($context->path)->provider($this->expectedType);
     }

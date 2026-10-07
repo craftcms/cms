@@ -553,7 +553,7 @@ class NestedElementManager extends Component
      * @param  'cards'|'cards-grid'|'index'  $viewMode
      * @param  array<string, mixed>  $config  The cards or index view config
      */
-    public function formControl(string|array $path, ?ElementInterface $owner, string $viewMode, array $config = []): NestedElements
+    public function uiControl(string|array $path, ?ElementInterface $owner, string $viewMode, array $config = []): NestedElements
     {
         // The Vue cards build their action menus from structured card data.
         $config += ['nestedActionEvents' => true];

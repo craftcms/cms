@@ -25,7 +25,7 @@ function fieldActionNodes(
     BaseField $field,
     ControlMode $mode = ControlMode::Editable,
 ): array {
-    return $field->formNode(new FieldLayoutElementContext(null, new UiContext, $mode))->children();
+    return $field->uiNode(new FieldLayoutElementContext(null, new UiContext, $mode))->children();
 }
 
 function customTextField(): CustomField

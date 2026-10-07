@@ -38,7 +38,7 @@ vi.mock('@craftcms/ui/vue/CraftCombobox.vue', () => ({
   }),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     setup:
       (_, {slots}) =>
@@ -74,7 +74,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: UiPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -135,9 +135,9 @@ it('keeps the exclusive two-step verification value shape', () => {
 
 function mount(): void {
   app = createApp(Settings, {
-    form,
+    ui,
     submit: {method: 'post', url: '/settings/users'},
-    refreshUrl: '/settings/users/render-form',
+    refreshUrl: '/settings/users/render-ui',
   });
   app.mount(container);
 }

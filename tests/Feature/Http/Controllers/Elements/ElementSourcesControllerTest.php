@@ -27,13 +27,13 @@ use function Pest\Laravel\postJson;
 /** @return list<list<string>> */
 function controlPaths(array $form): array
 {
-    return array_map(fn (array $control) => $control['path'], formControls($form));
+    return array_map(fn (array $control) => $control['path'], uiControls($form));
 }
 
 /** @return array<string, mixed>|null */
 function control(array $form, array $path): ?array
 {
-    return collect(formControls($form))->firstWhere('path', $path);
+    return collect(uiControls($form))->firstWhere('path', $path);
 }
 
 /** @return array<string, mixed> */
@@ -45,11 +45,11 @@ function controlProps(array $form, array $path): array
 /** @return array<string, mixed> */
 function sourceValues(array $source): array
 {
-    return $source['form']['values']['sources'][$source['key']] ?? [];
+    return $source['ui']['values']['sources'][$source['key']] ?? [];
 }
 
 /** @return list<array<string, mixed>> */
-function formControls(array $form): array
+function uiControls(array $form): array
 {
     $controls = [];
     $walk = function (array $nodes) use (&$walk, &$controls): void {
@@ -155,9 +155,9 @@ it('returns fully normalized source customization data', function () {
             ->where('sources.0.page', 'Test Elements')
             // ElementSources synthesizes a keyless blank heading as a
             // separator; it's regenerated on every read and isn't saveable.
-            ->where('sources.0.form', null)
+            ->where('sources.0.ui', null)
             ->where('sources.1.page', 'Test Elements')
-            ->where('sources.1.form.scope', ['sources', 'structured'])
+            ->where('sources.1.ui.scope', ['sources', 'structured'])
             // Everything the modal used to build its fields client-side now
             // arrives inside each source's Form.
             ->missing('viewModes')
@@ -178,14 +178,14 @@ it('returns fully normalized source customization data', function () {
     $fallback = $sources['fallback'];
     $custom = $sources['custom:existing'];
 
-    expect(controlPaths($structured['form']))->toBe([
+    expect(controlPaths($structured['ui']))->toBe([
         ['sources', 'structured', 'enabled'],
         ['sources', 'structured', 'defaultViewMode'],
         ['sources', 'structured', 'defaultSort', 'attr'],
         ['sources', 'structured', 'defaultSort', 'dir'],
         ['sources', 'structured', 'tableAttributes'],
     ])
-        ->and(controlPaths($custom['form']))->toBe([
+        ->and(controlPaths($custom['ui']))->toBe([
             ['sources', 'custom:existing', 'label'],
             ['sources', 'custom:existing', 'condition'],
             ['sources', 'custom:existing', 'defaultSort', 'attr'],
@@ -195,7 +195,7 @@ it('returns fully normalized source customization data', function () {
             ['sources', 'custom:existing', 'sites'],
             ['sources', 'custom:existing', 'userGroups'],
         ])
-        ->and(controlPaths($sources['heading:content']['form'] ?? ['nodes' => []]))->toBe([]);
+        ->and(controlPaths($sources['heading:content']['ui'] ?? ['nodes' => []]))->toBe([]);
 
     // Seeded values, normalized the way store() expects them back.
     expect(sourceValues($structured))->toMatchArray([
@@ -219,7 +219,7 @@ it('returns fully normalized source customization data', function () {
 
     // Every Choice's options must serialize as a JSON list — an associative
     // array becomes an object, which the Vue control can't map over.
-    foreach (formControls($custom['form']) as $control) {
+    foreach (uiControls($custom['ui']) as $control) {
         if ($control['component'] === 'craft:choice') {
             expect(array_is_list($control['props']['options']))
                 ->toBeTrue(implode('.', $control['path']).' options must be a list');
@@ -228,24 +228,24 @@ it('returns fully normalized source customization data', function () {
 
     // Only a structured source offers structure ordering, and it has no
     // direction to pick.
-    expect(controlProps($structured['form'], ['sources', 'structured', 'defaultSort', 'attr'])['options'][0]['value'])
+    expect(controlProps($structured['ui'], ['sources', 'structured', 'defaultSort', 'attr'])['options'][0]['value'])
         ->toBe('structure')
-        ->and(controlProps($fallback['form'], ['sources', 'fallback', 'defaultSort', 'attr'])['options'][0]['value'])
+        ->and(controlProps($fallback['ui'], ['sources', 'fallback', 'defaultSort', 'attr'])['options'][0]['value'])
         ->not->toBe('structure')
-        ->and(control($structured['form'], ['sources', 'structured', 'defaultViewMode'])['props']['options'])
+        ->and(control($structured['ui'], ['sources', 'structured', 'defaultViewMode'])['props']['options'])
         ->toHaveCount(count(TestElementSourcesElement::indexViewModes()));
 
     // A new custom source can pick previewable custom fields as columns, since
     // its field layouts aren't known yet.
-    $newSource = postJson(action([ElementSourcesController::class, 'form']), [
+    $newSource = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'custom:new',
         'type' => ElementSources::TYPE_CUSTOM,
-    ])->assertOk()->json('form');
+    ])->assertOk()->json('ui');
 
     // Draining HtmlStack here would ship the whole CP asset bootstrap, whose
     // initializers target elements that only exist on a full page render.
-    postJson(action([ElementSourcesController::class, 'form']), [
+    postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'custom:new',
         'type' => ElementSources::TYPE_CUSTOM,
@@ -267,14 +267,14 @@ it('re-resolves a source Form from posted settings', function () {
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'form']), [
+    $form = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
         'settings' => [
             'defaultSort' => ['attr' => 'structure', 'dir' => 'desc'],
         ],
-    ])->assertOk()->json('form');
+    ])->assertOk()->json('ui');
 
     expect(control($form, ['sources', 'structured', 'defaultSort', 'dir'])['mode'])->toBe('disabled');
 });
@@ -287,14 +287,14 @@ it('holds structure order ascending, since the direction control is disabled for
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'form']), [
+    $form = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
         'settings' => [
             'defaultSort' => ['attr' => 'structure', 'dir' => 'desc'],
         ],
-    ])->assertOk()->json('form');
+    ])->assertOk()->json('ui');
 
     expect($form['values']['sources']['structured']['defaultSort']['dir'])->toBe('asc');
 });
@@ -307,11 +307,11 @@ it('gives each sort attribute its default direction', function () {
         ],
     ]);
 
-    $form = postJson(action([ElementSourcesController::class, 'form']), [
+    $form = postJson(action([ElementSourcesController::class, 'ui']), [
         'elementType' => TestElementSourcesElement::class,
         'sourceKey' => 'structured',
         'type' => ElementSources::TYPE_NATIVE,
-    ])->assertOk()->json('form');
+    ])->assertOk()->json('ui');
 
     $options = controlProps($form, ['sources', 'structured', 'defaultSort', 'attr'])['options'];
 

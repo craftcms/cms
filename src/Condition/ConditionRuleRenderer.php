@@ -27,9 +27,9 @@ class ConditionRuleRenderer
         return $this->renderUi($rule->getUi());
     }
 
-    public function renderUi(Ui $form): string
+    public function renderUi(Ui $ui): string
     {
-        $payload = $this->resolver->resolve($form, new UiContext(refreshable: true));
+        $payload = $this->resolver->resolve($ui, new UiContext(refreshable: true));
         $html = '';
 
         foreach ($payload->nodes as $node) {

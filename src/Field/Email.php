@@ -79,7 +79,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return Text::make($context->path)
             ->inputType('email')

@@ -41,7 +41,7 @@ class ActionMenu implements Node
     ) {}
 
     /**
-     * @param  string  $uid  Stable and unique within the form — control-less
+     * @param  string  $uid  Stable and unique within the UI — control-less
      *                       nodes are keyed by it.
      * @param  list<array<string, mixed>>  $menuItems  Craft menu-item configs.
      */

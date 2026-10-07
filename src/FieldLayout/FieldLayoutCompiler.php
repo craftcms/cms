@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -36,7 +36,7 @@ class FieldLayoutCompiler
         ?ElementInterface $element = null,
         UiContext $context = new UiContext,
     ): Ui {
-        $form = Ui::make();
+        $ui = Ui::make();
 
         foreach ($layout->getTabs() as $layoutTab) {
             if (! $layoutTab->showInForm($element)) {
@@ -50,10 +50,10 @@ class FieldLayoutCompiler
                     continue;
                 }
 
-                $node = $layoutElement->formNode(new FieldLayoutElementContext(
+                $node = $layoutElement->uiNode(new FieldLayoutElementContext(
                     $element,
                     $context,
-                    $layoutElement->formMode($element),
+                    $layoutElement->uiMode($element),
                 ));
 
                 if ($node !== null) {
@@ -66,21 +66,21 @@ class FieldLayoutCompiler
             }
 
             if (! $layoutTab->uid) {
-                $form->add(...$nodes);
+                $ui->add(...$nodes);
 
                 continue;
             }
 
-            $form->addTab(
+            $ui->addTab(
                 t($layoutTab->name ?? '', category: 'site'),
                 $nodes,
                 $layoutTab->uid,
             );
         }
 
-        event($event = new FieldLayoutFormResolving($layout, $form, $context, $element));
+        event($event = new FieldLayoutUiResolving($layout, $ui, $context, $element));
 
-        return $event->form;
+        return $event->ui;
     }
 
     private function normalizeErrors(FieldLayout $layout, UiContext $context): UiContext

@@ -75,12 +75,11 @@ export class MatrixEntry extends Base {
     this.previewContainer =
       this.titlebar?.querySelector('[data-matrix-block-preview]') ?? null;
     this.fieldsContainer = blockPart(container, '[data-matrix-block-fields]');
-    const formHost =
-      this.fieldsContainer?.querySelector<EntryFieldLayoutUiHost>(
-        'craft-entry-field-layout-ui'
-      );
-    if (formHost) {
-      formHost.requestMetadata = () => ({
+    const uiHost = this.fieldsContainer?.querySelector<EntryFieldLayoutUiHost>(
+      'craft-entry-field-layout-ui'
+    );
+    if (uiHost) {
+      uiHost.requestMetadata = () => ({
         elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
         elementId: null,
         canonicalId: null,

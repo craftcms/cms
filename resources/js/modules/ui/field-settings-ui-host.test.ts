@@ -2,7 +2,7 @@ import {nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import {renderForm} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
+import {renderUi} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
 import {defineFieldSettingsUiHost} from './field-settings-ui-host';
 import {registerUiComponents} from './register';
 import {columnMetadata} from './table.test-support';
@@ -140,7 +140,7 @@ async function settle(form: HTMLFormElement): Promise<void> {
 it('refreshes the complete namespaced legacy settings form and retains unsaved settings for native submission', async () => {
   const request = vi
     .spyOn(actionClient, 'post')
-    .mockResolvedValue({data: {form: settingsPayload(true)}});
+    .mockResolvedValue({data: {ui: settingsPayload(true)}});
   const components = createCpComponentRegistry();
   registerUiComponents(components);
   defineFieldSettingsUiHost(components);
@@ -169,7 +169,7 @@ it('refreshes the complete namespaced legacy settings form and retains unsaved s
   await settle(form);
 
   expect(request).toHaveBeenCalledWith(
-    renderForm.url(),
+    renderUi.url(),
     expect.objectContaining({
       settingsOnly: true,
       scope: [],

@@ -262,7 +262,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $sources = $this->allowMultipleSources ? $this->sources : $this->source;
         $sources = $sources === '*' ? null : $sources;
@@ -287,7 +287,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * Override to return an {@see ElementSelect} subclass carrying whatever
      * the element type can do beyond plain relating — {@see Assets} returns an
      * {@see AssetSelect}, which can also upload. Configure it here; the shared
-     * relation settings are applied by {@see formControl()} afterwards.
+     * relation settings are applied by {@see uiControl()} afterwards.
      */
     protected function selectControl(FieldContext $context): ElementSelect
     {

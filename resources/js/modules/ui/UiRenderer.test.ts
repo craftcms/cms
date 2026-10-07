@@ -29,7 +29,7 @@ vi.mock(
     createElementSelectorModal: selectorModal.createElementSelectorModal,
   })
 );
-import payload from '../../../../tests/Fixtures/Form/plain-text-settings.json';
+import payload from '../../../../tests/Fixtures/Ui/plain-text-settings.json';
 import {registerTestPluginUiComponents} from '../../../../tests/TestClasses/TestPlugin/resources/js/register-ui-components';
 import {
   createCpComponentRegistry,
@@ -1277,7 +1277,7 @@ describe('UiRenderer', () => {
 
     expect(fields.length).toBeGreaterThan(0);
     expect(fields.map((field) => field.id)).toContain(
-      'form-settings-placeholder'
+      'ui-settings-placeholder'
     );
   });
 
@@ -1446,7 +1446,7 @@ describe('UiRenderer', () => {
     // panel id this component assigned, and the panel back at the tab's own id
     // — which the strip generates, so it's matched rather than spelled out.
     expect(tabButtons[0]?.getAttribute('aria-controls')).toBe(
-      'form-tab-tab-content-tab'
+      'ui-tab-tab-content-tab'
     );
     expect(tab?.getAttribute('aria-labelledby')).toBe(tabButtons[0]?.id);
     expect(tabButtons[0]?.id).toBeTruthy();

@@ -6,10 +6,10 @@
   import type {FormAction, FormSaveOptions} from '@/common/types';
   import {pathsMatch} from '@/modules/ui/runtime';
   import type {UiChange, UiPayload, UiValue} from '@/modules/ui/types';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
 
   const props = defineProps<{
-    form: UiPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
     supportedTranslationMethods: Record<string, string[]>;
@@ -52,9 +52,9 @@
 <template>
   <MetadataDetails :html="details" />
 
-  <FormPage
+  <UiPage
     ref="formPage"
-    :form="form"
+    :ui="ui"
     :submit="submit"
     :form-actions="formActions"
     :refresh-url="refreshUrl ?? undefined"

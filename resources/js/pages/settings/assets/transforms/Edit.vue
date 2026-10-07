@@ -10,7 +10,7 @@
     UiValue,
   } from '@/modules/ui/types';
   import {inputName} from '@/modules/ui/runtime';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';
   import letterboxImageUrl from '/images/transforms/letterbox.svg';
@@ -24,7 +24,7 @@
   };
 
   defineProps<{
-    form: UiPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
@@ -88,11 +88,7 @@
 </script>
 
 <template>
-  <FormPage
-    :form="form"
-    :submit="submit"
-    :refresh-url="refreshUrl ?? undefined"
-  >
+  <UiPage :ui="ui" :submit="submit" :refresh-url="refreshUrl ?? undefined">
     <template
       #mode="{control, value, setValue, editable, invalid, required, label}"
     >
@@ -195,7 +191,7 @@
         />
       </div>
     </template>
-  </FormPage>
+  </UiPage>
 </template>
 
 <style scoped>
@@ -251,9 +247,9 @@
     justify-content: center;
     inline-size: 2rem;
     block-size: 2rem;
-    border: 1px solid var(--c-form-control-border-color);
+    border: 1px solid var(--c-ui-control-border-color);
     border-radius: var(--c-radius-sm);
-    background-color: var(--c-form-control-fill);
+    background-color: var(--c-ui-control-fill);
     cursor: pointer;
   }
 

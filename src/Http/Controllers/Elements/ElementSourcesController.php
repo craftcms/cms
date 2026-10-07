@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\ElementSourceForm;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementSourceUi;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -26,7 +26,7 @@ readonly class ElementSourcesController
 {
     use RespondsWithFlash;
 
-    public function show(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceForm $sourceForm): JsonResponse
+    public function show(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceUi $sourceUi): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $request->elementType();
@@ -47,8 +47,8 @@ readonly class ElementSourcesController
                     // ElementSources synthesizes a keyless blank heading as a
                     // separator. Nothing can address it by Control path and
                     // store() can't save it, so it gets no Form.
-                    'form' => ($source['key'] ?? '') !== ''
-                        ? $sourceForm->payload($elementType, $source)
+                    'ui' => ($source['key'] ?? '') !== ''
+                        ? $sourceUi->payload($elementType, $source)
                         : null,
                 ])
                 ->values()
@@ -62,7 +62,7 @@ readonly class ElementSourcesController
      * Returns the settings Form for a single source — for one the client just
      * added, and for {@see UiPayload} refreshes.
      */
-    public function form(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceForm $sourceForm): JsonResponse
+    public function ui(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceUi $sourceUi): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $request->elementType();
@@ -82,21 +82,21 @@ readonly class ElementSourcesController
         $source = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)
             ->firstWhere('key', $data['sourceKey']);
 
-        $payload = $sourceForm->payload(
+        $payload = $sourceUi->payload(
             $elementType,
-            $source ?? $sourceForm->blankSource($data['type'], $data['sourceKey']),
+            $source ?? $sourceUi->blankSource($data['type'], $data['sourceKey']),
             $data['settings'] ?? [],
             isNew: $source === null,
         );
 
         $scope = $data['scope'] ?? [];
 
-        // No head/body HTML: this endpoint resolves a Form payload and renders
+        // No head/body HTML: this endpoint resolves a UI payload and renders
         // nothing, so draining HtmlStack would ship the whole CP asset bootstrap
         // — initializers for elements that only exist on a full page render.
         // A server-rendered Control fetches its own assets when it renders.
         return new JsonResponse([
-            'form' => $scope === [] ? $payload : $payload->forScope($scope),
+            'ui' => $scope === [] ? $payload : $payload->forScope($scope),
         ]);
     }
 

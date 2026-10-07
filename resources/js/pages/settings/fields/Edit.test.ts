@@ -33,7 +33,7 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   }),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     emits: ['change'],
     props: ['formActions'],
@@ -49,7 +49,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: UiPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -77,9 +77,9 @@ afterEach(() => {
 
 function mount(details: string | null = null): void {
   app = createApp(Edit, {
-    form,
+    ui,
     submit: {method: 'post', url: '/actions/fields/store'},
-    refreshUrl: '/actions/fields/render-form',
+    refreshUrl: '/actions/fields/render-ui',
     supportedTranslationMethods: {
       OldField: ['none', 'custom'],
       NewField: ['none'],
@@ -105,7 +105,7 @@ it('selects a supported translation method when the field type changes', async (
   );
 });
 
-it('saves and starts another field from the form action', async () => {
+it('saves and starts another field from the ui action', async () => {
   mount();
   await nextTick();
 

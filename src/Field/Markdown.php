@@ -258,7 +258,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return MarkdownControl::make($context->path)
             ->rows($this->initialRows)

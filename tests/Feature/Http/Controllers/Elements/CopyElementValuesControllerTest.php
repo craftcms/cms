@@ -249,7 +249,7 @@ it('copies a field value from another site and returns the updated field', funct
 function fieldActionLabels(Entry $entry): array
 {
     $layoutElement = $entry->getFieldLayout()->getCustomFieldElements()[0];
-    $fieldNode = $layoutElement->formNode(new FieldLayoutElementContext($entry, new UiContext));
+    $fieldNode = $layoutElement->uiNode(new FieldLayoutElementContext($entry, new UiContext));
 
     return collect($fieldNode->children())
         ->filter(fn ($node) => $node instanceof ActionMenu)

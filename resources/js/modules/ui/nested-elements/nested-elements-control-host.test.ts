@@ -182,7 +182,7 @@ it.each([
       async () =>
         new Response(
           JSON.stringify({
-            form: {
+            ui: {
               scope: [],
               values: {},
               errors: [],

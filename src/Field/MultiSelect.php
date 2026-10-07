@@ -45,7 +45,7 @@ class MultiSelect extends BaseOptionsField
     }
 
     #[\Override]
-    protected function formPresentation(): ChoicePresentation
+    protected function uiPresentation(): ChoicePresentation
     {
         return ChoicePresentation::Select;
     }

@@ -15,7 +15,7 @@ it('uses the pre-encoded flavor for encoded layout markdown', function () {
         'content' => '`<b>`',
     ]);
     $context = new UiContext;
-    $node = $element->formNode(new FieldLayoutElementContext(null, $context));
+    $node = $element->uiNode(new FieldLayoutElementContext(null, $context));
     $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
 
     expect(app(UiHtmlRenderer::class)->render($payload))

@@ -41,17 +41,17 @@ class UserSettingsViewModel extends ViewModel
         private readonly UserSettings $settings,
         private readonly Volumes $volumes,
         private readonly UserGroups $userGroups,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly bool $canRequire2fa,
         private readonly bool $canManagePublicRegistration,
         private readonly bool $readOnly,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): UiPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
-        $form = Ui::make([
+        $ui = Ui::make([
             Heading::make('user-photos-heading', t('User Photos')),
             Heading::make('user-photo-location-heading', t('User Photo Location'))
                 ->level(3)
@@ -76,7 +76,7 @@ class UserSettingsViewModel extends ViewModel
         ]);
 
         if ($this->canRequire2fa) {
-            $form->add(
+            $ui->add(
                 Separator::make('security-separator'),
                 Heading::make('security-heading', t('Security')),
                 Field::make(
@@ -87,7 +87,7 @@ class UserSettingsViewModel extends ViewModel
         }
 
         if ($this->canManagePublicRegistration) {
-            $form->add(
+            $ui->add(
                 Field::make(
                     t('Verify email addresses'),
                     Lightswitch::make('requireEmailVerification'),
@@ -121,11 +121,11 @@ class UserSettingsViewModel extends ViewModel
                     HiddenField::make('defaultGroup'),
                 ];
 
-            $form->add(Group::make('public-registration-settings', $registrationSettings)
+            $ui->add(Group::make('public-registration-settings', $registrationSettings)
                 ->dependsOn('allowPublicRegistration'));
         }
 
-        return $this->formResolver->resolve($form, new UiContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly && $this->canManagePublicRegistration,
@@ -145,7 +145,7 @@ class UserSettingsViewModel extends ViewModel
     {
         return $this->readOnly || ! $this->canManagePublicRegistration
             ? null
-            : action([UserSettingsController::class, 'renderForm']);
+            : action([UserSettingsController::class, 'renderUi']);
     }
 
     /** @return array<string, mixed> */

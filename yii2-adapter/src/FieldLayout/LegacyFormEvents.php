@@ -64,7 +64,7 @@ class LegacyFormEvents
 
         if ($mutations !== []) {
             throw new RuntimeException(sprintf(
-                'Legacy FieldLayout event mutation [%s] is incompatible with Form rendering.',
+                'Legacy FieldLayout event mutation [%s] is incompatible with UI rendering.',
                 implode(', ', $mutations),
             ));
         }
@@ -103,10 +103,10 @@ class LegacyFormEvents
                 continue;
             }
 
-            $node = $layoutElement->formNode(new FieldLayoutElementContext(
+            $node = $layoutElement->uiNode(new FieldLayoutElementContext(
                 $element,
                 $context,
-                $layoutElement->formMode($element),
+                $layoutElement->uiMode($element),
             ));
 
             if ($node !== null) {

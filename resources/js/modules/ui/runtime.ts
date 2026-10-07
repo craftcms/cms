@@ -173,7 +173,7 @@ export function fieldId(path: string[]): string {
     )
   );
 
-  return `form-${encoded.join('-')}`;
+  return `ui-${encoded.join('-')}`;
 }
 
 /** The id of the control's own input, which sits inside that field. */
@@ -189,7 +189,7 @@ export function inputName(path: string[]): string {
 }
 
 export function uiTabPanelId(uid: string, scope: string[]): string {
-  const id = `form-tab-${uid}`;
+  const id = `ui-tab-${uid}`;
 
   return scope.length ? Craft.namespaceId(id, inputName(scope)) : id;
 }
@@ -276,7 +276,7 @@ export function visitControls(
   for (const node of nodes) {
     if (node.control) {
       visit(node.control);
-      node.control.uis?.forEach((form) => visitControls(form.nodes, visit));
+      node.control.uis?.forEach((ui) => visitControls(ui.nodes, visit));
     }
 
     if (node.children) {

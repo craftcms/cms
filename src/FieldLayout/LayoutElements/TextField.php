@@ -114,7 +114,7 @@ class TextField extends BaseNativeField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         return Text::make($this->name ?? $this->attribute())
             ->inputType($this->inputType ?? 'text')

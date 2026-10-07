@@ -17,14 +17,14 @@ readonly class FieldContext
      * @param  string|list<string>  $path
      * @param  mixed  $value  The normalized field value
      * @param  ElementInterface|null  $element  The element being edited
-     * @param  UiContext  $form  The containing UI context
+     * @param  UiContext  $ui  The containing UI context
      * @param  ControlMode  $mode  The field's resolved mode
      */
     public function __construct(
         public string|array $path,
         public mixed $value = null,
         public ?ElementInterface $element = null,
-        public UiContext $form = new UiContext,
+        public UiContext $ui = new UiContext,
         public ControlMode $mode = ControlMode::Editable,
         public bool $inline = false,
     ) {}

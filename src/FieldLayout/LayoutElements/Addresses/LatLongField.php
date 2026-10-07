@@ -77,7 +77,7 @@ class LatLongField extends BaseNativeField
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $context->element instanceof Address) {
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));

@@ -37,9 +37,9 @@ use function CraftCms\Cms\t;
  */
 class FieldEditViewModel extends ViewModel
 {
-    private ?Ui $settingsForm = null;
+    private ?Ui $settingsUi = null;
 
-    private bool $settingsFormResolved = false;
+    private bool $settingsUiResolved = false;
 
     public function __construct(
         private readonly Field $field,
@@ -48,7 +48,7 @@ class FieldEditViewModel extends ViewModel
         private readonly bool $multiInstanceTypesOnly = false,
     ) {}
 
-    public function form(): UiPayload
+    public function ui(): UiPayload
     {
         $type = $this->typeClass();
         $translationMethods = $this->translationMethods(
@@ -121,8 +121,8 @@ class FieldEditViewModel extends ViewModel
         $nodes[] = Separator::make('field-settings-separator');
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
         $refreshable = ! $this->readOnly;
-        $formResolver = app(UiResolver::class);
-        $form = $formResolver->resolve(Ui::make($nodes), new UiContext(
+        $uiResolver = app(UiResolver::class);
+        $ui = $uiResolver->resolve(Ui::make($nodes), new UiContext(
             values: [
                 'fieldId' => $this->field->id,
                 'oldType' => $type,
@@ -138,31 +138,31 @@ class FieldEditViewModel extends ViewModel
             refreshable: $refreshable,
         ));
         $settingsContext = $this->settingsUiContext();
-        $settingsForm = $this->settingsUiDefinition($settingsContext);
-        $settings = $formResolver->resolve($settingsForm === null
+        $settingsUi = $this->settingsUiDefinition($settingsContext);
+        $settings = $uiResolver->resolve($settingsUi === null
             ? Ui::make()
             : Ui::make([
-                Group::make('field-settings', $settingsForm->nodes())->dependsOn('type'),
+                Group::make('field-settings', $settingsUi->nodes())->dependsOn('type'),
             ]), $settingsContext);
 
         return new UiPayload(
             scope: [],
             refreshable: $refreshable,
-            nodes: [...$form->nodes, ...$settings->nodes],
-            values: [...$form->values, ...$settings->values],
-            errors: [...$form->errors, ...$settings->errors],
-            globalErrors: [...$form->globalErrors, ...$settings->globalErrors],
+            nodes: [...$ui->nodes, ...$settings->nodes],
+            values: [...$ui->values, ...$settings->values],
+            errors: [...$ui->errors, ...$settings->errors],
+            globalErrors: [...$ui->globalErrors, ...$settings->globalErrors],
         );
     }
 
-    public function settingsForm(): ?UiPayload
+    public function settingsUi(): ?UiPayload
     {
         $context = $this->settingsUiContext();
-        $form = $this->settingsUiDefinition($context);
+        $ui = $this->settingsUiDefinition($context);
 
-        return $form === null
+        return $ui === null
             ? null
-            : app(UiResolver::class)->resolve($form, $context);
+            : app(UiResolver::class)->resolve($ui, $context);
     }
 
     /** @return array{method: 'post', url: string} */
@@ -181,7 +181,7 @@ class FieldEditViewModel extends ViewModel
         }
 
         return action(
-            [FieldsController::class, 'renderForm'],
+            [FieldsController::class, 'renderUi'],
             $this->multiInstanceTypesOnly ? ['multiInstanceTypesOnly' => 1] : [],
         );
     }
@@ -273,12 +273,12 @@ class FieldEditViewModel extends ViewModel
 
     private function settingsUiDefinition(UiContext $context): ?Ui
     {
-        if (! $this->settingsFormResolved) {
-            $this->settingsForm = $this->field->settingsUi($context);
-            $this->settingsFormResolved = true;
+        if (! $this->settingsUiResolved) {
+            $this->settingsUi = $this->field->settingsUi($context);
+            $this->settingsUiResolved = true;
         }
 
-        return $this->settingsForm;
+        return $this->settingsUi;
     }
 
     private function settingsUiContext(): UiContext

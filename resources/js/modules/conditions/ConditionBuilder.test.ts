@@ -21,7 +21,7 @@ function rule(
     label: type,
     hint: null,
     showHint: false,
-    form: {
+    ui: {
       scope,
       refreshable: true,
       nodes: [
@@ -388,9 +388,9 @@ it('does not allow edits or submit values in disabled mode', async () => {
 
 it('blocks native submission when a rule Form provider cannot render', async () => {
   const initial = rule();
-  initial.form.nodes[0] = {
-    ...initial.form.nodes[0]!,
-    control: {...initial.form.nodes[0]!.control!, component: 'missing:control'},
+  initial.ui.nodes[0] = {
+    ...initial.ui.nodes[0]!,
+    control: {...initial.ui.nodes[0]!.control!, component: 'missing:control'},
   };
   await mount(builder([initial]));
   await vi.waitFor(() =>

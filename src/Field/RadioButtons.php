@@ -49,7 +49,7 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     }
 
     #[Override]
-    protected function formPresentation(): ChoicePresentation
+    protected function uiPresentation(): ChoicePresentation
     {
         return ChoicePresentation::Radios;
     }

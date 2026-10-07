@@ -46,7 +46,7 @@ it('uses configured default row values for newly added rows', function () {
             'minRows' => 1,
             'maxRows' => 1,
         ])
-        ->and($field->formControl(new FieldContext('details'))->props()['defaultValues'])->toBe([
+        ->and($field->uiControl(new FieldContext('details'))->props()['defaultValues'])->toBe([
             'label' => 'New row',
             'enabled' => true,
         ]);
@@ -58,7 +58,7 @@ it('resolves normalized cell values for their form inputs', function (array $col
         'columns' => ['col1' => ['heading' => 'Value', 'handle' => 'value', ...$column]],
     ]);
     $rows = $field->normalizeValue([['col1' => $value]], null);
-    $control = $field->formControl(new FieldContext('details', value: $rows));
+    $control = $field->uiControl(new FieldContext('details', value: $rows));
     $payload = app(UiResolver::class)->resolve(Ui::make([
         UiField::make('Details', $control),
     ]), new UiContext);
@@ -132,7 +132,7 @@ it('round-trips money cells through localized row forms and scalar storage', fun
         $normalized = $field->normalizeValueFromRequest([['amount' => ['value' => $amount, 'locale' => 'nl-BE']]], null);
         $stored = $field->serializeValueForDb($normalized, new Entry);
         $payload = app(UiResolver::class)->resolve(Ui::make([
-            UiField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
+            UiField::make('Prices', $field->uiControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
         ]), new UiContext);
         $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
 
@@ -328,7 +328,7 @@ class ScaledTableCell extends TableCell
         return $value === null ? null : $value * $this->factor;
     }
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return Number::make($context->path)->value($this->serializeValue($context->value));
     }

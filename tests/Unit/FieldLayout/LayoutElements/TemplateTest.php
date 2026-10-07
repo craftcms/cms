@@ -26,7 +26,7 @@ it('renders sanitized non-interactive template content', function () {
             'width' => 50,
         ]);
         $context = new UiContext;
-        $node = $element->formNode(new FieldLayoutElementContext(null, $context));
+        $node = $element->uiNode(new FieldLayoutElementContext(null, $context));
     } finally {
         $templatesPath === null
             ? Aliases::remove('@templates')

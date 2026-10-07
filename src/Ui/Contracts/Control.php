@@ -31,7 +31,7 @@ interface Control
      * Returns what the control should read when its value is missing.
      *
      * A control renders as soon as the payload describing it does, and inside a
-     * nested form that can be a beat ahead of the values filling it — a Matrix
+     * nested UI that can be a beat ahead of the values filling it — a Matrix
      * block the server has just minted, say. A control whose value is a shape
      * would otherwise reach into nothing and throw, which takes the whole field
      * down; the renderer stands this in for that beat instead.
@@ -64,11 +64,11 @@ interface Control
     public function component(): string;
 
     /**
-     * Returns the control's path relative to the form context namespace.
+     * Returns the control's path relative to the UI context namespace.
      *
      * Strings may use dot notation. Array paths must contain non-empty string
      * segments. The resolved path identifies the value, input name, errors,
-     * and reconciliation unit, and must be unique within the form.
+     * and reconciliation unit, and must be unique within the UI.
      *
      * @return string|list<string>
      */
@@ -91,7 +91,7 @@ interface Control
     /**
      * Returns the control's default value.
      *
-     * The resolver uses this value only when the form context does not contain
+     * The resolver uses this value only when the UI context does not contain
      * a value at the resolved path. It must be JSON-serializable.
      */
     public function getValue(): mixed;
@@ -99,7 +99,7 @@ interface Control
     /**
      * Returns the control's requested interaction mode.
      *
-     * A non-editable mode set on the form context takes precedence over this
+     * A non-editable mode set on the UI context takes precedence over this
      * value when the payload is resolved.
      */
     public function getMode(): ControlMode;
@@ -129,7 +129,7 @@ interface Control
     public function resolveProps(mixed $value, ControlMode $mode): array;
 
     /**
-     * Returns Forms owned by this Control, scoped relative to its path.
+     * Returns UIs owned by this Control, scoped relative to its path.
      *
      * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
      */

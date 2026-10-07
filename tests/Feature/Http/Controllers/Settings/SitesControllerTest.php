@@ -36,7 +36,7 @@ it('requires authentication', function () {
     get(action([SitesController::class, 'index']))->assertRedirect();
     get(action([SitesController::class, 'create']))->assertRedirect();
     get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertRedirect();
-    postJson(action([SitesController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([SitesController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([SitesController::class, 'store']))->assertUnauthorized();
     postJson(action([SitesController::class, 'reorder']))->assertUnauthorized();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertUnauthorized();
@@ -49,14 +49,14 @@ it('requires admin changes', function () {
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.nodes', fn ($nodes): bool => collect(flattenFormNodes(collect($nodes)->all()))
+            ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
                 ->whereNotNull('control')
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')));
 
     // Not allowed
     get(action([SitesController::class, 'create']))->assertForbidden();
     postJson(action([SitesController::class, 'store']))->assertForbidden();
-    postJson(action([SitesController::class, 'renderForm']))->assertForbidden();
+    postJson(action([SitesController::class, 'renderUi']))->assertForbidden();
     postJson(action([SitesController::class, 'reorder']))->assertForbidden();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertForbidden();
 });
@@ -104,11 +104,11 @@ test('create can be loaded', function () {
     get(action([SitesController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.values.siteId', null)
-            ->where('form.values.group', SiteGroup::first()->id)
-            ->where('form.refreshable', true)
+            ->where('ui.values.siteId', null)
+            ->where('ui.values.group', SiteGroup::first()->id)
+            ->where('ui.refreshable', true)
             ->where('submit.url', action([SitesController::class, 'store']))
-            ->where('refreshUrl', action([SitesController::class, 'renderForm'])))
+            ->where('refreshUrl', action([SitesController::class, 'renderUi'])))
         ->assertOk();
 });
 
@@ -130,11 +130,11 @@ test('it can edit a site', function () {
     get(action([SitesController::class, 'edit'], [$site->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.values.siteId', $site->id)
-            ->where('form.values.name', $site->getName(false))
-            ->where('form.values.language', $site->getLanguage(false))
-            ->where('form.values.baseUrl', $site->getBaseUrl(false))
-            ->where('form.values.primary', true)
+            ->where('ui.values.siteId', $site->id)
+            ->where('ui.values.name', $site->getName(false))
+            ->where('ui.values.language', $site->getLanguage(false))
+            ->where('ui.values.baseUrl', $site->getBaseUrl(false))
+            ->where('ui.values.primary', true)
         );
 });
 
@@ -151,18 +151,18 @@ it('refreshes base URL visibility from current form values', function () {
         'baseUrl' => '',
     ];
 
-    $withoutBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+    $withoutBaseUrl = postJson(action([SitesController::class, 'renderUi']), [
         'values' => $values,
         'scope' => [],
-    ])->json('form.nodes');
+    ])->json('ui.nodes');
 
-    $withBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+    $withBaseUrl = postJson(action([SitesController::class, 'renderUi']), [
         'values' => [...$values, 'hasUrls' => true],
         'scope' => [],
-    ])->json('form.nodes');
+    ])->json('ui.nodes');
 
-    expect(collect(flattenFormNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
-        ->and(collect(flattenFormNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
+    expect(collect(flattenUiNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
+        ->and(collect(flattenUiNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
 });
 
 it('404s when a site does not exist', function () {

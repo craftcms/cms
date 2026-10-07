@@ -4,14 +4,14 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {UiPayload, UiValue} from '@/modules/ui/types';
   import WorkflowStagesInput from '@/modules/workflows/components/WorkflowStagesInput.vue';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
 
   type WorkflowStage = CraftCms.Cms.Workflow.Data.WorkflowStageData;
   type StageType =
     CraftCms.Cms.Http.ViewModels.WorkflowEditViewModel['stageTypes'][number];
 
   const props = defineProps<{
-    form: CraftCms.Cms.Ui.UiPayload;
+    ui: CraftCms.Cms.Ui.UiPayload;
     stageTypes: StageType[];
     submit: {
       method: 'patch' | 'post';
@@ -23,7 +23,7 @@
       url: string;
     } | null;
   }>();
-  const uiPayload = props.form as unknown as UiPayload;
+  const uiPayload = props.ui as unknown as UiPayload;
   const actions: ActionItem[] = props.deleteAction
     ? [
         {
@@ -46,7 +46,7 @@
 </script>
 
 <template>
-  <FormPage :form="uiPayload" :submit="submit">
+  <UiPage :ui="uiPayload" :submit="submit">
     <template #stages="{value, setValue, editable, errors}">
       <WorkflowStagesInput
         :model-value="stages(value)"
@@ -56,5 +56,5 @@
         @update:model-value="setValue($event, 'discrete')"
       />
     </template>
-  </FormPage>
+  </UiPage>
 </template>

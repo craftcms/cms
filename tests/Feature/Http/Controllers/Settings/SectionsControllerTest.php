@@ -47,7 +47,7 @@ it('requires authentication', function () {
     get(action([SectionsController::class, 'index']))->assertRedirect();
     get(action([SectionsController::class, 'create']))->assertRedirect();
     get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertRedirect();
-    postJson(action([SectionsController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([SectionsController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([SectionsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertUnauthorized();
 });
@@ -60,7 +60,7 @@ it('requires admin changes', function () {
 
     // Not allowed
     get(action([SectionsController::class, 'create']))->assertForbidden();
-    postJson(action([SectionsController::class, 'renderForm']))->assertForbidden();
+    postJson(action([SectionsController::class, 'renderUi']))->assertForbidden();
     postJson(action([SectionsController::class, 'store']))->assertForbidden();
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertForbidden();
 });
@@ -93,12 +93,12 @@ test('create can be loaded', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sections/Edit')
             ->where('title', t('Create a new section'))
-            ->where('form.values.sectionId', null)
-            ->where('form.values.type', SectionType::Channel->value)
-            ->where('form.refreshable', true)
+            ->where('ui.values.sectionId', null)
+            ->where('ui.values.type', SectionType::Channel->value)
+            ->where('ui.refreshable', true)
             ->where('submit.url', action([SectionsController::class, 'store']))
-            ->where('refreshUrl', action([SectionsController::class, 'renderForm']))
-            ->where('form.nodes', function ($nodes): bool {
+            ->where('refreshUrl', action([SectionsController::class, 'renderUi']))
+            ->where('ui.nodes', function ($nodes): bool {
                 $paths = collect($nodes)->pluck('control.path')->filter();
 
                 return $paths->contains(['entryTypes'])
@@ -115,9 +115,9 @@ test('it can edit a section', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sections/Edit')
-            ->where('form.values.sectionId', $section->id)
-            ->where('form.values.name', $section->name)
-            ->where('form.values.handle', $section->handle));
+            ->where('ui.values.sectionId', $section->id)
+            ->where('ui.values.name', $section->name)
+            ->where('ui.values.handle', $section->handle));
 });
 
 function sectionFormValues(array $overrides = []): array
@@ -142,27 +142,27 @@ function sectionFormValues(array $overrides = []): array
 it('refreshes the fields that depend on the section type', function () {
     Site::factory()->create();
     app(SitesService::class)->refreshSites();
-    $paths = fn (array $nodes) => collect(flattenFormNodes($nodes))->pluck('control.path')->filter()->values();
+    $paths = fn (array $nodes) => collect(flattenUiNodes($nodes))->pluck('control.path')->filter()->values();
 
-    $channel = postJson(action([SectionsController::class, 'renderForm']), [
+    $channel = postJson(action([SectionsController::class, 'renderUi']), [
         'values' => sectionFormValues(),
         'scope' => [],
     ])->assertOk();
-    $structure = postJson(action([SectionsController::class, 'renderForm']), [
+    $structure = postJson(action([SectionsController::class, 'renderUi']), [
         'values' => sectionFormValues(['type' => SectionType::Structure->value]),
         'scope' => [],
     ])->assertOk();
-    $single = postJson(action([SectionsController::class, 'renderForm']), [
+    $single = postJson(action([SectionsController::class, 'renderUi']), [
         'values' => sectionFormValues(['type' => SectionType::Single->value]),
         'scope' => [],
     ])->assertOk();
 
-    expect($paths($channel->json('form.nodes')))
+    expect($paths($channel->json('ui.nodes')))
         ->toContain(['propagationMethod'], ['minAuthors'], ['maxAuthors'])
         ->not->toContain(['maxLevels'], ['defaultPlacement'])
-        ->and($paths($structure->json('form.nodes')))
+        ->and($paths($structure->json('ui.nodes')))
         ->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors'])
-        ->and($paths($single->json('form.nodes')))
+        ->and($paths($single->json('ui.nodes')))
         ->not->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors']);
 });
 
@@ -253,7 +253,7 @@ it('defaults new preview targets to auto-refresh', function () {
 });
 
 it('rejects an invalid section type when refreshing', function () {
-    postJson(action([SectionsController::class, 'renderForm']), [
+    postJson(action([SectionsController::class, 'renderUi']), [
         'values' => sectionFormValues(['type' => 'invalid']),
         'scope' => [],
     ])->assertUnprocessable()
@@ -301,8 +301,8 @@ it('saves and reloads normalized route destinations without requiring applicatio
     get(action([SectionsController::class, 'edit'], [$section->id]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.sites.'.$site->handle.'.routeType', 'route')
-            ->where('form.values.sites.'.$site->handle.'.route', $expected));
+            ->where('ui.values.sites.'.$site->handle.'.routeType', 'route')
+            ->where('ui.values.sites.'.$site->handle.'.route', $expected));
 })->with([
     'named route' => [' services.show ', 'services.show'],
     'invokable' => ['App\\Http\\Controllers\\ServiceController', 'App\\Http\\Controllers\\ServiceController'],
@@ -330,8 +330,8 @@ it('clears a section route when switching its destination to a template', functi
     assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => 'entries/show', 'route' => null]);
     get(action([SectionsController::class, 'edit'], [$section->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.sites.'.$site->handle.'.routeType', 'template')
-            ->where('form.values.sites.'.$site->handle.'.route', 'entries/show'));
+            ->where('ui.values.sites.'.$site->handle.'.routeType', 'template')
+            ->where('ui.values.sites.'.$site->handle.'.route', 'entries/show'));
 });
 
 it('rejects malformed route syntax when saving a section', function () {

@@ -348,14 +348,14 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $owner = $context->element;
         $static = $context->mode !== ControlMode::Editable
-            || $context->form->mode !== ControlMode::Editable
+            || $context->ui->mode !== ControlMode::Editable
             || ($owner?->getIsRevision() ?? false);
 
-        return $this->addressManager()->formControl(
+        return $this->addressManager()->uiControl(
             $context->path,
             $owner,
             $this->viewMode === self::VIEW_MODE_INDEX ? self::VIEW_MODE_INDEX : 'cards-grid',

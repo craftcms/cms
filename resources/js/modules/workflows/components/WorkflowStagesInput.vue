@@ -63,7 +63,7 @@
         name: '',
         type: stageType.type,
         settings: {...stageType.settings},
-        settingsForm: stageType.settingsForm,
+        settingsUi: stageType.settingsUi,
       },
     ]);
   }
@@ -121,10 +121,10 @@
     ];
   }
 
-  function stageForm(stage: WorkflowStage): UiPayload | null {
-    return stage.settingsForm
+  function stageUi(stage: WorkflowStage): UiPayload | null {
+    return stage.settingsUi
       ? {
-          ...(stage.settingsForm as UiPayload),
+          ...(stage.settingsUi as UiPayload),
           values: stage.settings,
         }
       : null;
@@ -181,9 +181,9 @@
           </CraftInput>
 
           <UiRenderer
-            v-if="stageForm(modelValue[index]!)"
+            v-if="stageUi(modelValue[index]!)"
             :key="modelValue[index]!.type"
-            :payload="stageForm(modelValue[index]!)!"
+            :payload="stageUi(modelValue[index]!)!"
             :disabled="!editable"
             @change="(change, values) => changeSettings(index, change, values)"
           />

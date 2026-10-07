@@ -401,7 +401,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             Entry::class,
             array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->_entryTypes),
         );
-        $form = Ui::make([
+        $ui = Ui::make([
             UiField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
@@ -410,7 +410,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ]);
 
         if (Sites::isMultiSite()) {
-            $form->add(
+            $ui->add(
                 UiField::make(t('Propagation Method'))
                     ->instructions(t('Which sites should entries be saved to?'))
                     ->control(Choice::make('propagationMethod')->options([
@@ -460,7 +460,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $isIndex = $this->viewMode === self::VIEW_MODE_INDEX;
 
-        return $form->add(
+        return $ui->add(
             Group::make('matrix-site-settings', [
                 UiField::make(t('Site Settings'))
                     ->instructions(t('Choose the site-specific settings for nested entries.'))
@@ -576,7 +576,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
             return $this->nestedEntriesControl($context);
@@ -611,7 +611,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $forms[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->form->mode : $context->mode),
+                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
             );
             $sortOrder[] = $uid;
         }
@@ -1398,10 +1398,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
-            && $context->form->mode === ControlMode::Editable
+            && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->formControl(
+        return $this->entryManager()->uiControl(
             $context->path,
             $owner,
             $this->viewMode,

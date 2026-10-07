@@ -851,13 +851,13 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function formMode(?ElementInterface $element): ControlMode
+    public function uiMode(?ElementInterface $element): ControlMode
     {
         return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         try {
             $this->getField();
@@ -874,11 +874,11 @@ class CustomField extends BaseField
                 ->value($this->value($context->element));
         }
 
-        return $field->formControl(new FieldContext(
+        return $field->uiControl(new FieldContext(
             ['fields', $this->attribute()],
             $this->value($context->element),
             $context->element,
-            $context->form,
+            $context->ui,
             $context->mode,
         ));
     }

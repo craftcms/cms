@@ -566,7 +566,7 @@ it('provides permitted card menu events for the hosting field', function (bool $
 it('builds a shared nested elements control for attribute-backed owners', function (string $viewMode) {
     $user = UserModel::factory()->createElement();
 
-    $control = $user->getAddressManager()->formControl('addresses', $user, $viewMode, [
+    $control = $user->getAddressManager()->uiControl('addresses', $user, $viewMode, [
         'showInGrid' => true,
         'canCreate' => true,
     ]);
@@ -605,7 +605,7 @@ it('builds the shared control for plugin nested element types', function () {
         ],
     );
 
-    $control = $manager->formControl('pluginItems', $user, 'cards', ['canCreate' => true]);
+    $control = $manager->uiControl('pluginItems', $user, 'cards', ['canCreate' => true]);
 
     expect($control)->toBeInstanceOf(NestedElements::class)
         ->and($control->component())->toBe('craft:nested-elements')
@@ -619,7 +619,7 @@ it('builds the shared control for plugin nested element types', function () {
 it('explains why a nested elements control is unavailable for unsaved owners', function () {
     $user = UserModel::factory()->createElement();
 
-    $props = $user->getAddressManager()->formControl('addresses', new User, 'cards')->props();
+    $props = $user->getAddressManager()->uiControl('addresses', new User, 'cards')->props();
 
     expect($props['manager'])->toBeNull()
         ->and($props['cards'])->toBe([])

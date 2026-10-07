@@ -32,7 +32,7 @@ class UserSettingsController extends BaseUserSettingsController
         private readonly ProjectConfig $projectConfig,
         private readonly Volumes $volumes,
         private readonly UserGroups $userGroups,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly GeneralConfig $generalConfig,
     ) {}
 
@@ -49,7 +49,7 @@ class UserSettingsController extends BaseUserSettingsController
             ]);
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $request->validate([
             'values' => ['required', 'array'],
@@ -58,10 +58,10 @@ class UserSettingsController extends BaseUserSettingsController
         ]);
 
         return new JsonResponse([
-            'form' => $this->viewModel(
+            'ui' => $this->viewModel(
                 new UserSettings($this->projectConfig->get('users') ?? []),
                 $request->array('values'),
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -86,7 +86,7 @@ class UserSettingsController extends BaseUserSettingsController
             $settings,
             $this->volumes,
             $this->userGroups,
-            $this->formResolver,
+            $this->uiResolver,
             canRequire2fa: Edition::get()->supportsRequiring2FA(),
             canManagePublicRegistration: Edition::get()->supportsPublicRegistration(),
             readOnly: ! $this->generalConfig->allowAdminChanges,

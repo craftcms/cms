@@ -52,7 +52,7 @@ class FullNameField extends TextField
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         $element = $context->element;
 
@@ -61,7 +61,7 @@ class FullNameField extends TextField
             ! Cms::config()->showFirstAndLastNameFields ||
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) !== 2
         ) {
-            return parent::formNode($context);
+            return parent::uiNode($context);
         }
 
         if (! $this->uid) {

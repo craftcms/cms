@@ -63,7 +63,7 @@
     onSidebarMutation,
     props: payload,
     renderer,
-    refreshForm,
+    refreshUi,
     refreshLayout,
     save,
     sidebarErrors,

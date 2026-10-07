@@ -85,12 +85,12 @@ export function useElementAutosave<T extends object>(
   // leaving the screen standing long enough for the host to re-apply the
   // screen it had just dropped.
   const saved = shallowRef<{
-    form: UiPayload | null;
+    ui: UiPayload | null;
     screen: UiValues | null;
     modified: string[];
-  }>({form: null, screen: null, modified: []});
+  }>({ui: null, screen: null, modified: []});
 
-  const uiPayload = computed(() => saved.value.form);
+  const uiPayload = computed(() => saved.value.ui);
   const screenPayload = computed(() => saved.value.screen);
   const modified = computed(() => saved.value.modified);
   const changeGeneration = ref(0);
@@ -140,8 +140,8 @@ export function useElementAutosave<T extends object>(
       saved.value = {
         // The response carries the field layout as the server now sees it,
         // which is the only place a nested element created by this save (a new
-        // Matrix entry or address) can get its own Form payload from.
-        form: data.form ?? saved.value.form,
+        // Matrix entry or address) can get its own UI payload from.
+        ui: data.ui ?? saved.value.ui,
         // …and the rest of the edit screen as a fresh page load would render
         // it. The first save of a canonical element creates a provisional
         // draft, and from that moment the screen around the form is a draft's —
@@ -210,7 +210,7 @@ export function useElementAutosave<T extends object>(
     return inFlight;
   }
 
-  // Driven by the Form renderers' change callbacks rather than a deep watch on
+  // Driven by the UI renderers' change callbacks rather than a deep watch on
   // the form: the form is created empty and its keys are added dynamically, so
   // watching `form.data()` doesn't reliably track them.
   const delays: Record<UiChangeKind, number> = {
@@ -281,7 +281,7 @@ export function useElementAutosave<T extends object>(
    * stashed payload.
    */
   function clearSaved(): void {
-    saved.value = {form: null, screen: null, modified: []};
+    saved.value = {ui: null, screen: null, modified: []};
   }
 
   function acknowledgeChanges(): void {
@@ -313,7 +313,7 @@ export function useElementAutosave<T extends object>(
     httpStatus: readonly(httpStatus),
     modified,
     hasPendingChanges,
-    form: uiPayload,
+    ui: uiPayload,
     screen: screenPayload,
     save,
     schedule,

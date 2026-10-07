@@ -12,8 +12,8 @@ use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldHtml;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldSettings;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
 
 abstract class BaseRelationField extends CoreBaseRelationField implements LegacyField, LegacySettingsComponent
 {
@@ -22,7 +22,7 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
     use LegacyRelationFieldSettings {
         getSettingsHtml as private legacyRelationSettingsHtml;
     }
-    use LegacySettingsForm {
+    use LegacySettingsUi {
         settingsUi as private legacySettingsUi;
     }
 

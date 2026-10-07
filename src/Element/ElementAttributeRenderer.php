@@ -133,15 +133,15 @@ readonly class ElementAttributeRenderer
                     $context = $this->inlineUiContext([
                         $field->handle => $element->errors()->get("field:$field->handle"),
                     ]);
-                    $control = InputNamespace::with(null, fn () => $field->formControl(new FieldContext(
+                    $control = InputNamespace::with(null, fn () => $field->uiControl(new FieldContext(
                         path: $field->handle,
                         value: $value,
                         element: $element,
-                        form: $context,
+                        ui: $context,
                         inline: true,
                     )));
 
-                    return $this->renderInlineForm(Ui::make([UiField::make(control: $control)]), context: $context);
+                    return $this->renderInlineUi(Ui::make([UiField::make(control: $control)]), context: $context);
                 }
             }
 
@@ -158,9 +158,9 @@ readonly class ElementAttributeRenderer
      *
      * @param  array<string, list<string>>  $errors
      */
-    public function renderInlineForm(Ui $form, array $errors = [], ?UiContext $context = null): string
+    public function renderInlineUi(Ui $ui, array $errors = [], ?UiContext $context = null): string
     {
-        $payload = app(UiResolver::class)->resolve($form, $context ?? $this->inlineUiContext($errors));
+        $payload = app(UiResolver::class)->resolve($ui, $context ?? $this->inlineUiContext($errors));
 
         return Html::tag('craft-inline-attribute-ui', '', [
             'data-payload' => Json::encode($payload),

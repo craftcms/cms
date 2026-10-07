@@ -126,7 +126,7 @@ export function defineLayoutComponentSettingsUiHost(
           }
         );
 
-        if (!data.form) {
+        if (!data.ui) {
           throw new Error('The layout component did not return a UI payload.');
         }
 
@@ -135,7 +135,7 @@ export function defineLayoutComponentSettingsUiHost(
         await appendHeadHtml(data.headHtml);
         await appendBodyHtml(data.bodyHtml);
 
-        return data.form;
+        return data.ui;
       }
     }
   );

@@ -24,15 +24,15 @@ export interface NestedOwnerContext {
 }
 
 export function nestedOwnerContext(
-  form: UiPayload | null,
+  ui: UiPayload | null,
   path: string[]
 ): NestedOwnerContext | null {
-  if (!form) {
+  if (!ui) {
     return null;
   }
 
   let context: NestedOwnerContext | null = null;
-  visitControls(form.nodes, (control) => {
+  visitControls(ui.nodes, (control) => {
     if (
       !['craft:nested-elements', 'craft:nested-element-blocks'].includes(
         control.component
@@ -94,7 +94,7 @@ export type NestedOwnerEditorRequest = CustomEvent<{
   editor: NestedOwnerEditor | null;
 }>;
 
-/** Lets native controls in separate HTML form islands find their containing editor. */
+/** Lets native controls in separate HTML ui islands find their containing editor. */
 export function requestNestedOwnerEditor(
   element: HTMLElement
 ): NestedOwnerEditor | null {

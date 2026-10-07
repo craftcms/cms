@@ -20,7 +20,7 @@ abstract class TableCell extends Component implements TableCellInterface
 {
     use ConfigurableComponent;
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return $this->createControl($context)->value($this->controlValue($context));
     }

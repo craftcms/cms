@@ -50,13 +50,13 @@ describe('formWarning', function () {
     });
 });
 
-describe('formControl', function () {
+describe('uiControl', function () {
     it('drops the upload affordance instead of throwing on a bad location', function () {
         $field = assetsField();
         $field->allowUploads = true;
         $field->defaultUploadLocationSource = null;
 
-        $control = $field->formControl(new FieldContext(path: 'images'));
+        $control = $field->uiControl(new FieldContext(path: 'images'));
 
         expect($control)->toBeInstanceOf(AssetSelect::class)
             ->and($control->props()['canUpload'])->toBeFalse()

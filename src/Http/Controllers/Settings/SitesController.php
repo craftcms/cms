@@ -55,7 +55,7 @@ readonly class SitesController
         GeneralConfig $generalConfig,
         private Sites $sites,
         private SiteGroups $siteGroups,
-        private UiResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -157,7 +157,7 @@ readonly class SitesController
             ]);
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $request->validate([
             'values' => ['required', 'array'],
@@ -165,7 +165,7 @@ readonly class SitesController
             'scope' => ['present', 'array', 'size:0'],
         ]);
 
-        return new JsonResponse(['form' => $this->siteForm($request->array('values'))]);
+        return new JsonResponse(['ui' => $this->siteUi($request->array('values'))]);
     }
 
     public function store(Request $request): \Symfony\Component\HttpFoundation\Response
@@ -250,17 +250,17 @@ readonly class SitesController
     private function formProps(Site $site): array
     {
         return [
-            'form' => $this->siteForm($this->siteValues($site)),
+            'ui' => $this->siteUi($this->siteValues($site)),
             'submit' => [
                 'method' => 'post',
                 'url' => action([self::class, 'store']),
             ],
-            'refreshUrl' => action([self::class, 'renderForm']),
+            'refreshUrl' => action([self::class, 'renderUi']),
         ];
     }
 
     /** @param array<string, mixed> $values */
-    private function siteForm(array $values): UiPayload
+    private function siteUi(array $values): UiPayload
     {
         $siteId = $values['siteId'] ?? null;
         $site = $siteId ? $this->sites->getSiteById((int) $siteId) : new Site;
@@ -363,7 +363,7 @@ readonly class SitesController
             ])->dependsOn('hasUrls');
         }
 
-        return $this->formResolver->resolve(Ui::make($nodes), new UiContext(
+        return $this->uiResolver->resolve(Ui::make($nodes), new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,

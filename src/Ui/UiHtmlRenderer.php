@@ -115,7 +115,7 @@ class UiHtmlRenderer
 
     public function tabBaseId(NodePayload $node): string
     {
-        return "form-tab-{$node->uid}";
+        return "ui-tab-{$node->uid}";
     }
 
     public function isFirstTab(NodePayload $node, UiPayload $payload): bool
@@ -136,16 +136,16 @@ class UiHtmlRenderer
             return true;
         }
 
-        return array_any($node->control->uis ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
+        return array_any($node->control->uis ?? [], fn ($ui) => array_any($ui->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
     }
 
-    public function renderNestedUi(NestedUiPayload $form): string
+    public function renderNestedUi(NestedUiPayload $ui): string
     {
         if ($this->payload === null) {
             throw new RuntimeException('Nested UI definitions can only be rendered within a UI payload.');
         }
 
-        return $this->renderNodes($form->nodes, $this->payload->forScope($form->scope));
+        return $this->renderNodes($ui->nodes, $this->payload->forScope($ui->scope));
     }
 
     private function renderNode(NodePayload $node, UiPayload $payload): string
@@ -213,7 +213,7 @@ class UiHtmlRenderer
      */
     public function id(array $path): string
     {
-        return 'form-'.implode('-', array_map(rawurlencode(...), $path));
+        return 'ui-'.implode('-', array_map(rawurlencode(...), $path));
     }
 
     /**

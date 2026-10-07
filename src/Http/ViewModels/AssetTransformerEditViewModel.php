@@ -34,12 +34,12 @@ class AssetTransformerEditViewModel extends ViewModel
     public function __construct(
         private readonly AssetTransformer $transformer,
         private readonly AssetTransformDrivers $assetTransformDrivers,
-        private readonly UiResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): UiPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? [
             'uid' => $this->transformer->uid,
@@ -57,7 +57,7 @@ class AssetTransformerEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = $this->formResolver->resolve(Ui::make([
+        $ui = $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
             HiddenField::make('oldDriver'),
             Field::make(t('Name'), Text::make('name')->autofocus()->mode($identityMode))->required(),
@@ -72,15 +72,15 @@ class AssetTransformerEditViewModel extends ViewModel
             mode: $mode,
             refreshable: ! $this->readOnly,
         ));
-        $settingsForm = $this->settingsForm($values, $mode);
+        $settingsUi = $this->settingsUi($values, $mode);
 
         return new UiPayload(
             scope: [],
             refreshable: ! $this->readOnly,
-            nodes: [...$form->nodes, ...$settingsForm->nodes],
-            values: [...$form->values, ...$settingsForm->values],
-            errors: [...$form->errors, ...$settingsForm->errors],
-            globalErrors: [...$form->globalErrors, ...$settingsForm->globalErrors],
+            nodes: [...$ui->nodes, ...$settingsUi->nodes],
+            values: [...$ui->values, ...$settingsUi->values],
+            errors: [...$ui->errors, ...$settingsUi->errors],
+            globalErrors: [...$ui->globalErrors, ...$settingsUi->globalErrors],
         );
     }
 
@@ -97,7 +97,7 @@ class AssetTransformerEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([AssetTransformersController::class, 'renderForm']);
+            : action([AssetTransformersController::class, 'renderUi']);
     }
 
     /** @return list<array{label:string,value:string,disabled?:bool}> */
@@ -122,12 +122,12 @@ class AssetTransformerEditViewModel extends ViewModel
     }
 
     /** @param array<string, mixed> $values */
-    private function settingsForm(array $values, ControlMode $mode): UiPayload
+    private function settingsUi(array $values, ControlMode $mode): UiPayload
     {
         $driver = $values['driver'];
 
         if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
-            return $this->formResolver->resolve(Ui::make([
+            return $this->uiResolver->resolve(Ui::make([
                 Group::make('asset-transformer-settings', [
                     Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
                     Field::make(
@@ -142,7 +142,7 @@ class AssetTransformerEditViewModel extends ViewModel
 
         $definition = $this->assetTransformDrivers->driver($driver)->definition();
 
-        return $this->formResolver->resolve(
+        return $this->uiResolver->resolve(
             Ui::make([
                 Group::make('asset-transformer-settings', $definition->settingsFields)
                     ->dependsOn('driver'),

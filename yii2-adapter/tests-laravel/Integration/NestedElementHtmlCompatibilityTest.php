@@ -71,11 +71,11 @@ it('renders legacy nested field inputs with their owner scope and content', func
     }
     if (in_array($mode, ['readOnly', 'disabled', 'form'])) {
         $context = new UiContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
-        $control = $field->formControl(new FieldContext(
+        $control = $field->uiControl(new FieldContext(
             path: ['fields', 'nested'],
             value: $value,
             element: $owner,
-            form: $context,
+            ui: $context,
             inline: $inline,
         ));
         $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make()->control($control)]), $context);

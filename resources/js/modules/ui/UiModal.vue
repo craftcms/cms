@@ -6,7 +6,7 @@
   import type {UiPayload, UiValues} from './types';
 
   export interface UiModalResponse {
-    form: UiPayload;
+    ui: UiPayload;
     title?: string | null;
     submitLabel?: string | null;
   }
@@ -45,7 +45,7 @@
       const {data} = await actionClient.get<UiModalResponse>(props.modalUrl, {
         params: props.params,
       });
-      errors.value = data.form.errors ?? [];
+      errors.value = data.ui.errors ?? [];
       modal.value = data;
     } catch (error: any) {
       Craft.cp?.displayError?.(
@@ -103,7 +103,7 @@
     <UiRenderer
       v-if="modal"
       ref="renderer"
-      :payload="modal.form"
+      :payload="modal.ui"
       :errors="errors"
     />
   </ModalForm>

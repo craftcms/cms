@@ -99,7 +99,7 @@ class Tip extends BaseUiElement
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (trim($this->tip) === '') {
             return null;

@@ -264,7 +264,7 @@ async function mount(
   };
 }
 
-function ownerForm(payload: UiPayload, plugin: boolean): UiPayload {
+function ownerUi(payload: UiPayload, plugin: boolean): UiPayload {
   const native = structuredClone(payload);
   visitControls(native.nodes, (control) => {
     Object.assign(control, {
@@ -466,7 +466,7 @@ function createdBlock(path: string[], uid = 'block-b') {
       uid,
       type: 'text',
       block: {label: 'Text', actions: [], data: {'element-id': 101}},
-      form: {
+      ui: {
         scope: [...path, 'entries', uid],
         refreshable: false,
         nodes: [
@@ -741,7 +741,7 @@ it('stops creating minimum blocks when the HTML owner form is removed', async ()
       type: 'text',
       block: {actions: []},
       values: {},
-      form: {
+      ui: {
         scope: [...path, 'entries', 'block-b'],
         nodes: [],
         refreshable: false,
@@ -791,7 +791,7 @@ it.each([false, true])(
       async () =>
         new Response(
           JSON.stringify({
-            form: ownerForm(refreshed, plugin),
+            ui: ownerUi(refreshed, plugin),
             headHtml: '',
             bodyHtml: '',
           })
@@ -847,7 +847,7 @@ it.each([false, true])(
     );
     const refreshed = structuredClone(payload);
     refreshed.nodes[0]!.control!.uis![0]!.nodes[1]!.control!.props.cards = [];
-    const response = ownerForm(refreshed, plugin);
+    const response = ownerUi(refreshed, plugin);
     response.nodes.push({
       type: 'Field',
       component: 'craft:field',
@@ -870,9 +870,7 @@ it.each([false, true])(
     ];
     vi.mocked(fetch).mockImplementation(
       async () =>
-        new Response(
-          JSON.stringify({form: response, headHtml: '', bodyHtml: ''})
-        )
+        new Response(JSON.stringify({ui: response, headHtml: '', bodyHtml: ''}))
     );
     const request = vi.spyOn(actionClient, 'post');
     await nextTick();
@@ -921,24 +919,24 @@ it.each([false, true])(
 
 it('preserves plugin wrappers in native editor refresh responses', async () => {
   const {payload} = await mount();
-  const form = ownerForm(payload, true);
-  const fragment = form.nodes[0]!.control!.props.fragment as {html: string};
+  const ui = ownerUi(payload, true);
+  const fragment = ui.nodes[0]!.control!.props.fragment as {html: string};
   fragment.html =
     '<button data-plugin-command>Plugin command</button>' + fragment.html;
   vi.mocked(fetch).mockImplementation(
-    async () => new Response(JSON.stringify({form}))
+    async () => new Response(JSON.stringify({ui}))
   );
-  const response = await actionClient.post<{form: UiPayload}>(
+  const response = await actionClient.post<{ui: UiPayload}>(
     '/refresh',
     {elementId: 73},
     {
       headers: {'X-Craft-Ui-Root-Scope': JSON.stringify(['editor'])},
     }
   );
-  expect(response.data.form.nodes[0]!.control!.component).toBe(
+  expect(response.data.ui.nodes[0]!.control!.component).toBe(
     'craft-legacy:html'
   );
-  const retained = response.data.form.nodes[0]!.control!.props.fragment as {
+  const retained = response.data.ui.nodes[0]!.control!.props.fragment as {
     html: string;
   };
   const template = document.createElement('template');
@@ -989,9 +987,9 @@ it('decodes the requested HTML field without removing descendant plugin wrappers
     },
   });
   vi.mocked(fetch).mockImplementation(
-    async () => new Response(JSON.stringify({form: ownerForm(native, true)}))
+    async () => new Response(JSON.stringify({ui: ownerUi(native, true)}))
   );
-  const response = await actionClient.post<{form: UiPayload}>(
+  const response = await actionClient.post<{ui: UiPayload}>(
     '/refresh',
     'editor[elementId]=73',
     {
@@ -1001,7 +999,7 @@ it('decodes the requested HTML field without removing descendant plugin wrappers
       },
     }
   );
-  const outer = response.data.form.nodes[0]!.control!;
+  const outer = response.data.ui.nodes[0]!.control!;
   expect(outer.component).toBe('craft:nested-element-blocks');
   const retained = outer.uis![0]!.nodes[1]!.control!;
   expect(retained.component).toBe('craft-legacy:html');

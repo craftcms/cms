@@ -16,7 +16,7 @@ function sourcesProps(string $type, array $settings = []): array
     $context = new UiContext(namespace: 'settings');
     $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
-    foreach (flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)) as $node) {
+    foreach (flattenUiNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)) as $node) {
         if (($node['control']['path'] ?? null) === ['settings', 'sources']) {
             return $node['control']['props'];
         }
@@ -67,7 +67,7 @@ it('leaves single-source fields alone', function () {
     $context = new UiContext(namespace: 'settings');
     $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
-    $source = collect(flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)))
+    $source = collect(flattenUiNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)))
         ->first(fn (array $node): bool => ($node['control']['path'] ?? null) === ['settings', 'source']);
 
     expect($source)->not->toBeNull()

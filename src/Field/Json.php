@@ -87,7 +87,7 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof JsonData
             ? $context->value->getJson(true)

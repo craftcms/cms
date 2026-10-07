@@ -55,7 +55,7 @@ it('requires authentication', function () {
 
     get(action([VolumesController::class, 'index']))->assertRedirect();
     get(action([VolumesController::class, 'create']))->assertRedirect();
-    postJson(action([VolumesController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([VolumesController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([VolumesController::class, 'store']))->assertUnauthorized();
     deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertUnauthorized();
     postJson(action([VolumesController::class, 'reorder']))->assertUnauthorized();
@@ -71,7 +71,7 @@ it('requires admin changes', function () {
 
     get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', fn (Collection $nodes): bool => $nodes
+            ->where('ui.nodes', fn (Collection $nodes): bool => $nodes
                 ->filter(fn (array $node): bool => isset($node['control']))
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly'))
             ->where('contentNotice', fn (string $notice): bool => str_contains(
@@ -80,7 +80,7 @@ it('requires admin changes', function () {
             )));
 
     get(action([VolumesController::class, 'create']))->assertForbidden();
-    postJson(action([VolumesController::class, 'renderForm']))->assertForbidden();
+    postJson(action([VolumesController::class, 'renderUi']))->assertForbidden();
     postJson(action([VolumesController::class, 'store']), [
         'name' => 'Test',
         'handle' => 'test',
@@ -106,11 +106,11 @@ describe('create / edit', function () {
         get(action([VolumesController::class, 'create']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('title', t('Create a new asset volume'))
-                ->where('form.values.volumeId', null)
-                ->where('form.values.name', '')
-                ->where('form.values.assetTransformer', '')
+                ->where('ui.values.volumeId', null)
+                ->where('ui.values.name', '')
+                ->where('ui.values.assetTransformer', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
-                ->where('form.nodes', function (Collection $nodes): bool {
+                ->where('ui.nodes', function (Collection $nodes): bool {
                     $paths = $nodes->pluck('control.path');
 
                     return $nodes->contains(
@@ -134,9 +134,9 @@ describe('create / edit', function () {
         get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('title', $volume->name)
-                ->where('form.values.volumeId', $volume->id)
-                ->where('form.values.name', $volume->name)
-                ->where('form.values.handle', $volume->handle));
+                ->where('ui.values.volumeId', $volume->id)
+                ->where('ui.values.name', $volume->name)
+                ->where('ui.values.handle', $volume->handle));
     });
 
     test('filesystem options disable targets used by other root volumes', function () {
@@ -150,11 +150,11 @@ describe('create / edit', function () {
 
         get(action([VolumesController::class, 'create']))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('form.nodes', $hasDiskOption(true)));
+                ->where('ui.nodes', $hasDiskOption(true)));
 
         get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('form.nodes', $hasDiskOption(false)));
+                ->where('ui.nodes', $hasDiskOption(false)));
     });
 
     test('submits slideout saves to the volume endpoint', function () {
@@ -168,7 +168,7 @@ describe('create / edit', function () {
     });
 
     test('preserves entered values when the form refreshes', function () {
-        postJson(action([VolumesController::class, 'renderForm']), [
+        postJson(action([VolumesController::class, 'renderUi']), [
             'values' => [
                 'volumeId' => null,
                 'name' => 'New Volume',
@@ -186,10 +186,10 @@ describe('create / edit', function () {
             'scope' => [],
         ])
             ->assertOk()
-            ->assertJsonPath('form.values.handle', 'newVolume')
-            ->assertJsonPath('form.values.fsHandle', 'test-disk')
-            ->assertJsonPath('form.values.hasUrls', true)
-            ->assertJsonPath('form.values.assetTransformer', 'craft');
+            ->assertJsonPath('ui.values.handle', 'newVolume')
+            ->assertJsonPath('ui.values.fsHandle', 'test-disk')
+            ->assertJsonPath('ui.values.hasUrls', true)
+            ->assertJsonPath('ui.values.assetTransformer', 'craft');
     });
 
     test('edit returns 404 for non-existent volume', function () {
