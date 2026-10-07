@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
+
 ## 6.0.0-alpha.20 - 2026-10-07
 
 ### Content Management
