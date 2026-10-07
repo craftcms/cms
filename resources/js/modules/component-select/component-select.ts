@@ -1170,7 +1170,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     if (this.settings.showHandles && handle) {
       const handleEl = document.createElement('span');
-      handleEl.className = 'menu-item-description mt-2xs smalltext light code';
+      handleEl.className =
+        'menu-item-description mt-2xs text-xs font-mono text-quiet';
       handleEl.textContent = handle;
       labelWrap.append(handleEl);
     }
