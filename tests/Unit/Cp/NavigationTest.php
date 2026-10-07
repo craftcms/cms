@@ -363,6 +363,34 @@ it('carries a plugin’s own icon into its settings nav item', function () {
         ->and($plugin->icon)->toBeNull();
 });
 
+it('draws settings nav items with solid icons', function () {
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
+                'legacy' => ['label' => 'Legacy', 'iconName' => 'light/globe'],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $items = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav[0]->subnav);
+
+    // `globe` has no solid version, so it keeps the light one.
+    expect($items->pluck('icon')->all())->toBe(['plug', 'light/globe']);
+});
+
 it('selects the plugin settings item instead of the Plugins index', function () {
     $settings = Mockery::mock(Settings::class, [
         'all' => [
