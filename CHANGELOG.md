@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing.
+
 ## 6.0.0-alpha.20 - 2026-10-07
 
 ### Content Management
