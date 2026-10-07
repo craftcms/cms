@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Form\Controls;
 use CraftCms\Cms\Form\Contracts\Control as ControlContract;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Support\Facades\I18N;
 use InvalidArgumentException;
 
 /**
@@ -33,6 +34,10 @@ class TableColumn
             'heading' => Text::make([$key])->mode(ControlMode::ReadOnly),
             'multiline' => Textarea::make([$key])->rows($config['rows'] ?? 1)->monospace($config['code'] ?? false),
             'number' => Number::make([$key])->min($config['min'] ?? null)->max($config['max'] ?? null)->step($config['step'] ?? null),
+            'money' => Money::make([$key])
+                ->currency($config['currency'] ?? 'USD')
+                ->locale($config['locale'] ?? I18N::getFormattingLocale()->id)
+                ->showCurrency($config['showCurrency'] ?? true),
             'date' => Date::make([$key]),
             'time' => Time::make([$key]),
             'color' => Color::make([$key]),
@@ -43,7 +48,7 @@ class TableColumn
             'icon' => IconPicker::make([$key]),
             'autosuggest', 'template' => isset($config['textExpanderTriggers'])
                 ? Text::make([$key])
-                : Combobox::make([$key])->options($config['options'] ?? self::options($config['suggestions'] ?? []))->showAllOnEmpty(),
+                : Combobox::make([$key])->options(self::comboboxOptions($config['options'] ?? self::options($config['suggestions'] ?? [])))->showAllOnEmpty(),
             'hidden' => Hidden::make([$key]),
             default => throw new InvalidArgumentException("Unknown Table column type [{$type}] at [{$key}]."),
         };
@@ -69,18 +74,43 @@ class TableColumn
 
     /**
      * @param  array<array-key, mixed>  $options
-     * @return list<array{label: string, value: string|int|float|bool}>
+     * @return list<array{label: string, value: string|int|float|bool, group?: string, default?: bool}>
      */
     public static function options(array $options): array
     {
         $normalized = [];
 
         foreach ($options as $key => $option) {
+            if (is_array($option) && is_array($option['options'] ?? null)) {
+                foreach (self::options($option['options']) as $groupedOption) {
+                    $normalized[] = [...$groupedOption, 'group' => (string) ($option['label'] ?? '')];
+                }
+
+                continue;
+            }
+
             $normalized[] = is_array($option)
-                ? ['label' => (string) ($option['label'] ?? $option['value'] ?? $key), 'value' => $option['value'] ?? $key]
+                ? [
+                    ...$option,
+                    'label' => (string) ($option['label'] ?? $option['value'] ?? $key),
+                    'value' => $option['value'] ?? $key,
+                    ...(isset($option['group']) ? ['group' => (string) $option['group']] : []),
+                    ...(isset($option['default']) ? ['default' => (bool) $option['default']] : []),
+                ]
                 : ['label' => (string) $option, 'value' => $key];
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
+    private static function comboboxOptions(array $options): array
+    {
+        return array_map(fn (array $option): array => is_array($option['options'] ?? null)
+            ? ['type' => 'optgroup', 'label' => $option['label'] ?? '', 'options' => self::options($option['options'])]
+            : $option, $options);
     }
 }

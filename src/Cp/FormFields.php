@@ -1391,6 +1391,7 @@ readonly class FormFields
             ->readOnly((bool) ($config['readonly'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
                 ['class' => Html::explodeClass($config['class'] ?? [])],
                 $config['containerAttributes'] ?? [],

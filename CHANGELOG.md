@@ -3,11 +3,13 @@
 ## Unreleased
 
 - Updated generated fields in the Field Layout Designer and Table field inputs in HTML forms to use form-builder tables. ([#19873](https://github.com/craftcms/cms/pull/19873))
+- Added support for `money` columns and grouped options in legacy editable tables and Form tables, including a configurable Money cell type for Table fields. ([#19870](https://github.com/craftcms/cms/pull/19870))
 - Updated control panel navigation to refresh on each server navigation, including items added or removed dynamically by plugins.
 - Reduced database queries when building control panel navigation.
 - Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))
 - Brought back users’ gradient-based default avatars.
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
+- Entries’ Post Date and Expiry Date fields now span the full width of the sidebar, and their inputs no longer shift when the clear button appears. ([#19871](https://github.com/craftcms/cms/pull/19871))
 - Slideouts with Vue forms now have the same Save menu as full pages, including “Save and continue editing” and any additional actions and buttons. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Refined status badges and status indicators. Labelled badges now match the height of small controls, and their status indicators are vertically centered and no longer outlined. ([#19842](https://github.com/craftcms/cms/pull/19842))
 - Improved the accessibility of element index and edit screens. ([#19785](https://github.com/craftcms/cms/pull/19785))
@@ -38,6 +40,7 @@
 - Added `CraftCms\Cms\Markdown\MarkdownOptions::$indentedCode`, which determines whether indented lines can start code blocks. ([#19859](https://github.com/craftcms/cms/pull/19859))
 - Added the `craft:layout-slot`, `craft:app-layout`, and `craft:cp-container` global Vue components, which plugins can use to fill control panel screen layout regions on their own Inertia pages. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Added the `primary-action` screen layout slot and `CraftCms\Cms\Http\Responses\CpScreenResponse::primaryAction()`, for replacing the Save button while keeping its action menu. ([#19854](https://github.com/craftcms/cms/pull/19854))
+- Added a `width` attribute to `<craft-input-date-time>`, along with `CraftCms\Cms\Cp\Components\InputDateTime::width()` and `CraftCms\Cms\Form\Controls\DateTime::fullWidth()`, for stretching date and time inputs across their container. ([#19871](https://github.com/craftcms/cms/pull/19871))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are now shown in the Inertia element editor and element chips through the Yii adapter, if they define a `url` or `action`. Items that rely on JavaScript are left out, and deprecation warnings point to the code to update. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Updated `CraftCms\Cms\Entry\EntryTypes::saveEntryType()` to validate entry types and their field layouts by default, with a `$runValidation` argument for bypassing validation. ([#19821](https://github.com/craftcms/cms/pull/19821))
 - `<craft-indicator>` now uses the `solid` appearance by default, rather than `outline-fill`, except for white and black fills, which keep `outline-fill` (with a white outline for black). ([#19842](https://github.com/craftcms/cms/pull/19842))

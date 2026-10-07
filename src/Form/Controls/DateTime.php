@@ -27,6 +27,8 @@ class DateTime extends Control
 
     private int $minuteIncrement = 30;
 
+    private bool $fullWidth = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $value = is_array($value) ? $value : [];
@@ -44,6 +46,7 @@ class DateTime extends Control
             ->min($control->props['min'] ?? null)
             ->max($control->props['max'] ?? null)
             ->minuteIncrement($control->props['minuteIncrement'])
+            ->width(($control->props['fullWidth'] ?? false) ? 'full' : null)
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->required($attributes['required'])
@@ -97,6 +100,16 @@ class DateTime extends Control
         return $this;
     }
 
+    /**
+     * Stretches the inputs across the container.
+     */
+    public function fullWidth(bool $fullWidth = true): static
+    {
+        $this->fullWidth = $fullWidth;
+
+        return $this;
+    }
+
     /** @return array<string, string> */
     #[\Override]
     public function emptyValue(): mixed
@@ -115,6 +128,7 @@ class DateTime extends Control
             'min' => $this->min,
             'max' => $this->max,
             'minuteIncrement' => $this->minuteIncrement,
+            'fullWidth' => $this->fullWidth ?: null,
         ]);
     }
 }
