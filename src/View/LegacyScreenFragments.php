@@ -41,10 +41,10 @@ use Illuminate\Container\Attributes\Scoped;
 final class LegacyScreenFragments
 {
     /** The layout that collects instead of drawing. */
-    public const FRAGMENT_LAYOUT = '_layouts/cp-fragments.twig';
+    public const string FRAGMENT_LAYOUT = '_layouts/cp-fragments.twig';
 
     /** The document `_layouts/cp` extends when it isn't collecting. */
-    public const DOCUMENT_LAYOUT = '_layouts/basecp.twig';
+    public const string DOCUMENT_LAYOUT = '_layouts/basecp.twig';
 
     private bool $enabled = true;
 
