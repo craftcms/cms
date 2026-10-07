@@ -1,13 +1,20 @@
 import {css} from 'lit';
 
 export default css`
+  /*
+   * A label link: no underline until it's hovered. ::slotted() only reaches a
+   * link slotted straight into the chip; one nested a level down (inside a
+   * craft-truncate, as element chips render it) gets the same treatment
+   * through the custom properties, which it inherits and craft-truncate
+   * applies to its own slotted links.
+   */
   :host {
     display: contents;
+    --c-truncate-link-decoration: none;
+    --c-truncate-link-hover-decoration: underline;
   }
 
-  ::slotted([slot='status']) {
-    display: inline-flex;
-  }
+  /* Base */
 
   .cp-chip {
     --_chip-spacing: 0.25em;
@@ -25,16 +32,117 @@ export default css`
     overflow: clip;
   }
 
+  /* Sizes */
+
+  .cp-chip--small {
+    --_chip-spacing: 0.25em;
+  }
+
+  .cp-chip--medium {
+    --_chip-spacing: 0.5em;
+    --_thumb-size: calc(34rem / 16);
+  }
+
+  .cp-chip--large {
+    --_chip-spacing: 1em;
+    --_thumb-size: calc(40rem / 16);
+  }
+
+  /* Alignment */
+
+  .cp-chip--align-start {
+    align-items: start;
+  }
+
+  .cp-chip--align-end {
+    align-items: end;
+  }
+
   /*
-   * A label link: no underline until it's hovered. ::slotted() only reaches a
-   * link slotted straight into the chip; one nested a level down (inside a
-   * craft-truncate, as element chips render it) gets the same treatment
-   * through the custom properties, which it inherits and craft-truncate
-   * applies to its own slotted links.
+   * Off-center, the prefix is as tall as one line of the label plus the
+   * label's block padding, so an icon or status centers against the first
+   * (or last) line instead of sitting flush with the chip's edge.
    */
-  :host {
-    --c-truncate-link-decoration: none;
-    --c-truncate-link-hover-decoration: underline;
+  .cp-chip--align-start .cp-chip__prefix,
+  .cp-chip--align-end .cp-chip__prefix {
+    min-height: calc(1lh + var(--_chip-spacing));
+  }
+
+  /* Prefix */
+
+  /* Prefix gets no padding on its own because each prefix item has different spacing needs */
+  .cp-chip__prefix {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .cp-chip input[type='checkbox'] {
+    margin-inline-start: var(--_chip-spacing);
+    margin-inline-end: calc(var(--_chip-spacing) / 2);
+  }
+
+  .cp-chip__status,
+  .cp-chip__icon {
+    display: inline-flex;
+    padding-inline: var(--_chip-spacing);
+  }
+
+  ::slotted([slot='status']) {
+    display: inline-flex;
+  }
+
+  .cp-chip__thumbnail {
+    --c-thumbnail-size: var(--_thumb-size);
+    --c-thumbnail-image-radius: var(--c-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: var(--_thumb-size);
+    aspect-ratio: 1;
+    padding-inline-start: var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
+  }
+
+  /*
+   * Leading the chip, the thumbnail sits half the spacing in from every outer
+   * edge, matching the suffix's inset at the other end. Behind a checkbox or
+   * custom prefix content it keeps the full spacing, as a gap from it.
+   */
+  .cp-chip--leads-with-thumbnail .cp-chip__thumbnail {
+    padding-inline-start: calc(var(--_chip-spacing) / 2);
+  }
+
+  /*
+   * An image slotted straight in has no craft-thumbnail around it to size it,
+   * so it would render at its natural size and spill out of the prefix.
+   */
+  .cp-chip__thumbnail::slotted(img),
+  .cp-chip__thumbnail::slotted(svg) {
+    flex: none;
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+    object-fit: cover;
+    border-radius: var(--c-thumbnail-image-radius);
+  }
+
+  /* Body */
+
+  .cp-chip__body {
+    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-inline: var(--_chip-spacing);
+    display: flex;
+    gap: var(--c-spacing-sm);
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .cp-chip__body::slotted(a) {
@@ -45,9 +153,13 @@ export default css`
     text-decoration: underline;
   }
 
-  .cp-chip input[type='checkbox'] {
-    margin-inline-start: var(--_chip-spacing);
-    margin-inline-end: calc(var(--_chip-spacing) / 2);
+  /* Suffix */
+
+  .cp-chip__suffix {
+    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-inline: var(--_chip-spacing);
+    display: flex;
+    flex-direction: column;
   }
 
   /*
@@ -109,7 +221,7 @@ export default css`
     color: var(--c-chip-text, var(--c-text-default));
   }
 
-  /* Layout side of plain: no chrome, so no padding, border, or shadow either. */
+  /* Plain: no chrome, so no padding, border, or shadow either. */
   .cp-chip--plain {
     padding-block: 0;
     padding-inline: 0;
@@ -121,133 +233,7 @@ export default css`
     outline-offset: -1px;
   }
 
-  .cp-chip--small {
-    --_chip-spacing: 0.25em;
-  }
-
-  .cp-chip--medium {
-    --_chip-spacing: 0.5em;
-    --_thumb-size: calc(34rem / 16);
-  }
-
-  .cp-chip--large {
-    --_chip-spacing: 1em;
-    --_thumb-size: calc(40rem / 16);
-  }
-
-  /*
-   * Selected state, matching a selected thumbnail tile in the element index
-   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
-   * elements are being shown.
-   *
-   * Specificity puts this above the appearance and size variants deliberately:
-   * a selected chip stays legible as selected even when it is plain.
-   */
-  :host([selected]) .cp-chip {
-    background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
-  }
-
-  /* A plain chip has no border to color, so its outline takes the color. */
-  :host([selected]) .cp-chip--plain {
-    outline-color: var(--c-color-accent-border-quiet);
-  }
-
-  .cp-chip__prefix,
-  .cp-chip__body,
-  .cp-chip__suffix {
-    display: inline-flex;
-    flex-direction: column;
-  }
-
-  .cp-chip__body {
-    padding-block: calc(var(--_chip-spacing) / 2);
-    padding-inline: var(--_chip-spacing);
-    display: flex;
-    gap: var(--c-spacing-sm);
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    flex: 1 1 auto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Prefix gets no padding on its own because each prefix item has different spacing needs */
-  .cp-chip__prefix {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: nowrap;
-  }
-
-  .cp-chip__suffix {
-    padding-block: calc(var(--_chip-spacing) / 2);
-    padding-inline: var(--_chip-spacing);
-    display: flex;
-  }
-
-  .cp-chip__status,
-  .cp-chip__icon {
-    display: inline-flex;
-    padding-inline: var(--_chip-spacing);
-  }
-
-  .cp-chip__thumbnail {
-    --c-thumbnail-size: var(--_thumb-size);
-    --c-thumbnail-image-radius: var(--c-radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    width: var(--_thumb-size);
-    aspect-ratio: 1;
-    padding-inline-start: var(--_chip-spacing);
-    padding-block: calc(var(--_chip-spacing) / 2);
-  }
-
-  /*
-   * Leading the chip, the thumbnail sits half the spacing in from every outer
-   * edge, matching the suffix's inset at the other end. Behind a checkbox or
-   * custom prefix content it keeps the full spacing, as a gap from it.
-   */
-  .cp-chip--leads-with-thumbnail .cp-chip__thumbnail {
-    padding-inline-start: calc(var(--_chip-spacing) / 2);
-  }
-
-  /*
-   * An image slotted straight in has no craft-thumbnail around it to size it,
-   * so it would render at its natural size and spill out of the prefix.
-   */
-  .cp-chip__thumbnail::slotted(img),
-  .cp-chip__thumbnail::slotted(svg) {
-    flex: none;
-    inline-size: var(--c-thumbnail-size);
-    block-size: var(--c-thumbnail-size);
-    object-fit: cover;
-    border-radius: var(--c-thumbnail-image-radius);
-  }
-
-  .cp-chip--align-start {
-    align-items: start;
-  }
-
-  .cp-chip--align-end {
-    align-items: end;
-  }
-
-  /*
-   * Off-center, the prefix is as tall as one line of the label plus the
-   * label's block padding, so an icon or status centers against the first
-   * (or last) line instead of sitting flush with the chip's edge.
-   */
-  .cp-chip--align-start .cp-chip__prefix,
-  .cp-chip--align-end .cp-chip__prefix {
-    min-height: calc(1lh + var(--_chip-spacing));
-  }
-
+  /* Flush with the leading edge, whichever part comes first. */
   .cp-chip--plain.cp-chip--leads-with-thumbnail .cp-chip__thumbnail,
   .cp-chip--plain.cp-chip--leads-with-icon .cp-chip__icon,
   .cp-chip--plain.cp-chip--leads-with-status .cp-chip__status,
@@ -266,5 +252,23 @@ export default css`
   .cp-chip--plain .cp-chip__body,
   .cp-chip--plain .cp-chip__suffix {
     padding-block: 0;
+  }
+
+  /*
+   * Selected state, matching a selected thumbnail tile in the element index
+   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
+   * elements are being shown.
+   *
+   * Last in the file so it wins over the appearance tiers of equal
+   * specificity: a selected chip stays legible as selected even when it is plain.
+   */
+  :host([selected]) .cp-chip {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
+  /* A plain chip has no border to color, so its outline takes the color. */
+  :host([selected]) .cp-chip--plain {
+    outline-color: var(--c-color-accent-border-quiet);
   }
 `;
