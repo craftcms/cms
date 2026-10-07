@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -55,6 +56,11 @@ export default css`
     display: inline-flex;
     flex-direction: column;
     min-width: 0;
+  }
+
+  .tab__text {
+    display: block;
+    ${trimmedTextBoxStyles}
   }
 
   .tab__label::after {

@@ -17,7 +17,7 @@ export default css`
     display: inline-flex;
     border-radius: var(--_radius);
     align-items: center;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
 
     border-width: var(--c-chip-border-width, 1px);
@@ -184,8 +184,8 @@ export default css`
   }
 
   .cp-chip__suffix {
-    padding: calc(var(--_chip-spacing) / 2);
-    padding-inline-start: var(--_chip-spacing);
+    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-inline: var(--_chip-spacing);
     display: flex;
   }
 

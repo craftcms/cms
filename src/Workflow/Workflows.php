@@ -595,24 +595,29 @@ class Workflows
     /** @param Builder<WorkflowRun> $query */
     private function invalidateActiveRuns($query, string $reason): void
     {
-        $query->whereIn('status', [WorkflowStatus::Pending, WorkflowStatus::Approved])
-            ->with('activityRootEvent')
-            ->get()
-            ->each(function (WorkflowRun $run) use ($reason): void {
-                $draft = $this->draftForRun($run);
-                $run->update([
-                    'status' => WorkflowStatus::Invalidated,
-                    'currentStageResult' => null,
-                ]);
+        DB::transaction(function () use ($query, $reason): void {
+            $query->whereIn('status', [WorkflowStatus::Pending, WorkflowStatus::Approved])
+                ->with('activityRootEvent')
+                ->orderBy('draftId')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->each(function (WorkflowRun $run) use ($reason): void {
+                    $draft = $this->draftForRun($run);
+                    $run->update([
+                        'status' => WorkflowStatus::Invalidated,
+                        'currentStageResult' => null,
+                    ]);
 
-                if ($draft === null) {
-                    return;
-                }
+                    if ($draft === null) {
+                        return;
+                    }
 
-                $actor = currentUser();
-                $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
-                $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
-            });
+                    $actor = currentUser();
+                    $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
+                    $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
+                });
+        });
     }
 
     /** @param Builder<WorkflowRun> $query */

@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -51,6 +52,7 @@ export default css`
   .nav-item__action-item {
     text-decoration: none;
     color: inherit;
+    ${trimmedTextBoxStyles}
 
     &::after {
       content: '';
