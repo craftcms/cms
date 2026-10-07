@@ -20,6 +20,7 @@
     value: FormValue;
     label: string;
     editable: boolean;
+    invalid?: boolean;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
@@ -65,7 +66,7 @@
     :label="label"
     .labelSrOnly="true"
     .required="Boolean(node.props.required)"
-    .hasErrors="messages.length > 0"
+    .hasErrors="invalid || messages.length > 0"
     :data-form-control-path="JSON.stringify(control.path)"
     :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
   >
@@ -77,14 +78,14 @@
       :value="value"
       :label="label"
       :editable="editable && control.mode === 'editable'"
-      :invalid="messages.length > 0"
+      :invalid="invalid || messages.length > 0"
       :required="Boolean(node.props.required)"
       :values="values"
       :errors="errors"
       :touched-paths="touchedPaths"
       :form-scope="formScope"
       :form-refreshable="formRefreshable"
-      :aria-invalid="messages.length ? 'true' : undefined"
+      :aria-invalid="invalid || messages.length ? 'true' : undefined"
       @update:value="
         (value: FormValue, kind?: FormChangeKind) =>
           emit('update:value', value, kind)

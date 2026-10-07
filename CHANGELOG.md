@@ -24,6 +24,8 @@
 - Added `CraftCms\Cms\Mcp\Attributes\RequiresHttp`, for MCP capabilities that only work over HTTP. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `elements.*` MCP tools that list, read, create, update, delete, restore, validate, and duplicate elements of any supported type, with `elements.schema` and `craft://element-types` resources describing each type’s criteria and attributes. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `CraftCms\Cms\Mcp\Elements\ElementAdapter`, `CraftCms\Cms\Mcp\Elements\BaseElementAdapter`, and `CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry`, allowing plugins to make their element types available through the `elements.*` MCP tools. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Updated `CraftCms\Cms\Cp\FormFields::editableTableHtml()`, `editableTableFieldHtml()`, and the corresponding Twig macros to use form-builder tables.
+- Deprecated the editable table `initJs` option and number column `locale` option. Tables now mount automatically, and number columns submit unformatted values.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving`, allowing plugins to add action menu items to the Inertia element editor and element chips. ([#19783](https://github.com/craftcms/cms/pull/19783))
@@ -49,6 +51,8 @@
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed the `breadcrumbs` and `submit-button` screen layout slots, which never rendered on full pages. The `crumbs` page prop and the `primary-action` slot should be used instead. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - `craft\queue\Queue::getJobId()` can now return `null`, when the current job isn’t being run by Yii’s queue. ([#19835](https://github.com/craftcms/cms/pull/19835))
+- Fixed a bug where form-builder checkboxes submitted `on` instead of their configured checked value in HTML forms.
+- Fixed a bug where adding a form-builder table row with a row ID failed to focus its first editable cell.
 - Fixed an error that could occur on the control panel login page when a Craft 5 plugin’s type registration handlers, such as `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES` listeners, relied on the current user. Legacy type registration events are now triggered when the types are first needed rather than on every request, as they were in Craft 5. ([#19851](https://github.com/craftcms/cms/pull/19851))
 - Fixed a bug where `craft\base\Plugin::getVersion()` returned `1.0` for Craft 5 plugins, rather than the version from their Composer manifest. ([#19850](https://github.com/craftcms/cms/pull/19850))
 - Fixed a bug where Craft 5 plugins’ stored settings that didn’t have a validation rule weren’t loaded, so they reverted to their default values. ([#19850](https://github.com/craftcms/cms/pull/19850))

@@ -435,7 +435,10 @@
                     : column.width,
               }"
             >
-              {{ column.heading ?? column.label ?? key }}
+              <span v-if="column.headingHtml" v-html="column.headingHtml" />
+              <template v-else>{{
+                column.heading ?? column.label ?? key
+              }}</template>
               <span v-if="column.required">({{ t('Required') }})</span>
               <craft-info-icon v-if="column.infoHtml" .disabled="!editable">
                 <span v-html="column.infoHtml" />
@@ -500,6 +503,12 @@
               <TableCell
                 v-if="fieldFor(fields, key)"
                 :node="fieldFor(fields, key)!"
+                :invalid="
+                  Boolean(
+                    !errorsCleared &&
+                    control.props.errors?.[rowKey(index)]?.[key]
+                  )
+                "
                 :value="row.value[key]"
                 :label="
                   t('{heading}, row {row}', {
@@ -519,6 +528,10 @@
                   (value, kind) => updateCell(index, key, value, kind)
                 "
                 @change="commit($event.kind, $event.path)"
+              />
+              <span
+                v-else-if="column.type === 'html' || column.html"
+                v-html="String(row.value[key] ?? '')"
               />
               <span v-else>{{ row.value[key] }}</span>
               <TableCell
