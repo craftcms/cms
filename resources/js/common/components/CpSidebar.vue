@@ -42,7 +42,15 @@
   const body = useTemplateRef<HTMLElement>('body');
   const scrolling = ref(false);
   useResizeObserver(
-    () => (body.value ? [body.value, ...body.value.children] : []),
+    () =>
+      body.value
+        ? [
+            body.value,
+            ...Array.from(body.value.children).filter(
+              (child): child is HTMLElement => child instanceof HTMLElement
+            ),
+          ]
+        : [],
     () => {
       scrolling.value =
         !!body.value && body.value.scrollHeight > body.value.clientHeight;
