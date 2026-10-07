@@ -37,6 +37,17 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
    */
   #getInputValue: ((id: string | number) => string | null) | null = null;
 
+  constructor() {
+    super();
+
+    // Set before the element upgraded, it's an own property hiding the accessor.
+    if (Object.prototype.hasOwnProperty.call(this, 'getInputValue')) {
+      const value = this.getInputValue;
+      delete (this as {getInputValue?: unknown}).getInputValue;
+      this.getInputValue = value;
+    }
+  }
+
   /**
    * Optional per-instance hook: the hidden-input value a newly-rendered chip
    * should carry (legacy `renderSettings().inputValue`). Set by wrapping
