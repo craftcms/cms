@@ -376,7 +376,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
-        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
+        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data'])->middleware('can:viewUsers');
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {
