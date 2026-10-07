@@ -28,6 +28,7 @@
 - Fixed an accessibility issue where the control panel’s skip links were hidden behind the header bar when focused. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed an accessibility issue where switches in editable tables weren’t labeled by their column headers. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed a bug where editable tables on the same page could label each other’s inputs, or move focus to another table’s column header when sorting. ([#19886](https://github.com/craftcms/cms/pull/19886))
+- Fixed an accessibility issue where checkboxes and select menus in form-builder table cells were named twice for screen readers, and checkboxes showed their label beside them. ([#19890](https://github.com/craftcms/cms/pull/19890))
 
 ### Administration
 
