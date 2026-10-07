@@ -1,10 +1,12 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
-  import type {Table} from '@tanstack/vue-table';
+  import type {Row, Table} from '@tanstack/vue-table';
   import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import DataTable from '@/common/components/DataTable.vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
+  import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
   import {usePage} from '@inertiajs/vue3';
-  import {computed} from 'vue';
+  import {t} from '@craftcms/ui';
+  import {computed, type HTMLAttributes, ref} from 'vue';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
 
   const props = withDefaults(
@@ -12,6 +14,7 @@
       table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
+      selectable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
       layout?: 'auto' | 'fixed';
@@ -24,6 +27,7 @@
     }>(),
     {
       reorderable: false,
+      selectable: false,
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
@@ -38,6 +42,81 @@
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
   }>();
+
+  const {
+    onToggleAllSelected,
+    selectRow,
+    selectRowFromEvent,
+    toggleRow,
+    extendSelectionTo,
+  } = useElementIndexSelection(() => props.table, {
+    selectable: () => props.selectable,
+    readOnly,
+  });
+
+  // Captures modifier state from the native click, because craft-checkbox's
+  // `model-value-changed` event does not carry `shiftKey`.
+  const pendingShiftKey = ref(false);
+
+  const leadingColumnTracks = computed(() =>
+    props.selectable ? ['44px'] : []
+  );
+
+  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
+    return row.original.label ?? row.original.name ?? String(row.original.id);
+  }
+
+  function rowAttributes(row: Row<CraftTableFeatures, TData>): HTMLAttributes {
+    if (!props.selectable) {
+      return {};
+    }
+
+    return {
+      tabindex: 0,
+      class: {sel: row.getIsSelected()},
+    };
+  }
+
+  function onRowClick(row: Row<CraftTableFeatures, TData>, event: MouseEvent) {
+    if (props.loading) {
+      return;
+    }
+
+    selectRowFromEvent(row, event);
+  }
+
+  function onRowKeydown(
+    row: Row<CraftTableFeatures, TData>,
+    index: number,
+    event: KeyboardEvent
+  ) {
+    if (!props.selectable || props.loading) {
+      return;
+    }
+
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    const rows = props.table.getRowModel().rows;
+
+    switch (event.key) {
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
+        toggleRow(row);
+        break;
+      case 'ArrowDown':
+      case 'ArrowUp': {
+        const target = rows[event.key === 'ArrowDown' ? index + 1 : index - 1];
+        if (event.shiftKey && target) {
+          extendSelectionTo(target);
+        }
+        break;
+      }
+    }
+  }
+
   const showFooter = computed(
     () =>
       props.enableAdjustPageSize ||
@@ -60,8 +139,60 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
+        :leading-column-tracks="leadingColumnTracks"
+        :row-attributes="rowAttributes"
+        @row-click="onRowClick"
+        @row-keydown="onRowKeydown"
         @reorder="(start, end) => emit('reorder', start, end)"
       >
+        <template #leading-header>
+          <th
+            v-if="selectable"
+            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
+            scope="col"
+          >
+            <craft-checkbox
+              label-sr-only
+              .checked="table.getIsAllRowsSelected()"
+              .indeterminate="
+                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+              "
+              .disabled="readOnly || loading"
+              @model-value-changed="
+                onToggleAllSelected(($event.target as HTMLInputElement).checked)
+              "
+            >
+              <label slot="label">{{ t('Select all') }}</label>
+            </craft-checkbox>
+          </th>
+        </template>
+        <template #leading-cells="{row, hideBottomBorder}">
+          <td
+            v-if="selectable"
+            :class="{
+              'cp-table-cell': true,
+              'cp-table-cell--select': true,
+              'border-b-0': hideBottomBorder,
+            }"
+          >
+            <craft-checkbox
+              label-sr-only
+              .checked="row.getIsSelected()"
+              .disabled="readOnly || loading || !row.getCanSelect()"
+              @click="pendingShiftKey = $event.shiftKey"
+              @model-value-changed="
+                selectRow(row, {
+                  checked: ($event.target as HTMLInputElement).checked,
+                  shiftKey: pendingShiftKey,
+                })
+              "
+            >
+              <label slot="label">{{
+                t('Select {label}', {label: rowLabel(row)})
+              }}</label>
+            </craft-checkbox>
+          </td>
+        </template>
         <template #empty-row v-if="$slots['empty-row']"
           ><slot name="empty-row"
         /></template>
