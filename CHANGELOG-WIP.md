@@ -183,6 +183,7 @@
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.
 - Added `CraftCms\Cms\Form\Nodes\Action`.
 - Added `CraftCms\Cms\Form\Nodes\Field::actions()`.
+- Added `CraftCms\Cms\Form\Controls\BooleanMenu`.
 - Added `CraftCms\Cms\Form\Controls\Checkbox`.
 - Added `CraftCms\Cms\Form\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Form\Controls\ConditionBuilder::fieldLayouts()`.

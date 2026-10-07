@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\AssetSelect;
+use CraftCms\Cms\Form\Controls\BooleanMenu;
 use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
@@ -58,6 +59,7 @@ class FormControlTypes extends TypeRegistry
     protected const array DEFAULT_TYPES = [
         Address::class,
         AssetSelect::class,
+        BooleanMenu::class,
         Checkbox::class,
         Choice::class,
         ConditionBuilder::class,
