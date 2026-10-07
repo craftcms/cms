@@ -25,6 +25,8 @@ CP Styles
   --cp-footer-height: calc(54rem / 16);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-body-inset: var(--c-spacing-md);
+  --cp-body-border-width: 1px;
   --cp-header-bg: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-blue-50), white 50%),

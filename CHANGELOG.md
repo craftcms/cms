@@ -6,7 +6,7 @@
 - Added support for `money` columns and grouped options in legacy editable tables and Form tables, including a configurable Money cell type for Table fields. ([#19870](https://github.com/craftcms/cms/pull/19870))
 - Updated control panel navigation to refresh on each server navigation, including items added or removed dynamically by plugins.
 - Reduced database queries when building control panel navigation.
-- Made several minor UI refinements. ([#19839](https://github.com/craftcms/cms/pull/19839))
+- Made several minor UI refinements. ([#19887](https://github.com/craftcms/cms/pull/19887),[#19839](https://github.com/craftcms/cms/pull/19839), [#19842](https://github.com/craftcms/cms/pull/19842), [#19847](https://github.com/craftcms/cms/pull/19847), [#19871](https://github.com/craftcms/cms/pull/19871))
 - Brought back users’ gradient-based default avatars.
 - Improved consistency of control panel breadcrumbs. ([#19786](https://github.com/craftcms/cms/pull/19786))
 - Entries’ Post Date and Expiry Date fields now span the full width of the sidebar, and their inputs no longer shift when the clear button appears. ([#19871](https://github.com/craftcms/cms/pull/19871))
