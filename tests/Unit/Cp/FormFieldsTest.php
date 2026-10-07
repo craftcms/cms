@@ -203,6 +203,55 @@ describe('config deprecations', function () {
     });
 });
 
+describe('editable tables', function () {
+    it('preserves keyed legacy cells, per-cell choices, and submitted metadata', function (bool $twig, bool $static) {
+        $config = [
+            'id' => 'sites',
+            'name' => 'settings[sites]',
+            'label' => 'Sites',
+            'static' => $static,
+            'includeRowId' => true,
+            'cols' => [
+                'heading' => ['type' => 'heading', 'heading' => 'Site'],
+                'uri' => ['type' => 'singleline', 'heading' => 'URI', 'code' => true],
+                'choice' => ['type' => 'select', 'heading' => 'Choice', 'options' => ['default' => 'Default']],
+                'enabled' => ['type' => 'checkbox', 'heading' => 'Enabled', 'value' => 'yes'],
+            ],
+            'rows' => ['primary' => [
+                'heading' => '<strong>Primary</strong>',
+                'uri' => ['value' => 'articles/{slug}', 'hasErrors' => true],
+                'choice' => ['value' => 'override', 'options' => ['override' => 'Override']],
+                'enabled' => false,
+                'rowId' => 'stable-row',
+                'hiddenInputs' => ['token' => 'retained'],
+            ]],
+        ];
+        $html = $twig
+            ? app(TemplateManager::class)->renderString('{% import "_includes/forms" as forms %}{{ forms.editableTableField(config) }}', ['config' => $config], TemplateMode::Cp)
+            : FormFields::editableTableFieldHtml($config);
+        $input = new Crawler($html);
+        $payload = json_decode($input->filter('craft-table-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $control = $payload['nodes'][0]['control'];
+        $row = $payload['values']['settings']['sites']['primary'];
+        $cells = collect($control['forms'][0]['nodes'])->keyBy(fn (array $node): string => end($node['control']['path']));
+
+        expect($row)->toMatchArray([
+            'uri' => 'articles/{slug}', 'choice' => 'override', 'enabled' => false,
+            'rowId' => 'stable-row', 'token' => 'retained',
+        ])
+            ->and($control['mode'])->toBe($static ? 'readOnly' : 'editable')
+            ->and($control['props']['errors']['primary']['uri'])->toBeTrue()
+            ->and($cells['choice']['control']['props']['options'])->toBe([['label' => 'Override', 'value' => 'override']])
+            ->and($cells['enabled']['control']['props']['checkedValue'])->toBe('yes')
+            ->and($cells['token']['control']['path'])->toBe(['settings', 'sites', 'primary', 'token']);
+    })->with([
+        'PHP editable' => [false, false],
+        'Twig editable' => [true, false],
+        'PHP static' => [false, true],
+        'Twig static' => [true, true],
+    ]);
+});
+
 describe('field helper methods', function () {
     it('renders expected markers', function (string $needle, string $method, array $config = []) {
         $html = FormFields::$method($config);

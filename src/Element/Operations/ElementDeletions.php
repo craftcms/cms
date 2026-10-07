@@ -13,6 +13,7 @@ use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
 use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
@@ -284,6 +285,20 @@ readonly class ElementDeletions
                     return true;
                 }
 
+                if (
+                    $element instanceof NestedElementInterface &&
+                    ! $element->deletedWithOwner &&
+                    $elementRecord->dateDeleted === null &&
+                    ($owner = $element->getOwner()) !== null &&
+                    (
+                        (! $element->getIsDraft() && ! $element->getIsRevision()) ||
+                        $owner->getIsDraft() ||
+                        $owner->getIsRevision()
+                    )
+                ) {
+                    $this->elements->touchElementAndOwners($owner);
+                }
+
                 while (($record = StructureElementModel::where('elementId', $element->id)->first()) !== null) {
                     while (($child = $record->children(1)->first()) !== null) {
                         /** @var StructureElementModel $child */
@@ -296,6 +311,10 @@ readonly class ElementDeletions
                 $this->elementCaches->invalidateForElement($element);
 
                 if ($element->hardDelete) {
+                    // Remove drafts and revisions first. Otherwise PostgreSQL can null their elements' canonicalId after
+                    // cascading away their draft or revision rows, which violates the draftId or revisionId foreign key.
+                    DB::table(Table::DRAFTS)->where('canonicalId', $element->id)->delete();
+                    DB::table(Table::REVISIONS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::ELEMENTS)->delete($element->id);
                     DB::table(Table::SEARCHINDEX)
                         ->where('elementId', $element->id)

@@ -75,6 +75,9 @@ interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
   $elementDetailsTabs: ElementDetailsTabRegistry;
   $inertia: InertiaPageRegistry;
+  /** Runs before the Inertia app mounts; register plugin components here. */
+  booting(callback: (instance: CpStatic) => void): void;
+  booted(callback: (instance: CpStatic) => void): void;
 }
 
 interface CpNotificationSettings {

@@ -6,14 +6,14 @@ import {classMap} from 'lit/directives/class-map.js';
 import {t} from '@src/utilities/translate';
 
 /**
- * @summary A coloured dot standing for an object's state — an entry that is
+ * @summary A colored dot standing for an object's state — an entry that is
  * live, a user that is disabled, a draft that is pending.
  *
  * The dot carries no text. It is meant to sit beside the thing it describes,
  * in an index row or a chip, where the name is already present.
  *
  * Reach for `craft-indicator` instead when the dot means something the status
- * vocabulary does not cover: indicator takes any palette colour, where this
+ * vocabulary does not cover: indicator takes any palette color, where this
  * takes a fixed set of states.
  * @cssproperty [--size=var(--c-size-icon-xs)] - The dot's diameter. Shared
  * with avatar, spinner, and indicator.
@@ -26,7 +26,7 @@ export default class CraftStatus extends LitElement {
   @property() label: string | null = null;
 
   /**
-   * The state the dot stands for. Each renders in its own colour; leaving it
+   * The state the dot stands for. Each renders in its own color; leaving it
    * unset renders the neutral dot.
    */
   @property() status:

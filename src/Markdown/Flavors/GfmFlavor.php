@@ -23,7 +23,6 @@ class GfmFlavor extends Flavor
 {
     public function __construct(
         private readonly string $softBreak = "\n",
-        private readonly bool $indentedCode = true,
     ) {}
 
     public function __invoke(MarkdownOptions $options): MarkdownConverter
@@ -41,7 +40,7 @@ class GfmFlavor extends Flavor
 
         $environment->addExtension(new CommonMarkCoreExtension);
 
-        if (! $this->indentedCode) {
+        if (! $options->indentedCode) {
             $environment->addExtension(new NoIndentedCodeExtension);
         }
 

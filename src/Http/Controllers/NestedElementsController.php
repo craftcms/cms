@@ -49,16 +49,19 @@ readonly class NestedElementsController
     public function destroy(NestedElementsRequest $request): Response
     {
         $element = $request->nestedElement();
+        $owner = $request->owner();
         Gate::authorize('delete', $element);
 
         // If the element primarily belongs to a different element, just delete the ownership
-        if ($element->getPrimaryOwnerId() !== $request->owner()->id) {
-            $draftIds = $this->drafts->getDraftIdsForElement($request->owner());
-            $this->workflows->withContentChangeLock($draftIds, function () use ($element, $request): void {
+        if ($element->getPrimaryOwnerId() !== $owner->id) {
+            $draftIds = $this->drafts->getDraftIdsForElement($owner);
+            $this->workflows->withContentChangeLock($draftIds, function () use ($element, $owner): void {
                 DB::table(Table::ELEMENTS_OWNERS)
-                    ->where('ownerId', $request->owner()->id)
+                    ->where('ownerId', $owner->id)
                     ->where('elementId', $element->id)
                     ->delete();
+
+                $this->elements->touchElementAndOwners($owner);
             });
 
             $success = true;

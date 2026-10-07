@@ -18,7 +18,7 @@ export interface UseAppLayoutOptions {
   formAdditionalButtons?: Array<ActionItemButton>;
   /** Controls below the secondary nav. See `ScreenProps.subnavActions`. */
   subnavActions?: Array<ActionItem>;
-  /** Caps and centres the content column. See `ScreenProps.contentMaxWidth`. */
+  /** Caps and centers the content column. See `ScreenProps.contentMaxWidth`. */
   contentMaxWidth?: boolean | string;
   /** The screen's own edit page. See `ScreenProps.editUrl`. */
   editUrl?: string | null;

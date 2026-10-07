@@ -48,6 +48,7 @@
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
+  import {DEFAULT_FORM_ACTIONS} from './formActionItems';
   import CpContainer from '@/common/components/CpContainer.vue';
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
@@ -58,7 +59,7 @@
 
   const props = withDefaults(defineProps<ScreenProps>(), {
     form: null,
-    defaultFormActions: () => ['saveAndContinueEditing'],
+    defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
     fillViewport: false,
@@ -72,7 +73,7 @@
   const FOOTER_SLOTS = [
     'content-footer',
     'additional-buttons',
-    'submit-button',
+    'primary-action',
   ] as const;
   const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
 
@@ -100,6 +101,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
@@ -362,15 +364,6 @@
                           </div>
                         </slot>
 
-                        <!-- Gutters the tab strip like the header and toolbar above
-                          it, so tabs line up with the content below. It belongs here
-                          rather than in the screens that fill the slot: `cp/Screen`
-                          fills it in a slideout too, where `SlideoutScreen` supplies
-                          its own padding and a second gutter would be wrong.
-
-                          The wrapper is the grid item: an outlet's target is
-                          `display: contents`, so without it the tabs land in the
-                          gutter column instead of the content column. -->
                         <CpContainer v-show="hasTabs">
                           <div>
                             <LayoutSlotOutlet name="content-tabs">
@@ -418,6 +411,7 @@
                             :form-additional-buttons="formAdditionalButtons"
                             :full-page-form="fullPageForm"
                             :submit-button-label="submitButtonLabel"
+                            :primary-action-html="page.props.primaryAction"
                             :save-disabled="saveDisabled"
                             :contained="contentConstrained"
                             @save="save"

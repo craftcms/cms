@@ -229,6 +229,42 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
+  it.each(['metaKey', 'ctrlKey'] as const)(
+    'only submits %s+S while the element is editable',
+    async (modifier) => {
+      const {page} = mount(payload({readOnly: true}));
+      const save = interceptSave();
+      onTestFinished(save.restore);
+      await nextTick();
+
+      const shortcut = () => {
+        const event = new KeyboardEvent('keydown', {
+          key: 's',
+          [modifier]: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(true);
+      };
+
+      shortcut();
+      expect(save.calls()).toBe(0);
+
+      page.props = payload({readOnly: false});
+      await nextTick();
+
+      shortcut();
+      expect(save.calls()).toBe(1);
+      expect(save.last().url).toBe('/actions/entries/save-entry');
+
+      page.props = payload({readOnly: true});
+      await nextTick();
+
+      shortcut();
+      expect(save.calls()).toBe(1);
+    }
+  );
+
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',
@@ -1931,6 +1967,32 @@ describe('useElementEditor', () => {
       editor.save();
 
       await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/entries/save-entry',
+        data: expect.not.objectContaining({newOwnerId: expect.anything()}),
+      });
+    });
+
+    it('saves draft-less elements in place when the opener prepares an owner draft', async () => {
+      const slideout = handledSlideout();
+      const prepareNestedOwner = vi.fn().mockResolvedValue(73);
+      Object.assign(slideout.instance, {prepareNestedOwner});
+      const request = stubSaveRequest(() => Promise.resolve({data: {}}));
+      const {editor} = mount(
+        payload({
+          canAutosave: false,
+          nestedContext,
+          saveForDerivativeUrl:
+            '/actions/elements/save-nested-element-for-derivative',
+        }),
+        slideout
+      );
+
+      editor.save();
+
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      expect(prepareNestedOwner).toHaveBeenCalledOnce();
+      expect(postSpy).not.toHaveBeenCalled();
       expect(request.mock.calls[0]![0]).toMatchObject({
         url: '/actions/entries/save-entry',
         data: expect.not.objectContaining({newOwnerId: expect.anything()}),

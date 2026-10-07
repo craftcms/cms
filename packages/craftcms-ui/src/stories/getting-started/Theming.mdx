@@ -11,10 +11,10 @@ There are three levels to reach for, in order.
 
 ## 1. The palette
 
-Under everything is a palette of raw colours — `--color-red-500`, `--color-slate-200`, and so on across the ramp.
-These are the only place literal colours are written.
+Under everything is a palette of raw colors — `--color-red-500`, `--color-slate-200`, and so on across the ramp.
+These are the only place literal colors are written.
 
-Redefining one retunes every component that ends up reading it, which makes it the right lever for a brand colour and the wrong one for a one-off:
+Redefining one retunes every component that ends up reading it, which makes it the right lever for a brand color and the wrong one for a one-off:
 
 ```css
 :root {
@@ -24,7 +24,7 @@ Redefining one retunes every component that ends up reading it, which makes it t
 
 ## 2. The tokens
 
-Above the palette sit the `--c-*` tokens, which name a _role_ rather than a colour: `--c-surface-raised`, `--c-text-quiet`, `--c-color-focus-outline`, `--c-spacing-md`, `--c-text-sm`.
+Above the palette sit the `--c-*` tokens, which name a _role_ rather than a color: `--c-surface-raised`, `--c-text-quiet`, `--c-color-focus-outline`, `--c-spacing-md`, `--c-text-sm`.
 Components are authored against these, never against the palette directly.
 
 Change a token to move every component that plays that role:
@@ -63,19 +63,19 @@ The dark palette is applied by `data-theme="dark"` on an ancestor — usually `<
 That redefines the palette, and because tokens are defined in terms of the palette, everything above updates with it.
 This is why authoring against tokens matters: a component that hard-codes `#fff` stays white in the dark theme, while one that reads `--c-surface-raised` follows.
 
-## Colouring one component
+## Coloring one component
 
-Colour is a separate axis from theme, and it works through `data-color`:
+Color is a separate axis from theme, and it works through `data-color`:
 
 ```html
 <craft-badge fill="emerald">Live</craft-badge>
 <craft-chip data-color="violet">Draft</craft-chip>
 ```
 
-Setting it rescopes the generic `--c-color-*` tokens to that colour's group, so the component's surface, border, and text all move together and stay legible against each other.
+Setting it rescopes the generic `--c-color-*` tokens to that color's group, so the component's surface, border, and text all move together and stay legible against each other.
 [Colorable](?path=/docs/tokens-colorable--docs) covers the contract, and [Color Palette](?path=/docs/tokens-color-palette--docs) shows the palette.
 
-For a semantic state rather than a specific colour, use `variant` — `neutral`, `success`, `warning`, `danger`, `info` — paired with an `appearance` for how loudly it should read.
+For a semantic state rather than a specific color, use `variant` — `neutral`, `success`, `warning`, `danger`, `info` — paired with an `appearance` for how loudly it should read.
 [Variants & Appearances](?path=/docs/tokens-variants-appearances--docs) covers both.
 
 ## What not to do

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Markdown\Flavors;
 
+use CraftCms\Cms\Markdown\CommonMark\Extensions\NoIndentedCodeExtension;
 use CraftCms\Cms\Markdown\MarkdownOptions;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\InlinesOnly\InlinesOnlyExtension;
@@ -28,6 +29,10 @@ class ExtraFlavor extends Flavor
         $environment
             ->addExtension(new CommonMarkCoreExtension)
             ->addExtension(new TableExtension);
+
+        if (! $options->indentedCode) {
+            $environment->addExtension(new NoIndentedCodeExtension);
+        }
 
         return new MarkdownConverter($environment);
     }

@@ -1,5 +1,6 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import '../thumbnail/thumbnail.js';
+import '../truncate/truncate.js';
 import './chip.js';
 
 beforeEach(() => {
@@ -197,4 +198,68 @@ it('takes the theme’s text color when it has no fill of its own', async () => 
       chip.getAttribute('appearance')!
     ).toBe(expected);
   }
+});
+
+function decoration(element: Element): string {
+  return getComputedStyle(element).textDecorationLine;
+}
+
+/**
+ * Element chips nest their label link in a craft-truncate, out of reach of
+ * ::slotted(), so the chip hands the decoration down instead.
+ */
+it('does not underline a label link, nested or slotted directly', async () => {
+  document.body.innerHTML = `
+    <craft-chip id="nested">
+      <craft-truncate class="label"><a href="#">Nested</a></craft-truncate>
+    </craft-chip>
+    <craft-chip id="direct"><a href="#">Direct</a></craft-chip>`;
+  for (const chip of document.querySelectorAll('craft-chip')) {
+    await (chip as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+  }
+
+  expect(decoration(document.querySelector('#nested a')!)).toBe('none');
+  expect(decoration(document.querySelector('#direct a')!)).toBe('none');
+});
+
+it('leaves a link in a truncate outside a chip as it is', async () => {
+  document.body.innerHTML = `<craft-truncate><a href="#">Link</a></craft-truncate>`;
+  await (
+    document.querySelector('craft-truncate') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    }
+  ).updateComplete;
+
+  expect(decoration(document.querySelector('a')!)).toBe('underline');
+});
+
+it('centers a truncated label on its capitals without clipping its descenders', async () => {
+  document.body.innerHTML = `
+    <div style="width: 120px; font: 14px / 1.5 system-ui, sans-serif">
+      <craft-chip>
+        <craft-truncate><span id="text">Typography gyp jumpy quaggy</span></craft-truncate>
+      </craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  const truncate = document.querySelector('craft-truncate')!;
+  await Promise.all([chip.updateComplete, truncate.updateComplete]);
+
+  const clip = truncate.shadowRoot!.querySelector<HTMLElement>('.truncate')!;
+  const style = getComputedStyle(clip);
+  const rect = clip.getBoundingClientRect();
+  const capTop = rect.top + parseFloat(style.paddingTop);
+  const capBottom = rect.bottom - parseFloat(style.paddingBottom);
+  const body = chip
+    .shadowRoot!.querySelector('.cp-chip')!
+    .getBoundingClientRect();
+  const context = document.createElement('canvas').getContext('2d')!;
+  context.font = style.font;
+  const capHeight = context.measureText('H').actualBoundingBoxAscent;
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById('text')!);
+
+  expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+  expect(capTop - body.top).toBeCloseTo(body.bottom - capBottom, 0);
+  expect(range.getBoundingClientRect().bottom).toBeLessThanOrEqual(rect.bottom);
 });

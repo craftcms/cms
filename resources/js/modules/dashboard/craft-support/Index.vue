@@ -75,7 +75,7 @@
     </div>
     <craft-card v-show="screen !== 'home'">
       <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
-      <div v-show="screen !== 'home'" class="space-y-4 p-4">
+      <div v-show="screen !== 'home'" class="space-y-4">
         <SupportSearch
           v-show="!support"
           v-model="message"
@@ -103,21 +103,38 @@
 
 <style scoped>
   .support-tiles {
-    overflow: hidden;
-    border-radius: var(--c-radius-md);
+    border-radius: var(--c-card-radius, var(--c-radius-md));
+    box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
   }
   .support-tile {
+    --c-color-fill-normal: color-mix(
+      var(--c-color-neutral-fill-quiet) 30%,
+      var(--c-surface-default)
+    );
     display: flex;
     width: 100%;
     min-height: 150px;
     padding-block: 24px;
     padding-inline: 16px;
-    border: 0;
+    border: var(--c-card-border-width, 1px) solid
+      var(--c-color-neutral-border-quiet);
     border-radius: 0;
     white-space: normal;
   }
+  .support-tile:first-child {
+    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
+    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
+  }
+  .support-tile:last-child {
+    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
+    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
+  }
   .support-tile + .support-tile {
-    border-block-start: 1px solid var(--c-color-neutral-border-normal);
+    border-block-start-width: 0;
+  }
+  .support-tile:focus-visible {
+    position: relative;
+    z-index: 1;
   }
   .support-tile-content {
     display: flex;

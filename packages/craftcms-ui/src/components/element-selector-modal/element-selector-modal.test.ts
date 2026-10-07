@@ -113,7 +113,7 @@ describe('chrome', () => {
   });
 
   it('keeps the heading in the a11y tree when the title is hidden', async () => {
-    // The dialog is labelled by it, so it must not be removed — only hidden.
+    // The dialog is labeled by it, so it must not be removed — only hidden.
     const modal = await createModal((m) => {
       m.label = 'Choose';
     });

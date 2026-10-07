@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\TableRow;
+use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Type\Definition\Type;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -71,6 +72,10 @@ it('resolves normalized cell values for their form inputs', function (array $col
         'type' => 'select',
         'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Published', 'value' => 'published', 'default' => true]],
     ], null, 'published'],
+    'grouped select default' => [[
+        'type' => 'select',
+        'options' => [['label' => 'Editorial', 'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Review', 'value' => 'review', 'default' => true]]]],
+    ], null, 'review'],
     'first select option' => [[
         'type' => 'select',
         'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Published', 'value' => 'published']],
@@ -107,7 +112,58 @@ it('validates optional built-in cell values and reports their table paths', func
     'invalid colour' => ['color', '#gggggg', false],
     'empty colour' => ['color', '', true],
     'null colour' => ['color', null, true],
+    'valid money' => ['money', ['value' => '12,50', 'locale' => 'nl-BE'], true],
+    'invalid money' => ['money', ['value' => 'invalid', 'locale' => 'nl-BE'], false],
+    'empty money' => ['money', ['value' => '', 'locale' => 'nl-BE'], true],
 ]);
+
+it('round-trips money cells through localized row forms and scalar storage', function (?string $amount, ?string $expected) {
+    I18N::withLocale('en-US', 'nl-BE', function () use ($amount, $expected): void {
+        $field = new Table([
+            'name' => 'Prices',
+            'handle' => 'prices',
+            'columns' => ['amount' => [
+                'heading' => 'Amount', 'handle' => 'price', 'type' => 'money',
+                'currency' => 'EUR', 'showCurrency' => false,
+            ]],
+        ]);
+        expect($field->validate())->toBeTrue();
+
+        $normalized = $field->normalizeValueFromRequest([['amount' => ['value' => $amount, 'locale' => 'nl-BE']]], null);
+        $stored = $field->serializeValueForDb($normalized, new Entry);
+        $payload = app(FormResolver::class)->resolve(Form::make([
+            FormField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
+        ]), new FormContext);
+        $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
+
+        expect($stored)->toBe([['amount' => $expected]])
+            ->and($payload->values['prices'][0]['amount'])->toBe(['value' => $amount === '' ? null : $amount, 'locale' => 'nl-BE'])
+            ->and($cell->component)->toBe('craft:money')
+            ->and($cell->path)->toBe(['prices', '0', 'amount'])
+            ->and($cell->props)->toMatchArray(['currency' => 'EUR', 'locale' => 'nl-BE', 'showCurrency' => false]);
+
+        $settings = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+        $types = array_column($settings->nodes[0]->control->props['cellTypes'], 'value');
+        expect($types)->toContain('money')
+            ->and(TableRow::prepareRowFieldDefinition($field->columns)['price']->name)->toBe('Number');
+    });
+})->with([
+    'amount' => ['12,50', '12.50'],
+    'zero' => ['0', '0'],
+    'cleared' => ['', null],
+    'new' => [null, null],
+]);
+
+it('rejects unavailable currencies in money column settings', function () {
+    $field = new Table([
+        'name' => 'Prices',
+        'handle' => 'prices',
+        'columns' => ['amount' => ['heading' => 'Amount', 'handle' => 'price', 'type' => 'money', 'currency' => 'XYZ']],
+    ]);
+
+    expect($field->validate())->toBeFalse()
+        ->and($field->errors()->has('columns.amount.currency'))->toBeTrue();
+});
 
 it('keeps column handles scalar while rendering validation errors by cell', function () {
     $field = new Table([
@@ -226,6 +282,36 @@ it('rejects unregistered cell types submitted as new column settings', function 
 
     expect($field->validate())->toBeFalse()
         ->and($field->columns['col1']['type'])->toBe(ScaledTableCell::class);
+});
+
+it('renders registered cells and their validation feedback in inline HTML inputs', function () {
+    app(TableCellTypes::class)->register(ScaledTableCell::class);
+    $field = new Table([
+        'handle' => 'details',
+        'columns' => [
+            'col1' => ['heading' => 'Quantity', 'handle' => 'quantity', 'type' => ScaledTableCell::class, 'factor' => 10],
+        ],
+    ]);
+    $element = new class extends Entry
+    {
+        public function getLanguage(): string
+        {
+            return 'en-US';
+        }
+    };
+    $element->errors()->add('details.0.col1', 'Quantity must be positive.');
+    $element->errors()->add('title', 'Unrelated title error.');
+    $rows = $field->normalizeValue([['col1' => -25]], $element);
+    $html = $field->getInlineInputHtml($rows, $element);
+    $input = new Crawler($html);
+    $payload = json_decode($input->filter('craft-table-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($input->filter('craft-table-form')->attr('name'))->toBe('details')
+        ->and($payload['values']['details'][0]['col1'])->toBe(-25)
+        ->and($payload['errors'])->toBe([
+            ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
+        ])
+        ->and($payload['globalErrors'])->toBe([]);
 });
 
 class ScaledTableCell extends TableCell

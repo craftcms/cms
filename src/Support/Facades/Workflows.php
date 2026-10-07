@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection getAllWorkflows()
+ * @method static \Illuminate\Database\Eloquent\Collection getAllWorkflows()
  * @method static void saveWorkflow(\CraftCms\Cms\Workflow\Models\Workflow $workflow)
  * @method static void deleteWorkflow(\CraftCms\Cms\Workflow\Models\Workflow $workflow)
  * @method static void handleChangedWorkflow(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)

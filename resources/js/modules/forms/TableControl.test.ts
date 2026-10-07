@@ -171,24 +171,31 @@ describe('Vue table rows', () => {
     expect(referencedText(input, 'aria-labelledby')).toContain('Required');
   });
 
-  it('keeps new static row identities unique after an earlier row is deleted', async () => {
-    const {mutation} = await mountTable(false, undefined, {includeRowId: true});
-    button('Add a row').click();
-    await settle();
-    const firstId = new FormData(form).get('rows[2][rowId]');
-    button('Delete row 1').click();
-    await settle();
-    button('Add a row').click();
-    await settle();
+  it.each([
+    {includeRowId: true, field: 'rowId'},
+    {includeRowId: 'uid', field: 'uid'},
+  ])(
+    'keeps new $field identities unique after an earlier row is deleted',
+    async ({includeRowId, field}) => {
+      const {mutation} = await mountTable(false, undefined, {includeRowId});
+      button('Add a row').click();
+      await settle();
+      const firstId = new FormData(form).get(`rows[2][${field}]`);
+      expect(firstId).toEqual(expect.any(String));
+      button('Delete row 1').click();
+      await settle();
+      button('Add a row').click();
+      await settle();
 
-    const submitted = new FormData(form);
-    expect(submitted.get('rows[1][rowId]')).toBe(firstId);
-    expect(submitted.get('rows[2][rowId]')).not.toBe(firstId);
-    expect((mutation.value.rows as FormValues[])[1]!.rowId).toBe(firstId);
-    reorder(2, 'up');
-    await settle();
-    expect(new FormData(form).get('rows[2][rowId]')).toBe(firstId);
-  });
+      const submitted = new FormData(form);
+      expect(submitted.get(`rows[1][${field}]`)).toBe(firstId);
+      expect(submitted.get(`rows[2][${field}]`)).not.toBe(firstId);
+      expect((mutation.value.rows as FormValues[])[1]![field]).toBe(firstId);
+      reorder(2, 'up');
+      await settle();
+      expect(new FormData(form).get(`rows[2][${field}]`)).toBe(firstId);
+    }
+  );
 
   it('keeps edits made during submission unsaved until their own save completes', async () => {
     const {mutation, inertiaForm, advanceBaseline} = await mountTable();
@@ -225,43 +232,57 @@ describe('Vue table rows', () => {
     expect(inertiaForm.isDirty).toBe(false);
   });
 
-  it('clears stale cell errors when the row order changes and displays new validation errors', async () => {
-    const {errors} = await mountTable();
-    errors.value = [
-      {path: ['rows', '0', 'title'], messages: ['Use a unique title.']},
-    ];
-    await settle();
-    expect(form.textContent).toContain('Use a unique title.');
-    const input = form.querySelector<HTMLInputElement>(
-      'input[name="rows[0][title]"]'
-    )!;
-    expect(referencedText(input, 'aria-labelledby')).toContain('Title, row 1');
-    expect(input.getAttribute('aria-invalid')).toBe('true');
-    expect(referencedText(input, 'aria-describedby')).toContain(
-      'Use a unique title.'
-    );
+  it.each([false, true])(
+    'clears stale cell errors when the row order changes and displays new validation errors (legacy flags: %s)',
+    async (legacy) => {
+      const {errors} = await mountTable(
+        false,
+        undefined,
+        legacy ? {errors: {'0': {title: true}}} : {}
+      );
+      if (!legacy)
+        errors.value = [
+          {path: ['rows', '0', 'title'], messages: ['Use a unique title.']},
+        ];
+      await settle();
+      expect(form.textContent?.includes('Use a unique title.')).toBe(!legacy);
+      const input = form.querySelector<HTMLInputElement>(
+        'input[name="rows[0][title]"]'
+      )!;
+      expect(referencedText(input, 'aria-labelledby')).toContain(
+        'Title, row 1'
+      );
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(
+        referencedText(input, 'aria-describedby').includes(
+          'Use a unique title.'
+        )
+      ).toBe(!legacy);
 
-    reorder(0, 'down');
-    await settle();
-    expect(form.textContent).not.toContain('Use a unique title.');
-    expect(referencedText(input, 'aria-labelledby')).toContain('Title, row 2');
-    expect(input.getAttribute('aria-invalid')).not.toBe('true');
-    expect(referencedText(input, 'aria-describedby')).not.toContain(
-      'Use a unique title.'
-    );
+      reorder(0, 'down');
+      await settle();
+      expect(form.textContent).not.toContain('Use a unique title.');
+      expect(referencedText(input, 'aria-labelledby')).toContain(
+        'Title, row 2'
+      );
+      expect(input.getAttribute('aria-invalid')).not.toBe('true');
+      expect(referencedText(input, 'aria-describedby')).not.toContain(
+        'Use a unique title.'
+      );
 
-    errors.value = [
-      {path: ['rows', '1', 'title'], messages: ['Use a unique title.']},
-    ];
-    await settle();
-    expect(form.querySelectorAll('tbody tr')[1]?.textContent).toContain(
-      'Use a unique title.'
-    );
-    expect(input.getAttribute('aria-invalid')).toBe('true');
-    expect(referencedText(input, 'aria-describedby')).toContain(
-      'Use a unique title.'
-    );
-  });
+      errors.value = [
+        {path: ['rows', '1', 'title'], messages: ['Use a unique title.']},
+      ];
+      await settle();
+      expect(form.querySelectorAll('tbody tr')[1]?.textContent).toContain(
+        'Use a unique title.'
+      );
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(referencedText(input, 'aria-describedby')).toContain(
+        'Use a unique title.'
+      );
+    }
+  );
 
   it('blocks row additions, deletion, reordering, and row-creating paste during submission without omitting cell values', async () => {
     const {inertiaForm, mutation} = await mountTable();
@@ -330,7 +351,7 @@ describe('Vue table rows', () => {
     expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
   });
 
-  it('locks row structure for native submission and leaves cancelled submissions editable', async () => {
+  it('locks row structure for native submission and leaves canceled submissions editable', async () => {
     await mountTable();
     const cancel = (event: Event) => event.preventDefault();
     form.addEventListener('submit', cancel);
@@ -353,57 +374,96 @@ describe('Vue table rows', () => {
     const host = document.createElement('craft-table-form') as HTMLElement & {
       ready: Promise<void>;
     };
-    host.dataset.payload = JSON.stringify(payload(false));
+    const source = payload(false);
+    const table = source.nodes[0]!.control!;
+    const tableProps = table.props as TableControlProps;
+    Object.assign(tableProps.columns, {
+      enabled: {type: 'checkbox', heading: 'Enabled'},
+    });
+    const checkbox = {
+      type: 'CraftCms\\Cms\\Form\\Controls\\Checkbox',
+      component: 'craft:checkbox',
+      props: {checkedValue: 'yes'},
+      path: ['enabled'],
+      mode: 'editable' as const,
+      deltaGroup: ['rows'],
+    };
+    const checkboxNode = {
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: 'Enabled'},
+      control: checkbox,
+    };
+    const template = tableProps.rowTemplate!;
+    template.nodes.push(checkboxNode);
+    Object.assign(tableProps.defaultValues!, {enabled: true});
+    for (const rowForm of table.forms ?? []) {
+      rowForm.nodes.push({
+        ...checkboxNode,
+        control: {...checkbox, path: [...rowForm.scope, 'enabled']},
+      });
+    }
+    host.dataset.payload = JSON.stringify(source);
     host.setAttribute('name', 'fields[details]');
     form.append(host);
     document.body.append(form);
     await host.ready;
     await settle();
 
+    const changed = vi.fn(() =>
+      new FormData(form).get('fields[details][2][title]')
+    );
+    form.addEventListener('change', changed);
     button('Add a row').click();
     await settle();
     const submitted = new FormData(form);
     expect(submitted.get('fields[details][0][title]')).toBe('Alpha');
     expect(submitted.get('fields[details][2][title]')).toBe('Default');
+    expect(submitted.get('fields[details][2][enabled]')).toBe('yes');
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(changed.mock.results[0]?.value).toBe('Default');
     expect([...submitted.keys()].some((key) => key.startsWith('rows'))).toBe(
       false
     );
   });
 
-  it('keeps surviving inputs and focus while adding and reordering rows, and submits only ordered cell values', async () => {
-    const {mutation} = await mountTable();
-    const first = form.querySelector<HTMLInputElement>(
-      'input[name="rows[0][title]"]'
-    )!;
-    first.focus();
-    button('Add a row').click();
-    await settle();
+  it.each([false, true])(
+    'keeps surviving inputs and focus while adding and reordering rows, and submits only ordered cell values (row IDs: %s)',
+    async (includeRowId) => {
+      const {mutation} = await mountTable(false, undefined, {includeRowId});
+      const first = form.querySelector<HTMLInputElement>(
+        'input[name="rows[0][title]"]'
+      )!;
+      first.focus();
+      button('Add a row').click();
+      await settle();
 
-    const added = form.querySelector<HTMLInputElement>(
-      'input[name="rows[2][title]"]'
-    )!;
-    expect(added).not.toBeNull();
-    expect(document.activeElement).toBe(added);
-    expect(form.querySelector('input[name="rows[0][title]"]')).toBe(first);
+      const added = form.querySelector<HTMLInputElement>(
+        'input[name="rows[2][title]"]'
+      )!;
+      expect(added).not.toBeNull();
+      expect(document.activeElement).toBe(added);
+      expect(form.querySelector('input[name="rows[0][title]"]')).toBe(first);
 
-    reorder(2, 'up');
-    await settle();
-    expect(form.querySelector('input[name="rows[1][title]"]')).toBe(added);
-    const reordered = form.querySelectorAll('craft-reorder-button')[1]!;
-    expect(reordered.shadowRoot?.activeElement).toBe(
-      reordered.shadowRoot?.querySelector('[slot="invoker"]')
-    );
-    expect(mutation.value.rows).toEqual([
-      {title: 'Alpha'},
-      {title: 'Default'},
-      {title: 'Beta'},
-    ]);
+      reorder(2, 'up');
+      await settle();
+      expect(form.querySelector('input[name="rows[1][title]"]')).toBe(added);
+      const reordered = form.querySelectorAll('craft-reorder-button')[1]!;
+      expect(reordered.shadowRoot?.activeElement).toBe(
+        reordered.shadowRoot?.querySelector('[slot="invoker"]')
+      );
+      expect(
+        (mutation.value.rows as FormValues[]).map((row) => row.title)
+      ).toEqual(['Alpha', 'Default', 'Beta']);
 
-    button('Delete row 1').click();
-    await settle();
-    expect(form.querySelector('input[name="rows[0][title]"]')).toBe(added);
-    expect(mutation.value.rows).toEqual([{title: 'Default'}, {title: 'Beta'}]);
-  });
+      button('Delete row 1').click();
+      await settle();
+      expect(form.querySelector('input[name="rows[0][title]"]')).toBe(added);
+      expect(
+        (mutation.value.rows as FormValues[]).map((row) => row.title)
+      ).toEqual(['Default', 'Beta']);
+    }
+  );
 
   it('preserves external keyed row identities and displays refreshed errors without replacing inputs', async () => {
     const {mutation, errors} = await mountTable(true);

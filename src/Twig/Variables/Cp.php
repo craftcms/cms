@@ -34,6 +34,12 @@ use function CraftCms\Cms\t;
  */
 class Cp extends Component
 {
+    /** @param array<string, mixed> $config */
+    public function editableTable(array $config = []): string
+    {
+        return FormFields::editableTableHtml($config);
+    }
+
     /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *

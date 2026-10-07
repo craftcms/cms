@@ -51,7 +51,7 @@ export const FiveSteps: Story = {
  * The assertions run here rather than in a unit test because they exercise the
  * user agent's own side of form association: excluding a disabled control from
  * submission, and calling back on reset. happy-dom has no `ElementInternals` at
- * all, and the polyfill the unit tests use does not carry either behaviour.
+ * all, and the polyfill the unit tests use does not carry either behavior.
  */
 export const InAForm: Story = {
   render: () => html`

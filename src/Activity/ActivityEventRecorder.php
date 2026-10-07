@@ -9,6 +9,7 @@ use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -19,6 +20,8 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class ActivityEventRecorder
 {
+    public const string ContextOrigin = 'craft.activity.origin';
+
     public function __construct(
         private readonly Impersonation $impersonation,
     ) {}
@@ -38,6 +41,10 @@ class ActivityEventRecorder
             'source' => ['label' => $source->label],
             'event' => ['label' => t($event::label(), category: $source->translationCategory)],
         ];
+
+        if (($origin = Context::getHidden(self::ContextOrigin)) !== null) {
+            $snapshots['origin'] = $origin;
+        }
 
         if ($subject !== null) {
             $snapshots['subject'] = ['label' => $subject->label];

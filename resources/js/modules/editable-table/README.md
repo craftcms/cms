@@ -2,9 +2,9 @@
 
 A TypeScript port of the legacy jQuery `Craft.EditableTable`
 (`packages/craftcms-legacy/cp/src/js/EditableTable.js`) onto the modern
-**`@craftcms/garnish`** `Base`. It powers the `forms.editableTable` /
-`forms.editableTableField` macro (`_includes/forms/editableTable.twig`) and is
-the base class for the [generated-fields](../generated-fields/) table.
+**`@craftcms/garnish`** `Base`. It remains available for legacy integrations
+and custom table templates. Standard PHP helpers and Twig macros, Table field
+inputs, and generated fields use form-builder tables.
 
 ## What changed
 
@@ -76,7 +76,7 @@ The subclass `init` reshapes the constructor args before calling
 raw leaf args to `super()`, a constructor-based setup would receive the *shifted*
 args and break — so the modern base **defers** setup to `init()` and the compat
 trampoline (not our constructor) invokes it. Modern ES subclasses
-(`class extends EditableTable`, e.g. `GeneratedFieldsTable`) call `this.init(...)`
+(`class extends EditableTable`) call `this.init(...)`
 from their own leaf constructor.
 
 ## Files
@@ -100,5 +100,4 @@ here. The compat shim is what keeps the separate, still-legacy
 ## Deferred
 
 Behavioral/browser verification (exercising add/delete/reorder, paste-import,
-checkbox radio/toggle, the Table field settings screen, and the generated-fields
-table) is left to manual testing.
+checkbox radio/toggle, and custom table templates) is left to manual testing.

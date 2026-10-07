@@ -43,6 +43,7 @@ export interface LegacyElementEditorSlideout {
   ): void;
   elementEditor: {
     settings: {
+      canCreateDrafts?: boolean;
       draftId?: number | null;
       saveParams?: Record<string, unknown> | null;
     };
@@ -335,7 +336,10 @@ export function useNestedElementOperations(
       prepareNestedOwner
         ? async (slideout) => {
             const preparedOwnerId = await prepareNestedOwner();
-            if (!preparedOwnerId) {
+            if (
+              !preparedOwnerId ||
+              !slideout.elementEditor.settings.canCreateDrafts
+            ) {
               return;
             }
 

@@ -9,7 +9,7 @@ function fields(html: string): HTMLElement {
 }
 
 describe('blockPreviewParts', () => {
-  it('summarises one entry per field, joining a field’s own inputs', () => {
+  it('summarizes one entry per field, joining a field’s own inputs', () => {
     expect(
       blockPreviewParts(
         fields(`

@@ -4,7 +4,7 @@ import {property} from 'lit/decorators.js';
 import '../icon/icon';
 
 /**
- * @summary An empty state: a centred message, an optional graphic, and room
+ * @summary An empty state: a centered message, an optional graphic, and room
  * for whatever the person should do next.
  *
  * Shown where a list, an index, or a panel has nothing in it — a place that

@@ -120,7 +120,7 @@ describe('useElementSourceActions', () => {
     expect(grouped.items[0]!.selected).toBe(true);
   });
 
-  it('restores the current source when a visit is cancelled', async () => {
+  it('restores the current source when a visit is canceled', async () => {
     const active = ref<string | null>('*');
     const {actions} = run(() =>
       useElementSourceActions({sources: SOURCES, route, activeSource: active})
