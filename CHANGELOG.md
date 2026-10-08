@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
+
 - Improved control panel styling for medium-sized viewports.
+- Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
+- Fixed a bug where admin tables no longer had selectable rows. ([#19893](https://github.com/craftcms/cms/pull/19893))
+- Fixed a bug where the license enforcement screen wasn’t showing the “Continue to the control panel” link after the countdown ended. ([#19895](https://github.com/craftcms/cms/issues/19895))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

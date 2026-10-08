@@ -78,7 +78,7 @@ function embeddedActionFixture(array $titles = ['Nested entry'], ?int $maxEntrie
     $nestedEntries = $owner->getFieldValue('matrixField')->status(null)->all();
     $nested = $nestedEntries[0];
     $draft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
-    $control = $field->formControl(new FieldContext(path: 'matrixField', element: $draft));
+    $control = $field->uiControl(new FieldContext(path: 'matrixField', element: $draft));
 
     return compact('owner', 'field', 'nested', 'nestedEntries', 'draft', 'control');
 }

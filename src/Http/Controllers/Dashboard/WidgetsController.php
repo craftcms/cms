@@ -127,7 +127,7 @@ readonly class WidgetsController
         ]);
 
         return new JsonResponse([
-            'form' => $this->getWidgetSettingsForm($widget, $data['namespace']),
+            'ui' => $this->getWidgetSettingsUi($widget, $data['namespace']),
         ]);
     }
 

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Workflow\UserReview;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\UserGroupSelect;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\UserGroupSelect;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
@@ -52,9 +52,9 @@ class UserReviewStage extends WorkflowStage
         ];
     }
 
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
+        return Ui::make([
             Group::make('user-review-settings', [
                 Field::make(t('Reviewer groups'), UserGroupSelect::make('userGroups'))
                     ->required(),

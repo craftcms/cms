@@ -11,24 +11,24 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
-use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\TemplateContent;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -37,9 +37,9 @@ use function CraftCms\Cms\t;
  */
 class FieldEditViewModel extends ViewModel
 {
-    private ?Form $settingsForm = null;
+    private ?Ui $settingsUi = null;
 
-    private bool $settingsFormResolved = false;
+    private bool $settingsUiResolved = false;
 
     public function __construct(
         private readonly Field $field,
@@ -48,7 +48,7 @@ class FieldEditViewModel extends ViewModel
         private readonly bool $multiInstanceTypesOnly = false,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $type = $this->typeClass();
         $translationMethods = $this->translationMethods(
@@ -66,17 +66,17 @@ class FieldEditViewModel extends ViewModel
         $nodes = [
             HiddenField::make('fieldId'),
             HiddenField::make('oldType')->mode(ControlMode::ReadOnly),
-            FormField::make(t('Name'), Text::make('name')->autofocus())
+            UiField::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this field will be called in the control panel.'))
                 ->required(),
-            FormField::make(t('Handle'), $handle)
+            UiField::make(t('Handle'), $handle)
                 ->instructions(t('How you’ll refer to this field in the templates.'))
                 ->required(),
-            FormField::make(t('Default Instructions'), Textarea::make('instructions'))
+            UiField::make(t('Default Instructions'), Textarea::make('instructions'))
                 ->instructions(t('Helper text to guide the author.')),
-            FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
+            UiField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
-        $typeField = FormField::make(t('Field Type'), Combobox::make('type')
+        $typeField = UiField::make(t('Field Type'), Combobox::make('type')
             ->options($this->fieldTypeOptions())
             ->requireOptionMatch()
             ->reactive())
@@ -96,14 +96,14 @@ class FieldEditViewModel extends ViewModel
         $translationOptions = $this->translationMethodOptions($translationMethods);
 
         if (Sites::isMultiSite() && count($translationOptions) > 1) {
-            $nodes[] = FormField::make(
+            $nodes[] = UiField::make(
                 t('Translation Method'),
                 Choice::make('translationMethod')->options($translationOptions)->reactive(),
             )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
                 $nodes[] = Group::make('field-translation-settings', [
-                    FormField::make(
+                    UiField::make(
                         t('Translation Key Format'),
                         Text::make('translationKeyFormat')
                             ->monospace()
@@ -121,8 +121,8 @@ class FieldEditViewModel extends ViewModel
         $nodes[] = Separator::make('field-settings-separator');
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
         $refreshable = ! $this->readOnly;
-        $formResolver = app(FormResolver::class);
-        $form = $formResolver->resolve(Form::make($nodes), new FormContext(
+        $uiResolver = app(UiResolver::class);
+        $ui = $uiResolver->resolve(Ui::make($nodes), new UiContext(
             values: [
                 'fieldId' => $this->field->id,
                 'oldType' => $type,
@@ -137,32 +137,32 @@ class FieldEditViewModel extends ViewModel
             mode: $mode,
             refreshable: $refreshable,
         ));
-        $settingsContext = $this->settingsFormContext();
-        $settingsForm = $this->settingsFormDefinition($settingsContext);
-        $settings = $formResolver->resolve($settingsForm === null
-            ? Form::make()
-            : Form::make([
-                Group::make('field-settings', $settingsForm->nodes())->dependsOn('type'),
+        $settingsContext = $this->settingsUiContext();
+        $settingsUi = $this->settingsUiDefinition($settingsContext);
+        $settings = $uiResolver->resolve($settingsUi === null
+            ? Ui::make()
+            : Ui::make([
+                Group::make('field-settings', $settingsUi->nodes())->dependsOn('type'),
             ]), $settingsContext);
 
-        return new FormPayload(
+        return new UiPayload(
             scope: [],
             refreshable: $refreshable,
-            nodes: [...$form->nodes, ...$settings->nodes],
-            values: [...$form->values, ...$settings->values],
-            errors: [...$form->errors, ...$settings->errors],
-            globalErrors: [...$form->globalErrors, ...$settings->globalErrors],
+            nodes: [...$ui->nodes, ...$settings->nodes],
+            values: [...$ui->values, ...$settings->values],
+            errors: [...$ui->errors, ...$settings->errors],
+            globalErrors: [...$ui->globalErrors, ...$settings->globalErrors],
         );
     }
 
-    public function settingsForm(): ?FormPayload
+    public function settingsUi(): ?UiPayload
     {
-        $context = $this->settingsFormContext();
-        $form = $this->settingsFormDefinition($context);
+        $context = $this->settingsUiContext();
+        $ui = $this->settingsUiDefinition($context);
 
-        return $form === null
+        return $ui === null
             ? null
-            : app(FormResolver::class)->resolve($form, $context);
+            : app(UiResolver::class)->resolve($ui, $context);
     }
 
     /** @return array{method: 'post', url: string} */
@@ -181,7 +181,7 @@ class FieldEditViewModel extends ViewModel
         }
 
         return action(
-            [FieldsController::class, 'renderForm'],
+            [FieldsController::class, 'renderUi'],
             $this->multiInstanceTypesOnly ? ['multiInstanceTypesOnly' => 1] : [],
         );
     }
@@ -271,19 +271,19 @@ class FieldEditViewModel extends ViewModel
         );
     }
 
-    private function settingsFormDefinition(FormContext $context): ?Form
+    private function settingsUiDefinition(UiContext $context): ?Ui
     {
-        if (! $this->settingsFormResolved) {
-            $this->settingsForm = $this->field->settingsForm($context);
-            $this->settingsFormResolved = true;
+        if (! $this->settingsUiResolved) {
+            $this->settingsUi = $this->field->settingsUi($context);
+            $this->settingsUiResolved = true;
         }
 
-        return $this->settingsForm;
+        return $this->settingsUi;
     }
 
-    private function settingsFormContext(): FormContext
+    private function settingsUiContext(): UiContext
     {
-        return new FormContext(
+        return new UiContext(
             namespace: 'settings',
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,

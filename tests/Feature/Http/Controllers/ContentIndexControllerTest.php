@@ -93,7 +93,7 @@ it('renders page inline inputs only for explicitly editable table rows the user 
             ->where('data.0.id', $entry->id)
             ->where("data.0.inlineInputHtml.{$attribute}", function (string $html) use ($entry): bool {
                 $payload = json_decode(
-                    new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'),
+                    new Crawler($html)->filter('craft-inline-attribute-ui')->attr('data-payload'),
                     true,
                     flags: JSON_THROW_ON_ERROR,
                 );

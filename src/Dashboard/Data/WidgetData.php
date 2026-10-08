@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Data;
 
-use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\View\HtmlFragment;
 
 /**
@@ -28,6 +28,6 @@ readonly class WidgetData
         public ?string $component,
         public ?array $data,
         public HtmlFragment $fragment,
-        public ?FormPayload $settingsForm,
+        public ?UiPayload $settingsUi,
     ) {}
 }

@@ -8,9 +8,9 @@ use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Override;
@@ -51,7 +51,7 @@ class Asset extends BaseElementLinkType
     {
         return [
             ...parent::settingsNodes($prefix),
-            FormField::make(t('Show unpermitted volumes'))
+            UiField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedVolumes'))->value($this->showUnpermittedVolumes)),
         ];

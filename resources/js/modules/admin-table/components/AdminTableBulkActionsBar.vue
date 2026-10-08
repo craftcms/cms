@@ -12,7 +12,7 @@
     ActionItemGroup,
     ActionItems,
   } from '@/common/types';
-  import type {FormValues} from '@/modules/forms/types';
+  import type {UiValues} from '@/modules/ui/types';
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
 
@@ -25,7 +25,7 @@
       /** A separate, pinned "Set status" menu, rendered before "Actions". */
       statuses?: Array<BulkAction> | null;
       /** Extra fields merged into every `http`/`download` action's body — an element index's `elementType`/`source`/`context`, say. */
-      actionContext?: FormValues;
+      actionContext?: UiValues;
       /** The body key the selection posts under. */
       idsField?: string;
       /** Only used by the `craft:copy-elements` listener below; irrelevant outside an element index. */

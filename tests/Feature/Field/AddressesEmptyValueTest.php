@@ -31,7 +31,7 @@ test('an empty request value clears all addresses', function () {
 test('an empty delta value clears all addresses', function () {
     [$field, $element] = addressesEmptyValueField();
 
-    // What the Matrix form control posts once every address has been removed.
+    // What the Matrix UI control posts once every address has been removed.
     $value = ['entries' => [], 'sortOrder' => []];
 
     expect($field->normalizeValueFromRequest($value, $element)->getResultOverride())->toBe([]);
@@ -65,7 +65,7 @@ test('delta values are keyed by UUID rather than treated as addresses', function
         ->and($addresses[0]->uid)->toBe($uid)
         ->and($addresses[0]->title)->toBe('Home')
         ->and($addresses[0]->countryCode)->toBe('US')
-        // The Address form control nests the address format fields under `address`
+        // The Address UI control nests the address format fields under `address`
         ->and($addresses[0]->addressLine1)->toBe('123 Fake St.')
         ->and($addresses[0]->locality)->toBe('Chicago')
         ->and($addresses[0]->administrativeArea)->toBe('IL')

@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace craft\fields;
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 
@@ -24,12 +24,12 @@ class MissingField extends \CraftCms\Cms\Field\MissingField implements LegacyFie
 {
     use LegacyBuiltInField;
 
-    public function settingsForm(FormContext $context = new FormContext()): ?Form
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
         if (static::class !== self::class) {
-            return $this->legacySettingsForm($context);
+            return $this->legacySettingsUi($context);
         }
 
-        return parent::settingsForm($context);
+        return parent::settingsUi($context);
     }
 }

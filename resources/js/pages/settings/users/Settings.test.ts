@@ -1,10 +1,10 @@
 import {createApp, defineComponent, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {
-  FormControlPayload,
-  FormPayload,
-  FormProperties,
-} from '@/modules/forms/types';
+  UiControlPayload,
+  UiPayload,
+  UiProperties,
+} from '@/modules/ui/types';
 import Settings from './Settings.vue';
 
 interface CheckboxGroupElement extends HTMLElement {
@@ -15,7 +15,7 @@ const state = vi.hoisted(() => ({
   setRequire2fa: vi.fn(),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     setup:
       (_, {slots}) =>
@@ -38,7 +38,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -79,14 +79,14 @@ it('keeps the exclusive two-step verification value shape', () => {
 
 function mount(): void {
   app = createApp(Settings, {
-    form,
+    ui,
     submit: {method: 'post', url: '/settings/users'},
-    refreshUrl: '/settings/users/render-form',
+    refreshUrl: '/settings/users/render-ui',
   });
   app.mount(container);
 }
 
-function control(path: string, props: FormProperties): FormControlPayload {
+function control(path: string, props: UiProperties): UiControlPayload {
   return {
     type: 'test',
     component: 'test',
@@ -94,6 +94,6 @@ function control(path: string, props: FormProperties): FormControlPayload {
     path: [path],
     mode: 'editable',
     deltaGroup: [path],
-    forms: [],
+    uis: [],
   };
 }

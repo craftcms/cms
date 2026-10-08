@@ -129,7 +129,7 @@
 
 #### Plugins
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
-- Added support for defining standard plugin settings pages with the control panel Form system, via `CraftCms\Cms\Plugin\Plugin::settingsForm()`. ([#19439](https://github.com/craftcms/cms/pull/19439))
+- Added support for defining standard plugin settings pages with the control panel UI system, via `CraftCms\Cms\Plugin\Plugin::settingsUi()`. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
 - Added support for custom publishing workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
 - Plugins can now make their element types available through the `elements.*` MCP tools.
@@ -178,14 +178,14 @@
   - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
 
 #### Field Layouts & Forms
-- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsForm()`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsUi()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsNodes()`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.
-- Added `CraftCms\Cms\Form\Nodes\Action`.
-- Added `CraftCms\Cms\Form\Nodes\Field::actions()`.
-- Added `CraftCms\Cms\Form\Controls\Checkbox`.
-- Added `CraftCms\Cms\Form\Controls\FieldSelect`.
-- Added `CraftCms\Cms\Form\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Ui\Nodes\Action`.
+- Added `CraftCms\Cms\Ui\Nodes\Field::actions()`.
+- Added `CraftCms\Cms\Ui\Controls\Checkbox`.
+- Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
+- Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
 - Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
 - Added the `actions` slot to `<craft-field>`.
@@ -630,7 +630,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\ConditionRulesResolving` should be used instead.
 
 #### Control Panel
-- Added a renderer-neutral control panel Form system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
+- Added a renderer-neutral control panel UI system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides, in favor of upload sessions. ([#19604](https://github.com/craftcms/cms/pull/19604))
 - Removed HTMX from the control panel. Plugins that rely on it should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
 - The control panel no longer loads the `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))

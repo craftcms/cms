@@ -1,10 +1,10 @@
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted(() => ({
-  formProps: vi.fn(),
+  uiProps: vi.fn(),
   save: vi.fn(),
 }));
 
@@ -16,11 +16,11 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   default: defineComponent({render: () => h('div')}),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     props: ['formActions'],
     setup: (props, {expose}) => {
-      state.formProps({
+      state.uiProps({
         formActions: props.formActions,
       });
       expose({save: state.save});
@@ -30,7 +30,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -43,7 +43,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.formProps.mockClear();
+  state.uiProps.mockClear();
   state.save.mockReset();
   container = document.createElement('div');
   document.body.append(container);
@@ -56,9 +56,9 @@ afterEach(() => {
 
 it('saves the current values as a new entry type', async () => {
   app = createApp(Edit, {
-    form,
+    ui,
     submit: {method: 'post', url: '/actions/entry-types/store'},
-    refreshUrl: '/actions/entry-types/render-form',
+    refreshUrl: '/actions/entry-types/render-ui',
     brandNew: false,
     lowerTypeName: 'entry',
     metadataHtml: null,
@@ -66,7 +66,7 @@ it('saves the current values as a new entry type', async () => {
   app.mount(container);
   await nextTick();
 
-  state.formProps.mock.calls[0]![0].formActions[0].onClick();
+  state.uiProps.mock.calls[0]![0].formActions[0].onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {saveAsNew: true},

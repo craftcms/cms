@@ -73,7 +73,7 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     colspan: 1,
     maxColspan: 4,
     settings: {},
-    settingsForm: {
+    settingsUi: {
       scope: ['settings'],
       nodes: [],
       values: {},

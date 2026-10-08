@@ -7,7 +7,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
-import {openFormModal} from '@/modules/forms/open-form-modal';
+import {openUiModal} from '@/modules/ui/open-ui-modal';
 import {
   createElementActionMenu,
   useElementActionMenu,
@@ -18,7 +18,7 @@ vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
 vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
   openImageEditorDialog: vi.fn(),
 }));
-vi.mock('@/modules/forms/open-form-modal', () => ({openFormModal: vi.fn()}));
+vi.mock('@/modules/ui/open-ui-modal', () => ({openUiModal: vi.fn()}));
 
 const {actionPost, deletionManagers} = vi.hoisted(() => ({
   actionPost: vi.fn(),
@@ -263,7 +263,7 @@ describe('useElementActionMenu', () => {
       ])
     );
 
-    expect(openFormModal).toHaveBeenCalledWith({
+    expect(openUiModal).toHaveBeenCalledWith({
       modalUrl: 'things/receive-modal',
       actionUrl: 'things/receive',
       params: {thingId: 4},
@@ -271,7 +271,7 @@ describe('useElementActionMenu', () => {
     });
     expect(reload).not.toHaveBeenCalled();
 
-    vi.mocked(openFormModal).mock.lastCall![0].onSubmitted!({});
+    vi.mocked(openUiModal).mock.lastCall![0].onSubmitted!({});
 
     expect(reload).toHaveBeenCalled();
   });

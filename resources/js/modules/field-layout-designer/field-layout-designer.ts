@@ -19,7 +19,7 @@ import {
   type FieldLayoutHud,
 } from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import type {FormPayload, FormValues} from '@/modules/forms/types';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
 import {Slideout} from '@/modules/slideout';
@@ -30,24 +30,24 @@ import {Slideout} from '@/modules/slideout';
 declare const Craft: any;
 declare const $: any;
 
-interface LayoutComponentSettingsForm extends HTMLElement {
-  payload: FormPayload;
-  requestData: () => FormValues;
+interface LayoutComponentSettingsUi extends HTMLElement {
+  payload: UiPayload;
+  requestData: () => UiValues;
 }
 
 interface FieldLayoutSlideoutData {
-  form: FormPayload;
+  ui: UiPayload;
   headHtml?: string;
   bodyHtml?: string;
 }
 
 interface FieldLayoutSlideoutSettings {
   triggerElement?: HTMLElement;
-  requestData?: () => FormValues;
+  requestData?: () => UiValues;
 }
 
 type FieldLayoutSettingsSlideout = Slideout & {
-  settingsForm: LayoutComponentSettingsForm;
+  settingsUi: LayoutComponentSettingsUi;
 };
 
 /**
@@ -617,19 +617,17 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
     $fields.className = 'fields';
-    const $form = document.createElement(
-      'craft-layout-component-settings-form'
-    );
-    if (!('payload' in $form) || !('requestData' in $form)) {
-      throw new Error('Layout component settings form is not registered.');
+    const $ui = document.createElement('craft-layout-component-settings-ui');
+    if (!('payload' in $ui) || !('requestData' in $ui)) {
+      throw new Error('Layout component settings UI is not registered.');
     }
-    // SAFETY: The registration check above establishes the form element's public contract.
-    const settingsForm = $form as LayoutComponentSettingsForm;
-    settingsForm.payload = data.form;
+    // SAFETY: The registration check above establishes the UI element's public contract.
+    const settingsUi = $ui as LayoutComponentSettingsUi;
+    settingsUi.payload = data.ui;
     if (settings.requestData) {
-      settingsForm.requestData = settings.requestData;
+      settingsUi.requestData = settings.requestData;
     }
-    $fields.appendChild(settingsForm);
+    $fields.appendChild(settingsUi);
     $body.appendChild($fields);
 
     const $footer = document.createElement('div');
@@ -694,6 +692,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     Craft.initUiElements(slideout.$container);
 
-    return Object.assign(slideout, {settingsForm});
+    return Object.assign(slideout, {settingsUi});
   }
 }

@@ -7,15 +7,15 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -70,13 +70,13 @@ class RecentEntries extends Widget
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $form = Form::make();
+        $ui = Ui::make();
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $form->add(Field::make(t('Site'))
+            $ui->add(Field::make(t('Site'))
                 ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
                     ->map(fn ($site): array => [
                         'label' => t($site->getName(), category: 'site'),
@@ -86,7 +86,7 @@ class RecentEntries extends Widget
                     ->all())));
         }
 
-        return $form->add(
+        return $ui->add(
             Field::make(t('Section'))
                 ->instructions(t('Which section do you want to pull recent entries from?'))
                 ->control(Choice::make('section')->value($this->section)->options([

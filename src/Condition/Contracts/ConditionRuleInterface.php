@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 
 /**
  * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
@@ -53,9 +53,9 @@ interface ConditionRuleInterface extends ComponentInterface, ConditionComponentI
     public function getGroupLabel(): ?string;
 
     /**
-     * Returns the rule’s Form schema for a condition builder.
+     * Returns the rule’s Ui schema for a condition builder.
      */
-    public function getForm(FormContext $context = new FormContext): Form;
+    public function getUi(UiContext $context = new UiContext): Ui;
 
     /**
      * Sets the condition associated with this rule.

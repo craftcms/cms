@@ -269,7 +269,7 @@ use CraftCms\Cms\Twig\Nodes\NavItem_Node;
 use CraftCms\Cms\Twig\Nodes\NavItemNode;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutElement as LegacyFieldLayoutElement;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
 
 class ClassAliases
 {

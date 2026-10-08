@@ -3,7 +3,7 @@
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {useScreenPageProps} from '@/common/composables/screen';
-  import type {FormValues} from '@/modules/forms/types';
+  import type {UiValues} from '@/modules/ui/types';
   import ElementEditorHtml from './ElementEditorHtml.vue';
   import {
     provideLegacyEditorContext,
@@ -11,7 +11,7 @@
     type LegacyEditorPayload,
   } from './element-editor-context';
 
-  defineProps<{saveData?: () => FormValues}>();
+  defineProps<{saveData?: () => UiValues}>();
   const context = provideLegacyEditorContext();
   const pageProps = useScreenPageProps();
   const payload = computed(
@@ -21,7 +21,7 @@
     () =>
       context.contentReady.value &&
       (context.sidebarReady.value ||
-        (!payload.value.sidebarForm && !payload.value.editorSidebarHtml))
+        (!payload.value.sidebarUi && !payload.value.editorSidebarHtml))
   );
 </script>
 <template>

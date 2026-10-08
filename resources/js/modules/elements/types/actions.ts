@@ -37,13 +37,13 @@ export interface BulkActionItem {
     | {
         type: 'event';
         name: string;
-        detail?: FormValues;
+        detail?: UiValues;
       }
     | {
         type: 'http' | 'download';
         method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
         url: string;
-        body?: FormValues;
+        body?: UiValues;
         confirm?: string;
       }
     | {
@@ -109,4 +109,4 @@ export interface BulkActionEventDetail {
   trigger: HTMLElement;
 }
 import type {ActionItemDisplay} from '@/common/types';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
