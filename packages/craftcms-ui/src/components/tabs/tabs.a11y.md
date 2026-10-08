@@ -2,6 +2,14 @@
 
 Follows the WAI-ARIA APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/) example.
 
+**Not for** (use `craft-disclosure` instead):
+
+- Panels that can all be closed, or a selected tab that closes its panel when clicked again.
+- Triggers that live apart from their panels, with other content between them.
+- More than one panel open at once.
+
+A change that needs any of these is a different pattern. Don't add a mode to `craft-tabs` for it.
+
 ## Requirements
 
 ### Semantics
