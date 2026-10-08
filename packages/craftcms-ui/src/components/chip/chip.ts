@@ -9,10 +9,13 @@ import type {SizeValue} from '@src/constants/size';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 import {t} from '@src/utilities/translate';
 import variantsStyles from '@src/styles/variants.styles.js';
-import {
-  hasSlotted,
-  LightDomController,
-} from '@src/controllers/LightDomController';
+import {LightDomController} from '@src/controllers/LightDomController';
+
+/** Which of the chip's parts have something to show. */
+type FilledParts = Record<
+  'prefix' | 'thumbnail' | 'icon' | 'status' | 'body' | 'suffix',
+  boolean
+>;
 
 /**
  * @summary A container that pairs a label with an optional
@@ -66,6 +69,8 @@ import {
  * @cssproperty --c-chip-height - Minimum height of the chip's regions. Unset
  *   by default, so the chip is sized by its padding and content.
  * @cssproperty --c-chip-radius - Corner radius. Defaults to `--c-radius-md`.
+ * @cssproperty --c-chip-gap - Space between the chip's parts, the same at
+ *   every size. Defaults to `--c-spacing-md`.
  * @cssproperty --c-chip-spacing-inline - Inline (horizontal) padding. Defaults to `0`.
  * @cssproperty --c-chip-spacing-block - Block (vertical) padding. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-chip-fill - Background color. Defaults to
@@ -88,9 +93,11 @@ export default class CraftChip extends LitElement {
    * How much room the chip gives its contents. Each step sets the padding
    * around the label and the size of the thumbnail in the prefix — `small`
    * is tight enough for a chip in a table cell, `large` suits one standing on
-   * its own.
+   * its own. `small` is also as tall as a small suffix button, so adding one
+   * doesn't change its height; `auto` has the same padding without that
+   * minimum, for a chip as compact as its content allows.
    */
-  @property() size: SizeValue = 'small';
+  @property() size: SizeValue | 'auto' = 'small';
 
   /**
    * The semantic color group the chip draws its tokens from. It is combined
@@ -137,6 +144,13 @@ export default class CraftChip extends LitElement {
    */
   @property({type: Boolean}) selectable: boolean = false;
 
+  /**
+   * Stretches the chip to fill its parent, rather than sizing it to its
+   * content. Either way, a label too long for the parent truncates.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'full-width'})
+  fullWidth: boolean = false;
+
   /** Whether the chip is selected. Only meaningful alongside `selectable`. */
   @property({type: Boolean, reflect: true}) selected: boolean = false;
 
@@ -166,6 +180,7 @@ export default class CraftChip extends LitElement {
    * cue to have the chip's buttons inherit its palette.
    */
   #lightDom = new LightDomController(this, {
+    characterData: true,
     onChange: () => this.#inheritButtons(),
   });
 
@@ -224,54 +239,89 @@ export default class CraftChip extends LitElement {
   }
 
   /**
-   * Which part of the chip comes first, so a `plain` chip can drop the padding
-   * before it and sit flush with the surrounding content.
+   * Whether a slot has anything to show. A part rendered empty would still
+   * take a gap, so only filled slots are rendered. Templates often render a
+   * wrapper div into a slot whether or not they have anything to put in it, so
+   * an empty div doesn't count; any other element does, since an image or a
+   * custom element can draw something without children. `''` is the default
+   * slot, which text fills too.
    */
-  private get leadingPart():
-    | 'select'
-    | 'prefix'
-    | 'thumbnail'
-    | 'icon'
-    | 'status'
-    | 'body' {
+  #hasContent(name: string): boolean {
+    return Array.from(this.childNodes).some((node) => {
+      if (node instanceof Element) {
+        return (
+          node.slot === name &&
+          !(
+            node.localName === 'div' &&
+            node.childElementCount === 0 &&
+            node.textContent.trim() === ''
+          )
+        );
+      }
+
+      return (
+        name === '' &&
+        node.nodeType === Node.TEXT_NODE &&
+        node.textContent!.trim() !== ''
+      );
+    });
+  }
+
+  #filledParts(): FilledParts {
+    return {
+      prefix: this.#hasContent('prefix'),
+      thumbnail: this.showThumb && this.#hasContent('thumbnail'),
+      icon: !!this.icon || this.#hasContent('icon'),
+      status: this.#hasContent('status'),
+      body: this.#hasContent(''),
+      suffix: this.#hasContent('suffix'),
+    };
+  }
+
+  /**
+   * Which part of the chip comes first, so the spacing before it can suit it.
+   */
+  #leadingPart(
+    filled: FilledParts
+  ): 'select' | 'prefix' | 'thumbnail' | 'icon' | 'status' | 'body' {
     if (this.selectable) {
       return 'select';
     }
 
-    if (hasSlotted(this, 'prefix')) {
-      return 'prefix';
-    }
-
-    if (this.showThumb) {
-      return 'thumbnail';
-    }
-
-    if (this.icon) {
-      return 'icon';
-    }
-
-    if (this.showStatus || hasSlotted(this, 'status')) {
-      return 'status';
+    for (const part of ['prefix', 'thumbnail', 'icon', 'status'] as const) {
+      if (filled[part]) {
+        return part;
+      }
     }
 
     return 'body';
   }
 
-  protected renderPrefix() {
-    const showStatus = this.showStatus || hasSlotted(this, 'status');
-
-    return html`<div class="cp-chip__prefix" part="prefix">
-      <slot name="prefix"></slot>
-      ${this.showThumb
-        ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
+  protected renderPrefix(filled: FilledParts) {
+    return html`<div class="cp-chip__prefix">
+      ${filled.prefix
+        ? html`<slot name="prefix" part="prefix"></slot>`
         : nothing}
-      ${this.icon
-        ? html`<slot class="cp-chip__icon" name="icon"
-            ><craft-icon name="${this.icon}"></craft-icon
+      ${filled.thumbnail
+        ? html`<slot
+            class="cp-chip__thumbnail"
+            name="thumbnail"
+            part="thumbnail"
           ></slot>`
         : nothing}
-      ${showStatus
-        ? html`<slot class="cp-chip__status" name="status"></slot>`
+      ${filled.icon
+        ? html`<slot class="cp-chip__icon" name="icon" part="icon"
+            >${this.icon
+              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              : nothing}</slot
+          >`
+        : nothing}
+      ${filled.status
+        ? html`<slot
+            class="cp-chip__status"
+            name="status"
+            part="status"
+          ></slot>`
         : nothing}
     </div>`;
   }
@@ -282,15 +332,9 @@ export default class CraftChip extends LitElement {
   }
 
   override render() {
+    const filled = this.#filledParts();
     const renderPrefix =
-      hasSlotted(this, 'prefix', 'icon', 'status', 'thumbnail') ||
-      this.showStatus ||
-      this.icon;
-    const renderSuffix = Array.from(this.children).some(
-      (child) =>
-        child.slot === 'suffix' &&
-        (child.childElementCount > 0 || child.textContent.trim() !== '')
-    );
+      filled.prefix || filled.thumbnail || filled.icon || filled.status;
 
     return html`
       <div
@@ -306,13 +350,15 @@ export default class CraftChip extends LitElement {
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,
           'cp-chip--show-status': this.showStatus,
-          [`cp-chip--leads-with-${this.leadingPart}`]: true,
+          [`cp-chip--leads-with-${this.#leadingPart(filled)}`]: true,
         })}"
       >
         ${this.selectable ? this.renderSelect() : nothing}
-        ${renderPrefix ? this.renderPrefix() : nothing}
-        <slot class="cp-chip__body"></slot>
-        ${renderSuffix
+        ${renderPrefix ? this.renderPrefix(filled) : nothing}
+        ${filled.body
+          ? html`<slot class="cp-chip__body" part="body"></slot>`
+          : nothing}
+        ${filled.suffix
           ? html`<slot
               name="suffix"
               class="cp-chip__suffix"

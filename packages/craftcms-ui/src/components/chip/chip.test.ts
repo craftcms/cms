@@ -60,10 +60,30 @@ describe('craft-chip slots', () => {
     expect(slot(element, 'suffix')).toBeNull();
   });
 
-  it('renders the prefix for the icon attribute alone', async () => {
+  it('renders the icon for the icon attribute alone', async () => {
     const element = await createChip({icon: 'star'});
 
-    expect(slot(element, 'prefix')).not.toBeNull();
+    expect(slot(element, 'icon')).not.toBeNull();
+    expect(slot(element, 'prefix')).toBeNull();
+  });
+
+  // An empty part would still take the gap between parts.
+  it('leaves out slots filled only by an empty wrapper', async () => {
+    const element = await createChip(
+      {'show-status': '', 'show-thumb': ''},
+      '<div slot="status"></div><div slot="thumbnail"> </div>Label<div slot="suffix"></div>'
+    );
+
+    expect(slot(element, 'status')).toBeNull();
+    expect(slot(element, 'thumbnail')).toBeNull();
+    expect(slot(element, 'suffix')).toBeNull();
+    expect(element.shadowRoot?.querySelector('.cp-chip__prefix')).toBeNull();
+  });
+
+  it('leaves out the label when there is none', async () => {
+    const element = await createChip({icon: 'star'}, '');
+
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).toBeNull();
   });
 });
 
@@ -109,14 +129,27 @@ describe('craft-chip light DOM changes', () => {
   });
 
   /** Content is moved into a slot by setting the attribute, not only by being appended. */
-  it('renders the prefix when existing content is moved into the slot', async () => {
-    const element = await createChip({}, 'Label<div id="thumb"></div>');
-    expect(slot(element, 'prefix')).toBeNull();
+  it('renders a slot when existing content is moved into it', async () => {
+    const element = await createChip({}, 'Label<span id="status">Live</span>');
+    expect(slot(element, 'status')).toBeNull();
 
-    element.querySelector('#thumb')!.setAttribute('slot', 'thumbnail');
+    element.querySelector('#status')!.setAttribute('slot', 'status');
     await settle(element);
 
-    expect(slot(element, 'prefix')).not.toBeNull();
+    expect(slot(element, 'status')).not.toBeNull();
+  });
+
+  it('renders the label once its text arrives', async () => {
+    const element = await createChip({}, '');
+    const text = document.createTextNode('');
+    element.append(text);
+    await settle(element);
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).toBeNull();
+
+    text.data = 'Label';
+    await settle(element);
+
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).not.toBeNull();
   });
 });
 
@@ -138,7 +171,9 @@ describe('craft-chip status', () => {
       '<span slot="status">Live</span>'
     );
 
-    expect(element.shadowRoot?.querySelector('[part="prefix"]')).not.toBeNull();
+    expect(
+      element.shadowRoot?.querySelector('.cp-chip__prefix')
+    ).not.toBeNull();
   });
 
   // Slotting a status is enough to show it; `show-status` is for a status slot
