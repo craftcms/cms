@@ -279,7 +279,7 @@ readonly class Navigation
      * @param  string  $indexUri  The index these sources hang off
      * @return NavItem[]
      */
-    private function sourceSubnav(string $elementType, string $indexUri, ?string $page = null): array
+    public function sourceSubnav(string $elementType, string $indexUri, ?string $page = null): array
     {
         $items = [];
         $group = null;

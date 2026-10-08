@@ -4,6 +4,7 @@
   import '@craftcms/ui/components/icon/icon';
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, ref, watch} from 'vue';
+  import {useIsSlideout} from '@/common/composables/screen';
   import UiNode from './UiNode.vue';
   import {uiTabPanelId, pathsMatch} from './runtime';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
@@ -16,6 +17,12 @@
     scope: string[];
     refreshable: boolean;
   }>();
+  /**
+   * A slideout sits over a page whose URL is about what's behind it, so its
+   * tabs leave the hash alone.
+   */
+  const isSlideout = useIsSlideout();
+
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
   }>();
@@ -87,7 +94,11 @@
 
 <template>
   <!-- UiNodeList -->
-  <craft-tabs v-if="tabs.length > 1" @craft-tab-show="onSelectionChanged">
+  <craft-tabs
+    v-if="tabs.length > 1"
+    :sync-location-hash="isSlideout ? 'false' : null"
+    @craft-tab-show="onSelectionChanged"
+  >
     <craft-tab
       v-for="tab in tabs"
       slot="tab"
