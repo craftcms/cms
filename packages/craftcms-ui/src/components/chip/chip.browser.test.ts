@@ -274,6 +274,23 @@ it('sits a plain chip’s parts flush with its edges', async () => {
   }
 });
 
+// A fraction of a pixel would round onto one side when drawn, leaving uneven
+// space above and below the chip's parts.
+it('keeps a chip with a thumbnail a whole number of pixels tall', async () => {
+  for (const size of ['small', 'medium', 'large']) {
+    const {attrs, markup} = leadingParts.thumbnail;
+    const chip = await renderChip(
+      `size="${size}" ${attrs} style="font-size: 14px"`,
+      `${markup}Label`
+    );
+    const {height} = chip
+      .shadowRoot!.querySelector('.cp-chip')!
+      .getBoundingClientRect();
+
+    expect(height % 1, size).toBe(0);
+  }
+});
+
 it('keeps a small chip as tall as its suffix button, unless it is auto', async () => {
   const height = async (size: string, suffix: boolean) => {
     document.body.innerHTML = `

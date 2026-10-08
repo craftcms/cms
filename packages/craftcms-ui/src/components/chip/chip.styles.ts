@@ -25,6 +25,10 @@ export default css`
     --_chip-spacing: 0.25em;
     --_chip-gap: var(--c-chip-gap, var(--c-spacing-md));
     --_chip-status-gap: calc(var(--_chip-gap) * 0.75);
+    /* Whole pixels, so a chip is never a fraction of a pixel tall: the
+       remainder would round onto one side, leaving uneven space above and
+       below its parts, and shift everything after it off the pixel grid. */
+    --_chip-block-padding: round(calc(var(--_chip-spacing) / 2), 1px);
     --_thumb-size: calc(30rem / 16);
     --_radius: var(--c-radius-md);
     /* Sized to its content, but never wider than its parent: the label
@@ -104,7 +108,7 @@ export default css`
    */
   .cp-chip--align-start :is(.cp-chip__prefix, .cp-chip__status),
   .cp-chip--align-end :is(.cp-chip__prefix, .cp-chip__status) {
-    min-height: calc(1lh + var(--_chip-spacing));
+    min-height: calc(1lh + var(--_chip-block-padding) * 2);
   }
 
   /* Prefix */
@@ -158,7 +162,7 @@ export default css`
     position: relative;
     width: var(--_thumb-size);
     aspect-ratio: 1;
-    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-block: var(--_chip-block-padding);
   }
 
   /* A thumbnail or custom prefix content fills more of the chip's height, so
@@ -193,7 +197,7 @@ export default css`
   }
 
   .cp-chip__body {
-    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-block: var(--_chip-block-padding);
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: center;
@@ -221,7 +225,7 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
-    padding-block: calc(var(--_chip-spacing) / 2);
+    padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;
   }
