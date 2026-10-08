@@ -9,13 +9,10 @@ export default css`
     --_prefix-size: calc(24rem / 16);
     /* The rule down the side of an inline subnav. */
     --_subnav-rule: 2px;
-    /* The square a collapsed row reserves for its icon, and the box that
-       square actually occupies — the row draws a transparent border to keep
-       room for its focus state, so anything covering it has to match the
-       outer figure, not the inner one. */
+    /* The square a collapsed row occupies, border included. The row draws a
+       transparent border to keep room for its focus state. */
     --_rail-border: 1px;
-    --_rail-size: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
-    --_rail-box: calc(var(--_rail-size) + var(--_rail-border) * 2);
+    --_rail-size: var(--c-size-touch-target);
 
     border-radius: var(--c-radius-md);
   }
@@ -260,6 +257,7 @@ export default css`
    * disclosure moves on top of the icon, and a heading gives way to a rule.
    */
   .nav-item--icon {
+    box-sizing: border-box;
     width: var(--_rail-size);
     display: block;
     text-decoration: none;
@@ -348,8 +346,8 @@ export default css`
     /* The row's whole box, so the chevron lands dead on the icon it replaces
        — and the button fills it, so the focus ring appears exactly where the
        row's own would. Well past the 24px 2.5.8 floor either way. */
-    width: var(--_rail-box);
-    height: var(--_rail-box);
+    width: var(--_rail-size);
+    height: var(--_rail-size);
 
     /* A plain button is transparent, which would leave only a bare chevron
        and its ring to show a keyboard user where they are. */

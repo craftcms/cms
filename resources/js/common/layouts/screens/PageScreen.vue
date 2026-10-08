@@ -543,6 +543,9 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
 
   .cp-details-rail {
     position: sticky;
+    /* Sticky makes the rail a stacking context, so its tab tooltips can only
+       clear the details pane beside it if the rail does too. */
+    z-index: var(--c-layer-sticky);
     inset-block-start: 0;
     align-self: start;
     border-block-start: 1px solid transparent;
