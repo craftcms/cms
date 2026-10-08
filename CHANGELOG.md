@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug that prevented third party nested element types from being editable. ([#19898](https://github.com/craftcms/cms/issues/19898))
+
 ## 5.11.5 - 2026-10-07
 
 - Fixed a bug where saving an image as a new asset from the Image Editor didn’t always replace the original asset within the Assets field it was selected in. ([#19791](https://github.com/craftcms/cms/issues/19791))
