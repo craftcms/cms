@@ -596,20 +596,25 @@ describe('external-panel mode', () => {
   });
 
   it.each([
-    {disabled: [], expected: 0},
-    {disabled: [0], expected: 1},
+    {index: -1, disabled: [], expected: 0},
+    {index: -1, disabled: [0], expected: 1},
+    {index: 5, disabled: [], expected: 0},
+    {index: 1, disabled: [1], expected: 0},
   ])(
-    'resolves selected-index="-1" to the first enabled tab (disabled: $disabled)',
-    async ({disabled, expected}) => {
-      const {element, tabs} = await createExternalTabs({
+    'resolves selected-index $index to the first enabled tab (disabled: $disabled)',
+    async ({index, disabled, expected}) => {
+      const {element, tabs, sections} = await createExternalTabs({
         disabled,
-        attrs: {'selected-index': '-1'},
+        attrs: {'selected-index': String(index)},
       });
 
       expect(element.selectedIndex).toBe(expected);
       expect(tabs[expected]!.getAttribute('aria-selected')).toBe('true');
+      expect(sections[expected]!.classList.contains('hidden')).toBe(false);
 
-      element.selectedIndex = -1;
+      element.selectedIndex = 2;
+      await element.updateComplete;
+      element.selectedIndex = index;
       await element.updateComplete;
 
       expect(element.selectedIndex).toBe(expected);

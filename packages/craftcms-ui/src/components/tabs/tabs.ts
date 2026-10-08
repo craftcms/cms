@@ -345,6 +345,10 @@ export default class CraftTabs extends LionTabs {
       this.#setupExternal();
     } else {
       super.firstUpdated(changedProperties);
+
+      // Registered after Lion's own handler above, and so runs after it: a
+      // removed tab can leave Lion's store with no entry at `selectedIndex`.
+      tabSlot?.addEventListener('slotchange', this.#normalizeAfterSlotChange);
     }
 
     this.#normalizeSelection();
@@ -421,18 +425,21 @@ export default class CraftTabs extends LionTabs {
   }
 
   /**
-   * Moves a selection that points at no tab, such as `-1`, onto the first
+   * Moves a selection that points at no usable tab — `-1`, an index past the
+   * end, a disabled tab, or a tab that has since been removed — onto the first
    * enabled one: a tab strip always has a tab selected. Returns whether it
    * moved, which requests another update.
    */
   #normalizeSelection(): boolean {
-    if (this.selectedIndex >= 0) {
+    const selected = this.#tabs[this.selectedIndex];
+
+    if (this.selectedIndex >= 0 && selected && !selected.disabled) {
       return false;
     }
 
     const first = this.#tabs.findIndex((tab) => !tab.disabled);
 
-    if (first < 0) {
+    if (first < 0 || first === this.selectedIndex) {
       return false;
     }
 
@@ -440,6 +447,10 @@ export default class CraftTabs extends LionTabs {
 
     return true;
   }
+
+  #normalizeAfterSlotChange = () => {
+    this.#normalizeSelection();
+  };
 
   /** Exactly one tab is in the tab order: the selected one. */
   #syncTabindex() {
@@ -521,14 +532,9 @@ export default class CraftTabs extends LionTabs {
       });
     });
 
-    // Lion moves the initial selection off a disabled first tab; match that.
-    if (this.#tabs[this.selectedIndex]?.disabled) {
-      const enabled = this.#tabs.findIndex((tab) => !tab.disabled);
-      if (enabled !== -1) {
-        this.selectedIndex = enabled;
-      }
-    }
-
+    // A slot change can remove the selected tab, and Lion's first-render move
+    // off a disabled first tab doesn't run in this mode.
+    this.#normalizeSelection();
     this.#applyExternal();
   };
 

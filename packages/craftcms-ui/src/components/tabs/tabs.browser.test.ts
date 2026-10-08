@@ -99,6 +99,8 @@ it.each([
   {disabled: [0], attrs: {}, expected: 1},
   {disabled: [], attrs: {'selected-index': '-1'}, expected: 0},
   {disabled: [0], attrs: {'selected-index': '-1'}, expected: 1},
+  {disabled: [], attrs: {'selected-index': '5'}, expected: 0},
+  {disabled: [1], attrs: {'selected-index': '1'}, expected: 0},
 ])(
   'selects the first enabled tab given no valid selected-index (disabled: $disabled, attrs: $attrs)',
   async ({disabled, attrs, expected}) => {
@@ -313,4 +315,62 @@ describe.each(['block-start', 'inline-start'])('placed at %s', (placement) => {
       });
     }
   );
+});
+
+/** A strip driving three panels it doesn't slot, placed straight after it. */
+async function externalStrip(): Promise<{
+  element: Strip;
+  tabs: HTMLElement[];
+  sections: HTMLElement[];
+}> {
+  const element = document.createElement('craft-tabs') as Strip;
+  element.setAttribute('label', 'Tabs');
+  const sections: HTMLElement[] = [];
+
+  for (let index = 0; index < 3; index++) {
+    const tab = document.createElement('craft-tab');
+    tab.slot = 'tab';
+    tab.setAttribute('controls', `external-panel-${index}`);
+    tab.textContent = `Tab ${index}`;
+    element.append(tab);
+
+    const section = document.createElement('section');
+    section.id = `external-panel-${index}`;
+    section.textContent = `Panel ${index}`;
+    sections.push(section);
+  }
+
+  document.body.append(element, ...sections);
+  await element.updateComplete;
+
+  const tabs = [...element.querySelectorAll<HTMLElement>('craft-tab')];
+  await expect.poll(() => tabs[0]!.getAttribute('role')).toBe('tab');
+
+  return {element, tabs, sections};
+}
+
+it('moves the selection to the first tab when the selected slotted tab is removed', async () => {
+  const {element, tabs, slottedPanels} = await strip();
+
+  element.selectedIndex = 2;
+  await element.updateComplete;
+  tabs[2]!.remove();
+  slottedPanels[2]!.remove();
+
+  await expect.poll(() => element.selectedIndex).toBe(0);
+  await expect.poll(() => tabs[0]!.getAttribute('aria-selected')).toBe('true');
+  expect(getComputedStyle(slottedPanels[0]!).display).not.toBe('none');
+});
+
+it('moves the selection to the first tab when the selected external tab is removed', async () => {
+  const {element, tabs, sections} = await externalStrip();
+
+  element.selectedIndex = 2;
+  await element.updateComplete;
+  tabs[2]!.remove();
+  sections[2]!.remove();
+
+  await expect.poll(() => element.selectedIndex).toBe(0);
+  await expect.poll(() => tabs[0]!.getAttribute('aria-selected')).toBe('true');
+  expect(sections[0]!.classList.contains('hidden')).toBe(false);
 });
