@@ -33,7 +33,7 @@ import type {
   IndexRestore,
   IndexVisitor,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
-import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
+import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {
   ElementIndexModel,
   ElementIndexView,
@@ -252,7 +252,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     );
   }
 
-  const selection = useElementIndexSelection(table, {
+  const selection = useTableRowSelection(table, {
     selectable: true,
     readOnly: options.readOnly ?? false,
   });
