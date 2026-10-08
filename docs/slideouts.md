@@ -418,8 +418,8 @@ the field layout designer falls back to it.
 relaying `submit`/`close` back to the instance; subclasses keep the legacy panel. See
 `resources/js/modules/slideout/README.md`.
 
-> The designer's component settings use `openSlideoutWith()` when the Vue stack is available, and
-> the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
+> The designer's component settings — and the entry type manager's per-field overrides — use
+> `openSlideoutWith()` when the Vue stack is available, and the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
 > and the designer is also reachable from legacy-stack screens through the `fieldLayoutDesigner()`
 > Twig function. `canUseVueSlideout()` in
 > `resources/js/modules/field-layout-designer/settings-slideout.ts` decides, keying off whether the

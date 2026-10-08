@@ -8,6 +8,7 @@
    * ported to a real Vue page, and porting one is just adding `inertiaPage()`.
    */
   import {computed, onMounted} from 'vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useScreenContentReady} from '@/common/composables/screen';
@@ -112,5 +113,11 @@
     />
   </LayoutSlot>
 
-  <HtmlFragmentRenderer :fragment="contentFragment" @ready="fragmentReady" />
+  <CpContainer>
+    <HtmlFragmentRenderer
+      :fragment="contentFragment"
+      class="py-lg"
+      @ready="fragmentReady"
+    />
+  </CpContainer>
 </template>
