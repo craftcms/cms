@@ -25,4 +25,12 @@ interface EagerImageTransformerInterface
      * @param Asset[] $assets
      */
     public function eagerLoadTransforms(array $transforms, array $assets): void;
+
+    /**
+     * Eager-loads all the transforms for the given assets.
+     *
+     * @param Asset[] $assets
+     * @since 5.9.0
+     */
+    public function eagerLoadAllTransforms(array $assets): void;
 }
