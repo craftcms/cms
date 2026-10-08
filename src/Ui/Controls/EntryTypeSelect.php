@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Cp\Components\EntryTypeSelect as EntryTypeSelectComponent;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use Illuminate\Support\Arr;
 
 /**
