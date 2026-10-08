@@ -173,52 +173,55 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             }
         }
 
-        $response->attachBehavior(TemplateResponseBehavior::NAME, [
-            'class' => TemplateResponseBehavior::class,
-            'template' => '_layouts/cp',
-            'variables' => [
-                'docTitle' => $docTitle,
-                'title' => $behavior->title,
-                'selectedSubnavItem' => $behavior->selectedSubnavItem,
-                'crumbs' => array_map(function(array $crumb): array {
-                    if (isset($crumb['url'])) {
-                        $crumb['url'] = Url::cpUrl($crumb['url']);
-                    }
-                    return $crumb;
-                }, $crumbs ?? []),
-                'contextMenu' => $this->_contextMenu($behavior),
-                'toolbar' => $toolbar,
-                'actionMenu' => $this->_actionMenu($behavior, config: [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'id' => 'action-btn',
-                        'class' => ['action-btn', 'hairline-dark', 'm'],
-                        'title' => t('Actions'),
-                    ],
-                ]),
-                'submitButtonLabel' => $behavior->submitButtonLabel,
-                'additionalButtons' => $addlButtons,
-                'tabs' => $behavior->tabs,
-                'fullPageForm' => $isForm,
-                'mainAttributes' => $behavior->mainAttributes,
-                'mainFormAttributes' => $behavior->formAttributes,
-                'formActions' => array_map(function(array $action): array {
-                    if (isset($action['redirect'])) {
-                        $action['redirect'] = Crypt::encrypt($action['redirect']);
-                    }
-                    return $action;
-                }, $altActions ?? []),
-                'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
-                'contentNotice' => $notice,
-                'content' => $content,
-                'details' => $sidebar,
-                'sidebar' => $pageSidebar,
-                'errorSummary' => $errorSummary,
-            ],
-            'templateMode' => TemplateMode::Cp->value,
-        ]);
+        $variables = [
+            'docTitle' => $docTitle,
+            'title' => $behavior->title,
+            'selectedSubnavItem' => $behavior->selectedSubnavItem,
+            'crumbs' => array_map(function(array $crumb): array {
+                if (isset($crumb['url'])) {
+                    $crumb['url'] = Url::cpUrl($crumb['url']);
+                }
+                return $crumb;
+            }, $crumbs ?? []),
+            'contextMenu' => $this->_contextMenu($behavior),
+            'toolbar' => $toolbar,
+            'actionMenu' => $this->_actionMenu($behavior, config: [
+                'hiddenLabel' => t('Actions'),
+                'buttonAttributes' => [
+                    'id' => 'action-btn',
+                    'class' => ['action-btn', 'hairline-dark', 'm'],
+                    'title' => t('Actions'),
+                ],
+            ]),
+            'submitButtonLabel' => $behavior->submitButtonLabel,
+            'additionalButtons' => $addlButtons,
+            'tabs' => $behavior->tabs,
+            'fullPageForm' => $isForm,
+            'mainAttributes' => $behavior->mainAttributes,
+            'mainFormAttributes' => $behavior->formAttributes,
+            'formActions' => array_map(function(array $action): array {
+                if (isset($action['redirect'])) {
+                    $action['redirect'] = Crypt::encrypt($action['redirect']);
+                }
+                return $action;
+            }, $altActions ?? []),
+            'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
+            'contentNotice' => $notice,
+            'content' => $content,
+            'details' => $sidebar,
+            'sidebar' => $pageSidebar,
+            'errorSummary' => $errorSummary,
+        ];
 
-        (new TemplateResponseFormatter())->format($response);
+        /**
+         * Nothing in Craft 6 calls `asCpScreen()` — it exists only on
+         * `craft\web\Controller`. So every screen arriving here is Craft
+         * 5-era plugin code, and every one of them renders in the Inertia
+         * shell. `_layouts/cp` is no longer a destination for a screen
+         * response; it still backs the control panel templates that render
+         * through it directly.
+         */
+        BridgedScreen::send($response, $variables);
     }
 
     private function _contextMenu(

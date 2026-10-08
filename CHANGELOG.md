@@ -5,11 +5,40 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
+- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
+- Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
+- Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Tabs now mirror the selected tab in the URL hash, select the tab named by the hash on page load, and keep it after saving.
+- Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
+- Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
+- Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
+- Added `CraftCms\Cms\Cp\Navigation::sourceSubnav()`, which builds a subnav from an element type’s sources, for plugins adding their own control panel section.
+- Added `CraftCms\Cms\Cp\Data\ActionItem::$status` and `status()`. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Added `craft.cp.selectize()` and `CraftCms\Cms\Cp\FormFields::selectizeFromConfig()`, which render the legacy selectize variables as a combobox.
+- Added `craft.cp.select()` and `CraftCms\Cms\Cp\FormFields::selectFromConfig()`, which render the legacy select variables as a `<craft-select>`.
+- Added `craft.cp.autosuggest()` and `CraftCms\Cms\Cp\FormFields::autosuggestFromConfig()`, which render the legacy autosuggest variables as a combobox. Craft 5’s `suggestions` shape is still accepted.
+- Added `CraftCms\Cms\Cp\Components\Combobox::labelledBy()`, for a combobox labelled by an element the caller renders itself.
+- Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
+- `CraftCms\Cms\Element\Element::prepareEditScreen()` now accepts a `Symfony\Component\HttpFoundation\Response|CraftCms\Cms\Http\Responses\CpScreenResponse` argument, rather than `yii\web\Response`. Overrides must update their signatures.
+- `CraftCms\Cms\Element\Queries\ElementQuery::statusCondition()` now returns a `Closure` which modifies an `Illuminate\Database\Query\Builder`, rather than a Yii query condition. Overrides must update their signatures and return closures.
+- `craft\base\Model::attributes()` now declares an `array` return type. Overrides must update their signatures.
+- Plugin settings models must now extend `CraftCms\Cms\Plugin\PluginSettings` rather than `craft\base\Model`.
+- Plugin settings are now validated using Laravel validation rules returned by `CraftCms\Cms\Plugin\PluginSettings::getRules()`, rather than Yii validation rules returned by `rules()`. Validation errors are added via the `$fail` callback or `errors()`, rather than `addError()`.
+- Plugin settings are now persisted based on the settings model’s public properties, via `CraftCms\Cms\Plugin\PluginSettings::configData()`. Settings stored in private properties with getter and setter methods must be redeclared as public properties, or included by overriding `configData()`.
+- Removed the `data` and `methods` blocks from the `_includes/forms/autosuggest.twig` template, along with the Vue instance they configured. Templates that overrode them should pass `suggestions` instead.
+- Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved control panel styling for medium-sized viewports.
 - Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
 - Moved the shared control panel table code (`useCraftTable`, `createCraftColumnHelper`, `useServerPagination`, `useServerSort`, and `useEditableTable`) from `modules/admin-table` to `common/table`. ([#19897](https://github.com/craftcms/cms/pull/19897))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
+- Fixed an error that occurred when a Craft 5 plugin registered a utility, which no longer satisfied `CraftCms\Cms\Utility\UtilityTypes`’ contract. ([#19852](https://github.com/craftcms/cms/pull/19852))
+- Fixed an error that occurred when registering asset bundles that depend on `CraftCms\Cms\View\LegacyAssets\HtmxAsset`. The bundle is now deprecated and does nothing.
+- Fixed a bug where the tab strip wasn’t guttered with the content it sits above. ([#19861](https://github.com/craftcms/cms/pull/19861))
+- Fixed a bug where an editable table that wasn’t visible when the page loaded didn’t initialize until the window was resized.
+- Fixed a bug where environment variable, alias, and template suggestions weren’t sorted alphabetically.
+- Fixed a bug where status indicators for disabled elements were filled in rather than outlined, and custom status colors were shown as gray. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Fixed a bug where admin tables no longer had selectable rows. ([#19893](https://github.com/craftcms/cms/pull/19893))
 - Fixed a bug where the license enforcement screen wasn’t showing the “Continue to the control panel” link after the countdown ended. ([#19895](https://github.com/craftcms/cms/issues/19895))
 

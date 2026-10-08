@@ -109,7 +109,9 @@
 
   // Page chrome from props and shared page data.
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-  const subnav = computed(() => page.props.subnav ?? []);
+  // A page that knows its own nav — an index listing its sources — sets it
+  // through `useAppLayout`; everything else takes the server's page prop.
+  const subnav = computed(() => props.subnav ?? page.props.subnav ?? []);
 
   // The secondary nav's trail joins the crumbs, so location reads the same
   // with or without the nav on screen, and each level brings its switcher. The
@@ -155,6 +157,7 @@
   const hasFooter = computed(
     () =>
       Boolean(props.form) ||
+      Boolean(props.fullPageForm) ||
       regions.has('content-footer') ||
       regions.has('additional-buttons')
   );
@@ -211,6 +214,19 @@
     emit('save', options);
   }
 
+  /**
+   * A Vue page drives saving through its Inertia form, so the native submit is
+   * cancelled. A bridged legacy screen has no such form: it posts to the
+   * current URL, and the hidden `action` input in its own content names the
+   * controller action — the same contract Craft 5's page form used.
+   */
+  function onSubmit(event: Event): void {
+    if (props.form) {
+      event.preventDefault();
+      save();
+    }
+  }
+
   useAppendHtml();
 
   // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
@@ -256,11 +272,15 @@
                   <main id="main" tabindex="-1">
                     <form
                       method="post"
-                      @submit.prevent="form && save()"
+                      accept-charset="UTF-8"
+                      novalidate
+                      :id="legacyIds ? 'main-form' : undefined"
+                      @submit="onSubmit"
                       class="cp-main"
                     >
                       <div
                         ref="contentLayout"
+                        :id="legacyIds ? 'page-container' : undefined"
                         class="cp-content"
                         :class="{
                           'cp-content--sidebar': hasSidebar,
@@ -319,7 +339,10 @@
                                   class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
                                 >
                                   <LayoutSlotOutlet name="content-toolbar">
-                                    <div class="flex gap-2 items-center">
+                                    <div
+                                      :id="legacyIds ? 'toolbar' : undefined"
+                                      class="flex gap-2 items-center"
+                                    >
                                       <LayoutSlotOutlet
                                         name="content-toolbar-meta"
                                       >
@@ -372,7 +395,15 @@
                                 </LayoutSlotOutlet>
                               </div>
                             </CpContainer>
-                            <slot></slot>
+                            <!-- `#content` is how the legacy element editor finds its form
+                            host: `$('#content').find('craft-entry-field-layout-form')`.
+                            Without it `formHost` is undefined and every field-layout
+                            refresh throws, which stopped a nested element — an address,
+                            say — from ever being added on a bridged screen. -->
+                            <div v-if="legacyIds" id="content" class="contents">
+                              <slot></slot>
+                            </div>
+                            <slot v-else></slot>
                           </div>
                           <!-- Outside the content view, so its rule spans the pane even when
                           the view is constrained; the row itself keeps to the content's
@@ -402,6 +433,7 @@
                                 :form-actions="formActions"
                                 :form-additional-actions="formAdditionalActions"
                                 :form-additional-buttons="formAdditionalButtons"
+                                :full-page-form="fullPageForm"
                                 :submit-button-label="submitButtonLabel"
                                 :primary-action-html="page.props.primaryAction"
                                 :save-disabled="saveDisabled"
@@ -419,8 +451,16 @@
                             </div>
                           </div>
                         </div>
-                        <aside v-show="hasDetails" class="cp-content__details">
-                          <div class="cp-content__details-pane">
+                        <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
+                        <aside
+                          v-show="hasDetails"
+                          :id="legacyIds ? 'details' : undefined"
+                          class="cp-content__details"
+                        >
+                          <div
+                            class="cp-content__details-pane"
+                            :class="{details: legacyIds}"
+                          >
                             <ContentDetails
                               ref="detailsColumn"
                               :resizer="detailsResizer"
