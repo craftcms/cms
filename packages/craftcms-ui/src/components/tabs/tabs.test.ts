@@ -109,6 +109,18 @@ describe('structure', () => {
     expect((menu as HTMLElement).hidden).toBe(true);
   });
 
+  it('names the tablist from label', async () => {
+    const element = await createTabs({attrs: {label: 'Details'}});
+    const tablist = shadow(element, '[role="tablist"]')!;
+
+    expect(tablist.getAttribute('aria-label')).toBe('Details');
+
+    element.label = null;
+    await element.updateComplete;
+
+    expect(tablist.hasAttribute('aria-label')).toBe(false);
+  });
+
   it('keeps the class names and slots Lion depends on', async () => {
     const element = await createTabs();
 
@@ -499,10 +511,12 @@ describe('external-panel mode', () => {
     arrow(tabs[0]!, 'ArrowRight');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(1);
+    expect(document.activeElement).toBe(tabs[1]);
 
     arrow(tabs[1]!, 'ArrowLeft');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(0);
+    expect(document.activeElement).toBe(tabs[0]);
 
     // Wraps backwards off the first tab...
     arrow(tabs[0]!, 'ArrowLeft');
@@ -521,10 +535,12 @@ describe('external-panel mode', () => {
     arrow(tabs[0]!, 'End');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(2);
+    expect(document.activeElement).toBe(tabs[2]);
 
     arrow(tabs[2]!, 'Home');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(0);
+    expect(document.activeElement).toBe(tabs[0]);
   });
 
   it('skips disabled tabs when navigating, and refuses to select one', async () => {
@@ -537,6 +553,17 @@ describe('external-panel mode', () => {
     tabs[1]!.click();
     await element.updateComplete;
     expect(element.selectedIndex).toBe(2);
+  });
+
+  it('selects the first tab when no selected-index is given', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    expect(element.selectedIndex).toBe(0);
+    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'true',
+      'false',
+      'false',
+    ]);
   });
 
   it('moves the initial selection off a disabled first tab', async () => {

@@ -50,7 +50,9 @@ it('puts the strip in the rail and drives its panels in place', async () => {
   const rail = document.getElementById('rail')!;
   const tabElements = [...rail.querySelectorAll('craft-tab')];
 
-  expect(rail.querySelector('craft-tabs')).not.toBeNull();
+  expect(rail.querySelector('craft-tabs')?.getAttribute('label')).toBe(
+    'Details'
+  );
   expect(details.querySelector('craft-tabs')).toBeNull();
   expect(tabElements.map((tab) => tab.getAttribute('controls'))).toEqual([
     'details-tab-info-panel',
@@ -69,6 +71,7 @@ it('keeps the strip and its panels together without a rail', async () => {
   const strip = details.querySelector('craft-tabs')!;
 
   expect(document.getElementById('rail')!.childElementCount).toBe(0);
+  expect(strip.getAttribute('label')).toBe('Details');
   expect(strip.querySelectorAll(':scope > [slot="panel"]')).toHaveLength(2);
   expect(strip.querySelector('craft-tab')?.hasAttribute('controls')).toBe(
     false

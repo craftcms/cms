@@ -4,6 +4,7 @@
    * the rail. Tabs render either a named slot or a component, so a page can
    * mix its own markup with registered tabs.
    */
+  import {t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import type {Component} from 'vue';
@@ -200,6 +201,7 @@
       <craft-tabs
         ref="tabs"
         class="details-tabs__rail"
+        :label="t('Details')"
         placement="inline-end"
         collapsible
         @craft-tab-show="onSelectedChanged"
@@ -235,6 +237,7 @@
   <craft-tabs
     v-else
     ref="tabs"
+    :label="t('Details')"
     placement="inline-end"
     collapsible
     @craft-tab-show="onSelectedChanged"

@@ -1,6 +1,6 @@
 import {uuid} from '@lion/ui/core.js';
 import {LionTabs} from '@lion/ui/tabs.js';
-import {html, type PropertyValues} from 'lit';
+import {html, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
@@ -192,6 +192,8 @@ const FIT_TOLERANCE = 1;
  * @csspart panels - The container holding the panels. `hidden` while nothing
  *   is selected, so it takes no space at all.
  *
+ * @attr label - The tablist's accessible name. Set it on every strip.
+ *
  * @attr size - The scale of the strip: `small`, `medium` (the default), or
  *   `large`. Sets the strip's font size, which the tabs and the overflow
  *   invoker size themselves from.
@@ -235,6 +237,14 @@ export default class CraftTabs extends LionTabs {
    * `-1` and the panel region collapsed to nothing.
    */
   @property({type: Boolean, reflect: true}) collapsible = false;
+
+  /**
+   * The accessible name of the tablist, describing what the tabs switch
+   * between (e.g. "Details"). The tablist lives in the shadow root, where an
+   * `aria-labelledby` on the host can't reach it, so the name is passed in as
+   * text and applied there.
+   */
+  @property() label: string | null = null;
 
   /**
    * Whether every tab takes an equal share of the strip's width, rather than
@@ -944,6 +954,7 @@ export default class CraftTabs extends LionTabs {
             class="tabs__tab-group"
             part="tab-group"
             role="tablist"
+            aria-label="${this.label || nothing}"
             aria-orientation="${this.#inline ? 'vertical' : 'horizontal'}"
           >
             <slot name="tab"></slot>

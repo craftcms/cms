@@ -16,7 +16,7 @@ Use tabs for alternative views of the same subject — an entry's content, its s
 Tabs and panels are slotted as **siblings**, paired by document order: the first `slot="tab"` owns the first `slot="panel"`.
 
 ```html
-<craft-tabs>
+<craft-tabs label="Entry settings">
   <craft-tab slot="tab">Content</craft-tab>
   <div slot="panel">…</div>
   <craft-tab slot="tab">Settings</craft-tab>
@@ -80,8 +80,11 @@ Disabled tabs are skipped by arrow-key navigation, rather than being focusable a
 
 Lion supplies the whole tab contract: the `role`, `aria-controls`, and `aria-labelledby` wiring, the roving tabindex, and arrow/Home/End navigation.
 
-Two things stay with you:
+It follows the APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/) pattern: the arrow keys move focus and selection together.
 
+Three things stay with you:
+
+- **Name the strip.** Set `label` to what the tabs switch between, such as "Entry settings". The tablist is in the shadow root, so `aria-labelledby` on the host can't reach it.
 - **Keep labels short.** They sit in a strip, and a long label is what pushes a tab into the overflow menu.
 - **Do not use tabs to hide required form fields.** A validation error in a panel nobody has opened is an error nobody can find.
 

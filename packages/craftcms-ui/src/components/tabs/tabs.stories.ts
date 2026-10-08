@@ -44,6 +44,7 @@ const meta = {
   },
   render: (args) => html`
     <craft-tabs
+      label="${args.label ?? 'Example'}"
       placement="${args.placement}"
       size="${args.size}"
       selected-index="${args.selectedIndex}"
@@ -118,7 +119,7 @@ export const Placements: Story = {
     <div style="display: grid; gap: 3rem;">
       ${tabsPlacements.map(
         (placement) => html`
-          <craft-tabs placement="${placement}">
+          <craft-tabs label="Placement example" placement="${placement}">
             <craft-tab slot="tab">First</craft-tab>
             <div slot="panel"><p>The strip is at the ${placement}.</p></div>
             <craft-tab slot="tab">Second</craft-tab>
@@ -195,7 +196,7 @@ export const RightToLeft: Story = {
  */
 export const DeprecatedLayout: Story = {
   render: () => html`
-    <craft-tabs layout="vertical">
+    <craft-tabs label="Layout example" layout="vertical">
       <craft-tab slot="tab">First</craft-tab>
       <div slot="panel"><p>The first panel.</p></div>
       <craft-tab slot="tab">Second</craft-tab>
@@ -227,7 +228,11 @@ export const Sizes: Story = {
         >
           ${sizes.map(
             (size) => html`
-              <craft-tabs placement="${placement}" size="${size}">
+              <craft-tabs
+                label="Size example"
+                placement="${placement}"
+                size="${size}"
+              >
                 <craft-tab slot="tab">${size}</craft-tab>
                 <div slot="panel"><p>A ${size} ${placement} strip.</p></div>
                 <craft-tab slot="tab">Second</craft-tab>
@@ -284,7 +289,7 @@ export const SelectedIndex: Story = {
  */
 export const Disabled: Story = {
   render: () => html`
-    <craft-tabs>
+    <craft-tabs label="Disabled example">
       <craft-tab slot="tab">Enabled</craft-tab>
       <div slot="panel"><p>This tab can be selected.</p></div>
       <craft-tab slot="tab" disabled>Disabled</craft-tab>
@@ -322,7 +327,7 @@ export const ExternalPanels: Story = {
       }
     </style>
 
-    <craft-tabs>
+    <craft-tabs label="Settings">
       <craft-tab slot="tab" controls="external-content">Content</craft-tab>
       <craft-tab slot="tab" controls="external-settings">Settings</craft-tab>
     </craft-tabs>
@@ -398,7 +403,7 @@ export const Overflow: Story = {
   },
   render: () => html`
     <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
-      <craft-tabs>
+      <craft-tabs label="Entry settings">
         ${OVERFLOW_LABELS.map(
           (label, index) => html`
             <craft-tab slot="tab">${label}</craft-tab>
@@ -465,7 +470,7 @@ export const Overflow: Story = {
 export const NoOverflow: Story = {
   render: () => html`
     <div style="max-inline-size: 60rem;">
-      <craft-tabs>
+      <craft-tabs label="Example">
         <craft-tab slot="tab">One</craft-tab>
         <div slot="panel"><p>First</p></div>
         <craft-tab slot="tab">Two</craft-tab>
@@ -503,7 +508,7 @@ export const NoOverflow: Story = {
 export const EqualWidth: Story = {
   render: () => html`
     <div style="max-inline-size: 34rem;">
-      <craft-tabs equal-width>
+      <craft-tabs label="Entry settings" equal-width>
         ${OVERFLOW_LABELS.slice(0, 4).map(
           (label, index) => html`
             <craft-tab slot="tab">${label}</craft-tab>
@@ -578,6 +583,7 @@ export const IconToolbar: Story = {
   render: () => html`
     <div style="display: flex; block-size: 14rem;">
       <craft-tabs
+        label="Details"
         placement="inline-start"
         size="small"
         collapsible
