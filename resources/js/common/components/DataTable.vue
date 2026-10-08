@@ -8,7 +8,7 @@
   import {
     type CraftTableFeatures,
     tableHeaderId,
-  } from '@/modules/admin-table/craftTable';
+  } from '@/common/table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {

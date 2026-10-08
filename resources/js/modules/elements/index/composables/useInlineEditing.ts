@@ -1,7 +1,7 @@
 import {serializeFormInputs, t} from '@craftcms/ui';
 import {firstFocusableWithin} from '@/common/utils/dom';
 import type {CellContext} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
