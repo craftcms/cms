@@ -30,6 +30,9 @@ export default css`
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
+    /* A full touch target whether or not there's an icon to fill one. */
+    box-sizing: border-box;
+    min-block-size: var(--c-size-touch-target);
 
     /*
      * Expanded, the focusable element is the label inside the row, so the ring
@@ -128,6 +131,7 @@ export default css`
 
   :host([group]) .nav-item {
     padding-block: var(--_padding-block) var(--c-spacing-xs);
+    min-block-size: 0;
   }
 
   :host([active]) .nav-item {

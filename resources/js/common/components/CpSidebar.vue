@@ -179,6 +179,11 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
+    /* Level with the details tab rail, which starts below the body's inset
+       and border. */
+    padding-block-start: calc(
+      var(--c-spacing-md) + var(--cp-body-inset) + var(--cp-body-border-width)
+    );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
