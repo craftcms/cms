@@ -214,6 +214,15 @@
           <craft-icon :name="tab.icon" :label="tab.label" />
         </craft-tab>
       </craft-tabs>
+      <craft-tooltip
+        v-for="tab in visibleTabs"
+        :key="tab.id"
+        :for="`${idPrefix}-${tab.id}`"
+        placement="left"
+        invoker-relation="label"
+      >
+        {{ tab.label }}
+      </craft-tooltip>
     </Teleport>
     <div class="details-tabs__panels">
       <section
@@ -257,6 +266,17 @@
       </DetailsTabPanel>
     </div>
   </craft-tabs>
+  <template v-if="!rail">
+    <craft-tooltip
+      v-for="tab in visibleTabs"
+      :key="tab.id"
+      :for="`${idPrefix}-${tab.id}`"
+      placement="left"
+      invoker-relation="label"
+    >
+      {{ tab.label }}
+    </craft-tooltip>
+  </template>
 </template>
 
 <style scoped>
