@@ -13,9 +13,9 @@ use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -70,7 +70,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $options = collect(app(Addresses::class)->getCountryList(app()->getLocale()))
             ->map(fn (string $label, string $value): array => compact('label', 'value'))

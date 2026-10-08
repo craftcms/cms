@@ -11,10 +11,6 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -23,6 +19,10 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -119,7 +119,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         array_unshift($sources, ['label' => t('All'), 'value' => '*']);
 
         return [
-            FormField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
+            UiField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
                 ->control(Choice::make($this->settingPath($prefix, 'sources'))
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
@@ -132,12 +132,12 @@ abstract class BaseElementLinkType extends BaseLinkType
     /**
      * Returns the selection condition builder setting.
      */
-    protected function selectionConditionField(string $prefix): FormField
+    protected function selectionConditionField(string $prefix): UiField
     {
         $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
         $elementType = static::elementType();
 
-        return FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
+        return UiField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
             ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ])))

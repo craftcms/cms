@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Number as NumberControl;
 use CraftCms\Cms\Gql\Types\Number as GqlNumber;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Number as NumberControl;
 use GraphQL\Type\Definition\Type;
 
 use function CraftCms\Cms\t;

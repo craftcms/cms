@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Checkbox as CheckboxControl;
-use CraftCms\Cms\Form\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Checkbox as CheckboxControl;
+use CraftCms\Cms\Ui\Controls\Control;
 
 use function CraftCms\Cms\t;
 

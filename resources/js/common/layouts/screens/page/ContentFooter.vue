@@ -5,6 +5,7 @@
    */
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui/utilities/translate';
   import CpContainer from '@/common/components/CpContainer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
@@ -23,6 +24,7 @@
         | 'formAdditionalButtons'
         | 'saveDisabled'
         | 'submitButtonLabel'
+        | 'fullPageForm'
       > & {
         readOnly: boolean;
         form: InertiaForm<any> | null;
@@ -94,6 +96,18 @@
           </LayoutSlotOutlet>
         </template>
       </FormActions>
+
+      <!-- A bridged legacy screen has no Inertia form to drive `FormActions`.
+           It posts natively instead, so it gets a plain submit button — the
+           same contract as Craft 5's page form. `craft-button` extends
+           `LionButtonSubmit`, so `type="submit"` submits the enclosing form. -->
+      <craft-button
+        v-else-if="fullPageForm && !readOnly"
+        type="submit"
+        variant="primary"
+      >
+        {{ submitButtonLabel || t('Save') }}
+      </craft-button>
 
       <LayoutSlotOutlet name="additional-buttons">
         <slot name="additional-buttons"></slot>

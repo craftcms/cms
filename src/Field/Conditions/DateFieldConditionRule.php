@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
-use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\Node;
 use DateTimeInterface;
 use RuntimeException;
 

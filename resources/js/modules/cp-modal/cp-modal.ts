@@ -1,7 +1,7 @@
 import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
 import {uiLayerManager} from '@/modules/slideout/slideout';
-import {inputName} from '@/modules/forms/runtime';
-import type {FormValues} from '@/modules/forms/types';
+import {inputName} from '@/modules/ui/runtime';
+import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 
@@ -9,7 +9,7 @@ declare const Craft: any;
 declare const $: any;
 
 interface CpModalSettings {
-  params: FormValues;
+  params: UiValues;
   containerElement: string;
   containerAttributes: Record<string, string>;
   requestOptions: LegacyRequestOptions;
@@ -20,8 +20,8 @@ interface CpModalSettings {
 }
 
 interface CpModalSubmitEvent {
-  response: {data?: FormValues};
-  data: FormValues;
+  response: {data?: UiValues};
+  data: UiValues;
 }
 
 interface CpModalRequestError extends Error {
@@ -174,7 +174,7 @@ export class CpModal extends Modal {
     this.load();
   }
 
-  load(data?: FormValues, refreshInitialData?: boolean): Promise<void> {
+  load(data?: UiValues, refreshInitialData?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       this.trigger('beforeLoad');
       this.showLoadSpinner();
@@ -239,7 +239,7 @@ export class CpModal extends Modal {
     });
   }
 
-  getParams(): FormValues {
+  getParams(): UiValues {
     return {};
   }
 

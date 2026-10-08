@@ -12,7 +12,7 @@
  * on the way in and its collapsed state survives being materialized.
  */
 
-import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/forms/types';
+import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/ui/types';
 
 const STORAGE_KEY = 'MatrixInput.collapsedEntries';
 

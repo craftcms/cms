@@ -89,18 +89,18 @@ it('ends the breadcrumbs with an unlinked chip for the asset', function () {
         );
 });
 
-it('compiles the field layout into a form payload', function () {
+it('compiles the field layout into a UI payload', function () {
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('form.nodes')
-            ->where('form.values.title', 'Current Title')
+            ->has('ui.nodes')
+            ->where('ui.values.title', 'Current Title')
         );
 });
 
 it('renders the filename as a sidebar meta field', function () {
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.values.newFilename', 'current-file.png')
+            ->where('sidebarUi.values.newFilename', 'current-file.png')
         );
 });
 
@@ -137,7 +137,7 @@ it('re-keys rename errors onto the field that posts them', function () {
     $asset = Asset::find()->id($this->asset->id)->one();
     $asset->errors()->add('newLocation', '“exe” is not an allowed file extension.');
 
-    expect($asset->formErrors())
+    expect($asset->uiErrors())
         ->not->toHaveKey('newLocation')
         ->toHaveKey('newFilename');
 });

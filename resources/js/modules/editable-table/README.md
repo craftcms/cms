@@ -4,7 +4,7 @@ A TypeScript port of the legacy jQuery `Craft.EditableTable`
 (`packages/craftcms-legacy/cp/src/js/EditableTable.js`) onto the modern
 **`@craftcms/garnish`** `Base`. It remains available for legacy integrations
 and custom table templates. Standard PHP helpers and Twig macros, Table field
-inputs, and generated fields use form-builder tables.
+inputs, and generated fields use UI tables.
 
 ## What changed
 

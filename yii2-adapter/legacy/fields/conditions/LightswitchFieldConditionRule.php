@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace craft\fields\conditions;
 
 use CraftCms\Cms\Field\Lightswitch;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyLightswitchConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyLightswitchConditionRule;
 use RuntimeException;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule instead. */

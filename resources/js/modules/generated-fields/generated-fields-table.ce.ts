@@ -1,30 +1,29 @@
 import {h, nextTick, shallowRef} from 'vue';
 import {cpComponentRegistry} from '@/bootstrap/components';
-import FormRenderer from '@/modules/forms/FormRenderer.vue';
-import {mountFormHost} from '@/modules/forms/mountFormHost';
-import {isRecord, valueAt} from '@/modules/forms/runtime';
-import type {FormPayload, FormValues} from '@/modules/forms/types';
-import type {FormRendererInstance} from '@/modules/forms/useInertiaFormRenderer';
+import UiRenderer from '@/modules/ui/UiRenderer.vue';
+import {mountUiHost} from '@/modules/ui/mountUiHost';
+import {isRecord, valueAt} from '@/modules/ui/runtime';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
+import type {UiRendererInstance} from '@/modules/ui/useInertiaUiRenderer';
 import {cvdData} from '@/modules/field-layout-designer/support';
 import type {CardViewDesigner} from '@/modules/field-layout-designer/card-view-designer';
 
-/** Mounts the shared Form table and synchronizes generated field identities. */
+/** Mounts the shared UI table and synchronizes generated field identities. */
 export default class CraftGeneratedFieldsTable extends HTMLElement {
   ready: Promise<void> = Promise.resolve();
-  readonly #renderer =
-    shallowRef<Pick<FormRendererInstance, 'currentValues'>>();
-  #mount: ReturnType<typeof mountFormHost> | null = null;
+  readonly #renderer = shallowRef<Pick<UiRendererInstance, 'currentValues'>>();
+  #mount: ReturnType<typeof mountUiHost> | null = null;
   #path: string[] = [];
   #labels = new Map<string, string>();
 
   connectedCallback(): void {
     if (this.#mount) return;
 
-    // SAFETY: PHP serializes a resolved Form payload into this attribute.
-    const payload = JSON.parse(this.dataset.payload!) as FormPayload;
+    // SAFETY: PHP serializes a resolved UI payload into this attribute.
+    const payload = JSON.parse(this.dataset.payload!) as UiPayload;
     this.#path = payload.nodes[0]!.control!.path;
-    this.#mount = mountFormHost(this, cpComponentRegistry, () =>
-      h(FormRenderer, {
+    this.#mount = mountUiHost(this, cpComponentRegistry, () =>
+      h(UiRenderer, {
         ref: this.#renderer,
         payload,
         onChange: () => this.#changed(),
@@ -48,7 +47,7 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
     return element ? cvdData.get(element) : undefined;
   }
 
-  serialize(): FormValues[] {
+  serialize(): UiValues[] {
     const values = this.#renderer.value?.currentValues();
     const rows = values ? valueAt(values, this.#path) : [];
     return Array.isArray(rows) ? rows.filter(isRecord) : [];

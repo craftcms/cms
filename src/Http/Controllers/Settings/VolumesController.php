@@ -13,13 +13,13 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\VolumeEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -75,23 +75,23 @@ class VolumesController extends BaseAssetSettingsController
         ]);
     }
 
-    public function create(Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    public function create(Volumes $volumes, UiResolver $uiResolver): CpScreenResponse
     {
         abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
 
-        return $this->editScreen(new Volume, $volumes, $formResolver);
+        return $this->editScreen(new Volume, $volumes, $uiResolver);
     }
 
-    public function edit(Volumes $volumes, FormResolver $formResolver, int $volumeId): CpScreenResponse
+    public function edit(Volumes $volumes, UiResolver $uiResolver, int $volumeId): CpScreenResponse
     {
         $volume = $volumes->getVolumeById($volumeId);
 
         abort_if(is_null($volume), 404, 'Volume not found');
 
-        return $this->editScreen($volume, $volumes, $formResolver);
+        return $this->editScreen($volume, $volumes, $uiResolver);
     }
 
-    public function renderForm(Request $request, Volumes $volumes, FormResolver $formResolver): JsonResponse
+    public function renderUi(Request $request, Volumes $volumes, UiResolver $uiResolver): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -115,13 +115,13 @@ class VolumesController extends BaseAssetSettingsController
         abort_if($volume === null, 404, 'Volume not found');
 
         return new JsonResponse([
-            'form' => new VolumeEditViewModel(
+            'ui' => new VolumeEditViewModel(
                 $volume,
                 $volumes,
-                $formResolver,
+                $uiResolver,
                 $this->assetTransformers,
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -178,7 +178,7 @@ class VolumesController extends BaseAssetSettingsController
         return $this->asSuccess();
     }
 
-    private function editScreen(Volume $volume, Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    private function editScreen(Volume $volume, Volumes $volumes, UiResolver $uiResolver): CpScreenResponse
     {
         $isNewVolume = $volume->id === null;
         $title = $isNewVolume
@@ -191,10 +191,10 @@ class VolumesController extends BaseAssetSettingsController
             ->addCrumb(t('Assets'), 'settings/assets')
             ->addCrumb(t('Volumes'), 'settings/assets')
             ->addCrumb($title)
-            ->inertiaPage('Form', new VolumeEditViewModel(
+            ->inertiaPage('Ui', new VolumeEditViewModel(
                 $volume,
                 $volumes,
-                $formResolver,
+                $uiResolver,
                 $this->assetTransformers,
                 readOnly: $this->readOnly,
             ))
