@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Events\ElementsResaved;
 use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -516,7 +517,7 @@ readonly class ElementWrites
                 DB::beginTransaction();
 
                 try {
-                    $this->workflows->lockDraftIds($draftIdsToLock);
+                    Draft::lockIds(...$draftIdsToLock);
 
                     $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout, $trackChanges, $dirtyAttributes);
 

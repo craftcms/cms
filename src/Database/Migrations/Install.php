@@ -372,7 +372,6 @@ class Install extends Migration
             $table->integer('releaseId');
             $table->integer('draftId')->nullable();
             $table->integer('canonicalId');
-            $table->char('canonicalStateHash', 64);
             $table->integer('publishedElementId')->nullable();
             $table->dateTime('publishedAt')->nullable();
             $table->dateTime('dateCreated');

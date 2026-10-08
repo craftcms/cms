@@ -14,7 +14,6 @@ use Illuminate\Support\Carbon;
  * @property int $releaseId
  * @property int|null $draftId
  * @property int $canonicalId
- * @property string $canonicalStateHash SHA-256 hash of the persisted live element tree at attachment time
  * @property int|null $publishedElementId
  * @property Carbon|null $publishedAt
  * @property Carbon $dateCreated
