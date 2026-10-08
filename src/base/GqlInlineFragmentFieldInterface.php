@@ -13,7 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-interface GqlInlineFragmentFieldInterface
+interface GqlInlineFragmentFieldInterface extends FieldInterface
 {
     /**
      * Returns a GraphQL fragment by its GraphQL fragment name.
