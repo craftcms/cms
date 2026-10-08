@@ -52,9 +52,7 @@ readonly class Navigation
      */
     public function getItems(): array
     {
-        return $this->applySelection(
-            $this->applyBadgeCounts($this->getTree())
-        );
+        return $this->applySelection($this->applyBadgeCounts($this->getTree()));
     }
 
     /**
@@ -63,7 +61,8 @@ readonly class Navigation
      * `_layouts/components/global-sidebar.twig` renders a subnav and stops,
      * and has no notion of a group — a heading with no URL would come out as
      * an unclickable nav item. So a group hands its children up in its place,
-     * which is what that template saw before the tree went deeper.
+     * which is what that template saw before the tree went deeper. That
+     * goes for top-level groups (e.g. “Administration”) too.
      *
      * @return NavItem[]
      */
@@ -75,7 +74,7 @@ readonly class Navigation
             }
 
             return $item;
-        }, $this->getItems());
+        }, $this->flattenGroups($this->getItems()));
     }
 
     /**
@@ -178,18 +177,9 @@ readonly class Navigation
                 ->subnav($this->sourceSubnav(Asset::class, 'assets')));
         }
 
-        if (
-            Edition::get() !== Edition::Solo &&
-            Gate::check('viewUsers')
-        ) {
-            $navItems->add(new NavItem()
-                ->label(t('Users'))
-                ->href('users')
-                ->icon('user-group')
-                ->subnav($this->sourceSubnav(User::class, 'users')));
-        }
-
         // Add any Plugin nav items
+        $pluginNavItems = collect();
+
         foreach ($this->plugins->getAllPlugins() as $plugin) {
             if (! $plugin->hasCpSection) {
                 continue;
@@ -209,7 +199,29 @@ readonly class Navigation
                 $pluginNavItem = new NavItem($pluginNavItem);
             }
 
-            $navItems->add($pluginNavItem);
+            $pluginNavItems->add($pluginNavItem);
+        }
+
+        // Ungrouped items come first, so a group's heading never ends up
+        // heading the plugins listed after it.
+        [$groupedPluginNavItems, $ungroupedPluginNavItems] = $pluginNavItems->partition(
+            fn (NavItem $item): bool => $item->group,
+        );
+
+        $navItems = $navItems
+            ->merge($ungroupedPluginNavItems)
+            ->merge($groupedPluginNavItems);
+
+        $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
+        $administrationItems = [];
+
+        if (Edition::get() !== Edition::Solo && Gate::check('viewUsers')) {
+            $administrationItems[] =
+                new NavItem()
+                    ->label(t('Users'))
+                    ->href('users')
+                    ->icon('user-group')
+                    ->subnav($this->sourceSubnav(User::class, 'users'));
         }
 
         if ($isAdmin && $this->generalConfig->enableGql) {
@@ -220,39 +232,59 @@ readonly class Navigation
                         new NavItem()
                             ->label(t('Schemas'))
                             ->href(cp_url('graphql/schemas')),
-                    )
+                    ),
                 )
-                ->add(new NavItem()->label(t('Tokens'))->href(cp_url('graphql/tokens')))
-                ->add(new NavItem()->label('GraphiQL')->href(cp_url('graphql/explore')));
+                ->add(
+                    new NavItem()
+                        ->label(t('Tokens'))
+                        ->href(cp_url('graphql/tokens')),
+                )
+                ->add(
+                    new NavItem()
+                        ->label('GraphiQL')
+                        ->href(cp_url('graphql/explore')),
+                );
 
-            $navItems->add(new NavItem()
-                ->label('GraphQL')
-                ->href('graphql')
-                ->icon('custom-icons/graphql')
-                ->subnav($subNavItems->all()));
+            $administrationItems[] =
+                new NavItem()
+                    ->label('GraphQL')
+                    ->href('graphql')
+                    ->icon('custom-icons/graphql')
+                    ->subnav($subNavItems->all());
         }
 
         $utilities = $this->utilities->getAuthorizedUtilityTypes();
 
         if ($utilities->isNotEmpty()) {
-            $navItems->add(new NavItem()
+            $administrationItems[] = new NavItem()
                 ->label(t('Utilities'))
                 ->href('utilities')
                 ->icon('wrench')
-                ->subnav($this->utilitiesSubnav($utilities)));
+                ->subnav($this->utilitiesSubnav($utilities));
         }
 
         if ($isAdmin) {
-            $navItems->add(new NavItem()
-                ->label(t('Settings'))
-                ->href('settings')
-                ->icon($this->generalConfig->allowAdminChanges ? 'gear' : 'gear-slash')
-                ->subnav($this->settingsSubnav()));
+            $administrationItems[] =
+                new NavItem()
+                    ->label(t('Settings'))
+                    ->href('settings')
+                    ->icon(
+                        $this->generalConfig->allowAdminChanges
+                            ? 'gear'
+                            : 'gear-slash',
+                    )
+                    ->subnav($this->settingsSubnav());
 
-            $navItems->add(new NavItem()
-                ->label(t('Plugin Store'))
-                ->href('plugin-store')
-                ->icon('plug'));
+            $administrationItems[] =
+                new NavItem()
+                    ->label(t('Plugin Store'))
+                    ->href('plugin-store')
+                    ->icon('plug');
+        }
+
+        if (! empty($administrationItems)) {
+            $administrationGroup->subnav($administrationItems);
+            $navItems->add($administrationGroup);
         }
 
         event($event = new CpNavItemsResolving($navItems->all()));
@@ -300,7 +332,13 @@ readonly class Navigation
                 // A blank heading separates a trailing run of un-configured
                 // sources rather than naming one, so it closes the open group
                 // instead of starting an empty one.
-                $group = $heading === '' ? null : new NavItem()->label($heading)->group(true)->subnav([]);
+                $group =
+                    $heading === ''
+                        ? null
+                        : new NavItem()
+                            ->label($heading)
+                            ->group(true)
+                            ->subnav([]);
 
                 if ($group !== null) {
                     $items[] = $group;
@@ -317,7 +355,9 @@ readonly class Navigation
 
             $item = new NavItem()
                 ->label((string) ($source['label'] ?? ''))
-                ->href($this->sourceUri($elementType, $indexUri, $source, $page));
+                ->href(
+                    $this->sourceUri($elementType, $indexUri, $source, $page),
+                );
 
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
@@ -330,10 +370,13 @@ readonly class Navigation
 
         // A heading whose members all turned out to be unreachable would
         // otherwise be left standing over nothing.
-        return array_values(array_filter(
-            $items,
-            fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
-        ));
+        return array_values(
+            array_filter(
+                $items,
+                fn (NavItem $item): bool => ! $item->group ||
+                    $item->subnav !== [],
+            ),
+        );
     }
 
     /**
@@ -349,15 +392,21 @@ readonly class Navigation
     public function sourceUrl(string $elementType, string $key): ?string
     {
         foreach ($this->sourceIndexes($elementType) as [$indexUri, $page]) {
-            $source = collect($this->elementSources->getSources(
-                $elementType,
-                context: ElementSources::CONTEXT_NAVIGATION,
-                page: $page,
-                siteId: $this->navSiteId(),
-            ))->first(fn (array $source): bool => ($source['key'] ?? null) === $key);
+            $source = collect(
+                $this->elementSources->getSources(
+                    $elementType,
+                    context: ElementSources::CONTEXT_NAVIGATION,
+                    page: $page,
+                    siteId: $this->navSiteId(),
+                ),
+            )->first(
+                fn (array $source): bool => ($source['key'] ?? null) === $key,
+            );
 
             if ($source !== null) {
-                return Url::cpUrl($this->sourceUri($elementType, $indexUri, $source, $page));
+                return Url::cpUrl(
+                    $this->sourceUri($elementType, $indexUri, $source, $page),
+                );
             }
         }
 
@@ -375,12 +424,20 @@ readonly class Navigation
     private function sourceIndexes(string $elementType): array
     {
         if ($elementType === Entry::class) {
-            $pages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
+            $pages = $this->elementSources->getPages(
+                Entry::class,
+                ElementSources::CONTEXT_NAVIGATION,
+            );
 
             return $pages->isEmpty()
                 ? [['content/entries', null]]
                 : $pages
-                    ->map(fn (string $page) => [sprintf('content/%s', Str::slug($page)), $page])
+                    ->map(
+                        fn (string $page) => [
+                            sprintf('content/%s', Str::slug($page)),
+                            $page,
+                        ],
+                    )
                     ->values()
                     ->all();
         }
@@ -396,9 +453,14 @@ readonly class Navigation
      * @param  class-string<ElementInterface>  $elementType
      * @param  array<string, mixed>  $source
      */
-    private function sourceUri(string $elementType, string $indexUri, array $source, ?string $page): string
-    {
-        return $elementType::sourceCpUri($source, $page) ?? $this->sourceQueryUri($indexUri, (string) $source['key']);
+    private function sourceUri(
+        string $elementType,
+        string $indexUri,
+        array $source,
+        ?string $page,
+    ): string {
+        return $elementType::sourceCpUri($source, $page) ??
+            $this->sourceQueryUri($indexUri, (string) $source['key']);
     }
 
     /**
@@ -426,10 +488,12 @@ readonly class Navigation
     private function utilitiesSubnav(Collection $utilities): array
     {
         return $utilities
-            ->map(fn (string $class) => new NavItem()
-                ->label($class::displayName())
-                ->href('utilities/'.$class::id())
-                ->icon($class::icon()))
+            ->map(
+                fn (string $class) => new NavItem()
+                    ->label($class::displayName())
+                    ->href('utilities/'.$class::id())
+                    ->icon($class::icon()),
+            )
             ->values()
             ->all();
     }
@@ -494,7 +558,9 @@ readonly class Navigation
 
         $name = substr($icon, strlen('light/'));
 
-        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg")) ? $name : $icon;
+        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
+            ? $name
+            : $icon;
     }
 
     /**
@@ -512,10 +578,7 @@ readonly class Navigation
         $this->resolveIcon($item);
 
         if (is_array($item->subnav)) {
-            $item->subnav = array_map(
-                $this->normalize(...),
-                $item->subnav,
-            );
+            $item->subnav = array_map($this->normalize(...), $item->subnav);
         }
 
         return $item;
@@ -563,7 +626,12 @@ readonly class Navigation
     /** The stable id an item is known by, in the tree and in the badge map. */
     private function itemId(string $href): string
     {
-        return 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $href)));
+        return 'nav-'.
+            preg_replace(
+                "/[^\w\-_]/",
+                '',
+                Str::ascii(str_replace('/', '-', $href)),
+            );
     }
 
     /**
@@ -583,18 +651,32 @@ readonly class Navigation
         $best = null;
         $bestLength = -1;
         $bestQuerySize = -1;
-        $findBest = function (array $items) use (&$findBest, $path, &$best, &$bestLength, &$bestQuerySize): void {
+        $findBest = function (array $items) use (
+            &$findBest,
+            $path,
+            &$best,
+            &$bestLength,
+            &$bestQuerySize,
+        ): void {
             foreach ($items as $item) {
                 if (is_array($item->subnav)) {
                     $findBest($item->subnav);
                 }
 
                 $itemPath = $this->navItemPath((string) $item->href);
-                parse_str((string) parse_url((string) $item->href, PHP_URL_QUERY), $params);
+                parse_str(
+                    (string) parse_url((string) $item->href, PHP_URL_QUERY),
+                    $params,
+                );
                 $querySize = count($params);
 
-                if ($this->pathMatches($path, $itemPath) && $this->queryMatches((string) $item->href) &&
-                    ($bestLength < strlen($itemPath) || ($bestLength === strlen($itemPath) && $querySize > $bestQuerySize))) {
+                if (
+                    $this->pathMatches($path, $itemPath) &&
+                    $this->queryMatches((string) $item->href) &&
+                    ($bestLength < strlen($itemPath) ||
+                        ($bestLength === strlen($itemPath) &&
+                            $querySize > $bestQuerySize))
+                ) {
                     $best = $item;
                     $bestLength = strlen($itemPath);
                     $bestQuerySize = $querySize;
@@ -611,23 +693,33 @@ readonly class Navigation
      * @param  NavItem[]  $items
      * @return NavItem[]
      */
-    private function selectWithin(array $items, string $path, ?NavItem $best): array
-    {
+    private function selectWithin(
+        array $items,
+        string $path,
+        ?NavItem $best,
+    ): array {
         foreach ($items as $item) {
             if (is_array($item->subnav)) {
-                $item->subnav = $this->selectWithin($item->subnav, $path, $best);
+                $item->subnav = $this->selectWithin(
+                    $item->subnav,
+                    $path,
+                    $best,
+                );
             }
 
-            $descendantSelected = is_array($item->subnav) && array_any(
-                $item->subnav,
-                fn (NavItem $child): bool => $child->selected,
-            );
+            $descendantSelected =
+                is_array($item->subnav) &&
+                array_any(
+                    $item->subnav,
+                    fn (NavItem $child): bool => $child->selected,
+                );
 
             $itemPath = $this->navItemPath((string) $item->href);
 
             if ($descendantSelected || $item === $best) {
                 $item->selected = true;
-                $item->linkAttributes['aria']['current'] = $itemPath === $path ? 'page' : 'true';
+                $item->linkAttributes['aria']['current'] =
+                    $itemPath === $path ? 'page' : 'true';
             }
         }
 
@@ -680,7 +772,9 @@ readonly class Navigation
 
     private function navItemPath(string $url): string
     {
-        return Url::stripCpTrigger(rawurldecode((string) parse_url($url, PHP_URL_PATH)));
+        return Url::stripCpTrigger(
+            rawurldecode((string) parse_url($url, PHP_URL_PATH)),
+        );
     }
 
     /**
@@ -692,11 +786,15 @@ readonly class Navigation
     {
         parse_str((string) parse_url($url, PHP_URL_QUERY), $params);
 
-        return array_all($params, fn ($value, $name) => ! ($this->request->query($name) !== $value));
+        return array_all(
+            $params,
+            fn ($value, $name) => ! ($this->request->query($name) !== $value),
+        );
     }
 
     private function pathMatches(string $path, string $itemPath): bool
     {
-        return $itemPath !== '' && ($path === $itemPath || str_starts_with($path, $itemPath.'/'));
+        return $itemPath !== '' &&
+            ($path === $itemPath || str_starts_with($path, $itemPath.'/'));
     }
 }
