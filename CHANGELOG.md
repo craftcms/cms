@@ -4,11 +4,13 @@
 
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
+- Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Tabs now mirror the selected tab in the URL hash, select the tab named by the hash on page load, and keep it after saving.
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
 - Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
 - Added `CraftCms\Cms\Cp\Navigation::sourceSubnav()`, which builds a subnav from an element type’s sources, for plugins adding their own control panel section.
+- Added `CraftCms\Cms\Cp\Data\ActionItem::$status` and `status()`. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Added `craft.cp.selectize()` and `CraftCms\Cms\Cp\FormFields::selectizeFromConfig()`, which render the legacy selectize variables as a combobox.
 - Added `craft.cp.select()` and `CraftCms\Cms\Cp\FormFields::selectFromConfig()`, which render the legacy select variables as a `<craft-select>`.
 - Added `craft.cp.autosuggest()` and `CraftCms\Cms\Cp\FormFields::autosuggestFromConfig()`, which render the legacy autosuggest variables as a combobox. Craft 5’s `suggestions` shape is still accepted.
@@ -30,6 +32,7 @@
 - Fixed a bug where the tab strip wasn’t guttered with the content it sits above. ([#19861](https://github.com/craftcms/cms/pull/19861))
 - Fixed a bug where an editable table that wasn’t visible when the page loaded didn’t initialize until the window was resized.
 - Fixed a bug where environment variable, alias, and template suggestions weren’t sorted alphabetically.
+- Fixed a bug where status indicators for disabled elements were filled in rather than outlined, and custom status colors were shown as gray. ([#19892](https://github.com/craftcms/cms/pull/19892))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

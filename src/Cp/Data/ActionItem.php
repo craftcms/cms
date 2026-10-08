@@ -61,6 +61,12 @@ class ActionItem extends Component
 
     public ?string $iconColor = null;
 
+    /**
+     * A status dot in place of the icon: a palette color or status variant,
+     * as an element source's `status` names one.
+     */
+    public ?string $status = null;
+
     public ?string $id = null;
 
     public ?string $variant = null;
@@ -239,6 +245,13 @@ class ActionItem extends Component
     public function iconColor(?string $iconColor): static
     {
         $this->iconColor = $iconColor;
+
+        return $this;
+    }
+
+    public function status(?string $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }

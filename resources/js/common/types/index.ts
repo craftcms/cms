@@ -134,6 +134,8 @@ export interface ActionItemButton {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -165,6 +167,8 @@ export interface ActionItemLink {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /**
