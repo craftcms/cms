@@ -31,6 +31,7 @@ export default css`
     --_chip-block-padding: round(calc(var(--_chip-spacing) / 2), 1px);
     --_thumb-size: calc(30rem / 16);
     --_radius: var(--c-radius-md);
+    --_border-width: var(--c-chip-border-width, 1px);
     /* Sized to its content, but never wider than its parent: the label
        truncates instead. */
     box-sizing: border-box;
@@ -47,7 +48,7 @@ export default css`
     box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
 
-    border-width: var(--c-chip-border-width, 1px);
+    border-width: var(--_border-width);
     border-style: var(--c-chip-border-style, solid);
     overflow: clip;
   }
@@ -155,7 +156,12 @@ export default css`
 
   .cp-chip__thumbnail {
     --c-thumbnail-size: var(--_thumb-size);
-    --c-thumbnail-image-radius: var(--c-radius-sm);
+    /* Concentric with the chip's corner: inset by the border and padding,
+       the corner shrinks by as much, though never to a square. */
+    --c-thumbnail-image-radius: max(
+      2px,
+      calc(var(--_radius) - var(--_border-width) - var(--_chip-block-padding))
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -166,11 +172,10 @@ export default css`
   }
 
   /* A thumbnail or custom prefix content fills more of the chip's height, so
-     leading the chip it sits half the spacing in, as it does from the top
-     and bottom. */
+     leading the chip it sits as far in as it does from the top and bottom. */
   .cp-chip--leads-with-thumbnail,
   .cp-chip--leads-with-prefix {
-    padding-inline-start: calc(var(--_chip-spacing) / 2);
+    padding-inline-start: var(--_chip-block-padding);
   }
 
   /*
@@ -293,7 +298,7 @@ export default css`
   .cp-chip--plain {
     padding-block: 0;
     padding-inline: 0;
-    border-width: 0;
+    --_border-width: 0px;
     box-shadow: none;
     /* The border's stand-in, drawn inside the edge so it takes no space.
        Invisible, except in forced colors, where it gives the chip an edge. */
@@ -309,6 +314,11 @@ export default css`
   .cp-chip--plain .cp-chip__body,
   .cp-chip--plain .cp-chip__suffix {
     padding-block: 0;
+  }
+
+  /* With no padding, the thumbnail's corner is the chip's. */
+  .cp-chip--plain .cp-chip__thumbnail {
+    --c-thumbnail-image-radius: var(--_radius);
   }
 
   /*
