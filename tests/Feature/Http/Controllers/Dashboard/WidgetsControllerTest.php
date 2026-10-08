@@ -65,8 +65,8 @@ it('can refresh widget settings without saving', function () {
         ],
         'namespace' => 'new-widget-settings',
     ])->assertOk()
-        ->assertJsonPath('form.scope', ['new-widget-settings'])
-        ->assertJsonPath('form.values.new-widget-settings.limit', 25);
+        ->assertJsonPath('ui.scope', ['new-widget-settings'])
+        ->assertJsonPath('ui.values.new-widget-settings.limit', 25);
 
     expect(WidgetModel::count())->toBe(0);
 });

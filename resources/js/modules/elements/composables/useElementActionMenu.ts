@@ -6,8 +6,8 @@ import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
-import type {FormProperties, FormValues} from '@/modules/forms/types';
-import {openFormModal} from '@/modules/forms/open-form-modal';
+import type {UiProperties, UiValues} from '@/modules/ui/types';
+import {openUiModal} from '@/modules/ui/open-ui-modal';
 import {
   openImageEditorDialog,
   type ImageEditorSettings,
@@ -32,7 +32,7 @@ export type ElementActionBehavior =
   | {
       type: 'submit';
       actionUrl: string;
-      params?: FormValues;
+      params?: UiValues;
       /** Pre-encrypted by the server. */
       redirect?: string;
       confirm?: string;
@@ -58,16 +58,16 @@ export type ElementActionBehavior =
       type: 'formModal';
       modalUrl: string;
       actionUrl: string;
-      params?: FormValues;
+      params?: UiValues;
     }
   // The asset behaviors below all hand off to a modal or uploader, and reload
   // the page afterwards rather than patching the file's details into it.
   | {
       type: 'previewFile';
       assetId: number;
-      settings?: FormProperties;
+      settings?: UiProperties;
     }
-  | {type: 'download'; actionUrl: string; params?: FormValues}
+  | {type: 'download'; actionUrl: string; params?: UiValues}
   | {type: 'replaceFile'; assetId: number}
   | {type: 'editImage'; assetId: number; settings: ImageEditorSettings}
   /**
@@ -77,7 +77,7 @@ export type ElementActionBehavior =
   | {
       type: 'copyUrl';
       actionUrl: string;
-      params?: FormValues;
+      params?: UiValues;
       prompt: string;
     };
 
@@ -209,7 +209,7 @@ export function createElementActionMenu({
       }
 
       case 'formModal':
-        void openFormModal({
+        void openUiModal({
           modalUrl: behavior.modalUrl,
           actionUrl: behavior.actionUrl,
           params: behavior.params,
@@ -286,7 +286,7 @@ export function createElementActionMenu({
   async function submitInSlideout(
     panel: SlideoutController,
     actionUrl: string,
-    params: FormValues,
+    params: UiValues,
     destructive: boolean
   ): Promise<void> {
     try {
@@ -314,7 +314,7 @@ export function createElementActionMenu({
    * Posts to an action the browser should handle itself — a file download,
    * which can't come back through Inertia.
    */
-  function submitNativeForm(action: string, params: FormValues): void {
+  function submitNativeForm(action: string, params: UiValues): void {
     const form = document.createElement('form');
     form.method = 'post';
     form.action = action;

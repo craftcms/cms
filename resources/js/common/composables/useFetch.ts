@@ -18,22 +18,16 @@ import {
 } from '@craftcms/ui/utilities/api/http';
 import {useHelpers} from '@/common/composables/useCraftData';
 import {apiClient} from '@craftcms/ui/utilities/api/apiClient';
-import type {FormValue, FormValues} from '@/modules/forms/types';
+import type {UiValue, UiValues} from '@/modules/ui/types';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
 
-type RequestParams = FormValues | URLSearchParams;
-type RequestData =
-  | FormValues
-  | FormData
-  | URLSearchParams
-  | string
-  | Blob
-  | null;
+type RequestParams = UiValues | URLSearchParams;
+type RequestData = UiValues | FormData | URLSearchParams | string | Blob | null;
 
 // Options interface
-interface UseFetchOptions<T = FormValue> extends Omit<
+interface UseFetchOptions<T = UiValue> extends Omit<
   HttpRequestConfig,
   'url' | 'params'
 > {
@@ -64,7 +58,7 @@ interface UseFetchReturn<T> {
 
 export type FetchState = 'idle' | 'loading' | 'success' | 'error' | 'aborted';
 
-export function useFetch<T = FormValue>(
+export function useFetch<T = UiValue>(
   url: MaybeRef<string>,
   options: UseFetchOptions<T> = {}
 ): UseFetchReturn<T> {
@@ -227,7 +221,7 @@ export function useFetch<T = FormValue>(
   };
 }
 
-export function usePost<T = FormValue>(
+export function usePost<T = UiValue>(
   url: MaybeRef<string>,
   options: UseFetchOptions<T> = {}
 ) {
@@ -238,7 +232,7 @@ export function usePost<T = FormValue>(
   });
 }
 
-export function useActionClient<T = FormValue>(
+export function useActionClient<T = UiValue>(
   url: MaybeRef<string>,
   options: UseFetchOptions<T> = {}
 ) {
@@ -254,7 +248,7 @@ export function useActionClient<T = FormValue>(
   });
 }
 
-export function useApiClient<T = FormValue>(
+export function useApiClient<T = UiValue>(
   url: MaybeRef<string>,
   options: UseFetchOptions<T> = {}
 ) {

@@ -10,8 +10,8 @@ the shared controller module pattern:
 - `matrix-entry.ts` — the per-`.matrixblock` `MatrixEntry` controller:
   collapse/expand with preview text and localStorage persistence, the block
   action menu, enable/disable/move/duplicate/copy/delete, and conditional
-  field-layout updates (`elements/update-field-layout`). Form tabs are owned by
-  `FormRenderer`.
+  field-layout updates (`elements/update-field-layout`). UI tabs are owned by
+  `UiRenderer`.
 - `support.ts` — `WeakMap` registries replacing the legacy
   `$container.data('matrix')` / `$container.data('entry')`.
 - `index.ts` — assigns `window.Craft.MatrixInput`

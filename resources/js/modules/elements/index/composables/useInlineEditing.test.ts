@@ -1,6 +1,6 @@
 import {ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {InlineAttributeFormHost} from '@/modules/forms/inline-attribute-form-host';
+import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 import {
   useInlineEditing,
   type InlineEditingSaveResult,
@@ -22,14 +22,14 @@ describe('useInlineEditing', () => {
     container = document.createElement('div');
     container.innerHTML = `
       <div data-inline-id="11">
-        <craft-inline-attribute-form>
+        <craft-inline-attribute-ui>
           <input name="inline[element-11][title]" value="Original">
-        </craft-inline-attribute-form>
+        </craft-inline-attribute-ui>
       </div>
     `;
     document.body.append(container);
-    const host = container.querySelector<InlineAttributeFormHost>(
-      'craft-inline-attribute-form'
+    const host = container.querySelector<InlineAttributeUiHost>(
+      'craft-inline-attribute-ui'
     )!;
     Object.assign(host, {
       ready: Promise.resolve(),

@@ -790,8 +790,8 @@ return [
     'For marketing sites managed by small teams.' => 'Kis csapatok által kezelt marketinges oldalakhoz.',
     'For personal sites built for yourself or a friend.' => 'Önmagad vagy ismerőseid számára létrehozott személyes oldalakhoz.',
     'Forgot password?' => 'Elfelejtette a jelszót?',
-    'Form Control provider [{provider}] is unavailable.' => 'Form Control provider [{provider}] is unavailable.',
-    'Form Node provider [{provider}] is unavailable.' => 'Form Node provider [{provider}] is unavailable.',
+    'UI Control provider [{provider}] is unavailable.' => 'UI Control provider [{provider}] is unavailable.',
+    'UI Node provider [{provider}] is unavailable.' => 'UI Node provider [{provider}] is unavailable.',
     'Format' => 'Formázás',
     'Formatting Locale' => 'Helyi formázás',
     'Found errors in other tabs.' => 'Found errors in other tabs.',
@@ -2239,11 +2239,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => "Hello {{user.friendlyName|e}},
+    'account_activation_body' => 'Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>",
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',

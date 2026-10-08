@@ -4,7 +4,7 @@ import type {CellContext} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-import type {InlineAttributeFormHost} from '@/modules/forms/inline-attribute-form-host';
+import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 
 export type InlineEditingErrors = Record<
   string | number,
@@ -61,10 +61,10 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     ]);
   }
 
-  function hosts(): InlineAttributeFormHost[] {
+  function hosts(): InlineAttributeUiHost[] {
     return [
-      ...(options.container.value?.querySelectorAll<InlineAttributeFormHost>(
-        'craft-inline-attribute-form'
+      ...(options.container.value?.querySelectorAll<InlineAttributeUiHost>(
+        'craft-inline-attribute-ui'
       ) ?? []),
     ];
   }
@@ -76,11 +76,11 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
       .map((entry) => entry.id);
     await nextTick();
 
-    const formHosts = hosts();
-    await Promise.all(formHosts.map((host) => host.ready));
+    const uiHosts = hosts();
+    await Promise.all(uiHosts.map((host) => host.ready));
     initialInputs = serializeFormInputs(options.container.value!);
 
-    if (!formHosts[0]?.focusFirst()) {
+    if (!uiHosts[0]?.focusFirst()) {
       const firstCell =
         options.container.value?.querySelector<HTMLElement>('[data-inline-id]');
       if (firstCell) {
@@ -117,8 +117,8 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
       return;
     }
 
-    const formHosts = hosts();
-    if (formHosts.some((host) => !host.canSubmit())) {
+    const uiHosts = hosts();
+    if (uiHosts.some((host) => !host.canSubmit())) {
       return;
     }
 
@@ -146,7 +146,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
       errors.value = result.errors;
       window.Craft?.cp?.displayError?.(t('Couldn’t save.'));
 
-      for (const host of formHosts) {
+      for (const host of uiHosts) {
         host.errors =
           result.errors[
             Number(

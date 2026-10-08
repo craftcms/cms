@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ui\Controls;
+
+use CraftCms\Cms\Component\MissingComponents;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+
+use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
+
+/**
+ * @since 6.0.0
+ */
+class Missing extends Control
+{
+    private string $provider;
+
+    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
+    {
+        return template('_special/missing-component', $control->props + ['formId' => null]);
+    }
+
+    public function provider(string $provider): static
+    {
+        $this->provider = $provider;
+
+        return $this;
+    }
+
+    public function component(): string
+    {
+        return 'craft:missing-control';
+    }
+
+    #[\Override]
+    public function props(mixed $value = null): array
+    {
+        $presentation = app(MissingComponents::class)->resolve(
+            $this->provider,
+            t('UI Control provider [{provider}] is unavailable.', [
+                'provider' => $this->provider,
+            ]),
+        );
+
+        return ['provider' => $this->provider] + Arr::only($presentation, [
+            'error',
+            'pluginName',
+            'action',
+        ]);
+    }
+}
