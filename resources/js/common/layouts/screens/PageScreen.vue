@@ -506,11 +506,23 @@
   /**
 Shell
  */
+  /* The top bar keeps its height and the shell takes at least the rest. Docked,
+     the sidebar's own height does this; floating, nothing else would. */
+  .page-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+  }
+
   .cp {
+    flex: 1;
     display: grid;
+    /* The floating sidebar's row stays empty, so the main row takes the room. */
+    grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
 
     @media (width >= var(--breakpoint-lg)) {
+      grid-template-rows: none;
       grid-template-columns: auto minmax(0, 1fr);
     }
   }
@@ -519,15 +531,12 @@ Shell
     container: cp-shell / inline-size;
   }
 
-  /* The top bar keeps its height and the shell takes the rest. */
+  /* No taller than the viewport, either. */
   .page-screen--fill-viewport {
-    display: flex;
-    flex-direction: column;
     height: calc(100dvh - var(--cp-debug-bar-height, 0px));
 
     .cp {
       display: flex;
-      flex: 1;
       min-height: 0;
     }
 
@@ -603,6 +612,8 @@ Content: the secondary nav, content, and details panes
     /* Three columns at every width; the nav spans them while it's stacked above
        the content, and an area nothing occupies collapses to nothing. */
     grid-template-areas: 'sidebar sidebar sidebar' '. main details';
+    /* The nav's row, empty or not, keeps to its content; the rest goes below. */
+    grid-template-rows: auto 1fr;
     grid-template-columns:
       auto
       minmax(var(--cp-content-main-min), 1fr)
@@ -622,6 +633,7 @@ Content: the secondary nav, content, and details panes
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-areas: 'sidebar main details';
+      grid-template-rows: none;
     }
   }
 
