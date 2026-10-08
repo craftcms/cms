@@ -6,22 +6,22 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -34,12 +34,12 @@ class AssetTransformerEditViewModel extends ViewModel
     public function __construct(
         private readonly AssetTransformer $transformer,
         private readonly AssetTransformDrivers $assetTransformDrivers,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? [
             'uid' => $this->transformer->uid,
@@ -57,7 +57,7 @@ class AssetTransformerEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = $this->formResolver->resolve(Form::make([
+        $ui = $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
             HiddenField::make('oldDriver'),
             Field::make(t('Name'), Text::make('name')->autofocus()->mode($identityMode))->required(),
@@ -66,21 +66,21 @@ class AssetTransformerEditViewModel extends ViewModel
                 t('Driver'),
                 Choice::make('driver')->options($this->driverOptions())->mode($identityMode)->reactive(),
             )->required(),
-        ]), new FormContext(
+        ]), new UiContext(
             values: $values,
             errors: Arr::only($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),
             mode: $mode,
             refreshable: ! $this->readOnly,
         ));
-        $settingsForm = $this->settingsForm($values, $mode);
+        $settingsUi = $this->settingsUi($values, $mode);
 
-        return new FormPayload(
+        return new UiPayload(
             scope: [],
             refreshable: ! $this->readOnly,
-            nodes: [...$form->nodes, ...$settingsForm->nodes],
-            values: [...$form->values, ...$settingsForm->values],
-            errors: [...$form->errors, ...$settingsForm->errors],
-            globalErrors: [...$form->globalErrors, ...$settingsForm->globalErrors],
+            nodes: [...$ui->nodes, ...$settingsUi->nodes],
+            values: [...$ui->values, ...$settingsUi->values],
+            errors: [...$ui->errors, ...$settingsUi->errors],
+            globalErrors: [...$ui->globalErrors, ...$settingsUi->globalErrors],
         );
     }
 
@@ -97,7 +97,7 @@ class AssetTransformerEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([AssetTransformersController::class, 'renderForm']);
+            : action([AssetTransformersController::class, 'renderUi']);
     }
 
     /** @return list<array{label:string,value:string,disabled?:bool}> */
@@ -122,12 +122,12 @@ class AssetTransformerEditViewModel extends ViewModel
     }
 
     /** @param array<string, mixed> $values */
-    private function settingsForm(array $values, ControlMode $mode): FormPayload
+    private function settingsUi(array $values, ControlMode $mode): UiPayload
     {
         $driver = $values['driver'];
 
         if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
-            return $this->formResolver->resolve(Form::make([
+            return $this->uiResolver->resolve(Ui::make([
                 Group::make('asset-transformer-settings', [
                     Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
                     Field::make(
@@ -137,17 +137,17 @@ class AssetTransformerEditViewModel extends ViewModel
                             ->mode(ControlMode::ReadOnly),
                     ),
                 ])->dependsOn('driver'),
-            ]), new FormContext(mode: $mode));
+            ]), new UiContext(mode: $mode));
         }
 
         $definition = $this->assetTransformDrivers->driver($driver)->definition();
 
-        return $this->formResolver->resolve(
-            Form::make([
+        return $this->uiResolver->resolve(
+            Ui::make([
                 Group::make('asset-transformer-settings', $definition->settingsFields)
                     ->dependsOn('driver'),
             ]),
-            new FormContext(
+            new UiContext(
                 namespace: 'settings',
                 values: $values,
                 errors: Arr::except($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),

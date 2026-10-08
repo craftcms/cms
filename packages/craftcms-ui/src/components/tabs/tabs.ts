@@ -234,6 +234,23 @@ export default class CraftTabs extends LionTabs {
   equalWidth = false;
 
   /**
+   * Whether the selected tab is mirrored in `location.hash`, on by default.
+   *
+   * Only a tab naming a panel through `controls` has a hash: that id is the
+   * page's, so it means something in a URL and survives a reload. A slotted
+   * strip's ids are generated per render, so there is nothing to link to and
+   * nothing is written.
+   *
+   * Set `sync-location-hash="false"` where the strip isn't the page's own — a
+   * dialog, or a slideout over a page whose URL belongs to what's behind it.
+   */
+  @property({
+    attribute: 'sync-location-hash',
+    converter: {fromAttribute: (value: string | null) => value !== 'false'},
+  })
+  syncLocationHash = true;
+
+  /**
    * Which axis the tab strip runs along: `horizontal` or `vertical`.
    *
    * @deprecated Use {@link CraftTabs.placement}, which says which *side* the
@@ -333,6 +350,11 @@ export default class CraftTabs extends LionTabs {
     this.#normalizeSelection();
     this.#announcedIndex = this.selectedIndex;
 
+    if (this.syncLocationHash) {
+      this.#selectFromHash();
+      window.addEventListener('hashchange', this.#selectFromHash);
+    }
+
     // Overflow is independent of the mode: the strip is the same either way.
     tabSlot?.addEventListener('slotchange', this.#queueMeasure);
     this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
@@ -349,6 +371,7 @@ export default class CraftTabs extends LionTabs {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    window.removeEventListener('hashchange', this.#selectFromHash);
     this.#teardownExternal();
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = undefined;
@@ -375,6 +398,7 @@ export default class CraftTabs extends LionTabs {
         this.#announcedIndex !== null &&
         this.selectedIndex !== this.#announcedIndex
       ) {
+        this.#writeHash();
         this.dispatchEvent(new CustomEvent('craft-tab-show'));
       }
 
@@ -422,6 +446,50 @@ export default class CraftTabs extends LionTabs {
     this.#tabs.forEach((tab, index) => {
       tab.setAttribute('tabindex', index === this.selectedIndex ? '0' : '-1');
     });
+  }
+
+  /**
+  /** The hash a tab is reached by: the id of the panel it names. */
+  #hashFor(index: number): string | null {
+    return this.#tabs[index]?.controls || null;
+  }
+
+  /** Selects the tab the current hash names, if it names one. */
+  #selectFromHash = () => {
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+
+    if (hash === '') {
+      return;
+    }
+
+    const index = this.#tabs.findIndex(
+      (_, position) => this.#hashFor(position) === hash
+    );
+
+    if (index >= 0 && index !== this.selectedIndex) {
+      this.selectedIndex = index;
+    }
+  };
+
+  /**
+   * Mirrors the selection into the hash.
+   *
+   * Replaces rather than pushes: moving between tabs isn't navigation, and a
+   * history entry per tab would make Back walk them instead of leaving the
+   * page.
+   */
+  #writeHash(): void {
+    const hash = this.syncLocationHash
+      ? this.#hashFor(this.selectedIndex)
+      : null;
+
+    if (hash === null) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.hash = hash;
+    window.history.replaceState(window.history.state, '', url);
   }
 
   /**

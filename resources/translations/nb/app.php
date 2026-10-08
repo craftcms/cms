@@ -790,8 +790,8 @@ return [
     'For marketing sites managed by small teams.' => 'For markedsføringssider administrert av små team.',
     'For personal sites built for yourself or a friend.' => 'For personlige sider bygd for deg selv eller en venn.',
     'Forgot password?' => 'Glemt passordet?',
-    'Form Control provider [{provider}] is unavailable.' => 'Form Control provider [{provider}] is unavailable.',
-    'Form Node provider [{provider}] is unavailable.' => 'Form Node provider [{provider}] is unavailable.',
+    'UI Control provider [{provider}] is unavailable.' => 'UI Control provider [{provider}] is unavailable.',
+    'UI Node provider [{provider}] is unavailable.' => 'UI Node provider [{provider}] is unavailable.',
     'Format' => 'Formater',
     'Formatting Locale' => 'Nasjonal innstilling for formatering',
     'Found errors in other tabs.' => 'Found errors in other tabs.',
@@ -2325,9 +2325,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

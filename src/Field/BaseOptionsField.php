@@ -18,14 +18,6 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -33,6 +25,14 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -292,7 +292,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $columns = [];
         if (static::$optgroups) {
@@ -335,8 +335,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             return $option;
         }, $this->options ?: [['label' => '', 'value' => '']]);
 
-        return Form::make([
-            FormField::make($this->optionsSettingLabel())
+        return Ui::make([
+            UiField::make($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
                 ->control(Table::make('options')
                     ->columns($columns)
@@ -346,15 +346,15 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ->value($rows)),
         ])->when(
             static::$allowCustomOptions,
-            fn (Form $form): Form => $form->add(
-                FormField::make(t('Allow custom options'))
+            fn (Ui $ui): Ui => $ui->add(
+                UiField::make(t('Allow custom options'))
                     ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
             ),
         );
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $options = collect($this->translatedOptions(true, $context->value, $context->element))
             ->filter(fn (array $option): bool => array_key_exists('value', $option))
@@ -365,11 +365,11 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return Choice::make($context->path)
             ->options($options)
             ->multiple(static::$multi)
-            ->presentation($this->formPresentation())
+            ->presentation($this->uiPresentation())
             ->value($this->encodeValue($context->value));
     }
 
-    protected function formPresentation(): ChoicePresentation
+    protected function uiPresentation(): ChoicePresentation
     {
         return static::$multi ? ChoicePresentation::Checkboxes : ChoicePresentation::Select;
     }

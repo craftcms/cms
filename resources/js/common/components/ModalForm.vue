@@ -129,8 +129,8 @@
           slot="primary-action"
           type="submit"
           variant="primary"
-          :loading="loading"
-          :disabled="submitDisabled || undefined"
+          .loading="loading"
+          .disabled="submitDisabled"
         >
           {{ submitLabel }}
         </craft-button>

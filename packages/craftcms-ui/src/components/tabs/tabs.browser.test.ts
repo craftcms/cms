@@ -170,6 +170,18 @@ it('grows with its panels under a host that was not', async () => {
   expect(tabs.getBoundingClientRect().height).toBeGreaterThan(800);
 });
 
+it('weights the selected tab the same as its reserved label width', async () => {
+  const tabs = await fixture('display: block;');
+  const tab = tabs.querySelector<HTMLElement>('craft-tab')!;
+  const label = tab.shadowRoot!.querySelector<HTMLElement>('.tab__label')!;
+
+  expect(tab.hasAttribute('selected')).toBe(true);
+  expect(getComputedStyle(tab).fontWeight).toBe(
+    getComputedStyle(label, '::after').fontWeight
+  );
+  expect(getComputedStyle(tab).fontWeight).not.toBe('700');
+});
+
 it('scrolls its panels from the keyboard, leaving the strip in place', async () => {
   const tabs = await fixture('display: block; block-size: 300px;');
   const region = panels(tabs);

@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Field\TableCells;
 
 use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Missing;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Missing;
 
 /**
  * @since 6.0.0
@@ -21,7 +21,7 @@ class MissingTableCell extends TableCell implements MissingComponentInterface
         return false;
     }
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return Missing::make($context->path)->provider($this->expectedType);
     }

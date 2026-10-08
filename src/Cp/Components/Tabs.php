@@ -56,6 +56,8 @@ class Tabs extends ViewComponent
 
     protected bool $equalWidth = false;
 
+    protected bool $syncLocationHash = true;
+
     protected function tagName(): string
     {
         return 'craft-tabs';
@@ -164,6 +166,18 @@ class Tabs extends ViewComponent
     }
 
     /**
+     * Mirrors the selected tab in `location.hash`, and selects the tab the hash
+     * names on load. On by default, and only for tabs naming a panel. Turn it
+     * off where the strip isn't the page's own.
+     */
+    public function syncLocationHash(bool $syncLocationHash = true): static
+    {
+        $this->syncLocationHash = $syncLocationHash;
+
+        return $this;
+    }
+
+    /**
      * Which axis the strip runs along; the web component defaults to
      * `horizontal`. Strings (e.g. from Twig `ui()` config) are validated
      * against {@see TabsLayout}.
@@ -235,6 +249,7 @@ class Tabs extends ViewComponent
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
             'equal-width' => $this->equalWidth,
+            'sync-location-hash' => $this->syncLocationHash ? null : 'false',
             'layout' => $this->getLayout(),
         ];
     }

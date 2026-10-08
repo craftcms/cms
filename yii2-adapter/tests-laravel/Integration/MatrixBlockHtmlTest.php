@@ -68,7 +68,7 @@ it('creates a new matrix entry draft and renders its block html', function(bool 
     if ($eventAdded) {
         expect($html)->toContain("Add {$label} above");
     }
-    $host = new Crawler($html)->filter('craft-entry-field-layout-form[data-payload]');
+    $host = new Crawler($html)->filter('craft-entry-field-layout-ui[data-payload]');
 
     expect($html)
         ->toContain($label)

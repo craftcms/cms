@@ -18,9 +18,9 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
-  import type {FormValues} from '@/modules/forms/types';
+  import type {UiValues} from '@/modules/ui/types';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
@@ -39,8 +39,8 @@
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => FormValues;
-    transform?: (data: object) => FormValues;
+    saveData?: () => UiValues;
+    transform?: (data: object) => UiValues;
     formWrapper?: Component;
     showDetails?: boolean;
   }>();
@@ -58,12 +58,12 @@
     discardDraft,
     errors,
     form,
-    formPayload,
+    uiPayload,
     onMutation,
     onSidebarMutation,
     props: payload,
     renderer,
-    refreshForm,
+    refreshUi,
     refreshLayout,
     save,
     sidebarErrors,
@@ -83,7 +83,7 @@
    */
   const hasUntabbedFields = computed(
     () =>
-      formPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
+      uiPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
       false
   );
 
@@ -350,13 +350,13 @@
       >
         <component
           :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-          v-if="formPayload"
+          v-if="uiPayload"
         >
-          <FormRenderer
+          <UiRenderer
             ref="renderer"
-            :payload="formPayload"
+            :payload="uiPayload"
             :errors="errors"
-            :refresh="formPayload.refreshable ? refreshLayout : undefined"
+            :refresh="uiPayload.refreshable ? refreshLayout : undefined"
             :modified="autosave.modified.value"
             :disabled="workflowReviewLocked"
             @update:mutation="onMutation"
@@ -392,7 +392,7 @@
               v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
             >
               <craft-field-group v-if="sidebarPayload">
-                <FormRenderer
+                <UiRenderer
                   ref="sidebarRenderer"
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"

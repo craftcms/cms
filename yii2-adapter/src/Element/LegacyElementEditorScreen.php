@@ -74,8 +74,8 @@ class LegacyElementEditorScreen
             return true;
         }
 
-        // HTML-only overrides cannot be replaced by a Form without losing the
-        // type's fields. Types that port both meta-field methods use the Form.
+        // HTML-only overrides cannot be replaced by a UI without losing the
+        // type's fields. Types that port both meta-field methods use the UI.
         return new ReflectionMethod($element, 'getSidebarHtml')->getDeclaringClass()->getName() !== Element::class
             || new ReflectionMethod($element, 'metaFieldsHtml')->getDeclaringClass()->getName()
                 !== new ReflectionMethod($element, 'metaFieldsNodes')->getDeclaringClass()->getName();

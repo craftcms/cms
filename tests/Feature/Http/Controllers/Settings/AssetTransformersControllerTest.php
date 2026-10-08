@@ -12,9 +12,9 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -88,14 +88,14 @@ it('explains why transformers assigned to volumes cannot be deleted', function (
                     && $transformer['deleteDisabledReason'] === 'This Asset Transformer cannot be deleted because it is assigned to a volume.')));
 });
 
-it('renders the standalone transformer form', function () {
+it('renders the standalone transformer UI', function () {
     get(action([AssetTransformersController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Form')
-            ->where('form.values.driver', 'craft')
+            ->component('Ui')
+            ->where('ui.values.driver', 'craft')
             ->where('submit.url', action([AssetTransformersController::class, 'store']))
-            ->where('refreshUrl', action([AssetTransformersController::class, 'renderForm'])));
+            ->where('refreshUrl', action([AssetTransformersController::class, 'renderUi'])));
 });
 
 it('stores driver settings on the Asset Transformer', function () {

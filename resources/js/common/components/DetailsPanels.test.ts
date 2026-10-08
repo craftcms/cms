@@ -10,7 +10,10 @@ import {
   ref,
   type App,
 } from 'vue';
-import {ScreenDetailsRailKey} from '@/common/composables/screen';
+import {
+  ScreenDetailsOverlayKey,
+  ScreenDetailsRailKey,
+} from '@/common/composables/screen';
 import DetailsPanels from './DetailsPanels.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -35,7 +38,7 @@ const exposed = ref<{select(panelId: string): void} | null>(null);
 
 async function mount(
   rail: string | null,
-  {syncLocationHash = false} = {}
+  {syncLocationHash = false, overlaid = false} = {}
 ): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
 
@@ -43,6 +46,7 @@ async function mount(
     defineComponent({
       setup() {
         provide(ScreenDetailsRailKey, rail);
+        provide(ScreenDetailsOverlayKey, ref(overlaid));
 
         return () =>
           h(
@@ -102,6 +106,27 @@ it('puts the triggers in the rail and the panels in place', async () => {
   expect(panel('info').getAttribute('aria-labelledby')).toBe(
     heading('info').id
   );
+});
+
+it('stays folded to the rail when the shell mounts it overlaid', async () => {
+  await mount('#rail', {overlaid: true});
+
+  expect(panel('info').hidden).toBe(true);
+  expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('labels each trigger with a tooltip', async () => {
+  await mount('#rail');
+
+  expect(
+    [...document.querySelectorAll('#rail craft-tooltip')].map((tooltip) => [
+      tooltip.getAttribute('for'),
+      tooltip.textContent?.trim(),
+    ])
+  ).toEqual([
+    ['details-panel-info', 'Info'],
+    ['details-panel-history', 'History'],
+  ]);
 });
 
 it('keeps the triggers beside their panels without a rail', async () => {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use DateTimeInterface;
 use Override;
 
@@ -67,9 +67,9 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     abstract public function selectorHtml(): string;
 
-    abstract public function formNode(FieldLayoutElementContext $context): ?Node;
+    abstract public function uiNode(FieldLayoutElementContext $context): ?Node;
 
-    public function formMode(?ElementInterface $element): ControlMode
+    public function uiMode(?ElementInterface $element): ControlMode
     {
         return ControlMode::Editable;
     }

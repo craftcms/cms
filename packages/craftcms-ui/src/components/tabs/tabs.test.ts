@@ -87,6 +87,9 @@ function declarations(fragment: string): string {
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  // Tabs sync the hash by default, so one test's selection would pick the
+  // starting tab for the next.
+  window.history.replaceState(null, '', window.location.pathname);
 });
 
 describe('structure', () => {
@@ -714,5 +717,84 @@ describe('external-panel mode', () => {
     await element.updateComplete;
 
     expect(element.selectedIndex).toBe(0);
+  });
+});
+
+describe('location hash', () => {
+  const setHash = (hash: string) => {
+    window.history.replaceState(null, '', `#${hash}`);
+  };
+
+  it('selects the panel the hash names on load', async () => {
+    setHash('panel-2');
+
+    const {element} = await createExternalTabs();
+
+    expect(element.selectedIndex).toBe(2);
+  });
+
+  it('writes the selected panel’s id to the hash', async () => {
+    const {element} = await createExternalTabs();
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('#panel-1');
+  });
+
+  it('syncs without being asked to', async () => {
+    const {element} = await createExternalTabs();
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('#panel-1');
+  });
+
+  it('leaves the hash alone when turned off', async () => {
+    const {element} = await createExternalTabs({
+      attrs: {'sync-location-hash': 'false'},
+    });
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('');
+  });
+
+  it('leaves the hash alone for a slotted strip, which has no panel ids', async () => {
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    for (let i = 0; i < 2; i++) {
+      const tab = document.createElement('craft-tab') as CraftTab;
+      tab.slot = 'tab';
+      tab.textContent = `Tab ${i}`;
+      element.append(tab);
+    }
+    document.body.append(element);
+    await element.updateComplete;
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('');
+  });
+
+  it('ignores a hash that names no panel', async () => {
+    setHash('nothing-here');
+
+    const {element} = await createExternalTabs();
+
+    expect(element.selectedIndex).toBe(0);
+    expect(window.location.hash).toBe('#nothing-here');
+  });
+
+  it('follows the hash when it changes', async () => {
+    const {element} = await createExternalTabs();
+
+    setHash('panel-2');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
   });
 });

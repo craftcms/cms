@@ -66,7 +66,7 @@ test('nested element manager view modes use entry types defined by listeners', f
         ));
     });
 
-    $settings = $field->formControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
+    $settings = $field->uiControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
 
     expect($eventCount)->toBe(1)
         ->and($settings['pasteableData']['values'])->toBe([$allowedEntryType->id])
@@ -79,7 +79,7 @@ test('nested element manager view modes use all entry types without listeners', 
     $value = Entry::find();
     $value->setResultOverride([]);
 
-    $settings = $field->formControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
+    $settings = $field->uiControl(new FieldContext(path: 'matrixField', value: $value, element: $owner))->props()['manager'];
 
     expect($settings['pasteableData']['values'])->toBe([$allowedEntryType->id, $excludedEntryType->id])
         ->and(array_column(array_column($settings['createAttributes'], 'attributes'), 'typeId'))->toBe([$allowedEntryType->id, $excludedEntryType->id]);

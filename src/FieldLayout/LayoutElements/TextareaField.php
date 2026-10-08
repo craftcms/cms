@@ -6,11 +6,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use Override;
 
 use function CraftCms\Cms\currentUser;
@@ -81,7 +81,7 @@ class TextareaField extends BaseNativeField
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         return Textarea::make($this->name ?? $this->attribute())
             ->value($this->value($context->element))

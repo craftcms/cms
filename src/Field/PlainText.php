@@ -12,18 +12,18 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -134,26 +134,26 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
-            FormField::make(t('UI Mode'))
+        return Ui::make([
+            UiField::make(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
                 ->control(Choice::make('uiMode')->value($this->uiMode)->options([
                     ['label' => t('Normal'), 'value' => 'normal'],
                     ['label' => t('Enlarged'), 'value' => 'enlarged'],
                 ])),
-            FormField::make(t('Placeholder Text'))
+            UiField::make(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->control(Text::make(['placeholder'])->value($this->placeholder)),
             Group::make('plain-text-field-limit', [
-                FormField::make(t('Maximum'))
+                UiField::make(t('Maximum'))
                     ->control(Number::make('fieldLimit')
                         ->value($this->charLimit ?? $this->byteLimit)
                         ->deltaGroupAtNamespace()
                         ->min(1)
                         ->size(3)),
-                FormField::make(t('Unit'))
+                UiField::make(t('Unit'))
                     ->control(Choice::make(['limitUnit'])
                         ->value($this->byteLimit ? 'bytes' : 'chars')
                         ->deltaGroupAtNamespace()
@@ -166,16 +166,16 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
                 ->asField(),
             Group::make('plain-text-behavior', [
-                FormField::make(t('Use a monospaced font'))
+                UiField::make(t('Use a monospaced font'))
                     ->control(Lightswitch::make('code')->value($this->code)),
-                FormField::make(t('Allow line breaks'))
+                UiField::make(t('Allow line breaks'))
                     ->control(Lightswitch::make(['multiline'])
                         ->value($this->multiline)
                         ->reactive()),
             ]),
-        ])->when($this->multiline, fn (Form $form) => $form->add(
+        ])->when($this->multiline, fn (Ui $ui) => $ui->add(
             Group::make('plain-text-multiline-settings', [
-                FormField::make(t('Initial Rows'))
+                UiField::make(t('Initial Rows'))
                     ->control(Number::make('initialRows')
                         ->value($this->initialRows)
                         ->min(1)),
@@ -184,7 +184,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $control = $this->multiline
             ? Textarea::make($context->path)->rows($this->initialRows)

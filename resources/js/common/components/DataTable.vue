@@ -8,7 +8,7 @@
   import {
     type CraftTableFeatures,
     tableHeaderId,
-  } from '@/modules/admin-table/craftTable';
+  } from '@/common/table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -451,7 +451,37 @@
   :deep(.cp-table-cell) {
     width: min-content;
   }
+  // Selection column hugs its checkbox rather than claiming a data-column share.
+  // Doubled class so it outranks wrappers that restate the `min-content` width.
+  :deep(.cp-table-cell.cp-table-cell--select) {
+    width: 1px;
+    white-space: nowrap;
+  }
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  // Selected rows take the accent fill a selected chip or thumbnail does, so a
+  // selection reads the same whichever view mode you're in. Painted on the
+  // cells rather than the row: a `<tr>` background loses to any the cells set.
+  :deep(.cp-table-row.sel > td) {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
+  // Cells carry a bottom border only, so a run of selected rows is bounded by
+  // the bottom border of the row above it and the bottom border of its own last
+  // row. Borders between selected rows are interior and stay quiet.
+  :deep(.cp-table-row.sel:not(:has(+ .cp-table-row.sel)) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  :deep(.cp-table-row:not(.sel):has(+ .cp-table-row.sel) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  // Nothing above the first row to carry its edge, so it keeps its own.
+  :deep(.cp-table-row.sel:first-child > td) {
+    border-block-start-color: var(--c-color-accent-border-normal);
   }
 </style>

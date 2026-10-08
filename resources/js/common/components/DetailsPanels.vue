@@ -260,6 +260,15 @@
           </button>
         </craft-disclosure>
       </div>
+      <craft-tooltip
+        v-for="panel in visiblePanels"
+        :key="panel.id"
+        :for="triggerId(panel.id)"
+        placement="left"
+        invoker-relation="label"
+      >
+        {{ panel.label }}
+      </craft-tooltip>
     </Teleport>
   </div>
 </template>

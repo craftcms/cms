@@ -8,7 +8,7 @@ import {
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {ScreenPageProps} from '@/common/composables/screen';
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 
 const fetchSlideoutPage = vi.fn();
 
@@ -885,7 +885,7 @@ describe('SlideoutPanel', () => {
 
     const Page = defineComponent({
       setup() {
-        const form: FormPayload = {
+        const form: UiPayload = {
           scope: [],
           refreshable: false,
           nodes: [],
@@ -913,7 +913,7 @@ describe('SlideoutPanel', () => {
   describe('primary action', () => {
     const FormPage = defineComponent({
       setup() {
-        const form: FormPayload = {
+        const form: UiPayload = {
           scope: [],
           refreshable: false,
           nodes: [],
@@ -936,7 +936,7 @@ describe('SlideoutPanel', () => {
     it('renders the response’s button in place of Save', async () => {
       const Page = defineComponent({
         setup() {
-          useAppLayout({form: {} as FormPayload});
+          useAppLayout({form: {} as UiPayload});
 
           return () => h('div');
         },
@@ -972,7 +972,7 @@ describe('SlideoutPanel', () => {
 
     const Page = defineComponent({
       setup() {
-        const form: FormPayload = {
+        const form: UiPayload = {
           scope: [],
           refreshable: false,
           nodes: [],

@@ -15,13 +15,13 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Activity\WorkflowActivityEvent;
@@ -196,7 +196,7 @@ it('grants card reordering when compiling the field and changes only the prepare
     $first = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 1, 'First');
     $second = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 2, 'Second');
 
-    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new FormContext);
+    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext);
     $draft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
 
     postJson(action([NestedElementsController::class, 'reorder']), [

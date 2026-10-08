@@ -17,7 +17,7 @@ import SystemMessages from '@/modules/utilities/components/system-messages/Syste
 import CpLink from '@/common/components/CpLink.vue';
 import {cpComponentRegistry} from './components';
 import {elementDetailsPanelRegistry} from './element-details-panels';
-import {registerFormComponents} from '@/modules/forms/register';
+import {registerUiComponents} from '@/modules/ui/register';
 import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
 import {registerWorkflowComponents} from '@/modules/workflows/register';
@@ -26,7 +26,7 @@ import {registerLayoutComponents} from '@/common/layouts/register';
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
 
-registerFormComponents(cpComponentRegistry);
+registerUiComponents(cpComponentRegistry);
 registerWidgetComponents(cpComponentRegistry);
 registerActivityComponents(cpComponentRegistry);
 registerWorkflowComponents(cpComponentRegistry, elementDetailsPanelRegistry);

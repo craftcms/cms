@@ -15,7 +15,7 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\Node;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
 

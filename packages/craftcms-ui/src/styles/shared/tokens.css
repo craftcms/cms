@@ -243,10 +243,11 @@
      Persistent page chrome (sticky bars, sidebars, the header bar) stays below
      the global skip links, which must never be covered when focused. Modal
      layers start at the shade and may cover them. Other skip links don't set
-     a layer. */
+     a layer. The sidebar sits a step above sticky bars, since its tooltips
+     and flyouts open out over the page beside it. */
   --c-layer-raised: 1;
   --c-layer-sticky: 10;
-  --c-layer-sidebar: 10;
+  --c-layer-sidebar: 11;
   --c-layer-header: 20;
   --c-layer-skip-link: 90;
   --c-layer-shade: 99;
