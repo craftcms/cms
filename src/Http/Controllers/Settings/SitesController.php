@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Form\Controls\BooleanMenu;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -314,21 +315,10 @@ readonly class SitesController
         ];
 
         if ($isMultiSite || $isNew) {
-            $status = Field::make(t('Status'), Combobox::make('enabled')
-                ->options([
-                    [
-                        'label' => t('Enabled'),
-                        'value' => '1',
-                        'data' => ['indicator' => ['variant' => 'success']],
-                    ],
-                    [
-                        'label' => t('Disabled'),
-                        'value' => '0',
-                        'data' => ['indicator' => ['variant' => 'empty']],
-                    ],
-                    ...$this->booleanEnvOptions(),
-                ])
-                ->requireOptionMatch())
+            $status = Field::make(t('Status'), BooleanMenu::make('enabled')
+                ->yesLabel(t('Enabled'))
+                ->noLabel(t('Disabled'))
+                ->includeEnvVars())
                 ->tip(t('This can be set to an environment variable with a boolean value ({examples}).', [
                     'examples' => '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
                 ]));
@@ -373,46 +363,16 @@ readonly class SitesController
     /** @return array<string, mixed> */
     private function siteValues(Site $site): array
     {
-        $enabled = match ($site->getEnabled(false)) {
-            true => '1',
-            false => '0',
-            default => $site->getEnabled(false),
-        };
-
         return [
             'siteId' => $site->id,
             'group' => $site->groupId,
             'name' => $site->getName(false),
             'handle' => $site->handle,
             'language' => $site->getLanguage(false),
-            'enabled' => $enabled,
+            'enabled' => BooleanMenu::optionValue($site->getEnabled(false)),
             'primary' => $site->primary,
             'hasUrls' => $site->hasUrls,
             'baseUrl' => $site->getBaseUrl(false) ?? '',
         ];
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function booleanEnvOptions(): array
-    {
-        $groups = SelectOptions::getBooleanEnvOptions();
-        $groups[0]['options'] = $groups[0]['options']
-            ->map(function (array $option): array {
-                $enabled = $option['data']['boolean'] === '1';
-
-                return [
-                    ...$option,
-                    'data' => [
-                        ...$option['data'],
-                        'hint' => $enabled ? t('Enabled') : t('Disabled'),
-                        'indicator' => [
-                            'variant' => $enabled ? 'success' : 'empty',
-                        ],
-                    ],
-                ];
-            })
-            ->all();
-
-        return $groups;
     }
 }
