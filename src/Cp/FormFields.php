@@ -12,6 +12,8 @@ use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\ComponentSelect;
+use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
@@ -27,14 +29,23 @@ use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Form\Controls\Table as TableControl;
+use CraftCms\Cms\Form\Controls\TableColumn;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
@@ -755,7 +766,22 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function editableTableHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/editableTable', $config);
+        $control = self::editableTableFromConfig($config);
+        $payload = app(FormResolver::class)->resolve(
+            Form::make([FormField::make()->control($control)]),
+            new FormContext,
+        );
+
+        return Html::tag('craft-table-form', '', [
+            ...($config['containerAttributes'] ?? []),
+            'id' => $config['id'] ?? 'editabletable'.mt_rand(),
+            'name' => $config['name'] ?? null,
+            'aria' => [
+                'labelledby' => $config['labelledBy'] ?? null,
+                'describedby' => $config['describedBy'] ?? null,
+            ],
+            'data-payload' => Json::encode($payload),
+        ]);
     }
 
     /** @param array<string, mixed> $config */
@@ -764,7 +790,107 @@ readonly class FormFields
         $config['id'] ??= 'editabletable'.mt_rand();
         $config['width'] ??= 'full';
 
-        return self::fieldHtml('template:_includes/forms/editableTable', $config);
+        $config['fieldset'] = true;
+
+        return self::fieldHtml(self::editableTableHtml(...), $config);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function editableTableFromConfig(array $config): TableControl
+    {
+        self::deprecateConfig('editableTable', $config, [
+            'initJs' => 'is no longer supported. The form builder mounts the table automatically.',
+        ]);
+
+        $columns = $config['cols'] ?? [];
+        foreach ($columns as $key => &$column) {
+            self::deprecateConfig('editableTable column', $column, [
+                'locale' => 'is no longer supported. Number columns use native number inputs and submit unformatted values.',
+            ]);
+            if (in_array($column['type'] ?? '', ['checkbox', 'lightswitch'], true) && isset($column['value'])) {
+                $column['control'] = TableColumn::control((string) $key, $column);
+                unset($column['value']);
+            }
+            if (isset($column['info'])) {
+                $column['infoHtml'] = Markdown::parse($column['info']);
+            }
+            if (isset($column['headingHtml'])) {
+                $column['heading'] ??= strip_tags($column['headingHtml']);
+            }
+            if (($column['type'] ?? null) === 'heading') {
+                $column['html'] = true;
+            }
+            if (in_array($column['type'] ?? '', ['template', 'autosuggest'], true)) {
+                $column['options'] ??= array_merge(
+                    ($column['type'] === 'template' || ($column['suggestTemplates'] ?? false)) ? SelectOptions::getTemplateSuggestions() : [],
+                    ($column['suggestEnvVars'] ?? false) ? SelectOptions::getEnvSuggestions($column['suggestAliases'] ?? false) : [],
+                );
+            }
+        }
+        unset($column);
+
+        $defaults = array_map(
+            fn (mixed $cell): mixed => is_array($cell) && array_key_exists('value', $cell) ? $cell['value'] : $cell,
+            $config['defaultValues'] ?? [],
+        );
+        $rows = $config['rows'] ?? [];
+        $errors = [];
+        $legacyErrors = is_array($config['errors'] ?? null) ? $config['errors'] : [];
+        $cellOptions = [];
+        foreach ($rows as $rowKey => &$row) {
+            foreach ($row['hiddenInputs'] ?? [] as $key => $value) {
+                $columns[$key] ??= ['type' => 'hidden'];
+                $row[$key] = $value;
+            }
+            unset($row['hiddenInputs']);
+
+            foreach ($columns as $columnKey => $column) {
+                $cell = $row[$columnKey] ?? $defaults[$columnKey] ?? null;
+                if (is_array($cell) && array_key_exists('value', $cell)) {
+                    if (isset($cell['options'])) {
+                        $cellOptions[(string) $rowKey][$columnKey]['options'] = $cell['options'];
+                    }
+                    if (($cell['hasErrors'] ?? false) || ! empty($cell['errors'])) {
+                        $errors[(string) $rowKey][$columnKey] = true;
+                    }
+                    $cell = $cell['value'];
+                }
+                if ($cell instanceof DateTimeInterface) {
+                    $cell = $cell->format(($column['type'] ?? null) === 'time' ? 'H:i' : 'Y-m-d');
+                }
+                $row[$columnKey] = $cell;
+                if (! empty($legacyErrors[$rowKey][$columnKey])) {
+                    $errors[(string) $rowKey][$columnKey] = true;
+                }
+            }
+        }
+        unset($row);
+
+        $staticRows = ($config['staticRows'] ?? false) ||
+            (($config['minRows'] ?? null) === 1 && ($config['maxRows'] ?? null) === 1 && count($rows) === 1);
+        $mode = match (true) {
+            (bool) ($config['static'] ?? false), (bool) ($config['readonly'] ?? false) => ControlMode::ReadOnly,
+            (bool) ($config['disabled'] ?? false) => ControlMode::Disabled,
+            default => ControlMode::Editable,
+        };
+        $name = $config['name'] ?? 'table';
+        $path = explode('[', str_replace(']', '', $name));
+
+        return TableControl::make($path)
+            ->columns($columns)
+            ->cellOptions($cellOptions)
+            ->value($rows)
+            ->keyed(! array_is_list($rows))
+            ->defaultValues($defaults)
+            ->allowAdd(! $staticRows && ($config['allowAdd'] ?? false))
+            ->allowDelete(! $staticRows && ($config['allowDelete'] ?? false))
+            ->allowReorder(! $staticRows && ($config['allowReorder'] ?? false))
+            ->minRows($config['minRows'] ?? null)
+            ->maxRows($config['maxRows'] ?? null)
+            ->addRowLabel($config['addRowLabel'] ?? null)
+            ->includeRowId($config['includeRowId'] ?? false)
+            ->errors($errors)
+            ->mode($mode);
     }
 
     /** @param array<string, mixed> $config */
@@ -1267,6 +1393,7 @@ readonly class FormFields
             ->readOnly((bool) ($config['readonly'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
                 ['class' => Html::explodeClass($config['class'] ?? [])],
                 $config['containerAttributes'] ?? [],
@@ -1334,10 +1461,90 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
+    /**
+     * Maps the legacy componentSelect config surface onto the
+     * {@see ComponentSelect} component — the PHP twin of the
+     * `_includes/forms/componentSelect` glue template.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function componentSelectFromConfig(array $config): ComponentSelect
+    {
+        return self::configureComponentSelect(ComponentSelect::make(), $config);
+    }
+
+    /**
+     * Maps the legacy entryTypeSelect config surface onto the
+     * {@see EntryTypeSelect} component — the PHP twin of the
+     * `_includes/forms/entryTypeSelect` glue template. Indicators and
+     * descriptions default to on when overrides are allowed.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function entryTypeSelectFromConfig(array $config): EntryTypeSelect
+    {
+        $allowOverrides = (bool) ($config['allowOverrides'] ?? false);
+        $config['showHandles'] = true;
+        $config['showIndicators'] ??= $allowOverrides;
+        $config['showDescription'] ??= $allowOverrides;
+        unset($config['createAction']);
+
+        return self::configureComponentSelect(EntryTypeSelect::make(), $config)
+            ->allowOverrides($allowOverrides)
+            ->includeGroupInValues((bool) ($config['includeGroupInValues'] ?? false))
+            ->create((bool) ($config['create'] ?? false));
+    }
+
+    /**
+     * @template T of ComponentSelect
+     *
+     * @param  T  $select
+     * @param  array<string, mixed>  $config
+     * @return T
+     */
+    private static function configureComponentSelect(ComponentSelect $select, array $config): ComponentSelect
+    {
+        $values = $config['values'] ?? (! empty($config['value']) ? [$config['value']] : []);
+
+        $select
+            ->id($config['id'] ?? null)
+            ->name($config['name'] ?? null)
+            ->inputName($config['inputName'] ?? null)
+            ->renderDefaultInput((bool) ($config['renderDefaultInput'] ?? true))
+            ->values(is_iterable($values) ? $values : [$values])
+            ->limit(isset($config['limit']) ? (int) $config['limit'] : null)
+            ->showHandles((bool) ($config['showHandles'] ?? false))
+            ->showIndicators((bool) ($config['showIndicators'] ?? false))
+            ->showDescription((bool) ($config['showDescription'] ?? false))
+            ->sortable((bool) ($config['sortable'] ?? true))
+            ->selectable((bool) ($config['selectable'] ?? true))
+            ->showActionMenus((bool) ($config['showActionMenus'] ?? true))
+            ->hyperlinks((bool) ($config['hyperlinks'] ?? false))
+            ->searchable(isset($config['withSearchInput']) ? (bool) $config['withSearchInput'] : null)
+            ->createAction($config['createAction'] ?? null)
+            ->checkboxOptions((bool) ($config['checkboxOptions'] ?? false))
+            ->inline((bool) ($config['inline'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+
+        if (isset($config['options'])) {
+            $select->options($config['options']);
+        }
+
+        return $select;
+    }
+
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+        if (! empty($config['jsClass'])) {
+            return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+        }
+
+        return self::entryTypeSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1351,7 +1558,14 @@ readonly class FormFields
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+        if (! empty($config['jsClass'])) {
+            return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+        }
+
+        return self::fieldHtml(
+            fn (array $c): string => self::entryTypeSelectFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */

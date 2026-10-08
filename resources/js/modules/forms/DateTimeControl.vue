@@ -21,6 +21,7 @@
       min?: string;
       max?: string;
       minuteIncrement: number;
+      fullWidth?: boolean;
     }>;
     value: DateTimeValue;
     editable: boolean;
@@ -82,13 +83,17 @@
     .min="control.props.min"
     .max="control.props.max"
     .minuteIncrement="control.props.minuteIncrement"
+    :width="control.props.fullWidth ? 'full' : undefined"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     @model-value-changed="update"
   >
     <craft-button
-      v-if="editable && hasValue"
+      v-if="editable"
+      :class="{
+        invisible: !hasValue,
+      }"
       type="button"
       icon="xmark-large"
       :aria-label="t('Clear')"
@@ -98,3 +103,17 @@
     ></craft-button>
   </craft-input-date-time>
 </template>
+
+<style scoped>
+  craft-input-date-time[width='full']::part(inputs) {
+    width: calc(
+      100% - ((var(--c-input-spacing-inline) * 2) + var(--c-size-control-sm)) -
+        1px
+    );
+  }
+
+  craft-input-date-time[width='full'] > craft-button {
+    margin-inline-start: var(--c-input-spacing-inline);
+    margin-inline-end: calc(var(--c-input-spacing-inline) + 1px);
+  }
+</style>

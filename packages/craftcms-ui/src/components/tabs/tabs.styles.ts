@@ -67,6 +67,12 @@ export default css`
     flex: none;
   }
 
+  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
+     selected weight and its width-reserving label copy. */
+  .tabs__tab-group ::slotted([slot='tab'][selected]) {
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
   /*
    * Unless the strip is asked to divide its width evenly, which is the other
    * answer to the same problem: rather than collapsing the tabs that don't
@@ -87,10 +93,10 @@ export default css`
     flex: 1 1 0;
     min-width: 0;
     /* The label sits in the middle of the share it was given rather than
-       against its leading edge, and wrapped lines centre with it. */
+       against its leading edge, and wrapped lines center with it. */
     justify-content: center;
     text-align: center;
-    /* Centred on the cross axis too. A label with no room left wraps, which
+    /* Centered on the cross axis too. A label with no room left wraps, which
        makes that tab taller and stretches the rest of the row to match it;
        without this their single lines would sit against the top of the space
        they were stretched into while the wrapped one sat in the middle. */

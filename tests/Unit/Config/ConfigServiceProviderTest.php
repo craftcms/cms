@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
@@ -18,7 +19,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE'] as $name) {
+    foreach (['CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -162,6 +163,20 @@ it('applies environment overrides when resolved', function () {
     new ConfigServiceProvider(app())->register();
 
     expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+});
+
+it('materializes typed MCP configuration from JSON environment overrides', function () {
+    app(ConfigRepository::class)->set('craft.general', []);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MCP'] = '{"endpoint":"agents","middleware":["throttle:mcp"]}';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+
+    expect($config->mcp)->toBeInstanceOf(McpConfig::class)
+        ->and($config->mcp->endpoint)->toBe('agents')
+        ->and($config->mcp->middleware)->toBe(['throttle:mcp']);
 });
 
 it('fails when an environment override cannot be normalized', function () {

@@ -7,6 +7,7 @@
     defineProps<{
       actor: ActivityTarget;
       impersonator: ActivityTarget | null;
+      origin?: string | null;
       descriptionText?: string | null;
       descriptionHtml?: string | null;
       html: string | null;
@@ -34,7 +35,11 @@
 <template>
   <craft-card>
     <div slot="label" class="activity-comment-card__heading">
-      <ActivityTimelineActor :actor="actor" :impersonator="impersonator" />
+      <ActivityTimelineActor
+        :actor="actor"
+        :impersonator="impersonator"
+        :origin="origin"
+      />
       <span
         v-if="descriptionHtml"
         class="activity-comment-card__description"

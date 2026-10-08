@@ -1,4 +1,5 @@
 import {defineConfig, loadEnv, lazyPlugins} from 'vite-plus';
+import {playwright} from 'vite-plus/test/browser-playwright';
 import laravel from 'laravel-vite-plugin';
 import inertia from '@inertiajs/vite';
 import {exec} from 'child_process';
@@ -283,12 +284,36 @@ export default defineConfig(({mode}) => {
     // Vitest picks up this config's resolve/aliases. The unit tests colocated
     // under resources/js (e.g. modules/auth/elevated-session) need a DOM
     // environment; the craftcms-ui package has its own vitest projects.
+    // `*.browser.test.ts` files run in headless Chromium instead, for checks
+    // that need real layout and stacking, which happy-dom doesn't compute.
     test: {
-      environment: 'happy-dom',
       server: {deps: {inline: ['@uppy/tus']}},
-      include: [
-        'resources/js/**/*.test.ts',
-        'yii2-adapter/resources/js/**/*.test.ts',
+      projects: [
+        {
+          extends: true,
+          test: {
+            name: 'unit',
+            environment: 'happy-dom',
+            include: [
+              'resources/js/**/*.test.ts',
+              'yii2-adapter/resources/js/**/*.test.ts',
+            ],
+            exclude: ['**/node_modules/**', '**/*.browser.test.ts'],
+          },
+        },
+        {
+          extends: true,
+          test: {
+            name: 'browser',
+            include: ['resources/js/**/*.browser.test.ts'],
+            browser: {
+              enabled: true,
+              headless: true,
+              provider: playwright(),
+              instances: [{browser: 'chromium'}],
+            },
+          },
+        },
       ],
     },
 

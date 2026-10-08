@@ -6,6 +6,8 @@ use CraftCms\Cms\Cp\Settings;
 
 use function CraftCms\Cms\t;
 
+beforeEach(fn () => app(Settings::class)->remove('System', 'mcp'));
+
 it('adds settings lazily for the current mode', function () {
     $settings = app(Settings::class);
     $resolved = false;

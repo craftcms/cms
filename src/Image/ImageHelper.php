@@ -22,6 +22,11 @@ class ImageHelper
     // Bounds metadata scans for formats whose dimensions aren't in fixed header bytes.
     private const MAX_IMAGE_SIZE_STREAM_BYTES = 1024 * 1024;
 
+    private const string JXL_CONTAINER_SIGNATURE = "\x00\x00\x00\x0CJXL \x0D\x0A\x87\x0A";
+
+    // Bytes needed to parse a JPEG XL SizeHeader (68 bits max), plus the 2-byte codestream signature
+    private const int JXL_SIZE_HEADER_BYTES = 11;
+
     /** @return array{int,int} */
     public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {
@@ -264,6 +269,13 @@ class ImageHelper
                     $data = unpack('N2', stream_get_contents($stream, 8));
                     $dimensions = array_values($data);
                     break;
+                    // Maybe BMP
+                case '424D':
+                    $dimensions = self::bmpSize(stream_get_contents($stream, 24));
+                    if ($dimensions === null) {
+                        return false;
+                    }
+                    break;
                     // Maybe WebP
                 case '5249':
                     $buffer = hex2bin($signature);
@@ -273,13 +285,28 @@ class ImageHelper
 
                     $dimensions = self::webpSizeByStream($stream, $buffer);
                     break;
+                    // Maybe JPEG XL (bare codestream)
+                case 'FF0A':
+                    $dimensions = self::jxlCodestreamSize(hex2bin($signature).stream_get_contents($stream, self::JXL_SIZE_HEADER_BYTES - 2));
+                    if ($dimensions === null) {
+                        return false;
+                    }
+                    break;
                 default:
                     $buffer = hex2bin($signature);
                     if ($buffer === false) {
                         return false;
                     }
 
-                    $dimensions = self::isoBmffSizeByStream($stream, $buffer);
+                    $buffer .= stream_get_contents($stream, 12 - strlen($buffer));
+
+                    // Maybe JPEG XL (ISO BMFF container)
+                    if ($buffer === self::JXL_CONTAINER_SIGNATURE) {
+                        $dimensions = self::jxlContainerSizeByStream($stream);
+                    } else {
+                        $dimensions = self::isoBmffSizeByStream($stream, $buffer);
+                    }
+
                     if ($dimensions === null) {
                         return false;
                     }
@@ -380,7 +407,7 @@ class ImageHelper
      */
     private static function isoBmffSizeByStream($stream, string $buffer): ?array
     {
-        $buffer .= stream_get_contents($stream, 10);
+        $buffer .= stream_get_contents($stream, 12 - strlen($buffer));
         if (strlen($buffer) < 12 || substr($buffer, 4, 4) !== 'ftyp') {
             return null;
         }
@@ -413,6 +440,164 @@ class ImageHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns a BMP’s dimensions from the bytes following its 2-byte signature.
+     *
+     * @return array{int,int}|null
+     */
+    private static function bmpSize(string $buffer): ?array
+    {
+        // The DIB header starts after the remaining 12 bytes of the file header, and begins with its own size
+        if (strlen($buffer) < 16) {
+            return null;
+        }
+
+        $dibHeaderSize = unpack('V', substr($buffer, 12, 4))[1];
+
+        if ($dibHeaderSize === 12) {
+            // BITMAPCOREHEADER (OS/2 1.x): unsigned 16-bit dimensions
+            $width = unpack('v', substr($buffer, 16, 2))[1];
+            $height = unpack('v', substr($buffer, 18, 2))[1];
+        } elseif ($dibHeaderSize >= 40 && strlen($buffer) >= 24) {
+            // BITMAPINFOHEADER and later: signed 32-bit dimensions, where a negative height means top-down
+            [$width, $height] = array_map(
+                fn (int $value) => $value >= 0x80000000 ? $value - 0x100000000 : $value,
+                array_values(unpack('V2', substr($buffer, 16, 8))),
+            );
+            $height = abs($height);
+        } else {
+            return null;
+        }
+
+        if ($width <= 0 || $height <= 0) {
+            return null;
+        }
+
+        return [$width, $height];
+    }
+
+    /**
+     * Reads the beginning of the codestream out of a JPEG XL container’s `jxlc`/`jxlp` boxes,
+     * and returns its dimensions.
+     *
+     * @param  resource  $stream  A stream positioned right after the container signature box
+     * @return array{int,int}|null
+     */
+    private static function jxlContainerSizeByStream($stream): ?array
+    {
+        $codestream = '';
+        $bytesRead = 12;
+
+        while (strlen($codestream) < self::JXL_SIZE_HEADER_BYTES) {
+            $header = stream_get_contents($stream, 8);
+            if (strlen($header) < 8) {
+                return null;
+            }
+
+            $size = unpack('N', substr($header, 0, 4))[1];
+            $type = substr($header, 4, 4);
+            $bytesRead += 8;
+
+            if ($size === 1) {
+                // 64-bit box size
+                $largeSize = stream_get_contents($stream, 8);
+                if (strlen($largeSize) < 8) {
+                    return null;
+                }
+                $bytesRead += 8;
+                $contentSize = unpack('J', $largeSize)[1] - 16;
+            } elseif ($size === 0) {
+                // Box extends to the end of the file
+                $contentSize = PHP_INT_MAX;
+            } else {
+                $contentSize = $size - 8;
+            }
+
+            if ($contentSize < 0) {
+                return null;
+            }
+
+            if ($type === 'jxlc' || $type === 'jxlp') {
+                if ($type === 'jxlp') {
+                    // Skip the partial codestream box index
+                    if ($contentSize < 4 || strlen(stream_get_contents($stream, 4)) < 4) {
+                        return null;
+                    }
+                    $contentSize -= 4;
+                }
+
+                $chunk = stream_get_contents($stream, min($contentSize, self::JXL_SIZE_HEADER_BYTES - strlen($codestream)));
+                $codestream .= $chunk;
+
+                // jxlc holds the full codestream, so there's nothing more to read
+                if ($type === 'jxlc' || strlen($chunk) < $contentSize) {
+                    break;
+                }
+            } else {
+                if ($size === 0 || $bytesRead + $contentSize > self::MAX_IMAGE_SIZE_STREAM_BYTES) {
+                    return null;
+                }
+
+                if ($contentSize > 0 && strlen(stream_get_contents($stream, $contentSize)) < $contentSize) {
+                    return null;
+                }
+            }
+
+            $bytesRead += $contentSize;
+        }
+
+        return self::jxlCodestreamSize($codestream);
+    }
+
+    /**
+     * Parses the SizeHeader at the beginning of a JPEG XL codestream (ISO/IEC 18181-1 §A.3.1).
+     *
+     * Note that the returned dimensions don’t account for the image’s orientation, consistent with JPEG.
+     *
+     * @param  string  $codestream  The beginning of the codestream, including its signature
+     * @return array{int,int}|null
+     */
+    private static function jxlCodestreamSize(string $codestream): ?array
+    {
+        if (strlen($codestream) < self::JXL_SIZE_HEADER_BYTES || ! str_starts_with($codestream, "\xFF\x0A")) {
+            return null;
+        }
+
+        // Bits are packed least-significant-bit first
+        $position = 16;
+        $read = function (int $bits) use ($codestream, &$position): int {
+            $value = 0;
+            for ($i = 0; $i < $bits; $i++, $position++) {
+                $bit = (ord($codestream[$position >> 3]) >> ($position & 7)) & 1;
+                $value |= $bit << $i;
+            }
+
+            return $value;
+        };
+        $readSize = fn () => $read([9, 13, 18, 30][$read(2)]) + 1;
+
+        $div8 = $read(1) === 1;
+        $height = $div8 ? ($read(5) + 1) * 8 : $readSize();
+        $ratio = $read(3);
+
+        if ($ratio === 0) {
+            $width = $div8 ? ($read(5) + 1) * 8 : $readSize();
+        } else {
+            [$numerator, $denominator] = [
+                1 => [1, 1],
+                2 => [12, 10],
+                3 => [4, 3],
+                4 => [3, 2],
+                5 => [16, 9],
+                6 => [5, 4],
+                7 => [2, 1],
+            ][$ratio];
+            $width = intdiv($height * $numerator, $denominator);
+        }
+
+        return [$width, $height];
     }
 
     /**

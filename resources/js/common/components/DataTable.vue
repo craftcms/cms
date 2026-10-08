@@ -5,7 +5,10 @@
     type Row,
     type Table,
   } from '@tanstack/vue-table';
-  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+  import {
+    type CraftTableFeatures,
+    tableHeaderId,
+  } from '@/modules/admin-table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -63,6 +66,7 @@
     rowRef: [element: Element | null, row: Row<CraftTableFeatures, TData>];
   }>();
 
+  const rootRef = useTemplateRef<HTMLElement>('root-ref');
   const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
@@ -110,9 +114,10 @@
 
   function captureFocusedHeaderId(): string | null {
     const active = document.activeElement;
-    if (!(active instanceof HTMLElement)) return null;
-    const headerCell = active.closest<HTMLElement>('th[id^="header-"]');
-    return headerCell ? headerCell.id.slice('header-'.length) : null;
+    if (!(active instanceof HTMLElement) || !rootRef.value?.contains(active)) {
+      return null;
+    }
+    return active.closest<HTMLElement>('th[id]')?.id ?? null;
   }
 
   watch(
@@ -130,8 +135,8 @@
         const headerId = pendingSortFocusHeaderId.value;
         pendingSortFocusHeaderId.value = null;
         await nextTick();
-        document
-          .getElementById(`header-${headerId}`)
+        rootRef.value
+          ?.querySelector<HTMLElement>(`#${CSS.escape(headerId)}`)
           ?.querySelector<HTMLButtonElement>('button')
           ?.focus();
       }
@@ -245,7 +250,7 @@
 </script>
 
 <template>
-  <div>
+  <div ref="root-ref">
     <div v-if="loading" class="grid place-items-center min-h-20">
       <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
     </div>
@@ -283,7 +288,7 @@
             v-for="header in headerGroup.headers"
             :key="header.id"
             :colSpan="header.colSpan"
-            :id="`header-${header.id}`"
+            :id="tableHeaderId(table, header.id)"
             :class="[
               {
                 'cp-table-cell': true,

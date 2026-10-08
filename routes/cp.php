@@ -74,6 +74,7 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\Mcp\Http\Controllers\SettingsController as McpSettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -296,6 +297,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Index page
         Route::get('settings', SettingsIndexController::class)
             ->name('settings.index');
+
+        Route::get('settings/mcp', [McpSettingsController::class, 'index'])
+            ->name('settings.mcp.index');
+        Route::post('settings/mcp', [McpSettingsController::class, 'store'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.store');
 
         // Entry types
         Route::prefix('settings/entry-types')->group(function () {

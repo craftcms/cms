@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -177,3 +179,23 @@ it('resolves matching action menu props and HTML once per render', function () {
             ->and($props['bodyHtml'])->toContain($id);
     }
 });
+
+it('sends the primary action to a full page and a slideout alike', function (array $server) {
+    $screen = new CpScreenResponse;
+    $screen->inertiaPage('settings/entry-types/Edit')
+        ->primaryAction(Button::make()->label('Apply')->variant(ButtonVariant::Fill));
+
+    $html = $screen->toResponse(Request::create('/', server: $server))->getData(true)['props']['primaryAction'];
+
+    expect($html)->toStartWith('<craft-button')
+        ->toContain('type="submit"')
+        ->toContain('variant="fill"')
+        ->toContain('Apply');
+})->with([
+    'full page' => [['HTTP_X_INERTIA' => 'true', 'HTTP_ACCEPT' => 'text/html']],
+    'slideout' => [[
+        'HTTP_X_INERTIA' => 'true',
+        'HTTP_ACCEPT' => 'application/json',
+        'HTTP_X_CRAFT_CONTAINER_ID' => 'slideout-1',
+    ]],
+]);

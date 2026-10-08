@@ -31,6 +31,12 @@ use function CraftCms\Cms\t;
  */
 class Cp extends Component
 {
+    /** @param array<string, mixed> $config */
+    public function editableTable(array $config = []): string
+    {
+        return FormFields::editableTableHtml($config);
+    }
+
     /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
@@ -451,6 +457,24 @@ class Cp extends Component
     public function checkboxSelect(array $config = []): string
     {
         return FormFields::checkboxSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a component select's HTML from the legacy componentSelect variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function componentSelect(array $config = []): string
+    {
+        return FormFields::componentSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders an entry type select's HTML from the legacy entryTypeSelect variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function entryTypeSelect(array $config = []): string
+    {
+        return FormFields::entryTypeSelectFromConfig($config)->toHtml();
     }
 
     /**

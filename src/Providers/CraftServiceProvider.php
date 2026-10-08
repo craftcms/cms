@@ -19,6 +19,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider;
 use CraftCms\Cms\Gql\GqlServiceProvider;
 use CraftCms\Cms\Import\ImportServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
+use CraftCms\Cms\Mcp\McpServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
 use CraftCms\Cms\Queue\QueueServiceProvider;
@@ -33,6 +34,7 @@ use CraftCms\Cms\View\ViewServiceProvider;
 use CraftCms\Cms\Workflow\UserReview\UserReviewServiceProvider;
 use CraftCms\Cms\Workflow\WorkflowServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
+use Laravel\Passport\PassportServiceProvider;
 use Override;
 
 /**
@@ -54,6 +56,8 @@ class CraftServiceProvider extends AggregateServiceProvider
         DebugServiceProvider::class,
         LicenseServiceProvider::class,
         RouteServiceProvider::class,
+        PassportServiceProvider::class,
+        McpServiceProvider::class,
         AppServiceProvider::class,
         ConsoleServiceProvider::class,
         ElementServiceProvider::class,

@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Bilgi sızdırma saldırılarıyla hassas içeriklerin açığa çıkarılmasına olanak sağlayabilir.',
     'Can contain Markdown formatting.' => 'İşaretleme biçimlendirmesi içerebilir.',
     'Cancel' => 'İptal',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Dizin oluşturma oturumu bulunamadı veya gözden geçirilecek bir şey yok.',
     'Canton' => 'Kanton',
     'Can’t run Craft CMS' => 'Craft CMS çalıştırılamıyor',

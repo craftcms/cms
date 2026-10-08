@@ -671,7 +671,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     try {
       const ownerId = await slideout!.instance.prepareNestedOwner!();
 
-      if (!ownerId) {
+      // Element types without drafts (e.g. variants) save in place.
+      if (!ownerId || !props.canAutosave) {
         return true;
       }
 
@@ -707,6 +708,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       method: 'post' as const,
     }),
     {
+      keyboardShortcutEnabled: () => !props.readOnly,
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one

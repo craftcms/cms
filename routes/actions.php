@@ -308,6 +308,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('entry-types/render-form', [EntryTypesController::class, 'renderForm']);
+            Route::post('entry-types/render-select', [EntryTypesController::class, 'renderSelect']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
@@ -392,7 +393,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
-        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
+        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data'])->middleware('can:viewUsers');
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {

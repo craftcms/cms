@@ -163,6 +163,7 @@ describe('NestedElementsControl', () => {
   ) {
     const legacyElementEditor = {
       settings: {
+        canCreateDrafts: true,
         draftId: 6,
         saveParams: null as Record<string, unknown> | null,
       },
@@ -588,6 +589,33 @@ describe('NestedElementsControl', () => {
       action: 'elements/save-nested-element-for-derivative',
       newOwnerId: 73,
     });
+  });
+
+  it('saves draft-less elements in place in the legacy editor', async () => {
+    const {createElementEditor, legacyElementEditor} = mount({
+      vueSlideout: false,
+      cards: [
+        nestedElement({
+          id: 18,
+          siteId: 1,
+          ownerId: 31,
+          editUrl:
+            '/admin/actions/elements/edit?elementId=18&siteId=1&fieldId=7&ownerId=31',
+          cardAttributes: {data: {editable: true}},
+        }),
+      ],
+    });
+    legacyElementEditor.settings.canCreateDrafts = false;
+    legacyElementEditor.settings.draftId = null as unknown as number;
+    await nextTick();
+
+    root.querySelector<HTMLAnchorElement>('a[href]')!.click();
+    await vi.waitFor(() => expect(createElementEditor).toHaveBeenCalledOnce());
+
+    const settings = createElementEditor.mock.lastCall![1];
+    await expect(settings.onBeforeSubmit()).resolves.toBeUndefined();
+    expect(legacyElementEditor.saveDraft).not.toHaveBeenCalled();
+    expect(legacyElementEditor.settings.saveParams).toBeNull();
   });
 
   it('opens the entry’s own edit page in a new tab on a modified click', async () => {

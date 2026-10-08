@@ -38,6 +38,7 @@ use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -56,7 +57,7 @@ class Workflows
         private readonly ProjectConfig $projectConfig,
     ) {}
 
-    /** @return Collection<int, Workflow> */
+    /** @return EloquentCollection<int, Workflow> */
     public function getAllWorkflows(): Collection
     {
         return Workflow::query()->get();
@@ -594,24 +595,29 @@ class Workflows
     /** @param Builder<WorkflowRun> $query */
     private function invalidateActiveRuns($query, string $reason): void
     {
-        $query->whereIn('status', [WorkflowStatus::Pending, WorkflowStatus::Approved])
-            ->with('activityRootEvent')
-            ->get()
-            ->each(function (WorkflowRun $run) use ($reason): void {
-                $draft = $this->draftForRun($run);
-                $run->update([
-                    'status' => WorkflowStatus::Invalidated,
-                    'currentStageResult' => null,
-                ]);
+        DB::transaction(function () use ($query, $reason): void {
+            $query->whereIn('status', [WorkflowStatus::Pending, WorkflowStatus::Approved])
+                ->with('activityRootEvent')
+                ->orderBy('draftId')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->each(function (WorkflowRun $run) use ($reason): void {
+                    $draft = $this->draftForRun($run);
+                    $run->update([
+                        'status' => WorkflowStatus::Invalidated,
+                        'currentStageResult' => null,
+                    ]);
 
-                if ($draft === null) {
-                    return;
-                }
+                    if ($draft === null) {
+                        return;
+                    }
 
-                $actor = currentUser();
-                $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
-                $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
-            });
+                    $actor = currentUser();
+                    $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
+                    $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
+                });
+        });
     }
 
     /** @param Builder<WorkflowRun> $query */
@@ -735,7 +741,7 @@ class Workflows
         $event = new WorkflowTransitioning($transition, $draft, $actor, $run, $note);
         event($event);
         if ($event->cancel) {
-            throw new WorkflowException('The workflow transition was cancelled.');
+            throw new WorkflowException('The workflow transition was canceled.');
         }
     }
 

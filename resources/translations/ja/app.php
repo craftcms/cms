@@ -257,7 +257,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Can be exploited to reveal sensitive content by information disclosure attacks.',
     'Can contain Markdown formatting.' => 'Markdown の書式を含めることができます。',
     'Cancel' => 'キャンセル',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot find the indexing session, or there’s nothing to review.' => 'インデックスセッションが見つからないか、レビューするものがありません。',
     'Canton' => '州',
     'Can’t run Craft CMS' => 'Craft CMS を実行できません',

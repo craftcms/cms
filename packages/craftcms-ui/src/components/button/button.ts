@@ -263,14 +263,24 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
         );
       });
 
+    // Plain text can be trimmed to its capitals; slotted elements (icons,
+    // thumbnails) keep their flex layout. Screen-reader-only text is out of flow.
+    const textLabel =
+      filled(null) &&
+      !Array.from(this.children).some(
+        (child) => !child.slot && !child.classList.contains('sr-only')
+      );
+
     const content = {
       label: filled(null),
+      textLabel,
       prefix: filled('prefix'),
       suffix: filled('suffix'),
     };
 
     if (
       content.label !== this._content.label ||
+      content.textLabel !== this._content.textLabel ||
       content.prefix !== this._content.prefix ||
       content.suffix !== this._content.suffix
     ) {
@@ -443,7 +453,12 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   /** Which parts of the content have something in them; see #syncContent. */
   @state()
-  private _content = {label: false, prefix: false, suffix: false};
+  private _content = {
+    label: false,
+    textLabel: false,
+    prefix: false,
+    suffix: false,
+  };
 
   #contentObserver: MutationObserver | null = null;
 
@@ -493,7 +508,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
             ? html`<craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
-        <slot class="label" part="label"></slot>
+        <slot
+          class="${classMap({
+            label: true,
+            'label--text': this._content.textLabel,
+          })}"
+          part="label"
+        ></slot>
         <slot name="suffix" class="suffix" part="suffix">
           ${this.icon && this.iconPosition === 'suffix'
             ? html`<craft-icon name="${this.icon}"></craft-icon>`

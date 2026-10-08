@@ -15,6 +15,7 @@ use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Form\Controls\EntryTypeSelect as EntryTypeSelectControl;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -283,6 +284,31 @@ class EntryTypesController
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryTypeData->getUiLabel(),
         ]), redirect: action([EntryTypesController::class, 'index']));
+    }
+
+    public function renderSelect(Request $request, HtmlStack $HtmlStack): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'allowOverrides' => ['required', 'boolean'],
+            'create' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        $html = EntryTypeSelectControl::selectHtml(
+            $data['value'],
+            $data['allowOverrides'],
+            $data['create'],
+            $data['name'],
+            $data['disabled'],
+        );
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
+        ]);
     }
 
     public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse

@@ -22,10 +22,10 @@ function titleCase(value: string): string {
  *
  * @since 1.0
  *
- * @fires input - Emitted when a colour is picked.
- * @fires change - Emitted when a colour is picked. Picking is a commit, so it
+ * @fires input - Emitted when a color is picked.
+ * @fires change - Emitted when a color is picked. Picking is a commit, so it
  *   follows each `input`.
- * @fires model-value-changed - The selected colour changed. Re-dispatched from
+ * @fires model-value-changed - The selected color changed. Re-dispatched from
  *   the host as a composed event so it crosses the shadow boundary.
  *
  * `model-value-changed` is Lion's own protocol name, not one this package
@@ -55,7 +55,7 @@ export default class CraftSelectColor extends LitElement {
   modelValue: string | null = null;
 
   /**
-   * When enabled, a blank option (labelled {@link blankLabel}) is prepended
+   * When enabled, a blank option (labeled {@link blankLabel}) is prepended
    * to the list of colors.
    */
   @property({type: Boolean, reflect: true, attribute: 'allow-transparent'})
@@ -176,7 +176,7 @@ export default class CraftSelectColor extends LitElement {
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
 
-    // The public contract. Picking a colour is a commit, so the pair fires
+    // The public contract. Picking a color is a commit, so the pair fires
     // together, the way a radio group's does.
     emitInput(this);
     emitChange(this);

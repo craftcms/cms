@@ -56,7 +56,7 @@ Write the literal string instead.
 <Canvas of={InputDateTimeStories.WithTimezone} sourceState="shown" />
 
 Hiding the timezone does not discard it.
-It keeps travelling in a hidden input, so a value entered in one zone is not silently reinterpreted in another.
+It keeps traveling in a hidden input, so a value entered in one zone is not silently reinterpreted in another.
 
 ## Constraining the Value
 
@@ -87,6 +87,15 @@ The component's own inputs always lead, so slotted controls stay after the input
 
 <Canvas of={InputDateTimeStories.WithSlottedContent} sourceState="shown" />
 
+## Full Width
+
+By default each input is as wide as its content.
+Set `width="full"` to stretch them across the container instead; slotted content keeps its own width, so a clear button stays beside them:
+
+<Canvas of={InputDateTimeStories.FullWidth} sourceState="shown" />
+
+The inputs still wrap onto separate lines when the container is too narrow to fit them side by side.
+
 ## In a Field
 
 Wrapping in `craft-field` is what supplies the label, help text, and error handling:
@@ -98,7 +107,7 @@ Wrapping in `craft-field` is what supplies the label, help text, and error handl
 ## Accessibility
 
 Each input the component owns carries its own accessible name — "Date", "Time", "Time zone" — because a wrapping `craft-field` names the pair rather than the parts.
-Without them a screen reader reached two controls announced only as edit fields inside a labelled group, with nothing to say which half was which.
+Without them a screen reader reached two controls announced only as edit fields inside a labeled group, with nothing to say which half was which.
 
 The names are translated, so keep the field's own label describing what the value _is_ ("Post Date") rather than repeating what the parts are.
 

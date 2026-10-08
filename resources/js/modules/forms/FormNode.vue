@@ -40,6 +40,16 @@
     return false;
   });
 
+  /**
+   * Only tab nodes take these. Passed to any other node, they fall through as
+   * attributes, which a node that renders a fragment can't place.
+   */
+  const tabProps = computed(() =>
+    props.node.component === 'craft:tab'
+      ? {initiallyHidden: props.initiallyHidden, tabButtonId: props.tabButtonId}
+      : {}
+  );
+
   function identity(): string {
     return props.node.uid ?? props.node.control?.path.join('.') ?? 'unknown';
   }
@@ -62,8 +72,7 @@
     :touched-paths="touchedPaths"
     :scope="scope"
     :refreshable="refreshable"
-    :initially-hidden="initiallyHidden"
-    :tab-button-id="tabButtonId"
+    v-bind="tabProps"
     @change="onChange"
   />
 </template>

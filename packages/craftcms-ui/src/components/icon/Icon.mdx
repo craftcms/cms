@@ -11,9 +11,9 @@ import * as IconStories from './icon.stories';
 
 It is the icon primitive the rest of the library builds on — buttons, action items, callouts, and chips all render one internally when given an icon name.
 
-## Sizing and Colour
+## Sizing and Color
 
-Icons inherit `currentColor` and are sized in `em`, so they take the colour and size of the text around them.
+Icons inherit `currentColor` and are sized in `em`, so they take the color and size of the text around them.
 That is deliberate: an icon beside a label should match that label without either being set explicitly.
 
 <Canvas of={IconStories.InheritsText} sourceState="shown" />
@@ -32,21 +32,21 @@ Slot an `<svg>` to render something the icon set does not cover:
 
 <Canvas of={IconStories.SlottedSvg} sourceState="shown" />
 
-Slotted content wins: while the slot has content, no named icon is fetched. Give the SVG `fill="none"` and `stroke="currentColor"` if you want it to inherit colour the way a named icon does.
+Slotted content wins: while the slot has content, no named icon is fetched. Give the SVG `fill="none"` and `stroke="currentColor"` if you want it to inherit color the way a named icon does.
 
 ## Badges
 
-`appearance="badge"` draws the icon on a coloured disc, for a marker that has to read as a status rather than as decoration:
+`appearance="badge"` draws the icon on a colored disc, for a marker that has to read as a status rather than as decoration:
 
 <Canvas of={IconStories.Badge} sourceState="shown" />
 
-It defaults the disc to the warning colour. Set `data-color` for any other.
+It defaults the disc to the warning color. Set `data-color` for any other.
 
 ## Accessibility
 
 **An icon is decorative unless you say otherwise.** Without a `label` it is `aria-hidden`, so it adds nothing to what a screen reader announces:
 
-<Canvas of={IconStories.Labelled} sourceState="shown" />
+<Canvas of={IconStories.Labeled} sourceState="shown" />
 
 Setting `label` makes it `role="img"` with that accessible name.
 

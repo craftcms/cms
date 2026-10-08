@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Markdown\Flavors;
 
+use CraftCms\Cms\Markdown\CommonMark\Extensions\NoIndentedCodeExtension;
 use CraftCms\Cms\Markdown\CommonMark\Extensions\UserMentionExtension;
 use CraftCms\Cms\Markdown\MarkdownOptions;
 use League\CommonMark\Environment\Environment;
@@ -20,7 +21,9 @@ use League\CommonMark\MarkdownConverter;
  */
 class GfmFlavor extends Flavor
 {
-    public function __construct(private readonly string $softBreak = "\n") {}
+    public function __construct(
+        private readonly string $softBreak = "\n",
+    ) {}
 
     public function __invoke(MarkdownOptions $options): MarkdownConverter
     {
@@ -36,6 +39,10 @@ class GfmFlavor extends Flavor
         }
 
         $environment->addExtension(new CommonMarkCoreExtension);
+
+        if (! $options->indentedCode) {
+            $environment->addExtension(new NoIndentedCodeExtension);
+        }
 
         $this->registerExtensions($environment);
 

@@ -386,7 +386,7 @@
         <slot name="details-header" :payload="payload" />
 
         <MetadataDetailsContent :html="payload.metadataHtml">
-          <template #default>
+          <template v-if="sidebarPayload || formWrapper" #default>
             <component
               :is="formWrapper ?? 'div'"
               v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"

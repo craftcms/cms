@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -31,8 +32,16 @@ class NewUsers extends Widget
     #[Override]
     public static function isSelectable(): bool
     {
-        // This widget is only available for Craft Pro
-        return Edition::get()->value >= Edition::Pro->value;
+        return self::isAvailable();
+    }
+
+    /**
+     * The widget is only available for Craft Pro, and requires the `viewUsers` permission.
+     */
+    private static function isAvailable(): bool
+    {
+        return Edition::get()->value >= Edition::Pro->value
+            && (currentUser()?->can('viewUsers') ?? false);
     }
 
     #[Override]
@@ -71,7 +80,7 @@ class NewUsers extends Widget
 
     public function component(): ?string
     {
-        return Edition::get()->value >= Edition::Pro->value ? 'craft:widget-new-users' : null;
+        return self::isAvailable() ? 'craft:widget-new-users' : null;
     }
 
     /** @return array{userGroupId: ?int, dateRange: string} */

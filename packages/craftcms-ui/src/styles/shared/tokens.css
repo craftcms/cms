@@ -239,10 +239,17 @@
      lifting one of its own parts over another can keep a small local value.
      Slideouts, HUDs and legacy modals share the overlay layer and are ordered
      by their place in <body>. Native modal <dialog>s sit in the browser's top
-     layer and need none of these. */
+     layer and need none of these.
+     Persistent page chrome (sticky bars, sidebars, the header bar) stays below
+     the global skip links, which must never be covered when focused. Modal
+     layers start at the shade and may cover them. Other skip links don't set
+     a layer. The sidebar sits a step above sticky bars, since its tooltips
+     and flyouts open out over the page beside it. */
   --c-layer-raised: 1;
   --c-layer-sticky: 10;
-  --c-layer-sidebar: 10;
+  --c-layer-sidebar: 11;
+  --c-layer-header: 20;
+  --c-layer-skip-link: 90;
   --c-layer-shade: 99;
   --c-layer-overlay: 100;
   --c-layer-notification: 101;

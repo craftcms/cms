@@ -3,7 +3,9 @@
 <template>
   <div class="cp-container">
     <slot></slot>
-    <slot name="full" class="cp-container__full"></slot>
+    <div v-if="$slots.full" class="cp-container__full">
+      <slot name="full"></slot>
+    </div>
   </div>
 </template>
 
@@ -20,7 +22,8 @@
     grid-column: 2;
   }
 
-  .cp-container__full {
+  /* `:deep` so a page can also put the class on its own direct children. */
+  .cp-container > :deep(.cp-container__full) {
     grid-column: 1 / -1;
   }
 </style>

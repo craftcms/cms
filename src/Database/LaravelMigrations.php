@@ -16,6 +16,140 @@ use stdClass;
 #[Singleton]
 class LaravelMigrations
 {
+    public function ensureTables(): void
+    {
+        $this->ensurePasswordResetTokensTable();
+        $this->ensureCacheTables();
+        $this->ensureQueueTables();
+        $this->ensureSessionsTable();
+        $this->ensureNotificationsTable();
+        $this->ensurePassportTables();
+    }
+
+    public function ensurePasswordResetTokensTable(): void
+    {
+        if (Schema::hasTable(Table::PASSWORD_RESET_TOKENS)) {
+            return;
+        }
+
+        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+    }
+
+    public function ensureCacheTables(): void
+    {
+        if (! Schema::hasTable(Table::CACHE)) {
+            Schema::create(Table::CACHE, function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->mediumText('value');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+
+        if (! Schema::hasTable('cache_locks')) {
+            Schema::create('cache_locks', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->string('owner');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+    }
+
+    public function ensureQueueTables(): void
+    {
+        if (! Schema::hasTable('jobs')) {
+            Schema::create('jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('queue')->index();
+                $table->longText('payload');
+                $table->unsignedSmallInteger('attempts');
+                $table->unsignedInteger('reserved_at')->nullable();
+                $table->unsignedInteger('available_at');
+                $table->unsignedInteger('created_at');
+            });
+        }
+
+        if (! Schema::hasTable('job_batches')) {
+            Schema::create('job_batches', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->string('name');
+                $table->integer('total_jobs');
+                $table->integer('pending_jobs');
+                $table->integer('failed_jobs');
+                $table->longText('failed_job_ids');
+                $table->mediumText('options')->nullable();
+                $table->integer('cancelled_at')->nullable();
+                $table->integer('created_at');
+                $table->integer('finished_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('failed_jobs')) {
+            Schema::create('failed_jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('uuid')->unique();
+                $table->text('connection');
+                $table->text('queue');
+                $table->longText('payload');
+                $table->longText('exception');
+                $table->timestamp('failed_at')->useCurrent();
+            });
+        }
+    }
+
+    public function ensurePassportTables(): void
+    {
+        if (! Schema::hasTable(Table::OAUTH_AUTH_CODES)) {
+            Schema::create(Table::OAUTH_AUTH_CODES, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->foreignId('user_id')->index();
+                $table->foreignUuid('client_id');
+                $table->text('scopes')->nullable();
+                $table->boolean('revoked');
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_ACCESS_TOKENS)) {
+            Schema::create(Table::OAUTH_ACCESS_TOKENS, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->foreignUuid('client_id');
+                $table->string('name')->nullable();
+                $table->text('scopes')->nullable();
+                $table->boolean('revoked');
+                $table->timestamps();
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_REFRESH_TOKENS)) {
+            Schema::create(Table::OAUTH_REFRESH_TOKENS, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->char('access_token_id', 80)->index();
+                $table->boolean('revoked');
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable(Table::OAUTH_CLIENTS)) {
+            Schema::create(Table::OAUTH_CLIENTS, function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->nullableMorphs('owner');
+                $table->string('name');
+                $table->string('secret')->nullable();
+                $table->string('provider')->nullable();
+                $table->text('redirect_uris');
+                $table->text('grant_types');
+                $table->boolean('revoked');
+                $table->timestamps();
+            });
+        }
+    }
+
     public function ensureNotificationsTable(): void
     {
         if (Schema::hasTable('notifications')) {

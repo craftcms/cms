@@ -1,6 +1,6 @@
 import {mountFormHost} from './mountFormHost';
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import {h} from 'vue';
+import {h, nextTick} from 'vue';
 import FormRenderer from './FormRenderer.vue';
 import type {FormPayload} from './types';
 import {scopeFormPayload} from './formScope';
@@ -27,7 +27,16 @@ export function defineTableFormHost(components: CpComponentRegistry): void {
           };
         }
         this.#mount = mountFormHost(this, components, () =>
-          h(FormRenderer, {payload})
+          h(FormRenderer, {
+            payload,
+            onChange: () => {
+              void nextTick().then(() => {
+                if (this.isConnected) {
+                  this.dispatchEvent(new Event('change', {bubbles: true}));
+                }
+              });
+            },
+          })
         );
         this.ready = this.#mount.ready;
       }

@@ -369,21 +369,21 @@
     focusElement(row?.querySelector('craft-action-item'));
   }
 
-  /** Removes a source, moving selection to its nearest neighbour as Craft 5 did. */
+  /** Removes a source, moving selection to its nearest neighbor as Craft 5 did. */
   async function remove(key: string): Promise<void> {
     const source = sources.value.find((row) => row.key === key);
     if (!source) return;
 
     const visible = visibleSources.value;
     const index = visible.indexOf(source);
-    const neighbour = visible[index - 1] ?? visible[index + 1];
+    const neighbor = visible[index - 1] ?? visible[index + 1];
 
     sources.value = sources.value.filter((row) => row !== source);
     renderers.delete(key);
     delete errors.value[key];
 
     if (selectedKey.value === key) {
-      await select(neighbour?.key ?? null);
+      await select(neighbor?.key ?? null);
       await nextTick();
       focusElement(settingsPane.value?.querySelector(FOCUSABLE));
     }
@@ -580,7 +580,7 @@
   /**
    * Removes a page once confirmed. Its sources go to the end of the page before
    * it (or after, for the first), which takes over the selection if the removed
-   * page had it — Craft 5's behaviour.
+   * page had it — Craft 5's behavior.
    */
   async function removePage(page: PageRow): Promise<void> {
     if (
@@ -596,32 +596,32 @@
     const index = pages.value.indexOf(page);
     if (index === -1) return;
 
-    const neighbour = pages.value[index - 1] ?? pages.value[index + 1];
+    const neighbor = pages.value[index - 1] ?? pages.value[index + 1];
     pages.value.splice(index, 1);
 
-    if (neighbour) {
+    if (neighbor) {
       const moving = sources.value.filter(
         (source) => source.page === page.name
       );
       const rest = sources.value.filter((source) => source.page !== page.name);
       let last = -1;
       rest.forEach((source, i) => {
-        if (source.page === neighbour.name) last = i;
+        if (source.page === neighbor.name) last = i;
       });
 
-      for (const source of moving) source.page = neighbour.name;
+      for (const source of moving) source.page = neighbor.name;
       rest.splice(last === -1 ? rest.length : last + 1, 0, ...moving);
       sources.value = rest;
     }
 
     if (selectedPage.value === page.name) {
-      selectPage(neighbour?.name ?? null);
+      selectPage(neighbor?.name ?? null);
     }
 
-    // Focus the neighbour's menu, where the removed page's was.
+    // Focus the neighbor's menu, where the removed page's was.
     await nextTick();
     focusElement(
-      rowElement('pages', neighbour?.name ?? null)?.querySelector(
+      rowElement('pages', neighbor?.name ?? null)?.querySelector(
         'craft-action-menu [slot="invoker"]'
       )
     );

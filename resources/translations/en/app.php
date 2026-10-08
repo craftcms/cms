@@ -269,7 +269,7 @@ return [
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Can be exploited to reveal sensitive content by information disclosure attacks.',
     'Can contain Markdown formatting.' => 'Can contain Markdown formatting.',
     'Cancel' => 'Cancel',
-    'Cancelled' => 'Cancelled',
+    'Canceled' => 'Canceled',
     'Cannot create a new asset without a file. Please check your mapping and incoming data.' => 'Cannot create a new asset without a file. Please check your mapping and incoming data.',
     'Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.' => 'Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Cannot find the indexing session, or there’s nothing to review.',

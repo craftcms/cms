@@ -424,7 +424,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     protected static function defineSources(string $context): array
     {
-        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL, ElementSources::CONTEXT_NAVIGATION])) {
             $sections = Sections::getEditableSections();
             $editable = true;
         } else {
@@ -491,13 +491,20 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                             'type' => $type,
                             'handle' => $section->handle,
                             'section-id' => $section->id,
-                            'entry-type-ids' => array_map(fn (EntryType $entryType) => $entryType->id, $section->getEntryTypes()),
                         ],
                         'criteria' => [
                             'sectionId' => $section->id,
                             'editable' => $editable,
                         ],
                     ];
+
+                    if ($context === ElementSources::CONTEXT_NAVIGATION) {
+                        $sources[] = $source;
+
+                        continue;
+                    }
+
+                    $source['data']['entry-type-ids'] = array_map(fn (EntryType $entryType) => $entryType->id, $section->getEntryTypes());
 
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
@@ -2284,6 +2291,7 @@ JS, [
                     ->control(
                         DateTime::make('postDate')
                             ->showTime()
+                            ->fullWidth()
                             // Stored times aren't constrained to a picker step, and
                             // the screen submits natively — a coarser increment
                             // would make any off-step value fail validation and
@@ -2299,6 +2307,7 @@ JS, [
                     ->control(
                         DateTime::make('expiryDate')
                             ->showTime()
+                            ->fullWidth()
                             // Stored times aren't constrained to a picker step, and
                             // the screen submits natively — a coarser increment
                             // would make any off-step value fail validation and
@@ -2480,6 +2489,7 @@ JS, [
                     'id' => 'postDate',
                     'name' => 'postDate',
                     'value' => $this->postDate,
+                    'width' => 'full',
                     'errors' => $this->errors()->get('postDate'),
                     'disabled' => $static,
                 ]);
@@ -2493,6 +2503,7 @@ JS, [
                     'id' => 'expiryDate',
                     'name' => 'expiryDate',
                     'value' => $this->expiryDate,
+                    'width' => 'full',
                     'errors' => $this->errors()->get('expiryDate'),
                     'disabled' => $static,
                 ]);

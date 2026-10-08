@@ -301,7 +301,7 @@
 
     position: relative;
     display: flex;
-    // Top, not centre: a label that wraps would otherwise pull the handle and
+    // Top, not center: a label that wraps would otherwise pull the handle and
     // menu down to the middle of it.
     align-items: flex-start;
     gap: var(--c-spacing-xs);
@@ -340,15 +340,15 @@
     color: var(--c-text-quiet);
   }
 
-  // `data-color="accent"` points the palette tokens at the accent colours, so
-  // the label and the `inherit` buttons inside take the row's colours with it.
+  // `data-color="accent"` points the palette tokens at the accent colors, so
+  // the label and the `inherit` buttons inside take the row's colors with it.
   .cs-item--active {
     background-color: var(--c-color-fill-quiet);
     border-color: var(--c-color-border-loud);
     color: var(--c-color-on-quiet);
   }
 
-  // The row being dragged stays where it was, greyed out, so you can see where
+  // The row being dragged stays where it was, grayed out, so you can see where
   // it came from while the line shows where it's going.
   .cs-item--dragging {
     opacity: 0.4;
@@ -360,7 +360,7 @@
     border-color: transparent;
   }
 
-  // Centred in the gap between rows rather than on the row's own edge, so the
+  // Centered in the gap between rows rather than on the row's own edge, so the
   // bottom of one row and the top of the next draw the same line.
   // Scoped under `.cs-item` to outrank DropIndicator's own contained offsets.
   .cs-item .cs-item__drop-indicator.drop-indicator--top {

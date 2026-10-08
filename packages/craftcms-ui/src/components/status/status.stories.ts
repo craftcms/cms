@@ -32,7 +32,7 @@ type Story = StoryObj<StatusArgs>;
 /** A dot standing for one state. */
 export const Default: Story = {};
 
-/** Each state renders in its own colour. */
+/** Each state renders in its own color. */
 export const AllStatuses: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`

@@ -81,6 +81,33 @@ it('clears the console identity through the Craft guard', function() {
     new ConsoleUser()->setIdentity();
 });
 
+it('sets the console identity on the Craft guard without logging in', function() {
+    $identity = Mockery::mock(UserElement::class);
+    $identity->shouldReceive('getAuthIdentifier')->andReturn(42);
+
+    $guard = Mockery::mock(StatefulGuard::class);
+    $guard->shouldReceive('id')->once()->andReturnNull();
+    $guard->shouldReceive('setUser')->once()->with($identity);
+    $guard->shouldNotReceive('login');
+    Auth::shouldReceive('guard')->with('craft')->andReturn($guard);
+
+    new ConsoleUser()->setIdentity($identity);
+});
+
+// Setting the guard's user fires `Authenticated`, which sets the console identity again.
+it('leaves the console identity alone when the guard already has that user', function() {
+    $identity = Mockery::mock(UserElement::class);
+    $identity->shouldReceive('getAuthIdentifier')->andReturn(42);
+
+    $guard = Mockery::mock(StatefulGuard::class);
+    $guard->shouldReceive('id')->once()->andReturn(42);
+    $guard->shouldNotReceive('setUser');
+    $guard->shouldNotReceive('login');
+    Auth::shouldReceive('guard')->with('craft')->andReturn($guard);
+
+    new ConsoleUser()->setIdentity($identity);
+});
+
 it('checks legacy verification codes through the Craft password broker', function() {
     $user = Mockery::mock(UserElement::class);
     $broker = Mockery::mock(PasswordBroker::class);

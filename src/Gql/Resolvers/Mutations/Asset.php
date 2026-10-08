@@ -14,19 +14,20 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Filesystem\RemoteFileDownloader;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
-use CraftCms\UrlValidator\UrlValidator;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -39,8 +40,6 @@ class Asset extends ElementMutationResolver
     protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     private ?string $filename = null;
-
-    private UrlValidator $urlValidator;
 
     /** @param array<string, mixed> $arguments */
     public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
@@ -235,9 +234,11 @@ class Asset extends ElementMutationResolver
             $tempPath = AssetsHelper::tempFilePath($extension);
 
             try {
-                AssetsHelper::downloadUrl($this->urlValidator(), $url, $tempPath);
-            } catch (InvalidArgumentException $e) {
-                throw new UserError($e->getMessage(), previous: $e);
+                app(RemoteFileDownloader::class)->download($url, $tempPath, AssetsHelper::getMaxAssetUploadSize());
+            } catch (RuntimeException $exception) {
+                File::delete($tempPath);
+
+                throw new UserError($exception->getMessage());
             }
         }
 
@@ -256,10 +257,5 @@ class Asset extends ElementMutationResolver
         $asset->avoidFilenameConflicts = true;
 
         return true;
-    }
-
-    private function urlValidator(): UrlValidator
-    {
-        return $this->urlValidator ??= new UrlValidator;
     }
 }

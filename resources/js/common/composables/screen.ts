@@ -151,6 +151,19 @@ export function useScreenDetailsOverlay(): Readonly<Ref<boolean>> | null {
   return inject(ScreenDetailsOverlayKey, null);
 }
 
+/**
+ * Where the details tab strip goes, when the shell keeps it apart from the
+ * details panels. A full page puts it in a rail beside the inset content
+ * panel; a slideout provides `null`, so its strip stays beside its panels.
+ */
+export const ScreenDetailsRailKey: InjectionKey<string | null> =
+  Symbol('screenDetailsRail');
+
+/** A selector, or `null` where the strip stays with its panels. See {@link ScreenDetailsRailKey}. */
+export function useScreenDetailsRail(): string | null {
+  return inject(ScreenDetailsRailKey, null);
+}
+
 /** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
 export function useScreenContentReady(): () => void {
   return inject(ScreenContentReadyKey, () => {});

@@ -310,6 +310,7 @@ class GeneralConfig extends BaseConfig
         'jpx',
         'js',
         'json',
+        'jxl',
         'lrc',
         'm2t',
         'm4a',
@@ -2147,6 +2148,13 @@ class GeneralConfig extends BaseConfig
     public bool $preserveImageColorProfiles = true;
 
     /**
+     * @var McpConfig Administrative MCP transport and authentication configuration.
+     *
+     * @group System
+     */
+    public McpConfig $mcp;
+
+    /**
      * @var bool When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
      *
      * When set to `false` and you go through the “forgot password” flow from the control panel login page, you’ll get distinct messages indicating
@@ -3156,6 +3164,8 @@ class GeneralConfig extends BaseConfig
 
     public function __construct()
     {
+        $this->mcp = McpConfig::create();
+
         // (Re-)normalize everything.
         $this
             // IDE Helper defaults to the same value as devMode
@@ -5369,6 +5379,14 @@ class GeneralConfig extends BaseConfig
     public function preserveImageColorProfiles(bool $value = true): self
     {
         $this->preserveImageColorProfiles = $value;
+
+        return $this;
+    }
+
+    /** @param array<string, mixed>|string $value */
+    public function mcp(McpConfig|array|string $value): self
+    {
+        $this->mcp = $value instanceof McpConfig ? $value : McpConfig::fromConfig($value);
 
         return $this;
     }

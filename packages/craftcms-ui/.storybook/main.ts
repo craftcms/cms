@@ -3,6 +3,7 @@ import type {StorybookConfig} from '@storybook/web-components-vite';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {mergeConfig} from 'vite';
+import remarkGfm from 'remark-gfm';
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -17,7 +18,13 @@ const config: StorybookConfig = {
   addons: [
     getAbsolutePath('@chromatic-com/storybook'),
     getAbsolutePath('@storybook/addon-themes'),
-    getAbsolutePath('@storybook/addon-docs'),
+    {
+      name: getAbsolutePath('@storybook/addon-docs'),
+      // GitHub-flavored Markdown, so docs can use tables.
+      options: {
+        mdxPluginOptions: {mdxCompileOptions: {remarkPlugins: [remarkGfm]}},
+      },
+    },
     getAbsolutePath('@storybook/addon-a11y'),
     getAbsolutePath('@storybook/addon-vitest'),
   ],

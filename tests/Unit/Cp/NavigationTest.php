@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 /** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
 function cpSettings(): Settings
@@ -48,18 +50,14 @@ beforeEach(function () {
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('isAdmin')->andReturnTrue();
     $user->shouldReceive('can')->andReturnTrue();
-    // The nav caches per user, so building one asks who's asking.
-    $user->shouldReceive('getCraftUserId')->andReturn(1);
 
     $this->authGuard = Mockery::mock(Guard::class);
     $this->authGuard->shouldReceive('user')->andReturn($user);
+    $this->authGuard->shouldReceive('hasUser')->andReturnFalse();
     Auth::shouldReceive('getDefaultDriver')->andReturn('web');
     Auth::shouldReceive('guard')->with('web')->andReturn($this->authGuard);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 
-    // The tree is cached, and the key can't see a mocked service — so without
-    // this each test would be handed whichever tree ran before it.
-    Navigation::flushCache();
 });
 
 it('selects nav items from paths with the cp trigger', function () {
@@ -121,69 +119,22 @@ it('uses the cp navigation service for the twig variable', function () {
     ]);
 });
 
-/**
- * Builds a navigation whose Utilities service counts how often it's asked for
- * the authorized types — the expensive part of building a tree, and the thing
- * the cache is there to stop repeating.
- */
-function navigationCountingBuilds(Request $request, callable $onBuild): Navigation
-{
-    $utilities = Mockery::mock(Utilities::class);
-    $utilities->shouldReceive('getAuthorizedUtilityTypes')
-        ->andReturnUsing(function () use ($onBuild) {
-            $onBuild();
+it('keeps cp destinations for nav listeners on site and cp requests', function () {
+    Cms::config()->cpTrigger('control')->baseCpUrl('https://cp.example.test');
 
-            return new Collection;
-        });
-    $utilities->shouldReceive('getUtilitiesBadgeCount')->andReturn(0);
-
-    return new Navigation(
-        $request,
+    $navigationForRequest = fn (): Navigation => new Navigation(
+        request(),
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
-        $utilities,
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
     );
-}
-
-it('builds the tree once and serves it from the cache after that', function () {
-    $builds = 0;
-    $navigation = navigationCountingBuilds(
-        Request::create('/admin/settings/fields'),
-        function () use (&$builds) {
-            $builds++;
-        },
-    );
-
-    $navigation->getTree();
-    $navigation->getTree();
-    $navigation->getTree();
-
-    expect($builds)->toBe(1);
-});
-
-it('rebuilds after the cache is flushed', function () {
-    $builds = 0;
-    $navigation = navigationCountingBuilds(
-        Request::create('/admin/settings/fields'),
-        function () use (&$builds) {
-            $builds++;
-        },
-    );
-
-    $navigation->getTree();
-    Navigation::flushCache();
-    $navigation->getTree();
-
-    expect($builds)->toBe(2);
-});
-
-it('keeps cp destinations when a site request warms the navigation cache', function () {
-    Cms::config()->cpTrigger('control')->baseCpUrl('https://cp.example.test');
     swapUrlRequest('https://site.example.test/');
 
-    $builds = 0;
     Event::listen(CpNavItemsResolving::class, function (CpNavItemsResolving $event) {
         $event->navItems[] = new NavItem()
             ->label('Plugin')
@@ -195,19 +146,14 @@ it('keeps cp destinations when a site request warms the navigation cache', funct
             ]);
     });
 
-    $onBuild = function () use (&$builds) {
-        $builds++;
-    };
-
     expect(request()->isCpRequest())->toBeFalse();
-    navigationCountingBuilds(request(), $onBuild)->getTree();
+    $navigationForRequest()->getTree();
 
     swapUrlRequest('https://cp.example.test/control/my-plugin/reports?range=week');
-    $items = collect(navigationCountingBuilds(request(), $onBuild)->getItems());
+    $items = collect($navigationForRequest()->getItems());
     $plugin = $items->firstWhere('label', 'Plugin');
 
-    expect($builds)->toBe(1)
-        ->and($items->firstWhere('label', 'Dashboard')->href)->toBe('https://cp.example.test/control/dashboard')
+    expect($items->firstWhere('label', 'Dashboard')->href)->toBe('https://cp.example.test/control/dashboard')
         ->and($plugin->href)->toBe('https://cp.example.test/control/my-plugin')
         ->and($plugin->subnav[0]->href)->toBe('https://cp.example.test/control/my-plugin/reports?range=week')
         ->and($plugin->subnav[0]->linkAttributes['aria']['current'])->toBe('page')
@@ -215,7 +161,7 @@ it('keeps cp destinations when a site request warms the navigation cache', funct
         ->and($plugin->subnav[2]->href)->toBe('/custom/path');
 });
 
-it('keeps selection out of the cached tree', function () {
+it('selects navigation independently for each request', function () {
     $settings = new Navigation(
         Request::create('/admin/settings/fields'),
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
@@ -228,9 +174,6 @@ it('keeps selection out of the cached tree', function () {
         cpSettings(),
     );
 
-    // Same user, same everything — so the second request reads the first
-    // request's cached tree. If selection were baked into it, the nav would
-    // still be pointing at Settings here.
     $settings->getItems();
 
     $graphql = new Navigation(
@@ -420,6 +363,38 @@ it('carries a plugin’s own icon into its settings nav item', function () {
     // left the item with the bullet that stands in for a missing one.
     expect($plugin->iconSvg)->toBe('<svg viewBox="0 0 16 16"></svg>')
         ->and($plugin->icon)->toBeNull();
+});
+
+it('draws settings nav items with solid icons', function () {
+    $solidIcon = CmsAssets::resourcesPath('icons/solid/navigation-test-solid.svg');
+    File::ensureDirectoryExists(dirname($solidIcon));
+    File::put($solidIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
+                'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $items = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav[0]->subnav);
+
+    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {

@@ -35,6 +35,9 @@ const PART_LABELS: Record<string, () => string> = {
  * @slot - Content placed after the date and time inputs, such as a button
  *   that clears them. The component's own inputs always lead, so slotted
  *   controls stay after the inputs they act on in reading and tab order.
+ *
+ * @csspart inputs - The container holding the date, time, and timezone inputs,
+ *   beside any slotted content.
  */
 export default class CraftInputDateTime extends LitElement {
   /**
@@ -113,6 +116,12 @@ export default class CraftInputDateTime extends LitElement {
   @property({type: Boolean, attribute: 'force-round-time'})
   forceRoundTime = false;
 
+  /**
+   * Set to `full` to stretch the inputs across the container. Slotted
+   * content, such as a clear button, keeps its own width.
+   */
+  @property({reflect: true}) width?: 'full';
+
   /** Disables every input the component owns. */
   @property({type: Boolean}) disabled = false;
 
@@ -131,14 +140,31 @@ export default class CraftInputDateTime extends LitElement {
   static override styles = css`
     :host {
       display: flex;
+      align-items: center;
+    }
+
+    .inputs {
+      display: flex;
       flex-flow: row wrap;
       align-items: center;
-      gap: var(--c-spacing-xs);
+      gap: var(--c-spacing-md);
+      min-width: 0;
+    }
+
+    :host([width='full']) .inputs {
+      flex: 1 1 auto;
+    }
+
+    :host([width='full']) slot[name='inputs']::slotted([data-date-time-part]) {
+      flex: 1 1 auto;
     }
   `;
 
   override render() {
-    return html`<slot></slot>`;
+    return html`<div class="inputs" part="inputs">
+        <slot name="inputs"></slot>
+      </div>
+      <slot></slot>`;
   }
 
   override connectedCallback() {
@@ -215,6 +241,7 @@ export default class CraftInputDateTime extends LitElement {
     const currentInput =
       input ?? (document.createElement(tagName) as CraftInput);
     currentInput.dataset.dateTimePart = part;
+    currentInput.slot = 'inputs';
 
     return currentInput;
   }

@@ -31,12 +31,23 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
     return;
   }
 
+  let config: unknown;
+  try {
+    config = JSON.parse(input.value);
+  } catch {
+    config = null;
+  }
+  // Chips added without an input value hook carry a bare id.
+  if (typeof config !== 'object' || config === null) {
+    config = {id: Number(chip.dataset.id)};
+  }
+
   let data;
   try {
     const response = await Craft.sendActionRequest(
       'POST',
       renderOverrideSettings().url,
-      {data: JSON.parse(input.value)}
+      {data: config}
     );
     data = response.data;
   } catch (e: any) {
@@ -191,6 +202,9 @@ async function applyOverrides(
         // Not a JSON value — nothing to preserve.
       }
       input.value = JSON.stringify(config);
+      // Programmatic value changes don't fire `change`; announce it so
+      // wrapping form controls pick up the new override config.
+      input.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
     // Re-init any UI within the chip (description info icon, indicator tooltips).
