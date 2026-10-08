@@ -133,6 +133,15 @@
       }
 
       await nextTick();
+
+      // Folded by the shell, which runs first on mount: keeping the selection
+      // in step mustn't open it back over the content. `select()` opens it
+      // itself when that's what's wanted.
+      if (overlaid?.value && element.selectedIndex < 0) {
+        collapsedByShell = true;
+        return;
+      }
+
       if (element.selectedIndex !== nextSelectedIndex) {
         element.selectedIndex = nextSelectedIndex;
       }
@@ -169,6 +178,11 @@
     }
 
     selectedTabId.value = tabId;
+    if (tabsElement.value) {
+      tabsElement.value.selectedIndex = visibleTabs.value.findIndex(
+        (tab) => tab.id === tabId
+      );
+    }
     updateLocationHash();
   }
 

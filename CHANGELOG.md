@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved control panel styling for medium-sized viewports.
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
 
