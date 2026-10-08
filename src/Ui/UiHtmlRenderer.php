@@ -1,0 +1,288 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ui;
+
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Tab;
+use InvalidArgumentException;
+use RuntimeException;
+use Throwable;
+
+/**
+ * @since 6.0.0
+ */
+class UiHtmlRenderer
+{
+    private ?UiPayload $payload = null;
+
+    public function __construct(
+        private readonly UiNodeTypes $nodeTypes,
+        private readonly UiControlTypes $controlTypes,
+    ) {}
+
+    /** @return list<string> */
+    public function scope(): array
+    {
+        return $this->payload->scope ?? [];
+    }
+
+    /** Builds the isolated Ui used to mount a native control in an HTML field. */
+    public function controlUi(ControlPayload $control, mixed $value): UiPayload
+    {
+        foreach (array_reverse($control->path) as $segment) {
+            $value = [$segment => $value];
+        }
+
+        return new UiPayload(
+            scope: $this->scope(),
+            refreshable: $this->payload->refreshable ?? false,
+            nodes: [new NodePayload(Field::class, 'craft:field', [], control: $control)],
+            values: $value,
+            errors: array_values(array_filter(
+                $this->payload->errors ?? [],
+                fn (array $error): bool => array_slice($error['path'], 0, count($control->path)) === $control->path,
+            )),
+            globalErrors: [],
+        );
+    }
+
+    public function render(UiPayload $payload): string
+    {
+        $this->payload = $payload;
+
+        try {
+            return $this->globalErrors($payload->globalErrors).$this->renderNodes($payload->nodes, $payload);
+        } finally {
+            $this->payload = null;
+        }
+    }
+
+    /** @param list<NodePayload> $nodes */
+    public function renderNodes(array $nodes, UiPayload $payload): string
+    {
+        $previous = $this->payload;
+        $this->payload = $payload;
+
+        try {
+            return implode('', array_map(
+                fn (NodePayload $node): string => $this->renderNode($node, $payload),
+                $nodes,
+            ));
+        } finally {
+            $this->payload = $previous;
+        }
+    }
+
+    /** @return array<string, array{tabId: string, label: string, url: string, class: string|null}> */
+    public function tabMenu(UiPayload $payload, bool $namespaceScope = true): array
+    {
+        $tabs = [];
+
+        foreach ($payload->nodes as $node) {
+            if ($node->type !== Tab::class) {
+                continue;
+            }
+            if ($node->uid === null) {
+                continue;
+            }
+            $id = $namespaceScope ? $this->tabId($node, $payload) : $this->tabBaseId($node);
+            $tabs[$id] = [
+                'tabId' => "{$id}-tab",
+                'label' => (string) $node->props['label'],
+                'url' => "#{$id}",
+                'class' => $this->nodeHasErrors($node, $payload) ? 'error' : null,
+            ];
+        }
+
+        return $tabs;
+    }
+
+    public function tabId(NodePayload $node, UiPayload $payload): string
+    {
+        $id = $this->tabBaseId($node);
+
+        if ($payload->scope === []) {
+            return $id;
+        }
+
+        return InputNamespace::namespaceId($id, $this->name($payload->scope));
+    }
+
+    public function tabBaseId(NodePayload $node): string
+    {
+        return "ui-tab-{$node->uid}";
+    }
+
+    public function isFirstTab(NodePayload $node, UiPayload $payload): bool
+    {
+        return array_find($payload->nodes, fn (NodePayload $candidate): bool => $candidate->type === Tab::class) === $node;
+    }
+
+    public function nodeHasErrors(NodePayload $node, UiPayload $payload): bool
+    {
+        if ($node->control !== null && $this->errorsFor($payload->errors, $node->control->path) !== []) {
+            return true;
+        }
+
+        if (array_any(
+            $node->children ?? [],
+            fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload),
+        )) {
+            return true;
+        }
+
+        return array_any($node->control->uis ?? [], fn ($ui) => array_any($ui->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
+    }
+
+    public function renderNestedUi(NestedUiPayload $ui): string
+    {
+        if ($this->payload === null) {
+            throw new RuntimeException('Nested UI definitions can only be rendered within a UI payload.');
+        }
+
+        return $this->renderNodes($ui->nodes, $this->payload->forScope($ui->scope));
+    }
+
+    private function renderNode(NodePayload $node, UiPayload $payload): string
+    {
+        $type = $node->type;
+        $identity = $node->uid ?? implode('.', $node->control->path);
+
+        if ($this->nodeTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("UI Node type [{$type}] with component [{$node->component}] at [{$identity}] is not registered.");
+        }
+
+        try {
+            return $type::renderHtml($node, $payload, $this);
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Failed to render UI Node [{$type}] with component [{$node->component}] at [{$identity}]: {$exception->getMessage()}",
+                previous: $exception,
+            );
+        }
+    }
+
+    /** @param array<string, mixed> $values */
+    public function renderControl(
+        ControlPayload $control,
+        array $values,
+        string $id,
+        bool $invalid,
+        bool $required,
+    ): string {
+        $value = $this->valueAt($values, $control->path);
+        $mode = $control->mode;
+        $attributes = [
+            'id' => $id,
+            'name' => $mode === ControlMode::Editable ? $this->name($control->path) : null,
+            'disabled' => $mode === ControlMode::Disabled,
+            'readonly' => $mode === ControlMode::ReadOnly,
+            'required' => $mode === ControlMode::Editable && $required,
+            'aria' => [
+                'invalid' => $invalid ? 'true' : null,
+            ],
+        ];
+
+        $type = $control->type;
+        $identity = implode('.', $control->path);
+
+        if ($this->controlTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("UI Control type [{$type}] with component [{$control->component}] at [{$identity}] is not registered.");
+        }
+
+        try {
+            return $type::renderHtml($control, $value, $attributes, $this);
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Failed to render UI Control [{$type}] with component [{$control->component}] at [{$identity}]: {$exception->getMessage()}",
+                previous: $exception,
+            );
+        }
+    }
+
+    /**
+     * The id of the field wrapping a control, derived from the same path its
+     * input's name comes from.
+     *
+     * @param  list<string>  $path
+     */
+    public function id(array $path): string
+    {
+        return 'ui-'.implode('-', array_map(rawurlencode(...), $path));
+    }
+
+    /**
+     * The id of the control's own input, which sits inside that field.
+     *
+     * @param  list<string>  $path
+     */
+    public function inputId(array $path): string
+    {
+        return $this->id($path).'-input';
+    }
+
+    /** @param list<string> $path */
+    private function name(array $path): string
+    {
+        return array_shift($path).implode('', array_map(fn (string $segment): string => "[{$segment}]", $path));
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
+    private function valueAt(array $values, array $path): mixed
+    {
+        foreach ($path as $segment) {
+            $values = $values[$segment];
+        }
+
+        return $values;
+    }
+
+    /** @param list<string> $path
+     * @return list<array{path: list<string>, messages: list<string>}>
+     */
+    public function controlErrors(array $path): array
+    {
+        return array_values(array_filter($this->payload->errors ?? [],
+            fn (array $error): bool => array_slice($error['path'], 0, count($path)) === $path,
+        ));
+    }
+
+    /**
+     * @param  list<array{path: list<string>, messages: list<string>}>  $errors
+     * @param  list<string>  $path
+     * @return list<string>
+     */
+    public function errorsFor(array $errors, array $path): array
+    {
+        return array_merge(...array_map(
+            fn (array $error): array => $error['path'] === $path ? $error['messages'] : [],
+            $errors,
+        ));
+    }
+
+    /** @param list<string> $errors */
+    private function globalErrors(array $errors): string
+    {
+        return $errors === [] ? '' : $this->errorList($errors, null, ['role' => 'alert']);
+    }
+
+    /**
+     * @param  list<string>  $errors
+     * @param  array<string, mixed>  $attributes
+     */
+    private function errorList(array $errors, ?string $id, array $attributes = []): string
+    {
+        return Html::tag('ul', implode('', array_map(
+            fn (string $error): string => Html::tag('li', Html::encode($error)),
+            $errors,
+        )), [...$attributes, 'id' => $id, 'class' => 'error-list']);
+    }
+}

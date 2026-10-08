@@ -10,21 +10,21 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\PermissionTree;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Heading;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\PermissionTree;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
@@ -53,7 +53,7 @@ class UserGroupsController extends BaseUserSettingsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
@@ -85,7 +85,7 @@ class UserGroupsController extends BaseUserSettingsController
             ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'form' => $this->form($group, $userPermissions, true),
+                'ui' => $this->ui($group, $userPermissions, true),
                 'submit' => $this->submit(),
             ]);
     }
@@ -113,7 +113,7 @@ class UserGroupsController extends BaseUserSettingsController
             ])
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'form' => $this->form($group, $userPermissions),
+                'ui' => $this->ui($group, $userPermissions),
                 'submit' => $this->submit(),
                 'elevatedFields' => ['permissions'],
                 'deleteAction' => $this->readOnly ? null : [
@@ -204,7 +204,7 @@ class UserGroupsController extends BaseUserSettingsController
         return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
     }
 
-    private function form(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): FormPayload
+    private function ui(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): UiPayload
     {
         $handle = Handle::make('handle');
         $values = $group->getConfig(true);
@@ -213,7 +213,7 @@ class UserGroupsController extends BaseUserSettingsController
             $handle->source('name');
         }
 
-        return $this->formResolver->resolve(Form::make([
+        return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('id'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
@@ -223,7 +223,7 @@ class UserGroupsController extends BaseUserSettingsController
             Field::make(null, PermissionTree::make('permissions')
                 ->ariaLabel(t('Permissions'))
                 ->groups($userPermissions->getAllPermissions())),
-        ]), new FormContext(
+        ]), new UiContext(
             values: [
                 'id' => $group->id,
                 ...$values,

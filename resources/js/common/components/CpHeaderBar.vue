@@ -11,7 +11,7 @@
   import Breadcrumbs, {
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
-  import {fieldId} from '@/modules/forms/runtime';
+  import {fieldId} from '@/modules/ui/runtime';
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';

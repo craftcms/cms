@@ -140,12 +140,12 @@ it('renders registered stage types and inline settings forms', function () {
             'approvalMode' => 'total',
             'userGroups' => [],
         ])
-        ->and($userReview['settingsForm'])->not->toBeNull()
-        ->and($userReview['settingsForm']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
+        ->and($userReview['settingsUi'])->not->toBeNull()
+        ->and($userReview['settingsUi']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
         ->and($automaticApproval)->toMatchArray([
             'label' => 'Automatic Approval',
             'settings' => [],
-            'settingsForm' => null,
+            'settingsUi' => null,
         ]);
 });
 

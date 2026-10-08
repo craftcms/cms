@@ -8,9 +8,9 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Field\Link;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Override;
 
 /**
@@ -27,11 +27,11 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
     abstract public static function id(): string;
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         $nodes = $this->settingsNodes('');
 
-        return $nodes === [] ? null : Form::make($nodes);
+        return $nodes === [] ? null : Ui::make($nodes);
     }
 
     /** @return list<Node> */

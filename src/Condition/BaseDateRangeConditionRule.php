@@ -6,15 +6,15 @@ namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\DateTime;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Support\Facades\Date;
@@ -133,7 +133,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     {
         $nodes = [
             Field::make(t('Date Range'), Choice::make('rangeType')
-                ->options($this->formOptions($this->rangeTypeOptions()))
+                ->options($this->uiOptions($this->rangeTypeOptions()))
                 ->withoutPlaceholder()
                 ->value($this->rangeType)
                 ->reactive()),
@@ -148,7 +148,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             array_push($nodes,
                 Field::make(t('Period Value'), Text::make('periodValue')->size(5)->value($this->periodValue)),
                 Field::make(t('Period Type'), Choice::make('periodType')
-                    ->options($this->formOptions($this->periodTypeOptions()))
+                    ->options($this->uiOptions($this->periodTypeOptions()))
                     ->withoutPlaceholder()
                     ->value($this->periodType)),
             );

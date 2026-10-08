@@ -20,7 +20,7 @@ export type LinkTypeConfig = {
   inputAttributes?: Record<string, string>;
   elementType?: string;
   refHandle?: string;
-  elementSelectConfig?: import('@/modules/forms/types').FormValues;
+  elementSelectConfig?: import('@/modules/ui/types').UiValues;
 };
 
 export type LinkFieldValue = {

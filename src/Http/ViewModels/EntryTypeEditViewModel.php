@@ -11,26 +11,26 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ColorSelect;
-use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\IconPicker;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ColorSelect;
+use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\IconPicker;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -47,7 +47,7 @@ class EntryTypeEditViewModel extends ViewModel
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
         $handle = Handle::make('handle');
@@ -61,7 +61,7 @@ class EntryTypeEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = Form::make([
+        $ui = Ui::make([
             HiddenField::make('entryTypeId'),
             Field::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this {type} will be called in the control panel.', ['type' => Entry::lowerDisplayName()]))
@@ -84,7 +84,7 @@ class EntryTypeEditViewModel extends ViewModel
         ]);
 
         if (Sites::isMultiSite()) {
-            $form->add(
+            $ui->add(
                 Field::make(
                     t('Title Translation Method'),
                     Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
@@ -92,7 +92,7 @@ class EntryTypeEditViewModel extends ViewModel
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Group::make('entry-type-title-translation-settings', [
+                $ui->add(Group::make('entry-type-title-translation-settings', [
                     Field::make(
                         t('Title Translation Key Format'),
                         Text::make('titleTranslationKeyFormat')
@@ -103,7 +103,7 @@ class EntryTypeEditViewModel extends ViewModel
             }
         }
 
-        $form->add(
+        $ui->add(
             Field::make(t('Default Title Format'), Text::make('titleFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))
@@ -132,11 +132,11 @@ class EntryTypeEditViewModel extends ViewModel
                 ])->dependsOn('slugTranslationMethod');
             }
 
-            $form->add(Group::make('entry-type-slug-settings', $slugSettings)
+            $ui->add(Group::make('entry-type-slug-settings', $slugSettings)
                 ->dependsOn('showSlugField'));
         }
 
-        $form->add(
+        $ui->add(
             Field::make(t('Show the Status field'), Lightswitch::make('showStatusField')),
             Field::make(t('Show the Post Date field'), Lightswitch::make('showPostDateField')),
             Field::make(t('Show the Expiry Date field'), Lightswitch::make('showExpiryDateField')),
@@ -147,7 +147,7 @@ class EntryTypeEditViewModel extends ViewModel
                 ->withCardViewDesigner()),
         );
 
-        return app(FormResolver::class)->resolve($form, new FormContext(
+        return app(UiResolver::class)->resolve($ui, new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,
@@ -167,7 +167,7 @@ class EntryTypeEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([EntryTypesController::class, 'renderForm']);
+            : action([EntryTypesController::class, 'renderUi']);
     }
 
     public function brandNew(): bool

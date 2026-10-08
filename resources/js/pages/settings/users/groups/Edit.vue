@@ -3,11 +3,11 @@
   import {router} from '@inertiajs/vue3';
   import type {ActionItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import FormPage from '@/pages/Form.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import UiPage from '@/pages/Ui.vue';
+  import type {UiPayload} from '@/modules/ui/types';
 
   const props = defineProps<{
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     deleteAction?: {
@@ -36,5 +36,5 @@
 </script>
 
 <template>
-  <FormPage :form="form" :submit="submit" :elevated-fields="elevatedFields" />
+  <UiPage :ui="ui" :submit="submit" :elevated-fields="elevatedFields" />
 </template>

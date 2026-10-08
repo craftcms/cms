@@ -11,13 +11,6 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormControlTypes;
-use CraftCms\Cms\Form\FormNodeTypes;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Mutations\Mutation;
@@ -25,8 +18,15 @@ use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\PluginSettings;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ui\Controls\Slug;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ui\Nodes\Notice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiControlTypes;
+use CraftCms\Cms\Ui\UiNodeTypes;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
@@ -36,7 +36,7 @@ class TestPlugin extends Plugin
 {
     public static bool $useSettings = true;
 
-    public static bool $useSettingsForm = true;
+    public static bool $useSettingsUi = true;
 
     public static bool $beforeSaveSettings = true;
 
@@ -80,7 +80,7 @@ class TestPlugin extends Plugin
 
     public bool $didCallAfterUninstall = false;
 
-    public function registerFormTypes(FormNodeTypes $nodeTypes, FormControlTypes $controlTypes): void
+    public function registerUiTypes(UiNodeTypes $nodeTypes, UiControlTypes $controlTypes): void
     {
         $nodeTypes->register(Notice::class);
         $controlTypes->register(Slug::class);
@@ -327,15 +327,15 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
-        if (! self::$useSettingsForm) {
+        if (! self::$useSettingsUi) {
             return null;
         }
 
-        return Form::make([
+        return Ui::make([
             Field::make('Foo', Text::make('foo')->reactive()),
-        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Form $form) => $form->add(
+        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Ui $ui) => $ui->add(
             Group::make('test-plugin-bar', [
                 Field::make('Bar', Text::make('bar')),
             ])->dependsOn('settings.foo'),

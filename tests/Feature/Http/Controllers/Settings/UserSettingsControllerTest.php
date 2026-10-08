@@ -39,7 +39,7 @@ it('requires authentication', function () {
     Auth::logout();
 
     get(action([UserSettingsController::class, 'index']))->assertRedirect();
-    post(action([UserSettingsController::class, 'renderForm']))->assertRedirect();
+    post(action([UserSettingsController::class, 'renderUi']))->assertRedirect();
     post(action([UserSettingsController::class, 'store']))->assertRedirect();
 });
 
@@ -68,7 +68,7 @@ it('requires admin changes to save settings', function () {
             ->component('settings/users/Settings')
             ->where('readOnly', true));
 
-    post(action([UserSettingsController::class, 'renderForm']))->assertForbidden();
+    post(action([UserSettingsController::class, 'renderUi']))->assertForbidden();
     post(action([UserSettingsController::class, 'store']))->assertForbidden();
 });
 
@@ -77,13 +77,13 @@ it('renders the inertia user settings screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/Settings')
             ->where('title', 'User Settings')
-            ->where('form.values.requireEmailVerification', true)
-            ->where('form.values.allowPublicRegistration', false)
-            ->where('form.refreshable', true)
+            ->where('ui.values.requireEmailVerification', true)
+            ->where('ui.values.allowPublicRegistration', false)
+            ->where('ui.refreshable', true)
             ->where('submit.method', 'post')
             ->where('submit.url', action([UserSettingsController::class, 'store']))
-            ->where('refreshUrl', action([UserSettingsController::class, 'renderForm']))
-            ->where('form.nodes', function ($nodes) {
+            ->where('refreshUrl', action([UserSettingsController::class, 'renderUi']))
+            ->where('ui.nodes', function ($nodes) {
                 $paths = collect($nodes)->pluck('control.path');
 
                 return $paths->contains(['require2fa'])
@@ -99,7 +99,7 @@ it('only shows settings supported by the current edition', function () {
     get(action([UserSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('refreshUrl', null)
-            ->where('form.nodes', function ($nodes) {
+            ->where('ui.nodes', function ($nodes) {
                 $paths = collect($nodes)->pluck('control.path');
 
                 return $paths->doesntContain(['require2fa'])
@@ -134,7 +134,7 @@ it('exposes all user photo volumes', function () {
 
     get(action([UserSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes) use ($publicVolume, $privateVolume) {
+            ->where('ui.nodes', function ($nodes) use ($publicVolume, $privateVolume) {
                 $control = collect($nodes)
                     ->pluck('control')
                     ->firstWhere('path', ['photoVolumeUid']);
@@ -158,22 +158,22 @@ it('refreshes public registration fields without losing their current values', f
         'defaultGroup' => '',
     ];
 
-    $shown = post(action([UserSettingsController::class, 'renderForm']), [
+    $shown = post(action([UserSettingsController::class, 'renderUi']), [
         'values' => $values,
         'scope' => [],
     ])->assertOk()
-        ->assertJsonPath('form.values.allowPublicRegistration', true)
-        ->assertJsonPath('form.values.validateOnPublicRegistration', true);
+        ->assertJsonPath('ui.values.allowPublicRegistration', true)
+        ->assertJsonPath('ui.values.validateOnPublicRegistration', true);
 
-    $hidden = post(action([UserSettingsController::class, 'renderForm']), [
+    $hidden = post(action([UserSettingsController::class, 'renderUi']), [
         'values' => [...$values, 'allowPublicRegistration' => false],
         'scope' => [],
     ])->assertOk()
-        ->assertJsonPath('form.values.allowPublicRegistration', false)
-        ->assertJsonPath('form.values.validateOnPublicRegistration', true);
+        ->assertJsonPath('ui.values.allowPublicRegistration', false)
+        ->assertJsonPath('ui.values.validateOnPublicRegistration', true);
 
-    $shownNode = collect(flattenFormNodes($shown->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
-    $hiddenNode = collect(flattenFormNodes($hidden->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $shownNode = collect(flattenUiNodes($shown->json('ui.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $hiddenNode = collect(flattenUiNodes($hidden->json('ui.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
 
     expect($shownNode['component'])->toBe('craft:field')
         ->and($hiddenNode['component'])->toBe('craft:hidden-field');

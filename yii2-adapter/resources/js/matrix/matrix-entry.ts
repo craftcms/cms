@@ -9,7 +9,7 @@
 import {Base, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
-import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
+import type {EntryFieldLayoutUiHost} from '@/modules/ui/entry-field-layout-ui-host';
 import {animationDuration, MatrixInput} from './matrix-input';
 import {blockPreviewParts} from '@/modules/matrix/preview-text';
 import {containerMatrixEntries} from './support';
@@ -75,12 +75,11 @@ export class MatrixEntry extends Base {
     this.previewContainer =
       this.titlebar?.querySelector('[data-matrix-block-preview]') ?? null;
     this.fieldsContainer = blockPart(container, '[data-matrix-block-fields]');
-    const formHost =
-      this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
-        'craft-entry-field-layout-form'
-      );
-    if (formHost) {
-      formHost.requestMetadata = () => ({
+    const uiHost = this.fieldsContainer?.querySelector<EntryFieldLayoutUiHost>(
+      'craft-entry-field-layout-ui'
+    );
+    if (uiHost) {
+      uiHost.requestMetadata = () => ({
         elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
         elementId: null,
         canonicalId: null,

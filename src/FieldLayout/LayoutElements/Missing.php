@@ -8,8 +8,8 @@ use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\Missing as MissingNode;
 use InvalidArgumentException;
 
 /**
@@ -24,7 +24,7 @@ class Missing extends FieldLayoutElement implements MissingComponentInterface
         return $this->getPlaceholderHtml();
     }
 
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted missing FieldLayout elements require stable UIDs.');

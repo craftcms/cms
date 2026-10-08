@@ -82,7 +82,7 @@ describe('edit', function () {
                 ->has('crumbs', 2)
                 ->where('crumbs.0.label', t('Users'))
                 ->where('crumbs.1.html', fn (string $html) => str_contains($html, '<a class="label-link"'))
-                ->has('form.nodes')
+                ->has('ui.nodes')
                 ->has('subnav'));
     });
 
@@ -104,6 +104,6 @@ describe('edit', function () {
                 // A user has no drafts to autosave into.
                 ->where('canAutosave', false)
                 // Their status follows from the account actions, not a switch.
-                ->where('sidebarForm', null));
+                ->where('sidebarUi', null));
     });
 });
