@@ -166,11 +166,10 @@ export default css`
   }
 
   /* A thumbnail or custom prefix content fills more of the chip's height, so
-     leading the chip it sits half the spacing in, as it does from the top
-     and bottom. */
+     leading the chip it sits as far in as it does from the top and bottom. */
   .cp-chip--leads-with-thumbnail,
   .cp-chip--leads-with-prefix {
-    padding-inline-start: calc(var(--_chip-spacing) / 2);
+    padding-inline-start: var(--_chip-block-padding);
   }
 
   /*

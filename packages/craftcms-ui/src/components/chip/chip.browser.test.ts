@@ -217,27 +217,37 @@ it('insets whatever leads the chip by the gap, except a thumbnail or custom pref
       );
     }
 
-    // A thumbnail or custom content sits half the size's spacing in instead.
+    // A thumbnail sits as far in from the leading edge as from the top
+    // (at 14px, where half the spacing isn't a whole pixel), and custom
+    // content sits where a thumbnail would.
     const {attrs, markup, part} = leadingParts.thumbnail;
     const thumbnail = await renderChip(
-      `size="${size}" ${attrs}`,
+      `size="${size}" ${attrs} style="font-size: 14px"`,
       `${markup}${ending}`
     );
+    const thumbnailInset = inset(thumbnail, part(thumbnail));
+    const chipTop = thumbnail
+      .shadowRoot!.querySelector('.cp-chip')!
+      .getBoundingClientRect().top;
 
-    expect(inset(thumbnail, part(thumbnail)), `${size} thumbnail`).toBeCloseTo(
-      spacing(thumbnail).edge / 2,
-      0
+    expect(thumbnailInset, `${size} thumbnail`).toBeCloseTo(
+      part(thumbnail).getBoundingClientRect().top -
+        chipTop -
+        parseFloat(
+          getComputedStyle(thumbnail.shadowRoot!.querySelector('.cp-chip')!)
+            .borderTopWidth
+        )
     );
 
     const custom = await renderChip(
-      `size="${size}"`,
+      `size="${size}" style="font-size: 14px"`,
       `<span slot="prefix" id="prefix">★</span>${ending}`
     );
 
     expect(
       inset(custom, custom.querySelector('#prefix')!),
       `${size} prefix`
-    ).toBeCloseTo(spacing(custom).edge / 2, 0);
+    ).toBeCloseTo(thumbnailInset);
   }
 });
 
