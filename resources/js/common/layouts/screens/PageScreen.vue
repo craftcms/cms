@@ -526,7 +526,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
     background-color: var(--c-surface-default);
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-xl);
+    border-radius: calc(16px - var(--cp-body-inset));
     box-shadow: var(--shadow-xs), var(--shadow-lg);
     overflow: clip;
   }
