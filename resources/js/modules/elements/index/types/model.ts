@@ -7,7 +7,7 @@ import type {
   useContentIndexData,
   ElementIndexRow,
 } from '../composables/useContentIndexData';
-import type {ElementIndexSelection} from '../composables/useElementIndexSelection';
+import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
@@ -34,7 +34,7 @@ export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
   table: Table<CraftTableFeatures, ElementIndexRow>;
   data: ComputedRef<ElementIndexRow[]>;
-  selection: ElementIndexSelection<ElementIndexRow>;
+  selection: TableRowSelection<ElementIndexRow>;
   search: Ref<string>;
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;
