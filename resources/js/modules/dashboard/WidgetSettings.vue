@@ -107,13 +107,13 @@
       <craft-button
         type="submit"
         variant="primary"
-        :loading="form.processing"
-        :disabled="form.processing"
+        .loading="form.processing"
+        .disabled="form.processing"
         >{{ t('Save') }}</craft-button
       >
       <craft-button
         type="button"
-        :disabled="form.processing"
+        .disabled="form.processing"
         @click="emit('cancel')"
         >{{ t('Cancel') }}</craft-button
       >

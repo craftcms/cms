@@ -50,7 +50,7 @@
             <craft-button
               type="button"
               :variant="ButtonVariant.Solid"
-              :loading="testForm.processing"
+              .loading="testForm.processing"
               @click="sendTest"
             >
               {{ t('Test') }}
