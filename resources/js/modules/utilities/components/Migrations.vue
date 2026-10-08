@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import migrationsController from '@actions/Utilities/MigrationsController';
-  import {useCraftTable} from '@/common/table/craftTable';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {computed, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {Form} from '@inertiajs/vue3';

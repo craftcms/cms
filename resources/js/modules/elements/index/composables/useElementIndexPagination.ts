@@ -1,6 +1,6 @@
 import {watch} from 'vue';
 import type {IndexVisitor} from '@/modules/elements/index/composables/useElementIndexVisits';
-import {useServerPagination} from '@/common/table/useServerPagination';
+import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
 import type {PaginationData} from '@/common/types';
 
 interface ElementIndexPaginationContext {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {useCraftTable} from '@/common/table/craftTable';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
@@ -12,9 +12,9 @@
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerPagination} from '@/common/table/useServerPagination';
-  import {useServerSort} from '@/common/table/useServerSort';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
+  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';

@@ -1,6 +1,6 @@
 import type {ComputedRef, Ref} from 'vue';
 import type {Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/common/table/craftTable';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import type {CheckboxOption} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {

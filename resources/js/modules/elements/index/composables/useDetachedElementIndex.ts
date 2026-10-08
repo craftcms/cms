@@ -1,5 +1,5 @@
 import type {ColumnDef} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/common/table/craftTable';
+import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {shallowRef, type ComputedRef, type MaybeRefOrGetter} from 'vue';
 import {
   useContentIndexData,

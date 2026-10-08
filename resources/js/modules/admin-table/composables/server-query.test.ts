@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {useServerSort} from '@/common/table/useServerSort';
-import {useServerPagination} from '@/common/table/useServerPagination';
+import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
+import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
 
 /**
  * A non-page index — the element selector modal — keeps its query in a visitor

@@ -1,6 +1,6 @@
 import {createApp, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {useCraftTable} from '@/common/table/craftTable';
+import {useCraftTable} from '@/modules/admin-table/craftTable';
 import AdminTable from './AdminTable.vue';
 
 vi.mock('@inertiajs/vue3', () => ({

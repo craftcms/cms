@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
   import type {Table} from '@tanstack/vue-table';
-  import type {CraftTableFeatures} from '@/common/table/craftTable';
+  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import DataTable from '@/common/components/DataTable.vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import {usePage} from '@inertiajs/vue3';

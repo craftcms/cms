@@ -3,14 +3,14 @@
   import {h} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/common/table/craftTable';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {
     create,
     destroy,
     edit,
   } from '@actions/Settings/Users/UserGroupsController';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import type {UserGroup} from '@/common/types';

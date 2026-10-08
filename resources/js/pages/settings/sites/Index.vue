@@ -3,7 +3,7 @@
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/common/table/craftTable';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {Site, SiteGroup} from '@/common/types';
   import ModalForm from '@/common/components/ModalForm.vue';
@@ -15,7 +15,7 @@
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import useCraftData from '@/common/composables/useCraftData';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 

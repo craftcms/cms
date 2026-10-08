@@ -17,7 +17,7 @@ import {
   type CraftTableFeatures,
   tableHeaderId,
   useCraftTable,
-} from '@/common/table/craftTable';
+} from '@/modules/admin-table/craftTable';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';

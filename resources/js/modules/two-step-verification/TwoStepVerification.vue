@@ -2,10 +2,10 @@
   import {h, ref} from 'vue';
   import {router, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {useCraftTable} from '@/common/table/craftTable';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
   import {destroy as removeMethodAction} from '@actions/Users/AuthMethodController';
   import type {ActionItems} from '@/common/types';

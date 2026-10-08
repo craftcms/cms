@@ -4,7 +4,7 @@ import type {Table} from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
   useCraftTable,
-} from '@/common/table/craftTable';
+} from '@/modules/admin-table/craftTable';
 import {useElementIndexSelection} from '../composables/useElementIndexSelection';
 import {useNavItemActions} from '@/common/composables/useNavItemActions';
 

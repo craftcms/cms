@@ -2,8 +2,8 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {useCraftTable} from '@/common/table/craftTable';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import CpLink from '@/common/components/CpLink.vue';
   import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';

@@ -12,7 +12,7 @@ import {
 import {
   craftTableFeatures,
   type CraftTableFeatures,
-} from '@/common/table/craftTable';
+} from '@/modules/admin-table/craftTable';
 import ElementStatus from '@/modules/elements/ElementStatus.vue';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 
