@@ -213,6 +213,14 @@ export default class CraftChip extends LitElement {
     event.stopPropagation();
   }
 
+  /**
+   * Presses on the checkbox stay with it too: a host that selects on mousedown
+   * would toggle the item, then the checkbox's own click would toggle it back.
+   */
+  #onSelectPress(event: MouseEvent): void {
+    event.stopPropagation();
+  }
+
   #onSelectChange(event: Event): void {
     const {checked} = event.target as HTMLInputElement;
 
@@ -234,6 +242,8 @@ export default class CraftChip extends LitElement {
       .checked=${this.selected}
       aria-label=${this.selectLabel ?? t('Select')}
       @click=${this.#onSelectClick}
+      @mousedown=${this.#onSelectPress}
+      @mouseup=${this.#onSelectPress}
       @change=${this.#onSelectChange}
     />`;
   }

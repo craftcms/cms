@@ -200,6 +200,21 @@ describe('craft-chip selection', () => {
     expect(checkbox(await createChip())).toBeNull();
   });
 
+  // A host that selects on mousedown would otherwise toggle the item before the
+  // checkbox toggles it back.
+  it('keeps presses on the checkbox from reaching the host', async () => {
+    const element = await createChip({selectable: ''});
+    const reached: string[] = [];
+    for (const type of ['mousedown', 'mouseup']) {
+      element.addEventListener(type, () => reached.push(type));
+      checkbox(element)!.dispatchEvent(
+        new MouseEvent(type, {bubbles: true, composed: true})
+      );
+    }
+
+    expect(reached).toEqual([]);
+  });
+
   it('reflects `selected` onto the checkbox', async () => {
     const element = await createChip({selectable: '', selected: ''});
 
