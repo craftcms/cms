@@ -2,7 +2,7 @@ import type {ColumnDef, RowSelectionState} from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
   useCraftTable,
-} from '@/modules/admin-table/craftTable';
+} from '@/common/table/craftTable';
 import {
   computed,
   shallowRef,

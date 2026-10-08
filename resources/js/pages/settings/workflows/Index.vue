@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -10,9 +10,9 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
-  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useServerPagination} from '@/common/table/useServerPagination';
+  import {useServerSort} from '@/common/table/useServerSort';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {
     create,
     destroy,

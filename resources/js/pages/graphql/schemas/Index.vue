@@ -3,8 +3,8 @@
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useCraftTable} from '@/common/table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {create, destroy, edit} from '@actions/Gql/SchemasController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
