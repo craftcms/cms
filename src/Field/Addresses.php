@@ -280,6 +280,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             return false;
         }
 
+        // addresses don't support drafts, so make sure they can edit the canonical owner too
+        $canonicalOwner = $owner->getCanonical(true);
+        if ($canonicalOwner !== $owner && ! $user->can('save', $canonicalOwner)) {
+            return false;
+        }
+
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
         if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
