@@ -128,8 +128,14 @@ panel's unsaved-changes check. The panel always closes after a save, so
 `closeOnSubmit: false` has no effect, and the legacy DOM members (`$container`,
 `$footer`, …) and methods such as `reload()` aren't available.
 
-Subclasses, including `ElementEditorSlideout` and legacy `.extend()`
-subclasses, keep the legacy panel, since they may build on its markup.
+`ElementEditorSlideout` (and so `Craft.createElementEditor()`) does the same
+with the `elements/edit` action, also calling `onSaveElement`. It keeps the
+legacy panel when given `onBeforeSubmit` or `saveParams`, which drive the
+legacy `Craft.ElementEditor`; `elementEditor` and `$element` aren't available
+otherwise.
+
+Other subclasses, including legacy `.extend()` subclasses, keep the legacy
+panel, since they may build on its markup.
 
 ### Useful methods
 

@@ -981,28 +981,33 @@ export class CpScreenSlideout extends Slideout {
   }
 
   /**
-   * Subclasses stay on the legacy panel, since they may build on its markup.
-   * The compat wrapper's `ancestor` is this class; a legacy `.extend()` sits
-   * one level further down.
+   * Only `cls` itself opens in the Vue stack: subclasses stay on the legacy
+   * panel, since they may build on its markup. The compat wrapper's `ancestor`
+   * is the class; a legacy `.extend()` sits one level further down.
    */
-  private opensInVueStack(): boolean {
+  protected opensInVueStack(cls: unknown = CpScreenSlideout): boolean {
     const ctor = this.constructor as {ancestor?: unknown};
 
     return (
       Craft.openSlideout instanceof Function &&
-      (ctor === CpScreenSlideout || ctor.ancestor === CpScreenSlideout)
+      (ctor === cls || ctor.ancestor === cls)
     );
   }
 
   /** Opens the screen as a Vue slideout, relaying its events to this instance. */
-  private openInVueStack(
+  protected openInVueStack(
     action: string,
     settings?: Partial<CpScreenSlideoutSettings>
   ): void {
     this.settings = Object.assign({}, CpScreenSlideout.defaults, settings);
     this.vueSlideout = {id: null};
 
-    const params = {...this.getParams(), ...this.settings.params};
+    // Null params are left off, as the legacy request did.
+    const params = Object.fromEntries(
+      Object.entries({...this.getParams(), ...this.settings.params}).filter(
+        ([, value]) => value !== null && value !== undefined
+      )
+    );
     const href = /^(?:https?:\/\/|\/)/.test(action)
       ? Craft.getUrl(action, params)
       : Craft.getActionUrl(action, params);
