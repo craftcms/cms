@@ -89,6 +89,7 @@ use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -211,7 +212,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // App
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
-        Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
+        Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie'])
+            ->withoutMiddleware(EnforceLicenses::class);
         Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [PluginsController::class, 'getLicenseInfo']);
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
