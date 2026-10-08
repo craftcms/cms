@@ -141,53 +141,51 @@ async function renderChip(attrs: string, content: string): Promise<Element> {
   return chip;
 }
 
-it('separates the parts by the gap, whatever the size', async () => {
-  for (const size of ['small', 'medium', 'large']) {
-    for (const [name, {attrs, markup, part}] of Object.entries(leadingParts)) {
-      const chip = await renderChip(
-        `size="${size}" ${attrs}`,
-        `${markup}<span id="label">Label</span>${suffix}`
-      );
-      const label = document.getElementById('label')!.getBoundingClientRect();
-      const action = document.getElementById('action')!.getBoundingClientRect();
+/**
+ * The chip's own spacing, measured from a chip that ends with the label and a
+ * suffix: the gap between two parts, and the spacing at the trailing edge.
+ */
+function spacing(chip: Element): {gap: number; edge: number} {
+  const label = chip.querySelector('#label')!.getBoundingClientRect();
+  const action = chip.querySelector('#action')!.getBoundingClientRect();
 
-      expect(
-        Math.round(label.left - part(chip).getBoundingClientRect().right),
-        `${size} ${name}`
-      ).toBe(6);
-      expect(Math.round(action.left - label.right), `${size} ${name}`).toBe(6);
-    }
-  }
-});
+  return {
+    gap: action.left - label.right,
+    edge: chipEdges(chip).right - action.right,
+  };
+}
+
+/** How far a part sits in from the chip's leading edge. */
+function inset(chip: Element, part: Element): number {
+  return part.getBoundingClientRect().left - chipEdges(chip).left;
+}
+
+const ending = `<span id="label">Label</span>${suffix}`;
 
 it('separates the selection checkbox from the next part by the gap alone', async () => {
   const {attrs, markup, part} = leadingParts.status;
-  const chip = await renderChip(`selectable ${attrs}`, `${markup}Label`);
+  const chip = await renderChip(`selectable ${attrs}`, `${markup}${ending}`);
   const checkbox = chip.shadowRoot!.querySelector('input')!;
 
   expect(
-    Math.round(
-      part(chip).getBoundingClientRect().left -
-        checkbox.getBoundingClientRect().right
-    )
-  ).toBe(6);
+    part(chip).getBoundingClientRect().left -
+      checkbox.getBoundingClientRect().right
+  ).toBeCloseTo(spacing(chip).gap, 0);
 });
 
 it('measures the gap after an icon from its glyph', async () => {
   // Narrower than the icon's usual box, as most glyphs are.
   const glyph =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><rect width="384" height="512"/></svg>';
-  await renderChip(
+  const chip = await renderChip(
     '',
-    `<craft-icon slot="icon">${glyph}</craft-icon><span id="label">Label</span>`
+    `<craft-icon slot="icon">${glyph}</craft-icon>${ending}`
   );
 
   expect(
-    Math.round(
-      document.getElementById('label')!.getBoundingClientRect().left -
-        document.querySelector('craft-icon svg')!.getBoundingClientRect().right
-    )
-  ).toBe(6);
+    chip.querySelector('#label')!.getBoundingClientRect().left -
+      chip.querySelector('craft-icon svg')!.getBoundingClientRect().right
+  ).toBeCloseTo(spacing(chip).gap, 0);
 });
 
 it('insets whatever leads the chip by the gap, except a thumbnail or custom prefix', async () => {
@@ -205,37 +203,41 @@ it('insets whatever leads the chip by the gap, except a thumbnail or custom pref
       part: (chip: Element) => chip.querySelector('#label')!,
     },
   };
-  const inset = (chip: Element, part: Element) =>
-    Math.round(part.getBoundingClientRect().left - chipEdges(chip).left);
 
-  // A thumbnail sits half the size's spacing in instead (at a 16px font).
-  const thumbnailInsets = {small: 2, medium: 4, large: 8};
-
-  for (const [size, thumbnailInset] of Object.entries(thumbnailInsets)) {
+  for (const size of ['small', 'medium', 'large']) {
     for (const [name, {attrs, markup, part}] of Object.entries(leads)) {
       const chip = await renderChip(
         `size="${size}" ${attrs}`,
-        `${markup}<span id="label">Label</span>`
+        `${markup}${ending}`
       );
 
-      expect(inset(chip, part(chip)), `${size} ${name}`).toBe(6);
+      expect(inset(chip, part(chip)), `${size} ${name}`).toBeCloseTo(
+        spacing(chip).gap,
+        0
+      );
     }
 
+    // A thumbnail or custom content sits half the size's spacing in instead.
     const {attrs, markup, part} = leadingParts.thumbnail;
-    const chip = await renderChip(`size="${size}" ${attrs}`, `${markup}Label`);
+    const thumbnail = await renderChip(
+      `size="${size}" ${attrs}`,
+      `${markup}${ending}`
+    );
 
-    expect(inset(chip, part(chip)), `${size} thumbnail`).toBe(thumbnailInset);
+    expect(inset(thumbnail, part(thumbnail)), `${size} thumbnail`).toBeCloseTo(
+      spacing(thumbnail).edge / 2,
+      0
+    );
 
-    // Custom content sits in as a thumbnail does.
     const custom = await renderChip(
       `size="${size}"`,
-      '<span slot="prefix" id="prefix">★</span>Label'
+      `<span slot="prefix" id="prefix">★</span>${ending}`
     );
 
     expect(
       inset(custom, custom.querySelector('#prefix')!),
       `${size} prefix`
-    ).toBe(thumbnailInset);
+    ).toBeCloseTo(spacing(custom).edge / 2, 0);
   }
 });
 

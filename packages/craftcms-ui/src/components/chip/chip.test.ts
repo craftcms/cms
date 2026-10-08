@@ -163,17 +163,17 @@ describe('craft-chip status', () => {
     expect(slot(element, 'status')).not.toBeNull();
   });
 
-  // A status is prefix content like any other; without it counting, a chip whose
-  // only prefix content is its status would render no prefix at all.
-  it('renders the prefix for a status alone', async () => {
+  // A status describes the label, so it sits with it rather than in the prefix.
+  it('renders the status beside the label, outside the prefix', async () => {
     const element = await createChip(
       {'show-status': ''},
-      '<span slot="status">Live</span>'
+      '<span slot="status">Live</span>Label'
     );
 
     expect(
-      element.shadowRoot?.querySelector('.cp-chip__prefix')
+      element.shadowRoot?.querySelector('.cp-chip__main > slot[name="status"]')
     ).not.toBeNull();
+    expect(element.shadowRoot?.querySelector('.cp-chip__prefix')).toBeNull();
   });
 
   // Slotting a status is enough to show it; `show-status` is for a status slot

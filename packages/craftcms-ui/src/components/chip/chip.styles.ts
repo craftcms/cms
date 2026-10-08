@@ -19,11 +19,12 @@ export default css`
   /*
    * --_chip-gap separates the parts and insets the first one, and stays the
    * same at every size; --_chip-spacing insets the last part and the block
-   * edges, and grows with the size.
+   * edges, and grows with the size. A status sits closer to its label.
    */
   .cp-chip {
     --_chip-spacing: 0.25em;
     --_chip-gap: var(--c-chip-gap, var(--c-spacing-md));
+    --_chip-status-gap: calc(var(--_chip-gap) * 0.75);
     --_thumb-size: calc(30rem / 16);
     --_radius: var(--c-radius-md);
     /* Sized to its content, but never wider than its parent: the label
@@ -88,13 +89,21 @@ export default css`
     align-items: end;
   }
 
+  .cp-chip--align-start .cp-chip__main {
+    align-items: start;
+  }
+
+  .cp-chip--align-end .cp-chip__main {
+    align-items: end;
+  }
+
   /*
-   * Off-center, the prefix is as tall as one line of the label plus the
-   * label's block padding, so an icon or status centers against the first
-   * (or last) line instead of sitting flush with the chip's edge.
+   * Off-center, the prefix and status are as tall as one line of the label
+   * plus the label's block padding, so an icon or status centers against the
+   * first (or last) line instead of sitting flush with the chip's edge.
    */
-  .cp-chip--align-start .cp-chip__prefix,
-  .cp-chip--align-end .cp-chip__prefix {
+  .cp-chip--align-start :is(.cp-chip__prefix, .cp-chip__status),
+  .cp-chip--align-end :is(.cp-chip__prefix, .cp-chip__status) {
     min-height: calc(1lh + var(--_chip-spacing));
   }
 
@@ -103,6 +112,7 @@ export default css`
   /* Only the label gives way when the chip is too narrow. */
   .cp-chip__select,
   .cp-chip__prefix,
+  .cp-chip__status,
   .cp-chip__suffix {
     flex: none;
   }
@@ -125,6 +135,7 @@ export default css`
   .cp-chip__status,
   .cp-chip__icon {
     display: inline-flex;
+    align-items: center;
   }
 
   /* An icon's box is wider than most glyphs so icons line up in a column; in
@@ -173,6 +184,14 @@ export default css`
 
   /* Body */
 
+  .cp-chip__main {
+    display: flex;
+    align-items: center;
+    gap: var(--_chip-status-gap);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .cp-chip__body {
     padding-block: calc(var(--_chip-spacing) / 2);
     display: flex;
@@ -187,7 +206,7 @@ export default css`
   }
 
   /* Ending the chip, the label leaves as much room as a suffix button does. */
-  .cp-chip__body:last-child {
+  .cp-chip__main:last-child {
     padding-inline-end: var(--_chip-spacing);
   }
 
@@ -278,7 +297,7 @@ export default css`
     outline-offset: -1px;
   }
 
-  .cp-chip--plain .cp-chip__body:last-child {
+  .cp-chip--plain .cp-chip__main:last-child {
     padding-inline-end: 0;
   }
 

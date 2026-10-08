@@ -19,21 +19,20 @@ type FilledParts = Record<
 
 /**
  * @summary A container that pairs a label with an optional
- * leading prefix — a thumbnail, an icon, or a status dot — and a trailing
- * suffix, usually an action button. Chips represent a single entity in a
- * list: an entry, an asset, a user, a category, etc.
+ * leading prefix — a thumbnail or an icon — a status dot beside the label,
+ * and a trailing suffix, usually an action button. Chips represent a single
+ * entity in a list: an entry, an asset, a user, a category, etc.
  *
- * The prefix and suffix regions are only rendered when there is content for
- * them, so a chip with nothing but a label renders neither. The suffix is
- * rendered when the `suffix` slot is filled with an element that has content
- * of its own, so an empty placeholder waiting for actions takes up no space.
- * The prefix is rendered when the
- * `prefix`, `icon`, `thumbnail`, or `status` slot is filled, or when the
- * `icon` attribute or `show-status` is set.
+ * Each slot is only rendered when it has content, so an empty part takes up
+ * no space. An empty `div` doesn't count as content, so a placeholder
+ * waiting to be filled — an action menu, say — doesn't either. The
+ * `thumbnail` slot also needs `show-thumb`, and the `icon` attribute fills
+ * the `icon` slot on its own.
  *
  * The `prefix` slot comes first in the prefix region, before the built-in
- * `thumbnail`, `icon`, and `status` slots, so custom leading content (a
- * checkbox or a badge, say) doesn't displace them.
+ * `thumbnail` and `icon` slots, so custom leading content (a badge, say)
+ * doesn't displace them. The status sits with the label instead, closer to
+ * it than the other parts are to each other, since it describes the label.
  *
  * On connect the chip stamps `data-color="white"` on itself so it reads as a
  * raised surface by default, filled with `--c-surface-raised` so it follows
@@ -326,12 +325,24 @@ export default class CraftChip extends LitElement {
               : nothing}</slot
           >`
         : nothing}
+    </div>`;
+  }
+
+  /**
+   * The label, with the status beside it rather than in the prefix: a status
+   * describes the label, so the two sit closer together than the other parts.
+   */
+  protected renderMain(filled: FilledParts) {
+    return html`<div class="cp-chip__main">
       ${filled.status
         ? html`<slot
             class="cp-chip__status"
             name="status"
             part="status"
           ></slot>`
+        : nothing}
+      ${filled.body
+        ? html`<slot class="cp-chip__body" part="body"></slot>`
         : nothing}
     </div>`;
   }
@@ -343,8 +354,7 @@ export default class CraftChip extends LitElement {
 
   override render() {
     const filled = this.#filledParts();
-    const renderPrefix =
-      filled.prefix || filled.thumbnail || filled.icon || filled.status;
+    const renderPrefix = filled.prefix || filled.thumbnail || filled.icon;
 
     return html`
       <div
@@ -365,9 +375,7 @@ export default class CraftChip extends LitElement {
       >
         ${this.selectable ? this.renderSelect() : nothing}
         ${renderPrefix ? this.renderPrefix(filled) : nothing}
-        ${filled.body
-          ? html`<slot class="cp-chip__body" part="body"></slot>`
-          : nothing}
+        ${filled.status || filled.body ? this.renderMain(filled) : nothing}
         ${filled.suffix
           ? html`<slot
               name="suffix"
