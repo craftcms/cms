@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
 import type {Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {CraftTableFeatures} from '@/common/table/craftTable';
 import type {LegacyAdminTableRow} from '@/modules/admin-table/types/legacy';
 
 const captured: {

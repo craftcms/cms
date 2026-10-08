@@ -10,11 +10,11 @@
    *
    * @see resources/js/legacy-admin-table.ts
    */
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref, watch} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import type {
     LegacyAdminTableColumn,
     LegacyAdminTableRow,
