@@ -66,6 +66,3 @@ changed UI.
 
 ## Write docs in US English
 Use US English spellings in JSDoc (component JSDoc feeds the custom elements manifest and Storybook API tables), `<component>.a11y.md` checklists, `.mdx` pages, story names and descriptions, comments, test names, and local variable names: color, behavior, center, labeled, canceling, gray, -ize/-ization. Keep names you don't own as they are: the `aria-labelledby` attribute, Lion's `addToAriaLabelledBy()`, Inertia's `cancelled` visit flag, and exported APIs like `HttpCancelledError`.
-
-## Check a component's APG pattern before adding behavior
-Every `<component>.a11y.md` opens with the WAI-ARIA APG pattern the component follows and a "Not for" list. Before adding an attribute, mode or state, check it against both. If it contradicts the pattern (e.g. deselecting tabs, tab triggers apart from their panels), use the component that matches the behavior instead. See "Choosing an interaction pattern" in `.github/instructions/a11y.instructions.md`. `craft-tabs` grew a `collapsible` mode this way and had to be removed. A new component's `.a11y.md` must name its pattern and its "Not for" list.
