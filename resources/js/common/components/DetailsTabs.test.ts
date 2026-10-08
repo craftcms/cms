@@ -1,9 +1,31 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, defineComponent, h, nextTick, provide, type App} from 'vue';
-import {ScreenDetailsRailKey} from '@/common/composables/screen';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  provide,
+  ref,
+  type App,
+} from 'vue';
+import {
+  ScreenDetailsOverlayKey,
+  ScreenDetailsRailKey,
+} from '@/common/composables/screen';
 import DetailsTabs from './DetailsTabs.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
+
+/** Just enough of `<craft-tabs>` to hold a selection, which opens on its first tab. */
+class CraftTabs extends HTMLElement {
+  selectedIndex = 0;
+  refresh(): void {}
+  open(): void {}
+  close(): void {}
+}
+if (!customElements.get('craft-tabs')) {
+  customElements.define('craft-tabs', CraftTabs);
+}
 
 let app: App | undefined;
 
@@ -18,13 +40,17 @@ const tabs = [
   {id: 'history', label: 'History', icon: 'clock', slot: 'history'},
 ];
 
-async function mount(rail: string | null): Promise<HTMLElement> {
+async function mount(
+  rail: string | null,
+  overlaid = false
+): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
 
   app = createApp(
     defineComponent({
       setup() {
         provide(ScreenDetailsRailKey, rail);
+        provide(ScreenDetailsOverlayKey, ref(overlaid));
 
         return () =>
           h(
@@ -73,4 +99,13 @@ it('keeps the strip and its panels together without a rail', async () => {
   expect(strip.querySelector('craft-tab')?.hasAttribute('controls')).toBe(
     false
   );
+});
+
+it('stays folded to the rail when the shell mounts it overlaid', async () => {
+  await mount('#rail', true);
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(
+    document.querySelector<CraftTabs>('#rail craft-tabs')?.selectedIndex
+  ).toBe(-1);
 });

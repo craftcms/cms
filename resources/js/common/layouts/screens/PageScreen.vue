@@ -543,6 +543,9 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
 
   .cp-details-rail {
     position: sticky;
+    /* Sticky makes the rail a stacking context, so its tab tooltips can only
+       clear the details pane beside it if the rail does too. */
+    z-index: var(--c-layer-sticky);
     inset-block-start: 0;
     align-self: start;
     border-block-start: 1px solid transparent;
@@ -615,7 +618,12 @@ Content: the secondary nav, content, and details panes
 
   .cp-content__sidebar {
     grid-area: sidebar;
-    border-inline-end: 1px solid var(--c-color-border-quiet);
+
+    /* Only beside the content; collapsed to a menu above it, there's nothing
+       to divide it from. */
+    @media (width >= var(--breakpoint-lg)) {
+      border-inline-end: 1px solid var(--c-color-border-quiet);
+    }
   }
 
   .cp-content--sidebar .cp-content__sidebar {
@@ -661,21 +669,10 @@ Content: the secondary nav, content, and details panes
     min-height: var(--cp-footer-height);
   }
 
-  /**
-Folds
- */
-  /*
- * Below the sum of the content's floor (600px, `.cp-content-view`) and the
- * panel's (280px) one of them would be squeezed past it, so the panel folds to
- * its rail and opens over the content instead. The panel can't query its own
- * width, so these query the shell: the sum plus the 50px tab rail and the
- * panel's two border pixels. A query condition can't read a custom property,
- * so the sum is written out; keep it in step with the floors and with the
- * wider fold below.
- */
-  @container cp-shell (width < 932px) {
-    /* Edge to edge. The border goes transparent rather than away, so the
-       panel's width doesn't move when it flips. */
+  /* Once the global nav stops docking beside it, the panel runs edge to edge.
+     The border goes transparent rather than away, so the panel's width
+     doesn't move when it flips. */
+  @media (width < var(--breakpoint-lg)) {
     .cp-body {
       --cp-body-inset: 0px;
     }
@@ -690,7 +687,21 @@ Folds
     .cp-body--details .cp-body__panel {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }
+  }
 
+  /**
+Folds
+ */
+  /*
+ * Below the sum of the content's floor (600px, `--cp-content-main-min`) and the
+ * panel's (280px) one of them would be squeezed past it, so the panel folds to
+ * its rail and opens over the content instead. The panel can't query its own
+ * width, so these query the shell: the sum plus the 50px tab rail and the
+ * panel's two border pixels. A query condition can't read a custom property,
+ * so the sum is written out; keep it in step with the floors and with the
+ * wider fold below.
+ */
+  @container cp-shell (width < 932px) {
     .cp-content--details {
       --cp-details-overlay: 1;
       /* Nothing else shares the row, so the content keeps no floor of its own. */
@@ -711,27 +722,31 @@ Folds
   }
 
   @media (width >= var(--breakpoint-lg)) {
-    /* The docked global sidebar keeps a dividing line beside the panel. */
+    /* With the global nav docked, the panel still floats only while there'd be
+       room for a details pane beside the content, on every page alike. Below
+       that it goes edge to edge as it does below this breakpoint, keeping a
+       dividing line beside the sidebar. CpSidebar mirrors this width to drop
+       the inset from its own top padding. */
     @container cp-shell (width < 932px) {
+      .cp-body {
+        --cp-body-inset: 0px;
+      }
+
       .cp-body__panel {
+        border-color: transparent;
         border-inline-start-color: var(--c-color-neutral-border-quiet);
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .cp-body--details .cp-body__panel {
+        border-inline-end-color: var(--c-color-neutral-border-quiet);
       }
     }
 
     /* The same fold 250px sooner, for the one case where a third column shares
        the row: a secondary nav beside the content, counted from its minimum. */
     @container cp-shell (width < 1182px) {
-      .cp-body--sidebar.cp-body--details {
-        --cp-body-inset: 0px;
-
-        .cp-body__panel {
-          border-color: transparent;
-          border-inline-color: var(--c-color-neutral-border-quiet);
-          border-radius: 0;
-          box-shadow: none;
-        }
-      }
-
       .cp-content--sidebar.cp-content--details {
         --cp-details-overlay: 1;
         --cp-content-main-min: 0px;
@@ -765,11 +780,6 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
-
-    @media (width >= var(--breakpoint-md)) {
-      /* The content's half of the fold sum above. */
-      min-width: calc(600rem / 16);
-    }
   }
 
   .cp-content-view--constrained {
