@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Time as TimeControl;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Time as TimeControl;
 
 use function CraftCms\Cms\t;
 

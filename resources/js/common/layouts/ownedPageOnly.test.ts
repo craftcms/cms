@@ -17,7 +17,7 @@ const Chrome = ownedPageOnly(
   })
 );
 
-/** Stands in for a widget or form node a plugin renders on a page. */
+/** Stands in for a widget or UI node a plugin renders on a page. */
 const PluginComponent = defineComponent({
   setup: () => () => h(Chrome, null, () => h('span', 'from the plugin')),
 });

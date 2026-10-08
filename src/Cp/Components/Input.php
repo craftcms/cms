@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
-use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use Stringable;
 
 use function CraftCms\Cms\currentUserElement;

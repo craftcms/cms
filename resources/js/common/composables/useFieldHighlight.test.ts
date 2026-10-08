@@ -70,8 +70,8 @@ describe('useFieldHighlight', () => {
   });
 
   it('highlights the field a fragment names, then lets go', async () => {
-    const field = renderField('form-maintenanceMode');
-    setHash('#form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
+    setHash('#ui-maintenanceMode');
 
     scope.run(() => useFieldHighlight());
     await nextTick();
@@ -86,10 +86,10 @@ describe('useFieldHighlight', () => {
   });
 
   it('highlights the field a control sits inside', async () => {
-    const field = renderField('form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
     // Old links may point at the input rather than the field around it.
-    field.querySelector('input')!.id = 'form-maintenanceMode-input';
-    setHash('#form-maintenanceMode-input');
+    field.querySelector('input')!.id = 'ui-maintenanceMode-input';
+    setHash('#ui-maintenanceMode-input');
 
     scope.run(() => useFieldHighlight());
     await nextTick();
@@ -98,13 +98,13 @@ describe('useFieldHighlight', () => {
   });
 
   it('waits for the page an Inertia visit is still swapping in', async () => {
-    setHash('#form-maintenanceMode');
+    setHash('#ui-maintenanceMode');
 
     scope.run(() => useFieldHighlight());
     await nextTick();
 
     // Nothing to highlight yet: the visit settles before Vue patches the DOM.
-    const field = renderField('form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
 
     router.fire('navigate');
     await nextTick();
@@ -113,7 +113,7 @@ describe('useFieldHighlight', () => {
   });
 
   it('follows a link to the page already on screen', async () => {
-    const field = renderField('form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
 
     scope.run(() => useFieldHighlight());
     await nextTick();
@@ -121,7 +121,7 @@ describe('useFieldHighlight', () => {
     // Inertia replaces the history entry rather than pushing one when a visit
     // only adds a fragment to the current URL, and skips `navigate` when it
     // does — which is every click of the maintenance-mode badge from Settings.
-    setHash('#form-maintenanceMode');
+    setHash('#ui-maintenanceMode');
     router.fire('success');
     await nextTick();
 
@@ -141,14 +141,14 @@ describe('useFieldHighlight', () => {
   });
 
   it('follows a fragment change on a page that never reloads', async () => {
-    const field = renderField('form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
 
     scope.run(() => useFieldHighlight());
     await nextTick();
 
     expect(field.hasAttribute('data-highlighted')).toBe(false);
 
-    setHash('#form-maintenanceMode');
+    setHash('#ui-maintenanceMode');
     window.dispatchEvent(new Event('hashchange'));
     await nextTick();
 
@@ -156,8 +156,8 @@ describe('useFieldHighlight', () => {
   });
 
   it('stops listening once its scope is gone', async () => {
-    const field = renderField('form-maintenanceMode');
-    setHash('#form-maintenanceMode');
+    const field = renderField('ui-maintenanceMode');
+    setHash('#ui-maintenanceMode');
 
     scope.run(() => useFieldHighlight());
     await nextTick();

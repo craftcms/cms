@@ -4,7 +4,7 @@
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroupItem from '@/common/form/CheckboxGroupItem.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
-  import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
+  import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<string>): void;

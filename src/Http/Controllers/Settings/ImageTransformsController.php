@@ -8,7 +8,6 @@ use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImageTransformEditViewModel;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,7 +38,7 @@ class ImageTransformsController extends BaseAssetSettingsController
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
@@ -113,7 +113,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         );
     }
 
-    public function renderForm(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
+    public function renderUi(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -140,7 +140,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         abort_if($transform === null, 404, 'Transform not found');
 
         return new JsonResponse([
-            'form' => $this->viewModel($transform, $images, $values)->form(),
+            'ui' => $this->viewModel($transform, $images, $values)->ui(),
         ]);
     }
 
@@ -173,7 +173,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         return new ImageTransformEditViewModel(
             $transform,
             $images,
-            $this->formResolver,
+            $this->uiResolver,
             $this->assetTransformers,
             $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,

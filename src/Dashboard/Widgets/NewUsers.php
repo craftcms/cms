@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
@@ -90,9 +90,9 @@ class NewUsers extends Widget
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $form = Form::make([
+        $ui = Ui::make([
             Field::make(t('Date Range'))
                 ->control(Choice::make('dateRange')->value($this->dateRange)->options([
                     ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
@@ -104,7 +104,7 @@ class NewUsers extends Widget
 
         $userGroups = UserGroups::getAllGroups();
 
-        return $form->when($userGroups->isNotEmpty(), fn (Form $form) => $form->add(
+        return $ui->when($userGroups->isNotEmpty(), fn (Ui $ui) => $ui->add(
             Field::make(t('User Group'))
                 ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
                     ['label' => t('All'), 'value' => ''],

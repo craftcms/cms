@@ -6,7 +6,7 @@ namespace craft\elements\conditions\assets;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyNumberConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyNumberConditionRule;
 use function CraftCms\Cms\t;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Asset\Conditions\FileSizeConditionRule instead. */

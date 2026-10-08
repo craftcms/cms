@@ -10,7 +10,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Plugin\PluginSettingsForm;
+use CraftCms\Cms\Plugin\PluginSettingsUi;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
@@ -31,7 +31,7 @@ readonly class PluginsController
     public function __construct(
         private Plugins $plugins,
         private GeneralConfig $generalConfig,
-        private PluginSettingsForm $settingsForm,
+        private PluginSettingsUi $settingsUi,
     ) {}
 
     public function index(): CpScreenResponse
@@ -153,7 +153,7 @@ readonly class PluginsController
             : $this->editSettings($handle, $plugin);
     }
 
-    public function renderSettingsForm(Request $request, string $handle): JsonResponse
+    public function renderSettingsUi(Request $request, string $handle): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -166,7 +166,7 @@ readonly class PluginsController
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
         return new JsonResponse([
-            'form' => $this->settingsForm->refresh($plugin, $data['values'], $data['scope']),
+            'ui' => $this->settingsUi->refresh($plugin, $data['values'], $data['scope']),
         ]);
     }
 }

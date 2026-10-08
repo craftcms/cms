@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace craft\fields\conditions;
 
 use CraftCms\Cms\Field\BaseOptionsField;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyMultiSelectConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyMultiSelectConditionRule;
 use RuntimeException;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule instead. */

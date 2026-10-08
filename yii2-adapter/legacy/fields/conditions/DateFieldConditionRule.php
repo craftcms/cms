@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace craft\fields\conditions;
 
 use CraftCms\Cms\Field\Date;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyDateRangeConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyDateRangeConditionRule;
 use RuntimeException;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\DateFieldConditionRule instead. */

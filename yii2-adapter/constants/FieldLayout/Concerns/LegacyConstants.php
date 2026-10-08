@@ -11,14 +11,14 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\NativeFields;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Yii2Adapter\FieldLayout\LegacyFormEvents;
 use Deprecated;
 use Generator;
@@ -131,7 +131,7 @@ trait LegacyConstants
 
     public static function registerEvents(): void
     {
-        Event::listen(function(FieldLayoutFormResolving $event) {
+        Event::listen(function(FieldLayoutUiResolving $event) {
             if (!YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM)) {
                 return;
             }
@@ -145,7 +145,7 @@ trait LegacyConstants
             }
 
             try {
-                $nodes = $event->form->nodes();
+                $nodes = $event->ui->nodes();
                 $tabUids = array_map(fn($tab) => $tab->uid, $event->fieldLayout->getTabs());
                 $ordered = [];
 
@@ -163,13 +163,13 @@ trait LegacyConstants
                         $ordered[] = $node;
                     }
                 }
-                $event->form = Form::make([
+                $event->ui = Ui::make([
                     ...$ordered,
                     ...array_filter($nodes, fn(Node $node) => !in_array($node->uid(), $tabUids, true)),
                 ]);
 
                 if ($yiiEvent->static !== $static) {
-                    self::setFormMode($event->form->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
+                    self::setUiMode($event->ui->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
                 }
             } finally {
                 $legacyEvents->forget($event->fieldLayout, $event->context);
@@ -213,11 +213,11 @@ trait LegacyConstants
     }
 
     /** @param list<Node> $nodes */
-    private static function setFormMode(array $nodes, ControlMode $mode): void
+    private static function setUiMode(array $nodes, ControlMode $mode): void
     {
         foreach ($nodes as $node) {
             $node->getControl()?->mode($mode);
-            self::setFormMode($node->children(), $mode);
+            self::setUiMode($node->children(), $mode);
         }
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Override;
 
 /**
