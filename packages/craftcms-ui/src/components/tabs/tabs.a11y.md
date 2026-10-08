@@ -21,13 +21,15 @@ Follows the WAI-ARIA APG [Tabs with Automatic Activation](https://www.w3.org/WAI
 - [x] Navigation skips disabled tabs and tabs collapsed into the overflow menu. Per WCAG 2.1.1 (Keyboard). Verified by `skips disabled tabs when navigating, and refuses to select one` and `arrows past collapsed tabs` in `tabs.test.ts`, and the `Disabled` story.
 - [ ] Selecting a tab shows its panel without a noticeable delay, as automatic activation requires. A panel that loads its content shows a loading state straight away rather than holding the switch. Not yet verified.
 - [ ] The tablist comes directly before the panels it controls in the DOM, so reading order and focus order run from the tablist into the selected panel. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Slotted mode puts the tablist first; in external-panel mode the consumer places the panels. Not yet verified.
-- [ ] Each tab has a visible `:focus-visible` indicator with at least 3:1 contrast against adjacent colors. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
+- [x] A keyboard-focused tab shows a solid ring at least 2px wide, at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `rings a keyboard-focused tab at 3:1 against the surface` in `tabs.browser.test.ts`.
+- [x] A focused panel's ring is drawn inside the panel, so the scrolling panel region doesn't clip it. The inset applies only to slotted panels, which sit in the strip's own scroll region. External panels keep the default outset ring, and a consumer that puts them in a scroll container insets the ring there, as `DetailsTabs.vue` does. Per WCAG 2.4.7 (Focus Visible). Verified by `keeps a focused panel’s ring inside the scrolling panel region` in `tabs.browser.test.ts`.
 
 ### Visual
 
-- [ ] The selected tab is distinguished by more than color alone, with an indicator of at least 3:1 contrast. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Not yet verified.
-- [ ] The selected indicator and focus indicator stay visible in forced colors mode. Not yet verified.
-- [ ] Each tab is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Not yet verified.
+- [x] A selected text tab is marked by a bar on the edge facing the panels, plus a heavier weight. The bar reaches 3:1 against the surface in the light and dark themes, and unselected tabs have no bar, so the difference is shape as well as color. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Verified by the `marks the selected text tab …` cases in `tabs.browser.test.ts`, on the block and inline placements.
+- [x] A selected icon-only tab, which gets nothing from the weight change, is marked by the same bar at the same 3:1. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Verified by the `marks the selected icon tab …` cases in `tabs.browser.test.ts`, on the block and inline placements.
+- [x] The selected bar and the tab and panel focus rings stay visible in forced colors mode. The bar uses the `Highlight` system color there; an ordinary color would be forced to the canvas color and disappear. Verified manually with Playwright's `forced-colors: active` emulation against the `Default`, `IconToolbar`, and `ExternalPanels` stories. There's no automated test, since the browser tests can't emulate forced colors.
+- [x] Every tab is at least 24×24 CSS px, or a 24px circle centered on it clears every other tab, at each `size` on the block and inline placements. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by the `gives every … tab a 24px target, or room around it` cases in `tabs.browser.test.ts`.
 
 ### Overflow
 

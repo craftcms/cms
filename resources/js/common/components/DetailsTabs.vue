@@ -291,6 +291,10 @@
   .details-tabs__panels {
     block-size: 100%;
     overflow-y: auto;
+
+    > section {
+      --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
   }
 
   craft-tab {
@@ -312,6 +316,14 @@
 
     &::after {
       display: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    craft-tab[aria-selected='true'] {
+      border-color: Highlight;
+      background-color: Highlight;
+      color: HighlightText;
     }
   }
 </style>

@@ -117,6 +117,10 @@ export default css`
     display: none;
   }
 
+  ::slotted([slot='panel']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
   .tabs__panels {
     min-width: 0;
     background-color: var(--c-surface-default);
