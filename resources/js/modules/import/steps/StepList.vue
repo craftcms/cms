@@ -17,7 +17,7 @@
 
   const props = defineProps<{
     editable: boolean;
-    /** Every importer type a step can be, for labelling the summary rows. */
+    /** Every importer type a step can be, for labeling the summary rows. */
     importerTypes: Array<{value: string; label: string}>;
     /** Server-side errors, keyed `steps.<step uid>.<attribute>`. */
     errors?: Record<string, string[]>;

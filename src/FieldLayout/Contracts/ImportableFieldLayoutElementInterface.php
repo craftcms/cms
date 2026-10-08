@@ -25,14 +25,14 @@ interface ImportableFieldLayoutElementInterface
      * And custom field instances have their own implementation of this method.
      *
      * Additionally, for the CustomField instances,
-     * the underlying Field can implement the getFieldsForImportMapping() method to further customise this.
+     * the underlying Field can implement the getFieldsForImportMapping() method to further customize this.
      */
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null;
 
     /**
      * Returns whether the element can be used as a match criteria.
      * For the CustomField instances,
-     * the underlying Field can implement the canBeImportMatchCriteria() method to further customise this.
+     * the underlying Field can implement the canBeImportMatchCriteria() method to further customize this.
      *
      * It's false by default.
      */
@@ -41,7 +41,7 @@ interface ImportableFieldLayoutElementInterface
     /**
      * Returns whether the element's value can be cleared on import when no data is provided or the provided value is empty.
      * For the CustomField instances,
-     * the underlying Field can implement the canBeImportCleared() method to further customise this.
+     * the underlying Field can implement the canBeImportCleared() method to further customize this.
      *
      * It's false by default.
      */

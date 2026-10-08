@@ -7,6 +7,11 @@ namespace CraftCms\Cms\Import\DataTypes;
 interface DataTypeInterface
 {
     /**
+     * Returns the file extension this data type parses, without a leading dot.
+     */
+    public static function extension(): string;
+
+    /**
      * Formats the data string according to the Data Type rules.
      *
      * @param  string  $data  The raw file contents to parse.

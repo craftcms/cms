@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Import\Data\SourceColumn;
+use CraftCms\Cms\Import\DataTypes\DataTypes;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Tests\Support\Import\TestDataType;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -63,6 +65,13 @@ it('reports an unsupported file extension as an unsupported data type', function
 it('reports an unsupported file extension when reading headings too', function () {
     expect(fn () => $this->import->getDataHeadings(($this->fixturePath)('unsupported.txt')))
         ->toThrow(Exception::class, 'Unsupported data type: txt');
+});
+
+it('reads a file with a registered data type for its extension', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+
+    expect($this->import->getFormattedData(($this->fixturePath)('unsupported.txt')))
+        ->toBe([['line' => 'not import data']]);
 });
 
 it('returns the source headings with a "Please select" option prepended', function () {

@@ -538,7 +538,7 @@ it('is dirty once a setting really changes', async () => {
   expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
 });
 
-it('isn’t dirty after opening the mapping and cancelling it', async () => {
+it('isn’t dirty after opening the mapping and canceling it', async () => {
   state.openStepMapping.mockResolvedValue(true);
   mount(true, step.type, {entryType: 'blog'});
 

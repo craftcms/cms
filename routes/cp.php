@@ -235,9 +235,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Import
      */
     Route::middleware('can:viewImportPlans')->group(function () {
-        Route::get('import', [ImportPlansController::class, 'index']);
-        Route::middleware('can:saveImportPlans')->get('import/new', [ImportPlansController::class, 'create']);
-        Route::get('import/{handle}', [ImportPlansController::class, 'edit']);
+        Route::get('import', [ImportPlansController::class, 'index'])->name('import.index');
+        Route::middleware('can:saveImportPlans')->get('import/new', [ImportPlansController::class, 'create'])->name('import.create');
+        Route::get('import/{handle}', [ImportPlansController::class, 'edit'])->name('import.edit');
     });
     /**
      * Users

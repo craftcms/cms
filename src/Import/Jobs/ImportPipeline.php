@@ -76,7 +76,7 @@ class ImportPipeline extends Job
                 });
         }
 
-        // runs only after the last step's batch has finished, and never if a batch was cancelled
+        // runs only after the last step's batch has finished, and never if a batch was canceled
         Bus::chain([...$steps, new FinishImport($importPlan, $runId)])->dispatch();
     }
 

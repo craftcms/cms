@@ -15,6 +15,12 @@ use Override;
 class Json implements DataTypeInterface
 {
     #[Override]
+    public static function extension(): string
+    {
+        return 'json';
+    }
+
+    #[Override]
     public static function format(string $data): array
     {
         // Parse the JSON string

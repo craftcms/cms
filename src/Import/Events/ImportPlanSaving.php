@@ -17,7 +17,7 @@ class ImportPlanSaving
     use ValidatableEvent;
 
     /**
-     * Carries the import plan and isNew flag for a cancellable pre-save event.
+     * Carries the import plan and isNew flag for a cancelable pre-save event.
      *
      * @param  ImportPlan  $importPlan  The import plan this event concerns.
      * @param  bool  $isNew  Whether the import plan is newly created.

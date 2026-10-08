@@ -482,7 +482,7 @@ class ImportPlansController
 
         return new CpScreenResponse()
             ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
-            ->addCrumb(t('Import'), 'import')
+            ->addCrumb(t('Import'), route('craft.cp.import.index'))
             ->formAttributes(['action' => action([self::class, 'store'])])
             ->inertiaPage('import/Edit', new ImportPlanEditViewModel(
                 $importPlan,

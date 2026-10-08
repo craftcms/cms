@@ -34,6 +34,19 @@ vi.mock('./step-mapping', () => ({
   takeStepMappingContext: () => state.context,
 }));
 
+// The real element is Lion's select-rich, whose options register before its invoker
+// exists under happy-dom, so a bare element stands in for it.
+vi.mock('@craftcms/ui/components/select-rich/select-rich', () => {
+  class CraftSelectRich extends HTMLElement {
+    modelValue: unknown = '';
+  }
+  if (!customElements.get('craft-select-rich')) {
+    customElements.define('craft-select-rich', CraftSelectRich);
+  }
+
+  return {default: CraftSelectRich};
+});
+
 function col(
   overrides: Partial<MappingColumn> & {prefixedHandle: string}
 ): MappingColumn {
@@ -135,19 +148,14 @@ function toggleCheckbox(column: 'match' | 'clear', checked = true): void {
   );
 }
 
-// craft-combobox renders options a frame after mount and rejects values it doesn't list.
-function settle(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 50));
-}
-
-function combobox(): HTMLElement & {modelValue?: string} {
+function sourceSelect(): HTMLElement & {modelValue?: string} {
   return cells()[0]!.querySelector(
-    'craft-combobox'
+    'craft-select-rich'
   ) as unknown as HTMLElement & {modelValue?: string};
 }
 
 function chooseSource(value: string): void {
-  const host = combobox();
+  const host = sourceSelect();
   host.modelValue = value;
 
   host.dispatchEvent(
@@ -162,6 +170,7 @@ beforeEach(() => {
   state.layout.mockClear();
   state.openNested.mockReset();
   applied = null;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -169,6 +178,7 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
+  vi.unstubAllGlobals();
 });
 
 it('renders the mapping table inside the container field group, like other slideout forms', () => {
@@ -181,7 +191,6 @@ it('renders the mapping table inside the container field group, like other slide
 
 it('writes a chosen source column to the destination column’s path', async () => {
   mount([title]);
-  await settle();
 
   chooseSource('name');
   await nextTick();
@@ -241,7 +250,6 @@ it('offers a mapped column’s import settings and keeps them on their own tree'
   });
 
   mount([assets]);
-  await settle();
 
   expect(cells()[0]!.querySelector('craft-select')).toBeNull();
 
@@ -284,7 +292,6 @@ it('shows an import setting’s instructions in an info icon beside its label', 
   });
 
   mount([assets]);
-  await settle();
   chooseSource('name');
   await nextTick();
 
@@ -317,7 +324,7 @@ it('hands the step’s mapping trees back on apply', () => {
 it('opens a container column’s nested mapping against the draft step', () => {
   mount([outerMatrix]);
 
-  expect(container.querySelector('craft-combobox')).toBeNull();
+  expect(container.querySelector('craft-select-rich')).toBeNull();
 
   container.querySelector('craft-button')!.dispatchEvent(new Event('click'));
 
@@ -331,15 +338,13 @@ it('opens a container column’s nested mapping against the draft step', () => {
 
 it('shows a suggested source column and flags it as a best guess', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
-  await settle();
 
-  expect(combobox().modelValue).toBe('name');
+  expect(sourceSelect().modelValue).toBe('name');
   expect(cells()[0]!.classList).toContain('best-guess');
 });
 
 it('clears the best-guess flag once the user chooses a column themselves', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
-  await settle();
 
   chooseSource('email');
   await nextTick();
@@ -347,15 +352,14 @@ it('clears the best-guess flag once the user chooses a column themselves', async
   expect(cells()[0]!.classList).not.toContain('best-guess');
 });
 
-it('keeps a freshly guessed column flagged once the combobox settles', async () => {
+it('keeps a freshly guessed column flagged once the select renders', async () => {
   const values = cloneValues(emptyValues());
   const suggestedMap: SuggestedMap = {};
   applySuggestions(values.map, {title: 'name'}, suggestedMap);
 
   mount([title], values, suggestedMap);
-  await settle();
 
-  expect(combobox().modelValue).toBe('name');
+  expect(sourceSelect().modelValue).toBe('name');
   expect(cells()[0]!.classList).toContain('best-guess');
   expect(apply().map).toEqual({title: 'name'});
 });
@@ -382,7 +386,6 @@ it('merges a nested panel’s result back into the trees', async () => {
 
 it('isn’t dirty when a checkbox is ticked and unticked again', async () => {
   mount([title]);
-  await settle();
 
   toggleCheckbox('match');
   toggleCheckbox('match', false);
@@ -393,7 +396,6 @@ it('isn’t dirty when a checkbox is ticked and unticked again', async () => {
 
 it('is dirty once a column is mapped', async () => {
   mount([title]);
-  await settle();
 
   chooseSource('name');
   await nextTick();

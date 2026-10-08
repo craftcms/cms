@@ -3,7 +3,7 @@
    * One import step's field mapping, as a slideout panel.
    *
    * Opened from the step's own panel — see `step-mapping.ts`. The panel edits its own
-   * copy of the step's four mapping trees and hands them back on Apply, so cancelling
+   * copy of the step's four mapping trees and hands them back on Apply, so canceling
    * leaves the step behind untouched.
    */
   import {t} from '@craftcms/ui';

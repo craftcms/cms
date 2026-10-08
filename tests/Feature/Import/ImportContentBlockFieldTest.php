@@ -266,7 +266,7 @@ it('imports a content block whose values are given without a fields wrapper', fu
         ->and($contentBlock->getFieldValue('cbMatrix')->one()->getFieldValue('blockText'))->toBe('one');
 });
 
-it('still honours a fields wrapper when one is given', function () {
+it('still honors a fields wrapper when one is given', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         'fields' => ['cbText' => 'foo'],
     ]));

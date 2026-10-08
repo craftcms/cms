@@ -19,8 +19,8 @@ use RuntimeException;
  * The ModelImporter should be used for importing data into an eloquent model.
  * It's abstract - each importable model is represented by its own concrete subclass, which
  * implements modelClass() to name its target model (see SystemMessageImporter).
- * A model is importable if and only if a ModelImporter subclass is registered for it, via the
- * RegisterImporterTypes event.
+ * A model is importable if and only if a ModelImporter subclass is registered for it, with
+ * ImporterTypes.
  * Element types must use an ElementImporter subclass instead (see EntryImporter, AssetImporter, UserImporter).
  *
  * @since 6.0.0

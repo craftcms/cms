@@ -7,18 +7,17 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Assets as AssetsField;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Import\Events\RegisterFieldImportHandlers;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlers;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\Import\TestFieldImportHandler;
+use CraftCms\Cms\Tests\Support\Import\TestRelationFieldImportHandler;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
-use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $textField = ImportFixtures::plainTextField('myPlainText', 'My Plain Text');
@@ -38,9 +37,7 @@ beforeEach(function () {
 });
 
 it('lets a registered handler normalize a field’s imported value and act once the item is imported', function () {
-    Event::listen(RegisterFieldImportHandlers::class, function (RegisterFieldImportHandlers $event) {
-        $event->handlers[PlainText::class] = TestFieldImportHandler::class;
-    });
+    app(FieldImportHandlers::class)->register(TestFieldImportHandler::class);
 
     app(Import::class)->importItem($this->importer, [
         'title' => 'imported entry',
@@ -54,19 +51,15 @@ it('lets a registered handler normalize a field’s imported value and act once 
 });
 
 it('uses the handler registered for the nearest class in a field’s hierarchy', function () {
-    Event::listen(RegisterFieldImportHandlers::class, function (RegisterFieldImportHandlers $event) {
-        $event->handlers = [BaseRelationField::class => TestFieldImportHandler::class, ...$event->handlers];
-    });
+    app(FieldImportHandlers::class)->register(TestRelationFieldImportHandler::class);
 
     expect(ImportFacade::getFieldImportHandlerFor(new AssetsField))->toBeInstanceOf(AssetsFieldImportHandler::class)
-        ->and(ImportFacade::getFieldImportHandlerFor(new EntriesField))->toBeInstanceOf(TestFieldImportHandler::class)
+        ->and(ImportFacade::getFieldImportHandlerFor(new EntriesField))->toBeInstanceOf(TestRelationFieldImportHandler::class)
         ->and(ImportFacade::getFieldImportHandlerFor(new PlainText))->toBeNull();
 });
 
 it('discards a handler’s after-item callbacks when the item fails to import', function () {
-    Event::listen(RegisterFieldImportHandlers::class, function (RegisterFieldImportHandlers $event) {
-        $event->handlers[PlainText::class] = TestFieldImportHandler::class;
-    });
+    app(FieldImportHandlers::class)->register(TestFieldImportHandler::class);
 
     expect(fn () => app(Import::class)->importItem($this->importer, [
         'title' => 'imported entry',

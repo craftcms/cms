@@ -59,6 +59,7 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
     title: options.title,
     submitButtonLabel: t('Apply'),
     form,
+    defaultFormActions: [],
     onSave: apply,
   }));
 

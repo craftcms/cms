@@ -14,6 +14,12 @@ use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
 class Csv implements DataTypeInterface
 {
     #[Override]
+    public static function extension(): string
+    {
+        return 'csv';
+    }
+
+    #[Override]
     public static function format(string $data): array
     {
         try {

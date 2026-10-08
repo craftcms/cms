@@ -79,6 +79,7 @@ beforeEach(() => {
   state.openStepSlideout.mockReset();
   state.openStepSlideout.mockResolvedValue(true);
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   app = null;
   container = document.createElement('div');
   document.body.append(container);

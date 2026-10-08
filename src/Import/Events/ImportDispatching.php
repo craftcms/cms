@@ -18,7 +18,7 @@ class ImportDispatching
     use ValidatableEvent;
 
     /**
-     * Carries the steps and import plan for a cancellable pre-dispatch event.
+     * Carries the steps and import plan for a cancelable pre-dispatch event.
      *
      * @param  array<int, array{name: string, uid: string|null, job: ImportJob}>  $steps  The queue job steps to be dispatched.
      */

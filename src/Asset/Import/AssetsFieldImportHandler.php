@@ -39,6 +39,12 @@ use function CraftCms\Cms\t;
 class AssetsFieldImportHandler implements FieldImportHandlerInterface
 {
     #[Override]
+    public static function fieldClass(): string
+    {
+        return AssetsField::class;
+    }
+
+    #[Override]
     public function normalizeValue(FieldInterface $field, mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
     {
         if (! $field instanceof AssetsField) {

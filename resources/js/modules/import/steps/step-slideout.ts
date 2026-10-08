@@ -4,7 +4,7 @@
  * Opened with `openSlideoutWith()` rather than `openSlideout()`: a step is unsaved
  * client state the edit screen holds, with no URL to fetch. The server is POSTed the
  * draft step and returns only a Form payload for it; the panel edits a copy and hands
- * it back on Done, so cancelling leaves the screen untouched and nothing reaches the
+ * it back on Done, so canceling leaves the screen untouched and nothing reaches the
  * database until the import itself is saved.
  */
 import {actionClient} from '@craftcms/ui';

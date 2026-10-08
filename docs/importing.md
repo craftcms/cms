@@ -26,7 +26,7 @@ importer instance with its own `uid`, `type` (the importer FQCN), `source`, `tra
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
 database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:51`) lists DB plans
 first, in their saved `sortOrder` (then name, then handle), followed by file-based plans sorted
-by name. The result is keyed by handle and memoised. An invalid file-based plan is **skipped and
+by name. The result is keyed by handle and memoized. An invalid file-based plan is **skipped and
 logged** as a warning rather than blowing up the list.
 
 New and duplicated editable plans are appended to the end of the order (`nextSortOrder()`);
@@ -95,7 +95,7 @@ mapping), downloading a remote source to a temp file and deleting it afterwards.
 ## 3. Running an import plan
 
 `Import::dispatchImport()` (`src/Import/Import.php:162`) generates a `runId`, builds one
-`Import` job per step, fires `ImportDispatching` (cancellable), then dispatches a single
+`Import` job per step, fires `ImportDispatching` (cancelable), then dispatches a single
 `ImportPipeline` job so the whole plan shows as one named queue item. `ImportPipeline` wraps
 each step in its own `Bus::batch(...)->allowFailures()` and chains them, followed by a
 `FinishImport` job, so steps run sequentially and one bad step doesn't kill the plan.
@@ -158,7 +158,8 @@ imported as new.
 imported into.
 
 Extra importer types — including importers for plugin-defined element types and models — register
-via the `RegisterImporterTypes` event (`$event->importers`).
+with the `Import\ImporterTypes` registry from a service provider's `boot()`
+(`$importerTypes->register(MyImporter::class)`).
 
 ---
 
@@ -166,7 +167,7 @@ via the `RegisterImporterTypes` event (`$event->importers`).
 
 `Import::importItem()` (`src/Import/Import.php:219`):
 
-1. `ItemImporting` event (cancellable, can rewrite `$data`).
+1. `ItemImporting` event (cancelable, can rewrite `$data`).
 2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
 3. Collect `additionalMatchCriteria()` from the transformer.
 4. Resolve match criteria.
@@ -188,7 +189,7 @@ inline criteria on a container the step never configured still resolve.
 ### Clearable items
 
 A tree of truthy leaves mirroring the match-criteria shape (a flat dot-notation list
-is accepted and expanded). Behaviour:
+is accepted and expanded). Behavior:
 
 - Marked clearable + value missing/empty → forced to `null` so it's explicitly applied.
 - **Not** marked clearable + value empty → the key is `unset()` entirely, so the
@@ -220,7 +221,7 @@ is accepted and expanded). Behaviour:
    `$this->setAttributesForImport($element, $attributes)` on the importer (base implementation
    strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
    overrides it to resolve filename/folder/temp-file handling and download).
-5. **Skip-unchanged optimisation**: snapshots attribute values and serialized field
+5. **Skip-unchanged optimization**: snapshots attribute values and serialized field
    values; if nothing changed, the element is never saved. Skipped for new elements or
    when container data is present. A special case catches content blocks, whose
    `serializeValue()` returns null while the block has no id.
@@ -327,16 +328,19 @@ happen if the row goes through (replacing a file, calling an external service) c
 with the imported element or model once the item has been imported (saved, or skipped as unchanged),
 before `ItemImported` is dispatched, and discards them if importing the item throws.
 
-Core registers `AssetsFieldImportHandler` for `Assets`. Plugins add their own like data types and importers:
+Core registers `AssetsFieldImportHandler` for `Assets`. Plugins add their own like data types and importers,
+from a service provider's `boot()`:
 ```php
-Event::listen(RegisterFieldImportHandlers::class, function (RegisterFieldImportHandlers $event) {
-    $event->handlers[MyField::class] = MyFieldImportHandler::class;
-});
+public function boot(FieldImportHandlers $handlers): void
+{
+    $handlers->register(MyFieldImportHandler::class);
+}
 ```
 
-Handlers are keyed by field class, so a class has at most one. A field uses the handler for its
-own class or, failing that, its nearest parent class with one (a subclass of `Assets` gets
-`AssetsFieldImportHandler`). Registering for a class that already has a handler replaces it.
+A handler names the field class it handles with its static `fieldClass()` method, and handlers are
+keyed by it, so a class has at most one. A field uses the handler for its own class or, failing that,
+its nearest parent class with one (a subclass of `Assets` gets `AssetsFieldImportHandler`).
+Registering a second handler for the same class throws; `remove()` the existing one first to replace it.
 
 ### Creating assets from incoming files
 
@@ -412,7 +416,7 @@ children:
 
 A flat list of (dot-notation) handles is accepted too and expanded into `__keep__: true` leaves.
 Opt-in per field, per level — an outer field can keep while an inner one prunes. Pruning is
-Craft's normal save behaviour, so it isn't tracked or logged.
+Craft's normal save behavior, so it isn't tracked or logged.
 
 ---
 
@@ -490,15 +494,19 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
 
 ## 11. Extension points
 
-- `RegisterDataTypes` — `$event->dataTypes['yml'] = MyType::class;` (extension-keyed).
-  Built-ins: json, csv, xml. A data type implements two **static** methods,
-  `format()` and `getHeadings()`.
-- `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`. Registering a new
+Registries (register from a service provider's `boot()`; see `Component\TypeRegistry`):
+
+- `Import\DataTypes\DataTypes` — `$dataTypes->register(MyType::class);` (extension-keyed).
+  Built-ins: json, csv, xml. A data type implements three **static** methods,
+  `extension()`, `format()` and `getHeadings()`. To replace a built-in, `remove()` it first.
+- `Import\ImporterTypes` — `$importerTypes->register(MyImporter::class);`. Registering a new
   importable element type or model means contributing a concrete `ElementImporter` or
   `ModelImporter` subclass that implements `targetClass()`.
+- `Import\FieldHandlers\FieldImportHandlers` — `$handlers->register(MyFieldImportHandler::class);`
+  (keyed by the handler's `fieldClass()`; see §7).
 - `ItemImporting` / `ItemImported` (the latter with `$importedItem`),
   `ImportPlanSaving` / `ImportPlanSaved`, `ImportDispatching` / `ImportDispatched`.
-  The `*ing` variants are cancellable.
+  The `*ing` variants are cancelable.
 - Run lifecycle: `ImportStarted`, `ImportStepStarted`, `ImportChunkStarted`,
   `ImportChunkFinished`, `ImportStepFinished`, `ImportFinished` — all keyed by `runId`
   (see §3).

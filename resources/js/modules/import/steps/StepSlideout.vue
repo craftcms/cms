@@ -56,6 +56,7 @@
     title: props.title,
     submitButtonLabel: t('Apply'),
     form,
+    defaultFormActions: [],
     onSave: done,
   }));
 

@@ -4,33 +4,26 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
-use CraftCms\Cms\Asset\Import\AssetImporter;
-use CraftCms\Cms\Asset\Import\AssetsFieldImportHandler;
-use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\SourceColumn;
-use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
+use CraftCms\Cms\Import\DataTypes\DataTypes;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
 use CraftCms\Cms\Import\Events\ImportDispatched;
 use CraftCms\Cms\Import\Events\ImportDispatching;
 use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Events\ItemImporting;
-use CraftCms\Cms\Import\Events\RegisterDataTypes;
-use CraftCms\Cms\Import\Events\RegisterFieldImportHandlers;
-use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlers;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
-use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
-use CraftCms\Cms\User\Import\UserImporter;
+use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
@@ -49,27 +42,20 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Import
 {
+    public function __construct(
+        private readonly DataTypes $dataTypes,
+        private readonly ImporterTypes $importerTypes,
+        private readonly FieldImportHandlers $fieldImportHandlers,
+    ) {}
+
     /**
      * Returns the available data type classes, keyed by extension.
-     * The list includes built-in json/csv/xml data type map, extended via `RegisterDataTypes` event listeners.
      *
-     * @return array<class-string<DataTypeInterface>>
+     * @return array<string, class-string<DataTypeInterface>>
      */
     public function getAllDataTypes(): array
     {
-        $dataTypes = [
-            'json' => Json::class,
-            'csv' => Csv::class,
-            'xml' => Xml::class,
-        ];
-
-        if (Event::hasListeners(RegisterDataTypes::class)) {
-            Event::dispatch($event = new RegisterDataTypes($dataTypes));
-
-            $dataTypes = $event->dataTypes;
-        }
-
-        return $dataTypes;
+        return $this->dataTypes->byExtension();
     }
 
     /**
@@ -81,68 +67,40 @@ class Import
     {
         $extension = strtolower(File::extension($filePath));
 
-        return isset($this->getAllDataTypes()[$extension]) ? $extension : null;
+        return $this->dataTypes->find($extension) !== null ? $extension : null;
     }
 
     /**
      * Returns the data type class for a local file, based on its extension.
      *
+     * @return class-string<DataTypeInterface>
+     *
      * @throws Exception if the file isn't of an available data type.
      */
     private function dataTypeClass(string $filePath): string
     {
-        $dataType = $this->getDataTypeFromExtension($filePath);
-
-        if ($dataType === null) {
-            throw new Exception(t('Unsupported data type: {type}', ['type' => File::extension($filePath)]));
-        }
-
-        return $this->getAllDataTypes()[$dataType];
+        return $this->dataTypes->find(File::extension($filePath))
+            ?? throw new Exception(t('Unsupported data type: {type}', ['type' => File::extension($filePath)]));
     }
 
     /**
      * Returns the available importer classes.
-     * The list includes built-in Element/Model importer classes, extended via `RegisterImporterTypes` event.
      *
      * @return list<class-string<BaseImporter>>
      */
     public function getAllImporterTypes(): array
     {
-        $importers = [
-            EntryImporter::class,
-            AssetImporter::class,
-            UserImporter::class,
-            SystemMessageImporter::class,
-        ];
-
-        if (Event::hasListeners(RegisterImporterTypes::class)) {
-            Event::dispatch($event = new RegisterImporterTypes($importers));
-
-            $importers = $event->importers;
-        }
-
-        return $importers;
+        return $this->importerTypes->types()->all();
     }
 
     /**
      * Returns the available field import handler classes, indexed by the field class they handle.
-     * The list includes the built-in handlers, extended via `RegisterFieldImportHandlers` event.
      *
      * @return array<class-string<FieldInterface>, class-string<FieldImportHandlerInterface>>
      */
     public function getAllFieldImportHandlers(): array
     {
-        $handlers = [
-            AssetsField::class => AssetsFieldImportHandler::class,
-        ];
-
-        if (Event::hasListeners(RegisterFieldImportHandlers::class)) {
-            Event::dispatch($event = new RegisterFieldImportHandlers($handlers));
-
-            $handlers = $event->handlers;
-        }
-
-        return $handlers;
+        return $this->fieldImportHandlers->all();
     }
 
     /**
@@ -153,15 +111,7 @@ class Import
      */
     public function getFieldImportHandlerFor(FieldInterface $field): ?FieldImportHandlerInterface
     {
-        $handlers = $this->getAllFieldImportHandlers();
-
-        for ($class = $field::class; $class !== false; $class = get_parent_class($class)) {
-            if (isset($handlers[$class])) {
-                return app($handlers[$class]);
-            }
-        }
-
-        return null;
+        return $this->fieldImportHandlers->findFor($field);
     }
 
     /**
@@ -305,7 +255,11 @@ class Import
         }
 
         if (! empty($importerConfigLevelCriteria) || ! empty($dataSourcedMatchCriteria)) {
-            $matchCriteria = array_merge($dataSourcedMatchCriteria, $importerConfigLevelCriteria);
+            // values from the incoming data are matched on literally, not as query param syntax (e.g. `*`, `not 5`)
+            $matchCriteria = array_map(
+                fn ($value) => is_string($value) ? Query::escapeParam($value) : $value,
+                array_merge($dataSourcedMatchCriteria, $importerConfigLevelCriteria),
+            );
             $data = ['matchCriteria' => $matchCriteria] + $data;
         }
 

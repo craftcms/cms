@@ -16,6 +16,12 @@ use Override;
 class Xml implements DataTypeInterface
 {
     #[Override]
+    public static function extension(): string
+    {
+        return 'xml';
+    }
+
+    #[Override]
     public static function format(string $data): array
     {
         try {

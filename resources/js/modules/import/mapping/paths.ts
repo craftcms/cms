@@ -117,7 +117,7 @@ export function toObjectTree<T>(value: T): T {
 }
 
 /**
- * A structural copy of the trees, so a nested panel can be cancelled without a trace.
+ * A structural copy of the trees, so a nested panel can be canceled without a trace.
  *
  * Round-tripped through JSON rather than `structuredClone()`, which can't clone the
  * reactive proxies the screens hold these in.
@@ -127,7 +127,7 @@ export function cloneValues(values: MappingValues): MappingValues {
 }
 
 /**
- * A structural copy of one step, so a slideout can be cancelled without a trace.
+ * A structural copy of one step, so a slideout can be canceled without a trace.
  *
  * Round-tripped through JSON rather than `structuredClone()`, which can't clone the
  * reactive proxies the screens hold these in.

@@ -178,3 +178,13 @@ it('lets transformer criteria override step-level criteria on nested blocks', fu
         ->and($blocks[0]->id)->toBe($blockY->id)
         ->and($blocks[0]->title)->toBe('updated');
 });
+
+it('matches on incoming values literally rather than as query param syntax', function () {
+    $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, ($this->entryData)('*'));
+
+    expect(EntryElement::find()->id($this->entryA->id)->one()->title)->toBe('entry A')
+        ->and(EntryElement::find()->id($this->entryB->id)->one()->title)->toBe('entry B')
+        ->and(EntryElement::find()->title('\*')->count())->toBe(1);
+});

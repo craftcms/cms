@@ -4,7 +4,7 @@
    *
    * Opened with `openSlideoutWith()` — see `nested-mapping.ts` for why. The panel
    * edits its own copy of the screen's trees and hands them back on Apply, so
-   * cancelling leaves the screen behind untouched.
+   * canceling leaves the screen behind untouched.
    */
   import '@craftcms/ui/components/checkbox/checkbox';
   import {computed} from 'vue';
