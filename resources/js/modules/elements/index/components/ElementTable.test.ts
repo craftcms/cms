@@ -1,7 +1,7 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import DataTable from './ElementTable.vue';
-import {useElementIndexSelection} from '../composables/useElementIndexSelection';
+import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import {createSampleTable} from '@/modules/elements/fixtures/elements';
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -37,7 +37,7 @@ describe('DataTable', () => {
       render: () =>
         h(DataTable, {
           table,
-          selection: useElementIndexSelection(table, {
+          selection: useTableRowSelection(table, {
             selectable: true,
             readOnly: false,
           }),
@@ -262,7 +262,7 @@ describe('DataTable', () => {
       render: () =>
         h(DataTable, {
           table,
-          selection: useElementIndexSelection(table, {
+          selection: useTableRowSelection(table, {
             selectable: false,
             readOnly: false,
           }),
@@ -310,7 +310,7 @@ describe('DataTable', () => {
       render: () =>
         h(DataTable, {
           table,
-          selection: useElementIndexSelection(table, {
+          selection: useTableRowSelection(table, {
             selectable: false,
             readOnly: false,
           }),
@@ -344,7 +344,7 @@ describe('DataTable', () => {
           h('section', {class: 'first'}, [
             h(DataTable, {
               table: firstTable,
-              selection: useElementIndexSelection(firstTable, {
+              selection: useTableRowSelection(firstTable, {
                 selectable: false,
                 readOnly: false,
               }),
@@ -353,7 +353,7 @@ describe('DataTable', () => {
           h('section', {class: 'second'}, [
             h(DataTable, {
               table: secondTable,
-              selection: useElementIndexSelection(secondTable, {
+              selection: useTableRowSelection(secondTable, {
                 selectable: false,
                 readOnly: false,
               }),

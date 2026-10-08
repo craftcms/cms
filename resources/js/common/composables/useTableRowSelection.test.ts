@@ -3,9 +3,9 @@ import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
 import {
-  useElementIndexSelection,
-  type ElementIndexSelectionOptions,
-} from './useElementIndexSelection';
+  useTableRowSelection,
+  type TableRowSelectionOptions,
+} from './useTableRowSelection';
 
 interface TestElement {
   id: number;
@@ -68,14 +68,14 @@ function makeTable(
 }
 
 const opts = (
-  over: Partial<ElementIndexSelectionOptions> = {}
-): ElementIndexSelectionOptions => ({
+  over: Partial<TableRowSelectionOptions> = {}
+): TableRowSelectionOptions => ({
   selectable: true,
   readOnly: false,
   ...over,
 });
 
-describe('useElementIndexSelection', () => {
+describe('useTableRowSelection', () => {
   it('toggles a single row and sets the anchor', () => {
     const selection = makeSelection();
     const rows = [
@@ -84,7 +84,7 @@ describe('useElementIndexSelection', () => {
       makeRow(3, selection),
     ];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     s.selectRow(rowAt(rows, 1), {checked: true});
 
@@ -103,7 +103,7 @@ describe('useElementIndexSelection', () => {
       makeRow(4, selection),
     ];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     s.selectRow(rowAt(rows, 0), {checked: true}); // anchor = 0
     s.selectRow(rowAt(rows, 2), {checked: true, shiftKey: true});
@@ -120,7 +120,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection, true)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     s.selectRow(rowAt(rows, 0), {checked: true}); // already selected → no-op, no anchor
     expect(s.anchorIndex.value).toBe(null);
@@ -130,7 +130,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts({readOnly: true}));
+    const s = useTableRowSelection(table, opts({readOnly: true}));
 
     s.selectRow(rowAt(rows, 0), {checked: true});
     s.onToggleAllSelected(true);
@@ -162,7 +162,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection), makeRow(2, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     // Clicking a plain cell — and even the row itself — is not interactive.
     s.selectRowFromEvent(
@@ -178,7 +178,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     const link = document.createElement('a');
     link.setAttribute('href', '/edit/1');
@@ -195,7 +195,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     // The `craft-checkbox` host is not focusable, but composedPath surfaces the
     // real focusable control from inside its shadow root — so the row defers.
@@ -211,18 +211,18 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts({readOnly: true}));
+    const s = useTableRowSelection(table, opts({readOnly: true}));
 
     s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
 
     expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
-  it('does nothing on a row click when the index is not selectable', () => {
+  it('does nothing on a row click when the table is not selectable', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts({selectable: false}));
+    const s = useTableRowSelection(table, opts({selectable: false}));
 
     s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
 
@@ -233,7 +233,7 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     const row = rowAt(rows, 0);
     row.getCanSelect = () => false;
@@ -251,7 +251,7 @@ describe('useElementIndexSelection', () => {
       makeRow(3, selection),
     ];
     const table = makeTable(rows);
-    const s = useElementIndexSelection(table, opts());
+    const s = useTableRowSelection(table, opts());
 
     s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
     s.selectRowFromEvent(rowAt(rows, 2), clickEvent([], true));

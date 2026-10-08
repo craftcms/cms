@@ -3,7 +3,7 @@
   import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
   import DataTable from '@/common/components/DataTable.vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
-  import {useElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
+  import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {computed, type HTMLAttributes, ref} from 'vue';
@@ -49,7 +49,7 @@
     selectRowFromEvent,
     toggleRow,
     extendSelectionTo,
-  } = useElementIndexSelection(() => props.table, {
+  } = useTableRowSelection(() => props.table, {
     selectable: () => props.selectable,
     readOnly,
   });

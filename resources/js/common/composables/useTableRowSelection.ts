@@ -7,23 +7,23 @@ import {
   useSelectable,
 } from '@/common/composables/useSelectable';
 
-export interface ElementIndexSelectionOptions {
+export interface TableRowSelectionOptions {
   selectable: MaybeRefOrGetter<boolean>;
   readOnly: MaybeRefOrGetter<boolean>;
 }
 
 /**
- * The element index's selection, in the index's own `Row`-shaped terms.
+ * Row selection for a TanStack table, in the table's own `Row`-shaped terms.
  *
  * The anchor/range mechanics live in {@link useSelectable}; this adds the parts
- * that are specific to the index — translating rows to ids, TanStack's
+ * that are specific to tables — translating rows to ids, TanStack's
  * select-all. Selection state stays in the
  * table rather than being mirrored here, so the checkboxes, the row model and
  * this composable can never disagree.
  */
-export function useElementIndexSelection<TData extends Record<string, any>>(
+export function useTableRowSelection<TData extends Record<string, any>>(
   table: MaybeRefOrGetter<Table<CraftTableFeatures, TData>>,
-  options: ElementIndexSelectionOptions
+  options: TableRowSelectionOptions
 ) {
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
@@ -39,7 +39,7 @@ export function useElementIndexSelection<TData extends Record<string, any>>(
     ids: () => rows().map((row) => row.original.id),
     enabled: selectable,
     readOnly,
-    // The index selects through checkboxes, so a plain click adds to the
+    // Tables select through checkboxes, so a plain click adds to the
     // selection rather than collapsing it to the clicked row.
     click: 'toggle',
     canSelect: (id) => rowFor(id)?.getCanSelect() ?? false,
@@ -127,5 +127,6 @@ export function useElementIndexSelection<TData extends Record<string, any>>(
   };
 }
 
-export type ElementIndexSelection<TData extends Record<string, any>> =
-  ReturnType<typeof useElementIndexSelection<TData>>;
+export type TableRowSelection<TData extends Record<string, any>> = ReturnType<
+  typeof useTableRowSelection<TData>
+>;

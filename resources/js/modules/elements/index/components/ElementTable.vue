@@ -9,7 +9,7 @@
   import {t} from '@craftcms/ui';
   import {computed, ref, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
-  import type {ElementIndexSelection} from '@/modules/elements/index/composables/useElementIndexSelection';
+  import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import type {NestedReorderDirection} from '@craftcms/ui';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import {
@@ -26,7 +26,7 @@
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
-      selection: ElementIndexSelection<TData>;
+      selection: TableRowSelection<TData>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
