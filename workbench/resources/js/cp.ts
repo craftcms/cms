@@ -9,4 +9,7 @@ Cp.$inertia.register(
   UiKitchenSink as unknown as InertiaPageComponent
 );
 
-Cp.$inertia.register('workbench/Chips', Chips as unknown as InertiaPageComponent);
+Cp.$inertia.register(
+  'workbench/Chips',
+  Chips as unknown as InertiaPageComponent
+);
