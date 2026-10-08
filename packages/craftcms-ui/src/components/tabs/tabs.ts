@@ -192,7 +192,8 @@ const FIT_TOLERANCE = 1;
  * @csspart panels - The container holding the panels. `hidden` while nothing
  *   is selected, so it takes no space at all.
  *
- * @attr label - The tablist's accessible name. Set it on every strip.
+ * @attr label - The tablist's accessible name. Required: a strip rendered
+ *   without one logs an error.
  *
  * @attr size - The scale of the strip: `small`, `medium` (the default), or
  *   `large`. Sets the strip's font size, which the tabs and the overflow
@@ -243,6 +244,9 @@ export default class CraftTabs extends LionTabs {
    * between (e.g. "Details"). The tablist lives in the shadow root, where an
    * `aria-labelledby` on the host can't reach it, so the name is passed in as
    * text and applied there.
+   *
+   * Required. An attribute can't be enforced, so a strip that renders without
+   * one reports it on the console rather than failing.
    */
   @property() label: string | null = null;
 
@@ -410,6 +414,13 @@ export default class CraftTabs extends LionTabs {
     this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
     this.#resizeObserver.observe(this);
     this.#measureOverflow();
+
+    if (!this.label) {
+      console.error(
+        '<craft-tabs> needs a `label` naming what its tabs switch between.',
+        this
+      );
+    }
   }
 
   override disconnectedCallback() {

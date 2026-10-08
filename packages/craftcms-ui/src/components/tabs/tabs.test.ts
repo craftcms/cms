@@ -24,9 +24,14 @@ import './tabs.js';
 /** Builds a strip of `count` tabs and matching panels. */
 async function createTabs({
   count = 3,
+  label = 'Tabs' as string | null,
   attrs = {} as Record<string, string>,
 } = {}): Promise<CraftTabs> {
   const element = document.createElement('craft-tabs') as CraftTabs;
+
+  if (label !== null) {
+    element.setAttribute('label', label);
+  }
 
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);
@@ -109,8 +114,27 @@ describe('structure', () => {
     expect((menu as HTMLElement).hidden).toBe(true);
   });
 
+  it('reports a strip rendered without a label', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await createTabs({label: null});
+
+    expect(error).toHaveBeenCalledOnce();
+    expect(error.mock.calls[0]![0]).toContain('label');
+    error.mockRestore();
+  });
+
+  it('stays quiet when the strip is labeled', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await createTabs();
+
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
   it('names the tablist from label', async () => {
-    const element = await createTabs({attrs: {label: 'Details'}});
+    const element = await createTabs({label: 'Details'});
     const tablist = shadow(element, '[role="tablist"]')!;
 
     expect(tablist.getAttribute('aria-label')).toBe('Details');
@@ -384,6 +408,8 @@ async function createExternalTabs({
 }> {
   const element = document.createElement('craft-tabs') as CraftTabs;
   const sections: HTMLElement[] = [];
+
+  element.setAttribute('label', 'Tabs');
 
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);

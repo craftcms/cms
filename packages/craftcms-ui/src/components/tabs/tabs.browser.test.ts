@@ -15,6 +15,7 @@ beforeEach(() => {
 async function fixture(hostStyle: string): Promise<HTMLElement> {
   const tabs = document.createElement('craft-tabs');
   tabs.setAttribute('style', hostStyle);
+  tabs.setAttribute('label', 'Tabs');
 
   const tab = document.createElement('craft-tab');
   tab.slot = 'tab';
@@ -53,6 +54,7 @@ async function strip({
   slottedPanels: HTMLElement[];
 }> {
   const element = document.createElement('craft-tabs') as Strip;
+  element.setAttribute('label', 'Tabs');
 
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);

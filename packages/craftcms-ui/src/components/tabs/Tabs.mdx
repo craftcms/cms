@@ -84,7 +84,7 @@ It follows the APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/
 
 Three things stay with you:
 
-- **Name the strip.** Set `label` to what the tabs switch between, such as "Entry settings". The tablist is in the shadow root, so `aria-labelledby` on the host can't reach it.
+- **Name the strip.** `label` is required: set it to what the tabs switch between, such as "Entry settings". A strip without one logs an error, and the PHP `Tabs` component throws. The tablist is in the shadow root, so `aria-labelledby` on the host can't reach it.
 - **Keep labels short.** They sit in a strip, and a long label is what pushes a tab into the overflow menu.
 - **Do not use tabs to hide required form fields.** A validation error in a panel nobody has opened is an error nobody can find.
 

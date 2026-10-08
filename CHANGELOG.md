@@ -1,5 +1,18 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+### Accessibility
+
+- Fixed an accessibility issue where field layout tabs, element details tabs, and image editor tabs weren’t announced with a name for their tab list.
+- Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
+- Fixed an accessibility issue where the selected tab in `<craft-tabs>`, including the element details tabs, wasn’t distinguishable in forced colors mode.
+
+### Extensibility
+
+- Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
+- Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
+
 ## 6.0.0-alpha.20 - 2026-10-07
 
 ### Content Management

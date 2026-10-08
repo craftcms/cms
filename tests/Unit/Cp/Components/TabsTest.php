@@ -11,7 +11,7 @@ use Illuminate\Support\HtmlString;
 use function CraftCms\Cms\ui;
 
 it('renders attributes', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->layout('vertical')
         ->selectedIndex(1)
         ->toHtml();
@@ -21,25 +21,37 @@ it('renders attributes', function () {
         ->and($html)->toContain('selected-index="1"');
 });
 
+it('requires a label', function () {
+    expect(fn () => Tabs::make()->tab('One', 'Panel one')->toHtml())
+        ->toThrow(InvalidArgumentException::class);
+});
+
+it('names the tablist', function () {
+    expect(Tabs::make()->label('Entry settings')->tab('One', 'Panel one')->toHtml())
+        ->toStartWith('<craft-tabs label="Entry settings"')
+        ->and((string) ui('tabs', ['label' => 'Entry settings', 'tabs' => []]))
+        ->toStartWith('<craft-tabs label="Entry settings"');
+});
+
 it('omits unset attributes so the web component defaults apply', function () {
-    $html = Tabs::make()->tab('One', 'Panel one')->toHtml();
+    $html = Tabs::make()->label('Tabs')->tab('One', 'Panel one')->toHtml();
 
     expect($html)->not->toContain('layout=')
         ->and($html)->not->toContain('selected-index=');
 });
 
 it('accepts an enum layout', function () {
-    expect(Tabs::make()->layout(TabsLayout::Vertical)->toHtml())
+    expect(Tabs::make()->label('Tabs')->layout(TabsLayout::Vertical)->toHtml())
         ->toContain('layout="vertical"');
 });
 
 it('rejects an invalid layout string', function () {
-    expect(fn () => Tabs::make()->layout('diagonal')->toHtml())
+    expect(fn () => Tabs::make()->label('Tabs')->layout('diagonal')->toHtml())
         ->toThrow(ValueError::class);
 });
 
 it('emits each tab immediately followed by its panel', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->tab('One', new HtmlString('<p>Panel one</p>'))
         ->tab('Two', new HtmlString('<p>Panel two</p>'))
         ->toHtml();
@@ -55,7 +67,7 @@ it('emits each tab immediately followed by its panel', function () {
 });
 
 it('encodes plain-string panels and labels', function () {
-    $html = Tabs::make()->tab('A & B', '<script>alert(1)</script>')->toHtml();
+    $html = Tabs::make()->label('Tabs')->tab('A & B', '<script>alert(1)</script>')->toHtml();
 
     expect($html)->toContain('A &amp; B')
         ->and($html)->toContain('&lt;script&gt;')
@@ -63,7 +75,7 @@ it('encodes plain-string panels and labels', function () {
 });
 
 it('takes prepared tabs, keeping their own panels', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->tabs([
             Tab::make()->label('One')->panel('Panel one'),
             Tab::make()->label('Two')->panel('Panel two')->disabled(),
@@ -77,7 +89,7 @@ it('takes prepared tabs, keeping their own panels', function () {
 });
 
 it('takes tabs as config arrays', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->tabs([
             ['label' => 'One', 'panel' => 'Panel one'],
             ['label' => 'Two', 'panel' => 'Panel two', 'disabled' => true],
@@ -90,12 +102,12 @@ it('takes tabs as config arrays', function () {
 });
 
 it('rejects tab items that are neither a Tab nor a config array', function () {
-    expect(fn () => Tabs::make()->tabs(['One']))
+    expect(fn () => Tabs::make()->label('Tabs')->tabs(['One']))
         ->toThrow(InvalidArgumentException::class);
 });
 
 it('replaces the tabs when tabs() is called', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->tab('Stale', 'Stale panel')
         ->tabs([['label' => 'Fresh', 'panel' => 'Fresh panel']])
         ->toHtml();
@@ -107,7 +119,7 @@ it('replaces the tabs when tabs() is called', function () {
 it('renders tabs that point at external panels', function () {
     // External-panel mode: the tabs name panels rendered elsewhere, so the
     // component emits no panels of its own.
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->tabs([
             ['label' => 'Content', 'controls' => 'form-tab-1'],
             ['label' => 'Settings', 'controls' => 'form-tab-2'],
@@ -130,6 +142,7 @@ it('keeps a tab in the tab slot', function () {
 
 it('builds from the registry', function () {
     $html = (string) ui('tabs', [
+        'label' => 'Tabs',
         'layout' => 'vertical',
         'tabs' => [
             ['label' => 'One', 'panel' => 'Panel one'],
@@ -142,7 +155,7 @@ it('builds from the registry', function () {
 });
 
 it('renders the size, placement, and collapsible settings', function () {
-    $html = Tabs::make()
+    $html = Tabs::make()->label('Tabs')
         ->size('small')
         ->placement(TabsPlacement::InlineStart)
         ->collapsible()
@@ -155,15 +168,15 @@ it('renders the size, placement, and collapsible settings', function () {
 });
 
 it('validates placement strings against the enum', function () {
-    expect(Tabs::make()->placement('inline-end')->toHtml())
+    expect(Tabs::make()->label('Tabs')->placement('inline-end')->toHtml())
         ->toContain('placement="inline-end"');
 
-    expect(fn () => Tabs::make()->placement('sideways')->toHtml())
+    expect(fn () => Tabs::make()->label('Tabs')->placement('sideways')->toHtml())
         ->toThrow(ValueError::class);
 });
 
 it('omits the new settings when unset, so the web component defaults apply', function () {
-    $html = Tabs::make()->tab('One', 'Panel one')->toHtml();
+    $html = Tabs::make()->label('Tabs')->tab('One', 'Panel one')->toHtml();
 
     expect($html)->not->toContain('size=')
         ->and($html)->not->toContain('placement=')
@@ -172,6 +185,7 @@ it('omits the new settings when unset, so the web component defaults apply', fun
 
 it('builds placement and collapsible from the registry', function () {
     $html = (string) ui('tabs', [
+        'label' => 'Tabs',
         'placement' => 'inline-start',
         'collapsible' => true,
         'size' => 'small',
@@ -186,8 +200,8 @@ it('builds placement and collapsible from the registry', function () {
 });
 
 it('renders equal-width tabs', function () {
-    expect(Tabs::make()->equalWidth()->tab('One', 'Panel one')->toHtml())
+    expect(Tabs::make()->label('Tabs')->equalWidth()->tab('One', 'Panel one')->toHtml())
         ->toContain('equal-width')
-        ->and(Tabs::make()->tab('One', 'Panel one')->toHtml())
+        ->and(Tabs::make()->label('Tabs')->tab('One', 'Panel one')->toHtml())
         ->not->toContain('equal-width');
 });

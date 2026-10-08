@@ -170,7 +170,7 @@ export const Placements: Story = {
 export const RightToLeft: Story = {
   render: () => html`
     <div dir="rtl" style="max-inline-size: 30rem;">
-      <craft-tabs placement="inline-start">
+      <craft-tabs label="مثال" placement="inline-start">
         <craft-tab slot="tab">الأول</craft-tab>
         <div slot="panel"><p>اللوحة الأولى.</p></div>
         <craft-tab slot="tab">الثاني</craft-tab>
