@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.5.1 - 2026-10-08
 
 - Fixed a bug that prevented third party nested element types from being editable. ([#19898](https://github.com/craftcms/cms/issues/19898))
 
