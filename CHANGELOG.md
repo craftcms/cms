@@ -34,6 +34,7 @@
 - Fixed a bug where an editable table that wasn’t visible when the page loaded didn’t initialize until the window was resized.
 - Fixed a bug where environment variable, alias, and template suggestions weren’t sorted alphabetically.
 - Fixed a bug where status indicators for disabled elements were filled in rather than outlined, and custom status colors were shown as gray. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Fixed a bug where admin tables no longer had selectable rows. ([#19893](https://github.com/craftcms/cms/pull/19893))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
