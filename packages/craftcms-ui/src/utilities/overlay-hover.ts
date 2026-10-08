@@ -14,9 +14,23 @@ type HoverInteractionOptions = {
 };
 
 /**
+ * Whether focus arrived the way `:focus-visible` would show it — from the
+ * keyboard, not a pointer press. `focusin` is retargeted out of shadow roots,
+ * so this checks the element that actually took focus.
+ */
+function isFocusVisible(event: Event): boolean {
+  const [target] = event.composedPath();
+
+  return target instanceof Element && target.matches(':focus-visible');
+}
+
+/**
  * Lion's `withHoverInteraction`, with the pending show/hide timer cleared on
  * teardown. Lion leaves it armed, so an overlay torn down mid-hover still calls
  * `show()` on its dead controller once the delay elapses.
+ *
+ * Only keyboard focus holds the overlay open. Clicking the invoker focuses it
+ * too, and that shouldn't keep it showing once the pointer has left.
  */
 export function withHoverInteraction({
   delayIn = 0,
@@ -42,7 +56,9 @@ export function withHoverInteraction({
 
         clearTimeout(delayTimeout);
         isFocused =
-          type === 'focusout' ? false : isFocused || type === 'focusin';
+          type === 'focusout'
+            ? false
+            : isFocused || (type === 'focusin' && isFocusVisible(event));
         isHovered =
           type === 'mouseleave' ? false : isHovered || type === 'mouseenter';
 
