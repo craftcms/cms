@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -239,6 +240,48 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
     expect($children->pluck('label'))->toContain('General')
         ->and($children->every(fn ($item) => ! $item->group))->toBeTrue()
         ->and($children->every(fn ($item) => $item->href !== null))->toBeTrue();
+});
+
+it('lists ungrouped plugin nav items before grouped ones', function () {
+    $plugin = function (string $handle, NavItem $navItem): Plugin {
+        $plugin = new class(app()) extends Plugin
+        {
+            public ?NavItem $navItem = null;
+
+            public function getCpNavItem(): NavItem
+            {
+                return $this->navItem;
+            }
+        };
+        $plugin->handle = $handle;
+        $plugin->hasCpSection = true;
+        $plugin->navItem = $navItem;
+
+        return $plugin;
+    };
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => [
+            $plugin('shop', new NavItem()->label('Shop')->group(true)->subnav([
+                new NavItem()->label('Orders')->href('shop/orders'),
+            ])),
+            $plugin('bookings', new NavItem()->label('Bookings')->href('bookings')),
+            $plugin('newsletter', new NavItem(['label' => 'Newsletter', 'url' => 'newsletter'])),
+        ]]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        cpSettings(),
+    );
+
+    $labels = collect($navigation->getTree())->pluck('label')->all();
+
+    expect(array_values(array_intersect($labels, ['Shop', 'Bookings', 'Newsletter'])))
+        ->toBe(['Bookings', 'Newsletter', 'Shop']);
 });
 
 it('hangs an element type\'s sources off its nav item, grouped by heading', function () {
