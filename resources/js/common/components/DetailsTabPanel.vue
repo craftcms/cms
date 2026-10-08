@@ -10,6 +10,8 @@
   defineProps<{
     tab: DetailsTab;
     componentProps: Record<string, unknown>;
+    /** The heading's id, which names the panel and takes focus when it opens. */
+    headingId: string;
   }>();
   const emit = defineEmits<{
     (event: 'close'): void;
@@ -21,7 +23,7 @@
     class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
   >
     <div class="flex items-center gap-1">
-      <h3 class="text-md/4">{{ tab.label }}</h3>
+      <h3 :id="headingId" class="text-md/4" tabindex="-1">{{ tab.label }}</h3>
     </div>
 
     <div class="flex items-center gap-1">

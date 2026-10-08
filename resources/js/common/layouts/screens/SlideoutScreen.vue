@@ -158,7 +158,7 @@
     ScreenDetailsOverlayKey,
     useDetailsOverlay(() => detailsEl.value, detailsWidth)
   );
-  // A slideout keeps its details tab strip beside its panels, even when it
+  // A slideout keeps its details rail beside its panels, even when it
   // opens over a page that has a rail of its own.
   provide(ScreenDetailsRailKey, null);
 
@@ -648,23 +648,23 @@
     align-self: stretch;
 
     /* Overlaid by default, a panel being narrower than the threshold more often
-       than not. Only the tab panels lift out; the strip stays in the flow as
-       the rail. The width itself is in the query below. */
+       than not. Only the panels lift out; the rail stays in the flow. The width
+       itself is in the query below. */
     --cp-details-overlay: 1;
 
     /* The panels anchor to this, above the scrim so the rail stays lit. */
     position: relative;
     z-index: var(--c-layer-sticky);
 
-    &:has(craft-tabs[collapsed]) {
+    &:has(.details-tabs__rail[data-open='false']) {
       border-inline-start-color: transparent;
     }
   }
 
   /* The panels, and only the panels, sit over the content. Flat rather than
      nested in the rule above, where `:deep()` loses its parent selector and
-     would reach every craft-tabs in the shell. */
-  .slideout-screen__details :deep(craft-tabs::part(panels)) {
+     would reach every panel container in the shell. */
+  .slideout-screen__details :deep(.details-tabs__panels) {
     position: absolute;
     inset-block: 0;
     /* The rail's leading edge: at 0 it would open on top of the rail. */
@@ -690,7 +690,7 @@
     }
 
     /* Room of its own, so the panels stay in the flow. */
-    .slideout-screen__details :deep(craft-tabs::part(panels)) {
+    .slideout-screen__details :deep(.details-tabs__panels) {
       position: static;
       inline-size: calc(350rem / 16);
       min-inline-size: 0;

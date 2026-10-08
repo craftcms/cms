@@ -4,6 +4,7 @@
 
 ### Accessibility
 
+- Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
 - Fixed an accessibility issue where field layout tabs, element details tabs, and image editor tabs weren’t announced with a name for their tab list.
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, including the element details tabs, wasn’t distinguishable in forced colors mode.

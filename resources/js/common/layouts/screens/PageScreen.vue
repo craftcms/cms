@@ -189,7 +189,7 @@
   const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
 
-  // Lets content decide when it's cramped — the element details tabs fold away
+  // Lets content decide when it's cramped — the element details panels fold away
   // below a certain width.
   provide(ScreenContentWidthKey, contentLayoutWidth);
   const detailsOverlaid = useDetailsOverlay(
@@ -197,7 +197,7 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
-  // The details tab strip renders in the rail beside the panel.
+  // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
   const detailsResizer = useDetailsResizer({
@@ -512,7 +512,7 @@ Page
   }
 
   /**
-Body: the inset panel holding `page-main`, and the details tab rail beside it
+Body: the inset panel holding `page-main`, and the details rail beside it
  */
   .cp-body {
     height: 100%;
@@ -531,7 +531,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
     overflow: clip;
   }
 
-  /* The tab rail stands in for the trailing inset. */
+  /* The details rail stands in for the trailing inset. */
   .cp-body--details .cp-body__panel {
     margin-inline-end: 0;
   }
@@ -552,7 +552,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
 Content: the secondary nav, content, and details panes
  */
   .cp-content {
-    /* Sizes the details pane's `cqi` caps to the panel, not the tab rail beside it. */
+    /* Sizes the details pane's `cqi` caps to the panel, not the details rail beside it. */
     container: cp-content / inline-size;
     height: 100%;
     max-width: 100vw;
@@ -599,7 +599,7 @@ Content: the secondary nav, content, and details panes
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-body:has(.cp-details-rail craft-tabs[collapsed]) .cp-content--details {
+  .cp-body:has(.cp-details-rail [data-open='false']) .cp-content--details {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
     --cp-content-details-width: 0px !important;
@@ -668,7 +668,7 @@ Folds
  * Below the sum of the content's floor (600px, `.cp-content-view`) and the
  * panel's (280px) one of them would be squeezed past it, so the panel folds to
  * its rail and opens over the content instead. The panel can't query its own
- * width, so these query the shell: the sum plus the 50px tab rail and the
+ * width, so these query the shell: the sum plus the 50px details rail and the
  * panel's two border pixels. A query condition can't read a custom property,
  * so the sum is written out; keep it in step with the floors and with the
  * wider fold below.
@@ -686,7 +686,7 @@ Folds
       box-shadow: none;
     }
 
-    /* The border still divides the panel from the tab rail. */
+    /* The border still divides the panel from the details rail. */
     .cp-body--details .cp-body__panel {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }

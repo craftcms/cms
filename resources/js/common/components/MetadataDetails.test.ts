@@ -1,5 +1,7 @@
 import {createApp, defineComponent, h, nextTick, type App} from 'vue';
-import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {setIconResolver} from '@craftcms/ui/utilities/icons';
+import {nothing} from 'lit';
+import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
 import MetadataDetails from './MetadataDetails.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -20,6 +22,8 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   }),
 }));
 
+beforeAll(() => setIconResolver(() => nothing));
+
 let app: App | undefined;
 let container: HTMLElement | undefined;
 
@@ -39,7 +43,9 @@ it('shows the metadata in an Info tab', async () => {
   mount('<dl>ID 1</dl>');
   await nextTick();
 
-  expect(container!.querySelector('craft-tab')?.id).toBe('details-tab-info');
+  expect(container!.querySelector('craft-disclosure > button')?.id).toBe(
+    'details-tab-info'
+  );
   expect(container!.querySelector('.details-html')?.textContent).toBe(
     '<dl>ID 1</dl>'
   );
@@ -49,5 +55,5 @@ it('renders nothing without metadata', async () => {
   mount(null);
   await nextTick();
 
-  expect(container!.querySelector('craft-tabs')).toBeNull();
+  expect(container!.querySelector('craft-disclosure')).toBeNull();
 });

@@ -1,4 +1,6 @@
-import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {setIconResolver} from '@craftcms/ui/utilities/icons';
+import {nothing} from 'lit';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vite-plus/test';
 import {
   createApp,
   defineComponent,
@@ -22,6 +24,8 @@ vi.mock('./RevisionsList.vue', () => ({default: {render: () => null}}));
 
 let app: App | undefined;
 let container: HTMLElement | undefined;
+
+beforeAll(() => setIconResolver(() => nothing));
 const submitAction = vi.fn();
 
 function payload(): ElementEditPayload {
@@ -75,19 +79,39 @@ function payload(): ElementEditPayload {
   };
 }
 
+function triggers(): HTMLButtonElement[] {
+  return [
+    ...container!.querySelectorAll<HTMLButtonElement>(
+      'craft-disclosure > button'
+    ),
+  ];
+}
+
 function tabIds(): string[] {
-  return [...container!.querySelectorAll('craft-tab')].map((tab) => tab.id);
+  return triggers().map((trigger) => trigger.id);
 }
 
-function tabs(): HTMLElement & {selectedIndex: number} {
-  return container!.querySelector('craft-tabs') as HTMLElement & {
-    selectedIndex: number;
-  };
+function openIndex(): number {
+  return triggers().findIndex(
+    (trigger) => trigger.getAttribute('aria-expanded') === 'true'
+  );
 }
 
-function select(index: number): void {
-  tabs().selectedIndex = index;
-  tabs().dispatchEvent(new CustomEvent('craft-tab-show'));
+async function settle(): Promise<void> {
+  await Promise.resolve();
+  await nextTick();
+  await nextTick();
+}
+
+/** Opens a panel from its trigger, leaving an already-open one alone. */
+async function select(index: number): Promise<void> {
+  const trigger = triggers()[index]!;
+
+  if (trigger.getAttribute('aria-expanded') !== 'true') {
+    trigger.click();
+  }
+
+  await settle();
 }
 
 function mountWithOverlay(overlaid?: Ref<boolean>): void {
@@ -196,7 +220,7 @@ describe('ElementDetailsTabs', () => {
       'element-details-tab-revisions',
     ]);
 
-    select(1);
+    await select(1);
     expect(window.location.hash).toBe('');
 
     elementDetailsTabRegistry.register({
@@ -231,7 +255,7 @@ describe('ElementDetailsTabs', () => {
     });
     await nextTick();
 
-    select(3);
+    await select(3);
     await nextTick();
 
     elementDetailsTabRegistry.register({
@@ -261,9 +285,9 @@ describe('ElementDetailsTabs', () => {
       'element-details-tab-revisions',
       'element-details-tab-plugin:final',
     ]);
-    expect(tabs().selectedIndex).toBe(4);
+    expect(openIndex()).toBe(4);
 
-    select(1);
+    await select(1);
     await nextTick();
 
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
@@ -273,7 +297,7 @@ describe('ElementDetailsTabs', () => {
       '1:true'
     );
 
-    select(2);
+    await select(2);
     conditionalVisible.value = false;
     await nextTick();
     await nextTick();
@@ -285,12 +309,12 @@ describe('ElementDetailsTabs', () => {
       'element-details-tab-revisions',
       'element-details-tab-plugin:final',
     ]);
-    expect(tabs().selectedIndex).toBe(0);
+    expect(openIndex()).toBe(0);
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
       '1:false:function'
     );
 
-    select(4);
+    await select(4);
     finalVisible.value = false;
     await nextTick();
     await nextTick();
@@ -301,11 +325,11 @@ describe('ElementDetailsTabs', () => {
       'element-details-tab-plugin:before-revisions',
       'element-details-tab-revisions',
     ]);
-    expect(tabs().selectedIndex).toBe(0);
+    expect(openIndex()).toBe(0);
 
     overlaid.value = true;
     await nextTick();
-    expect(tabs().selectedIndex).toBe(-1);
+    expect(openIndex()).toBe(-1);
   });
 
   it('persists the selected full-page tab in the URL', async () => {
@@ -335,16 +359,16 @@ describe('ElementDetailsTabs', () => {
     const workflowIndex = tabIds().indexOf('element-details-tab-workflow');
     const revisionsIndex = tabIds().indexOf('element-details-tab-revisions');
 
-    expect(tabs().selectedIndex).toBe(workflowIndex);
+    expect(openIndex()).toBe(workflowIndex);
 
-    select(revisionsIndex);
+    await select(revisionsIndex);
     expect(window.location.hash).toBe('#revisions');
 
     window.location.hash = 'workflow';
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     await nextTick();
     await nextTick();
-    expect(tabs().selectedIndex).toBe(workflowIndex);
+    expect(openIndex()).toBe(workflowIndex);
   });
 
   it('allows its host to select a visible tab', async () => {
@@ -380,7 +404,7 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabs().selectedIndex).toBe(
+    expect(openIndex()).toBe(
       tabIds().indexOf('element-details-tab-host-selectable')
     );
     expect(window.location.hash).toBe('#host-selectable');
@@ -392,17 +416,17 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabs().selectedIndex).toBe(0);
+    expect(openIndex()).toBe(0);
 
     overlaid.value = true;
     await nextTick();
 
-    expect(tabs().selectedIndex).toBe(-1);
+    expect(openIndex()).toBe(-1);
 
     overlaid.value = false;
     await nextTick();
 
-    expect(tabs().selectedIndex).toBe(0);
+    expect(openIndex()).toBe(0);
   });
 
   it('stays open in a shell that never overlays', async () => {
@@ -410,6 +434,6 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabs().selectedIndex).toBe(0);
+    expect(openIndex()).toBe(0);
   });
 });
