@@ -3,28 +3,28 @@
   import {toUriFormat} from '@craftcms/ui';
   import {ref} from 'vue';
   import type {
-    FormChange,
-    FormChangeKind,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {isRecord, pathsMatch} from '@/modules/forms/runtime';
-  import FormPage from '@/pages/Form.vue';
+    UiChange,
+    UiChangeKind,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {isRecord, pathsMatch} from '@/modules/ui/runtime';
+  import UiPage from '@/pages/Ui.vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
     brandNew: boolean;
   }>();
 
-  const formPage = ref<{
-    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+  const uiPage = ref<{
+    setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
   }>();
 
   // A refresh never overwrites values the user can edit, so deriving the site
   // URIs from the name has to happen here.
-  function onChange(change: FormChange, values: FormPayload['values']): void {
+  function onChange(change: UiChange, values: UiPayload['values']): void {
     if (
       !props.brandNew ||
       !pathsMatch(change.path, ['name']) ||
@@ -51,14 +51,14 @@
       })
     );
 
-    formPage.value?.setValue(['sites'], generated, change.kind);
+    uiPage.value?.setValue(['sites'], generated, change.kind);
   }
 </script>
 
 <template>
-  <FormPage
-    ref="formPage"
-    :form="form"
+  <UiPage
+    ref="uiPage"
+    :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl ?? undefined"
     @change="onChange"

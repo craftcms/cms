@@ -112,6 +112,7 @@ readonly class ElementHtml
             'icon' => $icon,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
+            'select-label' => $config['selectable'] ? t('Select {label}', ['label' => $component->getUiLabel()]) : null,
             'appearance' => $config['appearance'] ?? null,
             'data' => array_filter([
                 'type' => $component::class,
@@ -150,12 +151,6 @@ readonly class ElementHtml
 
         if ($icon !== null) {
             $html .= Icon::make()->name($icon)->slot('icon');
-        }
-
-        if ($config['selectable']) {
-            $html .= Html::beginTag('div', ['slot' => 'prefix']);
-            $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
-            $html .= Html::endTag('div');
         }
 
         if (isset($config['labelHtml'])) {

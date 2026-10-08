@@ -17,8 +17,6 @@ use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
@@ -36,6 +34,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -246,7 +246,7 @@ class EditElementController
                     $canSave,
                     $response,
                     $containerId,
-                    fn (?string $form) => $this->editorContent($element, $canSave, $form),
+                    fn (?string $uiHtml) => $this->editorContent($element, $canSave, $uiHtml),
                     fn () => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn () => [
                         'additionalSites' => $addlEditableSites,
@@ -692,7 +692,7 @@ class EditElementController
             $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
                 $fieldLayout,
                 $element,
-                new FormContext(
+                new UiContext(
                     namespace: InputNamespace::get() ?? [],
                     errors: $element->errors()->getMessages(),
                     mode: $canSave ? ControlMode::Editable : ControlMode::ReadOnly,
@@ -701,13 +701,13 @@ class EditElementController
             ));
         }
 
-        $formContent = match (true) {
+        $uiContent = match (true) {
             $payload === null => null,
-            default => Html::tag('craft-entry-field-layout-form', '', [
+            default => Html::tag('craft-entry-field-layout-ui', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
         };
-        $contentHtml = $contentFn($formContent);
+        $contentHtml = $contentFn($uiContent);
         $sidebarHtml = $sidebarFn();
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->acceptsJson()) {
@@ -777,9 +777,9 @@ JS, [
         $element->prepareEditScreen($response, $containerId);
     }
 
-    private function editorContent(ElementInterface $element, bool $canSave, ?string $form): string
+    private function editorContent(ElementInterface $element, bool $canSave, ?string $uiHtml): string
     {
-        event($event = new ElementEditorContentResolving($element, $form ?? '', ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $uiHtml ?? '', ! $canSave));
 
         return trim($event->html);
     }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -703,6 +704,66 @@ abstract class ContentIndexViewModel extends ViewModel
         return $source['key'] === '*'
             ? $indexUrl
             : Url::urlWithParams($indexUrl, ['source' => (string) $source['key']]);
+    }
+
+    /**
+     * The index's sources as navigation entries, headings and all.
+     *
+     * The control panel puts an index's sources in the secondary nav, which a
+     * screen fills from its `subnav` prop. A heading becomes a group over the
+     * sources that follow it, the same way the sidebar drew it.
+     *
+     * @return list<NavItem>
+     */
+    public function sourceNavItems(): array
+    {
+        if ($this->indexUrl() === null) {
+            return [];
+        }
+
+        [$sourceKey] = $this->sourceState();
+        $items = [];
+        $group = null;
+
+        foreach ($this->sources() as $source) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
+                $items[] = new NavItem()
+                    ->label($source['heading'] ?? '')
+                    ->group(true)
+                    ->subnav([]);
+                $group = array_key_last($items);
+
+                continue;
+            }
+
+            $key = $source['key'] ?? null;
+            $url = $key !== null ? $this->sourceUrl($source) : null;
+
+            if ($url === null) {
+                continue;
+            }
+
+            $item = new NavItem()
+                ->label($source['label'] ?? $key)
+                ->href($url)
+                ->selected($key === $sourceKey)
+                ->status($source['status'] ?? null)
+                ->badgeCount((int) ($source['badgeCount'] ?? 0));
+
+            if ($group === null) {
+                $items[] = $item;
+
+                continue;
+            }
+
+            $items[$group]->add($item);
+        }
+
+        /** A heading that collected nothing has nothing to head. */
+        return array_values(array_filter(
+            $items,
+            fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
+        ));
     }
 
     /**

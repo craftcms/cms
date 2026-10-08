@@ -25,14 +25,6 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
@@ -41,6 +33,14 @@ use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -187,16 +187,16 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
-            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+        return Ui::make([
+            UiField::make(t('Min {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
-            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+            UiField::make(t('Max {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
-            FormField::make(t('View Mode'))
+            UiField::make(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
@@ -280,6 +280,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             return false;
         }
 
+        // addresses don't support drafts, so make sure they can edit the canonical owner too
+        $canonicalOwner = $owner->getCanonical(true);
+        if ($canonicalOwner !== $owner && ! $user->can('save', $canonicalOwner)) {
+            return false;
+        }
+
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
         if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
@@ -348,14 +354,14 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $owner = $context->element;
         $static = $context->mode !== ControlMode::Editable
-            || $context->form->mode !== ControlMode::Editable
+            || $context->ui->mode !== ControlMode::Editable
             || ($owner?->getIsRevision() ?? false);
 
-        return $this->addressManager()->formControl(
+        return $this->addressManager()->uiControl(
             $context->path,
             $owner,
             $this->viewMode === self::VIEW_MODE_INDEX ? self::VIEW_MODE_INDEX : 'cards-grid',
@@ -546,7 +552,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->enabled = (bool) $addressData['enabled'];
             }
 
-            // The Address form control nests the address format fields under an `address` key
+            // The Address UI control nests the address format fields under an `address` key
             if (isset($addressData['address']) && is_array($addressData['address'])) {
                 $addressData += $addressData['address'];
             }

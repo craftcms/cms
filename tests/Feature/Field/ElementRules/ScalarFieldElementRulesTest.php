@@ -66,7 +66,7 @@ test('JSON request values preserve user data and reject malformed input', functi
 
     $entry->setFieldValueFromRequest('jsonField', $raw);
     $value = $entry->getFieldValue('jsonField');
-    $control = $field->formControl(new FieldContext('jsonField', value: $value, element: $entry));
+    $control = $field->uiControl(new FieldContext('jsonField', value: $value, element: $entry));
 
     if ($valid) {
         expect(json_decode($control->getValue(), true, flags: JSON_THROW_ON_ERROR))

@@ -126,10 +126,12 @@ export default css`
    * heads. The flyout's label takes its spacing from the flyout grid.
    */
   :host([group]) {
+    border-radius: 0;
     margin-block-start: var(--c-spacing-sm);
   }
 
   :host([group]) .nav-item {
+    border-radius: 0;
     padding-block: var(--_padding-block) var(--c-spacing-xs);
     min-block-size: 0;
   }

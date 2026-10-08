@@ -1,0 +1,198 @@
+/**
+Legacy compat styles
+ */
+@scope (.cp-legacy-screen) {
+  .skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .field {
+    margin-block: var(--c-spacing-lg);
+  }
+
+  table.data {
+    width: 100%;
+  }
+
+  /* Tables — `_elements/revisions.twig` and any other legacy `table.data`.
+     Ported from the legacy stylesheet onto current tokens, because the vars it
+     used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here. */
+
+  /* The legacy rule also carried negative margins to bleed the table out of a
+     pane's padding. There's no such pane in this shell — `CpContainer` owns the
+     gutters — so only the scroll behavior comes across. */
+  .tablepane {
+    overflow-x: auto;
+  }
+
+  table.data td,
+  table.data th {
+    box-sizing: border-box;
+    padding-inline: var(--c-spacing-md);
+    position: relative;
+  }
+
+  table.data th {
+    font-weight: 700;
+  }
+
+  table.data thead td,
+  table.data thead th {
+    background-color: var(--c-color-neutral-fill-quiet);
+    cursor: default;
+    padding-block: var(--c-spacing-sm);
+    vertical-align: middle;
+    white-space: nowrap;
+    width: auto;
+  }
+
+  table.data thead:first-child tr:first-child th:first-child {
+    border-start-start-radius: var(--c-radius-sm);
+  }
+
+  table.data thead:first-child tr:first-child th:last-child {
+    border-start-end-radius: var(--c-radius-sm);
+  }
+
+  table.data tbody td,
+  table.data tbody th {
+    max-width: 33vw;
+    padding-block: var(--c-spacing-sm);
+  }
+
+  table.data tbody tr:not(.disabled):hover td,
+  table.data tbody tr:not(.disabled):hover th {
+    background-color: var(--c-color-neutral-fill-quiet);
+  }
+
+  /* Revision rows are focusable (`tabindex="0"`), so a focused row has to sit
+     above its neighbours' borders. */
+  table.data tbody tr:not(.disabled):focus {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Transparent on purpose, as in the legacy sheet: it reserves the row's
+     border box so selecting a row can colour it without shifting the layout. */
+  table.data thead + tbody tr td,
+  table.data thead + tbody tr th,
+  table.data tr + tr td,
+  table.data tr + tr th {
+    border-block-start: 1px solid transparent;
+  }
+
+  /* Narrow viewports: legacy JS adds `.collapsed`, and each cell's `data-title`
+     becomes its inline label. */
+  table.collapsed tbody [data-title] {
+    margin-inline-end: 0;
+  }
+
+  table.collapsed tbody [data-title]::before {
+    content: attr(data-title) ': ';
+    font-weight: 700;
+    margin-inline-end: 5px;
+  }
+
+  /* Empty state — "This entry doesn't have revisions." */
+  .zilch {
+    color: var(--c-text-quiet);
+    font-size: 20px;
+    line-height: 24px;
+    padding-block: 100px;
+    padding-inline: 0;
+    text-align: center;
+  }
+
+  .cp-details {
+    padding: var(--c-spacing-md);
+  }
+
+  .slideout-screen__details {
+    padding: var(--c-spacing-md);
+  }
+
+  /* Draft notice — the provisional-draft banner the legacy element editor puts
+     in `#content-notice`, with its icon and "Discard changes" button. Ported
+     onto current tokens: the legacy rule's blues (`--blue-600`/`--blue-800`,
+     plus `color.adjust()` on the SCSS `$blue*` variables) map to the accent
+     group, which also means the notice follows dark mode rather than staying
+     light-on-light. */
+
+  /* The legacy rule also styled `.so-notice > .draft-notice`, bleeding the
+     notice out of a slideout's padding with negative margins and a gradient.
+     Slideouts don't render through this shell, so that branch isn't carried
+     over. */
+  .draft-notice {
+    display: flex;
+    align-items: center;
+    place-content: stretch center;
+    gap: var(--c-spacing-md);
+    color: var(--c-color-accent-on-quiet);
+  }
+
+  #content-notice .draft-notice {
+    display: inline-flex;
+    justify-content: flex-start;
+  }
+
+  .draft-notice p {
+    flex: 1;
+    margin: 0;
+  }
+
+  .draft-notice .draft-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    border: 2px solid var(--c-color-accent-border-quiet);
+    box-sizing: border-box;
+    /* Lifts the icon off whatever sits behind the notice. */
+    box-shadow: 0 1px 1px 1px var(--c-surface-default);
+  }
+
+  /* The glyph itself comes from the icon font, so it needs the colour forced
+     past the font's own rule — as in the legacy stylesheet. */
+  .draft-notice .draft-icon::before {
+    position: relative;
+    inset-inline-start: 1px;
+    color: var(--c-color-accent-on-quiet) !important;
+    font-size: 17px;
+  }
+
+  .draft-notice .draft-icon::after {
+    content: '';
+    font-size: 0;
+    position: absolute;
+    inset: -2px;
+    border-radius: 100%;
+    box-shadow: inset 0 2px 0 var(--c-color-accent-border-quiet);
+  }
+
+  .draft-notice .discard-changes-btn {
+    margin-inline-start: var(--c-spacing-sm);
+    background-color: transparent !important;
+    color: var(--c-color-accent-on-quiet) !important;
+    border: 2px solid var(--c-color-accent-border-normal) !important;
+  }
+
+  /* The legacy rule darkened the border in two steps, hover then active. The
+     accent group has one step past `normal`, so both share it. */
+  .draft-notice .discard-changes-btn:hover,
+  .draft-notice .discard-changes-btn:focus,
+  .draft-notice .discard-changes-btn:active {
+    border-color: var(--c-color-accent-border-loud);
+  }
+}

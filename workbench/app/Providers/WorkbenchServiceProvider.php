@@ -16,7 +16,7 @@ use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Workbench\App\Forms\FormKitchenSink;
+use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
 use Workbench\App\Workflow\AutomaticApprovalStage;
@@ -27,15 +27,21 @@ class WorkbenchServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $composer = Json::decode(file_get_contents(package_path('composer.json')));
+        $composer = Json::decode(
+            file_get_contents(package_path('composer.json')),
+        );
 
-        AliasLoader::getInstance($composer['extra']['laravel']['aliases'] ?? []);
+        AliasLoader::getInstance(
+            $composer['extra']['laravel']['aliases'] ?? [],
+        );
     }
 
     public function boot(): void
     {
         $this->app->booted(
-            fn () => app(WorkflowStageTypes::class)->register(AutomaticApprovalStage::class),
+            fn () => app(WorkflowStageTypes::class)->register(
+                AutomaticApprovalStage::class,
+            ),
         );
 
         if (! $this->app->runningUnitTests()) {
@@ -61,25 +67,29 @@ class WorkbenchServiceProvider extends ServiceProvider
         Event::listen(function (CpNavItemsResolving $event): void {
             $subnav = [];
 
-            foreach (FormKitchenSink::COMPONENTS as $type => $components) {
+            foreach (UiKitchenSink::COMPONENTS as $type => $components) {
                 foreach ($components as $slug => $component) {
                     $label = Str::headline(class_basename($component));
                     $subnav[] = new NavItem()
                         ->label("{$label} ".Str::singular($type))
-                        ->href("workbench/forms/{$type}/{$slug}");
+                        ->href("workbench/ui/{$type}/{$slug}");
                 }
             }
 
             $event->navItems[] = new NavItem()
-                ->label('Kitchen Sink')
-                ->href('workbench/forms')
-                ->icon('flask')
-                ->subnav($subnav);
-
-            $event->navItems[] = new NavItem()
-                ->label('Layout Slots')
-                ->href('workbench/layout-slots')
-                ->icon('table-layout');
+                ->label('Debug')
+                ->group(true)
+                ->subnav([
+                    new NavItem()
+                        ->label('Kitchen Sink')
+                        ->href('workbench/ui')
+                        ->icon('flask')
+                        ->subnav($subnav),
+                    new NavItem()
+                        ->label('Layout Slots')
+                        ->href('workbench/layout-slots')
+                        ->icon('table-layout'),
+                ]);
         });
     }
 }

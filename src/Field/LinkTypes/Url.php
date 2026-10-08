@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Exception;
 use League\Uri\Uri;
 
@@ -75,11 +75,11 @@ class Url extends BaseTextLinkType
     public function settingsNodes(string $prefix): array
     {
         return [
-            FormField::make(t('Allow root-relative URLs'))
+            UiField::make(t('Allow root-relative URLs'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowRootRelativeUrls'))->value($this->allowRootRelativeUrls)),
-            FormField::make(t('Allow anchors'))
+            UiField::make(t('Allow anchors'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowAnchors'))->value($this->allowAnchors)),
-            FormField::make(t('Allow custom URL schemes'))
+            UiField::make(t('Allow custom URL schemes'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowCustomSchemes'))->value($this->allowCustomSchemes)),
         ];
     }

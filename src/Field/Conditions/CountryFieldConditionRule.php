@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
-use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\Node;
 use RuntimeException;
 
 /**

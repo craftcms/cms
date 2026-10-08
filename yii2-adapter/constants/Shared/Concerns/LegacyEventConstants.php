@@ -11,9 +11,9 @@ use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use Illuminate\Support\Facades\Event;
 
 /**

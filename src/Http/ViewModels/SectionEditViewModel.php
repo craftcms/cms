@@ -11,27 +11,27 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\EntryTypeSelect;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\EntryTypeSelect;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Models\Workflow;
 
 use function CraftCms\Cms\t;
@@ -45,14 +45,14 @@ class SectionEditViewModel extends ViewModel
     public function __construct(
         private readonly Section $section,
         private readonly Sites $sites,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         public readonly bool $brandNew,
         private readonly bool $readOnly,
         private readonly bool $headlessMode,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
         $type = $values['type'] instanceof SectionType
@@ -74,7 +74,7 @@ class SectionEditViewModel extends ViewModel
             $typeField->warning(t('Changing this may result in data loss.'));
         }
 
-        $form = Form::make([
+        $ui = Ui::make([
             HiddenField::make('sectionId'),
             Field::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this section will be called in the control panel.'))
@@ -120,12 +120,12 @@ class SectionEditViewModel extends ViewModel
                 $propagation->warning(t('Changing this may result in data loss.'));
             }
 
-            $form->add(Group::make('section-propagation-settings', [$propagation])
+            $ui->add(Group::make('section-propagation-settings', [$propagation])
                 ->dependsOn('type'));
         }
 
         if ($type === SectionType::Structure) {
-            $form->add(Group::make('section-structure-settings', [
+            $ui->add(Group::make('section-structure-settings', [
                 Separator::make('structure-settings-separator'),
                 Field::make(t('Max Levels'), Number::make('maxLevels')->min(1)->max(32767)->size(5))
                     ->instructions(t('The maximum number of levels this section can have.')),
@@ -138,7 +138,7 @@ class SectionEditViewModel extends ViewModel
             ])->dependsOn('type'));
         }
 
-        $form->add(
+        $ui->add(
             Separator::make('preview-targets-separator'),
             Field::make(t('Preview Targets'))
                 ->instructions(t('Locations that should be available for previewing entries in this section.'))
@@ -163,7 +163,7 @@ class SectionEditViewModel extends ViewModel
         );
 
         if (in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
-            $form->add(Group::make('section-author-settings', [
+            $ui->add(Group::make('section-author-settings', [
                 Separator::make('author-settings-separator'),
                 Field::make(t('Min Authors'), Number::make('minAuthors')->min(0)->max(32767)->size(5))
                     ->instructions(t('The minimum number of authors that entries in this section can have.')),
@@ -172,7 +172,7 @@ class SectionEditViewModel extends ViewModel
             ])->dependsOn('type'));
         }
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,
             errors: $this->section->errors()->getMessages(),
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
@@ -193,7 +193,7 @@ class SectionEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([SectionsController::class, 'renderForm']);
+            : action([SectionsController::class, 'renderUi']);
     }
 
     private function isMultiSite(): bool

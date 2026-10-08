@@ -1,22 +1,22 @@
-import type {FormChange, FormPayload} from '@/modules/forms/types';
+import type {UiChange, UiPayload} from '@/modules/ui/types';
 import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
 const state = vi.hoisted<{
-  change?: (change: FormChange, values: FormPayload['values']) => void;
+  change?: (change: UiChange, values: UiPayload['values']) => void;
   setValue: ReturnType<typeof vi.fn>;
 }>(() => ({
   change: undefined,
   setValue: vi.fn(),
 }));
 
-vi.mock('@/pages/Form.vue', async () => {
+vi.mock('@/pages/Ui.vue', async () => {
   const {defineComponent, h} = await import('vue');
 
   return {
     default: defineComponent({
-      props: ['form'],
+      props: ['ui'],
       emits: ['change'],
       setup: (_props, {emit, expose}) => {
         state.change = (change, values) => emit('change', change, values);
@@ -47,7 +47,7 @@ const values = {
     },
   },
 };
-const form: FormPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -101,9 +101,9 @@ it('does not generate site settings for an existing section', async () => {
 
 async function mount(brandNew: boolean): Promise<void> {
   app = createApp(Edit, {
-    form,
+    ui,
     submit: {method: 'post', url: '/sections'},
-    refreshUrl: '/sections/form',
+    refreshUrl: '/sections/ui',
     brandNew,
   });
   app.mount(container);

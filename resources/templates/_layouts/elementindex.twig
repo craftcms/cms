@@ -2,6 +2,25 @@
 
 {% hook 'cp.layouts.elementindex' %}
 
+{# When the control panel shell is collecting this screen rather than letting it
+   draw a document, it can render the real element index instead of the legacy
+   one: this layout knows the element type, and everything else the Vue index
+   needs it asks the element type for. Declaring it here means a screen that is
+   just `{% extends "_layouts/elementindex" %}` gets the new index without its
+   author touching anything.
+
+   `CONTENT_SENTINEL` goes in this layout's own content block. If a child
+   template has replaced that block, the sentinel won't survive and the shell
+   falls back to drawing the legacy markup — a screen that supplies its own
+   content isn't an element index the Vue one can stand in for.
+
+   @see CraftCms\Cms\Http\Responses\BridgedScreen #}
+{% set shimToVueIndex = craft.cp.screenCollecting() %}
+{% set elementIndex = shimToVueIndex ? {
+    elementType: elementType,
+    page: page ?? null,
+} : null %}
+
 {% if showSiteMenu %}
     {% if selectableSites is not defined %}
         {% if siteIds is defined %}
@@ -57,20 +76,30 @@
 
 
 {% block toolbar %}
-    {% include '_elements/toolbar' with {
-        showSiteMenu: false,
-    } %}
+    {# The Vue index renders its own search, filters and view modes, so the
+       legacy toolbar would duplicate them. Leaving this empty also means a
+       child's `{{ parent() }}` contributes nothing but the child's own
+       additions, which is exactly what the shell wants for its toolbar slot. #}
+    {% if not shimToVueIndex %}
+        {% include '_elements/toolbar' with {
+            showSiteMenu: false,
+        } %}
+    {% endif %}
 {% endblock %}
 
 
 {% block content %}
-    <div class="main element-index">
-        <span class="visually-hidden" role="status" data-status-message></span>
-        <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
-        <div id="elements" class="elements busy">
-            <div class="update-spinner spinner spinner-absolute"></div>
+    {% if shimToVueIndex %}
+        {{- craft.cp.elementIndexSentinel()|raw -}}
+    {% else %}
+        <div class="main element-index">
+            <span class="visually-hidden" role="status" data-status-message></span>
+            <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
+            <div id="elements" class="elements busy">
+                <div class="update-spinner spinner spinner-absolute"></div>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}
 
 
@@ -93,4 +122,6 @@
     });
 {% endblock %}
 
-{% js block('initJs') %}
+{% if not shimToVueIndex %}
+    {% js block('initJs') %}
+{% endif %}

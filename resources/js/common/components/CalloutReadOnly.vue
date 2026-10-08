@@ -5,7 +5,7 @@
 <template>
   <craft-callout
     appearance="fill"
-    rounded="start"
+    rounded="none"
     class="border border-b-neutral-border-quiet"
   >
     <craft-icon slot="icon" name="custom-icons/gear-slash"></craft-icon>

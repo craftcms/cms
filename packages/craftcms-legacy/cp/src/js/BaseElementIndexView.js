@@ -72,6 +72,35 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         this.updateInitialViewForSelectedElements($elements);
 
+        // Selectable chips render their own checkbox, which reports being
+        // ticked rather than going through the selection's click handling.
+        this.addListener(
+          this.$elementContainer,
+          'craft-selection-change',
+          (ev) => {
+            const $item = this.elementSelect.$items.filter((i, item) =>
+              item.contains(ev.target)
+            );
+
+            if (!$item.length) {
+              return;
+            }
+
+            const {selected, shiftKey} = ev.originalEvent.detail;
+
+            if (selected && shiftKey) {
+              this.elementSelect.selectRange($item, true);
+            } else if (selected) {
+              this.elementSelect.selectItem($item);
+            } else {
+              this.elementSelect.deselectItem($item);
+            }
+
+            // The selection may have refused the change; show what it kept.
+            ev.target.selected = this.elementSelect.isSelected($item);
+          }
+        );
+
         this._handleEnableElements = (ev) => {
           this.elementSelect.addItems(
             this.filterSelectableElements($(ev.elements))
@@ -183,6 +212,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           this.getElementCheckbox($element).attr({
             'aria-checked': 'true',
           });
+          $element.find('craft-chip[selectable]').prop('selected', true);
 
           // remove other focusable elements from the tab order
           this.disableFocusableElements($element);
@@ -191,6 +221,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         if (!this.canSelectElement($element)) {
           $element.find('.checkbox').remove();
+          $element.find('craft-chip[selectable]').removeAttr('selectable');
         }
       }
     },
@@ -489,6 +520,13 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     onSelectionChange: function () {
+      // Selectable chips show the selection with their own checkbox.
+      for (const item of this.elementSelect?.$items ?? []) {
+        $(item)
+          .find('craft-chip[selectable]')
+          .prop('selected', this.elementSelect.isSelected(item));
+      }
+
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
     },

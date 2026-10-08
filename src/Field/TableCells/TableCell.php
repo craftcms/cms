@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field\TableCells;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Control as FormControl;
-use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Control as UiControl;
+use CraftCms\Cms\Ui\Controls\Text;
 use GraphQL\Type\Definition\Type;
 use InvalidArgumentException;
 
@@ -20,12 +20,12 @@ abstract class TableCell extends Component implements TableCellInterface
 {
     use ConfigurableComponent;
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return $this->createControl($context)->value($this->controlValue($context));
     }
 
-    protected function createControl(TableCellContext $context): FormControl
+    protected function createControl(TableCellContext $context): UiControl
     {
         return Text::make($context->path);
     }

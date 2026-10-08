@@ -54,7 +54,7 @@
       null,
       () => {},
       context.widget.settings,
-      context.widget.settingsForm
+      context.widget.settingsUi
     );
     api.removeListener(api.$settingsBtn, 'click');
     api.showSettings = context.showSettings;

@@ -244,7 +244,7 @@ Inertia requests to `elements/edit` render the shared `elements/Edit` page. Entr
 use the same controller. Every element type has a default `ElementEditViewModel`; types can
 extend it to customize their payload and save parameters.
 
-`useElementEditor()` drives the native Form renderers, drafts, autosave, and saves in both pages
+`useElementEditor()` drives the native UI renderers, drafts, autosave, and saves in both pages
 and slideouts. The slideout provides its own payload and owner context through the same editor.
 With the Yii adapter installed, element HTML events and `prepareEditScreen()` can wrap or replace the native content and sidebar;
 inputs added by those customizations are included in saves, and registered assets load after the
