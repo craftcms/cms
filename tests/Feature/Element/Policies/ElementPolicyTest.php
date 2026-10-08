@@ -191,7 +191,7 @@ it('returns false when nested save is denied by the field', function () {
     expect($result)->toBeFalse();
 });
 
-it('leaves nested save checks for element types without drafts to their own policy', function () {
+it('delegates nested save checks to the field for element types without drafts', function () {
     $user = UserModel::factory()->create();
     $element = new class extends ContentBlock
     {
@@ -212,7 +212,7 @@ it('leaves nested save checks for element types without drafts to their own poli
 
     $result = $this->policy->before($user, 'save', $element);
 
-    expect($result)->toBeNull();
+    expect($result)->toBeFalse();
 });
 
 it('returns null when nested save authorization is unresolved', function () {
