@@ -13,6 +13,7 @@ import '../avatar/avatar.js';
 import '../badge/badge.js';
 import '../info-icon/info-icon.js';
 import '../reorder-button/reorder-button.js';
+import '../truncate/truncate.js';
 import type CraftChip from './chip.js';
 
 /**
@@ -39,8 +40,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<any>;
 
-/** Every `size` value, including unset, for the size stories below. */
+/** Every `size` value, for the size stories below. */
 const chipSizes = [
+  {size: 'auto', label: 'Auto'},
   {size: 'small', label: 'Small'},
   {size: 'medium', label: 'Medium'},
   {size: 'large', label: 'Large'},
@@ -221,15 +223,16 @@ export const Icon: Story = {
 };
 
 /**
- * The four `size` values on a bare chip. Each step is taller than the last:
- * `small` adds block padding, and `medium` applies a minimum height. `large`
- * has no styles of its own, so it renders the same as an unset `size`.
+ * The four `size` values on a bare chip. `small`, the default, is as tall as
+ * a small suffix button so adding one doesn't change its height; `auto` has
+ * the same padding without that minimum. `medium` and `large` add more
+ * padding and a larger thumbnail.
  */
 export const Sizes: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
     <div
-      style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: start"
+      style="display: flex; flex-direction: column; gap: 0.75rem; align-items: start"
     >
       ${chipSizes.map(
         ({size, label}) =>
@@ -240,9 +243,8 @@ export const Sizes: Story = {
 };
 
 /**
- * The same sizes with a thumbnail and a suffix. `medium` sets a minimum height
- * on the chip's regions, so the difference is clearest once there is content
- * that does not already fill them.
+ * The same sizes with a thumbnail and a suffix, where the thumbnail's size
+ * steps up with the chip's.
  */
 export const SizesWithContent: Story = {
   parameters: {controls: {disable: true}},
@@ -351,7 +353,9 @@ export const Colors: Story = {
 export const KitchenSink: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center">
+    <div
+      style="display: flex; flex-direction: column; gap: 1rem; align-items: start"
+    >
       <craft-chip
         selectable
         select-label="Select Homepage"
@@ -429,4 +433,394 @@ export const KitchenSink: Story = {
       </craft-chip>
     </div>
   `,
+};
+
+const stressTestMenu = () => html`
+  <craft-action-menu slot="suffix">
+    <craft-button slot="invoker" label="Actions" size="small" variant="plain">
+      <craft-icon name="ellipsis" label="Actions"></craft-icon>
+    </craft-button>
+    <craft-action-item>Action Item</craft-action-item>
+  </craft-action-menu>
+`;
+
+const stressTestThumb = (seed: string) =>
+  html`<img
+    slot="thumbnail"
+    src="https://picsum.photos/seed/${seed}/120/120"
+    alt=""
+  />`;
+
+const stressTestStatus = (status = 'live') =>
+  html`<craft-status slot="status" status=${status || nothing}></craft-status>`;
+
+/** Each leading part, rendered with and without a suffix. */
+const stressTestLeads = [
+  {name: 'Label only', attrs: {}, content: () => nothing},
+  {
+    name: 'Status',
+    attrs: {showStatus: true},
+    content: () => stressTestStatus(),
+  },
+  {name: 'Icon', attrs: {icon: 'file'}, content: () => nothing},
+  {
+    name: 'Thumbnail',
+    attrs: {showThumb: true},
+    content: () => stressTestThumb('leads'),
+  },
+  {
+    name: 'Avatar',
+    attrs: {showThumb: true},
+    content: () =>
+      html`<craft-avatar slot="thumbnail" label="Ada Lovelace"></craft-avatar>`,
+  },
+  {
+    name: 'Thumbnail and status',
+    attrs: {showThumb: true, showStatus: true},
+    content: () =>
+      html`${stressTestThumb('both')}${stressTestStatus('pending')}`,
+  },
+  {name: 'Selectable', attrs: {selectable: true}, content: () => nothing},
+  {
+    name: 'Selectable with thumbnail',
+    attrs: {selectable: true, showThumb: true},
+    content: () => stressTestThumb('select'),
+  },
+  {
+    name: 'Custom prefix',
+    attrs: {},
+    content: () =>
+      html`<craft-badge
+        fill="info"
+        slot="prefix"
+        style="margin-inline: var(--_chip-spacing)"
+        >Badge</craft-badge
+      >`,
+  },
+];
+
+type StressTestChip = {
+  caption: string;
+  chip: unknown;
+};
+
+/** A chip from the leads above, so every group varies one thing at a time. */
+const stressTestChip = (
+  lead: (typeof stressTestLeads)[number],
+  {
+    label = 'Homepage',
+    suffix = true,
+    size,
+    appearance,
+    variant,
+    selected = false,
+    color,
+  }: {
+    label?: unknown;
+    suffix?: boolean;
+    size?: string;
+    appearance?: string;
+    variant?: string;
+    selected?: boolean;
+    color?: string;
+  } = {}
+) => {
+  const attrs = lead.attrs as {
+    showStatus?: boolean;
+    showThumb?: boolean;
+    icon?: string;
+    selectable?: boolean;
+  };
+
+  return html`<craft-chip
+    ?show-status=${attrs.showStatus}
+    ?show-thumb=${attrs.showThumb}
+    ?selectable=${attrs.selectable}
+    ?selected=${selected}
+    icon=${attrs.icon ?? nothing}
+    size=${size ?? nothing}
+    appearance=${appearance ?? nothing}
+    variant=${variant ?? nothing}
+    data-color=${color ?? nothing}
+    select-label="Select Homepage"
+  >
+    ${lead.content()} ${label} ${suffix ? stressTestMenu() : nothing}
+  </craft-chip>`;
+};
+
+const leadNamed = (name: string) =>
+  stressTestLeads.find((lead) => lead.name === name)!;
+
+const stressTestGroups: {heading: string; chips: StressTestChip[]}[] = [
+  {
+    heading: 'Leading parts',
+    chips: stressTestLeads.flatMap((lead) => [
+      {caption: lead.name, chip: stressTestChip(lead, {suffix: false})},
+      {
+        caption: `${lead.name} + suffix`,
+        chip: stressTestChip(lead),
+      },
+    ]),
+  },
+  {
+    heading: 'Sizes',
+    chips: chipSizes.flatMap(({size, label}) =>
+      ['Status', 'Icon', 'Thumbnail'].map((name) => ({
+        caption: `${label}, ${name.toLowerCase()}`,
+        chip: stressTestChip(leadNamed(name), {size}),
+      }))
+    ),
+  },
+  {
+    heading: 'Appearances',
+    chips: ['solid', 'fill', 'outline-fill', 'outline', 'plain'].flatMap(
+      (appearance) => [
+        {
+          caption: `${appearance}, info`,
+          chip: stressTestChip(leadNamed('Status'), {
+            appearance,
+            variant: 'info',
+          }),
+        },
+        {
+          caption: `${appearance}, default`,
+          chip: stressTestChip(leadNamed('Thumbnail'), {appearance}),
+        },
+      ]
+    ),
+  },
+  {
+    heading: 'Selected',
+    chips: [
+      {
+        caption: 'Default',
+        chip: stressTestChip(leadNamed('Selectable'), {selected: true}),
+      },
+      {
+        caption: 'With thumbnail',
+        chip: stressTestChip(leadNamed('Selectable with thumbnail'), {
+          selected: true,
+        }),
+      },
+      {
+        caption: 'Plain',
+        chip: stressTestChip(leadNamed('Selectable'), {
+          selected: true,
+          appearance: 'plain',
+        }),
+      },
+      {
+        caption: 'Fill, info',
+        chip: stressTestChip(leadNamed('Selectable'), {
+          selected: true,
+          appearance: 'fill',
+          variant: 'info',
+        }),
+      },
+    ],
+  },
+  {
+    heading: 'Statuses',
+    chips: ['live', 'pending', 'expired', 'disabled', 'enabled', ''].map(
+      (status) => ({
+        caption: status || 'Unset',
+        chip: stressTestChip(
+          {
+            name: 'Status',
+            attrs: {showStatus: true},
+            content: () => stressTestStatus(status),
+          },
+          {label: status ? status[0]!.toUpperCase() + status.slice(1) : 'Draft'}
+        ),
+      })
+    ),
+  },
+  {
+    heading: 'Labels',
+    chips: [
+      {
+        caption: 'Link',
+        chip: stressTestChip(leadNamed('Status'), {
+          label: html`<a href="#">Homepage</a>`,
+        }),
+      },
+      {
+        caption: 'Truncated',
+        // craft-truncate truncates against its own width, so it needs the bound.
+        chip: stressTestChip(leadNamed('Thumbnail'), {
+          label: html`<craft-truncate style="max-width: 8rem"
+            >A much longer entry title that will not fit</craft-truncate
+          >`,
+        }),
+      },
+      {
+        caption: 'Badge in the label',
+        chip: stressTestChip(leadNamed('Icon'), {
+          label: html`Homepage <craft-badge fill="amber">Draft</craft-badge>`,
+        }),
+      },
+      {
+        caption: 'Single character',
+        chip: stressTestChip(leadNamed('Status'), {label: 'A'}),
+      },
+    ],
+  },
+  {
+    heading: 'Colors',
+    chips: ['red', 'amber', 'green', 'blue', 'violet', 'gray'].map((color) => ({
+      caption: color,
+      chip: stressTestChip(leadNamed('Status'), {
+        color,
+        label: color[0]!.toUpperCase() + color.slice(1),
+      }),
+    })),
+  },
+];
+
+/**
+ * The chip in as many combinations as fit on one page, for checking spacing
+ * and color across them at a glance. Each group varies one thing — the
+ * leading part, size, appearance, selection, status, label, or color — and
+ * keeps the rest at their defaults.
+ */
+export const StressTest: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: grid; gap: 2rem">
+      ${stressTestGroups.map(
+        ({heading, chips}) => html`
+          <section style="display: grid; gap: 0.75rem">
+            <h3 style="margin: 0">${heading}</h3>
+            <div style="display: grid; gap: 1rem">
+              ${chips.map(
+                ({caption, chip}) => html`
+                  <div
+                    style="display: grid; gap: 0.25rem; justify-items: start"
+                  >
+                    ${chip}
+                    <small style="color: var(--c-text-quiet)">${caption}</small>
+                  </div>
+                `
+              )}
+            </div>
+          </section>
+        `
+      )}
+    </div>
+  `,
+};
+
+/** The parts a chip can have, each switched on or off in `Permutations`. */
+const permutationParts = [
+  'selectable',
+  'prefix',
+  'thumbnail',
+  'icon',
+  'status',
+  'suffix',
+] as const;
+
+type PermutationPart = (typeof permutationParts)[number];
+
+/** A square image inlined so the story renders without network access. */
+const permutationThumb = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="120" height="120" fill="url(#g)"/></svg>'
+)}`;
+
+/** Every combination of parts, each one on or off. */
+const permutationCombos = Array.from(
+  {length: 2 ** permutationParts.length},
+  (_, mask) => permutationParts.filter((_, i) => mask & (2 ** i))
+);
+
+const permutationAppearances = [
+  'solid',
+  'fill',
+  'outline-fill',
+  'outline',
+  'plain',
+] as const;
+
+const permutationChip = (
+  size: string,
+  appearance: string,
+  parts: readonly PermutationPart[]
+) => {
+  const has = (part: PermutationPart) => parts.includes(part);
+  const description = parts.join(', ') || 'label only';
+
+  return html`<craft-chip
+    size="${size}"
+    appearance="${appearance}"
+    ?selectable=${has('selectable')}
+    ?show-thumb=${has('thumbnail')}
+    ?show-status=${has('status')}
+    icon=${has('icon') ? 'file' : nothing}
+    select-label="Select Homepage"
+    title="${description}"
+  >
+    ${has('prefix')
+      ? html`<craft-badge fill="amber" slot="prefix">Badge</craft-badge>`
+      : nothing}
+    ${has('thumbnail')
+      ? html`<img slot="thumbnail" src="${permutationThumb}" alt="" />`
+      : nothing}
+    ${has('status')
+      ? html`<craft-status slot="status" status="live"></craft-status>`
+      : nothing}
+    Homepage
+    ${has('suffix')
+      ? html`<craft-button icon size="small" variant="plain" slot="suffix">
+          <craft-icon name="ellipsis" label="Actions"></craft-icon>
+        </craft-button>`
+      : nothing}
+  </craft-chip>`;
+};
+
+/**
+ * One chip for every combination of size, appearance, and parts — 4 sizes ×
+ * 5 appearances × 64 part combinations, 1,280 chips in all. That many at once
+ * is too heavy for the browser, so it shows one size at a time — 320 chips —
+ * chosen with the `size` control. Hover a chip to see its parts.
+ *
+ * Color, selection, `align-items`, and `full-width` are left out: they would
+ * multiply the count without changing the spacing between parts, and have
+ * stories of their own.
+ */
+export const Permutations: Story = {
+  args: {size: 'small', appearance: 'all'},
+  argTypes: {
+    size: {
+      control: 'select',
+      options: chipSizes.map(({size}) => size),
+    },
+    appearance: {
+      control: 'select',
+      options: ['all', ...permutationAppearances],
+    },
+  },
+  parameters: {controls: {include: ['size', 'appearance']}},
+  render: ({size, appearance}) => {
+    const appearances =
+      appearance === 'all' ? permutationAppearances : [appearance as string];
+
+    return html`
+      <div style="display: grid; gap: 2rem">
+        ${appearances.map(
+          (appearance) => html`
+            <section style="display: grid; gap: 0.75rem">
+              <h3 style="margin: 0">${size}, ${appearance}</h3>
+              <div
+                style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center"
+              >
+                ${permutationCombos.map((parts) =>
+                  permutationChip(size, appearance, parts)
+                )}
+              </div>
+            </section>
+          `
+        )}
+      </div>
+    `;
+  },
 };
