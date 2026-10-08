@@ -398,7 +398,7 @@ it('creates a workflow entry as a draft before offering review', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.dropProvisional', 1)
             ->where('editorActions.primary.params.workflowSave', 1)
@@ -443,7 +443,7 @@ it('offers canonical creation for a disabled workflow entry', function () {
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
             ->where('editorActions.primary.actionUrl', null)
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('workflow.current.canSubmit', false)
             ->etc()
         );
@@ -477,7 +477,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Request review')
-            ->where('editorActions.primary.tabId', 'workflow')
+            ->where('editorActions.primary.panelId', 'workflow')
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.workflowSave', 1)
             ->where('workflow.current.canSubmit', true)
@@ -509,7 +509,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('editorActions.primary.label', 'Save draft')
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.workflowSave', 1)
             ->where('workflow.current.canSubmit', false)

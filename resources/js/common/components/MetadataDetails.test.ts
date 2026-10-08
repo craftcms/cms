@@ -39,12 +39,12 @@ afterEach(() => {
   container?.remove();
 });
 
-it('shows the metadata in an Info tab', async () => {
+it('shows the metadata in an Info panel', async () => {
   mount('<dl>ID 1</dl>');
   await nextTick();
 
   expect(container!.querySelector('craft-disclosure > button')?.id).toBe(
-    'details-tab-info'
+    'details-panel-info'
   );
   expect(container!.querySelector('.details-html')?.textContent).toBe(
     '<dl>ID 1</dl>'

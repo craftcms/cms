@@ -1450,6 +1450,8 @@ describe('FormRenderer', () => {
         ?.shadowRoot?.querySelector('[role="tablist"]')
         ?.getAttribute('aria-label')
     ).toBe('Primary fields');
+    expect(container.querySelector('craft-tabs')?.nextElementSibling).toBe(tab);
+    expect(tab?.nextElementSibling).toBe(seoTab);
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
     expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();

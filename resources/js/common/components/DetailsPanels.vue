@@ -3,7 +3,7 @@
    * The details column: a rail of icon buttons, each disclosing one panel. At
    * most one panel is open, and closing it folds the column to the rail. Panels
    * render either a named slot or a component, so a page can mix its own markup
-   * with registered tabs.
+   * with registered panels.
    *
    * On a full page the rail is teleported away from the panels, so opening a
    * panel from it moves focus to the panel's heading, and Escape or the
@@ -18,9 +18,9 @@
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
-  import DetailsTabPanel from './DetailsTabPanel.vue';
+  import DetailsPanelContent from './DetailsPanelContent.vue';
 
-  export interface DetailsTab {
+  export interface DetailsPanel {
     id: string;
     label: string;
     icon: string;
@@ -32,68 +32,72 @@
     /** Optional controls rendered at the end of the panel header. */
     headerActionsComponent?: Component;
     /** A status shown in the panel header. */
-    statusData?: DetailsTabStatus | null;
+    statusData?: DetailsPanelStatus | null;
   }
 
-  export interface DetailsTabStatus {
+  export interface DetailsPanelStatus {
     label: string;
     indicator: string;
   }
 
   const props = withDefaults(
     defineProps<{
-      tabs: DetailsTab[];
-      /** Props for a component tab, given the tab and the open tab's ID. */
+      panels: DetailsPanel[];
+      /** Props for a component panel, given the panel and the open panel's ID. */
       componentProps?: (
-        tab: DetailsTab,
-        activeTabId: string | null
+        panel: DetailsPanel,
+        activePanelId: string | null
       ) => Record<string, unknown>;
       idPrefix?: string;
-      /** Whether the open tab is mirrored in the URL hash. */
+      /** Whether the open panel is mirrored in the URL hash. */
       syncLocationHash?: boolean;
     }>(),
-    {idPrefix: 'details-tab', syncLocationHash: false}
+    {idPrefix: 'details-panel', syncLocationHash: false}
   );
 
-  const visibleTabs = computed<DetailsTab[]>(() =>
-    [...props.tabs].sort(
-      (firstTab, secondTab) => (firstTab.order ?? 0) - (secondTab.order ?? 0)
+  const visiblePanels = computed<DetailsPanel[]>(() =>
+    [...props.panels].sort(
+      (firstPanel, secondPanel) =>
+        (firstPanel.order ?? 0) - (secondPanel.order ?? 0)
     )
   );
 
   /** Where the rail goes when the shell keeps it apart from the panels. */
   const rail = useScreenDetailsRail();
 
-  function triggerId(tabId: string): string {
-    return `${props.idPrefix}-${tabId}`;
+  function triggerId(panelId: string): string {
+    return `${props.idPrefix}-${panelId}`;
   }
 
-  function panelId(tabId: string): string {
-    return `${triggerId(tabId)}-panel`;
+  function panelElementId(panelId: string): string {
+    return `${triggerId(panelId)}-panel`;
   }
 
-  function headingId(tabId: string): string {
-    return `${panelId(tabId)}-heading`;
+  function headingId(panelId: string): string {
+    return `${panelElementId(panelId)}-heading`;
   }
 
-  function isVisible(tabId: string): boolean {
-    return visibleTabs.value.some((tab) => tab.id === tabId);
+  function isVisible(panelId: string): boolean {
+    return visiblePanels.value.some((panel) => panel.id === panelId);
   }
 
   const initialHash =
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : null;
-  const openTabId = shallowRef<string | null>(
+  const openPanelId = shallowRef<string | null>(
     initialHash && isVisible(initialHash)
       ? initialHash
-      : (visibleTabs.value[0]?.id ?? null)
+      : (visiblePanels.value[0]?.id ?? null)
   );
 
-  // A tab that goes away takes its panel with it; fall back to the first.
-  watch(visibleTabs, (tabs) => {
-    if (openTabId.value && !tabs.some((tab) => tab.id === openTabId.value)) {
-      openTabId.value = tabs[0]?.id ?? null;
+  // An open panel that goes away falls back to the first.
+  watch(visiblePanels, (panels) => {
+    if (
+      openPanelId.value &&
+      !panels.some((panel) => panel.id === openPanelId.value)
+    ) {
+      openPanelId.value = panels[0]?.id ?? null;
     }
   });
 
@@ -109,16 +113,16 @@
     () => overlaid?.value ?? false,
     (isOverlaid) => {
       if (isOverlaid) {
-        if (openTabId.value !== null) {
-          openTabId.value = null;
+        if (openPanelId.value !== null) {
+          openPanelId.value = null;
           closedByShell = true;
         }
 
         return;
       }
 
-      if (closedByShell && openTabId.value === null) {
-        openTabId.value = visibleTabs.value[0]?.id ?? null;
+      if (closedByShell && openPanelId.value === null) {
+        openPanelId.value = visiblePanels.value[0]?.id ?? null;
       }
 
       closedByShell = false;
@@ -131,25 +135,25 @@
     void nextTick(() => document.getElementById(id)?.focus());
   }
 
-  function open(tabId: string, withFocus: boolean): void {
-    openTabId.value = tabId;
+  function open(panelId: string, withFocus: boolean): void {
+    openPanelId.value = panelId;
     closedByShell = false;
     updateLocationHash();
 
     if (withFocus) {
-      focusAfterRender(headingId(tabId));
+      focusAfterRender(headingId(panelId));
     }
   }
 
-  function close(tabId: string, returnFocus: boolean): void {
-    if (openTabId.value !== tabId) {
+  function close(panelId: string, returnFocus: boolean): void {
+    if (openPanelId.value !== panelId) {
       return;
     }
 
-    openTabId.value = null;
+    openPanelId.value = null;
 
     if (returnFocus) {
-      focusAfterRender(triggerId(tabId));
+      focusAfterRender(triggerId(panelId));
     }
   }
 
@@ -158,38 +162,38 @@
    * `craft-disclosure` toggles itself, so the `craft-show` that follows knows a
    * person opened the panel rather than the hash or the shell.
    */
-  let clickedTabId: string | null = null;
+  let clickedPanelId: string | null = null;
 
-  function onShow(tabId: string): void {
-    const withFocus = clickedTabId === tabId;
-    clickedTabId = null;
+  function onShow(panelId: string): void {
+    const withFocus = clickedPanelId === panelId;
+    clickedPanelId = null;
 
     // `craft-disclosure` reopens its target as it disconnects, so a removed
-    // tab announces itself one last time.
-    if (openTabId.value !== tabId && isVisible(tabId)) {
-      open(tabId, withFocus);
+    // panel announces itself one last time.
+    if (openPanelId.value !== panelId && isVisible(panelId)) {
+      open(panelId, withFocus);
     }
   }
 
-  function onPanelKeydown(event: KeyboardEvent, tabId: string): void {
+  function onPanelKeydown(event: KeyboardEvent, panelId: string): void {
     if (event.key !== 'Escape' || event.defaultPrevented) {
       return;
     }
 
     event.stopPropagation();
-    close(tabId, true);
+    close(panelId, true);
   }
 
-  function select(tabId: string): void {
-    if (isVisible(tabId)) {
-      open(tabId, true);
+  function select(panelId: string): void {
+    if (isVisible(panelId)) {
+      open(panelId, true);
     }
   }
 
   function updateLocationHash(): void {
-    if (props.syncLocationHash && openTabId.value) {
+    if (props.syncLocationHash && openPanelId.value) {
       const url = new URL(window.location.href);
-      url.hash = openTabId.value;
+      url.hash = openPanelId.value;
       window.history.replaceState(window.history.state, '', url);
     }
   }
@@ -199,9 +203,9 @@
       return;
     }
 
-    const tabId = window.location.hash.slice(1);
-    if (isVisible(tabId)) {
-      open(tabId, false);
+    const panelId = window.location.hash.slice(1);
+    if (isVisible(panelId)) {
+      open(panelId, false);
     }
   });
 
@@ -209,50 +213,50 @@
 </script>
 
 <template>
-  <div class="details-tabs">
+  <div class="details-panels">
     <!-- Panels come first: each trigger finds its panel by id when it connects. -->
-    <div class="details-tabs__panels" :hidden="openTabId === null">
+    <div class="details-panels__content" :hidden="openPanelId === null">
       <section
-        v-for="tab in visibleTabs"
-        :id="panelId(tab.id)"
-        :key="tab.id"
-        :aria-labelledby="headingId(tab.id)"
-        :hidden="openTabId !== tab.id"
-        @keydown="onPanelKeydown($event, tab.id)"
+        v-for="panel in visiblePanels"
+        :id="panelElementId(panel.id)"
+        :key="panel.id"
+        :aria-labelledby="headingId(panel.id)"
+        :hidden="openPanelId !== panel.id"
+        @keydown="onPanelKeydown($event, panel.id)"
       >
-        <DetailsTabPanel
-          :tab="tab"
-          :heading-id="headingId(tab.id)"
-          :component-props="componentProps?.(tab, openTabId) ?? {}"
-          @close="close(tab.id, true)"
+        <DetailsPanelContent
+          :panel="panel"
+          :heading-id="headingId(panel.id)"
+          :component-props="componentProps?.(panel, openPanelId) ?? {}"
+          @close="close(panel.id, true)"
         >
-          <slot v-if="tab.slot" :name="tab.slot" />
-        </DetailsTabPanel>
+          <slot v-if="panel.slot" :name="panel.slot" />
+        </DetailsPanelContent>
       </section>
     </div>
     <Teleport defer :to="rail ?? 'body'" :disabled="!rail">
       <div
-        class="details-tabs__rail"
-        :class="{'details-tabs__rail--detached': rail}"
+        class="details-panels__rail"
+        :class="{'details-panels__rail--detached': rail}"
         role="group"
         :aria-label="t('Details')"
-        :data-open="String(openTabId !== null)"
+        :data-open="String(openPanelId !== null)"
       >
         <craft-disclosure
-          v-for="tab in visibleTabs"
-          :key="tab.id"
-          :state="openTabId === tab.id ? 'expanded' : 'collapsed'"
-          @click.capture="clickedTabId = tab.id"
-          @craft-show="onShow(tab.id)"
-          @craft-hide="close(tab.id, false)"
+          v-for="panel in visiblePanels"
+          :key="panel.id"
+          :state="openPanelId === panel.id ? 'expanded' : 'collapsed'"
+          @click.capture="clickedPanelId = panel.id"
+          @craft-show="onShow(panel.id)"
+          @craft-hide="close(panel.id, false)"
         >
           <button
-            :id="triggerId(tab.id)"
+            :id="triggerId(panel.id)"
             type="button"
-            class="details-tabs__trigger"
-            :aria-controls="panelId(tab.id)"
+            class="details-panels__trigger"
+            :aria-controls="panelElementId(panel.id)"
           >
-            <craft-icon :name="tab.icon" :label="tab.label" />
+            <craft-icon :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
       </div>
@@ -261,12 +265,12 @@
 </template>
 
 <style scoped>
-  .details-tabs {
+  .details-panels {
     display: flex;
     block-size: 100%;
   }
 
-  .details-tabs__panels {
+  .details-panels__content {
     flex: 1;
     min-inline-size: 0;
     block-size: 100%;
@@ -277,12 +281,12 @@
     }
   }
 
-  .details-tabs__panels[hidden],
-  .details-tabs__panels > section[hidden] {
+  .details-panels__content[hidden],
+  .details-panels__content > section[hidden] {
     display: none;
   }
 
-  .details-tabs__rail {
+  .details-panels__rail {
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-md);
@@ -293,12 +297,12 @@
     background-color: var(--c-surface-sunken);
   }
 
-  .details-tabs__rail--detached {
+  .details-panels__rail--detached {
     border-inline-start: none;
     background-color: transparent;
   }
 
-  .details-tabs__trigger {
+  .details-panels__trigger {
     display: grid;
     inline-size: var(--c-size-touch-target);
     aspect-ratio: 1;
@@ -311,14 +315,14 @@
     cursor: pointer;
   }
 
-  .details-tabs__trigger[aria-expanded='true'] {
+  .details-panels__trigger[aria-expanded='true'] {
     border-color: var(--c-color-accent-border-normal);
     background-color: var(--c-color-accent-fill-quiet);
     color: var(--c-color-accent-on-quiet);
   }
 
   @media (forced-colors: active) {
-    .details-tabs__trigger[aria-expanded='true'] {
+    .details-panels__trigger[aria-expanded='true'] {
       border-color: Highlight;
       background-color: Highlight;
       color: HighlightText;

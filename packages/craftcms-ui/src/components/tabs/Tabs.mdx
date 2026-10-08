@@ -62,19 +62,19 @@ The two are alternatives rather than layers. `equal-width` turns the overflow me
 
 ## External Panels
 
-Some strips cannot slot their panels — a server-rendered field layout puts the tab bar in the page header and the sections inside a pane, so the two halves live in different parts of the document.
+A panel doesn't have to be slotted into the strip. A [Tab](?path=/docs/components-tab--docs) can name its panel by id with `controls`, and the strip wires the two together across the document instead of by position.
 
 <Canvas of={TabsStories.ExternalPanels} sourceState="shown" />
 
-For that case, a [Tab](?path=/docs/components-tab--docs) names its panel by id with `controls`, and the strip wires the two together across the document instead of by position.
+To follow the WAI-ARIA APG tabs pattern, an external panel still has to be next in the DOM: place the panels immediately after `<craft-tabs>`, with no content between them and the tablist. Screen reader users read from the tabs straight into the selected panel, and <kbd>Tab</kbd> moves from the selected tab into it.
+
+If the triggers and the content need to live in different parts of the page, such as buttons in a toolbar and panels in a pane, they aren't tabs. Use a [Disclosure](?path=/docs/components-disclosure--docs) for each one instead.
 
 ## States
 
 <Canvas of={TabsStories.Disabled} sourceState="shown" />
 
 Disabled tabs are skipped by arrow-key navigation, rather than being focusable and inert.
-
-<Canvas of={TabsStories.IconToolbar} sourceState="shown" />
 
 ## Accessibility
 

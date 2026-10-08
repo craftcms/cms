@@ -154,17 +154,15 @@ it('builds from the registry', function () {
         ->and($html)->toContain('<craft-tab slot="tab">One</craft-tab>');
 });
 
-it('renders the size, placement, and collapsible settings', function () {
+it('renders the size and placement settings', function () {
     $html = Tabs::make()->label('Tabs')
         ->size('small')
         ->placement(TabsPlacement::InlineStart)
-        ->collapsible()
         ->tab('One', 'Panel one')
         ->toHtml();
 
     expect($html)->toContain('size="small"')
-        ->and($html)->toContain('placement="inline-start"')
-        ->and($html)->toContain('collapsible');
+        ->and($html)->toContain('placement="inline-start"');
 });
 
 it('validates placement strings against the enum', function () {
@@ -179,15 +177,13 @@ it('omits the new settings when unset, so the web component defaults apply', fun
     $html = Tabs::make()->label('Tabs')->tab('One', 'Panel one')->toHtml();
 
     expect($html)->not->toContain('size=')
-        ->and($html)->not->toContain('placement=')
-        ->and($html)->not->toContain('collapsible');
+        ->and($html)->not->toContain('placement=');
 });
 
-it('builds placement and collapsible from the registry', function () {
+it('builds placement and size from the registry', function () {
     $html = (string) ui('tabs', [
         'label' => 'Tabs',
         'placement' => 'inline-start',
-        'collapsible' => true,
         'size' => 'small',
         'tabs' => [
             ['label' => 'One', 'panel' => 'Panel one'],
@@ -195,7 +191,6 @@ it('builds placement and collapsible from the registry', function () {
     ]);
 
     expect($html)->toContain('placement="inline-start"')
-        ->and($html)->toContain('collapsible')
         ->and($html)->toContain('size="small"');
 });
 

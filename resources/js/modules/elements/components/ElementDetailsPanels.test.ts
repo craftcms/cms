@@ -11,10 +11,10 @@ import {
   type App,
   type Ref,
 } from 'vue';
-import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
 import {ScreenDetailsOverlayKey} from '@/common/composables/screen';
-import ElementDetailsTabs from './ElementDetailsTabs.vue';
+import ElementDetailsPanels from './ElementDetailsPanels.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
 vi.mock('@/modules/activity/components/ActivityTimeline.vue', () => ({
@@ -51,7 +51,7 @@ function payload(): ElementEditPayload {
         actionUrl: null,
         params: {},
         redirect: null,
-        tabId: null,
+        panelId: null,
       },
       menu: [],
       buttons: [],
@@ -87,7 +87,7 @@ function triggers(): HTMLButtonElement[] {
   ];
 }
 
-function tabIds(): string[] {
+function panelIds(): string[] {
   return triggers().map((trigger) => trigger.id);
 }
 
@@ -126,7 +126,7 @@ function mountWithOverlay(overlaid?: Ref<boolean>): void {
 
         return () =>
           h(
-            ElementDetailsTabs,
+            ElementDetailsPanels,
             {
               payload: payload(),
               activityTimelineVersion: 0,
@@ -149,9 +149,9 @@ afterEach(() => {
   window.history.replaceState({}, '', '/');
 });
 
-describe('ElementDetailsTabs', () => {
-  it('merges, filters, and orders registered tabs before and after mounting', async () => {
-    const PluginTab = defineComponent({
+describe('ElementDetailsPanels', () => {
+  it('merges, filters, and orders registered panels before and after mounting', async () => {
+    const PluginPanel = defineComponent({
       props: {
         payload: Object,
         active: Boolean,
@@ -176,16 +176,16 @@ describe('ElementDetailsTabs', () => {
           `${props.payload?.elementId}:${props.active}`
         ),
     });
-    const HiddenTab = defineComponent({render: () => null});
+    const HiddenPanel = defineComponent({render: () => null});
     const overlaid = ref(false);
     const conditionalVisible = ref(true);
     const finalVisible = ref(true);
 
-    elementDetailsTabRegistry.register({
+    elementDetailsPanelRegistry.register({
       id: 'plugin:hidden',
       label: 'Hidden',
       icon: 'puzzle-piece',
-      component: HiddenTab,
+      component: HiddenPanel,
       visible: (element) => element.elementId === null,
     });
 
@@ -198,7 +198,7 @@ describe('ElementDetailsTabs', () => {
 
           return () =>
             h(
-              ElementDetailsTabs,
+              ElementDetailsPanels,
               {
                 payload: payload(),
                 activityTimelineVersion: 0,
@@ -215,19 +215,19 @@ describe('ElementDetailsTabs', () => {
     app.mount(container);
     await nextTick();
 
-    expect(tabIds()).toEqual([
-      'element-details-tab-info',
-      'element-details-tab-revisions',
+    expect(panelIds()).toEqual([
+      'element-details-panel-info',
+      'element-details-panel-revisions',
     ]);
 
     await select(1);
     expect(window.location.hash).toBe('');
 
-    elementDetailsTabRegistry.register({
+    elementDetailsPanelRegistry.register({
       id: 'plugin:details',
       label: 'Plugin details',
       icon: 'puzzle-piece',
-      component: PluginTab,
+      component: PluginPanel,
       headerActionsComponent: PluginTabActions,
       order: 5,
       props: ({payload, active, submitAction}) => ({
@@ -238,17 +238,17 @@ describe('ElementDetailsTabs', () => {
     });
     await nextTick();
 
-    expect(tabIds()).toEqual([
-      'element-details-tab-info',
-      'element-details-tab-plugin:details',
-      'element-details-tab-revisions',
+    expect(panelIds()).toEqual([
+      'element-details-panel-info',
+      'element-details-panel-plugin:details',
+      'element-details-panel-revisions',
     ]);
 
-    elementDetailsTabRegistry.register({
+    elementDetailsPanelRegistry.register({
       id: 'plugin:conditional',
       label: 'Conditional',
       icon: 'puzzle-piece',
-      component: PluginTab,
+      component: PluginPanel,
       order: 6,
       visible: () => conditionalVisible.value,
       props: ({payload, active}) => ({payload, active}),
@@ -258,18 +258,18 @@ describe('ElementDetailsTabs', () => {
     await select(3);
     await nextTick();
 
-    elementDetailsTabRegistry.register({
+    elementDetailsPanelRegistry.register({
       id: 'plugin:before-revisions',
       label: 'Before revisions',
       icon: 'puzzle-piece',
-      component: HiddenTab,
+      component: HiddenPanel,
       order: 15,
     });
-    elementDetailsTabRegistry.register({
+    elementDetailsPanelRegistry.register({
       id: 'plugin:final',
       label: 'Final',
       icon: 'puzzle-piece',
-      component: PluginTab,
+      component: PluginPanel,
       order: 30,
       visible: () => finalVisible.value,
       props: ({payload, active}) => ({payload, active}),
@@ -277,13 +277,13 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabIds()).toEqual([
-      'element-details-tab-info',
-      'element-details-tab-plugin:details',
-      'element-details-tab-plugin:conditional',
-      'element-details-tab-plugin:before-revisions',
-      'element-details-tab-revisions',
-      'element-details-tab-plugin:final',
+    expect(panelIds()).toEqual([
+      'element-details-panel-info',
+      'element-details-panel-plugin:details',
+      'element-details-panel-plugin:conditional',
+      'element-details-panel-plugin:before-revisions',
+      'element-details-panel-revisions',
+      'element-details-panel-plugin:final',
     ]);
     expect(openIndex()).toBe(4);
 
@@ -302,12 +302,12 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabIds()).toEqual([
-      'element-details-tab-info',
-      'element-details-tab-plugin:details',
-      'element-details-tab-plugin:before-revisions',
-      'element-details-tab-revisions',
-      'element-details-tab-plugin:final',
+    expect(panelIds()).toEqual([
+      'element-details-panel-info',
+      'element-details-panel-plugin:details',
+      'element-details-panel-plugin:before-revisions',
+      'element-details-panel-revisions',
+      'element-details-panel-plugin:final',
     ]);
     expect(openIndex()).toBe(0);
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
@@ -319,11 +319,11 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    expect(tabIds()).toEqual([
-      'element-details-tab-info',
-      'element-details-tab-plugin:details',
-      'element-details-tab-plugin:before-revisions',
-      'element-details-tab-revisions',
+    expect(panelIds()).toEqual([
+      'element-details-panel-info',
+      'element-details-panel-plugin:details',
+      'element-details-panel-plugin:before-revisions',
+      'element-details-panel-revisions',
     ]);
     expect(openIndex()).toBe(0);
 
@@ -332,8 +332,8 @@ describe('ElementDetailsTabs', () => {
     expect(openIndex()).toBe(-1);
   });
 
-  it('persists the selected full-page tab in the URL', async () => {
-    elementDetailsTabRegistry.register({
+  it('persists the open full-page panel in the URL', async () => {
+    elementDetailsPanelRegistry.register({
       id: 'workflow',
       label: 'Workflow',
       icon: 'clipboard-list-check',
@@ -344,7 +344,7 @@ describe('ElementDetailsTabs', () => {
 
     container = document.createElement('div');
     document.body.append(container);
-    app = createApp(ElementDetailsTabs, {
+    app = createApp(ElementDetailsPanels, {
       payload: payload(),
       activityTimelineVersion: 0,
       updatePayload: vi.fn(),
@@ -356,8 +356,10 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
     await nextTick();
 
-    const workflowIndex = tabIds().indexOf('element-details-tab-workflow');
-    const revisionsIndex = tabIds().indexOf('element-details-tab-revisions');
+    const workflowIndex = panelIds().indexOf('element-details-panel-workflow');
+    const revisionsIndex = panelIds().indexOf(
+      'element-details-panel-revisions'
+    );
 
     expect(openIndex()).toBe(workflowIndex);
 
@@ -371,23 +373,23 @@ describe('ElementDetailsTabs', () => {
     expect(openIndex()).toBe(workflowIndex);
   });
 
-  it('allows its host to select a visible tab', async () => {
-    elementDetailsTabRegistry.register({
+  it('allows its host to open a visible panel', async () => {
+    elementDetailsPanelRegistry.register({
       id: 'host-selectable',
       label: 'Host selectable',
       icon: 'clipboard-list-check',
       component: defineComponent({render: () => null}),
       order: 5,
     });
-    const detailsTabs = ref<{select: (tabId: string) => void} | null>(null);
+    const detailsPanels = ref<{select: (panelId: string) => void} | null>(null);
 
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(
       defineComponent({
         setup: () => () =>
-          h(ElementDetailsTabs, {
-            ref: detailsTabs,
+          h(ElementDetailsPanels, {
+            ref: detailsPanels,
             payload: payload(),
             activityTimelineVersion: 0,
             updatePayload: vi.fn(),
@@ -400,12 +402,12 @@ describe('ElementDetailsTabs', () => {
     app.mount(container);
     await nextTick();
 
-    detailsTabs.value?.select('host-selectable');
+    detailsPanels.value?.select('host-selectable');
     await nextTick();
     await nextTick();
 
     expect(openIndex()).toBe(
-      tabIds().indexOf('element-details-tab-host-selectable')
+      panelIds().indexOf('element-details-panel-host-selectable')
     );
     expect(window.location.hash).toBe('#host-selectable');
   });

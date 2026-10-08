@@ -656,7 +656,7 @@
     position: relative;
     z-index: var(--c-layer-sticky);
 
-    &:has(.details-tabs__rail[data-open='false']) {
+    &:has(.details-panels__rail[data-open='false']) {
       border-inline-start-color: transparent;
     }
   }
@@ -664,7 +664,7 @@
   /* The panels, and only the panels, sit over the content. Flat rather than
      nested in the rule above, where `:deep()` loses its parent selector and
      would reach every panel container in the shell. */
-  .slideout-screen__details :deep(.details-tabs__panels) {
+  .slideout-screen__details :deep(.details-panels__content) {
     position: absolute;
     inset-block: 0;
     /* The rail's leading edge: at 0 it would open on top of the rail. */
@@ -690,7 +690,7 @@
     }
 
     /* Room of its own, so the panels stay in the flow. */
-    .slideout-screen__details :deep(.details-tabs__panels) {
+    .slideout-screen__details :deep(.details-panels__content) {
       position: static;
       inline-size: calc(350rem / 16);
       min-inline-size: 0;

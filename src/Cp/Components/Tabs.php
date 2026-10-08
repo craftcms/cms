@@ -54,8 +54,6 @@ class Tabs extends ViewComponent
 
     protected TabsPlacement|string|null $placement = null;
 
-    protected bool $collapsible = false;
-
     protected bool $equalWidth = false;
 
     protected function tagName(): string
@@ -153,17 +151,6 @@ class Tabs extends ViewComponent
     }
 
     /**
-     * Lets the selected tab be deselected, closing the panel region entirely —
-     * what an icon toolbar wants, where "nothing open" is a normal state.
-     */
-    public function collapsible(bool $collapsible = true): static
-    {
-        $this->collapsible = $collapsible;
-
-        return $this;
-    }
-
-    /**
      * Gives every tab the same share of the strip’s width rather than the width
      * of its own label. Tabs that share the width always fit, so nothing
      * collapses into the overflow menu; long labels wrap instead. Only the
@@ -247,7 +234,6 @@ class Tabs extends ViewComponent
             'selected-index' => $this->selectedIndex,
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
-            'collapsible' => $this->collapsible,
             'equal-width' => $this->equalWidth,
             'layout' => $this->getLayout(),
         ];

@@ -131,17 +131,6 @@ export default css`
   }
 
   /*
-   * Nothing is selected, so the region goes away entirely rather than holding
-   * an empty box open: a collapsed strip is just the strip. LionTabs gives
-   * .tabs__panels an author display: block, which would otherwise beat the
-   * UA's [hidden] rule. The flex gap goes with it, gaps being drawn only
-   * between the items that are laid out.
-   */
-  .tabs__panels[hidden] {
-    display: none;
-  }
-
-  /*
    * The strip below the panels. The indicator moves to the tab's block start,
    * pulled 1px up to sit on top of the strip's rule.
    *

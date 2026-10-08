@@ -95,17 +95,17 @@ const FIT_TOLERANCE = 1;
  *
  * ## External-panel mode
  *
- * Some strips can't slot their panels: a server-rendered field layout puts the
- * tab bar in the page header and the sections inside a pane, so the two halves
- * are never siblings. Give every tab a `controls` naming its panel's `id` and
- * the strip drives those panels in place instead — toggling Craft's `hidden`
- * class and owning the same `role`/`aria`/roving-tabindex contract:
+ * A strip can drive panels it doesn't slot. Give every tab a `controls`
+ * naming its panel's `id` and the strip drives those panels in place —
+ * toggling Craft's `hidden` class and owning the same `role`/`aria`/
+ * roving-tabindex contract. To follow the APG tabs pattern the panels still
+ * come directly after the strip, with nothing between them; triggers and
+ * content that live apart are disclosures, not tabs:
  *
- *     <craft-tabs>
+ *     <craft-tabs label="Entry settings">
  *       <craft-tab slot="tab" controls="form-tab-1">Content</craft-tab>
  *       <craft-tab slot="tab" controls="form-tab-2">Settings</craft-tab>
  *     </craft-tabs>
- *     …
  *     <section id="form-tab-1">…</section>
  *     <section id="form-tab-2" class="hidden">…</section>
  *
@@ -148,39 +148,14 @@ const FIT_TOLERANCE = 1;
  * with no room left shrinks (wrapping, then clipping) in place. Inline
  * placements are unaffected — their tabs already span the strip.
  *
- * ## Collapsible strips
- *
- * With `collapsible`, clicking the selected tab deselects it: `selectedIndex`
- * becomes `-1`, the panel region collapses to nothing, and the component is
- * just the strip. Combined with `placement="inline-start"` and icon tabs,
- * that's an icon toolbar — a rail that opens and closes a panel beside it:
- *
- *     <craft-tabs placement="inline-start" collapsible selected-index="-1">
- *       <craft-tab slot="tab"><craft-icon name="gear" label="Settings"></craft-icon></craft-tab>
- *       <div slot="panel">…</div>
- *     </craft-tabs>
- *
- * `-1` is also a valid *initial* state, with or without `collapsible`, so a
- * toolbar can start closed. Escape closes a collapsible strip from a tab, and
- * arrowing out of the closed state selects the first (or, backwards, the last)
- * tab. Without `collapsible` nothing deselects a tab but another selection.
- *
 
  * @slot tab - The tab triggers, one per panel. Normally `<craft-tab>`.
  * @slot panel - The panels, one per tab, in the same order. Omitted entirely
  *   in external-panel mode.
  *
  * @event craft-tab-show - Fired when the selected tab changes, by click or
- *   keyboard, including when a collapsible strip closes. Read `selectedIndex`
- *   off the target for the new index — `-1` when nothing is selected. Note it
+ *   keyboard. Read `selectedIndex` off the target for the new index. Note it
  *   does not bubble, so listen on the element itself.
- *
- * @attr collapsed - Present while nothing is selected and the panel region is
- *   taking no space. Reflected and read-only — set `selectedIndex` (or let a
- *   `collapsible` strip be toggled) to change it. Exists so a surrounding
- *   layout can respond in CSS alone, without listening for `craft-tab-show`:
- *
- *       .body:has(craft-tabs[collapsed]) { grid-template-columns: 1fr auto; }
  *
  * @csspart base - The wrapper around both regions, which owns the placement.
  * @csspart strip - The tab row: the tablist plus the overflow menu, and what
@@ -189,8 +164,7 @@ const FIT_TOLERANCE = 1;
  *   separate from the strip so the overflow menu isn't a child of the tablist.
  * @csspart overflow-menu - The `<craft-action-menu>` holding the collapsed
  *   tabs. Present but `hidden` while everything fits.
- * @csspart panels - The container holding the panels. `hidden` while nothing
- *   is selected, so it takes no space at all.
+ * @csspart panels - The container holding the panels.
  *
  * @attr label - The tablist's accessible name. Required: a strip rendered
  *   without one logs an error.
@@ -232,12 +206,6 @@ export default class CraftTabs extends LionTabs {
    */
   @property({reflect: true}) placement: TabsPlacementValue =
     TabsPlacement.BlockStart;
-
-  /**
-   * Whether clicking the selected tab deselects it, leaving `selectedIndex` at
-   * `-1` and the panel region collapsed to nothing.
-   */
-  @property({type: Boolean, reflect: true}) collapsible = false;
 
   /**
    * The accessible name of the tablist, describing what the tabs switch
@@ -290,11 +258,6 @@ export default class CraftTabs extends LionTabs {
     return INLINE_PLACEMENTS.includes(this.placement);
   }
 
-  /** Whether nothing is selected, so there is no panel to show. */
-  get #collapsed(): boolean {
-    return this.selectedIndex < 0;
-  }
-
   /**
    * How large the strip is. Expressed as a font size on the strip and nothing
    * else: `<craft-tab>`'s padding is `em`-based and the overflow invoker's
@@ -312,8 +275,11 @@ export default class CraftTabs extends LionTabs {
   /** Indexes of the tabs currently collapsed into the overflow menu. */
   #overflowed: number[] = [];
 
-  /** Which tab holds the tab order while nothing is selected. */
-  #entryIndex = 0;
+  /**
+   * The selection the last `craft-tab-show` reported, so moving an invalid
+   * selection onto a real tab isn't announced as a change.
+   */
+  #announcedIndex: number | null = null;
 
   #resizeObserver?: ResizeObserver;
 
@@ -349,33 +315,6 @@ export default class CraftTabs extends LionTabs {
     this.#measureOverflow();
   }
 
-  /**
-   * Closes a collapsible strip, as clicking the selected tab does — for a
-   * close button inside a panel. Focus moves to the tab that was selected,
-   * since the button goes away with its panel. Does nothing when the strip
-   * isn't collapsible or is already closed.
-   */
-  close() {
-    if (!this.collapsible || this.#collapsed) {
-      return;
-    }
-
-    this.#collapse(true);
-  }
-
-  /**
-   * Reopens a closed strip on the tab it was last on — for a control outside
-   * the strip that brings the panel back. Focus moves to that tab. Does
-   * nothing when a tab is already selected.
-   */
-  open() {
-    if (!this.#collapsed) {
-      return;
-    }
-
-    this.#select(this.#entryTab(), true);
-  }
-
   override firstUpdated(changedProperties: PropertyValues) {
     // Decided from an explicit author signal rather than an absent panel
     // count, so a strip that simply hasn't been filled in yet doesn't quietly
@@ -388,26 +327,11 @@ export default class CraftTabs extends LionTabs {
       tabSlot?.addEventListener('slotchange', this.#setupExternal);
       this.#setupExternal();
     } else {
-      // Lion moves the initial selection onto the first enabled tab when the
-      // first one is disabled, which would open a strip asked to start closed.
-      const startsCollapsed = this.#collapsed;
-
       super.firstUpdated(changedProperties);
-
-      if (startsCollapsed) {
-        this.selectedIndex = -1;
-      }
-
-      // Registered after Lion's own handler above, and so runs after it: its
-      // slot setup deselects every tab before restoring the selected one,
-      // which leaves a collapsed strip with nothing in the tab order.
-      tabSlot?.addEventListener('slotchange', this.#syncSlotted);
     }
 
-    // A capturing listener, so a click on the selected tab is intercepted
-    // before it reaches the per-tab handler that would select it again.
-    this.addEventListener('click', this.#handleClick, true);
-    this.addEventListener('keydown', this.#handleEscape);
+    this.#normalizeSelection();
+    this.#announcedIndex = this.selectedIndex;
 
     // Overflow is independent of the mode: the strip is the same either way.
     tabSlot?.addEventListener('slotchange', this.#queueMeasure);
@@ -433,26 +357,28 @@ export default class CraftTabs extends LionTabs {
   protected override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    // Reflected so a consumer's stylesheet can react to the strip closing —
-    // e.g. a layout giving the panel's grid track its space back. Written here
-    // rather than declared as a `@property` because it is derived from
-    // `selectedIndex`: it's readable state, not a knob to set.
-    this.toggleAttribute('collapsed', this.#collapsed);
+    // The move requests another update, which does the rest.
+    if (changedProperties.has('selectedIndex') && this.#normalizeSelection()) {
+      return;
+    }
 
     if (changedProperties.has('selectedIndex')) {
       if (this.#external) {
         this.#applyExternal();
-      } else {
-        this.#syncSlotted();
       }
 
       // Lion announces the selection as `selected-changed`. That is its
       // protocol, not this component's API, so the public event is emitted
-      // here under our own name. The guard keeps the initial render quiet:
-      // there is no previous index to have changed from.
-      if (changedProperties.get('selectedIndex') !== undefined) {
+      // here under our own name. The initial render, and a selection moved
+      // off nothing, are left quiet: neither is a change anyone made.
+      if (
+        this.#announcedIndex !== null &&
+        this.selectedIndex !== this.#announcedIndex
+      ) {
         this.dispatchEvent(new CustomEvent('craft-tab-show'));
       }
+
+      this.#announcedIndex = this.selectedIndex;
     }
 
     if (
@@ -470,134 +396,32 @@ export default class CraftTabs extends LionTabs {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Collapsing
-  |--------------------------------------------------------------------------
-  */
-
   /**
-   * Toggling the selected tab off. Runs in the capture phase so it can claim
-   * the click before the per-tab handler — Lion's in slotted mode, ours in
-   * external-panel mode — selects the tab that is already selected. One
-   * handler covers both modes, and neither one has to know about collapsing.
-   *
-   * The click it claims is stopped where it is, so a listener bound to the
-   * host (or above it) won't see the one that closes the strip. Listen for
-   * `craft-tab-show` instead, which fires either way.
+   * Moves a selection that points at no tab, such as `-1`, onto the first
+   * enabled one: a tab strip always has a tab selected. Returns whether it
+   * moved, which requests another update.
    */
-  #handleClick = (event: Event) => {
-    if (!this.collapsible || this.#collapsed) {
-      return;
+  #normalizeSelection(): boolean {
+    if (this.selectedIndex >= 0) {
+      return false;
     }
 
-    const tab = this.#tabFrom(event.target);
+    const first = this.#tabs.findIndex((tab) => !tab.disabled);
 
-    if (
-      !tab ||
-      tab.disabled ||
-      this.#tabs.indexOf(tab) !== this.selectedIndex
-    ) {
-      return;
+    if (first < 0) {
+      return false;
     }
 
-    event.stopPropagation();
-    this.#collapse(true);
-  };
+    this.selectedIndex = first;
 
-  /**
-   * Escape closes a collapsible strip, giving the keyboard the same way out
-   * that clicking the selected tab gives the pointer. Scoped to the tabs: a
-   * panel is arbitrary content, often with its own Escape handling, and this
-   * has no business taking that key away from it.
-   */
-  #handleEscape = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || !this.collapsible || this.#collapsed) {
-      return;
-    }
-
-    if (!this.#tabFrom(event.target)) {
-      return;
-    }
-
-    event.stopPropagation();
-    this.#collapse(true);
-  };
-
-  /** The tab an event came from, if it came from one of ours. */
-  #tabFrom(target: EventTarget | null): CraftTab | null {
-    if (!(target instanceof Node)) {
-      return null;
-    }
-
-    return (
-      this.#tabs.find((tab) => tab === target || tab.contains(target)) ?? null
-    );
+    return true;
   }
 
-  /**
-   * Deselects everything. Lion's setter fires `selected-changed` and requests
-   * an update; the tabs and panels are reconciled from `updated()`, because
-   * Lion's own pass indexes its store by `selectedIndex` and bails on a miss,
-   * leaving the outgoing tab looking selected.
-   */
-  #collapse(withFocus: boolean) {
-    const tab = this.#tabs[this.selectedIndex];
-
-    // Keep the tab order where the user left it rather than snapping it back
-    // to the front of the strip.
-    this.#entryIndex = this.selectedIndex;
-    this.selectedIndex = -1;
-
-    if (withFocus) {
-      tab?.focus();
-    }
-  }
-
-  /**
-   * Applies a collapsed selection to the slotted tabs and panels, and keeps
-   * the roving tabindex honest in the states Lion doesn't cover: `-1`, which
-   * it skips, and the move back out of it, after which the tab that held the
-   * tab order while collapsed would otherwise still hold it.
-   */
-  #syncSlotted = () => {
-    if (this.#collapsed) {
-      this.#tabs.forEach((tab) => {
-        tab.removeAttribute('selected');
-        tab.setAttribute('aria-selected', 'false');
-      });
-
-      this.panels.forEach((panel) => panel.removeAttribute('selected'));
-    }
-
-    this.#syncTabindex();
-  };
-
-  /**
-   * Exactly one tab is in the tab order: the selected one, or — with nothing
-   * selected — the tab the selection was last on, so a collapsed strip is
-   * still reachable by keyboard.
-   */
+  /** Exactly one tab is in the tab order: the selected one. */
   #syncTabindex() {
-    const entry = this.#collapsed ? this.#entryTab() : this.selectedIndex;
-
     this.#tabs.forEach((tab, index) => {
-      tab.setAttribute('tabindex', index === entry ? '0' : '-1');
+      tab.setAttribute('tabindex', index === this.selectedIndex ? '0' : '-1');
     });
-  }
-
-  /**
-   * The tab a closed strip keeps in the tab order and reopens on: the one the
-   * selection was last on, or the first usable tab if that one's gone.
-   */
-  #entryTab(): number {
-    const tabs = this.#tabs;
-    const focusable = (index: number) =>
-      !!tabs[index] && !tabs[index].disabled && !tabs[index].hidden;
-
-    return focusable(this.#entryIndex)
-      ? this.#entryIndex
-      : tabs.findIndex((_, index) => focusable(index));
   }
 
   /**
@@ -882,8 +706,6 @@ export default class CraftTabs extends LionTabs {
       return;
     }
 
-    // A click on the selected tab never reaches here on a collapsible strip:
-    // `#handleClick` claims it in the capture phase and collapses instead.
     // Lion's setter dispatches `selected-changed` and requests an update; the
     // panel work happens in `updated()`.
     this.selectedIndex = index;
@@ -930,13 +752,6 @@ export default class CraftTabs extends LionTabs {
     }
 
     const step = key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1;
-
-    // Arrowing out of the collapsed state opens the strip at the end you came
-    // from — forwards lands on the first tab, backwards on the last. (Lion's
-    // slotted handling arrives at the same two answers from `-1`.)
-    if (this.#collapsed) {
-      return this.#nextIndex(step === 1 ? 'Home' : 'End');
-    }
 
     // Walk at most a full lap so a strip of entirely disabled tabs terminates.
     for (let hop = 1; hop <= tabs.length; hop++) {
@@ -1009,13 +824,7 @@ export default class CraftTabs extends LionTabs {
             </craft-button>
           </craft-action-menu>
         </div>
-        <!--
-          Hidden rather than emptied when nothing is selected: the region has
-          to take no space at all — a collapsible strip is meant to be just the
-          strip — but the slot has to survive, since removing it would unassign
-          the panels this strip was given.
-        -->
-        <div class="tabs__panels" part="panels" ?hidden="${this.#collapsed}">
+        <div class="tabs__panels" part="panels">
           <slot name="panel"></slot>
         </div>
       </div>

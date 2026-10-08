@@ -32,9 +32,11 @@ const meta = {
     ...argTypes,
     selectedIndex: {
       name: 'selected-index',
-      control: {type: 'number'},
-      description: 'Index of the selected tab. -1 selects nothing.',
+      control: {type: 'number', min: 0},
+      description: 'Index of the selected tab.',
     },
+    // A strip with no selected tab isn't a tab pattern; nothing uses it.
+    collapsible: {table: {disable: true}},
   },
   args: {
     ...args,
@@ -48,7 +50,6 @@ const meta = {
       placement="${args.placement}"
       size="${args.size}"
       selected-index="${args.selectedIndex}"
-      ?collapsible="${args.collapsible}"
       ?equal-width="${args.equalWidth}"
     >
       <craft-tab slot="tab">Tab One</craft-tab>
@@ -314,10 +315,10 @@ export const Disabled: Story = {
 };
 
 /**
- * When the panels can't be slotted next to their tabs — a server-rendered
- * field layout puts the tab bar in the page header and the sections inside a
- * pane — each tab names its panel by `id` instead, and the strip drives those
- * panels where they stand.
+ * The panels can live outside the component: each tab names its panel by `id`
+ * with `controls`, and the strip drives those panels where they stand. To
+ * follow the APG tabs pattern they still come directly after the strip in the
+ * DOM, with nothing between them.
  */
 export const ExternalPanels: Story = {
   render: () => html`
@@ -331,9 +332,6 @@ export const ExternalPanels: Story = {
       <craft-tab slot="tab" controls="external-content">Content</craft-tab>
       <craft-tab slot="tab" controls="external-settings">Settings</craft-tab>
     </craft-tabs>
-
-    <p>Anything at all can sit between the strip and its panels.</p>
-
     <section id="external-content"><p>The content panel.</p></section>
     <section id="external-settings" class="hidden">
       <p>The settings panel.</p>
@@ -341,8 +339,12 @@ export const ExternalPanels: Story = {
   `,
   play: async ({canvas, canvasElement, userEvent}) => {
     const tabs = canvas.getAllByRole('tab');
+    const strip = canvasElement.querySelector('craft-tabs')!;
     const content = canvasElement.querySelector('#external-content')!;
     const settings = canvasElement.querySelector('#external-settings')!;
+
+    await expect(strip.nextElementSibling).toBe(content);
+    await expect(content.nextElementSibling).toBe(settings);
 
     await expect(tabs[0]).toHaveAttribute('aria-controls', 'external-content');
     await expect(content).toHaveAttribute('role', 'tabpanel');
@@ -571,99 +573,5 @@ export const EqualWidth: Story = {
         Math.abs(text.top - box.top - (box.bottom - text.bottom))
       ).toBeLessThanOrEqual(3);
     });
-  },
-};
-
-/**
- * The target of `collapsible`: a rail of icon tabs that opens a panel beside
- * it, and closes again when you click the open tab — leaving nothing but the
- * rail. It starts closed here, which `selected-index="-1"` says.
- */
-export const IconToolbar: Story = {
-  render: () => html`
-    <div style="display: flex; block-size: 14rem;">
-      <craft-tabs
-        label="Details"
-        placement="inline-start"
-        size="small"
-        collapsible
-        selected-index="-1"
-      >
-        <craft-tab slot="tab">
-          <craft-icon name="circle-info" label="Info"></craft-icon>
-        </craft-tab>
-        <div slot="panel" style="inline-size: 18rem; padding-inline: 1rem;">
-          <p>Everything known about this thing.</p>
-        </div>
-
-        <craft-tab slot="tab">
-          <craft-icon name="wave-pulse" label="Activity"></craft-icon>
-        </craft-tab>
-        <div slot="panel" style="inline-size: 18rem; padding-inline: 1rem;">
-          <p>What has happened to it lately.</p>
-        </div>
-
-        <craft-tab slot="tab">
-          <craft-icon name="clock-rotate-left" label="Revisions"></craft-icon>
-        </craft-tab>
-        <div slot="panel" style="inline-size: 18rem; padding-inline: 1rem;">
-          <p>Every version of it.</p>
-        </div>
-      </craft-tabs>
-    </div>
-  `,
-  play: async ({canvasElement, userEvent}) => {
-    const strip = canvasElement.querySelector('craft-tabs')!;
-    const tabs = [...strip.querySelectorAll('craft-tab')];
-    const panels =
-      strip.shadowRoot!.querySelector<HTMLElement>('[part="panels"]')!;
-    const rail = strip
-      .shadowRoot!.querySelector('[part="strip"]')!
-      .getBoundingClientRect().width;
-    const width = () => strip.getBoundingClientRect().width;
-
-    // Closed: nothing selected, and the component is exactly the rail — the
-    // panel region isn't holding an empty box open beside it.
-    await expect(strip.selectedIndex).toBe(-1);
-    await expect(getComputedStyle(panels).display).toBe('none');
-    await expect(width()).toBeCloseTo(rail, 0);
-
-    // The strip is still reachable by keyboard while it's closed.
-    await expect(tabs[0]).toHaveAttribute('tabindex', '0');
-    await expect(
-      tabs.every((tab) => tab.getAttribute('aria-selected') === 'false')
-    ).toBe(true);
-
-    await userEvent.click(tabs[1]!);
-    await strip.updateComplete;
-
-    await expect(strip.selectedIndex).toBe(1);
-    await expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
-    await expect(getComputedStyle(panels).display).not.toBe('none');
-    await expect(width()).toBeGreaterThan(rail);
-
-    // Clicking the open tab closes it again and gives the space back.
-    await userEvent.click(tabs[1]!);
-    await strip.updateComplete;
-
-    await expect(strip.selectedIndex).toBe(-1);
-    await expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
-    await expect(getComputedStyle(panels).display).toBe('none');
-    await expect(width()).toBeCloseTo(rail, 0);
-
-    // ...and the tab it closed from keeps the tab order.
-    await expect(tabs[1]).toHaveAttribute('tabindex', '0');
-
-    // Escape is the keyboard's way out of an open strip.
-    await userEvent.click(tabs[2]!);
-    await strip.updateComplete;
-    await expect(strip.selectedIndex).toBe(2);
-
-    tabs[2]!.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
-    );
-    await strip.updateComplete;
-
-    await expect(strip.selectedIndex).toBe(-1);
   },
 };

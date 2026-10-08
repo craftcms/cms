@@ -5,14 +5,18 @@
 ### Accessibility
 
 - Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
-- Fixed an accessibility issue where field layout tabs, element details tabs, and image editor tabs weren’t announced with a name for their tab list.
+- Fixed an accessibility issue where field layout tabs and image editor tabs weren’t announced with a name for their tab list.
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
-- Fixed an accessibility issue where the selected tab in `<craft-tabs>`, including the element details tabs, wasn’t distinguishable in forced colors mode.
+- Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
 
 ### Extensibility
 
 - Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
 - Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
+- Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
+- Deprecated `Cp.$elementDetailsTabs`, its `tabs` property, and the `ElementDetailsTab*` types. `Cp.$elementDetailsPanels`, its `panels` property, and the `ElementDetailsPanel*` types should be used instead.
+- `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
+- Removed the `collapsible` attribute, the reflected `collapsed` attribute, and the `close()` and `open()` methods from `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::collapsible()`. Panels that can all be closed should use `<craft-disclosure>` instead.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

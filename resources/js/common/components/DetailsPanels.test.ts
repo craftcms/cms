@@ -11,7 +11,7 @@ import {
   type App,
 } from 'vue';
 import {ScreenDetailsRailKey} from '@/common/composables/screen';
-import DetailsTabs from './DetailsTabs.vue';
+import DetailsPanels from './DetailsPanels.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
 
@@ -26,7 +26,7 @@ afterEach(() => {
   window.history.replaceState(null, '', '/');
 });
 
-const tabs = [
+const panels = [
   {id: 'info', label: 'Info', icon: 'info', slot: 'info'},
   {id: 'history', label: 'History', icon: 'clock', slot: 'history'},
 ];
@@ -46,8 +46,8 @@ async function mount(
 
         return () =>
           h(
-            DetailsTabs,
-            {tabs, syncLocationHash, ref: exposed},
+            DetailsPanels,
+            {panels, syncLocationHash, ref: exposed},
             {
               info: () => h('p', 'Info content'),
               history: () =>
@@ -72,11 +72,13 @@ async function settle(): Promise<void> {
 }
 
 function trigger(id: string): HTMLButtonElement {
-  return document.querySelector<HTMLButtonElement>(`button#details-tab-${id}`)!;
+  return document.querySelector<HTMLButtonElement>(
+    `button#details-panel-${id}`
+  )!;
 }
 
 function panel(id: string): HTMLElement {
-  return document.getElementById(`details-tab-${id}-panel`)!;
+  return document.getElementById(`details-panel-${id}-panel`)!;
 }
 
 function heading(id: string): HTMLElement {
@@ -93,7 +95,7 @@ it('puts the triggers in the rail and the panels in place', async () => {
     [...rail.querySelectorAll('craft-disclosure > button')].map((button) =>
       button.getAttribute('aria-controls')
     )
-  ).toEqual(['details-tab-info-panel', 'details-tab-history-panel']);
+  ).toEqual(['details-panel-info-panel', 'details-panel-history-panel']);
   expect(details.querySelector('craft-disclosure')).toBeNull();
   expect(panel('info').textContent).toContain('Info content');
   expect(panel('history').textContent).toContain('History content');

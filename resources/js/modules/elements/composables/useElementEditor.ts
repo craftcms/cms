@@ -62,7 +62,7 @@ export interface ElementFormAction {
 export type ElementFormActionSubmitter = (action: ElementFormAction) => void;
 
 export interface ElementPrimaryAction extends ElementFormAction {
-  tabId: string | null;
+  panelId: string | null;
 }
 
 export interface ElementEditorActions {

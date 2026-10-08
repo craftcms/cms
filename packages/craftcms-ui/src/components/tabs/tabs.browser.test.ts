@@ -95,12 +95,14 @@ async function strip({
 }
 
 it.each([
-  {disabled: [], expected: 0},
-  {disabled: [0], expected: 1},
+  {disabled: [], attrs: {}, expected: 0},
+  {disabled: [0], attrs: {}, expected: 1},
+  {disabled: [], attrs: {'selected-index': '-1'}, expected: 0},
+  {disabled: [0], attrs: {'selected-index': '-1'}, expected: 1},
 ])(
-  'selects the first enabled tab when no selected-index is given (disabled: $disabled)',
-  async ({disabled, expected}) => {
-    const {element, tabs, slottedPanels} = await strip({disabled});
+  'selects the first enabled tab given no valid selected-index (disabled: $disabled, attrs: $attrs)',
+  async ({disabled, attrs, expected}) => {
+    const {element, tabs, slottedPanels} = await strip({disabled, attrs});
 
     await expect
       .poll(() => tabs.map((tab) => tab.getAttribute('aria-selected')))
