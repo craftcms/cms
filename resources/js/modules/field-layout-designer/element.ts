@@ -11,7 +11,7 @@ import {
 } from './support';
 import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
 
@@ -340,7 +340,7 @@ export class Element extends Base {
     try {
       await this.applyConfig(
         () => this.config,
-        this.slideout.settingsForm?.currentValues() ?? {}
+        this.slideout.settingsUi?.currentValues() ?? {}
       );
     } catch {
       // Errors are already shown in the slideout.
@@ -422,7 +422,7 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    settings: FormValues | null = null,
+    settings: UiValues | null = null,
     closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
@@ -430,10 +430,10 @@ export class Element extends Base {
       return;
     }
 
-    const settingsForm = this.slideout?.settingsForm;
+    const settingsUi = this.slideout?.settingsUi;
 
-    if (settings && settingsForm) {
-      settingsForm.errors = {};
+    if (settings && settingsUi) {
+      settingsUi.errors = {};
     }
 
     let data;
@@ -455,8 +455,8 @@ export class Element extends Base {
       const errors = e?.response?.data?.errors;
 
       // The Vue panel renders its own errors from the rejection.
-      if (settings && settingsForm && errors) {
-        settingsForm.errors = errors;
+      if (settings && settingsUi && errors) {
+        settingsUi.errors = errors;
       }
 
       Craft.cp.displayError(e?.response?.data?.message);

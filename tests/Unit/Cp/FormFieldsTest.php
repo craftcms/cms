@@ -230,10 +230,10 @@ describe('editable tables', function () {
             ? app(TemplateManager::class)->renderString('{% import "_includes/forms" as forms %}{{ forms.editableTableField(config) }}', ['config' => $config], TemplateMode::Cp)
             : FormFields::editableTableFieldHtml($config);
         $input = new Crawler($html);
-        $payload = json_decode($input->filter('craft-table-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
         $control = $payload['nodes'][0]['control'];
         $row = $payload['values']['settings']['sites']['primary'];
-        $cells = collect($control['forms'][0]['nodes'])->keyBy(fn (array $node): string => end($node['control']['path']));
+        $cells = collect($control['uis'][0]['nodes'])->keyBy(fn (array $node): string => end($node['control']['path']));
 
         expect($row)->toMatchArray([
             'uri' => 'articles/{slug}', 'choice' => 'override', 'enabled' => false,

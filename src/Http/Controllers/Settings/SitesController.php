@@ -9,19 +9,6 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
@@ -32,6 +19,19 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +55,7 @@ readonly class SitesController
         GeneralConfig $generalConfig,
         private Sites $sites,
         private SiteGroups $siteGroups,
-        private FormResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -126,7 +126,7 @@ readonly class SitesController
                 new ActionItem()->label(t('Create a new site')),
             ])
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($site),
+                ...$this->uiProps($site),
                 'site' => $site,
             ]);
     }
@@ -151,13 +151,13 @@ readonly class SitesController
             ])
             ->redirectUrl('settings/sites')
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($siteData),
+                ...$this->uiProps($siteData),
                 'site' => $siteData,
                 'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
             ]);
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $request->validate([
             'values' => ['required', 'array'],
@@ -165,7 +165,7 @@ readonly class SitesController
             'scope' => ['present', 'array', 'size:0'],
         ]);
 
-        return new JsonResponse(['form' => $this->siteForm($request->array('values'))]);
+        return new JsonResponse(['ui' => $this->siteUi($request->array('values'))]);
     }
 
     public function store(Request $request): \Symfony\Component\HttpFoundation\Response
@@ -247,20 +247,20 @@ readonly class SitesController
     }
 
     /** @return array<string, mixed> */
-    private function formProps(Site $site): array
+    private function uiProps(Site $site): array
     {
         return [
-            'form' => $this->siteForm($this->siteValues($site)),
+            'ui' => $this->siteUi($this->siteValues($site)),
             'submit' => [
                 'method' => 'post',
                 'url' => action([self::class, 'store']),
             ],
-            'refreshUrl' => action([self::class, 'renderForm']),
+            'refreshUrl' => action([self::class, 'renderUi']),
         ];
     }
 
     /** @param array<string, mixed> $values */
-    private function siteForm(array $values): FormPayload
+    private function siteUi(array $values): UiPayload
     {
         $siteId = $values['siteId'] ?? null;
         $site = $siteId ? $this->sites->getSiteById((int) $siteId) : new Site;
@@ -363,7 +363,7 @@ readonly class SitesController
             ])->dependsOn('hasUrls');
         }
 
-        return $this->formResolver->resolve(Form::make($nodes), new FormContext(
+        return $this->uiResolver->resolve(Ui::make($nodes), new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,

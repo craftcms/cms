@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
+
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
@@ -26,6 +29,7 @@
 - Removed the `data` and `methods` blocks from the `_includes/forms/autosuggest.twig` template, along with the Vue instance they configured. Templates that overrode them should pass `suggestions` instead.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved control panel styling for medium-sized viewports.
+- Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
 - Fixed an error that occurred when a Craft 5 plugin registered a utility, which no longer satisfied `CraftCms\Cms\Utility\UtilityTypes`’ contract. ([#19852](https://github.com/craftcms/cms/pull/19852))
@@ -35,6 +39,7 @@
 - Fixed a bug where environment variable, alias, and template suggestions weren’t sorted alphabetically.
 - Fixed a bug where status indicators for disabled elements were filled in rather than outlined, and custom status colors were shown as gray. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Fixed a bug where admin tables no longer had selectable rows. ([#19893](https://github.com/craftcms/cms/pull/19893))
+- Fixed a bug where the license enforcement screen wasn’t showing the “Continue to the control panel” link after the countdown ended. ([#19895](https://github.com/craftcms/cms/issues/19895))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

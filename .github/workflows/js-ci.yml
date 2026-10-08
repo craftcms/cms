@@ -145,4 +145,4 @@ jobs:
             run: vp run test:ui
 
           - name: Run element, field, legacy HTML control, and skip link tests
-            run: vp test run resources/js/modules/elements resources/js/modules/fields resources/js/modules/forms/nested-elements resources/js/modules/forms/entry-field-layout-form-host.test.ts resources/js/modules/sections/components/PreviewTargetsTable.test.ts resources/js/common/layouts/screens/page/ScreenSkipLinks.browser.test.ts yii2-adapter/resources/js
+            run: vp test run resources/js/modules/elements resources/js/modules/fields resources/js/modules/ui/nested-elements resources/js/modules/ui/entry-field-layout-ui-host.test.ts resources/js/modules/sections/components/PreviewTargetsTable.test.ts resources/js/common/layouts/screens/page/ScreenSkipLinks.browser.test.ts yii2-adapter/resources/js

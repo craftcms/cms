@@ -31,13 +31,6 @@ use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Form\Controls\Table as TableControl;
-use CraftCms\Cms\Form\Controls\TableColumn;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -49,6 +42,13 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\TableColumn;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
@@ -769,12 +769,12 @@ readonly class FormFields
     public static function editableTableHtml(array $config): string
     {
         $control = self::editableTableFromConfig($config);
-        $payload = app(FormResolver::class)->resolve(
-            Form::make([FormField::make()->control($control)]),
-            new FormContext,
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([UiField::make()->control($control)]),
+            new UiContext,
         );
 
-        return Html::tag('craft-table-form', '', [
+        return Html::tag('craft-table-ui', '', [
             ...($config['containerAttributes'] ?? []),
             'id' => $config['id'] ?? 'editabletable'.mt_rand(),
             'name' => $config['name'] ?? null,
@@ -801,7 +801,7 @@ readonly class FormFields
     public static function editableTableFromConfig(array $config): TableControl
     {
         self::deprecateConfig('editableTable', $config, [
-            'initJs' => 'is no longer supported. The form builder mounts the table automatically.',
+            'initJs' => 'is no longer supported. The UI builder mounts the table automatically.',
         ]);
 
         $columns = $config['cols'] ?? [];

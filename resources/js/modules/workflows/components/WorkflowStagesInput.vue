@@ -6,12 +6,8 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
   import type {ActionItems} from '@/common/types';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {
-    FormChange,
-    FormPayload,
-    FormValues,
-  } from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiChange, UiPayload, UiValues} from '@/modules/ui/types';
 
   type WorkflowStageData = CraftCms.Cms.Workflow.Data.WorkflowStageData;
   type WorkflowStage = {
@@ -24,7 +20,7 @@
     modelValue: WorkflowStage[];
     stageTypes: StageType[];
     editable: boolean;
-    errors?: FormPayload['errors'];
+    errors?: UiPayload['errors'];
   }>();
   const emit = defineEmits<{
     'update:modelValue': [value: WorkflowStage[]];
@@ -48,8 +44,8 @@
 
   function changeSettings(
     index: number,
-    _change: FormChange,
-    values: FormValues
+    _change: UiChange,
+    values: UiValues
   ): void {
     updateStage(index, {settings: values});
   }
@@ -67,7 +63,7 @@
         name: '',
         type: stageType.type,
         settings: {...stageType.settings},
-        settingsForm: stageType.settingsForm,
+        settingsUi: stageType.settingsUi,
       },
     ]);
   }
@@ -125,10 +121,10 @@
     ];
   }
 
-  function stageForm(stage: WorkflowStage): FormPayload | null {
-    return stage.settingsForm
+  function stageUi(stage: WorkflowStage): UiPayload | null {
+    return stage.settingsUi
       ? {
-          ...(stage.settingsForm as FormPayload),
+          ...(stage.settingsUi as UiPayload),
           values: stage.settings,
         }
       : null;
@@ -184,10 +180,10 @@
             <input slot="input" />
           </CraftInput>
 
-          <FormRenderer
-            v-if="stageForm(modelValue[index]!)"
+          <UiRenderer
+            v-if="stageUi(modelValue[index]!)"
             :key="modelValue[index]!.type"
-            :payload="stageForm(modelValue[index]!)!"
+            :payload="stageUi(modelValue[index]!)!"
             :disabled="!editable"
             @change="(change, values) => changeSettings(index, change, values)"
           />

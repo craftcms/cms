@@ -1,13 +1,13 @@
 <script setup lang="ts">
-  import type {FormNodePayload} from '@/modules/forms/types';
+  import type {UiNodePayload} from '@/modules/ui/types';
 
   defineProps<{
-    node: FormNodePayload<{message: string}>;
+    node: UiNodePayload<{message: string}>;
   }>();
 </script>
 
 <template>
-  <p :data-form-node="node.uid" data-test-plugin-notice>
+  <p :data-ui-node="node.uid" data-test-plugin-notice>
     {{ node.props.message }}
   </p>
 </template>

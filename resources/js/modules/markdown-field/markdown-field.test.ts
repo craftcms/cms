@@ -60,7 +60,7 @@ it('applies properties from the Vue Markdown Control', async () => {
     required: false,
     slot: 'input',
     label: 'Description',
-    'data-form-control-path': '["body"]',
+    'data-ui-control-path': '["body"]',
   }).mount(container);
   await nextTick();
 
@@ -71,7 +71,7 @@ it('applies properties from the Vue Markdown Control', async () => {
   expect(textarea.getAttribute('rows')).toBe('6');
   expect(textarea.closest('craft-markdown-field')).toMatchObject({
     slot: 'input',
-    dataset: {formControlPath: '["body"]'},
+    dataset: {uiControlPath: '["body"]'},
   });
   expect(container.querySelector('.overtype-toolbar')).not.toBeNull();
   expect(textExpander.for).toBe(textarea.id);

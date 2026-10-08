@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
@@ -66,10 +66,10 @@ class CpModalResponse implements Responsable
      */
     public $contentHtml;
 
-    public ?Form $form = null;
+    public ?Ui $ui = null;
 
     /** @var array<string, mixed> */
-    public array $formValues = [];
+    public array $uiValues = [];
 
     /**
      * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
@@ -133,14 +133,14 @@ class CpModalResponse implements Responsable
     }
 
     /**
-     * Sets a Form to render alongside any legacy content HTML.
+     * Sets a Ui to render alongside any legacy content HTML.
      *
      * @param  array<string, mixed>  $values
      */
-    public function form(?Form $form, array $values = []): self
+    public function ui(?Ui $ui, array $values = []): self
     {
-        $this->form = $form;
-        $this->formValues = $values;
+        $this->ui = $ui;
+        $this->uiValues = $values;
 
         return $this;
     }
@@ -194,9 +194,9 @@ class CpModalResponse implements Responsable
             if ($this->contentHtml) {
                 $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
             }
-            if ($this->form !== null) {
-                $components[] = app(FormHtmlRenderer::class)->render(
-                    app(FormResolver::class)->resolve($this->form, new FormContext(values: $this->formValues)),
+            if ($this->ui !== null) {
+                $components[] = app(UiHtmlRenderer::class)->render(
+                    app(UiResolver::class)->resolve($this->ui, new UiContext(values: $this->uiValues)),
                 );
             }
             if ($this->action) {

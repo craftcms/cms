@@ -10,8 +10,8 @@ import {
   ScreenPropsStoreKey,
   type ScreenPageProps,
 } from '@/common/composables/screen';
-import {registerFormComponents} from '@/modules/forms/register';
-import type {FormPayload} from '@/modules/forms/types';
+import {registerUiComponents} from '@/modules/ui/register';
+import type {UiPayload} from '@/modules/ui/types';
 import EditPage from '@/pages/elements/Edit.vue';
 import './element-editor';
 
@@ -60,22 +60,22 @@ afterEach(() => {
 });
 
 it('autosaves and submits custom HTML inputs together with native field edits', async () => {
-  const form: FormPayload = {
+  const ui: UiPayload = {
     scope: [],
     refreshable: false,
     nodes: [
       {
-        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
         component: 'craft:field',
         props: {label: 'Body', instructions: null, required: false},
         control: {
-          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
           component: 'craft:text',
           props: {inputType: 'text'},
           path: ['fields', 'body'],
           mode: 'editable',
           deltaGroup: ['fields', 'body'],
-          forms: [],
+          uis: [],
         },
       },
     ],
@@ -91,8 +91,8 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
     draftId: null,
     isProvisionalDraft: false,
     canAutosave: true,
-    form,
-    sidebarForm: null,
+    ui,
+    sidebarUi: null,
     saveParams: {entryId: 12, siteId: 1},
     saveUrl: '/actions/entries/save-entry',
     applyDraftUrl: '/actions/elements/apply-draft',
@@ -139,7 +139,7 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
         );
     },
   });
-  registerFormComponents(cpComponentRegistry);
+  registerUiComponents(cpComponentRegistry);
   cpComponentRegistry.install(app);
   container = document.createElement('div');
   document.body.append(container);

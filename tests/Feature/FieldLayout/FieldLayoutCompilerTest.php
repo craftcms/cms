@@ -10,7 +10,7 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -22,20 +22,20 @@ use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Form\Controls\Missing as MissingControl;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\Nodes\Callout;
-use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
-use CraftCms\Cms\Form\Nodes\LineBreak as LineBreakNode;
-use CraftCms\Cms\Form\Nodes\MarkdownContent;
-use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Ui\Controls\Missing as MissingControl;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\Heading as HeadingNode;
+use CraftCms\Cms\Ui\Nodes\LineBreak as LineBreakNode;
+use CraftCms\Cms\Ui\Nodes\MarkdownContent;
+use CraftCms\Cms\Ui\Nodes\Missing as MissingNode;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
@@ -82,7 +82,7 @@ function persistedEntryLayout(): FieldLayoutModel
     ]);
 }
 
-it('compiles persisted entry layout intent into a form payload', function () {
+it('compiles persisted entry layout intent into a UI payload', function () {
     $layoutModel = persistedEntryLayout();
     $entry = Entry::factory()
         ->withFieldLayout($layoutModel)
@@ -98,7 +98,7 @@ it('compiles persisted entry layout intent into a form payload', function () {
     $payload = app(FieldLayoutCompiler::class)->compile(
         $entry->getFieldLayout(),
         $entry,
-        new FormContext(errors: ['title' => ['Title is invalid.']]),
+        new UiContext(errors: ['title' => ['Title is invalid.']]),
     );
     $contentNode = $payload->nodes[0]->children[1];
     $content = new Crawler($contentNode->props['html']);
@@ -134,32 +134,32 @@ it('compiles persisted entry layout intent into a form payload', function () {
             'messages' => ['Title is invalid.'],
         ]]);
 
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $field = $crawler->filter('craft-field[data-layout-element="field-title"]');
 
-    expect($crawler->filter('section[data-form-tab="tab-content"]'))->toHaveCount(1)
+    expect($crawler->filter('section[data-ui-tab="tab-content"]'))->toHaveCount(1)
         ->and($field)->toHaveCount(1)
         ->and($field->attr('class'))->toContain('width-50')
         ->and($field->attr('instructions-position'))->toBe('after')
         ->and($field->text())->toContain('Use sentence case.')
         ->and($field->text())->toContain('This appears publicly.')
-        ->and($crawler->filter('[data-form-node="content-note"] strong')->text())->toBe('Editorial note');
+        ->and($crawler->filter('[data-ui-node="content-note"] strong')->text())->toBe('Editorial note');
 });
 
-it('allows the form-stage event to replace typed nodes without changing persisted intent', function () {
+it('allows the UI-stage event to replace typed nodes without changing persisted intent', function () {
     $layoutModel = persistedEntryLayout();
     $layout = app(Fields::class)->getLayoutById($layoutModel->id);
     $config = $layoutModel->config;
 
-    Event::listen(FieldLayoutFormResolving::class, function (FieldLayoutFormResolving $event) {
-        $nodes = $event->form->nodes();
-        $event->form = Form::make([
+    Event::listen(FieldLayoutUiResolving::class, function (FieldLayoutUiResolving $event) {
+        $nodes = $event->ui->nodes();
+        $event->ui = Ui::make([
             $nodes[1],
             MarkdownContent::make('injected-note', 'Injected'),
         ]);
     });
 
-    $payload = app(FieldLayoutCompiler::class)->compile($layout, context: new FormContext);
+    $payload = app(FieldLayoutCompiler::class)->compile($layout, context: new UiContext);
 
     expect(array_column($payload->nodes, 'uid'))->toBe(['tab-hidden', 'injected-note'])
         ->and($layoutModel->fresh()->config)->toEqual($config);
@@ -192,7 +192,7 @@ it('compiles custom fields and shared semantic layout content', function () {
 
     $payload = app(FieldLayoutCompiler::class)->compile($layout);
     $children = $payload->nodes[0]->children;
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($children)->toHaveCount(5)
         ->and($children[0]->control?->component)->toBe('craft:textarea')
@@ -209,13 +209,13 @@ it('compiles custom fields and shared semantic layout content', function () {
             'variant' => 'warning',
             'dismissible' => false,
         ])
-        ->and($crawler->filter('[data-form-node="heading"] h2')->text())->toBe('Details')
-        ->and($crawler->filter('hr[data-form-node="separator"]'))->toHaveCount(1)
-        ->and($crawler->filter('.line-break[data-form-node="break"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-callout[data-form-node="warning"]')->text())->toContain('Careful');
+        ->and($crawler->filter('[data-ui-node="heading"] h2')->text())->toBe('Details')
+        ->and($crawler->filter('hr[data-ui-node="separator"]'))->toHaveCount(1)
+        ->and($crawler->filter('.line-break[data-ui-node="break"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-callout[data-ui-node="warning"]')->text())->toContain('Careful');
 });
 
-it('preserves missing persisted form providers without submitting their values', function () {
+it('preserves missing persisted UI providers without submitting their values', function () {
     $missingNodeType = 'Acme\\Forms\\MissingLayoutElement';
     $missingControlType = 'Acme\\Forms\\MissingField';
     actingAs(User::find()->one());
@@ -264,10 +264,10 @@ it('preserves missing persisted form providers without submitting their values',
 
     $payload = app(FieldLayoutCompiler::class)->compile(
         $layout,
-        context: new FormContext(values: ['fields' => ['unavailable' => 'Original content']]),
+        context: new UiContext(values: ['fields' => ['unavailable' => 'Original content']]),
     );
     $children = $payload->nodes[0]->children;
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $twigPlaceholder = new Crawler($field->getPlaceholderHtml());
 
     expect($field)->toBeInstanceOf(MissingField::class)
@@ -310,9 +310,9 @@ it('preserves missing persisted form providers without submitting their values',
     $recoveredLayout->getTabs()[0]->add($recoveredControl);
     $recovered = app(FieldLayoutCompiler::class)->compile(
         $recoveredLayout,
-        context: new FormContext(values: ['fields' => ['unavailable' => 'Original content']]),
+        context: new UiContext(values: ['fields' => ['unavailable' => 'Original content']]),
     );
-    $recoveredCrawler = new Crawler(app(FormHtmlRenderer::class)->render($recovered));
+    $recoveredCrawler = new Crawler(app(UiHtmlRenderer::class)->render($recovered));
 
     expect($recovered->nodes[0]->children[0]->type)->toBe(MarkdownContent::class)
         ->and($recovered->nodes[0]->children[1]->control?->component)->toBe('craft:text')
@@ -377,7 +377,7 @@ it('carries per-field change-tracking status into the payload when compiling a d
     expect(collect($canonicalPayload->nodes[0]->children)->pluck('props')->pluck('status')->filter())
         ->toBeEmpty();
 
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter('craft-field[status="modified"]'))->toHaveCount(2)
         ->and($crawler->filter('craft-field[status="modified"]')->eq(0)->attr('status-label'))

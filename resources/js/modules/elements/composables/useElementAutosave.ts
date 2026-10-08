@@ -2,11 +2,7 @@ import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
-import type {
-  FormChangeKind,
-  FormPayload,
-  FormValues,
-} from '@/modules/forms/types';
+import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -33,11 +29,11 @@ export interface ElementAutosaveOptions {
    * Extra params sent with every save, such as a nested element's owner, which
    * the server needs to resolve it through the owner it's being edited in.
    */
-  params?: () => FormValues;
+  params?: () => UiValues;
   /** Adapts the editor's form state into the save request. */
-  transform?: (data: object) => FormValues;
+  transform?: (data: object) => UiValues;
   /** How long to wait after the last edit before saving, per change kind. */
-  debounceMs?: Partial<Record<FormChangeKind, number>>;
+  debounceMs?: Partial<Record<UiChangeKind, number>>;
   /**
    * Called after each successful save with the element's new last-modified
    * stamps. An autosave moves `dateUpdated`, so whoever is watching for
@@ -49,7 +45,7 @@ export interface ElementAutosaveOptions {
       element: number | null;
       canonical: number | null;
     },
-    response: FormValues
+    response: UiValues
   ) => void;
 }
 
@@ -89,12 +85,12 @@ export function useElementAutosave<T extends object>(
   // leaving the screen standing long enough for the host to re-apply the
   // screen it had just dropped.
   const saved = shallowRef<{
-    form: FormPayload | null;
-    screen: FormValues | null;
+    ui: UiPayload | null;
+    screen: UiValues | null;
     modified: string[];
-  }>({form: null, screen: null, modified: []});
+  }>({ui: null, screen: null, modified: []});
 
-  const formPayload = computed(() => saved.value.form);
+  const uiPayload = computed(() => saved.value.ui);
   const screenPayload = computed(() => saved.value.screen);
   const modified = computed(() => saved.value.modified);
   const changeGeneration = ref(0);
@@ -116,7 +112,7 @@ export function useElementAutosave<T extends object>(
     canceled = false;
     controller = new AbortController();
 
-    const payload: FormValues = {
+    const payload: UiValues = {
       elementType: options.elementType,
       elementId: options.elementId,
       siteId: options.siteId,
@@ -144,8 +140,8 @@ export function useElementAutosave<T extends object>(
       saved.value = {
         // The response carries the field layout as the server now sees it,
         // which is the only place a nested element created by this save (a new
-        // Matrix entry or address) can get its own Form payload from.
-        form: data.form ?? saved.value.form,
+        // Matrix entry or address) can get its own UI payload from.
+        ui: data.ui ?? saved.value.ui,
         // …and the rest of the edit screen as a fresh page load would render
         // it. The first save of a canonical element creates a provisional
         // draft, and from that moment the screen around the form is a draft's —
@@ -214,10 +210,10 @@ export function useElementAutosave<T extends object>(
     return inFlight;
   }
 
-  // Driven by the Form renderers' change callbacks rather than a deep watch on
+  // Driven by the UI renderers' change callbacks rather than a deep watch on
   // the form: the form is created empty and its keys are added dynamically, so
   // watching `form.data()` doesn't reliably track them.
-  const delays: Record<FormChangeKind, number> = {
+  const delays: Record<UiChangeKind, number> = {
     typing: options.debounceMs?.typing ?? 1000,
     discrete: options.debounceMs?.discrete ?? 100,
   };
@@ -239,7 +235,7 @@ export function useElementAutosave<T extends object>(
 
   let suspended = false;
 
-  function schedule(kind: FormChangeKind = 'discrete'): void {
+  function schedule(kind: UiChangeKind = 'discrete'): void {
     // A submission in flight is authoritative, and its response re-seeds the
     // renderers with what it saved — the mutations that reconcile emits are the
     // server echoing the save back, not a fresh edit, and they arrive before
@@ -285,7 +281,7 @@ export function useElementAutosave<T extends object>(
    * stashed payload.
    */
   function clearSaved(): void {
-    saved.value = {form: null, screen: null, modified: []};
+    saved.value = {ui: null, screen: null, modified: []};
   }
 
   function acknowledgeChanges(): void {
@@ -317,7 +313,7 @@ export function useElementAutosave<T extends object>(
     httpStatus: readonly(httpStatus),
     modified,
     hasPendingChanges,
-    form: formPayload,
+    ui: uiPayload,
     screen: screenPayload,
     save,
     schedule,

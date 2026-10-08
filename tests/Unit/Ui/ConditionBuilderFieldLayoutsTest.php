@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
+use Symfony\Component\DomCrawler\Crawler;
+
+it('advertises field layouts on the resolved payload', function () {
+    $layout = ['type' => Entry::class, 'tabs' => []];
+    $ui = Ui::make([
+        Field::make('Condition', ConditionBuilder::make('elementCondition')
+            ->conditionClass(ElementCondition::class)
+            ->fieldLayouts([$layout])),
+    ]);
+
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
+
+    expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([$layout]);
+});
+
+it('defaults field layouts to an empty list', function () {
+    $ui = Ui::make([
+        Field::make('Condition', ConditionBuilder::make('elementCondition')
+            ->conditionClass(ElementCondition::class)),
+    ]);
+
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
+
+    expect($payload->nodes[0]->control->props['fieldLayouts'])->toBe([]);
+});
+
+it('hydrates field layout configs onto the condition', function () {
+    $condition = Conditions::createCondition([
+        'class' => ElementCondition::class,
+        'elementType' => Entry::class,
+        'fieldLayouts' => [['type' => Entry::class, 'tabs' => []]],
+    ]);
+
+    expect($condition)->toBeInstanceOf(ElementCondition::class)
+        ->and($condition->getFieldLayouts())->toHaveCount(1)
+        ->and($condition->getFieldLayouts()[0])->toBeInstanceOf(FieldLayout::class);
+});
+
+it('renders a builder for a condition seeded with field layouts', function () {
+    $html = ConditionBuilder::builderHtml(
+        [],
+        ElementCondition::class,
+        [],
+        true,
+        'elementCondition',
+        false,
+        [['type' => Entry::class, 'tabs' => []]],
+    );
+
+    expect($html)->toContain('elementCondition');
+});
+
+it('applies a custom add-rule label to the builder', function () {
+    $control = ConditionBuilder::make('condition')
+        ->conditionClass(ElementCondition::class)
+        ->addRuleLabel('Add a filter');
+
+    expect($control->props()['addRuleLabel'])->toBe('Add a filter')
+        ->and(ConditionBuilder::make('condition')->conditionClass(ElementCondition::class)->props())
+        ->not->toHaveKey('addRuleLabel')
+        ->and(ConditionBuilder::builderHtml([], ElementCondition::class, [], true, 'condition', false, [], 'Add a filter'))
+        ->toContain('Add a filter');
+});
+
+it('mounts a disabled builder with its fully namespaced input name', function () {
+    $html = ConditionBuilder::builderHtml([], ElementCondition::class, [], true, 'settings[selectionCondition]', true);
+    $crawler = new Crawler($html);
+    $host = $crawler->filter('craft-condition-builder');
+
+    expect($host->attr('data-name'))->toBe('settings[selectionCondition]')
+        ->and($host->attr('data-editable'))->toBe('0');
+});

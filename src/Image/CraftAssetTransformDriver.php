@@ -12,12 +12,12 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\t;

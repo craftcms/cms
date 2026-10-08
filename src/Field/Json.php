@@ -9,13 +9,13 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\JsonData;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use InvalidArgumentException;
@@ -87,7 +87,7 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof JsonData
             ? $context->value->getJson(true)
