@@ -133,6 +133,15 @@
       }
 
       await nextTick();
+
+      // Folded by the shell, which runs first on mount: keeping the selection
+      // in step mustn't open it back over the content. `select()` opens it
+      // itself when that's what's wanted.
+      if (overlaid?.value && element.selectedIndex < 0) {
+        collapsedByShell = true;
+        return;
+      }
+
       if (element.selectedIndex !== nextSelectedIndex) {
         element.selectedIndex = nextSelectedIndex;
       }
@@ -169,6 +178,11 @@
     }
 
     selectedTabId.value = tabId;
+    if (tabsElement.value) {
+      tabsElement.value.selectedIndex = visibleTabs.value.findIndex(
+        (tab) => tab.id === tabId
+      );
+    }
     updateLocationHash();
   }
 
@@ -214,6 +228,15 @@
           <craft-icon :name="tab.icon" :label="tab.label" />
         </craft-tab>
       </craft-tabs>
+      <craft-tooltip
+        v-for="tab in visibleTabs"
+        :key="tab.id"
+        :for="`${idPrefix}-${tab.id}`"
+        placement="left"
+        invoker-relation="label"
+      >
+        {{ tab.label }}
+      </craft-tooltip>
     </Teleport>
     <div class="details-tabs__panels">
       <section
@@ -257,6 +280,17 @@
       </DetailsTabPanel>
     </div>
   </craft-tabs>
+  <template v-if="!rail">
+    <craft-tooltip
+      v-for="tab in visibleTabs"
+      :key="tab.id"
+      :for="`${idPrefix}-${tab.id}`"
+      placement="left"
+      invoker-relation="label"
+    >
+      {{ tab.label }}
+    </craft-tooltip>
+  </template>
 </template>
 
 <style scoped>

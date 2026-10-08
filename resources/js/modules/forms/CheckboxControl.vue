@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
+  import {inject} from 'vue';
   import type {FormControlPayload} from './types';
   import {
+    FieldLabelSrOnly,
     ignoreModelValueInitialization,
     inputName,
     serverErrorValidators,
@@ -21,6 +23,9 @@
     required: boolean;
   }>();
   const emit = defineEmits<{(event: 'update:value', value: boolean): void}>();
+  // A hidden field label already names the input; repeating it would show it
+  // beside the box and read it twice.
+  const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     if (!(event.currentTarget instanceof CraftCheckbox)) {
@@ -34,7 +39,7 @@
 <template>
   <craft-checkbox
     :name="editable ? inputName(control.path) : ''"
-    :label="control.props.label ?? label"
+    :label="control.props.label ?? (fieldLabelSrOnly ? undefined : label)"
     .checked="Boolean(value)"
     .choiceValue="String(control.props.checkedValue ?? '1')"
     :disabled="!editable"

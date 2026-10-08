@@ -105,8 +105,15 @@
 </template>
 
 <style scoped>
-  craft-input-date-time > craft-button {
-    margin-inline-start: calc(var(--c-spacing-sm) * -1);
-    margin-inline-end: calc(var(--_flush-inline) * -1);
+  craft-input-date-time[width='full']::part(inputs) {
+    width: calc(
+      100% - ((var(--c-input-spacing-inline) * 2) + var(--c-size-control-sm)) -
+        1px
+    );
+  }
+
+  craft-input-date-time[width='full'] > craft-button {
+    margin-inline-start: var(--c-input-spacing-inline);
+    margin-inline-end: calc(var(--c-input-spacing-inline) + 1px);
   }
 </style>
