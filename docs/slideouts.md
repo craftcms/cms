@@ -8,7 +8,7 @@ Screens that haven't been ported to a Vue page still work: they fall back to a b
 that draws the server-rendered HTML the response already carries.
 
 > This is the Vue/Inertia system. The legacy `Craft.CpScreenSlideout` (jQuery/Garnish, in
-> `resources/js/modules/slideout/`) still exists and is unchanged — see
+> `resources/js/modules/slideout/`) opens its screen here whenever this stack is available — see
 > [Coexisting with the legacy stack](#coexisting-with-the-legacy-stack).
 
 ## Basic Usage
@@ -413,6 +413,10 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 The legacy `Craft.Slideout` (and its `CpScreenSlideout` / `ElementEditorSlideout` subclasses) is
 still very much alive — matrix, component select and the nested element manager all open one, and
 the field layout designer falls back to it.
+
+`new Craft.CpScreenSlideout(action)` itself opens a Vue panel whenever `Craft.openSlideout` exists,
+relaying `submit`/`close` back to the instance; subclasses keep the legacy panel. See
+`resources/js/modules/slideout/README.md`.
 
 > The designer's component settings use `openSlideoutWith()` when the Vue stack is available, and
 > the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,

@@ -117,6 +117,20 @@ through the dirty-check):
 `beforeLoad`, `load`, and `submit` (`{response, data}`, where `data` is the
 saved model's payload).
 
+### Opening in the Vue slideout stack
+
+When the page has the Vue slideout stack, `new CpScreenSlideout(action)` (or
+the `Craft.CpScreenSlideout` global) opens the screen there instead: `action`
+is fetched as an action URL, or as is when it's a URL, with `params` appended.
+The `load`, `submit` and `close` events and the `onLoad`/`onSubmit` callbacks
+still fire, `close()` closes the panel, and `closeMeMaybe()` goes through the
+panel's unsaved-changes check. The panel always closes after a save, so
+`closeOnSubmit: false` has no effect, and the legacy DOM members (`$container`,
+`$footer`, …) and methods such as `reload()` aren't available.
+
+Subclasses, including `ElementEditorSlideout` and legacy `.extend()`
+subclasses, keep the legacy panel, since they may build on its markup.
+
 ### Useful methods
 
 `load()` / `reload()`, `isDirty()`, `closeMeMaybe()`, `showErrors(errors)` /

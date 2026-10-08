@@ -93,6 +93,9 @@ export class CpScreenSlideout extends Slideout {
   override settings: CpScreenSlideoutSettings | null = null;
 
   action: string | null = null;
+
+  /** Set when the screen opened in the Vue slideout stack instead. */
+  vueSlideout: {id: string | null} | null = null;
   namespace: string | null = null;
   inertiaApp: App | null = null;
 
@@ -164,6 +167,11 @@ export class CpScreenSlideout extends Slideout {
     settings?: Partial<CpScreenSlideoutSettings>
   ): void {
     this.action = action;
+
+    if (this.opensInVueStack()) {
+      this.openInVueStack(action, settings);
+      return;
+    }
 
     const mergedSettings: Partial<CpScreenSlideoutSettings> = Object.assign(
       {},
@@ -925,6 +933,14 @@ export class CpScreenSlideout extends Slideout {
   }
 
   closeMeMaybe(): void {
+    // The Vue stack runs its own unsaved-changes check.
+    if (this.vueSlideout) {
+      if (this.vueSlideout.id) {
+        Craft.closeSlideout(this.vueSlideout.id);
+      }
+      return;
+    }
+
     if (!this.isOpen) {
       return;
     }
@@ -943,6 +959,13 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override close(): void {
+    if (this.vueSlideout) {
+      if (this.vueSlideout.id) {
+        Craft.closeSlideout(this.vueSlideout.id, {force: true});
+      }
+      return;
+    }
+
     this.unmountInertiaApp();
 
     if (this.showingSidebar) {
@@ -955,6 +978,66 @@ export class CpScreenSlideout extends Slideout {
       this.ignoreFailedRequest = true;
       this.abortController.abort();
     }
+  }
+
+  /**
+   * Subclasses stay on the legacy panel, since they may build on its markup.
+   * The compat wrapper's `ancestor` is this class; a legacy `.extend()` sits
+   * one level further down.
+   */
+  private opensInVueStack(): boolean {
+    const ctor = this.constructor as {ancestor?: unknown};
+
+    return (
+      Craft.openSlideout instanceof Function &&
+      (ctor === CpScreenSlideout || ctor.ancestor === CpScreenSlideout)
+    );
+  }
+
+  /** Opens the screen as a Vue slideout, relaying its events to this instance. */
+  private openInVueStack(
+    action: string,
+    settings?: Partial<CpScreenSlideoutSettings>
+  ): void {
+    this.settings = Object.assign({}, CpScreenSlideout.defaults, settings);
+    this.vueSlideout = {id: null};
+
+    const params = {...this.getParams(), ...this.settings.params};
+    const href = /^(?:https?:\/\/|\/)/.test(action)
+      ? Craft.getUrl(action, params)
+      : Craft.getActionUrl(action, params);
+
+    void Craft.openSlideout(href, {
+      opener: $(this.settings.triggerElement)[0] ?? undefined,
+      onSaved: ({data, draft}: {data?: any; draft?: boolean}) => {
+        if (draft || !data) {
+          return;
+        }
+
+        if (data.modelClass && data.modelId) {
+          Craft.refreshComponentInstances(data.modelClass, data.modelId);
+        }
+
+        const ev = {
+          response: {data},
+          data: (data.modelName && data[data.modelName]) || {},
+        };
+        this.trigger('submit', ev);
+        this.settings!.onSubmit?.(ev);
+      },
+      onClosed: () => {
+        this.vueSlideout!.id = null;
+        this.trigger('close');
+      },
+    }).then((panel: {id: string} | null) => {
+      if (!panel) {
+        return;
+      }
+
+      this.vueSlideout!.id = panel.id;
+      this.trigger('load');
+      this.settings!.onLoad?.();
+    });
   }
 
   private unmountInertiaApp(): void {
