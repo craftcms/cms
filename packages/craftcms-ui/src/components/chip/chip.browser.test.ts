@@ -40,9 +40,27 @@ it('shows the thumbnail and status alongside custom prefix content', async () =>
   expect(box(document.getElementById('status')!).width).toBe(10);
 });
 
+/**
+ * The radius a thumbnail needs to stay concentric with the chip's corner,
+ * before any minimum.
+ */
+function concentricRadius(chip: Element): number {
+  const style = getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!);
+  const padding = parseFloat(
+    getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip__thumbnail')!)
+      .paddingTop
+  );
+
+  return (
+    parseFloat(style.borderTopLeftRadius) -
+    parseFloat(style.borderTopWidth) -
+    padding
+  );
+}
+
 it('sizes and rounds the thumbnail to suit the chip', async () => {
   document.body.innerHTML = `
-    <style>:root { --c-radius-sm: 3px; }</style>
+    <style>:root { --c-radius-md: 12px; }</style>
     <craft-chip show-thumb size="large">
       <div slot="thumbnail"><craft-thumbnail src="${image}" alt="Thumbnail"></craft-thumbnail></div>
       Label
@@ -59,7 +77,30 @@ it('sizes and rounds the thumbnail to suit the chip', async () => {
     width: 40,
     height: 40,
   });
-  expect(getComputedStyle(rendered).borderRadius).toBe('3px');
+  expect(concentricRadius(chip)).toBeGreaterThan(0);
+  expect(parseFloat(getComputedStyle(rendered).borderRadius)).toBe(
+    concentricRadius(chip)
+  );
+});
+
+it('keeps a thumbnail’s corners rounded when its padding outgrows the chip’s', async () => {
+  document.body.innerHTML = `
+    <style>:root { --c-radius-md: 4px; }</style>
+    <craft-chip show-thumb size="large">
+      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+  const thumbnail = chip.querySelector('craft-thumbnail')!;
+  await chip.updateComplete;
+  await thumbnail.updateComplete;
+
+  const rendered = thumbnail.shadowRoot!.querySelector('.thumbnail__image')!;
+
+  expect(concentricRadius(chip)).toBeLessThanOrEqual(0);
+  expect(parseFloat(getComputedStyle(rendered).borderRadius)).toBeGreaterThan(
+    0
+  );
 });
 
 it('centers a thumbnail that’s smaller than the chip’s thumbnail size', async () => {
@@ -434,7 +475,7 @@ it('aligns the prefix and suffix against the first line when align-items is star
 
 it('sizes and rounds an image slotted straight into the thumbnail', async () => {
   document.body.innerHTML = `
-    <style>:root { --c-radius-sm: 3px; }</style>
+    <style>:root { --c-radius-md: 12px; }</style>
     <craft-chip show-thumb>
       <img slot="thumbnail" src="${image}" alt="" />
       Label
@@ -442,7 +483,9 @@ it('sizes and rounds an image slotted straight into the thumbnail', async () => 
   const chip = document.querySelector('craft-chip')!;
   await chip.updateComplete;
 
-  expect(getComputedStyle(chip.querySelector('img')!).borderRadius).toBe('3px');
+  expect(
+    parseFloat(getComputedStyle(chip.querySelector('img')!).borderRadius)
+  ).toBe(concentricRadius(chip));
   // The source image is 10px; it takes the chip's thumbnail size instead.
   expect(box(chip.querySelector('img')!)).toEqual({width: 30, height: 30});
 });
