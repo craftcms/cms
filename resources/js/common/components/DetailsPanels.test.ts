@@ -31,7 +31,7 @@ const panels = [
   {id: 'history', label: 'History', icon: 'clock', slot: 'history'},
 ];
 
-const exposed = ref<{select(tabId: string): void} | null>(null);
+const exposed = ref<{select(panelId: string): void} | null>(null);
 
 async function mount(
   rail: string | null,

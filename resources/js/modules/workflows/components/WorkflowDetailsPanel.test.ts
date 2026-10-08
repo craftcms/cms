@@ -75,7 +75,7 @@ describe('WorkflowDetailsPanel', () => {
         actionUrl: '/actions/elements/save-draft',
         params: {},
         redirect: null,
-        tabId: null,
+        panelId: null,
       },
       menu: [],
       buttons: [
