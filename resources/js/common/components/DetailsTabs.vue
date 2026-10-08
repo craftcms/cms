@@ -8,6 +8,7 @@
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
+    useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
@@ -82,11 +83,27 @@
       refresh(): void;
     }
   >('tabs');
+  // A slideout opens on its content; the column starts folded to the rail.
+  const startsFolded = useIsSlideout();
   const selectedTabId = shallowRef<string | null>(
-    props.syncLocationHash && window.location.hash
-      ? window.location.hash.slice(1)
-      : (visibleTabs.value[0]?.id ?? null)
+    startsFolded
+      ? null
+      : props.syncLocationHash && window.location.hash
+        ? window.location.hash.slice(1)
+        : (visibleTabs.value[0]?.id ?? null)
   );
+  if (startsFolded) {
+    watch(
+      tabsElement,
+      (element) => {
+        if (element) {
+          element.selectedIndex = -1;
+        }
+      },
+      {once: true}
+    );
+  }
+
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
   let collapsedByShell = false;
 

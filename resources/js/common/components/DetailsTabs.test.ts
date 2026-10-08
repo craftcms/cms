@@ -9,8 +9,10 @@ import {
   type App,
 } from 'vue';
 import {
+  ScreenContextKey,
   ScreenDetailsOverlayKey,
   ScreenDetailsRailKey,
+  type ScreenMode,
 } from '@/common/composables/screen';
 import DetailsTabs from './DetailsTabs.vue';
 
@@ -42,13 +44,15 @@ const tabs = [
 
 async function mount(
   rail: string | null,
-  overlaid = false
+  overlaid = false,
+  mode: ScreenMode = 'page'
 ): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
 
   app = createApp(
     defineComponent({
       setup() {
+        provide(ScreenContextKey, {mode});
         provide(ScreenDetailsRailKey, rail);
         provide(ScreenDetailsOverlayKey, ref(overlaid));
 
@@ -108,4 +112,22 @@ it('stays folded to the rail when the shell mounts it overlaid', async () => {
   expect(
     document.querySelector<CraftTabs>('#rail craft-tabs')?.selectedIndex
   ).toBe(-1);
+});
+
+it('starts folded to the rail in a slideout', async () => {
+  await mount('#rail', false, 'slideout');
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(
+    document.querySelector<CraftTabs>('#rail craft-tabs')?.selectedIndex
+  ).toBe(-1);
+});
+
+it('starts open on a page with room beside the content', async () => {
+  await mount('#rail');
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(
+    document.querySelector<CraftTabs>('#rail craft-tabs')?.selectedIndex
+  ).toBe(0);
 });
