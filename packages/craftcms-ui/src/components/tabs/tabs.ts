@@ -76,7 +76,7 @@ const FIT_TOLERANCE = 1;
  * lets a panel be any element (a `<div>`, a `<craft-pane>`, a form section)
  * rather than a wrapper this component defines:
  *
- *     <craft-tabs>
+ *     <craft-tabs label="Entry settings">
  *       <craft-tab slot="tab">Content</craft-tab>
  *       <div slot="panel">…</div>
  *       <craft-tab slot="tab">Settings</craft-tab>
@@ -136,7 +136,7 @@ const FIT_TOLERANCE = 1;
  * holding the width of its own label — four tabs take a quarter each, however
  * long their labels are:
  *
- *     <craft-tabs equal-width>
+ *     <craft-tabs label="Entry settings" equal-width>
  *       <craft-tab slot="tab">Content</craft-tab>
  *       <div slot="panel">…</div>
  *       <craft-tab slot="tab">Advanced settings</craft-tab>
