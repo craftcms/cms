@@ -61,7 +61,8 @@ readonly class Navigation
      * `_layouts/components/global-sidebar.twig` renders a subnav and stops,
      * and has no notion of a group — a heading with no URL would come out as
      * an unclickable nav item. So a group hands its children up in its place,
-     * which is what that template saw before the tree went deeper.
+     * which is what that template saw before the tree went deeper. That
+     * goes for top-level groups (e.g. “Administration”) too.
      *
      * @return NavItem[]
      */
@@ -73,7 +74,7 @@ readonly class Navigation
             }
 
             return $item;
-        }, $this->getItems());
+        }, $this->flattenGroups($this->getItems()));
     }
 
     /**
