@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {capitalize, t} from '@craftcms/ui';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useCraftTable} from '@/common/table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {

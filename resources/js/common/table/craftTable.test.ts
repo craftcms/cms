@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useCraftTable} from './craftTable';
-import {createCraftColumnHelper} from './helpers/createCraftColumnHelper';
-import {useServerSort} from './composables/useServerSort';
+import {createCraftColumnHelper} from './createCraftColumnHelper';
+import {useServerSort} from './useServerSort';
 
 interface TestRow {
   id: number;

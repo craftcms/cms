@@ -1,17 +1,17 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {useCraftTable} from '@/common/table/craftTable';
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
-  import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
+  import {useServerPagination} from '@/common/table/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
+  import {useServerSort} from '@/common/table/useServerSort';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';

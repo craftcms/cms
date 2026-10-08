@@ -5,7 +5,7 @@
     type Row,
     type Table,
   } from '@tanstack/vue-table';
-  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+  import type {CraftTableFeatures} from '@/common/table/craftTable';
   import {t} from '@craftcms/ui';
   import {computed, ref, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
