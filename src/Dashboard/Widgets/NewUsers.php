@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -31,8 +32,16 @@ class NewUsers extends Widget
     #[Override]
     public static function isSelectable(): bool
     {
-        // This widget is only available for Craft Pro
-        return Edition::get()->value >= Edition::Pro->value;
+        return self::isAvailable();
+    }
+
+    /**
+     * The widget is only available for Craft Pro, and requires the `viewUsers` permission.
+     */
+    private static function isAvailable(): bool
+    {
+        return Edition::get()->value >= Edition::Pro->value
+            && (currentUser()?->can('viewUsers') ?? false);
     }
 
     #[Override]
@@ -71,7 +80,7 @@ class NewUsers extends Widget
 
     public function component(): ?string
     {
-        return Edition::get()->value >= Edition::Pro->value ? 'craft:widget-new-users' : null;
+        return self::isAvailable() ? 'craft:widget-new-users' : null;
     }
 
     /** @return array{userGroupId: ?int, dateRange: string} */
@@ -81,9 +90,9 @@ class NewUsers extends Widget
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $form = Form::make([
+        $ui = Ui::make([
             Field::make(t('Date Range'))
                 ->control(Choice::make('dateRange')->value($this->dateRange)->options([
                     ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
@@ -95,7 +104,7 @@ class NewUsers extends Widget
 
         $userGroups = UserGroups::getAllGroups();
 
-        return $form->when($userGroups->isNotEmpty(), fn (Form $form) => $form->add(
+        return $ui->when($userGroups->isNotEmpty(), fn (Ui $ui) => $ui->add(
             Field::make(t('User Group'))
                 ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
                     ['label' => t('All'), 'value' => ''],

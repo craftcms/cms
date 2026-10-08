@@ -2046,7 +2046,11 @@ class View extends \yii\web\View
 $js
   };
 
-  if (document.readyState === 'loading') {
+  const whenReady = window.Craft && window.Craft.whenReady;
+
+  if (typeof whenReady === 'function') {
+    whenReady(() => run.call(document));
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
   } else {
     run.call(document);

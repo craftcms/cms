@@ -235,7 +235,7 @@
         </craft-button>
         <craft-button
           variant="primary"
-          :disabled="!newFolderName.trim() || creatingFolder"
+          .disabled="!newFolderName.trim() || creatingFolder"
           @click="createSubfolder"
         >
           {{ t('Create') }}
@@ -263,7 +263,7 @@
         </craft-button>
         <craft-button
           variant="primary"
-          :disabled="!renameName.trim() || renaming"
+          .disabled="!renameName.trim() || renaming"
           @click="submitRename"
         >
           {{ t('Rename') }}

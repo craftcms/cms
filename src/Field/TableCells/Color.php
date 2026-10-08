@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\TableCells;
 
 use CraftCms\Cms\Field\Data\ColorData;
-use CraftCms\Cms\Form\Controls\Color as ColorControl;
-use CraftCms\Cms\Form\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Color as ColorControl;
+use CraftCms\Cms\Ui\Controls\Control;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 
 use function CraftCms\Cms\t;

@@ -9,14 +9,14 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
@@ -249,7 +249,7 @@ it('copies a field value from another site and returns the updated field', funct
 function fieldActionLabels(Entry $entry): array
 {
     $layoutElement = $entry->getFieldLayout()->getCustomFieldElements()[0];
-    $fieldNode = $layoutElement->formNode(new FieldLayoutElementContext($entry, new FormContext));
+    $fieldNode = $layoutElement->uiNode(new FieldLayoutElementContext($entry, new UiContext));
 
     return collect($fieldNode->children())
         ->filter(fn ($node) => $node instanceof ActionMenu)

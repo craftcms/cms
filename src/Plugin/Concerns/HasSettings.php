@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\PluginSettings;
-use CraftCms\Cms\Plugin\PluginSettingsForm;
+use CraftCms\Cms\Plugin\PluginSettingsUi;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 use LogicException;
@@ -108,21 +108,21 @@ trait HasSettings
 
     private function settingsResponse(bool $readOnly): mixed
     {
-        $form = app(PluginSettingsForm::class)->render($this, $readOnly);
+        $ui = app(PluginSettingsUi::class)->render($this, $readOnly);
 
         return new CpScreenResponse()
             ->title($this->name)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Plugins'), 'settings/plugins')
             ->redirectUrl('settings')
-            ->inertiaPage('Form', [
-                'form' => $form,
+            ->inertiaPage('Ui', [
+                'ui' => $ui,
                 'submit' => [
                     'method' => 'post',
                     'url' => Url::cpUrl("settings/plugins/{$this->handle}"),
                 ],
                 ...($readOnly ? [] : [
-                    'refreshUrl' => action([PluginsController::class, 'renderSettingsForm'], [$this->handle]),
+                    'refreshUrl' => action([PluginsController::class, 'renderSettingsUi'], [$this->handle]),
                 ]),
             ]);
     }
@@ -137,7 +137,7 @@ trait HasSettings
         // carry on
     }
 
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         return null;
     }

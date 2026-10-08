@@ -49,7 +49,7 @@ it('requires admin changes', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/groups/Edit')
             ->where('deleteAction', null)
-            ->where('form.nodes', function (Collection $nodes): bool {
+            ->where('ui.nodes', function (Collection $nodes): bool {
                 $controls = $nodes->pluck('control')->filter();
 
                 return $controls->isNotEmpty()
@@ -74,12 +74,12 @@ test('create requires pro edition', function () {
     get(action([UserGroupsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/groups/Edit')
-            ->where('form.values.id', null)
-            ->where('form.values.permissions', [])
+            ->where('ui.values.id', null)
+            ->where('ui.values.permissions', [])
             ->where('submit.method', 'post')
             ->where('crumbs.3.label', 'New user group')
             ->where('crumbs.3.href', null)
-            ->where('form.nodes', fn (Collection $nodes): bool => $nodes
+            ->where('ui.nodes', fn (Collection $nodes): bool => $nodes
                 ->contains(fn (array $node): bool => ($node['control']['path'] ?? null) === ['handle']
                     && ($node['control']['props']['source'] ?? null) === ['name'])));
 });
@@ -109,8 +109,8 @@ test('edit renders user group page when edition is pro or higher', function () {
     get(action([UserGroupsController::class, 'edit'], $group->id))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/groups/Edit')
-            ->where('form.values.id', $group->id)
-            ->where('form.values.name', $group->name)
+            ->where('ui.values.id', $group->id)
+            ->where('ui.values.name', $group->name)
             ->where('elevatedFields', ['permissions'])
             ->where('deleteAction.url', action([UserGroupsController::class, 'destroy'], $group->id)));
 });

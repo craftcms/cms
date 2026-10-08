@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\EntryTypeSelect as EntryTypeSelectControl;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -154,7 +155,7 @@ class EntryTypesController
         return $response;
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -180,11 +181,11 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
-            'form' => new EntryTypeEditViewModel(
+            'ui' => new EntryTypeEditViewModel(
                 new EntryType,
                 brandNew: ! isset($data['values']['entryTypeId']),
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -283,6 +284,31 @@ class EntryTypesController
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryTypeData->getUiLabel(),
         ]), redirect: action([EntryTypesController::class, 'index']));
+    }
+
+    public function renderSelect(Request $request, HtmlStack $HtmlStack): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'allowOverrides' => ['required', 'boolean'],
+            'create' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        $html = EntryTypeSelectControl::selectHtml(
+            $data['value'],
+            $data['allowOverrides'],
+            $data['create'],
+            $data['name'],
+            $data['disabled'],
+        );
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
+        ]);
     }
 
     public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse

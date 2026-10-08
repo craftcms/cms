@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -41,7 +41,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     #[Override]
     protected function inputNodes(): array
     {
-        return [Field::make($this->getLabel(), Choice::make('value')->options($this->formOptions($this->options()))->withoutPlaceholder()->value($this->value))];
+        return [Field::make($this->getLabel(), Choice::make('value')->options($this->uiOptions($this->options()))->withoutPlaceholder()->value($this->value))];
     }
 
     #[Override]

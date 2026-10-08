@@ -38,21 +38,6 @@ use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
-use CraftCms\Cms\Form\Controls\NestedElements;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Table as TableControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -69,6 +54,21 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
+use CraftCms\Cms\Ui\Controls\NestedElements;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
@@ -393,7 +393,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $objectTemplateTip = SelectOptions::getObjectTemplateTip();
         $ownerTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers();
@@ -401,8 +401,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             Entry::class,
             array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->_entryTypes),
         );
-        $form = Form::make([
-            FormField::make(t('Entry Types'))
+        $ui = Ui::make([
+            UiField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
                     ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))
@@ -410,8 +410,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ]);
 
         if (Sites::isMultiSite()) {
-            $form->add(
-                FormField::make(t('Propagation Method'))
+            $ui->add(
+                UiField::make(t('Propagation Method'))
                     ->instructions(t('Which sites should entries be saved to?'))
                     ->control(Choice::make('propagationMethod')->options([
                         ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
@@ -420,7 +420,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
                         ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
                     ])->value($this->propagationMethod->value)),
-                FormField::make(t('Propagation Key Format'))
+                UiField::make(t('Propagation Key Format'))
                     ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
                     ->control(Text::make('propagationKeyFormat')
                         ->monospace()
@@ -460,21 +460,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $isIndex = $this->viewMode === self::VIEW_MODE_INDEX;
 
-        return $form->add(
+        return $ui->add(
             Group::make('matrix-site-settings', [
-                FormField::make(t('Site Settings'))
+                UiField::make(t('Site Settings'))
                     ->instructions(t('Choose the site-specific settings for nested entries.'))
                     ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
             ])->dependsOn('settings.entryTypes'),
-            FormField::make(t('Min {type}', ['type' => t('Entries')]))
+            UiField::make(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('minEntries')->min(0)->value($this->minEntries)),
-            FormField::make(t('Max {type}', ['type' => t('Entries')]))
+            UiField::make(t('Max {type}', ['type' => t('Entries')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('maxEntries')->min(0)->value($this->maxEntries)),
-            FormField::make(t('Enable versioning for entries in this field'))
+            UiField::make(t('Enable versioning for entries in this field'))
                 ->control(Lightswitch::make('enableVersioning')->value($this->enableVersioning)),
-            FormField::make(t('View Mode'))
+            UiField::make(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
@@ -493,14 +493,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->reactive()),
             // Only the index view has a table to include, or pages to size — and
             // there are only columns to choose once that table is switched on.
-            FormField::make(t('Include Table View'))
+            UiField::make(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
                 ->control(Lightswitch::make('includeTableView')
                     ->value($this->includeTableView)
                     ->reactive())
                 ->visible($isIndex),
             Group::make('matrix-table-columns', [
-                FormField::make(t('Default Table Columns'))
+                UiField::make(t('Default Table Columns'))
                     ->instructions(t('Choose which table columns should be visible by default.'))
                     ->control(Choice::make('defaultTableColumns')
                         ->multiple()
@@ -508,16 +508,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         ->value($this->defaultTableColumns))
                     ->visible($isIndex && $this->includeTableView),
             ])->dependsOn('settings.includeTableView'),
-            FormField::make(t('Default View Mode'))
+            UiField::make(t('Default View Mode'))
                 ->control(Choice::make('defaultIndexViewMode')->options($indexViewModes)->value($this->defaultIndexViewMode)),
-            FormField::make(t('{type} Per Page', ['type' => t('Entries')]))
+            UiField::make(t('{type} Per Page', ['type' => t('Entries')]))
                 ->instructions(t('The total number of {type} to display per page within the element index.', ['type' => t('entries')]))
                 ->control(Choice::make('pageSize')->options(array_map(fn (int $size): array => [
                     'label' => (string) $size,
                     'value' => $size,
                 ], [10, 20, 50, 100]))->value($this->pageSize ?? 50))
                 ->visible($isIndex),
-            FormField::make(t('“New” Button Label'))
+            UiField::make(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
                 ->control(Text::make('createButtonLabel')->placeholder($this->defaultCreateButtonLabel())->value($this->createButtonLabel)),
         );
@@ -570,19 +570,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function getEntryTypesForOwner(ElementInterface $owner): array
     {
         return $this->getEntryTypesForField(
-            $this->entriesForForm($owner->getFieldValue($this->handle)),
+            $this->entriesForUi($owner->getFieldValue($this->handle)),
             $owner,
         );
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
             return $this->nestedEntriesControl($context);
         }
 
-        $entries = $this->entriesForForm($context->value);
+        $entries = $this->entriesForUi($context->value);
         $creationTypes = $this->getEntryTypesForField($entries, $context->element);
         $entryTypes = collect([
             ...array_map(fn (Entry $entry): EntryType => $entry->getType(), $entries),
@@ -596,7 +596,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'group' => $type->group,
             ]])
             ->all();
-        $values = $forms = $sortOrder = $blocks = [];
+        $values = $uis = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
@@ -608,10 +608,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+            $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new FormContext(mode: $context->mode === ControlMode::Editable ? $context->form->mode : $context->mode),
+                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
             );
             $sortOrder[] = $uid;
         }
@@ -622,7 +622,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->elementType(Entry::class)
             ->blocks($blocks)
             ->create($this->createConfig($context->element, $creationTypes))
-            ->forms($forms)
+            ->uis($uis)
             ->siteName($this->localizedSiteName($context->element))
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
@@ -630,7 +630,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** @return list<Entry> */
-    protected function entriesForForm(mixed $value): array
+    protected function entriesForUi(mixed $value): array
     {
         // Include disabled entries and in-memory values retained after validation.
         $entries = array_values(match (true) {
@@ -749,7 +749,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * and so the permission checks stay on the server. Behavior travels with each
      * item as a declarative `action` descriptor — the instance-local ones as a
      * `craft:matrix-block-action` event the owning Control listens for, scoped by
-     * the invoking element (see `resources/js/modules/forms/nested-elements/NestedElementBlocksControl.vue`).
+     * the invoking element (see `resources/js/modules/ui/nested-elements/NestedElementBlocksControl.vue`).
      *
      * @param  list<EntryType>|null  $creationTypes
      * @return list<array<string, mixed>>
@@ -1398,10 +1398,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $context->element;
         $editable = $context->mode === ControlMode::Editable
-            && $context->form->mode === ControlMode::Editable
+            && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->formControl(
+        return $this->entryManager()->uiControl(
             $context->path,
             $owner,
             $this->viewMode,
@@ -2021,7 +2021,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
             // `collapsed` has no column — it only lives for the request. Echoing the
             // posted value back keeps a collapsed block collapsed across an autosave
-            // instead of springing open on the Form the response returns.
+            // instead of springing open on the UI the response returns.
             if (array_key_exists('collapsed', $entryData)) {
                 $entry->collapsed = ! empty($entryData['collapsed']);
             }

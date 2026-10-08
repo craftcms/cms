@@ -3,7 +3,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
-  import {computed, nextTick, useTemplateRef, watch} from 'vue';
+  import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
+  import {useResizeObserver} from '@vueuse/core';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {type CraftData} from '@/common/composables/useCraftData';
   import {usePage} from '@inertiajs/vue3';
@@ -35,6 +36,27 @@
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
+  // Whether the nav overflows its body, so the footer can show it's floating
+  // above more of it. Watching the nav as well as the body catches branches
+  // expanding, which grow the nav without resizing the body.
+  const body = useTemplateRef<HTMLElement>('body');
+  const scrolling = ref(false);
+  useResizeObserver(
+    () =>
+      body.value
+        ? [
+            body.value,
+            ...Array.from(body.value.children).filter(
+              (child): child is HTMLElement => child instanceof HTMLElement
+            ),
+          ]
+        : [],
+    () => {
+      scrolling.value =
+        !!body.value && body.value.scrollHeight > body.value.clientHeight;
+    }
+  );
+
   // The item re-renders as a different element when the nav collapses, which
   // would otherwise drop focus to the page.
   async function toggleCollapsed() {
@@ -54,7 +76,10 @@
     class="cp-sidebar"
     :data-visibility="sidebar.visibility"
     :data-mode="sidebar.mode"
-    :class="{'cp-sidebar--collapsed': collapsed}"
+    :class="{
+      'cp-sidebar--collapsed': collapsed,
+      'cp-sidebar--scrolling': scrolling,
+    }"
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
@@ -71,7 +96,7 @@
       >
       </craft-button>
     </div>
-    <div class="cp-sidebar__body">
+    <div ref="body" class="cp-sidebar__body">
       <!-- Floating, the sidebar overlays the page and there's nowhere for a
         flyout to go, so every branch expands in place instead. -->
       <MainNav
@@ -104,7 +129,6 @@
     flex-direction: column;
     inset-block-start: 0;
     flex: 0 0 auto;
-    border-inline-end: 1px solid var(--c-color-border-quiet);
     overflow: clip;
   }
 
@@ -155,11 +179,35 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
+    /* Level with the details tab rail, which starts below the body's inset
+       and border. */
+    padding-block-start: calc(
+      var(--c-spacing-md) + var(--cp-body-inset) + var(--cp-body-border-width)
+    );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     scrollbar-gutter: stable;
+  }
+
+  /* Floating, there's no rail beside it to level with. */
+  @media (width < var(--breakpoint-lg)) {
+    .cp-sidebar__body {
+      padding-block-start: var(--c-spacing-md);
+    }
+  }
+
+  /* Docked and expanded, PageScreen flattens the body below 932px of shell,
+     dropping its inset, so the rail moves up by that much. The sidebar sits
+     outside the shell's container, so the same width is written as a viewport
+     width here: 932px plus the 226px expanded sidebar. Keep it in step. */
+  @media (width >= var(--breakpoint-lg)) and (width < 1158px) {
+    .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
+      padding-block-start: calc(
+        var(--c-spacing-md) + var(--cp-body-border-width)
+      );
+    }
   }
 
   .cp-sidebar__footer {
@@ -172,8 +220,11 @@
     min-height: var(--cp-footer-height);
     position: sticky;
     z-index: 1;
+    border-block-start: 1px solid transparent;
     inset-block-end: var(--cp-debug-bar-height, 0px);
-    background-color: var(--c-surface-sunken);
-    border-block-start: 1px solid var(--c-color-border-quiet);
+  }
+
+  .cp-sidebar--scrolling .cp-sidebar__footer {
+    border-block-start-color: var(--c-color-border-quiet);
   }
 </style>

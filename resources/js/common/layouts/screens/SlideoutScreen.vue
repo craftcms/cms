@@ -33,6 +33,7 @@
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
     ScreenContentReadyKey,
+    ScreenDetailsRailKey,
     ScreenShellKey,
     type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
@@ -157,6 +158,9 @@
     ScreenDetailsOverlayKey,
     useDetailsOverlay(() => detailsEl.value, detailsWidth)
   );
+  // A slideout keeps its details tab strip beside its panels, even when it
+  // opens over a page that has a rail of its own.
+  provide(ScreenDetailsRailKey, null);
 
   const submittingHtml = ref(false);
   const screenErrors = ref<Record<string, string> | null>(null);

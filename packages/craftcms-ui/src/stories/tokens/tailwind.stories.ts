@@ -150,6 +150,38 @@ export const BorderColors: Story = {
 };
 
 /**
+ * Text colors: `--text-color-*` feeds only `text-*`, so `text-quiet` comes
+ * without a `bg-quiet`.
+ */
+export const TextColors: Story = {
+  name: 'Text Colors',
+  render: () => html`
+    <div class="stage">
+      <table class="cp-table cp-table--padded">
+        <thead>
+          <tr>
+            <th>Preview</th>
+            <th>Class</th>
+            <th>Token</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${entriesIn('text-color').map(
+            (entry) => html`
+              <tr>
+                <td style="color:${entry.value}">Aa</td>
+                <td>${classCell(`text-${entry.name}`)}</td>
+                <td>${tokenCell(entry)}</td>
+              </tr>
+            `
+          )}
+        </tbody>
+      </table>
+    </div>
+  `,
+};
+
+/**
  * Spacing: the named `--c-spacing-*` steps, mapped separately for padding,
  * margin, gap and space. Not `--spacing-*`, which `w-*`, `max-w-*` and
  * `min-w-*` read before their container sizes.

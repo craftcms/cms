@@ -10,15 +10,15 @@ use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Field\TableCellTypes;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use GraphQL\Type\Definition\Type;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -34,7 +34,7 @@ it('uses configured default row values for newly added rows', function () {
         ]],
     ]);
 
-    $settings = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+    $settings = app(UiResolver::class)->resolve($field->settingsUi(), new UiContext);
     $defaultRowValues = $settings->nodes[1]->children[1];
 
     expect($defaultRowValues->props['label'])->toBe('Default Row Values')
@@ -46,7 +46,7 @@ it('uses configured default row values for newly added rows', function () {
             'minRows' => 1,
             'maxRows' => 1,
         ])
-        ->and($field->formControl(new FieldContext('details'))->props()['defaultValues'])->toBe([
+        ->and($field->uiControl(new FieldContext('details'))->props()['defaultValues'])->toBe([
             'label' => 'New row',
             'enabled' => true,
         ]);
@@ -58,10 +58,10 @@ it('resolves normalized cell values for their form inputs', function (array $col
         'columns' => ['col1' => ['heading' => 'Value', 'handle' => 'value', ...$column]],
     ]);
     $rows = $field->normalizeValue([['col1' => $value]], null);
-    $control = $field->formControl(new FieldContext('details', value: $rows));
-    $payload = app(FormResolver::class)->resolve(Form::make([
-        FormField::make('Details', $control),
-    ]), new FormContext);
+    $control = $field->uiControl(new FieldContext('details', value: $rows));
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        UiField::make('Details', $control),
+    ]), new UiContext);
 
     expect($payload->values['details'][0]['col1'])->toBe($expected);
 })->with([
@@ -131,10 +131,10 @@ it('round-trips money cells through localized row forms and scalar storage', fun
 
         $normalized = $field->normalizeValueFromRequest([['amount' => ['value' => $amount, 'locale' => 'nl-BE']]], null);
         $stored = $field->serializeValueForDb($normalized, new Entry);
-        $payload = app(FormResolver::class)->resolve(Form::make([
-            FormField::make('Prices', $field->formControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
-        ]), new FormContext);
-        $cell = $payload->nodes[0]->control->forms[0]->nodes[0]->control;
+        $payload = app(UiResolver::class)->resolve(Ui::make([
+            UiField::make('Prices', $field->uiControl(new FieldContext('prices', value: $field->normalizeValue($stored, null)))),
+        ]), new UiContext);
+        $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
 
         expect($stored)->toBe([['amount' => $expected]])
             ->and($payload->values['prices'][0]['amount'])->toBe(['value' => $amount === '' ? null : $amount, 'locale' => 'nl-BE'])
@@ -142,7 +142,7 @@ it('round-trips money cells through localized row forms and scalar storage', fun
             ->and($cell->path)->toBe(['prices', '0', 'amount'])
             ->and($cell->props)->toMatchArray(['currency' => 'EUR', 'locale' => 'nl-BE', 'showCurrency' => false]);
 
-        $settings = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+        $settings = app(UiResolver::class)->resolve($field->settingsUi(), new UiContext);
         $types = array_column($settings->nodes[0]->control->props['cellTypes'], 'value');
         expect($types)->toContain('money')
             ->and(TableRow::prepareRowFieldDefinition($field->columns)['price']->name)->toBe('Number');
@@ -185,10 +185,10 @@ it('keeps column handles scalar while rendering validation errors by cell', func
         ->and($field->columns['third']['handle'])->toBe('col3')
         ->and($field->errors()->get('columns'))->toHaveCount(2);
 
-    $context = new FormContext(errors: $field->errors()->getMessages());
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
-    $rerenderedPayload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
-    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $context = new UiContext(errors: $field->errors()->getMessages());
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
+    $rerenderedPayload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->values['columns']['first']['handle'])->toBe('invalid-handle')
         ->and($payload->values['columns']['second']['handle'])->toBe('validHandle')
@@ -200,7 +200,7 @@ it('keeps column handles scalar while rendering validation errors by cell', func
         ->and($rerenderedPayload->values)->toBe($payload->values)
         ->and($rerenderedPayload->nodes[0]->control->props['errors'])->toBe($payload->nodes[0]->control->props['errors']);
 
-    $mountedPayload = json_decode($crawler->filter('craft-table-form')->first()->attr('data-payload'), true);
+    $mountedPayload = json_decode($crawler->filter('craft-table-ui')->first()->attr('data-payload'), true);
     expect($mountedPayload['values']['columns']['first']['handle'])->toBe('invalid-handle')
         ->and($mountedPayload['nodes'][0]['control']['props']['errors']['first'])->toBe(['handle' => true]);
 
@@ -211,7 +211,7 @@ it('keeps column handles scalar while rendering validation errors by cell', func
 
     expect($field->validate())->toBeTrue();
 
-    $payload = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($field->settingsUi(), new UiContext);
     expect($payload->values['columns']['first']['handle'])->toBe('firstHandle')
         ->and($payload->values['columns']['third']['handle'])->toBe('thirdHandle')
         ->and($payload->nodes[0]->control->props)->not->toHaveKey('errors');
@@ -284,6 +284,36 @@ it('rejects unregistered cell types submitted as new column settings', function 
         ->and($field->columns['col1']['type'])->toBe(ScaledTableCell::class);
 });
 
+it('renders registered cells and their validation feedback in inline HTML inputs', function () {
+    app(TableCellTypes::class)->register(ScaledTableCell::class);
+    $field = new Table([
+        'handle' => 'details',
+        'columns' => [
+            'col1' => ['heading' => 'Quantity', 'handle' => 'quantity', 'type' => ScaledTableCell::class, 'factor' => 10],
+        ],
+    ]);
+    $element = new class extends Entry
+    {
+        public function getLanguage(): string
+        {
+            return 'en-US';
+        }
+    };
+    $element->errors()->add('details.0.col1', 'Quantity must be positive.');
+    $element->errors()->add('title', 'Unrelated title error.');
+    $rows = $field->normalizeValue([['col1' => -25]], $element);
+    $html = $field->getInlineInputHtml($rows, $element);
+    $input = new Crawler($html);
+    $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($input->filter('craft-table-ui')->attr('name'))->toBe('details')
+        ->and($payload['values']['details'][0]['col1'])->toBe(-25)
+        ->and($payload['errors'])->toBe([
+            ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
+        ])
+        ->and($payload['globalErrors'])->toBe([]);
+});
+
 class ScaledTableCell extends TableCell
 {
     public int $factor = 1;
@@ -298,7 +328,7 @@ class ScaledTableCell extends TableCell
         return $value === null ? null : $value * $this->factor;
     }
 
-    public function formControl(TableCellContext $context): Control
+    public function uiControl(TableCellContext $context): Control
     {
         return Number::make($context->path)->value($this->serializeValue($context->value));
     }

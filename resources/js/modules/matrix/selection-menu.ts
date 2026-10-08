@@ -247,7 +247,7 @@ export function matrixField(element: Element): HTMLElement | null {
   const field = element.closest<HTMLElement>('craft-field');
   const host = field?.parentElement;
 
-  return host?.matches('craft-entry-field-layout-form[data-field-path]')
+  return host?.matches('craft-entry-field-layout-ui[data-field-path]')
     ? (host.closest<HTMLElement>('craft-field') ?? field)
     : field;
 }

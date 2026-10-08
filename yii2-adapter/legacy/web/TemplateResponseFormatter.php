@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyScreenFragments;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use Throwable;
@@ -56,10 +57,27 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
+        $templateMode = $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null;
+
+        /**
+         * A Craft 5-era control panel screen is often just a template extending
+         * `_layouts/cp`, with no `asCpScreen()` response to carry its parts, so
+         * that layout hands its fragments over instead of drawing a document.
+         * Collecting is the default; this converts in place rather than leaving
+         * it to `RenderBridgedScreen`, because the response being formatted
+         * here is a Yii one and has to carry the result out through Yii.
+         *
+         * A template that doesn't extend `_layouts/cp` — a site template, a
+         * front-end preview — never reaches the collecting layout, so nothing
+         * is collected and the rendered document stands exactly as it did.
+         */
+        $fragments = app(LegacyScreenFragments::class);
+
         // Render and return the template
         try {
-            $response->content = pageTemplate($behavior->template, $behavior->variables, $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null);
+            $response->content = pageTemplate($behavior->template, $behavior->variables, $templateMode);
         } catch (Throwable $e) {
+            $fragments->reset();
             $previous = $e->getPrevious();
             if ($previous instanceof YiiExitException) {
                 // Something called Craft::$app->end()
@@ -73,6 +91,15 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             $response->format = Response::FORMAT_HTML;
             throw $e;
         }
+
+        if (($collected = $fragments->fragments()) !== null) {
+            $fragments->reset();
+            BridgedScreen::send($response, $collected);
+
+            return;
+        }
+
+        $fragments->reset();
 
         $headers = $response->getHeaders();
 

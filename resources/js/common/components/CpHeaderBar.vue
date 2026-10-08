@@ -11,7 +11,7 @@
   import Breadcrumbs, {
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
-  import {fieldId} from '@/modules/forms/runtime';
+  import {fieldId} from '@/modules/ui/runtime';
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
@@ -44,10 +44,25 @@
     toggleButton.value = (el as HTMLElement | null) ?? null;
   }
 
-  const page = usePage<{craft: CraftData}>();
+  const page = usePage<{
+    craft: CraftData;
+    bridged?: 'screen' | 'elementIndex';
+  }>();
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+
+  /**
+   * Which bridge drew this screen, for the badge below. Only the two bridged
+   * pages set it, so a ported page shows nothing.
+   */
+  const bridged = computed(() =>
+    page.props.bridged === 'screen'
+      ? t('Bridged screen')
+      : page.props.bridged === 'elementIndex'
+        ? t('Bridged index')
+        : null
+  );
   const generalSettingsUrl = computed(() =>
     generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
   );
@@ -85,6 +100,13 @@
           <craft-badge fill="warning">
             <craft-icon name="code" slot="prefix"></craft-icon>
             {{ t('Dev Mode') }}
+          </craft-badge>
+        </template>
+
+        <template v-if="devMode && bridged">
+          <craft-badge fill="violet">
+            <craft-icon name="bridge" slot="prefix"></craft-icon>
+            {{ bridged }}
           </craft-badge>
         </template>
 
@@ -157,9 +179,10 @@
     grid-template-rows: repeat(2, auto);
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
-    box-shadow: var(--shadow-xs), var(--shadow-sm), var(--shadow-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    box-shadow: var(--shadow-xs), var(--shadow-lg);
     position: relative;
-    z-index: var(--c-layer-overlay);
+    z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
@@ -183,6 +206,8 @@
 
   .cp-header-bar__indicators {
     grid-area: indicators;
+    display: flex;
+    gap: var(--c-spacing-sm);
   }
 
   .cp-header-bar__breadcrumbs {

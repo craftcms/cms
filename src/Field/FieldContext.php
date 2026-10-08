@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 
 /**
  * @since 6.0.0
@@ -17,14 +17,14 @@ readonly class FieldContext
      * @param  string|list<string>  $path
      * @param  mixed  $value  The normalized field value
      * @param  ElementInterface|null  $element  The element being edited
-     * @param  FormContext  $form  The containing Form context
+     * @param  UiContext  $ui  The containing UI context
      * @param  ControlMode  $mode  The field's resolved mode
      */
     public function __construct(
         public string|array $path,
         public mixed $value = null,
         public ?ElementInterface $element = null,
-        public FormContext $form = new FormContext,
+        public UiContext $ui = new UiContext,
         public ControlMode $mode = ControlMode::Editable,
         public bool $inline = false,
     ) {}

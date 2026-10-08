@@ -42,6 +42,16 @@ Size (Minimum)** — interactive targets need at least 24×24 CSS px, or enough
 spacing around a smaller one — **3.2.6 Consistent Help**, **3.3.7 Redundant
 Entry**, and **3.3.8 Accessible Authentication (Minimum)**.
 
+## Global skip links sit on top of the page chrome
+
+Focused global skip links use `--c-layer-skip-link`. Keep every persistent piece of page chrome (header bar,
+sidebars, sticky bars) below that layer, and only let modal layers
+(`--c-layer-shade` and up) cover them. Leave other skip links without a
+`z-index`. When you change a `z-index` in CP chrome, run
+`ScreenSkipLinks.browser.test.ts`. To check that something can actually be
+seen, use `expectUnobscured()` rather than `toBeVisible()`, which passes for
+covered elements.
+
 ## Automated checks are necessary, not sufficient
 
 This repo runs axe-core automatically against every Storybook story

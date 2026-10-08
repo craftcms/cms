@@ -4,13 +4,13 @@
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import type {UrlMethodPair} from '@inertiajs/core';
   import type {
-    FormControlOverrideProps,
-    FormControlPayload,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {inputName} from '@/modules/forms/runtime';
-  import FormPage from '@/pages/Form.vue';
+    UiControlOverrideProps,
+    UiControlPayload,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {inputName} from '@/modules/ui/runtime';
+  import UiPage from '@/pages/Ui.vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';
   import letterboxImageUrl from '/images/transforms/letterbox.svg';
@@ -24,7 +24,7 @@
   };
 
   defineProps<{
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
@@ -40,7 +40,7 @@
     return Object.hasOwn(modeImageUrls, value);
   }
 
-  function modeImageUrl(value: FormValue): string {
+  function modeImageUrl(value: UiValue): string {
     const mode = String(value);
     if (isTransformMode(mode)) {
       return modeImageUrls[mode];
@@ -49,14 +49,14 @@
     throw new Error(`Unsupported transform mode: ${mode}`);
   }
 
-  function options(control: FormControlPayload): ChoiceOption[] {
+  function options(control: UiControlPayload): ChoiceOption[] {
     // SAFETY: choice controls serialize this documented option shape.
     return control.props.options as ChoiceOption[];
   }
 
   function qualityPickerValue(
-    control: FormControlPayload,
-    quality: FormValue
+    control: UiControlPayload,
+    quality: UiValue
   ): string {
     const numericQuality = Number(quality);
 
@@ -79,7 +79,7 @@
 
   function setQualityPreset(
     value: ChoiceValue | undefined,
-    setValue: FormControlOverrideProps['setValue']
+    setValue: UiControlOverrideProps['setValue']
   ): void {
     const numericValue = Number(value);
 
@@ -88,11 +88,7 @@
 </script>
 
 <template>
-  <FormPage
-    :form="form"
-    :submit="submit"
-    :refresh-url="refreshUrl ?? undefined"
-  >
+  <UiPage :ui="ui" :submit="submit" :refresh-url="refreshUrl ?? undefined">
     <template
       #mode="{control, value, setValue, editable, invalid, required, label}"
     >
@@ -195,7 +191,7 @@
         />
       </div>
     </template>
-  </FormPage>
+  </UiPage>
 </template>
 
 <style scoped>
@@ -251,9 +247,9 @@
     justify-content: center;
     inline-size: 2rem;
     block-size: 2rem;
-    border: 1px solid var(--c-form-control-border-color);
+    border: 1px solid var(--c-ui-control-border-color);
     border-radius: var(--c-radius-sm);
-    background-color: var(--c-form-control-fill);
+    background-color: var(--c-ui-control-fill);
     cursor: pointer;
   }
 

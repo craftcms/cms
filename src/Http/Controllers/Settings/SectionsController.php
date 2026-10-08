@@ -10,8 +10,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -24,6 +22,7 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +43,7 @@ readonly class SectionsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
-        private FormResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -105,16 +103,17 @@ readonly class SectionsController
             ->inertiaPage('settings/sections/Edit', $this->viewModel($sectionData, $sites, brandNew: false));
     }
 
-    public function renderForm(Request $request, Sites $sites, Sections $sections): JsonResponse
+    public function renderUi(Request $request, Sites $sites, Sections $sections): JsonResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'values' => ['required', 'array'],
             'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
             'values.type' => ['required', Rule::enum(SectionType::class)],
             'values.workflowId' => ['nullable', 'integer', Rule::exists(Workflow::class, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
-        $values = $data['values'];
+        // Validated output drops the keys without rules, which is every other value.
+        $values = $request->array('values');
         $section = empty($values['sectionId'])
             ? new SectionData(['type' => SectionType::Channel])
             : $sections->getSectionById((int) $values['sectionId']);
@@ -122,12 +121,12 @@ readonly class SectionsController
         abort_if($section === null, 404, 'Section not found');
 
         return new JsonResponse([
-            'form' => $this->viewModel(
+            'ui' => $this->viewModel(
                 $section,
                 $sites,
                 brandNew: $section->id === null,
                 values: $values,
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -249,8 +248,7 @@ readonly class SectionsController
         return new SectionEditViewModel(
             $section,
             $sites,
-            $this->entryTypes,
-            $this->formResolver,
+            $this->uiResolver,
             $brandNew,
             $this->readOnly,
             $this->generalConfig->headlessMode,

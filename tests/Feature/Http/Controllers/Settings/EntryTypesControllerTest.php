@@ -39,7 +39,8 @@ it('requires authentication', function () {
     get(action([EntryTypesController::class, 'create']))->assertRedirect();
     get(action([EntryTypesController::class, 'edit'], [EntryType::first()->id]))->assertRedirect();
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertUnauthorized();
-    postJson(action([EntryTypesController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([EntryTypesController::class, 'renderSelect']))->assertUnauthorized();
+    postJson(action([EntryTypesController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'store']))->assertUnauthorized();
     deleteJson(action([EntryTypesController::class, 'destroy'], [EntryType::first()->id]))->assertUnauthorized();
@@ -57,7 +58,8 @@ it('requires admin changes', function () {
     // Not allowed
     get(action([EntryTypesController::class, 'create']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertForbidden();
-    postJson(action([EntryTypesController::class, 'renderForm']))->assertForbidden();
+    postJson(action([EntryTypesController::class, 'renderSelect']))->assertForbidden();
+    postJson(action([EntryTypesController::class, 'renderUi']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'store']))->assertForbidden();
     deleteJson(action([EntryTypesController::class, 'destroy'], [EntryType::first()->id]))->assertForbidden();
@@ -74,12 +76,12 @@ test('create can be loaded', function () {
         ->assertSee(t('Create a new entry type'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/entry-types/Edit')
-            ->where('form.values.entryTypeId', null)
-            ->where('form.values.name', '')
-            ->where('form.refreshable', true)
+            ->where('ui.values.entryTypeId', null)
+            ->where('ui.values.name', '')
+            ->where('ui.refreshable', true)
             ->where('submit.method', 'post')
-            ->where('refreshUrl', action([EntryTypesController::class, 'renderForm']))
-            ->where('form.nodes', function ($nodes): bool {
+            ->where('refreshUrl', action([EntryTypesController::class, 'renderUi']))
+            ->where('ui.nodes', function ($nodes): bool {
                 $designer = collect($nodes)->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['fieldLayout'],
                 );
@@ -93,7 +95,7 @@ it('offers the palette colors for the entry type color', function () {
     get(action([EntryTypesController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes): bool {
+            ->where('ui.nodes', function ($nodes): bool {
                 $color = collect($nodes)->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
                 );
@@ -130,29 +132,29 @@ it('refreshes fields that depend on the entry type settings', function () {
         'fieldLayout' => [],
     ];
 
-    $response = postJson(action([EntryTypesController::class, 'renderForm']), [
+    $response = postJson(action([EntryTypesController::class, 'renderUi']), [
         'values' => $values,
         'scope' => [],
     ])->assertOk();
-    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenUiNodes($response->json('ui.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['titleTranslationKeyFormat'])
         ->not->toContain(['slugTranslationMethod']);
 
-    $response = postJson(action([EntryTypesController::class, 'renderForm']), [
+    $response = postJson(action([EntryTypesController::class, 'renderUi']), [
         'values' => [...$values, 'showSlugField' => true],
         'scope' => [],
     ])->assertOk();
-    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenUiNodes($response->json('ui.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['slugTranslationMethod'])
         ->toContain(['slugTranslationKeyFormat']);
 });
 
-it('refreshes a single-site form without translation controls', function () {
-    postJson(action([EntryTypesController::class, 'renderForm']), [
+it('refreshes a single-site UI without translation controls', function () {
+    postJson(action([EntryTypesController::class, 'renderUi']), [
         'values' => [
             'allowLineBreaksInTitles' => false,
             'showSlugField' => false,
@@ -282,6 +284,36 @@ it('can delete an entry type', function () {
     deleteJson(action([EntryTypesController::class, 'destroy'], [$newEntryType->id]))->assertOk();
 
     expect(EntryType::count())->toBe(1);
+});
+
+it('renders the entry type select', function () {
+    $entryType = EntryType::first();
+    $other = EntryType::factory()->create([
+        'handle' => 'otherType',
+        'icon' => 'newspaper',
+        'color' => Color::Red->value,
+    ]);
+
+    $html = postJson(action([EntryTypesController::class, 'renderSelect']), [
+        'value' => [['id' => $entryType->id, 'name' => 'Overridden']],
+        'allowOverrides' => true,
+        'create' => true,
+        'name' => 'entryTypes',
+        'disabled' => false,
+    ])
+        ->assertOk()
+        ->assertJsonStructure(['html', 'headHtml', 'bodyHtml'])
+        ->json('html');
+
+    expect($html)
+        ->toContain('<craft-component-select')
+        ->toContain('name="entryTypes[]"')
+        ->toContain('Overridden')
+        ->toContain('command="--create-item"')
+        ->toContainTag('craft-component-select', ['checkbox-options' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $entryType->id, 'type' => 'checkbox', 'checked' => true])
+        ->toContainTag('craft-action-item', ['data-id' => $other->id, 'type' => 'checkbox', 'checked' => false, 'icon' => 'newspaper', 'icon-color' => 'red'])
+        ->toContain('>otherType</span>');
 });
 
 it('can render override settings', function () {
