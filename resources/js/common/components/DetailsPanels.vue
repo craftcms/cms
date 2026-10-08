@@ -164,6 +164,10 @@
    */
   let clickedPanelId: string | null = null;
 
+  function rememberClick(panelId: string): void {
+    clickedPanelId = panelId;
+  }
+
   function onShow(panelId: string): void {
     const withFocus = clickedPanelId === panelId;
     clickedPanelId = null;
@@ -246,7 +250,7 @@
           v-for="panel in visiblePanels"
           :key="panel.id"
           :state="openPanelId === panel.id ? 'expanded' : 'collapsed'"
-          @click.capture="clickedPanelId = panel.id"
+          @click.capture="rememberClick(panel.id)"
           @craft-show="onShow(panel.id)"
           @craft-hide="close(panel.id, false)"
         >
