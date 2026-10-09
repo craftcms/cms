@@ -54,6 +54,15 @@ a craft-chip {
   --c-chip-text: var(--c-text-link);
 }
 
+/* A link's underline doesn't reach into the chip's shadow tree, so its label takes it directly. */
+a craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration-hover);
+}
+
 /*
   Make lists unstyled by default.
 */
