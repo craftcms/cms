@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Carbon\CarbonImmutable;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
@@ -18,11 +19,11 @@ use CraftCms\Cms\Import\Jobs\FinishImport;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Facades\ImportPlan;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Bus\PendingBatch;
+use Illuminate\Contracts\Queue\Job as QueueJob;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -52,7 +53,7 @@ beforeEach(function () {
     $this->step = fn (string $uid) => [
         'name' => "Step {$uid}",
         'uid' => $uid,
-        'job' => new ImportJob('plan-uid', $uid, '/path/to/file.json', 'run-id'),
+        'job' => new ImportJob($this->importPlan, $uid, '/path/to/file.json', 'run-id'),
     ];
 
     $this->batchWithFailures = fn (int $failedJobs) => new BatchFake(
@@ -80,9 +81,7 @@ beforeEach(function () {
     };
 
     $this->runJob = function (int $start = 0): void {
-        ImportPlan::shouldReceive('getImportPlanByUid')->with('plan-uid')->andReturn($this->importPlan);
-
-        [$job] = new ImportJob('plan-uid', 'step-1', $this->filePath, 'run-id', $start)->withFakeBatch();
+        [$job] = new ImportJob($this->importPlan, 'step-1', $this->filePath, 'run-id', $start)->withFakeBatch();
         $job->handle();
     };
 });
@@ -288,4 +287,49 @@ it('fires only the chunk events from a later chunk’s import job', function () 
     Event::assertDispatched(fn (ImportChunkStarted $event) => $event->offset === 1);
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->offset === 1
         && $event->count === 2);
+});
+
+it('queues every step batch on the configured queue', function () {
+    Cms::config()->queueName('craft');
+
+    new ImportPipeline([($this->step)('step-1'), ($this->step)('step-2')], $this->importPlan, 'run-id')->handle();
+
+    Bus::assertChained([
+        Bus::chainedBatch(fn (PendingBatch $batch) => $batch->queue() === 'craft'),
+        Bus::chainedBatch(fn (PendingBatch $batch) => $batch->queue() === 'craft'),
+        FinishImport::class,
+    ]);
+});
+
+it('keeps importing the chunk’s other items when one throws an error', function () {
+    Event::fake([ImportChunkFinished::class]);
+    $importedTitles = [];
+    Event::listen(ItemImporting::class, function (ItemImporting $event) use (&$importedTitles) {
+        $importedTitles[] = $event->data['title'];
+
+        if (count($importedTitles) === 1) {
+            throw new Error('Item failed.');
+        }
+
+        $event->isValid = false;
+    });
+
+    ($this->runJob)();
+
+    expect($importedTitles)->toBe(['first file entry', 'second file entry', 'third file entry']);
+    Event::assertDispatched(fn (ImportChunkFinished $event) => $event->count === 3 && $event->hasFailures);
+});
+
+it('stops importing and doesn’t queue the next chunk once the job is canceled', function () {
+    Event::fake([ItemImporting::class]);
+    $this->importPlan->steps[0]->batchSize(1);
+    $queueJob = Mockery::mock(QueueJob::class);
+    $queueJob->allows(['uuid' => 'canceled-job-uuid', 'getConnectionName' => 'database']);
+
+    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', $this->filePath, 'run-id')->withFakeBatch();
+    $job->setJob($queueJob);
+    $job->handle();
+
+    Event::assertNotDispatched(ItemImporting::class);
+    expect($batch->added)->toBeEmpty();
 });

@@ -132,7 +132,7 @@ class Import
             // name for this batch of jobs
             $steps[$key]['name'] = self::stepLabel($importPlan, $step);
             $steps[$key]['uid'] = $step->uid;
-            $steps[$key]['job'] = new ImportJob($importPlan->uid ?? $importPlan->handle, $step->uid, $filePath, $runId, 0);
+            $steps[$key]['job'] = new ImportJob($importPlan, $step->uid, $filePath, $runId, 0);
         }
 
         event($event = new ImportDispatching($steps, $importPlan));

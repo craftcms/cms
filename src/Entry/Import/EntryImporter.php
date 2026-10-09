@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Entry\Import;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -275,6 +277,11 @@ class EntryImporter extends ElementImporter
             $element = new ($this::targetClass());
             $element->sectionId = $section?->id;
 
+            // Element::attributes() only lists parentId once the structure ID is known
+            if ($section?->type === SectionType::Structure) {
+                $element->structureId = $section->structureId;
+            }
+
             if ($entryType) {
                 $element->setTypeId($entryType->id);
                 $element->fieldLayoutId = $entryType->getFieldLayoutId();
@@ -287,6 +294,16 @@ class EntryImporter extends ElementImporter
         parent::prepareNewRootElementForImport($data, $element);
 
         return $element;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementInterface $element, ElementQueryInterface $query): ElementQueryInterface
+    {
+        /** @var Entry $element */
+        /** @var EntryQuery<Entry> $query */
+        return $query
+            ->sectionId($element->sectionId)
+            ->typeId($element->getTypeId());
     }
 
     #[Override]
@@ -304,7 +321,7 @@ class EntryImporter extends ElementImporter
         /** @var Entry $element */
         if ($element->section?->type === SectionType::Structure && isset($data['parentId'])) {
             $parent = self::normalizeParent($data['parentId'], $element->section->id, $this->site->id);
-            if ($element->getParentId() !== $parent->id) {
+            if ($parent !== null && $element->getParentId() !== $parent->id) {
                 $element->setParent($parent);
             }
         }

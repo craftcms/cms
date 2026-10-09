@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportStarted;
 use CraftCms\Cms\Import\Events\ImportStepFinished;
@@ -60,6 +61,8 @@ class ImportPipeline extends Job
             $steps[] = Bus::batch([$step['job']])
                 ->name($step['name'] ?? 'Importing step data')
                 ->allowFailures()
+                // batched jobs are pushed onto the batch's queue, rather than the one each job was given
+                ->onQueue(Cms::config()->queueName)
                 // runs once, after every job in this step has run (failed ones included)
                 ->finally(function (Batch $batch) use ($importPlan, $stepUid, $runId) {
                     // let FinishImport know that at least one step had failures
@@ -77,7 +80,9 @@ class ImportPipeline extends Job
         }
 
         // runs only after the last step's batch has finished, and never if a batch was canceled
-        Bus::chain([...$steps, new FinishImport($importPlan, $runId)])->dispatch();
+        Bus::chain([...$steps, new FinishImport($importPlan, $runId)])
+            ->onQueue(Cms::config()->queueName)
+            ->dispatch();
     }
 
     #[Override]

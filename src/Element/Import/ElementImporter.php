@@ -647,9 +647,10 @@ abstract class ElementImporter extends BaseImporter
 
         foreach ($handles as $handle) {
             $field = $fieldLayout?->getFieldByHandle($handle);
-            $values[$handle] = $field
-                ? $field->serializeValue($element->getFieldValue($handle), $element)
-                : $element->getFieldValue($handle);
+            if (! $field) {
+                continue;
+            }
+            $values[$handle] = $field->serializeValue($element->getFieldValue($handle), $element);
         }
 
         return $values;
