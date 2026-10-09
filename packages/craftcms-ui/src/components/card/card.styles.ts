@@ -71,6 +71,7 @@ export default css`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-sizing: border-box;
   }
 
   .card__label-text,
@@ -78,10 +79,14 @@ export default css`
     text-box: trim-both cap alphabetic;
   }
 
+  .card__header__suffix {
+    display: flex;
+    gap: var(--c-spacing-md);
+  }
+
   .card__actions {
     display: flex;
     gap: var(--c-spacing-sm);
-    align-self: end;
   }
 
   .card-body {

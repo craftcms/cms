@@ -291,6 +291,9 @@
 
     > section {
       --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+      display: flex;
+      flex-direction: column;
+      block-size: 100%;
     }
   }
 

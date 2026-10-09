@@ -21,7 +21,7 @@ class ElementSiteAdded extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Added to {site}.',
+            'Added to {site}',
             ['site' => $event->snapshots['site']['name']],
         );
     }
