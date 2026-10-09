@@ -22,6 +22,7 @@
     contentNotice?: string | null;
     errorSummary?: string | null;
     toolbar?: string | null;
+    additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
     headHtml?: string | null;
@@ -64,6 +65,7 @@
         props.contentNotice,
         props.errorSummary,
         props.toolbar,
+        props.additionalButtons,
         props.sidebar,
         props.details,
         contentFragment.value,
@@ -247,6 +249,14 @@
   <LayoutSlot v-if="toolbar" name="content-toolbar-meta">
     <HtmlFragmentRenderer
       :fragment="fragment(toolbar)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot v-if="additionalButtons" name="additional-buttons">
+    <HtmlFragmentRenderer
+      class="flex items-center gap-2"
+      :fragment="fragment(additionalButtons)"
       @ready="fragmentReady"
     />
   </LayoutSlot>

@@ -48,10 +48,8 @@
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import FormActions from '@/common/components/FormActions.vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import PrimaryActionButton from '@/common/components/PrimaryActionButton.vue';
-  import {DEFAULT_FORM_ACTIONS, formActionItems} from './formActionItems';
+  import ContentFooter from './page/ContentFooter.vue';
+  import {DEFAULT_FORM_ACTIONS} from './formActionItems';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -120,18 +118,24 @@
   const hasNotices = computed(() => regions.has('content-notices'));
   const hasDetails = computed(() => regions.has('content-details'));
 
-  // The same Save menu a full page gets. "Save and continue editing" keeps
-  // the panel open: in a slideout that's what `redirect: false` means.
-  const actionItems = computed(() =>
-    formActionItems(
-      props.value.defaultFormActions ?? DEFAULT_FORM_ACTIONS,
-      props.value.formActions,
-      (options) => {
-        emit('save', options);
-        store?.save(options);
-      }
-    )
+  // The same footer slots a full page forwards, only when the page filled them
+  // so the footer's own fallbacks still apply.
+  const FOOTER_SLOTS = [
+    'content-footer',
+    'footer-meta',
+    'additional-buttons',
+    'primary-action',
+  ] as const;
+  const footerSlots = computed(() =>
+    FOOTER_SLOTS.filter((name) => slots[name])
   );
+
+  // The Save menu's entries. "Save and continue editing" keeps the panel open:
+  // in a slideout that's what `redirect: false` means.
+  function saveWithOptions(options?: FormSaveOptions): void {
+    emit('save', options);
+    store?.save(options);
+  }
 
   const submitLabel = computed(
     () =>
@@ -483,10 +487,6 @@
         <craft-field-group>
           <slot></slot>
         </craft-field-group>
-
-        <LayoutSlotOutlet name="content-footer">
-          <slot name="content-footer"></slot>
-        </LayoutSlotOutlet>
       </div>
 
       <!-- v-show, not v-if: the outlet is a teleport target and must stay in
@@ -503,61 +503,29 @@
     </div>
 
     <footer class="slideout-screen__footer">
-      <LayoutSlotOutlet name="additional-buttons">
-        <slot name="additional-buttons"></slot>
-      </LayoutSlotOutlet>
-
-      <div class="slideout-screen__footer-actions">
-        <craft-button type="button" @click="close">
-          {{ cancelLabel }}
-        </craft-button>
-
-        <FormActions
-          v-if="form"
-          :form="form"
-          :action-items="actionItems"
-          :additional-actions="props.formAdditionalActions"
-          :additional-buttons="props.formAdditionalButtons"
-          :submit-label="submitLabel"
-          :read-only="readOnly"
-          :save-disabled="props.saveDisabled"
-        >
-          <template #primary-action>
-            <LayoutSlotOutlet name="primary-action">
-              <slot name="primary-action">
-                <DynamicHtmlRenderer
-                  v-if="chrome.primaryAction"
-                  :html="chrome.primaryAction"
-                />
-                <PrimaryActionButton v-else :form="form" :label="submitLabel" />
-              </slot>
-            </LayoutSlotOutlet>
-          </template>
-        </FormActions>
-        <!-- Server-rendered screens and the element editor have no Vue form
-          for the action menu to drive, so they get a plain Save button. -->
-        <LayoutSlotOutlet
-          v-else-if="canSave && !readOnly && !props.saveDisabled"
-          name="primary-action"
-        >
-          <slot name="primary-action">
-            <DynamicHtmlRenderer
-              v-if="chrome.primaryAction"
-              :html="chrome.primaryAction"
-            />
-            <craft-button
-              v-else
-              type="submit"
-              :variant="ButtonVariant.Primary"
-              :loading="
-                submittingHtml || elementEditor.saving.value || undefined
-              "
-            >
-              {{ submitLabel }}
-            </craft-button>
-          </slot>
-        </LayoutSlotOutlet>
-      </div>
+      <ContentFooter
+        :read-only="readOnly"
+        :form="form"
+        :default-form-actions="props.defaultFormActions ?? DEFAULT_FORM_ACTIONS"
+        :form-actions="props.formActions"
+        :form-additional-actions="props.formAdditionalActions"
+        :form-additional-buttons="props.formAdditionalButtons"
+        :full-page-form="canSave && !props.saveDisabled"
+        :submit-button-label="submitLabel"
+        :primary-action-html="chrome.primaryAction"
+        :submitting="submittingHtml || elementEditor.saving.value"
+        :save-disabled="props.saveDisabled"
+        @save="saveWithOptions"
+      >
+        <template v-for="name in footerSlots" :key="name" #[name]>
+          <slot :name="name"></slot>
+        </template>
+        <template #shell-actions>
+          <craft-button type="button" @click="close">
+            {{ cancelLabel }}
+          </craft-button>
+        </template>
+      </ContentFooter>
     </footer>
 
     <!-- Regions a slideout has no place for. Kept as hidden outlets so a page
@@ -701,19 +669,13 @@
     }
   }
 
+  /* Matches the page shell's `.cp-content__footer`. */
   .slideout-screen__footer {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm, 0.5rem);
-    padding: var(--c-spacing-md, 1rem);
-    border-block-start: 1px solid var(--c-border-quiet, #e5e5e5);
+    display: grid;
+    align-content: center;
+    border-block-start: 1px solid var(--c-color-border-quiet);
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--cp-container-padding);
     min-height: var(--cp-footer-height);
-  }
-
-  .slideout-screen__footer-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm, 0.5rem);
-    margin-inline-start: auto;
   }
 </style>
