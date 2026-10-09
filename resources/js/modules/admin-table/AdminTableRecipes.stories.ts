@@ -3,18 +3,18 @@ import {computed, h, ref} from 'vue';
 import {
   AdminTable,
   createCraftColumnHelper,
+  DeleteButton,
+  SearchForm,
   useCraftTable,
   useServerPagination,
   useServerSort,
   type SortItem,
-} from '@/admin-table';
-import {DeleteButton, SearchForm} from '@/elements';
+} from '@/cp-module';
 import {queryWidgets, widgets, type Widget} from './fixtures/widgets';
 
 /**
  * Each story builds its table the way a plugin page does, importing only from
- * `@craftcms/cms/admin-table` and `@craftcms/cms/elements`. See the AdminTable
- * Guide for the walkthrough.
+ * `@craftcms/cp`. See the AdminTable Guide for the walkthrough.
  */
 const meta = {
   title: 'Elements/AdminTable Recipes',

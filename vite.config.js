@@ -319,8 +319,8 @@ export default defineConfig(({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`elements.ts`/`admin-table.ts` entries that plugin bundles
-        // import through the import map.
+        // `vue.ts`/`cp-module.ts` entries that plugin bundles import through
+        // the import map.
         preserveEntrySignatures: 'exports-only',
       },
     },
@@ -383,8 +383,7 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'yii2-adapter/resources/js/cp-compat.ts',
-                'resources/js/elements.ts',
-                'resources/js/admin-table.ts',
+                'resources/js/cp-module.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',
