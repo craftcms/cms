@@ -138,14 +138,12 @@ it('renders a functional create form', function () {
                 ->contains(['mode'])));
 });
 
-it('groups declared parameter controls by Asset Transformer', function () {
+it('renders declared parameters under their Asset Transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes', fn ($nodes): bool => collect($nodes)
-                ->pluck('children')
-                ->flatten(1)
+            ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
                 ->pluck('control.path')
                 ->contains(['parameters', $transformer->uid, 'blur'])));
 });

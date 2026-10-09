@@ -23,6 +23,7 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use CraftCms\Cms\Ui\Ui;
@@ -121,8 +122,15 @@ class FieldEditViewModel extends ViewModel
         $nodes[] = Separator::make('field-settings-separator');
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
         $refreshable = ! $this->readOnly;
-        $uiResolver = app(UiResolver::class);
-        $ui = $uiResolver->resolve(Ui::make($nodes), new UiContext(
+        $settingsUi = $this->settingsUiDefinition($this->settingsUiContext());
+
+        if ($settingsUi !== null) {
+            $nodes[] = Scope::make('settings', [
+                Group::make('field-settings', $settingsUi->nodes())->dependsOn('type'),
+            ]);
+        }
+
+        return app(UiResolver::class)->resolve(Ui::make($nodes), new UiContext(
             values: [
                 'fieldId' => $this->field->id,
                 'oldType' => $type,
@@ -137,22 +145,6 @@ class FieldEditViewModel extends ViewModel
             mode: $mode,
             refreshable: $refreshable,
         ));
-        $settingsContext = $this->settingsUiContext();
-        $settingsUi = $this->settingsUiDefinition($settingsContext);
-        $settings = $uiResolver->resolve($settingsUi === null
-            ? Ui::make()
-            : Ui::make([
-                Group::make('field-settings', $settingsUi->nodes())->dependsOn('type'),
-            ]), $settingsContext);
-
-        return new UiPayload(
-            scope: [],
-            refreshable: $refreshable,
-            nodes: [...$ui->nodes, ...$settings->nodes],
-            values: [...$ui->values, ...$settings->values],
-            errors: [...$ui->errors, ...$settings->errors],
-            globalErrors: [...$ui->globalErrors, ...$settings->globalErrors],
-        );
     }
 
     public function settingsUi(): ?UiPayload

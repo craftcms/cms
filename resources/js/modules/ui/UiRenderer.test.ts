@@ -434,24 +434,124 @@ describe('UiRenderer', () => {
     }
   });
 
-  it('badges the fields the server reports as modified', async () => {
+  it('renders custom help beside a field label', async () => {
+    const payload = clonePayload();
+    required(
+      payload.nodes[0],
+      'Expected a field in the UI fixture.'
+    ).props.headingSuffix =
+      '<craft-info-icon label="More info about UI Mode">Choose how the input is displayed.</craft-info-icon>';
     app.unmount();
-    await mount(clonePayload(), {
-      modified: ['settings.placeholder'],
-    });
+    await mount(payload);
 
-    const field = (name: string) =>
-      container
-        .querySelector<HTMLInputElement>(`[name="settings[${name}]"]`)!
-        .closest('craft-field')!;
+    const icon = container.querySelector('craft-info-icon');
+    expect(icon?.getAttribute('label')).toBe('More info about UI Mode');
+    expect(icon?.textContent).toBe('Choose how the input is displayed.');
+    expect(icon?.closest('[slot="heading-suffix"]')).not.toBeNull();
 
-    expect(field('placeholder').getAttribute('status')).toBe('modified');
-    expect(field('placeholder').getAttribute('status-label')).toBe(
-      'This field has been modified.'
-    );
-    // Matched on the delta group, so a field the server didn't report stays clean.
-    expect(field('uiMode').getAttribute('status')).toBeNull();
+    currentPayload.value = clonePayload();
+    await nextTick();
+
+    expect(container.querySelector('craft-info-icon')).toBeNull();
   });
+
+  it('renders field presentation settings and clears them when the payload changes', async () => {
+    const payload = clonePayload();
+    Object.assign(
+      required(payload.nodes[0], 'Expected a field in the UI fixture.').props,
+      {
+        label: 'UI Mode',
+        labelHtml: '<strong>UI Mode</strong>',
+        headingPrefix: '<span>Before</span>',
+        translatable: true,
+        translationDescription: 'Translated for each site.',
+        orientation: 'rtl',
+        width: 50,
+        inputWidth: 'full',
+        fieldset: true,
+      }
+    );
+    app.unmount();
+    await mount(payload);
+
+    const field = required(
+      container.querySelector('craft-field'),
+      'Expected a rendered field.'
+    );
+    expect(field.querySelector('[slot="label"] strong')?.textContent).toBe(
+      'UI Mode'
+    );
+    expect(field.querySelector('[slot="heading-prefix"]')?.textContent).toBe(
+      'Before'
+    );
+    expect(field.hasAttribute('translatable')).toBe(true);
+    expect(field.getAttribute('translation-description')).toBe(
+      'Translated for each site.'
+    );
+    expect(field.getAttribute('orientation')).toBe('rtl');
+    expect(field.getAttribute('width')).toBe('full');
+    expect(field.classList.contains('width-50')).toBe(true);
+    expect(field.getAttribute('role')).toBe('group');
+
+    currentPayload.value = clonePayload();
+    await nextTick();
+    await vi.waitFor(() => {
+      expect(field.hasAttribute('translatable')).toBe(false);
+      expect(field.querySelector('[slot="label"] strong')).toBeNull();
+      expect(field.querySelector('[slot="label"]')?.textContent).toBe(
+        'UI Mode'
+      );
+      expect(field.querySelector('[slot="heading-prefix"]')).toBeNull();
+      expect(field.hasAttribute('orientation')).toBe(false);
+      expect(field.hasAttribute('width')).toBe(false);
+      expect(field.hasAttribute('fieldset')).toBe(false);
+    });
+  });
+
+  it.each([
+    {
+      name: 'shows status by default',
+      showStatus: undefined,
+      status: 'modified',
+      statusLabel: 'This field has been modified.',
+    },
+    {
+      name: 'suppresses status when disabled',
+      showStatus: false,
+      status: null,
+      statusLabel: null,
+    },
+  ])(
+    '$name when the server reports a modified field',
+    async ({showStatus, status, statusLabel}) => {
+      const payload = clonePayload();
+      const placeholder = required(
+        payload.nodes.find(
+          (node) => node.control?.path.at(-1) === 'placeholder'
+        ),
+        'Expected the placeholder field.'
+      );
+      if (showStatus !== undefined) {
+        placeholder.props.showStatus = showStatus;
+      }
+      app.unmount();
+      await mount(payload, {
+        modified: ['settings.placeholder'],
+      });
+
+      const field = (name: string) =>
+        container
+          .querySelector<HTMLInputElement>(`[name="settings[${name}]"]`)!
+          .closest('craft-field')!;
+
+      expect(field('placeholder').getAttribute('status')).toBe(status);
+      expect(field('placeholder').getAttribute('status-label')).toBe(
+        statusLabel
+      );
+      // Matched on the delta group, so a field the server didn't report stays clean.
+      expect(field('uiMode').getAttribute('status')).toBeNull();
+    }
+  );
 
   /**
    * A control inside a nested UI belongs to a different element, and inherits
@@ -642,6 +742,65 @@ describe('UiRenderer', () => {
     await nextTick();
 
     expect(matrix().getAttribute('status')).toBeNull();
+  });
+
+  it('submits all scoped settings when one setting in a shared delta group changes', async () => {
+    const onMutation = vi.fn();
+    const settingsField = (name: string): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+        component: 'craft:text',
+        props: {},
+        path: ['providerSettings', name],
+        mode: 'editable',
+        deltaGroup: ['providerSettings'],
+      },
+    });
+    app.unmount();
+    await mount(
+      {
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Scope',
+            component: 'craft:scope',
+            uid: 'provider-settings',
+            props: {},
+            children: [settingsField('apiKey'), settingsField('endpoint')],
+          },
+        ],
+        values: {
+          providerSettings: {apiKey: 'old', endpoint: 'https://example.com'},
+        },
+        errors: [],
+        globalErrors: [],
+      },
+      {onMutation}
+    );
+
+    const input = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="providerSettings[apiKey]"]'
+      ),
+      'Expected the scoped API key input.'
+    );
+    input.value = 'new';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(onMutation).toHaveBeenLastCalledWith(
+      {providerSettings: {apiKey: 'new', endpoint: 'https://example.com'}},
+      'typing'
+    );
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="providerSettings[endpoint]"]'
+      )?.value
+    ).toBe('https://example.com');
   });
 
   it('renders the shared payload with equivalent names, values, and errors', () => {

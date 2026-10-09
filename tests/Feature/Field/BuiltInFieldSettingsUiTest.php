@@ -80,3 +80,19 @@ it('preserves the rel advanced field label markup', function () {
 
     expect($relOption->filter('label code')->text())->toBe('rel');
 });
+
+it('submits link settings together at the enclosing settings scope', function (string $type, string $path) {
+    $field = Fields::createField($type);
+    $context = new UiContext(namespace: 'settings', refreshable: true);
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
+    $controls = collect(flattenUiNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)))
+        ->pluck('control')->filter()->keyBy(fn (array $control): string => implode('.', $control['path']));
+
+    expect($controls["settings.{$path}types"]['deltaGroup'])->toBe(['settings'])
+        ->and($controls["settings.{$path}showLabelField"]['deltaGroup'])->toBe(['settings'])
+        ->and($controls["settings.{$path}advancedFields"]['deltaGroup'])->toBe(['settings'])
+        ->and($controls["settings.{$path}typeSettings.url.allowAnchors"]['deltaGroup'])->toBe(['settings']);
+})->with([
+    'link' => [Link::class, ''],
+    'markdown' => [Markdown::class, 'linkSettings.'],
+]);

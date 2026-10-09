@@ -18,6 +18,7 @@
   interface ElementIndexQuickEdit {
     longPress?: boolean;
     onDblClick(event: MouseEvent): void;
+    deferChipClick?(event: MouseEvent): boolean;
     onPrimaryLink?(event: MouseEvent): void;
     suppressPrimaryLinkVisit?(event: MouseEvent): void;
   }
@@ -180,6 +181,22 @@
     }
   }
 
+  function onBodyMouseCapture(event: MouseEvent): void {
+    if (isInlineEditing.value || !props.quickEdit) {
+      return;
+    }
+
+    if (props.quickEdit.deferChipClick?.(event)) {
+      return;
+    }
+
+    if (event.type === 'click') {
+      props.quickEdit.onPrimaryLink?.(event);
+    } else {
+      props.quickEdit.suppressPrimaryLinkVisit?.(event);
+    }
+  }
+
   function onBodyDblClick(event: MouseEvent): void {
     if (isInlineEditing.value) {
       return;
@@ -266,14 +283,8 @@
             ? undefined
             : quickEdit?.suppressPrimaryLinkVisit?.($event)
         "
-        @mouseup.capture="
-          isInlineEditing
-            ? undefined
-            : quickEdit?.suppressPrimaryLinkVisit?.($event)
-        "
-        @click.capture="
-          isInlineEditing ? undefined : quickEdit?.onPrimaryLink?.($event)
-        "
+        @mouseup.capture="onBodyMouseCapture"
+        @click.capture="onBodyMouseCapture"
         @dblclick="onBodyDblClick"
         @keydown="onBodyKeydown"
       >
