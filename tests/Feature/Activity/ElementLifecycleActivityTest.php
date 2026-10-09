@@ -165,8 +165,8 @@ it('records site removal and addition without generic propagation events', funct
         $secondarySite->id,
         $secondarySite->id,
     ])->and($events->pluck('snapshots.site.name')->unique()->all())->toBe(['Secondary Site'])
-        ->and($this->activities->format($events[0]))->toBe('Removed from Secondary Site.')
-        ->and($this->activities->format($events[1]))->toBe('Added to Secondary Site.');
+        ->and($this->activities->format($events[0]))->toBe('Removed from Secondary Site')
+        ->and($this->activities->format($events[1]))->toBe('Added to Secondary Site');
 });
 
 it('keeps actor labels after the actor is permanently deleted', function () {

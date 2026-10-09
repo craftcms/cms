@@ -70,11 +70,15 @@
   .workflow-draft__status {
     display: flex;
     align-items: center;
-    gap: var(--c-spacing-xs);
   }
 
   .workflow-draft__heading {
     flex-wrap: wrap;
+    gap: var(--c-spacing-md);
+  }
+
+  .workflow-draft__status {
+    gap: var(--c-spacing-sm);
   }
 
   .workflow-draft__status,

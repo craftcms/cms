@@ -317,7 +317,6 @@
 
   .workflow-user-review-actions__footer {
     display: flex;
-    justify-content: flex-end;
     gap: var(--c-spacing-xs);
   }
 

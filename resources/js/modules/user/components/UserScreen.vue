@@ -51,7 +51,7 @@
   <LayoutSlot v-if="hasDetails" name="content-details">
     <DetailsPanels :panels="panels">
       <template #info>
-        <div class="p-lg">
+        <div class="py-lg px-(--cp-container-padding)">
           <HtmlFragmentRenderer
             v-if="detailsFragment"
             :fragment="detailsFragment"

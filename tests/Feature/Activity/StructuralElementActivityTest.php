@@ -53,7 +53,7 @@ it('records duplication instead of nested creation', function () {
             'id' => $source->uid,
             'label' => $source->getUiLabel(),
         ])
-        ->and($this->activities->format($events->first()))->toBe('Duplicated from Source entry.');
+        ->and($this->activities->format($events->first()))->toBe('Duplicated from Source entry');
 });
 
 it('does not record draft creation for unpublished draft duplicates', function () {
@@ -141,7 +141,7 @@ it('records captured structure movement positions', function () {
             'previousSibling' => null,
         ],
     ])->and($this->activities->format($event))->toBe(
-        "Moved from the position after {$parent->getUiLabel()} in {$root->getUiLabel()} to the first position in {$parent->getUiLabel()}.",
+        "Moved from the position after {$parent->getUiLabel()} in {$root->getUiLabel()} to the first position in {$parent->getUiLabel()}",
     );
 });
 
@@ -181,7 +181,7 @@ it('shows parent changes in the activity timeline', function (bool $provisional)
         ->assertOk()
         ->assertJsonPath(
             'events.0.description.text',
-            'Moved from the position after Parent at the top level to the first position in Parent.',
+            'Moved from the position after Parent at the top level to the first position in Parent',
         );
 })->with([
     'canonical entry save' => false,
@@ -203,6 +203,6 @@ it('records both merge subjects without nested updates or deletion', function ()
     expect($events)->toHaveCount(2)
         ->and($events->pluck('eventType')->unique()->all())->toBe([ElementMerged::class])
         ->and($events->pluck('subjectId')->all())->toEqualCanonicalizing([$merged->uid, $prevailing->uid])
-        ->and($this->activities->format($mergedEvent))->toBe('Merged into Prevailing entry.')
-        ->and($this->activities->format($prevailingEvent))->toBe('Merged Merged entry into this element.');
+        ->and($this->activities->format($mergedEvent))->toBe('Merged into Prevailing entry')
+        ->and($this->activities->format($prevailingEvent))->toBe('Merged Merged entry into this element');
 });

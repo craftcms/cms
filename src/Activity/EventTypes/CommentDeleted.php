@@ -19,6 +19,6 @@ class CommentDeleted extends CommentEvent
 
     public static function format(ActivityEvent $event): string
     {
-        return t('Removed a comment.');
+        return t('Removed a comment');
     }
 }

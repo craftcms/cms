@@ -63,17 +63,17 @@ class WorkflowActivityEvent extends ActivityEventType implements ShouldBeRetaine
         $type = WorkflowActivityType::from($event->data['type']);
 
         return match ($type) {
-            WorkflowActivityType::Submit => t('Submitted for review in “{workflow}”.', ['workflow' => $event->data['workflow']['name']]),
-            WorkflowActivityType::Comment => t('Commented on the “{stage}” review stage.', ['stage' => $translatedStage]),
-            WorkflowActivityType::Override => t('Overrode the workflow approval.'),
-            WorkflowActivityType::Approve => t('Approved the “{stage}” review stage.', ['stage' => $translatedStage]),
-            WorkflowActivityType::Reject => t('Requested changes during the “{stage}” review stage.', ['stage' => $translatedStage]),
-            WorkflowActivityType::RequestReview => t('Requested another review of the “{stage}” stage.', ['stage' => $translatedStage]),
-            WorkflowActivityType::Restart => t('Restarted the workflow review.'),
-            WorkflowActivityType::StageApproved => t('The “{stage}” stage was approved.', ['stage' => $translatedStage]),
-            WorkflowActivityType::StageFailed => t('The “{stage}” stage failed.', ['stage' => $translatedStage]),
-            WorkflowActivityType::Invalidate => t('Invalidated the workflow review.'),
-            WorkflowActivityType::Publish => t('Published the approved draft.'),
+            WorkflowActivityType::Submit => t('Submitted for review in “{workflow}”', ['workflow' => $event->data['workflow']['name']]),
+            WorkflowActivityType::Comment => t('Commented on the “{stage}” review stage', ['stage' => $translatedStage]),
+            WorkflowActivityType::Override => t('Overrode the workflow approval'),
+            WorkflowActivityType::Approve => t('Approved the “{stage}” review stage', ['stage' => $translatedStage]),
+            WorkflowActivityType::Reject => t('Requested changes during the “{stage}” review stage', ['stage' => $translatedStage]),
+            WorkflowActivityType::RequestReview => t('Requested another review of the “{stage}” stage', ['stage' => $translatedStage]),
+            WorkflowActivityType::Restart => t('Restarted the workflow review'),
+            WorkflowActivityType::StageApproved => t('The “{stage}” stage was approved', ['stage' => $translatedStage]),
+            WorkflowActivityType::StageFailed => t('The “{stage}” stage failed', ['stage' => $translatedStage]),
+            WorkflowActivityType::Invalidate => t('Invalidated the workflow review'),
+            WorkflowActivityType::Publish => t('Published the approved draft'),
         };
     }
 

@@ -168,6 +168,5 @@
   .cp-link {
     gap: var(--c-spacing-sm);
     align-items: center;
-    text-decoration: none;
   }
 </style>

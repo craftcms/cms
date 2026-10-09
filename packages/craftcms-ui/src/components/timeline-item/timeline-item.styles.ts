@@ -15,7 +15,11 @@ export default css`
     display: grid;
     grid-template-columns: 1.75rem minmax(0, 1fr);
     gap: var(--c-spacing-md);
-    padding-block: var(--c-spacing-md);
+    padding-block-end: var(--c-spacing-md);
+  }
+
+  :host([last]) .timeline-item {
+    padding-block-end: 0;
   }
 
   .timeline-item::after {

@@ -20,7 +20,7 @@
 
 <template>
   <div
-    class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
+    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
   >
     <div class="flex items-center gap-1">
       <h3 :id="headingId" class="text-md/4" tabindex="-1">{{ panel.label }}</h3>
@@ -53,7 +53,7 @@
     </div>
   </div>
   <slot>
-    <div class="p-lg">
+    <div class="grow basis-0 min-h-0">
       <component
         v-if="panel.component"
         :is="panel.component"

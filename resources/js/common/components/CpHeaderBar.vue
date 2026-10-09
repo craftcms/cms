@@ -212,6 +212,8 @@
 
   .cp-header-bar__breadcrumbs {
     --c-text-link: var(--c-text-default);
+    --c-link-decoration: none;
+    --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
   }
