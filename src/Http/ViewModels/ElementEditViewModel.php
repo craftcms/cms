@@ -212,7 +212,7 @@ class ElementEditViewModel extends ViewModel
 
     /**
      * @return array{
-     *     primary: array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: null, tabId: string|null},
+     *     primary: array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: null, panelId: string|null},
      *     menu: list<array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: string|null, shortcut: bool, shift: bool}>,
      *     buttons: list<array<string, mixed>>,
      * }

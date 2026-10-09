@@ -21,8 +21,8 @@
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {UiValues} from '@/modules/ui/types';
-  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
-  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
+  import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
@@ -93,10 +93,10 @@
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
-      elementDetailsTabRegistry.hasVisible(payload)
+      elementDetailsPanelRegistry.hasVisible(payload)
   );
-  const detailsTabs = useTemplateRef<{select: (tabId: string) => void}>(
-    'detailsTabs'
+  const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(
+    'detailsPanels'
   );
 
   // Alternate saves in the Save button's menu, and the buttons grouped with
@@ -143,8 +143,8 @@
   }
 
   function primaryAction(options?: FormSaveOptions): void {
-    if (payload.editorActions.primary.tabId) {
-      detailsTabs.value?.select(payload.editorActions.primary.tabId);
+    if (payload.editorActions.primary.panelId) {
+      detailsPanels.value?.select(payload.editorActions.primary.panelId);
       return;
     }
 
@@ -372,8 +372,8 @@
     v-if="hasDetails || $slots['details-header']"
     name="content-details"
   >
-    <ElementDetailsTabs
-      ref="detailsTabs"
+    <ElementDetailsPanels
+      ref="detailsPanels"
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
       :update-payload="updatePayload"
@@ -405,7 +405,7 @@
           </template>
         </MetadataDetailsContent>
       </template>
-    </ElementDetailsTabs>
+    </ElementDetailsPanels>
   </LayoutSlot>
 </template>
 

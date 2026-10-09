@@ -10,7 +10,10 @@ import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
-import {elementDetailsTabRegistry} from './element-details-tabs.js';
+import {
+  elementDetailsPanelRegistry,
+  warnDeprecated,
+} from './element-details-panels.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
 
@@ -68,8 +71,15 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  get $elementDetailsPanels() {
+    return elementDetailsPanelRegistry;
+  },
+
+  /** @deprecated Use `$elementDetailsPanels`. */
   get $elementDetailsTabs() {
-    return elementDetailsTabRegistry;
+    warnDeprecated('Cp.$elementDetailsTabs', 'Cp.$elementDetailsPanels');
+
+    return elementDetailsPanelRegistry;
   },
 
   booted(callback: (instance: typeof window.Cp) => void) {

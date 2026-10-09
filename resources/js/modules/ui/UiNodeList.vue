@@ -96,6 +96,7 @@
   <!-- UiNodeList -->
   <craft-tabs
     v-if="tabs.length > 1"
+    :label="t('Primary fields')"
     :sync-location-hash="isSlideout ? 'false' : null"
     @craft-tab-show="onSelectionChanged"
   >
