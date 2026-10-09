@@ -8,6 +8,10 @@
     useWorkflowTransition,
     type WorkflowIdentity,
   } from '../composables/useWorkflowTransition';
+  import {
+    COMMENT_MAX_LENGTH,
+    useCharacterLimit,
+  } from '@/common/composables/useCharacterLimit';
   import '../../markdown-field/markdown-field';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
@@ -32,6 +36,7 @@
   const noteId = `workflow-review-note-${id}`;
   const commentId = `workflow-review-comment-${id}`;
   const noteIsEmpty = computed(() => !note.value.trim());
+  const {overage, overageMessage} = useCharacterLimit(note, COMMENT_MAX_LENGTH);
   const canShowActions = computed(
     () => props.review.canSubmit || props.review.canComment
   );
@@ -54,6 +59,10 @@
   );
 
   async function submitForReview(): Promise<void> {
+    if (overage.value > 0) {
+      return;
+    }
+
     await transition(controller.submit.url(), {note: note.value});
   }
 
@@ -66,7 +75,8 @@
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
       event.isComposing ||
-      processing.value
+      processing.value ||
+      overage.value > 0
     ) {
       return;
     }
@@ -81,7 +91,7 @@
   }
 
   async function addComment(): Promise<void> {
-    if (noteIsEmpty.value || processing.value) {
+    if (noteIsEmpty.value || processing.value || overage.value > 0) {
       return;
     }
 
@@ -110,49 +120,63 @@
     <label class="visually-hidden" :for="noteId">
       {{ t('Leave a comment') }}
     </label>
-    <craft-markdown-field
-      :id="noteId"
-      class="markdown-field"
-      :rows="3"
-      :max-length="5000"
-      :placeholder="t('Leave a comment')"
-      sanitize-html
-      show-toolbar
-      .toolbarButtons="commentToolbarButtons"
-      .value="note"
-      :disabled="processing"
-      @input="note = ($event.target as HTMLTextAreaElement).value"
-      @keydown="onNoteKeydown"
-    />
-
-    <div class="workflow-default-actions__buttons">
-      <craft-button
-        v-if="review.canSubmit"
-        type="button"
-        :variant="ButtonVariant.Primary"
+    <div
+      class="workflow-default-actions__field"
+      :class="{
+        'workflow-default-actions__field--footer':
+          review.canComment || overageMessage,
+      }"
+    >
+      <craft-markdown-field
+        :id="noteId"
+        class="markdown-field"
+        :max-height="200"
+        :rows="1"
+        :placeholder="t('Leave a comment')"
+        sanitize-html
+        show-toolbar
+        .toolbarButtons="commentToolbarButtons"
+        .value="note"
         :disabled="processing"
-        @click="submitForReview"
-      >
-        {{ review.submitLabel }}
-      </craft-button>
+        @input="note = ($event.target as HTMLTextAreaElement).value"
+        @keydown="onNoteKeydown"
+      />
 
-      <template v-if="review.canComment">
-        <span class="workflow-default-actions__button">
+      <div class="workflow-default-actions__field-footer">
+        <span class="workflow-default-actions__overage" aria-live="polite">
+          {{ overageMessage }}
+        </span>
+        <span
+          v-if="review.canComment"
+          class="workflow-default-actions__comment"
+        >
           <craft-button
             :id="commentId"
             type="button"
+            size="small"
             :variant="ButtonVariant.Solid"
-            :disabled="processing || noteIsEmpty"
+            :disabled="processing || noteIsEmpty || overage > 0"
             focusable-when-disabled
             @click="addComment"
           >
             {{ t('Comment') }}
           </craft-button>
         </span>
-        <craft-tooltip v-if="noteIsEmpty" :for="commentId">
-          {{ t('Enter a comment before submitting.') }}
-        </craft-tooltip>
-      </template>
+      </div>
+      <craft-tooltip v-if="review.canComment && noteIsEmpty" :for="commentId">
+        {{ t('Enter a comment before submitting.') }}
+      </craft-tooltip>
+    </div>
+
+    <div v-if="review.canSubmit" class="workflow-default-actions__buttons">
+      <craft-button
+        type="button"
+        :variant="ButtonVariant.Primary"
+        :disabled="processing || overage > 0"
+        @click="submitForReview"
+      >
+        {{ review.submitLabel }}
+      </craft-button>
     </div>
 
     <craft-callout
@@ -172,10 +196,37 @@
     gap: var(--c-spacing-md);
   }
 
-  .workflow-default-actions__buttons,
-  .workflow-default-actions__button {
+  .workflow-default-actions__buttons {
     display: flex;
     align-items: center;
+  }
+
+  .workflow-default-actions__field {
+    position: relative;
+  }
+
+  .workflow-default-actions__field--footer craft-markdown-field {
+    --markdown-field-footer-height: calc(
+      var(--c-size-control-sm) + var(--c-spacing-sm) * 2
+    );
+  }
+
+  .workflow-default-actions__field-footer {
+    position: absolute;
+    inset-block-end: var(--c-spacing-sm);
+    inset-inline-end: var(--c-spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+  }
+
+  .workflow-default-actions__overage {
+    color: var(--c-color-danger-on-quiet);
+    font-size: var(--c-text-sm);
+  }
+
+  .workflow-default-actions__comment {
+    display: flex;
   }
 
   .workflow-default-actions craft-markdown-field {

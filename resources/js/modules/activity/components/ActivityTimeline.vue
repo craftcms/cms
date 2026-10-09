@@ -129,6 +129,7 @@
   }
 
   .activity-timeline__day {
+    text-align: center;
     margin-block: var(--c-spacing-md);
     color: var(--c-text-quiet);
     font-size: var(--c-text-xs);
@@ -140,9 +141,15 @@
   }
 
   .activity-timeline__composer {
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
     padding-block: var(--c-spacing-lg);
     padding-inline: var(--cp-container-padding);
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    background: var(--c-bg);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
+      var(--c-surface-default) var(--c-spacing-lg)
+    );
+    position: relative;
+    z-index: 1;
   }
 </style>

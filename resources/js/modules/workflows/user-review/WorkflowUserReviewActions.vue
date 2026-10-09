@@ -4,6 +4,10 @@
   import transitionsController from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import userReviewController from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/UserReviewController';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
+  import {
+    COMMENT_MAX_LENGTH,
+    useCharacterLimit,
+  } from '@/common/composables/useCharacterLimit';
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
   import {isModifierKeyPressed} from '@/modules/markdown-field/behaviors/utilities';
   import '@/modules/markdown-field/markdown-field';
@@ -38,6 +42,7 @@
   );
   const id = useId();
   const messageIsEmpty = computed(() => !message.value.trim());
+  const {overageMessage} = useCharacterLimit(message, COMMENT_MAX_LENGTH);
   const currentRun = computed(() =>
     props.review.runs.find((run) => run.current)
   );
@@ -52,6 +57,10 @@
   );
   const requiresMessage = computed(() => selectedDecision.value !== 'approve');
   const disabledReason = computed(() => {
+    if (overageMessage.value) {
+      return overageMessage.value;
+    }
+
     if (!requiresMessage.value || !messageIsEmpty.value) {
       return null;
     }
@@ -62,10 +71,12 @@
     () =>
       props.canReview || props.canRequestReviewAgain || props.review.canComment
   );
+  /** With no decision to make, the submit button just posts a comment. */
+  const commentOnly = computed(
+    () => !props.canReview && props.review.canComment
+  );
   const submitLabel = computed(() =>
-    !props.canReview && props.review.canComment
-      ? t('Comment')
-      : t('Submit review')
+    commentOnly.value ? t('Comment') : t('Submit review')
   );
 
   function identity(): WorkflowIdentity {
@@ -165,20 +176,49 @@
     <label class="visually-hidden" :for="`workflow-user-review-message-${id}`">
       {{ t('Review comment') }}
     </label>
-    <craft-markdown-field
-      :id="`workflow-user-review-message-${id}`"
-      class="markdown-field"
-      :rows="3"
-      :max-length="5000"
-      :placeholder="t('Review comment')"
-      sanitize-html
-      show-toolbar
-      .toolbarButtons="commentToolbarButtons"
-      .value="message"
-      :disabled="processing"
-      @input="message = ($event.target as HTMLTextAreaElement).value"
-      @keydown="onMessageKeydown"
-    />
+    <div
+      class="workflow-user-review-actions__field"
+      :class="{
+        'workflow-user-review-actions__field--footer':
+          commentOnly || overageMessage,
+      }"
+    >
+      <craft-markdown-field
+        :id="`workflow-user-review-message-${id}`"
+        class="markdown-field"
+        :max-height="200"
+        :rows="1"
+        :placeholder="t('Review comment')"
+        sanitize-html
+        show-toolbar
+        .toolbarButtons="commentToolbarButtons"
+        .value="message"
+        :disabled="processing"
+        @input="message = ($event.target as HTMLTextAreaElement).value"
+        @keydown="onMessageKeydown"
+      />
+      <div class="workflow-user-review-actions__field-footer">
+        <span class="workflow-user-review-actions__overage" aria-live="polite">
+          {{ overageMessage }}
+        </span>
+        <span
+          v-if="commentOnly"
+          :id="`workflow-user-review-submit-${id}`"
+          class="workflow-user-review-actions__submit"
+        >
+          <craft-button
+            type="button"
+            size="small"
+            :variant="ButtonVariant.Primary"
+            .disabled="processing || Boolean(disabledReason)"
+            focusable-when-disabled
+            @click="submitReview"
+          >
+            {{ submitLabel }}
+          </craft-button>
+        </span>
+      </div>
+    </div>
 
     <fieldset v-if="canReview" class="workflow-user-review-actions__choices">
       <legend class="visually-hidden">{{ t('Review action') }}</legend>
@@ -226,7 +266,10 @@
       </label>
     </fieldset>
 
-    <div class="workflow-user-review-actions__footer">
+    <div
+      v-if="canRequestReviewAgain || !commentOnly"
+      class="workflow-user-review-actions__footer"
+    >
       <craft-button
         v-if="canRequestReviewAgain"
         type="button"
@@ -237,6 +280,7 @@
         {{ t('Request review again') }}
       </craft-button>
       <span
+        v-if="!commentOnly"
         :id="`workflow-user-review-submit-${id}`"
         class="workflow-user-review-actions__submit"
       >
@@ -250,13 +294,13 @@
           {{ submitLabel }}
         </craft-button>
       </span>
-      <craft-tooltip
-        v-if="disabledReason"
-        :for="`workflow-user-review-submit-${id}`"
-      >
-        {{ disabledReason }}
-      </craft-tooltip>
     </div>
+    <craft-tooltip
+      v-if="disabledReason"
+      :for="`workflow-user-review-submit-${id}`"
+    >
+      {{ disabledReason }}
+    </craft-tooltip>
 
     <craft-callout
       v-if="error"
@@ -322,5 +366,29 @@
 
   .workflow-user-review-actions__submit {
     display: inline-flex;
+  }
+
+  .workflow-user-review-actions__field {
+    position: relative;
+  }
+
+  .workflow-user-review-actions__field--footer craft-markdown-field {
+    --markdown-field-footer-height: calc(
+      var(--c-size-control-sm) + var(--c-spacing-sm) * 2
+    );
+  }
+
+  .workflow-user-review-actions__field-footer {
+    position: absolute;
+    inset-block-end: var(--c-spacing-sm);
+    inset-inline-end: var(--c-spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+  }
+
+  .workflow-user-review-actions__overage {
+    color: var(--c-color-danger-on-quiet);
+    font-size: var(--c-text-sm);
   }
 </style>
