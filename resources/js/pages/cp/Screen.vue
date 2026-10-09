@@ -255,7 +255,7 @@
 
   <LayoutSlot v-if="additionalButtons" name="additional-buttons">
     <HtmlFragmentRenderer
-      class="flex items-center gap-2"
+      class="flex items-center gap-md"
       :fragment="fragment(additionalButtons)"
       @ready="fragmentReady"
     />

@@ -46,7 +46,7 @@
           headHtml: '',
           bodyHtml: '',
         }"
-        class="flex items-center gap-2"
+        class="flex items-center gap-md"
         @ready="buttonsReady = true"
       />
     </LayoutSlot>

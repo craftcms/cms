@@ -74,7 +74,7 @@
       'content-footer--contained': contained,
     }"
   >
-    <div class="flex gap-2 items-center">
+    <div class="flex gap-md items-center">
       <FormActions
         v-if="form"
         :form="form"
