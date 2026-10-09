@@ -39,14 +39,14 @@
 </script>
 
 <template>
-  <div class="workflow-details-tab">
+  <div class="workflow-details-panel">
     <div
       v-if="
         payload.workflow.current &&
         payload.draftId !== null &&
         !payload.isProvisionalDraft
       "
-      class="workflow-details-tab__review"
+      class="workflow-details-panel__review"
     >
       <WorkflowReviewPanel
         :review="payload.workflow.current"
@@ -70,7 +70,7 @@
 
     <section
       v-if="payload.workflow.draftReviews.length"
-      class="workflow-details-tab__drafts"
+      class="workflow-details-panel__drafts"
     >
       <h3>{{ t('Drafts in review') }}</h3>
       <WorkflowDraftReviews :drafts="payload.workflow.draftReviews" />
@@ -79,22 +79,27 @@
 </template>
 
 <style scoped>
-  .workflow-details-tab,
-  .workflow-details-tab__review {
+  .workflow-details-panel,
+  .workflow-details-panel__review {
     display: grid;
   }
 
-  .workflow-details-tab__drafts {
+  .workflow-details-panel {
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
+  }
+
+  .workflow-details-panel__drafts {
     display: grid;
     gap: var(--c-spacing-sm);
     padding: var(--c-spacing-md);
   }
 
-  .workflow-details-tab__review + .workflow-details-tab__drafts {
+  .workflow-details-panel__review + .workflow-details-panel__drafts {
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
-  .workflow-details-tab__drafts h3 {
+  .workflow-details-panel__drafts h3 {
     margin: 0;
     font-size: var(--c-text-sm);
   }

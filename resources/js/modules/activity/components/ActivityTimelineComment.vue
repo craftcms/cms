@@ -123,6 +123,21 @@
     }
   }
 
+  /** Ctrl/Command + Enter posts (or saves) the comment from the editor. */
+  function onDraftKeydown(event: KeyboardEvent): void {
+    if (
+      event.key !== 'Enter' ||
+      (!event.metaKey && !event.ctrlKey) ||
+      event.isComposing ||
+      mutating.value
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void saveComment();
+  }
+
   async function deleteComment(): Promise<void> {
     if (!window.confirm(t('Remove this comment?'))) {
       return;
@@ -175,6 +190,7 @@
         .toolbarButtons="commentToolbarButtons"
         .value="draft"
         @input="draft = ($event.target as HTMLTextAreaElement).value"
+        @keydown="onDraftKeydown"
       />
       <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
       <div class="activity-timeline__comment-actions">
@@ -240,6 +256,10 @@
 </template>
 
 <style scoped>
+  .activity-timeline__comment:not(:last-child) {
+    margin-block-end: var(--c-spacing-md);
+  }
+
   .activity-timeline__comment-actions {
     display: flex;
     align-items: center;
@@ -257,8 +277,7 @@
   }
 
   .activity-timeline__comment-editor .activity-timeline__comment-actions {
-    justify-content: flex-end;
-    margin-block-start: var(--c-spacing-xs);
+    margin-block-start: var(--c-spacing-md);
   }
 
   .activity-timeline__comment-actions .error {

@@ -14,7 +14,11 @@
    */
   import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
-  import {useElementSize} from '@vueuse/core';
+  import {
+    useElementBounding,
+    useElementSize,
+    useWindowSize,
+  } from '@vueuse/core';
   import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
@@ -181,18 +185,34 @@
   const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
   // The details pane and the sidebar both stop short of Laravel Debugbar.
   const debugBarHeight = useDebugBarHeight();
+  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
+  const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
+  const {width: contentLayoutWidth} = useElementSize(contentLayout);
+  // Where the details column sits in the viewport: how far down it starts until
+  // the pane sticks, and how much room its end leaves at the bottom once the
+  // page is scrolled to it. The pane is sized to fit between the two.
+  // The `aside`, which spans the row, rather than the pane's own contents,
+  // whose height follows from this.
+  const detailsAside = useTemplateRef<HTMLElement>('detailsAside');
+  const {top: detailsColumnTop, bottom: detailsColumnBottom} =
+    useElementBounding(detailsAside);
+  const {height: windowHeight} = useWindowSize();
+
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
+    '--cp-details-end-gap': `${Math.max(
+      0,
+      windowHeight.value -
+        (debugBarHeight.value ?? 0) -
+        detailsColumnBottom.value
+    )}px`,
     ...(debugBarHeight.value === null
       ? {}
       : {'--cp-debug-bar-height': `${debugBarHeight.value}px`}),
   }));
 
-  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
-  const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
-  const {width: contentLayoutWidth} = useElementSize(contentLayout);
-
-  // Lets content decide when it's cramped — the element details tabs fold away
+  // Lets content decide when it's cramped — the element details panels fold away
   // below a certain width.
   provide(ScreenContentWidthKey, contentLayoutWidth);
   const detailsOverlaid = useDetailsOverlay(
@@ -200,7 +220,7 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
-  // The details tab strip renders in the rail beside the panel.
+  // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
   const detailsResizer = useDetailsResizer({
@@ -453,6 +473,7 @@
                         </div>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <aside
+                          ref="detailsAside"
                           v-show="hasDetails"
                           :id="legacyIds ? 'details' : undefined"
                           class="cp-content__details"
@@ -561,7 +582,7 @@ Page
   }
 
   /**
-Body: the inset panel holding `page-main`, and the details tab rail beside it
+Body: the inset panel holding `page-main`, and the details rail beside it
  */
   .cp-body {
     height: 100%;
@@ -580,7 +601,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
     overflow: clip;
   }
 
-  /* The tab rail stands in for the trailing inset. */
+  /* The details rail stands in for the trailing inset. */
   .cp-body--details .cp-body__panel {
     margin-inline-end: 0;
   }
@@ -604,7 +625,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
 Content: the secondary nav, content, and details panes
  */
   .cp-content {
-    /* Sizes the details pane's `cqi` caps to the panel, not the tab rail beside it. */
+    /* Sizes the details pane's `cqi` caps to the panel, not the details rail beside it. */
     container: cp-content / inline-size;
     height: 100%;
     max-width: 100vw;
@@ -654,7 +675,7 @@ Content: the secondary nav, content, and details panes
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-body:has(.cp-details-rail craft-tabs[collapsed]) .cp-content--details {
+  .cp-body:has(.cp-details-rail [data-open='false']) .cp-content--details {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
     --cp-content-details-width: 0px !important;
@@ -702,13 +723,14 @@ Content: the secondary nav, content, and details panes
     justify-self: stretch;
   }
 
+  /* Runs from wherever the pane starts to the viewport's bottom, stopping
+     short only once the page's end brings the panel's own bottom into view. */
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: var(--cp-body-inset);
+    inset-block-start: 0;
     height: calc(
-      100dvh - var(--cp-top-bar-visible-height, 0px) -
-        var(--cp-debug-bar-height, 0px) -
-        (var(--cp-body-inset) + var(--cp-body-border-width)) * 2
+      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
+        var(--cp-details-end-gap, 0px)
     );
   }
 
@@ -735,7 +757,7 @@ Content: the secondary nav, content, and details panes
       box-shadow: none;
     }
 
-    /* The border still divides the panel from the tab rail. */
+    /* The border still divides the panel from the details rail. */
     .cp-body--details .cp-body__panel {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }
@@ -748,7 +770,7 @@ Folds
  * Below the sum of the content's floor (600px, `--cp-content-main-min`) and the
  * panel's (280px) one of them would be squeezed past it, so the panel folds to
  * its rail and opens over the content instead. The panel can't query its own
- * width, so these query the shell: the sum plus the 50px tab rail and the
+ * width, so these query the shell: the sum plus the 50px details rail and the
  * panel's two border pixels. A query condition can't read a custom property,
  * so the sum is written out; keep it in step with the floors and with the
  * wider fold below.

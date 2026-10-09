@@ -19,9 +19,9 @@
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import DetailsTabs, {
-    type DetailsTab,
-  } from '@/common/components/DetailsTabs.vue';
+  import DetailsPanels, {
+    type DetailsPanel,
+  } from '@/common/components/DetailsPanels.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
@@ -36,7 +36,7 @@
     Boolean(detailsFragment.value || details.value)
   );
 
-  const tabs: DetailsTab[] = [
+  const panels: DetailsPanel[] = [
     {id: 'info', label: t('Info'), icon: 'circle-info', slot: 'info'},
   ];
 </script>
@@ -49,9 +49,9 @@
   </div>
 
   <LayoutSlot v-if="hasDetails" name="content-details">
-    <DetailsTabs :tabs="tabs">
+    <DetailsPanels :panels="panels">
       <template #info>
-        <div class="p-lg">
+        <div class="py-lg px-(--cp-container-padding)">
           <HtmlFragmentRenderer
             v-if="detailsFragment"
             :fragment="detailsFragment"
@@ -59,6 +59,6 @@
           <div v-else v-html="details"></div>
         </div>
       </template>
-    </DetailsTabs>
+    </DetailsPanels>
   </LayoutSlot>
 </template>

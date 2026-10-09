@@ -57,18 +57,27 @@
     await transition(controller.submit.url(), {note: note.value});
   }
 
+  /**
+   * Ctrl/Command + Enter posts the comment that's been written. With nothing
+   * written, it submits for review instead, where the note is optional.
+   */
   function onNoteKeydown(event: KeyboardEvent): void {
     if (
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
-      !props.review.canSubmit ||
+      event.isComposing ||
       processing.value
     ) {
       return;
     }
 
-    event.preventDefault();
-    void submitForReview();
+    if (props.review.canComment && !noteIsEmpty.value) {
+      event.preventDefault();
+      void addComment();
+    } else if (props.review.canSubmit) {
+      event.preventDefault();
+      void submitForReview();
+    }
   }
 
   async function addComment(): Promise<void> {

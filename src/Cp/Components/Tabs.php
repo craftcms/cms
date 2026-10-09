@@ -17,13 +17,14 @@ use Stringable;
  * set of panels, one visible at a time:
  *
  *     Tabs::make()
+ *         ->label(t('Entry settings'))
  *         ->tab(t('Content'), $contentHtml)
  *         ->tab(t('Settings'), $settingsHtml)
  *         ->selectedIndex(1);
  *
  * or from a config array (Twig `ui()`):
  *
- *     {{ ui('tabs', {tabs: [
+ *     {{ ui('tabs', {label: 'Entry settings'|t, tabs: [
  *         {label: 'Content'|t, panel: contentHtml},
  *         {label: 'Settings'|t, panel: settingsHtml, disabled: true},
  *     ]}) }}
@@ -45,13 +46,13 @@ class Tabs extends ViewComponent
     /** @var list<Tab> */
     protected array $items = [];
 
+    protected ?string $label = null;
+
     protected ?int $selectedIndex = null;
 
     protected TabsLayout|string|null $layout = null;
 
     protected TabsPlacement|string|null $placement = null;
-
-    protected bool $collapsible = false;
 
     protected bool $equalWidth = false;
 
@@ -109,6 +110,17 @@ class Tabs extends ViewComponent
         return $this;
     }
 
+    /**
+     * The tablist's accessible name, describing what the tabs switch between.
+     * Required: rendering a strip without one throws.
+     */
+    public function label(?string $label): static
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
     /** The index of the initially selected tab; the web component defaults to 0. */
     public function selectedIndex(?int $selectedIndex): static
     {
@@ -138,17 +150,6 @@ class Tabs extends ViewComponent
         return $this->placement instanceof TabsPlacement
             ? $this->placement->value
             : TabsPlacement::from($this->placement)->value;
-    }
-
-    /**
-     * Lets the selected tab be deselected, closing the panel region entirely —
-     * what an icon toolbar wants, where "nothing open" is a normal state.
-     */
-    public function collapsible(bool $collapsible = true): static
-    {
-        $this->collapsible = $collapsible;
-
-        return $this;
     }
 
     /**
@@ -201,6 +202,19 @@ class Tabs extends ViewComponent
     }
 
     /**
+     * @throws InvalidArgumentException if no {@see label()} was set
+     */
+    #[\Override]
+    public function toHtml(): string
+    {
+        if ($this->label === null || $this->label === '') {
+            throw new InvalidArgumentException('Tabs require a label naming what the tabs switch between.');
+        }
+
+        return parent::toHtml();
+    }
+
+    /**
      * Emits each tab immediately followed by its panel, which is the order the
      * web component pairs them in. Any content assigned to the component's own
      * slots follows.
@@ -230,10 +244,10 @@ class Tabs extends ViewComponent
     protected function hostAttributes(): array
     {
         return [
+            'label' => $this->label,
             'selected-index' => $this->selectedIndex,
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
-            'collapsible' => $this->collapsible,
             'equal-width' => $this->equalWidth,
             'sync-location-hash' => $this->syncLocationHash ? null : 'false',
             'layout' => $this->getLayout(),

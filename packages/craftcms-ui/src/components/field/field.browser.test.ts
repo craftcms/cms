@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
 import './field.js';
@@ -28,14 +29,15 @@ it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {
     document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple-choice' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
+    const field = document.querySelector('craft-field')!;
     const combobox = document.querySelector('craft-combobox')!;
-    await vi.waitFor(() =>
-      expect(
-        computeAccessibleName(
-          combobox.querySelector('input:not([type=hidden])')!
-        )
-      ).toBe('Entry Type')
-    );
+    await field.updateComplete;
+    await combobox.updateComplete;
+    // Picking up the field's label queues another update, which names the listbox.
+    await combobox.updateComplete;
+    expect(
+      computeAccessibleName(combobox.querySelector('input:not([type=hidden])')!)
+    ).toBe('Entry Type');
     expect(
       computeAccessibleName(combobox.querySelector('[role=listbox]')!)
     ).toBe('Entry Type');
@@ -84,4 +86,35 @@ describe('spacing', () => {
       helpText.getBoundingClientRect().height
     );
   });
+});
+
+it('exposes translation help on keyboard focus and dismisses it with Escape', async () => {
+  const field = document.createElement('craft-field');
+  field.label = 'Title';
+  field.translatable = true;
+  field.translationDescription = 'Translated per site.';
+  field.innerHTML = '<input slot="input" type="text">';
+  document.body.append(field);
+  await field.updateComplete;
+
+  const tooltip = field.querySelector('craft-tooltip')!;
+  const indicator = tooltip.querySelector('craft-button')!;
+
+  await expect.element(indicator).toBeVisible();
+  expect(indicator.getBoundingClientRect().width).toBeGreaterThanOrEqual(24);
+  expect(indicator.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
+  await expect.element(indicator).toHaveAccessibleName('Translated per site.');
+  await userEvent.tab();
+  expect(document.activeElement).toBe(indicator);
+  await expect.poll(() => tooltip.opened).toBe(true);
+  await expect
+    .element(tooltip.querySelector<HTMLElement>('[slot="content"]')!)
+    .toHaveTextContent('Translated per site.');
+
+  await userEvent.keyboard('{Escape}');
+  await expect.poll(() => tooltip.opened).toBe(false);
+  expect(document.activeElement).toBe(indicator);
+
+  await userEvent.tab();
+  expect(document.activeElement).toBe(field.querySelector('input'));
 });

@@ -5,13 +5,14 @@
     node: UiNodePayload<{
       html: string;
       width: number;
+      inert?: boolean;
     }>;
   }>();
 </script>
 
 <template>
   <div
-    inert
+    :inert="node.props.inert ?? true"
     :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
     v-html="node.props.html"

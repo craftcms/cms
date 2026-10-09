@@ -206,7 +206,7 @@
   </LayoutSlot>
 
   <AdminTable
-    class="admin-table--padded"
+    padded
     :table="table"
     :reorderable="false"
     :from="pagination.from"

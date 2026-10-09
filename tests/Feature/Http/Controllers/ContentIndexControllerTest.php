@@ -1168,6 +1168,7 @@ it('lists only the new site’s sources in the navigation after a switch', funct
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($primaryOnly, $bothSites) {
             $entries = collect($page->toArray()['props']['craft']['nav'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
                 ->firstWhere('label', 'Entries');
 
             // The nav is the sources sidebar on an index page, so it has to
@@ -1191,6 +1192,7 @@ it('keeps every source in the navigation on a single-site install', function () 
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($section) {
             $entries = collect($page->toArray()['props']['craft']['nav'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
                 ->firstWhere('label', 'Entries');
 
             $labels = collect($entries['subnav'])

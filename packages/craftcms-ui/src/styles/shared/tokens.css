@@ -38,6 +38,8 @@
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
+  --c-link-decoration: none;
+  --c-link-decoration-hover: underline;
 
   /* Transparent tokens */
   --c-color-border-translucent: color-mix(
@@ -273,4 +275,9 @@
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
     0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+}
+
+.underline-links {
+  --c-link-decoration: underline;
+  --c-link-decoration-hover: none;
 }

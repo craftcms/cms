@@ -1,15 +1,15 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import type {ElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import {t} from '@craftcms/ui';
 import WorkflowDefaultActions from './components/WorkflowDefaultActions.vue';
 import WorkflowDetailsActions from './components/WorkflowDetailsActions.vue';
-import WorkflowDetailsTab from './components/WorkflowDetailsTab.vue';
+import WorkflowDetailsPanel from './components/WorkflowDetailsPanel.vue';
 import WorkflowUserReviewActions from './user-review/WorkflowUserReviewActions.vue';
 import WorkflowUserReviewSummary from './user-review/WorkflowUserReviewSummary.vue';
 
 export function registerWorkflowComponents(
   components: Pick<CpComponentRegistry, 'register'>,
-  elementDetailsTabs: Pick<ElementDetailsTabRegistry, 'register'>
+  elementDetailsPanels: Pick<ElementDetailsPanelRegistry, 'register'>
 ): void {
   components.register('craft:workflow-default-actions', WorkflowDefaultActions);
   components.register(
@@ -24,13 +24,13 @@ export function registerWorkflowComponents(
     'craft:workflow-activity-event',
     () => import('./components/WorkflowActivityTimelineEvent.vue')
   );
-  elementDetailsTabs.register({
+  elementDetailsPanels.register({
     id: 'workflow',
     get label() {
       return t('Workflow');
     },
     icon: 'clipboard-list-check',
-    component: WorkflowDetailsTab,
+    component: WorkflowDetailsPanel,
     headerActionsComponent: WorkflowDetailsActions,
     order: 5,
     visible: (payload) =>

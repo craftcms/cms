@@ -87,5 +87,5 @@
       t('New schema')
     }}</CpButtonLink>
   </LayoutSlot>
-  <AdminTable class="admin-table--padded" :table="table" />
+  <AdminTable padded :table="table" />
 </template>

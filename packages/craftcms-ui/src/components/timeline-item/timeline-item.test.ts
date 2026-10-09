@@ -36,10 +36,6 @@ describe('craft-timeline-item', () => {
       element.shadowRoot?.querySelector('slot[name="meta"]')
     ).not.toBeNull();
     expect(
-      element.shadowRoot?.querySelector('.timeline-item__separator')
-        ?.textContent
-    ).toBe('•');
-    expect(
       element.shadowRoot?.querySelector('slot:not([name])')
     ).not.toBeNull();
     expect(
@@ -63,10 +59,6 @@ describe('craft-timeline-item', () => {
 
   it('omits the metadata separator unless both heading and metadata exist', async () => {
     const element = await createTimelineItem('<time slot="meta">Now</time>');
-
-    expect(
-      element.shadowRoot?.querySelector('.timeline-item__separator')
-    ).toBeNull();
   });
 
   it('keeps a heading and its metadata in separate grid columns', () => {

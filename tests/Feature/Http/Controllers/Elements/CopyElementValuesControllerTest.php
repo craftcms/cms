@@ -238,6 +238,9 @@ it('copies a field value from another site and returns the updated field', funct
             ->where('fieldHtml', fn (string $html) => $html !== ''
                 && str_contains($html, 'data-layout-element="'.$layoutElementUid.'"'))
             ->where('field.control.path', ['copyNamespace', 'fields', 'copyField'])
+            ->where('field.props.orientation', 'ltr')
+            ->where('field.props.translatable', true)
+            ->where('field.props.translationDescription', 'This field is translated for each site.')
             ->where('values.copyNamespace.fields.copyField', 'Secondary field value')
             ->has('headHtml')
             ->has('bodyHtml')

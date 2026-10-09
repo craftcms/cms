@@ -12,6 +12,9 @@ export default css`
     display: contents;
     --c-truncate-link-decoration: none;
     --c-truncate-link-hover-decoration: underline;
+    /* The page's link rule outranks ::slotted(), so it's told through these. */
+    --c-link-decoration: none;
+    --c-link-decoration-hover: underline;
   }
 
   /* Base */

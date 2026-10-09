@@ -213,6 +213,9 @@ class HandleInertiaRequests extends Middleware
                     'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                     'admin' => $currentUser->admin,
+                    'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
+                        ?? $generalConfig->accessibilityDefaults['underlineLinks']
+                        ?? false),
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),

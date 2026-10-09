@@ -45,7 +45,7 @@ it('renders an existing comment with its activity metadata', async () => {
     actor: {label: 'Ada', url: null, deleted: false},
     impersonator: null,
     source: {label: 'Craft'},
-    description: {text: 'Commented.', html: null},
+    description: {text: 'Commented', html: null},
     changes: [],
     comment: {
       html: '<p>Please clarify this.</p>',
@@ -70,7 +70,7 @@ it('renders an existing comment with its activity metadata', async () => {
   app.mount(container);
   await nextTick();
 
-  expect(container.textContent).toContain('Ada commented.');
+  expect(container.textContent).toContain('Ada commented');
   expect(container.textContent).toContain('Please clarify this.');
   expect(container.textContent).toContain('Edited');
   expect(container.querySelector('time')?.textContent).toContain('9:41 AM');
@@ -146,4 +146,49 @@ it('inserts mentions into the active composer without changing another comment',
 
   expect(secondEditor.value).toBe('Hello [@ada](craft-user:42)');
   expect(firstEditor.value).toBe('Another comment');
+});
+
+it('posts the comment on Ctrl/Command + Enter', async () => {
+  const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+    data: {event: {id: 'comment-2'}},
+  });
+
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(ActivityTimelineComment, {
+        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        elementId: 12,
+        siteId: 1,
+      }),
+  });
+  app.mount(container);
+  await nextTick();
+
+  const editor = container.querySelector('textarea')!;
+  editor.value = 'Looks good';
+  editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
+  await nextTick();
+
+  editor.dispatchEvent(
+    new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+  );
+  expect(post).not.toHaveBeenCalled();
+
+  for (const modifier of ['metaKey', 'ctrlKey'] as const) {
+    post.mockClear();
+    editor.value = 'Looks good';
+    editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    editor.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        [modifier]: true,
+        bubbles: true,
+      })
+    );
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    expect(post.mock.calls[0]![1]).toMatchObject({markdown: 'Looks good'});
+  }
 });

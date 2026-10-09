@@ -2,23 +2,25 @@
   import {t} from '@craftcms/ui';
   import {computed, useTemplateRef} from 'vue';
   import {
-    elementDetailsTabRegistry,
-    type ElementDetailsTabDescriptor,
-  } from '@/bootstrap/element-details-tabs';
-  import DetailsTabs, {
-    type DetailsTab,
-  } from '@/common/components/DetailsTabs.vue';
+    elementDetailsPanelRegistry,
+    type ElementDetailsPanelDescriptor,
+  } from '@/bootstrap/element-details-panels';
+  import DetailsPanels, {
+    type DetailsPanel,
+  } from '@/common/components/DetailsPanels.vue';
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
+  import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
+  import ElementRevisionsActions from '@/modules/elements/components/ElementRevisionsActions.vue';
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
     ElementFormActionSubmitter,
   } from '@/modules/elements/composables/useElementEditor';
 
-  type ElementDetailsTab = DetailsTab &
+  type ElementDetailsPanel = DetailsPanel &
     Pick<
-      ElementDetailsTabDescriptor,
+      ElementDetailsPanelDescriptor,
       'visible' | 'status' | 'props' | 'headerActionsComponent'
     >;
 
@@ -30,7 +32,7 @@
     syncLocationHash?: boolean;
   }>();
 
-  const coreTabs: ElementDetailsTab[] = [
+  const corePanels: ElementDetailsPanel[] = [
     {
       id: 'info',
       label: t('Info'),
@@ -43,6 +45,7 @@
       label: t('Activity'),
       icon: 'wave-pulse',
       component: ElementActivityTimeline,
+      headerActionsComponent: ElementActivityTimelineActions,
       order: 10,
       visible: (payload) => payload.activityTimelineUrl !== null,
       props: ({payload, active, refreshToken}) => ({
@@ -56,56 +59,62 @@
       label: t('Revisions'),
       icon: 'clock-rotate-left',
       component: RevisionsList,
+      headerActionsComponent: ElementRevisionsActions,
       order: 20,
       props: ({payload}) => ({payload}),
     },
   ];
 
-  const visibleTabs = computed<ElementDetailsTab[]>(() =>
-    ([...coreTabs, ...elementDetailsTabRegistry.tabs] as ElementDetailsTab[])
-      .filter((tab) => tab.visible?.(props.payload) ?? true)
-      .map((tab) => ({
-        ...tab,
-        statusData: tab.status?.(props.payload) ?? null,
+  const visiblePanels = computed<ElementDetailsPanel[]>(() =>
+    (
+      [
+        ...corePanels,
+        ...elementDetailsPanelRegistry.panels,
+      ] as ElementDetailsPanel[]
+    )
+      .filter((panel) => panel.visible?.(props.payload) ?? true)
+      .map((panel) => ({
+        ...panel,
+        statusData: panel.status?.(props.payload) ?? null,
       }))
   );
 
-  const detailsTabs = useTemplateRef<{select(tabId: string): void}>(
-    'detailsTabs'
+  const detailsPanels = useTemplateRef<{select(panelId: string): void}>(
+    'detailsPanels'
   );
 
   function componentProps(
-    tab: DetailsTab,
-    activeTabId: string | null
+    panel: DetailsPanel,
+    activePanelId: string | null
   ): Record<string, unknown> {
     const context = {
       payload: props.payload,
-      active: activeTabId === tab.id,
+      active: activePanelId === panel.id,
       refreshToken: props.activityTimelineVersion,
       updatePayload: props.updatePayload,
       submitAction: props.submitAction,
     };
 
-    return (tab as ElementDetailsTab).props?.(context) ?? {};
+    return (panel as ElementDetailsPanel).props?.(context) ?? {};
   }
 
-  function select(tabId: string): void {
-    detailsTabs.value?.select(tabId);
+  function select(panelId: string): void {
+    detailsPanels.value?.select(panelId);
   }
 
   defineExpose({select});
 </script>
 
 <template>
-  <DetailsTabs
-    ref="detailsTabs"
-    :tabs="visibleTabs"
+  <DetailsPanels
+    ref="detailsPanels"
+    :panels="visiblePanels"
     :component-props="componentProps"
-    id-prefix="element-details-tab"
+    id-prefix="element-details-panel"
     :sync-location-hash="syncLocationHash"
   >
     <template #info>
       <slot name="info" />
     </template>
-  </DetailsTabs>
+  </DetailsPanels>
 </template>

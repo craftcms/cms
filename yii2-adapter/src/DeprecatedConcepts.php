@@ -436,16 +436,36 @@ class DeprecatedConcepts
                 }
 
                 if (!empty($newItems)) {
-                    // Find the last item with a "content/" URL
-                    $lastContentKey = array_find_key($event->navItems, fn(array $item, int $key) => (
-                        str_starts_with($item['url'], 'content/') &&
-                        (!isset($event->navItems[$key + 1]) || !str_starts_with($event->navItems[$key + 1]['url'], 'content/'))
-                    ));
+                    // Insert after the last "content/" item, whether that's at the top level or within a group
+                    // (top-level items have a `url`; group members are passed through with an `href`)
+                    $insertAfterContent = function(array &$items) use ($newItems): bool {
+                        $isContentItem = fn(?array $item) => str_starts_with((string)($item['url'] ?? $item['href'] ?? ''), 'content/');
+                        $lastContentKey = array_find_key($items, fn(array $item, int $key) => (
+                            $isContentItem($item) && !$isContentItem($items[$key + 1] ?? null)
+                        ));
 
-                    if ($lastContentKey !== null) {
-                        array_splice($event->navItems, $lastContentKey + 1, 0, $newItems);
-                    } else {
-                        array_push($event->navItems, ...$newItems);
+                        if ($lastContentKey === null) {
+                            return false;
+                        }
+
+                        array_splice($items, $lastContentKey + 1, 0, $newItems);
+                        return true;
+                    };
+
+                    if (!$insertAfterContent($event->navItems)) {
+                        $inserted = false;
+
+                        foreach ($event->navItems as &$item) {
+                            if (!empty($item['group']) && is_array($item['subnav'] ?? null) && $insertAfterContent($item['subnav'])) {
+                                $inserted = true;
+                                break;
+                            }
+                        }
+                        unset($item);
+
+                        if (!$inserted) {
+                            array_push($event->navItems, ...$newItems);
+                        }
                     }
                 }
             },

@@ -47,11 +47,14 @@ it('uses a non-PlainText field settings UI through the public contract', functio
         public function settingsUi(UiContext $context = new UiContext): Ui
         {
             return Ui::make([
-                Field::make()->control(CraftCms\Cms\Ui\Controls\Number::make('decimals')),
+                Field::make()->control(CraftCms\Cms\Ui\Controls\Number::make('decimals')->value(2)),
             ]);
         }
     };
     $viewModel = new FieldEditViewModel($field, app(Fields::class));
+    $settings = $viewModel->settingsUi();
 
-    expect($viewModel->settingsUi()?->nodes)->toHaveCount(1);
+    expect($settings?->scope)->toBe(['settings'])
+        ->and($settings?->values)->toBe(['settings' => ['decimals' => 2]])
+        ->and($viewModel->ui()->values['settings'])->toBe(['decimals' => 2]);
 });

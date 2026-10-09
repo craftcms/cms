@@ -61,7 +61,7 @@
   </LayoutSlot>
 
   <div class="@container">
-    <AdminTable class="admin-table--padded" :table="table">
+    <AdminTable padded :table="table">
       <template #empty-row>
         <craft-empty icon="users" :label="t('No groups exist yet.')">
           <CpButtonLink :href="create().url" icon="plus">{{

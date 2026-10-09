@@ -59,8 +59,17 @@
   type FieldNodeProps = {
     id?: string;
     label?: string | null;
+    labelHtml?: string;
     /** Visually hides the label, keeping it available to screen readers. */
     labelSrOnly?: boolean;
+    fieldset?: boolean;
+    showStatus?: boolean;
+    headingSuffix?: string;
+    headingPrefix?: string;
+    translatable?: boolean;
+    translationDescription?: string;
+    orientation?: 'ltr' | 'rtl';
+    inputWidth?: 'full' | 'auto';
     instructions?: string | null;
     instructionsHtml?: string;
     required?: boolean;
@@ -139,7 +148,12 @@
 
   const modifiedGroups = inject(UiModifiedGroups, undefined);
   const changedPaths = inject(UiChangedPaths, undefined);
-  const modified = computed(() => holdsChange() || modifiedByServer());
+  const showStatus = computed(
+    () => resolvedNode.value.props.showStatus !== false
+  );
+  const modified = computed(
+    () => showStatus.value && (holdsChange() || modifiedByServer())
+  );
 
   /**
    * Whether something changed inside this field, for a field holding nested
@@ -297,7 +311,11 @@
   <craft-field
     ref="field"
     :id="resolvedNode.props.id ?? fieldId(control.path)"
-    :label="resolvedNode.props.label ?? undefined"
+    .translatable="Boolean(resolvedNode.props.translatable)"
+    .fieldset="Boolean(resolvedNode.props.fieldset)"
+    :translation-description="resolvedNode.props.translationDescription"
+    :orientation="resolvedNode.props.orientation"
+    :width="resolvedNode.props.inputWidth"
     :label-sr-only="resolvedNode.props.labelSrOnly || undefined"
     :help-text="
       resolvedNode.props.instructionsHtml
@@ -309,11 +327,19 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
-    :status="modified ? 'modified' : resolvedNode.props.status"
+    :status="
+      showStatus
+        ? modified
+          ? 'modified'
+          : resolvedNode.props.status
+        : undefined
+    "
     :status-label="
-      modified
-        ? t('This field has been modified.')
-        : resolvedNode.props.statusLabel
+      !showStatus
+        ? undefined
+        : modified
+          ? t('This field has been modified.')
+          : resolvedNode.props.statusLabel
     "
     :class="{
       [`width-${resolvedNode.props.width}`]: Boolean(resolvedNode.props.width),
@@ -322,6 +348,24 @@
     :hidden="resolvedNode.props.hidden || undefined"
     :data-layout-element="resolvedNode.props.layoutUid"
   >
+    <span
+      v-if="resolvedNode.props.labelHtml !== undefined"
+      slot="label"
+      v-html="resolvedNode.props.labelHtml"
+    />
+    <span v-else-if="resolvedNode.props.label != null" slot="label">{{
+      resolvedNode.props.label
+    }}</span>
+    <span
+      v-if="resolvedNode.props.headingPrefix"
+      slot="heading-prefix"
+      v-html="resolvedNode.props.headingPrefix"
+    />
+    <span
+      v-if="resolvedNode.props.headingSuffix"
+      slot="heading-suffix"
+      v-html="resolvedNode.props.headingSuffix"
+    />
     <div v-if="actions.length" slot="actions">
       <UiNodeList
         :nodes="actions"

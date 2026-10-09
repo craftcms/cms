@@ -344,7 +344,7 @@ it('lets a collaborator with view access post a safe Markdown comment without sa
     ])
         ->assertOk()
         ->assertJsonPath('event.component', 'craft:activity-timeline-comment')
-        ->assertJsonPath('event.description.text', 'Commented.')
+        ->assertJsonPath('event.description.text', 'Commented')
         ->assertJsonPath('event.actor.label', 'Grace Hopper')
         ->assertJsonPath('event.comment.edited', false)
         ->assertJsonPath('event.comment.deleted', false)
@@ -654,7 +654,7 @@ it('edits and removes a comment in place on the timeline', function () {
     ])
         ->assertOk()
         ->assertJsonPath('event.id', $created['id'])
-        ->assertJsonPath('event.description.text', 'Commented.')
+        ->assertJsonPath('event.description.text', 'Commented')
         ->assertJsonPath('event.occurredAt', $created['occurredAt'])
         ->assertJsonPath('event.comment.edited', true)
         ->assertJsonPath('event.comment.deleted', false)
@@ -681,7 +681,7 @@ it('edits and removes a comment in place on the timeline', function () {
         ->assertJsonPath('event.id', $created['id'])
         ->assertJsonPath('event.icon', 'comment-slash')
         ->assertJsonPath('event.actor.label', $otherAdmin->name)
-        ->assertJsonPath('event.description.text', 'Removed a comment.')
+        ->assertJsonPath('event.description.text', 'Removed a comment')
         ->assertJsonPath('event.occurredAt', $created['occurredAt'])
         ->assertJsonPath('event.comment.deleted', true)
         ->assertJsonPath('event.comment.canEdit', false)
@@ -705,7 +705,7 @@ it('edits and removes a comment in place on the timeline', function () {
         ->assertOk()
         ->assertJsonCount(2, 'events')
         ->assertJsonPath('events.0.id', $created['id'])
-        ->assertJsonPath('events.0.description.text', 'Removed a comment.')
+        ->assertJsonPath('events.0.description.text', 'Removed a comment')
         ->assertJsonPath('events.0.comment.deleted', true);
 });
 

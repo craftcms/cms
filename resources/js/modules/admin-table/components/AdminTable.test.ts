@@ -174,3 +174,32 @@ it('toggles a focused row with space and extends with shift+arrow', async () => 
 
   expect(selectedIds()).toEqual([1, 2]);
 });
+
+it.each([true, false])(
+  'only pads the table and flushes its row edges when padded (%s)',
+  (padded) => {
+    const table = useCraftTable({
+      data: [{id: 1, name: 'Settings record'}],
+      columns: [
+        {accessorKey: 'name', header: 'Name', cell: ({getValue}) => getValue()},
+      ],
+    });
+    const host = document.createElement('div');
+    document.body.append(host);
+    const app = createApp({
+      render: () => h(AdminTable, {table, padded} as never),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(host);
+    teardown = () => app.unmount();
+
+    expect(
+      host
+        .querySelector('.admin-table')
+        ?.classList.contains('admin-table--padded')
+    ).toBe(padded);
+    expect(
+      host.querySelector('table')?.classList.contains('cp-table--flush')
+    ).toBe(padded);
+  }
+);
