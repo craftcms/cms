@@ -79,6 +79,7 @@
 - Fixed a bug where the “Underline links” accessibility preference wasn’t respected on most control panel screens. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 - Fixed a bug where the Activity details panel didn’t scroll to the newest activity when opened. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Fixed a bug where control panel nav flyouts could close as soon as the pointer reached them. ([#19926](https://github.com/craftcms/cms/pull/19926))
 - Fixed a bug where action menus on thumbnails in single-element relation fields were positioned at the start of the thumbnail rather than the end.
 
 ## 6.0.0-alpha.20 - 2026-10-07
