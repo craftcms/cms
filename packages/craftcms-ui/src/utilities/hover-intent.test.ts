@@ -330,6 +330,32 @@ describe('safe area', () => {
     expect(trigger.open).toBe(false);
   });
 
+  it('reports the triangle while the overlay waits to close', () => {
+    const {trigger} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    vi.advanceTimersByTime(100);
+
+    expect(group.safeAreas()).toEqual([
+      {
+        corners: [
+          {x: 10, y: 10},
+          {x: 100, y: 0},
+          {x: 100, y: 100},
+        ],
+        pointerInside: true,
+        graceRemaining: 200,
+      },
+    ]);
+
+    vi.advanceTimersByTime(300);
+
+    expect(group.safeAreas()).toEqual([]);
+  });
+
   it('spares the trigger the pointer doubles back into', () => {
     const {trigger, neighbor} = aimedTree();
 

@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Uri;
+use Inertia\Inertia;
 
 /**
  * @since 6.0.0
@@ -74,15 +75,21 @@ readonly class EnforceLicenses
             default => 1597,
         };
 
-        return response()
-            ->view('_special/licensing-issues', [
-                'issues' => $licenseIssues,
-                'hash' => $hash,
-                'cartUrl' => $cartUrl,
-                'duration' => $duration,
-            ])
-            ->setStatusCode(402)
-            ->setNoCacheHeaders();
+        $response = Inertia::render('licensing/Issues', [
+            'issues' => array_map(fn (array $issue) => $issue[1], $licenseIssues),
+            'hash' => $hash,
+            'cartUrl' => $cartUrl,
+            'duration' => $duration,
+        ])->toResponse($request);
+
+        $response->setStatusCode(402);
+        $response->headers->add([
+            'Expires' => '0',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        ]);
+
+        return $response;
     }
 
     private function showScreen(Request $request, string $hash): bool
