@@ -2,10 +2,9 @@
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {useCraftTable} from '@/common/table/craftTable';
-  import {computed, h, nextTick, ref, watch} from 'vue';
+  import {computed, h} from 'vue';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {router} from '@inertiajs/vue3';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {
     create,
@@ -15,6 +14,7 @@
   } from '@actions/Settings/VolumesController';
   import type {SortItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {useInertiaReorder} from '@/common/composables/useInertiaReorder';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface VolumeData {
@@ -48,39 +48,7 @@
     readOnly: boolean;
   }>();
 
-  const volumeIds = ref(props.volumes.map((volume) => volume.id));
-  const volumes = computed((): VolumeData[] => {
-    return (volumeIds.value ?? [])
-      .map((id) => props.volumes.find((volume) => volume.id === id))
-      .filter((v): v is VolumeData => v !== undefined);
-  });
-
-  function handleReorder(startIndex: number, finishIndex: number) {
-    const newIds = [...volumeIds.value];
-    const [id] = newIds.splice(startIndex, 1);
-    if (id === undefined) return;
-    newIds.splice(finishIndex, 0, id);
-    volumeIds.value = newIds;
-  }
-
-  watch(volumeIds, (newValue, oldValue) => {
-    // Defer to next tick to avoid issues during drag-and-drop event handling
-    nextTick(() => {
-      router.post(
-        reorder(),
-        {
-          ids: [...newValue], // Copy to ensure we have the current value
-        },
-        {
-          preserveScroll: true,
-          preserveState: true,
-          onError: () => {
-            volumeIds.value = oldValue;
-          },
-        }
-      );
-    });
-  });
+  const onReorder = useInertiaReorder({url: reorder(), prop: 'volumes'});
 
   const columnHelper = createCraftColumnHelper<VolumeData>();
   const columnVisibility = computed(() => {
@@ -104,14 +72,14 @@
         confirm: t('Are you sure you want to delete “{name}?', {
           name: row.original.name,
         }),
-        onClick: () => router.delete(destroy({volumeId: row.original.id})),
+        action: destroy({volumeId: row.original.id}),
       }),
     ]),
   ]);
 
   const table = useCraftTable<VolumeData>({
     get data() {
-      return volumes.value;
+      return props.volumes;
     },
     get columns() {
       return columns.value;
@@ -139,7 +107,7 @@
       :table="table"
       :reorderable="true"
       :read-only="readOnly"
-      @reorder="handleReorder"
+      @reorder="onReorder"
     >
       <template #empty-row>
         <craft-empty

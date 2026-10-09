@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {router} from '@inertiajs/vue3';
   import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -58,16 +57,18 @@
             }
           ),
           disabled: transformer.deleteDisabledReason !== null,
-          onClick: () =>
-            router
-              .optimistic<{transformers: Array<AssetTransformerIndexData>}>(
-                ({transformers}) => ({
-                  transformers: transformers.filter(
-                    ({handle}) => handle !== transformer.handle
-                  ),
-                })
-              )
-              .delete(destroy({handle: transformer.handle})),
+          action: destroy({handle: transformer.handle}),
+          options: {
+            optimistic: ({
+              transformers,
+            }: {
+              transformers: Array<AssetTransformerIndexData>;
+            }) => ({
+              transformers: transformers.filter(
+                ({handle}) => handle !== transformer.handle
+              ),
+            }),
+          },
         });
 
         if (transformer.deleteDisabledReason === null) {

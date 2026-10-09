@@ -6,6 +6,9 @@ import '../resources/css/cp.css';
 import './preview.css';
 import {installInertiaMock, setPageProps} from './inertia-mock';
 
+// The slice of the CP's `window.Craft` config that components read directly.
+window.Craft ??= {pageTrigger: 'page'};
+
 // Install the Inertia mock globally
 setup((app) => {
   installInertiaMock(app);
