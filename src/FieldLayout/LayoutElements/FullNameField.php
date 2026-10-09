@@ -69,7 +69,7 @@ class FullNameField extends TextField
         }
 
         // Both halves inherit the Full Name field’s change-tracking status.
-        $static = $context->mode !== ControlMode::Editable;
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
         $status = $this->showStatus() ? $this->statusClass($element, $static) : null;
         $statusLabel = $status !== null
             ? ($this->statusLabel($element, $static) ?? ucfirst($status))
@@ -77,10 +77,12 @@ class FullNameField extends TextField
 
         return Group::make($this->uid, [
             Field::make(t('First Name'), Text::make('firstName')->value($element->firstName ?? null))
-                ->required($this->required)
+                ->required(! $static && $this->required)
+                ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
             Field::make(t('Last Name'), Text::make('lastName')->value($element->lastName ?? null))
-                ->required($this->required)
+                ->required(! $static && $this->required)
+                ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
         ]);
     }

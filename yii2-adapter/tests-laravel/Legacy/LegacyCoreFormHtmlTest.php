@@ -17,6 +17,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -90,6 +91,10 @@ it('renders the legacy relation templates with overridable settings HTML', funct
 })->with([Entries::class, Assets::class, Users::class]);
 
 it('captures legacy entry title inputs while retaining the core title type', function(bool $multiline) {
+    Sites::partialMock()->shouldReceive('isMultiSite')->andReturn(false);
+    Sites::shouldReceive('getAllSiteIds')->andReturn(collect([1]));
+    Sites::shouldReceive('getPrimarySite')->andReturn(new Site(['id' => 1, 'language' => 'en']));
+
     $entry = Mockery::mock(Entry::class)->makePartial();
     $entry->title = 'A title';
     $entry->shouldReceive('getType')->andReturn(new EntryType([
@@ -109,6 +114,9 @@ it('captures legacy entry title inputs while retaining the core title type', fun
 })->with([false, true]);
 
 it('captures plugin title overrides once in every form mode', function(ControlMode $mode) {
+    Sites::partialMock()->shouldReceive('isMultiSite')->andReturn(false);
+    Sites::shouldReceive('getPrimarySite')->andReturn(new Site(['id' => 1, 'language' => 'en']));
+
     $field = new class(['uid' => 'title', 'name' => 'headline']) extends LegacyEntryTitleField {
         public int $calls = 0;
 
