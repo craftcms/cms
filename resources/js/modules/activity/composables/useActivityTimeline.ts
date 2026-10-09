@@ -1,4 +1,5 @@
 import {actionClient} from '@craftcms/ui';
+import {useEventListener, useResizeObserver} from '@vueuse/core';
 import {computed, nextTick, onScopeDispose, watch, type Ref} from 'vue';
 import {useFetch} from '@/common/composables/useFetch';
 
@@ -106,19 +107,72 @@ export function useActivityTimeline(
     data.value = {events: updatedEvents};
   }
 
-  async function scrollToEnd(): Promise<void> {
-    await nextTick();
+  /**
+   * Whether the newest activity is kept in view. The timeline keeps growing
+   * after it loads — each event is a lazily loaded component that renders in
+   * afterwards — so a single scroll once it loads lands short of the end.
+   * Instead it stays pinned as the content grows, until the reader scrolls
+   * away from the end.
+   */
+  let pinnedToEnd = false;
+  /** Where pinning last left the scroll position. */
+  let pinnedScrollTop = 0;
 
-    if (timeline.value !== null) {
+  function pinToEnd(): void {
+    if (pinnedToEnd && timeline.value !== null) {
       timeline.value.scrollTop = timeline.value.scrollHeight;
+      pinnedScrollTop = timeline.value.scrollTop;
     }
   }
+
+  async function scrollToEnd(): Promise<void> {
+    pinnedToEnd = true;
+    await nextTick();
+    pinToEnd();
+  }
+
+  // `events` is read so the rail is observed once it has rendered.
+  useResizeObserver(
+    () =>
+      events.value && timeline.value
+        ? [
+            timeline.value,
+            ...Array.from(timeline.value.children).filter(
+              (child): child is HTMLElement => child instanceof HTMLElement
+            ),
+          ]
+        : [],
+    pinToEnd
+  );
+
+  useEventListener(
+    timeline,
+    'scroll',
+    () => {
+      const element = timeline.value;
+
+      if (element === null) {
+        return;
+      }
+
+      // The scroll pinning sets off arrives late, after more may have rendered
+      // below it, so only a move up from where pinning left it lets go.
+      const atEnd =
+        element.scrollHeight - element.scrollTop - element.clientHeight < 2;
+      pinnedToEnd =
+        atEnd || (pinnedToEnd && element.scrollTop >= pinnedScrollTop - 1);
+    },
+    {passive: true}
+  );
 
   watch(
     () => props.active,
     (active) => {
       if (active && status.value === 'idle') {
         void load();
+      } else if (active && hasLoaded.value) {
+        // Hiding the panel reset its scroll position.
+        void scrollToEnd();
       }
     },
     {immediate: true}
