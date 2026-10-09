@@ -9,9 +9,6 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\ImportStep;
 use CraftCms\Cms\Import\Data\MappingColumn;
@@ -26,6 +23,7 @@ use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
 use Illuminate\Database\Eloquent\Model;
@@ -140,18 +138,18 @@ abstract class BaseImporter
     abstract public static function displayName(): string;
 
     /**
-     * Defines the type-specific settings nodes and context for this importer form.
+     * Defines the type-specific settings nodes for this importer, scoped under `settings` in the step's UI.
      *
-     * @return array{context?: FormContext, nodes?: list<Node>}
+     * @return list<Node>
      */
-    abstract public function settingsForm(FormContext $context): array;
+    abstract public function settingsUi(): array;
 
     /**
-     * Renders the importer-specific part of the settings form.
+     * Applies the posted settings when the importer-specific part of the step's UI refreshes.
      *
      * @param  array<string, mixed>  $settings
      */
-    abstract public function refreshSettingsForm(array $settings): void;
+    abstract public function refreshSettingsUi(array $settings): void;
 
     /**
      * Gives importers a chance to store their specific settings.

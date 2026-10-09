@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -30,11 +30,11 @@ class ImportPlanEditViewModel extends ViewModel
     public function __construct(
         private readonly ImportPlanData $importPlan,
         private readonly Import $importService,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly bool $canSave = true,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
 
@@ -43,18 +43,18 @@ class ImportPlanEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        return $this->formResolver->resolve(Form::make([
+        return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
-            FormField::make(t('Name'), Text::make('name')->autofocus())
+            UiField::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this import plan will be called in the control panel.'))
                 ->required(),
-            FormField::make(t('Handle'), $handle)
+            UiField::make(t('Handle'), $handle)
                 ->instructions(t('How you’ll refer to this import plan in the code.'))
                 ->required(),
-            FormField::make(t('Description'), Textarea::make('description'))
+            UiField::make(t('Description'), Textarea::make('description'))
                 ->instructions(t('A description of what this import plan is for.')),
-            FormField::make(control: Table::make('steps')),
-        ]), new FormContext(
+            UiField::make(control: Table::make('steps')),
+        ]), new UiContext(
             values: [
                 'uid' => $this->importPlan->uid,
                 'name' => $this->importPlan->name,

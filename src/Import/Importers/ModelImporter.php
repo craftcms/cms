@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Importers;
 
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Import;
@@ -53,13 +52,13 @@ abstract class ModelImporter extends BaseImporter
     ];
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): array
+    public function settingsUi(): array
     {
         return [];
     }
 
     #[Override]
-    public function refreshSettingsForm(array $settings): void {}
+    public function refreshSettingsUi(array $settings): void {}
 
     #[Override]
     public function storeSettings(array $settings): void {}

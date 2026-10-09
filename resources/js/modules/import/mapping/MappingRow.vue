@@ -15,7 +15,7 @@
   import '@craftcms/ui/components/select-rich/select-rich';
   import {computed, inject, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
+  import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
   import {checkedValue, getAt, isChecked, setAt} from './paths';
   import {
     type FieldMappingSetting,

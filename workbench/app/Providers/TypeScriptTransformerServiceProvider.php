@@ -43,8 +43,8 @@ use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\SourceColumn;
-use CraftCms\Cms\Import\Data\StepFormPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
+use CraftCms\Cms\Import\Data\StepUiPayload;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -95,7 +95,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     NestedMappingPayload::class,
                     SourceColumn::class,
                     ImportStep::class,
-                    StepFormPayload::class,
+                    StepUiPayload::class,
                     StepMappingPayload::class,
                     EntryType::class,
                     EntryTypeIndexData::class,

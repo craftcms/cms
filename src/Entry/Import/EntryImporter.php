@@ -9,15 +9,15 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Validation\Validator;
 use Override;
 
@@ -61,40 +61,35 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
-    public function settingsForm(FormContext $context): array
+    public function settingsUi(): array
     {
-        $parent = parent::settingsForm($context);
-
         return [
-            'context' => $parent['context'] ?? $context,
-            'nodes' => [
-                ...$parent['nodes'] ?? [],
-                FormField::make(t('Section'), Choice::make(['section'])
-                    ->value($this->section)
+            ...parent::settingsUi(),
+            UiField::make(t('Section'), Choice::make(['section'])
+                ->value($this->section)
+                ->placeholder(t('Please select'))
+                ->options($this->availableSections())
+                ->reactive())
+                ->instructions(t('The section to import into.')),
+            Group::make('entry-type-group', [
+                // reactive: choosing an entry type is what resolves the field layout,
+                // which the step's mapping is gated on
+                UiField::make(t('Entry Type'), Choice::make('entryType')
+                    ->value($this->entryType)
                     ->placeholder(t('Please select'))
-                    ->options($this->availableSections())
+                    ->options($this->availableEntryTypes())
                     ->reactive())
-                    ->instructions(t('The section to import into.')),
-                Group::make('entry-type-group', [
-                    // reactive: choosing an entry type is what resolves the field layout,
-                    // which the step's mapping is gated on
-                    FormField::make(t('Entry Type'), Choice::make('entryType')
-                        ->value($this->entryType)
-                        ->placeholder(t('Please select'))
-                        ->options($this->availableEntryTypes())
-                        ->reactive())
-                        ->instructions(t('The entry type to import into.')),
-                ])
-                    ->dependsOn('settings.section')
-                    ->visible($this->section !== null),
-            ],
+                    ->instructions(t('The entry type to import into.')),
+            ])
+                ->dependsOn('settings.section')
+                ->visible($this->section !== null),
         ];
     }
 
     #[Override]
-    public function refreshSettingsForm(array $settings): void
+    public function refreshSettingsUi(array $settings): void
     {
-        parent::refreshSettingsForm($settings);
+        parent::refreshSettingsUi($settings);
 
         if (array_key_exists('section', $settings)) {
             $this->section($settings['section']);
@@ -239,17 +234,17 @@ class EntryImporter extends ElementImporter
 
     private static function normalizeParent(string|int|Entry|null $value, int $sectionId, int $siteId): ?Entry
     {
+        // @phpstan-ignore return.type
         return match (true) {
             $value instanceof Entry => $value,
             $value === null => null,
             is_numeric($value) => Elements::getElementById((int) $value, Entry::class),
             // if it's a string query entries by title or slug only in the section and site we're importing into
             default => Entry::find()
-                ->where(['title' => $value])
-                ->orWhere(['slug' => $value])
                 ->sectionId($sectionId)
                 ->siteId($siteId)
                 ->status(null)
+                ->where(fn (Builder $query) => $query->where('title', $value)->orWhere('slug', $value))
                 ->one()
         };
     }

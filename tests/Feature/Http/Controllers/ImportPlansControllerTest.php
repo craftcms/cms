@@ -236,8 +236,8 @@ it('builds a step’s settings form from the posted draft step', function () {
     ]);
 
     $response->assertOk();
-    expect($response->json('form.nodes'))->not->toBeEmpty()
-        ->and($response->json('form.values.type'))->toBe(EntryImporter::class);
+    expect($response->json('ui.nodes'))->not->toBeEmpty()
+        ->and($response->json('ui.values.type'))->toBe(EntryImporter::class);
 });
 
 it('applies only declared settings when building a draft step', function () {

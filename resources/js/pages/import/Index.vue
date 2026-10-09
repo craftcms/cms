@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref, watch} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -55,7 +55,7 @@
         if (
           !window.confirm(
             t('Are you sure you want to run “{name}”?', {
-              name: row.original.name,
+              name: row.name,
             })
           )
         ) {
@@ -90,7 +90,7 @@
         ];
 
         if (props.canTrigger) {
-          actions.push(runAction({uid: row.original.uid}, row));
+          actions.push(runAction({uid: row.original.uid}, row.original));
         }
 
         if (props.canSave) {
@@ -200,7 +200,7 @@
 
         return [
           h(ActionMenu, {
-            actions: [runAction({handle: row.original.handle}, row)],
+            actions: [runAction({handle: row.original.handle}, row.original)],
           }),
         ];
       }),

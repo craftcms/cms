@@ -97,7 +97,7 @@ class ImportHelper
             }
         } while ($class = $class->getParentClass());
 
-        return array_map(function ($property) {
+        return array_values(array_map(function ($property) {
             $attribute = $property->getAttributes(Importable::class)[0];
             $arguments = $attribute->getArguments();
 
@@ -112,7 +112,7 @@ class ImportHelper
                 'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
             ];
-        }, $properties);
+        }, $properties));
     }
 
     /**

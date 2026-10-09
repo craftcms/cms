@@ -209,7 +209,7 @@ it('throws for a local temp file path that resolves outside of all allowed roots
         $asset = new Asset;
         $asset->setVolumeId($this->volume->id);
 
-        expect(fn () => $this->importer->setAttributesForImport($asset, ['tempFilePath' => $outsidePath]))
+        expect(fn () => $this->importer->setAttributesForImport($asset, ['tempFilePath' => $outsidePath], []))
             ->toThrow(FileException::class);
     } finally {
         @unlink($outsidePath);
@@ -222,13 +222,13 @@ it('throws for a local temp file path that does not exist on disk', function () 
 
     expect(fn () => $this->importer->setAttributesForImport($asset, [
         'tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt'),
-    ]))->toThrow(FileException::class);
+    ], []))->toThrow(FileException::class);
 });
 
 it('takes the field layout from the volume when the settings form refreshes', function () {
     $importer = AssetImporter::create();
 
-    $importer->refreshSettingsForm(['volume' => $this->volume->uid]);
+    $importer->refreshSettingsUi(['volume' => $this->volume->uid]);
 
     expect($importer->volume)->toBe($this->volume->uid)
         ->and($importer->fieldLayout)->toBe(Volumes::getVolumeById($this->volume->id)->getFieldLayout()->uid);

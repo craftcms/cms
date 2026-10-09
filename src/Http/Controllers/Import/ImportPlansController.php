@@ -11,18 +11,17 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportPlanStepFormViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportPlanStepUiViewModel;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\ImportPlanIndexData;
 use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
-use CraftCms\Cms\Import\Data\StepFormPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
+use CraftCms\Cms\Import\Data\StepUiPayload;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportPlan;
@@ -30,6 +29,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -150,7 +150,7 @@ class ImportPlansController
     }
 
     /**
-     * Returns the form payload for a single step, built from the posted draft step rather than
+     * Returns the UI payload for a single step, built from the posted draft step rather than
      * anything persisted, so a step can be configured before the import plan is ever saved.
      */
     public function stepSettings(): JsonResponse
@@ -159,14 +159,14 @@ class ImportPlansController
         $batchSize = $this->request->input('step.batchSize');
         $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
 
-        return new JsonResponse(new StepFormPayload(
-            form: new ImportPlanStepFormViewModel(
+        return new JsonResponse(new StepUiPayload(
+            ui: new ImportPlanStepUiViewModel(
                 $importer,
                 $this->importService,
-                app(FormResolver::class),
+                app(UiResolver::class),
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
                 $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
-            )->form(),
+            )->ui(),
             canMap: $this->hasDestination($importer) && $sourceError === null,
             // shown under the source field; a step whose source is yet to be entered isn't flagged
             sourceError: ! empty($importer->source) ? $sourceError : null,
@@ -487,7 +487,7 @@ class ImportPlansController
             ->inertiaPage('import/Edit', new ImportPlanEditViewModel(
                 $importPlan,
                 $this->importService,
-                app(FormResolver::class),
+                app(UiResolver::class),
                 $canSave,
             ))
             ->when(

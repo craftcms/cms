@@ -16,15 +16,14 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Exception;
 use Illuminate\Validation\Validator;
 use Override;
@@ -68,28 +67,23 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
-    public function settingsForm(FormContext $context): array
+    public function settingsUi(): array
     {
-        $parent = parent::settingsForm($context);
-
         return [
-            'context' => $parent['context'] ?? $context,
-            'nodes' => [
-                ...$parent['nodes'] ?? [],
-                FormField::make(t('Volume'), Choice::make(['volume'])
-                    ->value($this->volume)
-                    ->placeholder(t('Please select'))
-                    ->options($this->availableVolumes())
-                    ->reactive())
-                    ->instructions(t('The volume to import into.')),
-            ],
+            ...parent::settingsUi(),
+            UiField::make(t('Volume'), Choice::make(['volume'])
+                ->value($this->volume)
+                ->placeholder(t('Please select'))
+                ->options($this->availableVolumes())
+                ->reactive())
+                ->instructions(t('The volume to import into.')),
         ];
     }
 
     #[Override]
-    public function refreshSettingsForm(array $settings): void
+    public function refreshSettingsUi(array $settings): void
     {
-        parent::refreshSettingsForm($settings);
+        parent::refreshSettingsUi($settings);
 
         if (array_key_exists('volume', $settings)) {
             $this->volume($settings['volume']);

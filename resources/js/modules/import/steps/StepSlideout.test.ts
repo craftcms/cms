@@ -1,21 +1,21 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 import type {ImportStep} from '@/modules/import/mapping/types';
 import {StepMappingUnavailableError} from './step-mapping';
 import StepSlideout from './StepSlideout.vue';
 
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
-  fetchStepForm: vi.fn(),
+  fetchStepUi: vi.fn(),
   validateStep: vi.fn(),
   openStepMapping: vi.fn(),
   errorHandler: vi.fn(),
   context: null as any,
   values: {} as Record<string, unknown>,
-  refresh: null as ((values: unknown) => Promise<FormPayload>) | null,
+  refresh: null as ((values: unknown) => Promise<UiPayload>) | null,
   emitChange: null as (() => void) | null,
-  errors: null as FormPayload['errors'] | null,
+  errors: null as UiPayload['errors'] | null,
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({
@@ -35,14 +35,14 @@ vi.mock('./step-mapping', async (importOriginal) => ({
 
 vi.mock('./step-slideout', () => ({
   takeStepSlideoutContext: () => state.context,
-  fetchStepForm: state.fetchStepForm,
+  fetchStepUi: state.fetchStepUi,
   validateStep: state.validateStep,
 }));
 
 // Stubbed so the test can drive the panel's refresh callback and reported values.
-vi.mock('@/modules/forms/FormRenderer.vue', () => ({
+vi.mock('@/modules/ui/UiRenderer.vue', () => ({
   default: {
-    name: 'FormRenderer',
+    name: 'UiRenderer',
     props: ['payload', 'refresh', 'errors'],
     emits: ['change'],
     setup(props: any, {expose, emit}: any) {
@@ -53,16 +53,16 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
       return () => {
         state.errors = props.errors;
 
-        return h('div', {class: 'form-renderer'}, [
-          h('input', {'data-form-control-path': '["source"]'}),
-          h('input', {'data-form-control-path': '["transformer"]'}),
+        return h('div', {class: 'ui-renderer'}, [
+          h('input', {'data-ui-control-path': '["source"]'}),
+          h('input', {'data-ui-control-path': '["transformer"]'}),
         ]);
       };
     },
   },
 }));
 
-function payload(): FormPayload {
+function payload(): UiPayload {
   return {
     scope: [],
     refreshable: true,
@@ -70,7 +70,7 @@ function payload(): FormPayload {
     values: {},
     errors: [],
     globalErrors: [],
-  } as unknown as FormPayload;
+  } as unknown as UiPayload;
 }
 
 const step: ImportStep = {
@@ -120,7 +120,7 @@ function mappingButton(): HTMLElement & {disabled: boolean; loading: boolean} {
 
 function blur(path: string): void {
   container
-    .querySelector(`[data-form-control-path='${path}']`)!
+    .querySelector(`[data-ui-control-path='${path}']`)!
     .dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
 }
 
@@ -141,7 +141,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   state.layout.mockClear();
-  state.fetchStepForm.mockReset();
+  state.fetchStepUi.mockReset();
   state.validateStep.mockReset();
   state.openStepMapping.mockReset();
   state.errorHandler.mockReset();
@@ -164,7 +164,7 @@ it('renders the form and mapping inside the container field group, like other sl
   const group = container.querySelector('.cp-container > craft-field-group');
 
   expect(group).not.toBeNull();
-  expect(group!.querySelector('.form-renderer')).not.toBeNull();
+  expect(group!.querySelector('.ui-renderer')).not.toBeNull();
   expect(group!.querySelector('section')).not.toBeNull();
 });
 
@@ -189,7 +189,7 @@ it('enables the mapping button once the step can be mapped', () => {
 
 it('enables the mapping button when a refresh reports the step as mappable', async () => {
   mount(false);
-  state.fetchStepForm.mockResolvedValue({form: payload(), canMap: true});
+  state.fetchStepUi.mockResolvedValue({ui: payload(), canMap: true});
 
   await state.refresh!({settings: {}});
   await nextTick();
@@ -206,7 +206,7 @@ it('lets a read-only step’s mapping be viewed', () => {
 
 it('disables the mapping button again when a refresh reports it unmappable', async () => {
   mount(true);
-  state.fetchStepForm.mockResolvedValue({form: payload(), canMap: false});
+  state.fetchStepUi.mockResolvedValue({ui: payload(), canMap: false});
 
   await state.refresh!({settings: {}});
   await nextTick();
@@ -216,8 +216,8 @@ it('disables the mapping button again when a refresh reports it unmappable', asy
 
 it('shows the data source’s problem under its field when a refresh reports one', async () => {
   mount(true);
-  state.fetchStepForm.mockResolvedValue({
-    form: payload(),
+  state.fetchStepUi.mockResolvedValue({
+    ui: payload(),
     canMap: false,
     sourceError: 'File “people.csv” does not exist.',
   });
@@ -233,8 +233,8 @@ it('shows the data source’s problem under its field when a refresh reports one
 
 it('shows the mapping section only once the chosen type’s form arrives', async () => {
   vi.useFakeTimers();
-  const loading = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm.mockReturnValue(loading.promise);
+  const loading = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi.mockReturnValue(loading.promise);
   mount(false, null);
 
   state.values = {...state.values, type: step.type};
@@ -251,7 +251,7 @@ it('shows the mapping section only once the chosen type’s form arrives', async
   expect(spinner()).not.toBeNull();
   expect(mappingSection()).toBeNull();
 
-  loading.resolve({form: payload(), canMap: true});
+  loading.resolve({ui: payload(), canMap: true});
   await refreshing;
   await nextTick();
 
@@ -262,8 +262,8 @@ it('shows the mapping section only once the chosen type’s form arrives', async
 
 it('doesn’t show the spinner for a refresh that keeps the type', async () => {
   vi.useFakeTimers();
-  const loading = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm.mockReturnValue(loading.promise);
+  const loading = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi.mockReturnValue(loading.promise);
   mount(false);
 
   const refreshing = state.refresh!({settings: {}});
@@ -272,14 +272,14 @@ it('doesn’t show the spinner for a refresh that keeps the type', async () => {
 
   expect(spinner()).toBeNull();
 
-  loading.resolve({form: payload(), canMap: true});
+  loading.resolve({ui: payload(), canMap: true});
   await refreshing;
 });
 
 it('ignores a refresh response that a newer one has overtaken', async () => {
-  const first = deferred<{form: FormPayload; canMap: boolean}>();
-  const second = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm
+  const first = deferred<{ui: UiPayload; canMap: boolean}>();
+  const second = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi
     .mockReturnValueOnce(first.promise)
     .mockReturnValueOnce(second.promise);
   mount(false, null);
@@ -289,9 +289,9 @@ it('ignores a refresh response that a newer one has overtaken', async () => {
   state.values = {...state.values, type: null};
   const latest = state.refresh!({settings: {}});
 
-  second.resolve({form: payload(), canMap: false});
+  second.resolve({ui: payload(), canMap: false});
   await latest;
-  first.resolve({form: payload(), canMap: true});
+  first.resolve({ui: payload(), canMap: true});
   await stale;
   await nextTick();
 
@@ -300,8 +300,8 @@ it('ignores a refresh response that a newer one has overtaken', async () => {
 
 it('clears the spinner and keeps the mapping section hidden when a refresh fails', async () => {
   vi.useFakeTimers();
-  const loading = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm.mockReturnValue(loading.promise);
+  const loading = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi.mockReturnValue(loading.promise);
   mount(false, null);
 
   state.values = {...state.values, type: step.type};
@@ -320,21 +320,21 @@ it('clears the spinner and keeps the mapping section hidden when a refresh fails
 });
 
 it('checks whether the step can be mapped once the data source field loses focus', async () => {
-  const checking = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm.mockReturnValue(checking.promise);
+  const checking = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi.mockReturnValue(checking.promise);
   mount(false);
 
   state.values = {...state.values, source: 'other.csv'};
   blur('["source"]');
   await nextTick();
 
-  expect(state.fetchStepForm).toHaveBeenCalledOnce();
-  expect(state.fetchStepForm.mock.calls[0]![0]).toMatchObject({
+  expect(state.fetchStepUi).toHaveBeenCalledOnce();
+  expect(state.fetchStepUi.mock.calls[0]![0]).toMatchObject({
     source: 'other.csv',
   });
   expect(mappingButton().loading).toBe(true);
 
-  checking.resolve({form: payload(), canMap: true});
+  checking.resolve({ui: payload(), canMap: true});
   await checking.promise;
   await nextTick();
 
@@ -348,7 +348,7 @@ it('doesn’t check again when the data source hasn’t changed', async () => {
   blur('["source"]');
   await nextTick();
 
-  expect(state.fetchStepForm).not.toHaveBeenCalled();
+  expect(state.fetchStepUi).not.toHaveBeenCalled();
 });
 
 it('doesn’t check when another field loses focus', async () => {
@@ -358,13 +358,13 @@ it('doesn’t check when another field loses focus', async () => {
   blur('["transformer"]');
   await nextTick();
 
-  expect(state.fetchStepForm).not.toHaveBeenCalled();
+  expect(state.fetchStepUi).not.toHaveBeenCalled();
 });
 
 it('lets a refresh that starts after a source check decide whether the step can be mapped', async () => {
-  const checking = deferred<{form: FormPayload; canMap: boolean}>();
-  const refreshing = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm
+  const checking = deferred<{ui: UiPayload; canMap: boolean}>();
+  const refreshing = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi
     .mockReturnValueOnce(checking.promise)
     .mockReturnValueOnce(refreshing.promise);
   mount(false);
@@ -373,9 +373,9 @@ it('lets a refresh that starts after a source check decide whether the step can 
   blur('["source"]');
   const refresh = state.refresh!({settings: {}});
 
-  refreshing.resolve({form: payload(), canMap: false});
+  refreshing.resolve({ui: payload(), canMap: false});
   await refresh;
-  checking.resolve({form: payload(), canMap: true});
+  checking.resolve({ui: payload(), canMap: true});
   await checking.promise;
   await nextTick();
 
@@ -384,8 +384,8 @@ it('lets a refresh that starts after a source check decide whether the step can 
 });
 
 it('keeps the last reported state when the source check fails', async () => {
-  const checking = deferred<{form: FormPayload; canMap: boolean}>();
-  state.fetchStepForm.mockReturnValue(checking.promise);
+  const checking = deferred<{ui: UiPayload; canMap: boolean}>();
+  state.fetchStepUi.mockReturnValue(checking.promise);
   mount(true);
 
   state.values = {...state.values, source: 'missing.csv'};

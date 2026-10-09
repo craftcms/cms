@@ -3,7 +3,7 @@
  *
  * Opened with `openSlideoutWith()` rather than `openSlideout()`: a step is unsaved
  * client state the edit screen holds, with no URL to fetch. The server is POSTed the
- * draft step and returns only a Form payload for it; the panel edits a copy and hands
+ * draft step and returns only a UI payload for it; the panel edits a copy and hands
  * it back on Done, so canceling leaves the screen untouched and nothing reaches the
  * database until the import itself is saved.
  */
@@ -18,19 +18,19 @@ import {
   openContextSlideout,
 } from '@/modules/import/context-slideout';
 import {cloneStep} from '@/modules/import/mapping/paths';
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 import type {ImportStep} from '@/modules/import/mapping/types';
 
-export type StepFormPayload = Omit<
-  CraftCms.Cms.Import.Data.StepFormPayload,
-  'form'
+export type StepUiPayload = Omit<
+  CraftCms.Cms.Import.Data.StepUiPayload,
+  'ui'
 > & {
-  form: FormPayload;
+  ui: UiPayload;
 };
 
 export interface StepSlideoutContext {
   step: ImportStep;
-  payload: FormPayload;
+  payload: UiPayload;
   canMap: boolean;
   sourceError: string | null;
   editable: boolean;
@@ -52,18 +52,16 @@ export function takeStepSlideoutContext(
   return registry.take(contextId);
 }
 
-/** Fetches the form for a draft step, and whether that step can be mapped yet. */
-export async function fetchStepForm(
-  step: ImportStep
-): Promise<StepFormPayload> {
+/** Fetches the UI for a draft step, and whether that step can be mapped yet. */
+export async function fetchStepUi(step: ImportStep): Promise<StepUiPayload> {
   const {data} = await actionClient.post(stepSettings().url, {step});
 
-  if (!data.form) {
-    throw new Error('The import step did not return a Form payload.');
+  if (!data.ui) {
+    throw new Error('The import step did not return a UI payload.');
   }
 
   return {
-    form: data.form as FormPayload,
+    ui: data.ui as UiPayload,
     canMap: Boolean(data.canMap),
     sourceError: data.sourceError ?? null,
   };
@@ -86,7 +84,7 @@ export async function openStepSlideout(
   title: string
 ): Promise<boolean> {
   const step = cloneStep(options.step);
-  const {form, canMap, sourceError} = await fetchStepForm(step);
+  const {ui, canMap, sourceError} = await fetchStepUi(step);
 
   return openContextSlideout(
     registry,
@@ -96,7 +94,7 @@ export async function openStepSlideout(
       ),
     {
       step,
-      payload: form,
+      payload: ui,
       canMap,
       sourceError,
       editable: options.editable,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\Support\Import;
 
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\UrlValidator\UrlValidator;
 use Override;
@@ -44,13 +43,13 @@ class TestImporter extends BaseImporter
     }
 
     #[Override]
-    public function settingsForm(FormContext $context): array
+    public function settingsUi(): array
     {
         return [];
     }
 
     #[Override]
-    public function refreshSettingsForm(array $settings): void {}
+    public function refreshSettingsUi(array $settings): void {}
 
     #[Override]
     public function storeSettings(array $settings): void {}

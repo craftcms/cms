@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
-use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Ui\UiPayload;
 use JsonSerializable;
 
 /**
- * The response to a request for a draft import step's settings form.
+ * The response to a request for a draft import step's settings UI.
  *
  * `canMap` says whether the step has settled enough to be mapped, and `sourceError` why its
  * data source can't be used, if it can't.
  *
  * @since 6.0.0
  */
-readonly class StepFormPayload implements JsonSerializable
+readonly class StepUiPayload implements JsonSerializable
 {
     public function __construct(
-        public FormPayload $form,
+        public UiPayload $ui,
         public bool $canMap,
         public ?string $sourceError,
     ) {}
@@ -27,7 +27,7 @@ readonly class StepFormPayload implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'form' => $this->form,
+            'ui' => $this->ui,
             'canMap' => $this->canMap,
             'sourceError' => $this->sourceError,
         ];

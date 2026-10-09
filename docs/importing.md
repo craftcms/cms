@@ -132,9 +132,10 @@ All of them carry `importPlan` and `runId`. Failures are tracked across jobs thr
 ## 4. Importers
 
 Every importer extends `BaseImporter`, whose abstract `targetClass()` names what it imports
-into. Each importer also owns its settings: `settingsForm()`, `refreshSettingsForm()`,
+into. Each importer also owns its settings: `settingsUi()`, `refreshSettingsUi()`,
 `storeSettings()`, `getSettings()` and `getSettingsRules()` drive the step slideout in the CP
-and its validation.
+and its validation. `settingsUi()` returns a list of [UI](ui.md) nodes, which the step's UI
+wraps in a `settings` `Scope`.
 
 - **`ElementImporter`** is abstract. Each importable element type is represented by its own
   concrete subclass: `EntryImporter`, `AssetImporter`, `UserImporter` are the built-ins (there's
@@ -422,7 +423,7 @@ Craft's normal save behavior, so it isn't tracked or logged.
 
 ## 9. Control panel
 
-Nav: **Import**. Permissions group `import`: `viewImportPlans`
+Nav: **Import**, in the Administration group. Permissions group `import`: `viewImportPlans`
 (→ `saveImportPlans`, `deleteImportPlans`, `triggerImportPlans`).
 
 Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPlansController`:
@@ -434,7 +435,7 @@ Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPla
 - `import/new|{handle}` — name, handle, description, then the **Steps** list
   (`modules/import/steps/StepList.vue`). Each step opens a slideout (`StepSlideout.vue`), with a
   loading state on the button while it opens: importer type (reactive select, with a spinner
-  while the form for a new type loads), the importer's own settings form, **Data Source**
+  while the UI for a new type loads), the importer's own settings, **Data Source**
   (a path, alias or URL), transformer and batch size, plus a **Mapping** section with an
   "Edit mapping" button. Choosing the importer type for an element import (Entries / Assets /
   Users) *is* choosing the element type — there's no separate "Element Type" field. A step is

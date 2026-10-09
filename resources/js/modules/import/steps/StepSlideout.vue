@@ -15,12 +15,12 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import {useSlideout} from '@/common/slideouts';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload} from '@/modules/ui/types';
   import type {MappingValues, ImportStep} from '@/modules/import/mapping/types';
   import {dirtyState} from '@/modules/import/mapping/paths';
   import {
-    fetchStepForm,
+    fetchStepUi,
     takeStepSlideoutContext,
     validateStep,
   } from './step-slideout';
@@ -33,10 +33,10 @@
 
   const context = takeStepSlideoutContext(props.contextId);
   const slideout = useSlideout();
-  const payload = shallowRef<FormPayload>(context.payload);
-  const errors = shallowRef<FormPayload['errors']>([]);
+  const payload = shallowRef<UiPayload>(context.payload);
+  const errors = shallowRef<UiPayload['errors']>([]);
   const renderer = ref<{
-    currentValues(): FormPayload['values'];
+    currentValues(): UiPayload['values'];
   } | null>(null);
 
   /** The step as it currently stands, including mapping the form doesn't render. */
@@ -88,7 +88,7 @@
   );
 
   /** The validation errors, plus the data source's own problem under its field. */
-  const formErrors = computed<FormPayload['errors']>(() => {
+  const formErrors = computed<UiPayload['errors']>(() => {
     const message =
       sourceError.value ??
       (sourceReadError.value?.source === step.value.source
@@ -239,7 +239,7 @@
     return {...step.value, settings: {...settings, ...mappingValues()}};
   }
 
-  async function refresh(values: FormPayload['values']): Promise<FormPayload> {
+  async function refresh(values: UiPayload['values']): Promise<UiPayload> {
     syncFromForm();
 
     const request = ++latestRefresh;
@@ -252,7 +252,7 @@
     }
 
     try {
-      const response = await fetchStepForm(
+      const response = await fetchStepUi(
         stepForRequest((values.settings ?? {}) as Record<string, unknown>)
       );
 
@@ -266,7 +266,7 @@
         sourceError.value = response.sourceError;
       }
 
-      return response.form;
+      return response.ui;
     } finally {
       if (request === latestRefresh) {
         loadingType.value = false;
@@ -277,11 +277,11 @@
   function onFocusOut(event: FocusEvent): void {
     const control =
       event.target instanceof Element
-        ? event.target.closest('[data-form-control-path]')
+        ? event.target.closest('[data-ui-control-path]')
         : null;
 
     if (
-      control?.getAttribute('data-form-control-path') !== '["source"]' ||
+      control?.getAttribute('data-ui-control-path') !== '["source"]' ||
       (event.relatedTarget instanceof Node &&
         control.contains(event.relatedTarget))
     ) {
@@ -305,7 +305,7 @@
     checkingMap.value = true;
 
     try {
-      const response = await fetchStepForm(
+      const response = await fetchStepUi(
         stepForRequest(step.value.settings ?? {})
       );
 
@@ -358,7 +358,7 @@
 <template>
   <CpContainer @focusout="onFocusOut">
     <craft-field-group class="py-4">
-      <FormRenderer
+      <UiRenderer
         ref="renderer"
         :payload="payload"
         :errors="formErrors"

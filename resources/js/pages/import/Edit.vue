@@ -8,8 +8,8 @@
    */
   import type {UrlMethodPair} from '@inertiajs/core';
   import type {FormAction} from '@/common/types';
-  import FormPage from '@/pages/Form.vue';
-  import type {FormPayload, FormValue} from '@/modules/forms/types';
+  import UiPage from '@/pages/Ui.vue';
+  import type {UiPayload, UiValue} from '@/modules/ui/types';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import {cloneSteps} from '@/modules/import/mapping/paths';
   import StepList from '@/modules/import/steps/StepList.vue';
@@ -18,13 +18,13 @@
     CraftCms.Cms.Http.ViewModels.ImportPlanEditViewModel['importerTypes'][number];
 
   defineProps<{
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     importerTypes: ImporterType[];
     formActions?: FormAction[];
   }>();
 
-  function asSteps(value: FormValue): ImportStep[] {
+  function asSteps(value: UiValue): ImportStep[] {
     return Array.isArray(value) ? (value as unknown as ImportStep[]) : [];
   }
 
@@ -32,7 +32,7 @@
    * Keys the errors about individual steps (`steps.<uid>.*`) the way the list expects.
    * An error about the list as a whole is left to the field.
    */
-  function stepErrors(errors: FormPayload['errors']): Record<string, string[]> {
+  function stepErrors(errors: UiPayload['errors']): Record<string, string[]> {
     return Object.fromEntries(
       errors
         .filter((error) => error.path[0] === 'steps' && error.path.length > 1)
@@ -42,7 +42,7 @@
 </script>
 
 <template>
-  <FormPage :form="form" :submit="submit" :form-actions="formActions">
+  <UiPage :ui="ui" :submit="submit" :form-actions="formActions">
     <template #steps="{value, setValue, editable, errors}">
       <StepList
         :model-value="asSteps(value)"
@@ -50,9 +50,9 @@
         :importer-types="importerTypes"
         :errors="stepErrors(errors)"
         @update:model-value="
-          setValue(cloneSteps($event) as unknown as FormValue, 'discrete')
+          setValue(cloneSteps($event) as unknown as UiValue, 'discrete')
         "
       />
     </template>
-  </FormPage>
+  </UiPage>
 </template>

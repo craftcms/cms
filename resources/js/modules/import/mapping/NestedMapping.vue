@@ -9,7 +9,7 @@
   import '@craftcms/ui/components/checkbox/checkbox';
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
+  import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
   import CpContainer from '@/common/components/CpContainer.vue';
   import MappingTable from './MappingTable.vue';
   import {checkedValue, getAt, isChecked, keepFlagPath, setAt} from './paths';

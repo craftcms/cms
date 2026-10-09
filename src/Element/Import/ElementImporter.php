@@ -13,9 +13,6 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Site\Data\Site;
@@ -26,6 +23,8 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -84,26 +83,23 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function settingsForm(FormContext $context): array
+    public function settingsUi(): array
     {
         $availableSites = Sites::getEditableSites()
             ->map(fn ($item) => ['label' => $item->name, 'value' => $item->handle])
             ->all();
 
         return [
-            'context' => $context,
-            'nodes' => [
-                FormField::make(t('Site'), Choice::make('site')
-                    ->value($this->site->handle ?? Sites::getPrimarySite()->handle)
-                    ->options($availableSites))
-                    ->instructions(t('The site you want to import the data into'))
-                    ->required(),
-            ],
+            UiField::make(t('Site'), Choice::make('site')
+                ->value($this->site->handle ?? Sites::getPrimarySite()->handle)
+                ->options($availableSites))
+                ->instructions(t('The site you want to import the data into'))
+                ->required(),
         ];
     }
 
     #[Override]
-    public function refreshSettingsForm(array $settings): void
+    public function refreshSettingsUi(array $settings): void
     {
         if (array_key_exists('site', $settings)) {
             $this->site($settings['site']);
