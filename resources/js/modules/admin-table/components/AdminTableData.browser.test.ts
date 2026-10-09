@@ -548,6 +548,8 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
           id: 1,
           name: {label: 'Settings link', url: '/settings/item'},
           count: {html: '<strong>42</strong>'},
+          lastUsed: {date: new Date(2026, 2, 14, 12).toISOString()},
+          expiryDate: null,
         },
       ],
       pagination: result('Unused').pagination,
@@ -557,6 +559,8 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
     columns: [
       {key: 'name', label: 'Name', sortable: true},
       {key: 'count', label: 'Count'},
+      {key: 'lastUsed', label: 'Last Used'},
+      {key: 'expiryDate', label: 'Expires'},
     ],
     rows: [],
     dataUrl: '/settings/table-data',
@@ -571,6 +575,16 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
     '/settings/item'
   );
   expect(host.querySelector('tbody strong')?.textContent).toBe('42');
+  const headers = Array.from(host.querySelectorAll('thead th'));
+  const cells = host.querySelector('tbody tr')!.querySelectorAll('td');
+  function cellText(label: string) {
+    const index = headers.findIndex(
+      (header) => header.textContent?.trim() === label
+    );
+    return cells[index]?.textContent?.trim();
+  }
+  expect(cellText('Last Used')).toBe('March 14, 2026');
+  expect(cellText('Expires')).toBe('');
   expect(host.querySelector('tbody craft-checkbox label')?.textContent).toBe(
     'Select Settings link'
   );

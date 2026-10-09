@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
-use CraftCms\Cms\Gql\Resources\GqlTokenResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
+use DateTimeInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -33,16 +35,43 @@ readonly class TokensController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index(): \Inertia\Response
+    public function index(): CpScreenResponse
     {
-        return Inertia::render('graphql/tokens/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('GraphQL'))->href(Url::cpUrl('graphql/tokens')),
+        $allowDeletion = Cms::config()->allowAdminChanges;
+
+        $table = Table::make('graphql-tokens')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'lastUsed', 'label' => t('Last Used')],
+                ['key' => 'expiryDate', 'label' => t('Expires')],
+            ])
+            ->rows(array_map(fn (GqlToken $token): array => [
+                'id' => $token->id,
+                'name' => [
+                    'label' => $token->name,
+                    'url' => route('craft.cp.graphql.tokens.edit', ['tokenId' => $token->id]),
+                ],
+                'lastUsed' => $token->lastUsed ? ['date' => $token->lastUsed->format(DateTimeInterface::ATOM)] : null,
+                'expiryDate' => $token->expiryDate ? ['date' => $token->expiryDate->format(DateTimeInterface::ATOM)] : null,
+                ...($allowDeletion ? [
+                    '_deleteUrl' => route('craft.cp.graphql.tokens.destroy', ['tokenId' => $token->id]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” token?', ['name' => $token->name]),
+                ] : []),
+            ], $this->gql->getTokens()))
+            ->emptyMessage(t('No GraphQL tokens exist yet.'))
+            ->showFooter(false)
+            ->createAction(t('New token'), route('craft.cp.graphql.tokens.create'))
+            ->createActionInPageHeader()
+            ->when($allowDeletion, fn (Table $table) => $table->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('GraphQL Tokens'))
+            ->selectedSubnavItem('tokens')
+            ->crumbs([
+                new ActionItem()->label(t('GraphQL'))->href(route('craft.cp.graphql.tokens.index')),
                 new ActionItem()->label(t('Tokens')),
-            ],
-            'title' => t('GraphQL Tokens'),
-            'tokens' => GqlTokenResource::collection($this->gql->getTokens()),
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(): CpScreenResponse

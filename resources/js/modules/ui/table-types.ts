@@ -36,6 +36,10 @@ export interface TableHtml {
   html: string;
 }
 
+export interface TableDate {
+  date: string;
+}
+
 export interface BulkActionSingle {
   label: string;
   url: string;
@@ -61,7 +65,8 @@ export type TableCellValue =
   | TableLink[]
   | TableMenu
   | TableIcon
-  | TableHtml;
+  | TableHtml
+  | TableDate;
 
 export interface TableStatus {
   value?: string;

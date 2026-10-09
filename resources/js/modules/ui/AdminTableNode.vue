@@ -5,6 +5,7 @@
   import {computed, h, ref, shallowRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import Date from '@/common/components/Date.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import type {
     ActionItemButton,
@@ -36,6 +37,7 @@
     BulkActionMenu,
     BulkActionSingle,
     TableCellValue,
+    TableDate,
     TableHtml,
     TableIcon,
     TableLink,
@@ -91,6 +93,7 @@
     if (value === null || value === undefined) return '';
     if (typeof value !== 'object') return String(value);
     if (Array.isArray(value)) return value.map((link) => link.label).join(' ');
+    if ('date' in value) return value.date;
     // `html` cells could hold anything (a working custom element, not just markup) — there's no
     // safe, generic way to reduce that to plain text, so a row relying on one for its primary
     // content needs its own explicit `_search` to stay searchable.
@@ -117,19 +120,37 @@
   );
 
   function isMenu(
-    value: TableLink | TableLink[] | TableMenu | TableIcon | TableHtml
+    value:
+      | TableLink
+      | TableLink[]
+      | TableMenu
+      | TableIcon
+      | TableHtml
+      | TableDate
   ): value is TableMenu {
     return !Array.isArray(value) && 'items' in value;
   }
 
   function isIcon(
-    value: TableLink | TableLink[] | TableMenu | TableIcon | TableHtml
+    value:
+      | TableLink
+      | TableLink[]
+      | TableMenu
+      | TableIcon
+      | TableHtml
+      | TableDate
   ): value is TableIcon {
     return !Array.isArray(value) && 'icon' in value;
   }
 
   function isHtml(
-    value: TableLink | TableLink[] | TableMenu | TableIcon | TableHtml
+    value:
+      | TableLink
+      | TableLink[]
+      | TableMenu
+      | TableIcon
+      | TableHtml
+      | TableDate
   ): value is TableHtml {
     return !Array.isArray(value) && 'html' in value;
   }
@@ -267,6 +288,7 @@
               if (isMenu(value)) rendered = renderMenu(value);
               else if (isIcon(value)) rendered = renderIcon(value);
               else if (isHtml(value)) rendered = renderHtmlCell(value);
+              else if ('date' in value) rendered = h(Date, {value: value.date});
               else rendered = renderLink(value);
             } else {
               rendered = value ?? '';

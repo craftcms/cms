@@ -28,6 +28,7 @@
 - Updated the GraphQL schemas index to use shared UI tables, and prevented the public schema from being deleted through its numeric URL.
 - Updated the image transforms index to use shared UI tables, with copyable handles, formatted configuration values, and empty-state creation actions.
 - Updated the asset volumes index to use shared UI tables, with copyable handles and reordering that restores the previous order when saving fails.
+- Updated the GraphQL tokens index to use shared UI tables, preserving date formatting and empty-state creation actions.
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates.
 - Fixed a bug where page-header actions could be clipped on narrow screens.
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))

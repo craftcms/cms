@@ -11,6 +11,7 @@ use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
+use DateTimeImmutable;
 use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\t;
@@ -114,7 +115,7 @@ class Table implements Node
      * Rows are keyed by column `key`, with an `id` when reordering or deleting.
      * Cells accept scalars, `['label' => string, 'url' => ?string]` links, lists of
      * links, `['label' => string, 'items' => list<links>]` menus, `['icon' => string,
-     * 'label' => ?string]` icons, or `['html' => string]` markup. HTML is rendered
+     * 'label' => ?string]` icons, `['date' => ISO timestamp]` dates, or `['html' => string]` markup. HTML is rendered
      * without sanitization in both renderers. Encode untrusted content with
      * {@see Html::encode()} before passing it.
      *
@@ -442,6 +443,7 @@ class Table implements Node
                     is_array($value) && array_key_exists('items', $value) => implode(', ', array_map($renderLink, $value['items'])),
                     is_array($value) && array_key_exists('icon', $value) => Html::encode($value['label'] ?? ''),
                     is_array($value) && array_key_exists('html', $value) => $value['html'],
+                    is_array($value) && array_key_exists('date', $value) => Html::tag('time', Html::encode(new DateTimeImmutable($value['date'])->format('F j, Y')), ['datetime' => $value['date']]),
                     is_array($value) && array_is_list($value) => implode(', ', array_map($renderLink, $value)),
                     is_array($value) => $renderLink($value),
                     default => Html::encode((string) $value),
