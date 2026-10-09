@@ -246,6 +246,7 @@
     :layout="layout"
     :spacing="spacing"
     :with-bottom-border="withBottomBorder"
+    flush
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"

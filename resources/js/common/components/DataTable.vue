@@ -42,6 +42,11 @@
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
       withBottomBorder?: boolean;
+      /**
+       * Drops the inline padding at the start and end of each row, so the
+       * table lines up with its container's edges.
+       */
+      flush?: boolean;
     }>(),
 
     {
@@ -52,6 +57,7 @@
       loading: false,
       layout: 'auto',
       withBottomBorder: true,
+      flush: false,
     }
   );
 
@@ -262,6 +268,7 @@
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
+        'cp-table--flush': flush,
       }"
       :style="tableStyles"
     >
