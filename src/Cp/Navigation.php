@@ -138,13 +138,16 @@ readonly class Navigation
                 ->icon('gauge'),
         ]);
 
+        $contentGroup = new NavItem()->label(t('Content'))->group(true);
+        $contentItems = collect();
+
         if (Sections::getTotalEditableSections()) {
             $entryPages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
 
             if ($entryPages->isNotEmpty()) {
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
 
-                $navItems = $navItems->merge(
+                $contentItems = $contentItems->merge(
                     $entryPages->map(fn (string $page) => new NavItem()
                         ->when(
                             $page === 'Entries',
@@ -161,7 +164,7 @@ readonly class Navigation
                     )
                 );
             } else {
-                $navItems->add(new NavItem()
+                $contentItems->add(new NavItem()
                     ->label(t('Entries'))
                     ->href('content/entries')
                     ->icon('newspaper')
@@ -170,7 +173,7 @@ readonly class Navigation
         }
 
         if (Volumes::getTotalViewableVolumes()) {
-            $navItems->add(new NavItem()
+            $contentItems->add(new NavItem()
                 ->label(t('Assets'))
                 ->href('assets')
                 ->icon('image')
@@ -208,9 +211,14 @@ readonly class Navigation
             fn (NavItem $item): bool => $item->group,
         );
 
-        $navItems = $navItems
-            ->merge($ungroupedPluginNavItems)
-            ->merge($groupedPluginNavItems);
+        $contentItems = $contentItems->merge($ungroupedPluginNavItems);
+
+        if ($contentItems->isNotEmpty()) {
+            $contentGroup->subnav($contentItems->all());
+            $navItems->add($contentGroup);
+        }
+
+        $navItems = $navItems->merge($groupedPluginNavItems);
 
         $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
         $administrationItems = [];
