@@ -24,6 +24,11 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
+      /**
+       * Insets the table by the page container’s padding, and drops the inline
+       * padding at the start and end of each row to match.
+       */
+      padded?: boolean;
     }>(),
     {
       reorderable: false,
@@ -33,6 +38,7 @@
       spacing: TableSpacing.Spacious,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
+      padded: false,
     }
   );
   const page = usePage<{readOnly: boolean}>();
@@ -126,7 +132,7 @@
 </script>
 
 <template>
-  <div class="admin-table">
+  <div :class="['admin-table', {'admin-table--padded': padded}]">
     <div v-if="$slots['table-header']" class="admin-table__header">
       <slot name="table-header" />
     </div>
@@ -139,6 +145,7 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
+        :flush="padded"
         :leading-column-tracks="leadingColumnTracks"
         :row-attributes="rowAttributes"
         @row-click="onRowClick"

@@ -92,7 +92,7 @@
       t('New token')
     }}</CpButtonLink>
   </LayoutSlot>
-  <AdminTable class="admin-table--padded" :table="table">
+  <AdminTable padded :table="table">
     <template #empty-row>
       <craft-empty :label="t('No GraphQL tokens exist yet.')">
         <CpButtonLink :href="create().url" icon="plus">{{
