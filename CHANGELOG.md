@@ -29,6 +29,7 @@
 - Updated the image transforms index to use shared UI tables, with copyable handles, formatted configuration values, and empty-state creation actions.
 - Updated the asset volumes index to use shared UI tables, with copyable handles and reordering that restores the previous order when saving fails.
 - Updated the GraphQL tokens index to use shared UI tables, preserving date formatting and empty-state creation actions.
+- Updated the sections index to use shared UI tables, preserving server-side search, sorting, pagination, and section deletion warnings about entries.
 - Updated the workflows index to use shared UI tables, with name sorting and visible deletion refusal messages.
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates.
 - Fixed a bug where page-header actions could be clipped on narrow screens.

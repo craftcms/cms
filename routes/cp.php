@@ -432,12 +432,14 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
             ->name('settings.sections.index');
+        Route::post('settings/sections/table-data', [SectionsController::class, 'tableData'])
+            ->name('settings.sections.table-data');
         Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::get('settings/sections/new', [SectionsController::class, 'create']);
+            Route::get('settings/sections/new', [SectionsController::class, 'create'])->name('settings.sections.create');
             Route::post('settings/sections/render-ui', [SectionsController::class, 'renderUi']);
         });
-        Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
+        Route::get('settings/sections/{section}', [SectionsController::class, 'edit'])->name('settings.sections.edit');
+        Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy'])->name('settings.sections.destroy');
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
