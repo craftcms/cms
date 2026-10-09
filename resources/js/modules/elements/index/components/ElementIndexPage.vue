@@ -160,7 +160,7 @@
       :footer-active="footerActive"
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
-      @dblclick="quickEdit.onDblClick"
+      :quick-edit="quickEdit"
     >
       <template #toolbar-actions v-if="$slots['toolbar-actions']">
         <slot name="toolbar-actions" :element-index="elementIndex" />
