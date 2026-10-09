@@ -19,6 +19,7 @@
   } from '../types';
   import AdminTableControls from './AdminTableControls.vue';
   import MoveToPageButton from './MoveToPageButton.vue';
+  import CreateActionButton from './CreateActionButton.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -111,6 +112,7 @@
     ? null
     : useAdminTable<TData>(props, (error) => emit('load-error', error));
   const table = computed(() => props.table ?? managed!.table);
+  const hasRows = computed(() => table.value.getRowModel().rows.length > 0);
   const loading = computed(
     () => props.loading || !!managed?.loading.value || moving.value
   );
@@ -286,12 +288,23 @@
         @reorder="onReorder"
       >
         <template #empty-row v-if="$slots['empty-row'] || managed">
-          <slot name="empty-row"
-            ><craft-empty v-if="!loading" :label="emptyLabel"></craft-empty
-          ></slot>
+          <slot name="empty-row"><span hidden /></slot>
         </template>
       </DataTable>
     </div>
+    <craft-empty
+      v-if="managed && !hasRows && !loading && !$slots['empty-row']"
+      :label="emptyLabel"
+    >
+      <slot name="empty-actions">
+        <CreateActionButton
+          v-if="!readOnly"
+          :label="createLabel ?? null"
+          :url="createUrl"
+          :menu-items="createMenuItems"
+        />
+      </slot>
+    </craft-empty>
     <div class="admin-table__footer" v-if="footerVisible">
       <AdminTableBulkActionsBar
         v-if="showBulkActions"

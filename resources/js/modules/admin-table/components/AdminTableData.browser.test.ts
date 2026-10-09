@@ -119,6 +119,54 @@ function mountNode(options: Partial<TableProps> = {}) {
   return host;
 }
 
+it.each([false, true])(
+  'offers creation in the empty state with page-header placement %s',
+  async (createActionInPageHeader) => {
+    const host = mountNode({
+      columns: [
+        'Name',
+        'Handle',
+        'Mode',
+        'Dimensions',
+        'Interlace',
+        'Format',
+      ].map((label) => ({key: label.toLowerCase(), label})),
+      rows: [],
+      emptyMessage: 'No image transforms exist yet.',
+      createLabel: 'New image transform',
+      createUrl: '/settings/assets/transforms/new',
+      createActionInPageHeader,
+    });
+    host.style.width = '320px';
+    await nextTick();
+
+    const empty =
+      host.querySelector<HTMLElementTagNameMap['craft-empty']>('craft-empty')!;
+    await empty.updateComplete;
+    const link =
+      empty.querySelector<HTMLElementTagNameMap['craft-button']>(
+        'craft-button[href]'
+      )!;
+    expect(empty.shadowRoot!.textContent).toContain(
+      'No image transforms exist yet.'
+    );
+    expect(link?.textContent?.trim()).toBe('New image transform');
+    expect(link?.getAttribute('href')).toBe('/settings/assets/transforms/new');
+    const body = host.querySelector('.admin-table__body')!;
+    body.scrollLeft = body.scrollWidth;
+    const labelBounds = empty
+      .shadowRoot!.querySelector('p')!
+      .getBoundingClientRect();
+    const bounds = host.getBoundingClientRect();
+    expect(labelBounds.left).toBeGreaterThanOrEqual(bounds.left);
+    expect(labelBounds.right).toBeLessThanOrEqual(bounds.right);
+    await link.updateComplete;
+    const anchor = link.shadowRoot!.querySelector('a')!;
+    anchor.focus();
+    expect(link.shadowRoot!.activeElement).toBe(anchor);
+  }
+);
+
 async function setControl(host: HTMLElement, selector: string, value: string) {
   const control = host.querySelector<HTMLElement & {modelValue: string}>(
     selector
@@ -352,7 +400,7 @@ it('uses independent endpoints and confirmations for row and bulk deletion', asy
     .find((item) => item.textContent?.trim() === 'Delete')!
     .click();
   await vi.waitFor(() =>
-    expect(host.querySelector('tbody craft-empty')).not.toBeNull()
+    expect(host.querySelector('craft-empty')).not.toBeNull()
   );
 
   expect(request).toHaveBeenLastCalledWith('/settings/delete-many', {

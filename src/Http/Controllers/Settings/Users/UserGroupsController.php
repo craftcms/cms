@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Http\Controllers\Settings\Users;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -77,7 +77,7 @@ class UserGroupsController extends BaseUserSettingsController
                     'url' => route('craft.cp.settings.users.groups.edit', ['userGroup' => $group->id]),
                 ],
                 'handle' => [
-                    'html' => Html::tag('craft-copy-attribute', Html::encode($group->handle), ['value' => $group->handle]),
+                    'html' => CopyAttribute::make()->value($group->handle)->toHtml(),
                 ],
                 ...($this->readOnly ? [] : [
                     '_deleteUrl' => route('craft.cp.settings.users.groups.destroy', ['groupId' => $group->id]),

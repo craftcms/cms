@@ -558,7 +558,18 @@
         @action-error="onOrderFailed"
         @load-error="onLoadFailed"
         @action-performed="refreshUi"
-      />
+      >
+        <template
+          v-if="hasCreateAction && node.props.createActionInPageHeader"
+          #empty-actions
+        >
+          <CreateActionButton
+            :label="node.props.createLabel"
+            :url="node.props.createUrl"
+            :menu-items="node.props.createMenuItems"
+          />
+        </template>
+      </AdminTable>
     </component>
     <AdminTableDeleteModal
       v-if="deletingRow && node.props.deleteModalUrl"
