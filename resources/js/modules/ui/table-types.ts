@@ -72,6 +72,7 @@ export interface TableStatus {
 export type TableRow = Record<string, TableCellValue> & {
   id?: string | number;
   _deletable?: boolean;
+  _deleteUrl?: string;
   _status?: TableStatus | null;
   _search?: string;
   _sort?: Record<string, string | number | boolean | null>;
@@ -93,9 +94,11 @@ export interface TableProps {
   reorderSuccessMessage: string | null;
   reorderFailMessage: string | null;
   deleteUrl: string | null;
+  deletable?: boolean;
   deleteConfirmMessage: string | null;
-  bulkDeletable: boolean;
   deleteModalUrl: string | null;
+  bulkDeleteUrl: string | null;
+  bulkDeleteConfirmMessage: string | null;
   bulkActions: BulkActionDescriptor[];
   statusActions: BulkActionSingle[];
   statusFilterOptions: AdminTableStatusOption[];

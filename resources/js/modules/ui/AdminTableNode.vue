@@ -48,6 +48,10 @@
   const props = defineProps<{node: TableNodePayload}>();
 
   const adminTable = ref<AdminTableHandle>();
+  const deletePending = shallowRef(false);
+  const deletable = computed(
+    () => props.node.props.deletable ?? !!props.node.props.deleteUrl
+  );
 
   // Endpoint preferences are shared across screens that use the same endpoint.
   const storageKey = props.node.props.dataUrl
@@ -284,14 +288,17 @@
         })
       );
 
-    if (props.node.props.deleteUrl) {
+    if (deletable.value) {
       cols.push(
         columnHelper.actions(({row}) => {
           const actions = [];
 
-          if (row.original._deletable !== false) {
+          if (row.original._deletable !== false && deleteUrl(row.original)) {
             actions.push(
-              h(DeleteButton, {onClick: () => deleteRow(row.original)})
+              h(DeleteButton, {
+                disabled: deletePending.value,
+                onClick: () => deleteRow(row.original),
+              })
             );
           }
 
@@ -305,14 +312,14 @@
 
   const hasBulkFooter = computed(
     () =>
-      (!!props.node.props.deleteUrl && props.node.props.bulkDeletable) ||
+      !!props.node.props.bulkDeleteUrl ||
       props.node.props.bulkActions.length > 0 ||
       props.node.props.statusActions.length > 0 ||
       !!props.node.props.moveToPageUrl
   );
 
   async function reorderRows(move: AdminTableReorder<TableRow>): Promise<void> {
-    // Legacy actions expect JSON-encoded IDs for tables without pagination.
+    const ids = move.rows.map((row) => row.id);
     await actionClient.post(
       props.node.props.reorderUrl!,
       move.paginated
@@ -320,7 +327,7 @@
             id: move.row.id,
             toPosition: (move.page - 1) * move.pageSize + move.finishIndex,
           }
-        : {ids: JSON.stringify(move.rows.map((row) => row.id))}
+        : {ids}
     );
     notifyOrderUpdated();
     if (!move.paginated) refreshUi();
@@ -353,6 +360,32 @@
 
   const deletingRow = ref<TableRow | null>(null);
 
+  function deleteUrl(row: TableRow): string | null {
+    return row._deleteUrl ?? props.node.props.deleteUrl;
+  }
+
+  async function submitDelete(
+    url: string,
+    data: {id?: string | number; ids?: Array<string | number>}
+  ): Promise<boolean> {
+    if (deletePending.value) return false;
+
+    deletePending.value = true;
+
+    try {
+      await actionClient.delete(url, {data});
+
+      return true;
+    } catch (error: any) {
+      Craft.cp?.displayError?.(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
+      return false;
+    } finally {
+      deletePending.value = false;
+    }
+  }
+
   function onModalDeleted(): void {
     const row = deletingRow.value;
     deletingRow.value = null;
@@ -361,6 +394,9 @@
   }
 
   async function deleteRow(row: TableRow): Promise<void> {
+    const url = deleteUrl(row);
+    if (!url || deletePending.value) return;
+
     if (props.node.props.deleteModalUrl) {
       deletingRow.value = row;
       return;
@@ -372,23 +408,27 @@
       return;
     }
 
-    await actionClient.post(props.node.props.deleteUrl!, {id: row.id});
+    if (!(await submitDelete(url, {id: row.id}))) return;
+
     if (row.id !== undefined) adminTable.value?.removeRows([row.id]);
     refreshTable();
   }
 
   async function deleteSelected(): Promise<void> {
     const ids = adminTable.value?.selectedIds ?? [];
+    const url = props.node.props.bulkDeleteUrl;
 
-    if (!ids.length) return;
+    if (!ids.length || !url || deletePending.value) return;
 
-    const message = props.node.props.deleteConfirmMessage ?? t('Are you sure?');
+    const message =
+      props.node.props.bulkDeleteConfirmMessage ?? t('Are you sure?');
 
     if (!confirm(message)) {
       return;
     }
 
-    await actionClient.post(props.node.props.deleteUrl!, {ids});
+    if (!(await submitDelete(url, {ids}))) return;
+
     adminTable.value?.removeRows(ids);
     refreshTable();
   }
@@ -422,7 +462,7 @@
           : bulkActionToItem(action)
     );
 
-    if (props.node.props.deleteUrl && props.node.props.bulkDeletable) {
+    if (props.node.props.bulkDeleteUrl) {
       items.push({
         key: 'delete',
         label: t('Delete'),
@@ -492,6 +532,7 @@
         :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
         :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
         :selectable="hasBulkFooter"
+        :interactions-disabled="deletePending"
         :show-footer="node.props.showFooter"
         :actions="footerActionItems"
         :statuses="statusActionItems"
@@ -519,7 +560,7 @@
     <AdminTableDeleteModal
       v-if="deletingRow && node.props.deleteModalUrl"
       :modal-url="node.props.deleteModalUrl"
-      :delete-url="node.props.deleteUrl!"
+      :delete-url="deleteUrl(deletingRow)!"
       :row-id="deletingRow.id!"
       @close="deletingRow = null"
       @deleted="onModalDeleted"

@@ -1,7 +1,8 @@
 import {actionClient} from '@craftcms/ui';
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {createApp, defineComponent, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
+import UiModal from './UiModal.vue';
 
 const modalProps = vi.hoisted(() => ({current: {} as Record<string, unknown>}));
 const rendererProps = vi.hoisted(() => ({
@@ -55,6 +56,8 @@ describe('AdminTableDeleteModal', () => {
   let container: HTMLElement;
   const get = vi.spyOn(actionClient, 'get');
   const post = vi.spyOn(actionClient, 'post');
+  const remove = vi.spyOn(actionClient, 'delete');
+  const subject = ref<'deletion' | 'action'>('deletion');
   const events: string[] = [];
 
   beforeEach(() => {
@@ -69,16 +72,25 @@ describe('AdminTableDeleteModal', () => {
       },
     });
     events.length = 0;
+    subject.value = 'deletion';
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(() =>
-      h(AdminTableDeleteModal, {
-        modalUrl: 'things/delete-modal',
-        deleteUrl: 'things/delete',
-        rowId: 7,
-        onDeleted: () => events.push('deleted'),
-        onClose: () => events.push('close'),
-      })
+      subject.value === 'deletion'
+        ? h(AdminTableDeleteModal, {
+            modalUrl: 'things/delete-modal',
+            deleteUrl: 'things/delete',
+            rowId: 7,
+            onDeleted: () => events.push('deleted'),
+            onClose: () => events.push('close'),
+          })
+        : h(UiModal, {
+            modalUrl: 'things/edit-modal',
+            actionUrl: 'things/save',
+            params: {id: 7},
+            onSubmitted: () => events.push('submitted'),
+            onClose: () => events.push('close'),
+          })
     );
     app.mount(container);
   });
@@ -104,22 +116,39 @@ describe('AdminTableDeleteModal', () => {
     });
   });
 
-  it('posts the UI values with the row id to the delete URL', async () => {
-    post.mockResolvedValue({data: {}});
-    await flush();
+  it.each([
+    {
+      kind: 'deletion',
+      method: 'delete',
+      url: 'things/delete',
+      event: 'deleted',
+    },
+    {kind: 'action', method: 'post', url: 'things/save', event: 'submitted'},
+  ] as const)(
+    'submits $kind UI values and row id using $method',
+    async ({kind, method, url, event}) => {
+      subject.value = kind;
+      post.mockResolvedValue({data: {}});
+      remove.mockResolvedValue({data: {}});
+      await flush();
 
-    container.querySelector('form')!.dispatchEvent(new Event('submit'));
-    await flush();
+      container.querySelector('form')!.dispatchEvent(new Event('submit'));
+      await flush();
 
-    expect(post).toHaveBeenCalledWith('things/delete', {
-      destination: '3',
-      id: 7,
-    });
-    expect(events).toEqual(['deleted']);
-  });
+      const values = {destination: '3', id: 7};
+      if (method === 'delete') {
+        expect(remove).toHaveBeenCalledWith(url, {data: values});
+        expect(post).not.toHaveBeenCalled();
+      } else {
+        expect(post).toHaveBeenCalledWith(url, values);
+        expect(remove).not.toHaveBeenCalled();
+      }
+      expect(events).toEqual([event]);
+    }
+  );
 
   it('shows validation errors against their control paths', async () => {
-    post.mockRejectedValue({
+    remove.mockRejectedValue({
       response: {
         data: {message: 'Nope', errors: {'address.line1': ['Required']}},
       },

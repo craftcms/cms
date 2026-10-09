@@ -58,11 +58,15 @@ class Table implements Node
 
     private ?string $deleteUrl = null;
 
+    private bool $deletable = false;
+
     private ?string $deleteConfirmMessage = null;
 
-    private bool $bulkDeletable = false;
-
     private ?string $deleteModalUrl = null;
+
+    private ?string $bulkDeleteUrl = null;
+
+    private ?string $bulkDeleteConfirmMessage = null;
 
     /** @var list<array<string, mixed>> */
     private array $bulkActions = [];
@@ -123,6 +127,7 @@ class Table implements Node
      * submitLabel?: string}`; submitting posts the UI's values plus `params` to `actionUrl`,
      * then reloads the table.
      *
+     * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
      * `_deletable => false` suppresses deletion of one row. `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
@@ -255,7 +260,8 @@ class Table implements Node
     }
 
     /**
-     * Enables drag-to-reorder; the new order posts to `$url` as `{ids: list<int|string>}`.
+     * Enables drag-to-reorder. Static rows post `{ids: list<int|string>}`.
+     * Paginated rows post `{id: <row id>, toPosition: <absolute zero-based position>}`.
      * `$successMessage`/`$failMessage` are shown as a toast after the request settles — omit
      * either (or both) to fall back to a generic message client-side.
      */
@@ -269,24 +275,36 @@ class Table implements Node
     }
 
     /**
-     * Adds a per-row delete action, posting `{id: <row id>}` to `$url`. Individual rows can
-     * opt out via `_deletable => false` in {@see rows()}.
-     *
-     * `$bulk` enables row selection and posts `{ids: <row ids>}` to the same endpoint.
-     * Enable it only if the endpoint handles `ids` as well as `id`.
+     * Adds a per-row delete action, submitting `{id: <row id>}` to `$url` via DELETE.
+     * Individual rows can opt out via `_deletable => false` in {@see rows()}.
+     * For resource routes, set `_deleteUrl` on each row using `route()`.
+     * The shared `$url` can then be omitted.
      *
      * `$modalUrl` replaces the per-row confirmation with a modal UI, for deletions that need
      * more input (where to move a deleted record's data, say). It's requested via GET with
      * `{id: <row id>}` and must return JSON `{ui: UiPayload, title?: string,
-     * submitLabel?: string}`; submitting posts the UI's values plus `id` to `$url`. Bulk
-     * deletion still uses the plain confirmation.
+     * submitLabel?: string}`; submitting sends the UI's values plus `id` to the row's
+     * deletion URL via DELETE.
      */
-    public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false, ?string $modalUrl = null): static
+    public function deletable(?string $url = null, ?string $confirmMessage = null, ?string $modalUrl = null): static
     {
+        $this->deletable = true;
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
-        $this->bulkDeletable = $bulk;
         $this->deleteModalUrl = $modalUrl;
+
+        return $this;
+    }
+
+    /**
+     * Enables row selection and adds a bulk delete action, submitting
+     * `{ids: list<int|string>}` to `$url` via DELETE after confirmation.
+     * Row deletion is configured independently with {@see deletable()}.
+     */
+    public function bulkDeletable(string $url, ?string $confirmMessage = null): static
+    {
+        $this->bulkDeleteUrl = $url;
+        $this->bulkDeleteConfirmMessage = $confirmMessage;
 
         return $this;
     }
@@ -487,9 +505,11 @@ class Table implements Node
             'reorderSuccessMessage' => $this->reorderSuccessMessage,
             'reorderFailMessage' => $this->reorderFailMessage,
             'deleteUrl' => $this->deleteUrl,
+            'deletable' => $this->deletable,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
-            'bulkDeletable' => $this->bulkDeletable,
             'deleteModalUrl' => $this->deleteModalUrl,
+            'bulkDeleteUrl' => $this->bulkDeleteUrl,
+            'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
             'bulkActions' => $this->bulkActions,
             'statusActions' => $this->statusActions,
             'statusFilterOptions' => $this->resolveStatusFilterOptions(),

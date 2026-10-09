@@ -2,8 +2,8 @@
   /**
    * Confirms a Table node row deletion with a server-built UI, for deletions
    * that need more than a yes/no — where to move a deleted record's data, say.
-   * The UI is loaded from `modalUrl`, and its values are posted to
-   * `deleteUrl` alongside the row's `id`.
+   * The UI is loaded from `modalUrl`, and its values are sent to
+   * `deleteUrl` via DELETE alongside the row's `id`.
    */
   import {t} from '@craftcms/ui';
   import UiModal from './UiModal.vue';
@@ -24,6 +24,7 @@
   <UiModal
     :modal-url="modalUrl"
     :action-url="deleteUrl"
+    action-method="delete"
     :params="{id: rowId}"
     :title="t('Delete')"
     :submit-label="t('Delete')"

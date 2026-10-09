@@ -332,6 +332,13 @@
   .admin-table {
     min-width: 0;
   }
+  .admin-table--padded {
+    .admin-table__header,
+    .admin-table__body,
+    .admin-table__footer {
+      padding-inline: var(--cp-container-padding);
+    }
+  }
   .admin-table__header {
     margin-block-end: var(--c-spacing-md);
   }
