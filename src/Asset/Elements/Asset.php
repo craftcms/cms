@@ -1699,26 +1699,15 @@ JS, [
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Volume settings
-            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
             $items[] = [
-                'id' => $volumeEditId,
                 'icon' => 'gear',
                 'label' => t('Volume settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/assets/volumes/$this->volumeId")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($volumeEditId),
-                ['volumeId' => $this->volumeId],
-            ]);
-
         }
 
         return $items;

@@ -25,8 +25,6 @@ use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
@@ -394,24 +392,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Field settings
-            $fieldEditId = sprintf('edit-field-%s', mt_rand());
             $items[] = [
-                'id' => $fieldEditId,
                 'icon' => 'gear',
                 'label' => t('Field settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-field',
+                    'detail' => ['fieldId' => $this->fieldId],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
-      });
-    })();
-    JS, [
-                InputNamespace::namespaceId($fieldEditId),
-                ['fieldId' => $this->fieldId],
-            ]);
         }
 
         return $items;

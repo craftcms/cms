@@ -270,30 +270,28 @@ JS, [
 
         if (Gate::check('view', $this)) {
             // Edit
-            $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'edit',
                 'label' => mb_ucfirst(t('Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.createElementEditor($elementType, $settings)
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                static::class,
-                [
-                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
-                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
-                    'revisionId' => $this->revisionId,
-                    'siteId' => $this->siteId,
-                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-element',
+                    'detail' => [
+                        'elementType' => static::class,
+                        'settings' => [
+                            'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                            'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                            'revisionId' => $this->revisionId,
+                            'siteId' => $this->siteId,
+                            'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        ],
+                        'cpEditUrl' => $this->getCpEditUrl(),
+                    ],
                 ],
-            ]);
+            ];
 
             // Copy
             if (! $this->getIsRevision() && Gate::check('copy', $this)) {
