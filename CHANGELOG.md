@@ -47,6 +47,7 @@
 - Added `CraftCms\Cms\Ui\Nodes\Scope` for embedding component settings under a path prefix, with optional shared delta tracking. ([#19914](https://github.com/craftcms/cms/pull/19914))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
+- Fixed an error when rendering the Craft 5 starter homepage with the Yii adapter installed.
 - Fixed a bug where fields in element editors didn’t receive their text direction or translation settings. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Fixed a bug where element editor fields didn’t preserve field grouping, static presentation settings, or suppression of modification indicators. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Fixed an accessibility issue where fields’ translation indicators and their help text were hidden. ([#19915](https://github.com/craftcms/cms/pull/19915))
