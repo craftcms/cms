@@ -22,11 +22,8 @@ const COMPONENTS = join(import.meta.dirname, '.');
  * a component listed here that has gained a doc fails until it's removed.
  */
 const PENDING = new Set([
-  'action-item',
-  'action-menu',
   'avatar',
   'badge-indicator',
-  'breadcrumbs',
   'button-group',
   'callout',
   'card',
@@ -51,7 +48,6 @@ const PENDING = new Set([
   'input-password',
   'input-time',
   'missing-component',
-  'nav-list',
   'option',
   'pane',
   'permission-tree',
@@ -70,7 +66,6 @@ const PENDING = new Set([
   'status',
   'switch',
   'switch-button',
-  'tab',
   'textarea',
   'thumbnail-loader',
   'timeline-item',
