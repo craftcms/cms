@@ -32,6 +32,16 @@ export default css`
     height: 100%;
   }
 
+  /* White fills the whole card, not just the header over a translucent body. */
+  :host([data-color='white']:not([active])) .card {
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  :host([data-color='white']:not([active])) .card__header,
+  :host([data-color='white']:not([active])) .card__footer {
+    background-color: transparent;
+  }
+
   .card__header,
   .card__footer {
     font-size: 0.875em;

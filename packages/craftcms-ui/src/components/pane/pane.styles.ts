@@ -60,6 +60,15 @@ export default css`
     --_pane-shadow: none;
   }
 
+  :host([appearance='outline-fill']) {
+    --_pane-background: var(
+      --c-pane-background,
+      color-mix(var(--c-color-neutral-fill-quiet), transparent 70%)
+    );
+    --_pane-border-color: var(--c-color-neutral-border-quiet);
+    --_pane-shadow: none;
+  }
+
   :host([appearance='sunken']) {
     --_pane-background: var(--c-pane-background, var(--c-surface-sunken));
     --_pane-border-color: transparent;
