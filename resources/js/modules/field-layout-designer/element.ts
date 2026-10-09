@@ -358,22 +358,6 @@ export class Element extends Base {
       : t('Settings');
   }
 
-  async showFieldEditor(): Promise<void> {
-    const slideout = new Craft.CpScreenSlideout(
-      Craft.getCpUrl('settings/fields/edit'),
-      {
-        params: {
-          fieldId: this.fieldId,
-          multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
-        },
-      }
-    );
-
-    slideout.on('submit', async ({response}: any) => {
-      this.refreshField(response.data.selectorHtml);
-    });
-  }
-
   private refreshField(selectorHtml: string): void {
     const designer = this.tab.designer;
     const $oldSelector = designer.$fieldLibrary.querySelector(
