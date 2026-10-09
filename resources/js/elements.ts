@@ -1,8 +1,8 @@
 import {defineAsyncComponent} from 'vue';
 
 /**
- * The CP's element index and editor, and the pieces their pages build
- * toolbars from, published to plugin bundles through the import map as
+ * The CP's element index and editor, and the shared components CP pages build
+ * toolbars and tables from, published to plugin bundles through the import map as
  * `@craftcms/cms/elements` (see `Cp::sharedModules()`), so a plugin's own
  * element pages can wrap the same `ElementIndexPage` and `ElementEditor` the
  * CP's pages do.
@@ -25,6 +25,14 @@ export const CpButtonLink = defineAsyncComponent(
 
 export const ActionMenu = defineAsyncComponent(
   () => import('./common/components/ActionMenu.vue')
+);
+
+export const SearchForm = defineAsyncComponent(
+  () => import('./modules/admin-table/components/SearchForm.vue')
+);
+
+export const DeleteButton = defineAsyncComponent(
+  () => import('./modules/admin-table/components/DeleteButton.vue')
 );
 
 export type {ActionItem, ActionItemLink} from './common/types';

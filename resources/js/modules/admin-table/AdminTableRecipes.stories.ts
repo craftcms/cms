@@ -3,18 +3,18 @@ import {computed, h, ref} from 'vue';
 import {
   AdminTable,
   createCraftColumnHelper,
-  DeleteButton,
-  SearchForm,
   useCraftTable,
   useServerPagination,
   useServerSort,
-  type PaginationData,
   type SortItem,
 } from '@/admin-table';
+import {DeleteButton, SearchForm} from '@/elements';
+import {queryWidgets, widgets, type Widget} from './fixtures/widgets';
 
 /**
  * Each story builds its table the way a plugin page does, importing only from
- * `@craftcms/cms/admin-table`. See the AdminTable Guide for the walkthrough.
+ * `@craftcms/cms/admin-table` and `@craftcms/cms/elements`. See the AdminTable
+ * Guide for the walkthrough.
  */
 const meta = {
   title: 'Elements/AdminTable Recipes',
@@ -31,24 +31,6 @@ const meta = {
 export default meta;
 
 type Story = StoryObj;
-
-interface Widget {
-  id: number;
-  name: string;
-  handle: string;
-  type: string;
-  dateCreated: string;
-}
-
-const widgetTypes = ['Gadget', 'Gizmo', 'Doohickey'];
-
-const widgets: Array<Widget> = Array.from({length: 23}, (_, i) => ({
-  id: i + 1,
-  name: `Widget ${i + 1}`,
-  handle: `widget${i + 1}`,
-  type: widgetTypes[i % widgetTypes.length]!,
-  dateCreated: new Date(Date.UTC(2026, 0, 1 + i * 3, 12)).toISOString(),
-}));
 
 function widgetColumns(onDelete?: (widget: Widget) => void) {
   const columnHelper = createCraftColumnHelper<Widget>();
@@ -104,49 +86,6 @@ export const ColumnHelpers: Story = {
     template: '<AdminTable :table="table" title="Widgets" />',
   }),
 };
-
-/**
- * Stands in for the controller: sorts and slices the widgets for a query the
- * way a paginated Laravel query would.
- */
-function queryWidgets(query: {
-  page: number;
-  perPage: number;
-  sort: Array<SortItem>;
-}): {data: Array<Widget>; pagination: PaginationData} {
-  const [sort] = query.sort;
-  const sorted = [...widgets];
-
-  if (sort) {
-    const field = sort.field as keyof Widget;
-    sorted.sort(
-      (a, b) =>
-        String(a[field]).localeCompare(String(b[field]), undefined, {
-          numeric: true,
-        }) * (sort.direction === 'desc' ? -1 : 1)
-    );
-  }
-
-  const total = sorted.length;
-  const lastPage = Math.max(1, Math.ceil(total / query.perPage));
-  const page = Math.min(query.page, lastPage);
-  const offset = (page - 1) * query.perPage;
-  const data = sorted.slice(offset, offset + query.perPage);
-
-  return {
-    data,
-    pagination: {
-      total,
-      per_page: query.perPage,
-      current_page: page,
-      last_page: lastPage,
-      next_page_url: null,
-      prev_page_url: null,
-      from: data.length ? offset + 1 : 0,
-      to: offset + data.length,
-    },
-  };
-}
 
 /**
  * `useServerPagination` and `useServerSort` turn the table's page and sort

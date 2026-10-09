@@ -11,9 +11,10 @@ import {
   useCraftTable,
   useServerPagination,
   useServerSort,
-  SearchForm,
-  DeleteButton,
 } from '@craftcms/cms/admin-table';
+
+// Generic CP components that tables commonly use.
+import {DeleteButton, SearchForm} from '@craftcms/cms/elements';
 ```
 
 Leave `vue` and `@craftcms/cms/*` out of the plugin's bundle (for example,

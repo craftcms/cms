@@ -47,8 +47,6 @@ import {
 | `createCraftColumnHelper` | TanStack's column helper plus Craft presets (`link`, `handle`, `date`, `html`, `actions`).                                                                                                                                |
 | `useServerPagination`     | Turns page changes into query params for your controller.                                                                                                                                                                 |
 | `useServerSort`           | Turns sort changes into query params for your controller.                                                                                                                                                                 |
-| `SearchForm`              | A debounced search field for the `table-header` slot.                                                                                                                                                                     |
-| `DeleteButton`            | The small “×” button for an actions column.                                                                                                                                                                               |
 | `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                            |
 | types                     | `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
 
@@ -56,7 +54,17 @@ For Inertia navigation (pagination, sorting, reordering), use the CP's router,
 `Cp.$router`, rather than one imported from your own `@inertiajs/vue3`. A
 second copy of the router isn't connected to the page the CP mounted.
 
+`SearchForm` and `DeleteButton` work outside tables too, so they come from
+`@craftcms/cms/elements`:
+
+```ts
+import {DeleteButton, SearchForm} from '@craftcms/cms/elements';
+```
+
 ## A basic table
+
+**Composables/useCraftTable** has stories for its defaults, column visibility
+and selection.
 
 Define the row type, build columns with the column helper, create the table
 with `useCraftTable`, and pass it to `AdminTable`. Read `data` through a getter
@@ -160,7 +168,7 @@ it can confirm first if you give it a `confirm` message:
 
 ```ts
 import {h} from 'vue';
-import {DeleteButton} from '@craftcms/cms/admin-table';
+import {DeleteButton} from '@craftcms/cms/elements';
 
 columnHelper.actions(({row}) => [
   h(DeleteButton, {
@@ -195,6 +203,8 @@ const table = useCraftTable({
 `useCraftTable` doesn't sort or page on the client, because CP tables leave
 that to the server. `useServerPagination` and `useServerSort` translate the
 table's changes into a query, and you send it to your controller.
+The **Composables/useServerPagination** and **Composables/useServerSort**
+stories show the exact query each change produces.
 
 ```ts
 import {
@@ -302,7 +312,7 @@ public function index(TableRequest $request): CpScreenResponse
 
 ## Search
 
-Put `SearchForm` in the `table-header` slot. It submits `search` to its
+Put `SearchForm` (from `@craftcms/cms/elements`) in the `table-header` slot. It submits `search` to its
 `action` half a second after typing stops, or straight away on Enter, and
 reloads only the `data` and `searchTerm` props. Pass `options` to reload
 different props:

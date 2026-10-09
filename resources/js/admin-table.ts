@@ -12,14 +12,6 @@ export const AdminTable = defineAsyncComponent(
   () => import('./modules/admin-table/components/AdminTable.vue')
 );
 
-export const DeleteButton = defineAsyncComponent(
-  () => import('./modules/admin-table/components/DeleteButton.vue')
-);
-
-export const SearchForm = defineAsyncComponent(
-  () => import('./modules/admin-table/components/SearchForm.vue')
-);
-
 export {
   useCraftTable,
   craftTableFeatures,
