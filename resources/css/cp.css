@@ -183,6 +183,33 @@ Sidebar metadata
   .cp-metadata-list dd {
     text-align: end;
   }
+
+  .cp-metadata-list dd > ul.path {
+    justify-content: flex-end;
+  }
+}
+
+/**
+Element paths (e.g. the Ancestors attribute)
+ */
+ul.path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.path > li {
+  display: inline-flex;
+  align-items: center;
+}
+
+ul.path > li:not(:last-child)::after {
+  content: '/' / '';
+  margin-inline: var(--c-spacing-sm);
+  color: var(--c-text-quiet);
 }
 
 .context-label {
