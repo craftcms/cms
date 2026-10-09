@@ -177,7 +177,7 @@ it('passes a custom add row label through Table payloads and HTML', function () 
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->control->props['addRowLabel'])->toBe('Add a coupon')
-        ->and($crawler->filter('craft-button[command="--add-row"]')->text())->toContain('Add a coupon');
+        ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['props']['addRowLabel'])->toBe('Add a coupon');
 });
 
 it('renders text expanders for text and textarea Controls', function () {
