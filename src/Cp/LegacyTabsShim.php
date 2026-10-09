@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
 
+use function CraftCms\Cms\t;
+
 /**
  * Renders a legacy screen's tabs as `<craft-tabs>`, with no plugin changes.
  *
@@ -44,7 +46,8 @@ final class LegacyTabsShim
             return null;
         }
 
-        $component = Tabs::make()->selectedIndex(0);
+        // The same name the legacy strip gives its tab list.
+        $component = Tabs::make()->label(t('Primary fields'))->selectedIndex(0);
 
         foreach ($tabs as $tab) {
             $url = $tab['url'] ?? null;

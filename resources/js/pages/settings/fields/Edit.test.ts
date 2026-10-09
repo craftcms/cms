@@ -1,7 +1,11 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {setIconResolver} from '@craftcms/ui/utilities/icons';
+import {nothing} from 'lit';
+import {afterEach, beforeAll, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UiChange, UiPayload} from '@/modules/ui/types';
 import Edit from './Edit.vue';
+
+beforeAll(() => setIconResolver(() => nothing));
 
 const state = vi.hoisted<{
   uiProps: ReturnType<
@@ -117,11 +121,13 @@ it('saves and starts another field from the ui action', async () => {
   });
 });
 
-it('shows the field’s details in an Info tab', async () => {
+it('shows the field’s details in an Info panel', async () => {
   mount('<dl>ID 1</dl>');
   await nextTick();
 
-  expect(container.querySelector('craft-tab')?.id).toBe('details-tab-info');
+  expect(container.querySelector('craft-disclosure > button')?.id).toBe(
+    'details-panel-info'
+  );
   expect(container.querySelector('.details-html')?.textContent).toBe(
     '<dl>ID 1</dl>'
   );
@@ -131,5 +137,5 @@ it('omits the details column for a new field', async () => {
   mount();
   await nextTick();
 
-  expect(container.querySelector('craft-tabs')).toBeNull();
+  expect(container.querySelector('craft-disclosure')).toBeNull();
 });

@@ -1,6 +1,49 @@
 # `craft-tabs` accessibility
 
+Follows the WAI-ARIA APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/) example.
+
+**Not for** (use `craft-disclosure` instead):
+
+- Panels that can all be closed, or a selected tab that closes its panel when clicked again.
+- Triggers that live apart from their panels, with other content between them.
+- More than one panel open at once.
+
+A change that needs any of these is a different pattern. Don't add a mode to `craft-tabs` for it.
+
 ## Requirements
+
+### Semantics
+
+- [x] Tabs carry `role="tab"`, `aria-selected`, and `aria-controls`; panels carry `role="tabpanel"` and an `aria-labelledby` naming their tab. Per WCAG 4.1.2 (Name, Role, Value). Verified in external-panel mode by `wires the tab/tabpanel contract across the two halves` in `tabs.test.ts`, and in slotted mode by the `Default` story.
+- [x] The tablist has an accessible name, set with `label` and applied to the `role="tablist"` element as `aria-label`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `names the tablist from label` in `tabs.test.ts`.
+- [x] `aria-orientation` matches the axis the strip runs along: `horizontal` for the block placements, `vertical` for the inline ones. Per WCAG 4.1.2 (Name, Role, Value). Verified by `derives the tablist orientation from the axis` in `tabs.test.ts`.
+- [x] Exactly one tab is selected at all times. The strip doesn't behave like a disclosure: clicking the selected tab or pressing Escape doesn't collapse its panel. A selection that points at no usable tab (`-1`, an index past the end, a disabled tab, or a tab that has been removed) moves to the first enabled tab. Per WCAG 4.1.2 (Name, Role, Value), since a collapsed strip would expose tabs with no selected panel. Verified by the `resolves selected-index … to the first enabled tab` cases and `keeps the selected tab selected on a repeat click or Escape` in `tabs.test.ts`, and the `selects the first enabled tab given no valid selected-index` and `moves the selection to the first tab when the selected … tab is removed` cases in `tabs.browser.test.ts`.
+
+### Keyboard and focus
+
+- [x] Roving tabindex: only the selected tab is in the Tab order. Per WCAG 2.1.1 (Keyboard). Verified by `keeps a roving tabindex` in `tabs.test.ts` and the `Default` story.
+- [x] Tab moves from the selected tab into its panel (or the panel's first focusable element), and Shift+Tab from there returns to the selected tab. Per WCAG 2.4.3 (Focus Order). Verified by `tabs from the selected tab into its panel and back` in `tabs.browser.test.ts`.
+- [x] Left and Right arrow keys (Up and Down on the inline placements) select the previous or next tab, wrapping at both ends. Per WCAG 2.1.1 (Keyboard). Verified by `navigates with the arrow keys, wrapping at both ends` in `tabs.test.ts` and the `Default` story.
+- [x] Home and End select the first and last tabs. Per WCAG 2.1.1 (Keyboard). Verified by `jumps to the ends with Home and End` in `tabs.test.ts`.
+- [x] Focus follows the selection: the tab an arrow, Home, or End key selects also receives focus. Per WCAG 2.4.3 (Focus Order). Verified by `moves focus with the selection` in `tabs.browser.test.ts`, and by the arrow and Home/End cases in `tabs.test.ts` for external-panel mode.
+- [x] Navigation skips disabled tabs and tabs collapsed into the overflow menu. Per WCAG 2.1.1 (Keyboard). Verified by `skips disabled tabs when navigating, and refuses to select one` and `arrows past collapsed tabs` in `tabs.test.ts`, and the `Disabled` story.
+- [ ] Selecting a tab shows its panel without a noticeable delay, as automatic activation requires. A panel that loads its content shows a loading state straight away rather than holding the switch. Not yet verified.
+- [x] The tablist comes directly before the panels it controls in the DOM, so reading order and focus order run from the tablist into the selected panel. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Slotted mode puts the tablist first. In external-panel mode the consumer places the panels: `Tabs.mdx` documents the requirement, the `ExternalPanels` story asserts it, and `FormRenderer.test.ts` asserts it for the field-layout tabs. One untested edge case: a field layout that mixes a tab without a `uid` ahead of saved tabs would render that tab's fields between the tablist and the panels (`FieldLayoutCompiler.php`). Nothing in core builds such a layout.
+- [x] A keyboard-focused tab shows a solid ring at least 2px wide, at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `rings a keyboard-focused tab at 3:1 against the surface` in `tabs.browser.test.ts`.
+- [x] A focused panel's ring is drawn inside the panel, so the scrolling panel region doesn't clip it. The inset applies only to slotted panels, which sit in the strip's own scroll region. External panels keep the default outset ring, and a consumer that puts them in a scroll container insets the ring there, as `DetailsPanels.vue` does. Per WCAG 2.4.7 (Focus Visible). Verified by `keeps a focused panel’s ring inside the scrolling panel region` in `tabs.browser.test.ts`.
+
+### Visual
+
+- [x] A selected text tab is marked by a bar on the edge facing the panels, plus a heavier weight. The bar reaches 3:1 against the surface in the light and dark themes, and unselected tabs have no bar, so the difference is shape as well as color. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Verified by the `marks the selected text tab …` cases in `tabs.browser.test.ts`, on the block and inline placements.
+- [x] A selected icon-only tab, which gets nothing from the weight change, is marked by the same bar at the same 3:1. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Verified by the `marks the selected icon tab …` cases in `tabs.browser.test.ts`, on the block and inline placements.
+- [x] The selected bar and the tab and panel focus rings stay visible in forced colors mode. The bar uses the `Highlight` system color there; an ordinary color would be forced to the canvas color and disappear. Verified manually with Playwright's `forced-colors: active` emulation against the `Default` and `ExternalPanels` stories, and a strip of icon tabs. There's no automated test, since the browser tests can't emulate forced colors.
+- [x] Every tab is at least 24×24 CSS px, or a 24px circle centered on it clears every other tab, at each `size` on the block and inline placements. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by the `gives every … tab a 24px target, or room around it` cases in `tabs.browser.test.ts`.
+
+### Overflow
+
+- [x] Tabs that don't fit the strip get `hidden`, leaving the accessibility tree, and stay reachable through the "More tabs" menu. Selecting one from the menu brings it back into the strip, selects it, and moves focus to it. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by the `Overflow` story.
+
+### Scrolling and reflow
 
 - [x] Given a height, the panel region scrolls its own content rather than
       overflowing the host, and that scrolling is operable from the keyboard:

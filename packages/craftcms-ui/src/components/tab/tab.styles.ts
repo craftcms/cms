@@ -46,6 +46,12 @@ export default css`
     );
   }
 
+  @media (forced-colors: active) {
+    :host([selected])::after {
+      background-color: Highlight;
+    }
+  }
+
   :host([selected]) {
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }

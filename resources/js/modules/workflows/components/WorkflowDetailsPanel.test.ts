@@ -6,7 +6,7 @@ import type {
   ElementEditPayloadUpdater,
 } from '@/modules/elements/composables/useElementEditor';
 import WorkflowUserReviewActions from '../user-review/WorkflowUserReviewActions.vue';
-import WorkflowDetailsTab from './WorkflowDetailsTab.vue';
+import WorkflowDetailsPanel from './WorkflowDetailsPanel.vue';
 
 type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
 
@@ -38,7 +38,7 @@ function review(
   };
 }
 
-describe('WorkflowDetailsTab', () => {
+describe('WorkflowDetailsPanel', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
 
@@ -75,7 +75,7 @@ describe('WorkflowDetailsTab', () => {
         actionUrl: '/actions/elements/save-draft',
         params: {},
         redirect: null,
-        tabId: null,
+        panelId: null,
       },
       menu: [],
       buttons: [
@@ -135,7 +135,7 @@ describe('WorkflowDetailsTab', () => {
     document.body.append(container);
     app = createApp({
       render: () =>
-        h(WorkflowDetailsTab, {
+        h(WorkflowDetailsPanel, {
           payload: elementPayload.value,
           updatePayload,
           submitAction,
