@@ -6,6 +6,7 @@
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
+- Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Element index tables and padded admin tables no longer have inline padding at the outer edges of each row, so they line up with the surrounding content. ([#19906](https://github.com/craftcms/cms/pull/19906))
 - Double-clicking an element chip in an element index now opens the chip’s own element in a slideout, rather than the row’s element or the chip’s link. ([#19907](https://github.com/craftcms/cms/pull/19907))
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
@@ -69,6 +70,7 @@
 - Fixed an accessibility issue where field layout tabs and image editor tabs weren’t announced with a name for their tab list.
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
+- Fixed a bug where the “Underline links” accessibility preference wasn’t respected on most control panel screens. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 
 ## 6.0.0-alpha.20 - 2026-10-07
