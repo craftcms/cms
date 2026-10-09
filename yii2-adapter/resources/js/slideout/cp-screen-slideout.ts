@@ -27,7 +27,11 @@ import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
 import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
-import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
+import {
+  Slideout,
+  uiLayerManager,
+  type SlideoutSettings,
+} from '@/modules/slideout/slideout';
 import type {UiValues} from '@/modules/ui/types';
 import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import {

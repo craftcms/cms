@@ -7,8 +7,8 @@ the shell around it differs.
 Screens that haven't been ported to a Vue page still work: they fall back to a built-in component
 that draws the server-rendered HTML the response already carries.
 
-> This is the Vue/Inertia system, and the one core uses. The legacy `Craft.CpScreenSlideout`
-> (jQuery/Garnish, in `resources/js/modules/slideout/`) remains for plugins — see
+> This is the Vue/Inertia system, and the one core uses. Craft 5's `Craft.CpScreenSlideout` and
+> `Craft.createElementEditor()` remain for plugins, via the yii2-adapter — see
 > [Coexisting with the legacy stack](#coexisting-with-the-legacy-stack).
 
 ## Basic Usage
@@ -414,7 +414,9 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 Core opens its slideouts through the Vue stack — all but two-step verification setup, whose
 auth-method setup flow still hands plugins a legacy panel. The legacy `Craft.Slideout` (and its
 `CpScreenSlideout` / `ElementEditorSlideout` subclasses) remains for plugins and the yii2-adapter's
-nested element manager, so both kinds can be on screen at once: a Vue panel opened over a legacy
+nested element manager. The subclasses, and `Craft.createElementEditor()`, are registered by the
+yii2-adapter (`yii2-adapter/resources/js/slideout/`), and open their screen in the Vue stack whenever
+the page has it — relaying `submit`/`close` back to the instance. Both kinds can be on screen at once: a Vue panel opened over a legacy
 slideout, or a legacy element editor opened from inside a Vue panel.
 
 Server-rendered menus open slideouts declaratively, with `{type: 'event'}` actions that

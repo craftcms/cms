@@ -63,9 +63,7 @@ interface ElementEditorParams extends UiValues {
  *
  * @example
  * ```ts
- * import {ElementEditorSlideout} from '@/modules/slideout';
- *
- * const slideout = new ElementEditorSlideout($chip, {siteId: 2});
+ * const slideout = Craft.createElementEditor(elementType, $chip, {siteId: 2});
  * slideout.on('submit', ({data}) => console.log('saved', data.id));
  * ```
  */
