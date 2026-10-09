@@ -18,7 +18,6 @@ use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
@@ -95,13 +94,6 @@ trait HasControlPanelUI
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
-
-    public function getAdditionalButtons(): string|Stringable
-    {
-        event($event = new ElementAdditionalButtonsResolving($this));
-
-        return $event->html;
-    }
 
     public function getAltActions(): array
     {

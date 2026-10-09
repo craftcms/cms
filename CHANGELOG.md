@@ -153,6 +153,7 @@
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::joinElementTable()`. Element queries should now declare their element table via the `$table` property, which is joined automatically. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed `CraftCms\Cms\Element\Contracts\ElementInterface::getAdditionalButtons()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving`. `defineAdditionalButtonDescriptors()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving` should be used instead. The Yii adapter still provides `getAdditionalButtons()` and `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#19921](https://github.com/craftcms/cms/pull/19921))
 - Removed the `breadcrumbs` and `submit-button` screen layout slots, which never rendered on full pages. The `crumbs` page prop and the `primary-action` slot should be used instead. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
 

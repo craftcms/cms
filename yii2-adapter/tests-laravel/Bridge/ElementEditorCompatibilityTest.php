@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Tests\Bridge;
 
 use craft\base\Element;
+use craft\elements\Entry as LegacyEntry;
 use craft\events\DefineHtmlEvent;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Policies\AddressPolicy;
@@ -141,4 +142,19 @@ it('leaves out additional buttons when nothing defines them', function() {
     $page = json_decode($response->toResponse(request())->getContent(), true);
 
     expect($page['props']['editorAdditionalButtonsHtml'])->toBeNull();
+});
+
+it('fires Craft 5 additional buttons handlers registered under legacy element class names', function() {
+    $entry = new Entry(['title' => 'Legacy handlers']);
+    YiiEvent::on(LegacyEntry::class, Element::EVENT_DEFINE_ADDITIONAL_BUTTONS, function(DefineHtmlEvent $event) {
+        $event->html .= '<a class="btn" href="https://example.com/legacy">Legacy</a>';
+    });
+
+    try {
+        $html = $entry->getAdditionalButtons();
+    } finally {
+        YiiEvent::off(LegacyEntry::class, Element::EVENT_DEFINE_ADDITIONAL_BUTTONS);
+    }
+
+    expect($html)->toContain('Legacy');
 });

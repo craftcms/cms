@@ -55,7 +55,7 @@ class LegacyElementEditorScreen
 
             $screen->contentHtml($this->resolveHtml($screen->contentHtml));
             $screen->metaSidebarHtml($this->resolveHtml($screen->metaSidebarHtml));
-            $buttonsHtml = trim($this->resolveHtml($screen->additionalButtonsHtml) . $element->getAdditionalButtons());
+            $buttonsHtml = trim($this->resolveHtml($screen->additionalButtonsHtml) . (method_exists($element, 'getAdditionalButtons') ? $element->getAdditionalButtons() : ''));
 
             return '';
         });
