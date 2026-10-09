@@ -1678,7 +1678,6 @@ $('#' + $id).on('activate', () => {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
       if (data.newAssetId) {
-        {$this->_replaceSlideoutAssetJs("$('#' + $id)")}
         return;
       }
 
@@ -2860,26 +2859,6 @@ CSS,
                 'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
             ],
         ];
-    }
-
-    /**
-     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
-     * Assets field’s editor slideout.
-     *
-     * @param  string  $elementJs  JavaScript expression for a jQuery object within the slideout
-     */
-    private function _replaceSlideoutAssetJs(string $elementJs): string
-    {
-        return <<<JS
-// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
-// since it's still editing the old asset
-const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
-if (slideout && slideout.settings.elementSelectInput) {
-    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-        .then(() => slideout.closeMeMaybe())
-        .catch(() => {});
-}
-JS;
     }
 
     private function _updatePreviewThumbJs(): string
