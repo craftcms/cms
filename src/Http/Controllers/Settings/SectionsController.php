@@ -95,6 +95,7 @@ readonly class SectionsController
         abort_if(is_null($sectionData), 404, 'Section not found');
 
         return new CpScreenResponse()
+            ->editUrl($sectionData->getCpEditUrl())
             ->title(trim($sectionData->name) ?: t('Edit Section'))
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
