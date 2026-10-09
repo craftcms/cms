@@ -89,17 +89,22 @@ it('updates dynamic navigation even when the client already has the tree', funct
         'X-Inertia-Version' => (string) Cp::vite()->manifestHash(),
     ];
 
+    $navLabels = fn (array $items): array => collect($items)
+        ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
+        ->pluck('label')
+        ->all();
+
     $initial = get($url, $headers)->assertOk()->json('props.craft.nav');
-    expect(array_column($initial, 'label'))->not->toContain('Review queue');
+    expect($navLabels($initial))->not->toContain('Review queue');
 
     $headers['X-Inertia-Except-Once-Props'] = 'craft.nav.'.(app(Navigation::class)->navSiteId() ?? 'all');
     $plugin->showQueue = true;
     $added = get($url, $headers)->assertOk()->json('props.craft.nav');
     expect($added)->toBeArray();
-    expect(array_column($added, 'label'))->toContain('Review queue');
+    expect($navLabels($added))->toContain('Review queue');
 
     $plugin->showQueue = false;
     $removed = get($url, $headers)->assertOk()->json('props.craft.nav');
     expect($removed)->toBeArray();
-    expect(array_column($removed, 'label'))->not->toContain('Review queue');
+    expect($navLabels($removed))->not->toContain('Review queue');
 })->with(['listener', 'wildcard listener', 'plugin']);
