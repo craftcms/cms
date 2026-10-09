@@ -22,6 +22,7 @@ import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
 import {registerWorkflowComponents} from '@/modules/workflows/register';
 import {registerLayoutComponents} from '@/common/layouts/register';
+import {useUnderlineLinks} from '@/common/composables/useUnderlineLinks';
 
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
@@ -51,6 +52,8 @@ export function installCpApp(app: App): void {
   app.component('AssetIndexes', AssetIndexes);
   app.component('SystemMessages', SystemMessages);
   app.component('CpLink', CpLink);
+
+  app.runWithContext(useUnderlineLinks);
 
   cpComponentRegistry.install(app);
   app.onUnmount(() => cpComponentRegistry.uninstall(app));

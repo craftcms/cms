@@ -43,6 +43,11 @@ pre {
 a {
   cursor: pointer;
   color: var(--c-text-link);
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover {
+  text-decoration-line: var(--c-link-hover-decoration);
 }
 
 /*

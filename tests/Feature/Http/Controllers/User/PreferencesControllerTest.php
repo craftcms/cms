@@ -215,3 +215,13 @@ test('update returns success message', function () {
             'message' => t('Preferences saved.'),
         ]);
 });
+
+test('the underline links preference is shared with every screen', function () {
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.underlineLinks', false));
+
+    patchJson(cp_url('myaccount/preferences'), ['underlineLinks' => true])->assertOk();
+
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.underlineLinks', true));
+});
