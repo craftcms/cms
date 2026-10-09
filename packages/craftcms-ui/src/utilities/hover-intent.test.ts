@@ -330,6 +330,33 @@ describe('safe area', () => {
     expect(trigger.open).toBe(false);
   });
 
+  it('drops a hover held on an ancestor once the pointer reaches its overlay', () => {
+    const ancestor = member(document.createElement('div'));
+    const trigger = member(
+      document.createElement('div'),
+      box(100, 200, 0, 100)
+    );
+
+    ancestor.element.append(trigger.element);
+    document.body.append(ancestor.element);
+
+    group.requestOpen(ancestor, {immediate: true});
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    group.requestClose(ancestor);
+
+    // The overlay renders inside the trigger, so arriving in it hovers the
+    // ancestor first, while the pointer is still in the safe area.
+    movePointer(60, 40);
+    group.requestOpen(ancestor);
+    group.requestOpen(trigger);
+    movePointer(150, 50);
+    vi.advanceTimersByTime(500);
+
+    expect(trigger.open).toBe(true);
+  });
+
   it('spares the trigger the pointer doubles back into', () => {
     const {trigger, neighbor} = aimedTree();
 
