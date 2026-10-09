@@ -4,11 +4,10 @@ import {
 } from '@actions/Settings/EntryTypesController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 
-// `Craft` and `$` (jQuery) remain page globals. The entry-type override editor
-// is a still-jQuery `Craft.Slideout` orchestrating server-rendered settings
-// HTML, so the same legacy seams the rest of the manager leans on survive here
-// (`Craft.sendActionRequest`, `Craft.Slideout`, `Craft.ui`,
-// `Craft.initUiElements`, `Craft.cp.displayError`).
+// `Craft` and `$` (jQuery) remain page globals; the settings form is
+// server-rendered HTML, so the legacy seams the rest of the manager leans on
+// survive here (`Craft.sendActionRequest`, `Craft.initUiElements`,
+// `Craft.cp.displayError`).
 declare const Craft: any;
 declare const $: any;
 
@@ -18,8 +17,7 @@ declare const $: any;
  * web-component `<craft-component-select>` path. POSTs the chip's current
  * `{id, group, name?, handle?, description?}` JSON to
  * the override-settings action route, opens a slideout with the returned
- * settings form — a Vue panel when the page has the Vue slideout stack, a
- * `Craft.Slideout` otherwise — and on submit applies the overrides back onto the
+ * settings form, and on submit applies the overrides back onto the
  * chip (label + indicators + hidden-input JSON) via {@link writeOverrides}.
  *
  * Self-contained and chip-local: overriding an entry type's name/handle/
@@ -57,21 +55,7 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
     throw e;
   }
 
-  if (Craft.openSlideout instanceof Function) {
-    await openVueSlideout(chip, data);
-    return;
-  }
-
-  const settingsNamespace = data.namespace;
-  const slideout = await createSlideout(data);
-
-  slideout.$container.on('submit', (ev: Event) => {
-    ev.preventDefault();
-    void applyOverrides(chip, slideout, settingsNamespace);
-  });
-  slideout.on('close', () => {
-    slideout.destroy();
-  });
+  await openVueSlideout(chip, data);
 }
 
 interface OverrideSettingsContext {
@@ -95,8 +79,8 @@ export function takeOverrideSettingsContext(
 }
 
 /**
- * Opens the overrides in a Vue slideout. The Vue side is imported on demand:
- * the manager also loads on legacy pages, which have no Vue slideout stack.
+ * Opens the overrides in a Vue slideout. The Vue side is imported on demand,
+ * since the manager also loads in the legacy bundle.
  */
 async function openVueSlideout(chip: HTMLElement, data: any): Promise<void> {
   const [{openSlideoutWith}, {default: EntryTypeOverrideSettings}] =
@@ -139,110 +123,6 @@ async function openVueSlideout(chip: HTMLElement, data: any): Promise<void> {
 
   if (!panel) {
     contexts.delete(contextId);
-  }
-}
-
-/** Build the override-settings `Craft.Slideout` (legacy `createSlideout`). */
-async function createSlideout(data: any): Promise<any> {
-  const $body = $('<div/>', {class: 'entry-type-override-settings-body'});
-  $('<div/>', {class: 'fields', html: data.settingsHtml}).appendTo($body);
-
-  const $footer = $('<div/>', {class: 'entry-type-override-settings-footer'});
-  $('<div/>', {class: 'flex-grow'}).appendTo($footer);
-  const $cancelBtn = Craft.ui
-    .createButton({label: Craft.t('app', 'Close'), spinner: true})
-    .appendTo($footer);
-  Craft.ui
-    .createSubmitButton({
-      class: 'secondary',
-      label: Craft.t('app', 'Apply'),
-      spinner: true,
-    })
-    .appendTo($footer);
-
-  const slideout = new Craft.Slideout($body.add($footer), {
-    containerElement: 'form',
-    containerAttributes: {
-      action: '',
-      method: 'post',
-      novalidate: '',
-      class: 'entry-type-override-settings',
-    },
-  });
-
-  slideout.on('open', () => {
-    // Hold off a frame until it's positioned, then focus the first text input.
-    requestAnimationFrame(() => {
-      slideout.$container.find('.text:first').focus();
-    });
-  });
-
-  $cancelBtn.on('click', () => {
-    slideout.close();
-  });
-
-  if (data.headHtml) {
-    await Craft.appendHeadHtml(data.headHtml);
-  }
-  if (data.bodyHtml) {
-    await Craft.appendBodyHtml(data.bodyHtml);
-  }
-
-  Craft.initUiElements(slideout.$container);
-
-  return slideout;
-}
-
-/** Submit the legacy panel's override form and apply the result to the chip. */
-async function applyOverrides(
-  chip: HTMLElement,
-  slideout: any,
-  settingsNamespace: string
-): Promise<void> {
-  const $submitBtn = slideout.$container
-    .find('button[type=submit]')
-    .addClass('loading');
-
-  // Clear any errors from a previous submit.
-  slideout.$container
-    .find('.field.has-errors')
-    .each((_i: number, field: HTMLElement) => {
-      const $field = $(field);
-      $field.removeClass('has-errors');
-      $field.children('.input').removeClass('errors prevalidate');
-      $field.children('ul.errors').remove();
-    });
-
-  try {
-    let data;
-
-    try {
-      data = await requestOverrides(
-        chip,
-        settingsNamespace,
-        slideout.$container.serialize()
-      );
-    } catch (e: any) {
-      const errors = e?.response?.data?.errors;
-      if (errors) {
-        Object.entries(errors).forEach(([name, fieldErrors]) => {
-          const $field = slideout.$container.find(`[data-error-key="${name}"]`);
-          if ($field.length) {
-            Craft.ui.addErrorsToField($field, fieldErrors);
-          }
-        });
-      }
-
-      Craft.cp.displayError(e?.response?.data?.message);
-      throw e;
-    }
-
-    writeOverrides(chip, data);
-
-    slideout.close();
-    slideout.destroy();
-  } finally {
-    $submitBtn.removeClass('loading');
   }
 }
 

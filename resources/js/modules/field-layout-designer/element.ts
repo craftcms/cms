@@ -1,9 +1,5 @@
 import {Base, hasAttr} from '@craftcms/garnish';
-import {FieldLayoutDesigner} from './field-layout-designer';
-import {
-  canUseVueSlideout,
-  openLayoutComponentSettings,
-} from './settings-slideout';
+import {openLayoutComponentSettings} from './settings-slideout';
 import {
   firstFocusableInSiblings,
   fldElementData,
@@ -35,7 +31,6 @@ export class Element extends Base {
   thumbable = false;
   hasCustomWidth = false;
   hasSettings = false;
-  slideout: any = null;
   defaultHandle: any = null;
   fieldId: any = null;
 
@@ -289,64 +284,15 @@ export class Element extends Base {
       config: this.config,
     });
 
-    if (canUseVueSlideout()) {
-      await openLayoutComponentSettings(data, {
-        title: this.settingsTitle(),
-        triggerElement: this.$actionBtn,
-        requestData,
-        // The panel owns Save/Cancel and reports errors from the rejection.
-        apply: (settings) => this.applyConfig(() => this.config, settings),
-      });
-
-      this.trigger('createSettings');
-
-      return;
-    }
-
-    this.slideout = await FieldLayoutDesigner.createSlideout(data, {
+    await openLayoutComponentSettings(data, {
+      title: this.settingsTitle(),
       triggerElement: this.$actionBtn,
       requestData,
-    });
-
-    // slideout.$container is a Craft jQuery object; bind on the native form.
-    this.addListener(this.slideout.$container[0], 'submit', (ev: any) => {
-      ev.preventDefault();
-      this.applySettings();
-    });
-    this.slideout.on('close', () => {
-      this.slideout.destroy();
-      this.slideout = null;
-    });
-
-    const $fieldsContainer =
-      this.slideout.$container[0].querySelector('.fields');
-
-    this.addListener($fieldsContainer, 'field-saved', (event) => {
-      if (event instanceof CustomEvent && event.detail?.selectorHtml) {
-        this.refreshField(String(event.detail.selectorHtml));
-      }
+      // The panel owns Save/Cancel and reports errors from the rejection.
+      apply: (settings) => this.applyConfig(() => this.config, settings),
     });
 
     this.trigger('createSettings');
-  }
-
-  async applySettings(): Promise<void> {
-    // update the UI
-    const $submitBtn = this.slideout.$container[0].querySelector(
-      'button[type=submit]'
-    );
-    $submitBtn?.classList.add('loading');
-
-    try {
-      await this.applyConfig(
-        () => this.config,
-        this.slideout.settingsUi?.currentValues() ?? {}
-      );
-    } catch {
-      // Errors are already shown in the slideout.
-    } finally {
-      $submitBtn?.classList.remove('loading');
-    }
   }
 
   /** The label shown in the settings panel's title bar. */
@@ -356,22 +302,6 @@ export class Element extends Base {
           label: this.getLabel(),
         })
       : t('Settings');
-  }
-
-  private refreshField(selectorHtml: string): void {
-    const designer = this.tab.designer;
-    const $oldSelector = designer.$fieldLibrary.querySelector(
-      `.fld-field[data-id=${this.fieldId}]`
-    );
-    const $newSelector = htmlToElement(selectorHtml);
-    $oldSelector?.replaceWith($newSelector);
-    designer.refreshLibraryFields();
-    designer.elementDrag!.removeItems($oldSelector);
-    designer.elementDrag!.addItems($newSelector);
-
-    designer.$tabContainer
-      .querySelectorAll(`.fld-field[data-id=${this.fieldId}]`)
-      .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
   }
 
   async makeRequired(): Promise<void> {
@@ -406,18 +336,11 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    settings: UiValues | null = null,
-    closeSlideout = true
+    settings: UiValues | null = null
   ): Promise<void> {
     const config = callback(this.config);
     if (config === false) {
       return;
-    }
-
-    const settingsUi = this.slideout?.settingsUi;
-
-    if (settings && settingsUi) {
-      settingsUi.errors = {};
     }
 
     let data;
@@ -436,13 +359,7 @@ export class Element extends Base {
       );
       data = response.data;
     } catch (e: any) {
-      const errors = e?.response?.data?.errors;
-
-      // The Vue panel renders its own errors from the rejection.
-      if (settings && settingsUi && errors) {
-        settingsUi.errors = errors;
-      }
-
+      // The settings panel renders field errors from the rejection.
       Craft.cp.displayError(e?.response?.data?.message);
       throw e;
     }
@@ -480,12 +397,6 @@ export class Element extends Base {
     designer.elementDrag!.removeItems($oldContainer);
     designer.elementDrag!.addItems($newContainer);
 
-    if (closeSlideout && this.slideout) {
-      this.slideout.close();
-      this.slideout.destroy();
-      this.slideout = null;
-    }
-
     if (this.config.providesThumbs) {
       // make sure this is the only one
       this.tab.designer.$tabContainer
@@ -503,7 +414,7 @@ export class Element extends Base {
   }
 
   async refresh(): Promise<void> {
-    await this.applyConfig((config: any) => config, null, false);
+    await this.applyConfig((config: any) => config);
   }
 
   get index(): number {
