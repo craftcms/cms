@@ -5,7 +5,6 @@
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {computed, h, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
-  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -129,7 +128,7 @@
               confirm: t('Are you sure you want to delete “{name}”?', {
                 name: row.original.title,
               }),
-              onClick: () => router.delete(destroy({fieldId: row.original.id})),
+              action: destroy({fieldId: row.original.id}),
             }),
           ]),
       }),

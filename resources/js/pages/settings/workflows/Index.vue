@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {router} from '@inertiajs/vue3';
   import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -51,7 +50,7 @@
           confirm: t('Are you sure you want to delete “{name}”?', {
             name: row.original.name,
           }),
-          onClick: () => router.delete(destroy({workflow: row.original.id})),
+          action: destroy({workflow: row.original.id}),
         }),
       ]),
     ])

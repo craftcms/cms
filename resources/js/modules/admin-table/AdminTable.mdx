@@ -1,6 +1,7 @@
 import {Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as AdminTableStories from './components/AdminTable.stories';
 import * as Recipes from './AdminTableRecipes.stories';
+import * as ReorderStories from '../../common/composables/useInertiaReorder.stories';
 
 <Meta title="Elements/AdminTable Guide" />
 
@@ -46,9 +47,17 @@ import {AdminTable, createCraftColumnHelper, useCraftTable} from '@craftcms/cp';
 | `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                                                                             |
 | types                     | `CraftTableOptions`, `CraftTableInertiaOptions`, `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
 
-For your own Inertia navigation (deleting, reordering), use the CP's router,
-`Cp.$router`, rather than one imported from your own `@inertiajs/vue3`. A
-second copy of the router isn't connected to the page the CP mounted.
+Don't import Inertia's router or `Link` from your own `@inertiajs/vue3`. A
+second copy isn't connected to the page the CP mounted. The table makes its own
+visits, `DeleteButton` and `useInertiaReorder` cover deleting and reordering,
+and `CpButtonLink` covers other links and actions; `method` and `data` pass
+through to Inertia's `Link`:
+
+```vue
+<CpButtonLink href="/admin/my-plugin/widgets/reset" method="post">
+  Reset
+</CpButtonLink>
+```
 
 ## A basic table
 
@@ -155,8 +164,10 @@ columnHelper.accessor('enabled', {
 
 ### Row actions
 
-Put per-row buttons in an `actions` column. `DeleteButton` emits `click`, and
-it can confirm first if you give it a `confirm` message:
+Put per-row buttons in an `actions` column. Give `DeleteButton` an `action`,
+a URL (sent as a `DELETE`) or a route, and it confirms with its `confirm`
+message, then makes that visit. `options` takes Inertia visit options, such as
+an `optimistic` update that drops the row before the server responds:
 
 ```ts
 import {h} from 'vue';
@@ -166,13 +177,18 @@ columnHelper.actions(({row}) => [
   h(DeleteButton, {
     label: `Delete ${row.original.name}`,
     confirm: `Are you sure you want to delete “${row.original.name}”?`,
-    onClick: () =>
-      Cp.$router.delete(`/admin/my-plugin/widgets/${row.original.id}`, {
-        preserveScroll: true,
+    action: `/admin/my-plugin/widgets/${row.original.id}`,
+    options: {
+      optimistic: ({widgets}: {widgets: Widget[]}) => ({
+        widgets: widgets.filter((w) => w.id !== row.original.id),
       }),
+    },
   }),
 ]);
 ```
+
+Without an `action`, it only emits `click`, for a button that does something
+else.
 
 ### Hiding columns
 
@@ -306,41 +322,28 @@ different props:
 ## Reordering
 
 `reorderable` adds a drag handle and keyboard move buttons to each row.
-`AdminTable` only emits `reorder(startIndex, finishIndex)`. Apply the move to
-your data and save it, then roll back if the save fails:
+`AdminTable` only emits `reorder(startIndex, finishIndex)`. `useInertiaReorder`
+returns a handler that moves the row in its page prop straight away and posts
+the new id order. Inertia puts the prop back if the save fails.
 
 ```ts
-const ids = ref(props.widgets.map((w) => w.id));
-const rows = computed(() =>
-  ids.value.map((id) => props.widgets.find((w) => w.id === id)!)
-);
+import {useInertiaReorder} from '@craftcms/cp';
 
-function onReorder(start: number, finish: number) {
-  const previous = ids.value;
-  const next = [...previous];
-  next.splice(finish, 0, ...next.splice(start, 1));
-  ids.value = next;
-
-  Cp.$router.post(
-    '/admin/my-plugin/widgets/reorder',
-    {ids: next},
-    {
-      preserveScroll: true,
-      preserveState: true,
-      onError: () => (ids.value = previous),
-    }
-  );
-}
+const onReorder = useInertiaReorder({
+  url: '/admin/my-plugin/widgets/reorder',
+  prop: 'widgets',
+});
 ```
 
 ```vue
 <AdminTable :table="table" reorderable @reorder="onReorder" />
 ```
 
-Build the table's `data` from `rows`. Reordering is turned off while the table
-is read-only.
+Read the table's `data` straight from that prop. The ids come from each row's
+`id` and post as `ids`; pass `key` and `param` to change either. Reordering is
+turned off while the table is read-only.
 
-<Canvas of={AdminTableStories.Reorderable} />
+<Canvas of={ReorderStories.Default} />
 
 ## Selection
 

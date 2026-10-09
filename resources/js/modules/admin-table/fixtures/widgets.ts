@@ -112,7 +112,7 @@ export function useWidgetPageProps(initial: Partial<WidgetQuery> = {}) {
   const response = computed(() => queryWidgets(query.value));
   const lastVisit = ref<RecordedVisit | null>(null);
 
-  const originalVisit = router.visit;
+  const originalVisit = router.visit.bind(router);
   router.visit = ((url, options = {}) => {
     const data = (options.data ?? {}) as Record<string, unknown>;
     lastVisit.value = {

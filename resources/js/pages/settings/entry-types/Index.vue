@@ -5,7 +5,6 @@
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -61,7 +60,7 @@
             'Are you sure you want to delete “{name}” and all entries of that type?',
             {name: row.original.title}
           ),
-          onClick: () => router.delete(destroy({entryType: row.original.id})),
+          action: destroy({entryType: row.original.id}),
         }),
       ]),
     ])

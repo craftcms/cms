@@ -47,6 +47,11 @@ export type {ActionItem, ActionItemLink} from './common/types';
 export {useAppLayout} from './common/composables/useAppLayout';
 
 export {
+  useInertiaReorder,
+  type InertiaReorderOptions,
+} from './common/composables/useInertiaReorder';
+
+export {
   useCustomizeSources,
   type CustomizeSourcesTarget,
 } from './modules/elements/index/composables/useCustomizeSources';
