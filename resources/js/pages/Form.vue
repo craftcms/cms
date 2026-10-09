@@ -2,7 +2,7 @@
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {computed, shallowRef, toRaw} from 'vue';
+  import {computed, provide, shallowRef, toRaw} from 'vue';
   import type {
     ActionItem,
     FormAction,
@@ -14,6 +14,7 @@
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {FormIsBareTable} from '@/modules/forms/runtime';
   import type {
     FormChange,
     FormChangeKind,
@@ -27,7 +28,8 @@
 
   const props = defineProps<{
     form: FormPayload;
-    submit: UrlMethodPair;
+    /** Omit for node-only screens with no form submission. */
+    submit?: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     formActions?: FormAction[];
@@ -36,6 +38,7 @@
     metadataHtml?: string;
     /** Controls for the details column, submitted alongside `form`. */
     sidebarForm?: FormPayload;
+    contentMaxWidth?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -52,51 +55,53 @@
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
   const elevatedFields = props.elevatedFields;
 
-  const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    onSaveShortcut: (event) => {
-      const action = submissionActions.value.find(
-        (item) =>
-          item.shortcut &&
-          !!item.shift === event.shiftKey &&
-          !item.hidden &&
-          !item.disabled
-      );
+  const save = props.submit
+    ? useSettingsSave(inertiaForm, () => props.submit!, {
+        onSaveShortcut: (event) => {
+          const action = submissionActions.value.find(
+            (item) =>
+              item.shortcut &&
+              !!item.shift === event.shiftKey &&
+              !item.hidden &&
+              !item.disabled
+          );
 
-      if (action) {
-        submitAction(action);
-      } else if (!event.shiftKey) {
-        save({redirect: false});
-      }
-    },
-    transform: currentValues,
-    onSuccess: () => {
-      elevatedBaseline.value = structuredClone(currentValues());
-      advanceBaseline();
-      advanceSidebarBaseline();
-    },
-    passwordConfirmation: elevatedFields
-      ? {
-          required: () => {
-            const values = currentValues();
-            const fields =
-              elevatedFields === '*'
-                ? [
-                    ...new Set([
-                      ...Object.keys(elevatedBaseline.value),
-                      ...Object.keys(values),
-                    ]),
-                  ]
-                : elevatedFields;
+          if (action) {
+            submitAction(action);
+          } else if (!event.shiftKey) {
+            save?.({redirect: false});
+          }
+        },
+        transform: currentValues,
+        onSuccess: () => {
+          elevatedBaseline.value = structuredClone(currentValues());
+          advanceBaseline();
+          advanceSidebarBaseline();
+        },
+        passwordConfirmation: elevatedFields
+          ? {
+              required: () => {
+                const values = currentValues();
+                const fields =
+                  elevatedFields === '*'
+                    ? [
+                        ...new Set([
+                          ...Object.keys(elevatedBaseline.value),
+                          ...Object.keys(values),
+                        ]),
+                      ]
+                    : elevatedFields;
 
-            return fields.some(
-              (field) =>
-                normalize(values[field]) !==
-                normalize(elevatedBaseline.value[field])
-            );
-          },
-        }
-      : undefined,
-  });
+                return fields.some(
+                  (field) =>
+                    normalize(values[field]) !==
+                    normalize(elevatedBaseline.value[field])
+                );
+              },
+            }
+          : undefined,
+      }).save
+    : undefined;
 
   function isSubmissionAction(
     action: FormAction
@@ -137,6 +142,7 @@
 
   function submitAction(action: FormSubmissionAction): void {
     if (
+      !save ||
       inertiaForm.processing ||
       action.hidden ||
       action.disabled ||
@@ -165,8 +171,19 @@
     });
   }
 
+  const isBareTable = computed(() => {
+    const [node, ...rest] = props.form.nodes;
+    return (
+      rest.length === 0 &&
+      node?.component === 'craft:admin-table' &&
+      node.props.bordered === false
+    );
+  });
+
+  provide(FormIsBareTable, isBareTable);
+
   useAppLayout(() => ({
-    form: inertiaForm,
+    form: props.submit ? inertiaForm : null,
     defaultFormActions: submissionActions.value.some(
       (action) =>
         !action.hidden &&
@@ -176,7 +193,7 @@
       ? []
       : props.defaultFormActions,
     formActions: translatedFormActions.value,
-    contentMaxWidth: true,
+    contentMaxWidth: props.contentMaxWidth ?? true,
     onSave: save,
   }));
 
@@ -224,27 +241,35 @@
 </script>
 
 <template>
-  <form @submit.prevent="save()">
-    <CpContainer>
-      <craft-field-group class="py-4">
-        <FormRenderer
-          ref="renderer"
-          :payload="form"
-          :refresh="refreshUrl ? refresh : undefined"
-          :errors="errors"
-          @update:mutation="onMutation"
-          @change="onChange"
+  <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
+    <component :is="isBareTable ? 'div' : CpContainer">
+      <component
+        :is="isBareTable ? 'div' : 'craft-pane'"
+        v-bind="isBareTable ? {} : {appearance: 'raised'}"
+      >
+        <component
+          :is="isBareTable ? 'div' : 'craft-field-group'"
+          v-bind="isBareTable ? {} : {class: 'py-4'}"
         >
-          <template
-            v-for="(_, slotName) in $slots"
-            :key="slotName"
-            #[slotName]="slotProps"
+          <FormRenderer
+            ref="renderer"
+            :payload="form"
+            :refresh="refreshUrl ? refresh : undefined"
+            :errors="errors"
+            @update:mutation="onMutation"
+            @change="onChange"
           >
-            <slot :name="slotName" v-bind="slotProps" />
-          </template>
-        </FormRenderer>
-      </craft-field-group>
-    </CpContainer>
+            <template
+              v-for="(_, slotName) in $slots"
+              :key="slotName"
+              #[slotName]="slotProps"
+            >
+              <slot :name="slotName" v-bind="slotProps" />
+            </template>
+          </FormRenderer>
+        </component>
+      </component>
+    </component>
     <MetadataDetails :html="metadataHtml">
       <template v-if="sidebarForm" #default>
         <craft-field-group>
@@ -257,5 +282,5 @@
         </craft-field-group>
       </template>
     </MetadataDetails>
-  </form>
+  </component>
 </template>

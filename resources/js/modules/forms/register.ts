@@ -43,6 +43,7 @@ import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
+import AdminTableNode from './AdminTableNode.vue';
 import UserGroupSelectControl from './UserGroupSelectControl.vue';
 import './content-block-input';
 
@@ -87,6 +88,7 @@ export function registerFormComponents(
   components.register('craft:user-group-select', UserGroupSelectControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
+  components.register('craft:admin-table', AdminTableNode);
   components.register('craft:table-columns', TableColumnsControl);
   components.register('craft:link', LinkControl);
   components.register('craft:address', AddressControl);

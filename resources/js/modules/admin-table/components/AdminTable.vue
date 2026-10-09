@@ -1,6 +1,8 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
   import type {Table} from '@tanstack/vue-table';
   import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+  import type {BulkAction} from '@/modules/elements/types/actions';
+  import AdminTableBulkActionsBar from './AdminTableBulkActionsBar.vue';
   import DataTable from '@/common/components/DataTable.vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import {usePage} from '@inertiajs/vue3';
@@ -12,6 +14,13 @@
       table: Table<CraftTableFeatures, TData>;
       title?: string;
       reorderable?: boolean;
+      selectable?: boolean;
+      actions?: Array<BulkAction> | null;
+      statuses?: Array<BulkAction> | null;
+      idsField?: string;
+      elementType?: string;
+      source?: string | null;
+      context?: string;
       readOnly?: boolean;
       loading?: boolean;
       layout?: 'auto' | 'fixed';
@@ -19,14 +28,20 @@
       from?: number;
       to?: number;
       total?: number;
+      showFooter?: boolean;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
     }>(),
     {
       reorderable: false,
+      selectable: false,
+      actions: () => [],
+      source: null,
+      context: 'index',
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
+      showFooter: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
     }
@@ -37,12 +52,36 @@
   );
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
+    'action-performed': [];
   }>();
-  const showFooter = computed(
+  const selectedIds = computed(() =>
+    props.table.getSelectedRowModel().rows.map((row) => row.original.id)
+  );
+  const showBulkActions = computed(
     () =>
-      props.enableAdjustPageSize ||
-      (props.total ?? 0) > 0 ||
-      props.table.getPageCount() > 1
+      props.selectable &&
+      !readOnly.value &&
+      selectedIds.value.length > 0 &&
+      ((props.actions?.length ?? 0) > 0 || (props.statuses?.length ?? 0) > 0)
+  );
+  const actionContext = computed(() => ({
+    elementType: props.elementType,
+    source: props.source,
+    context: props.context,
+  }));
+
+  function onActionPerformed() {
+    props.table.resetRowSelection();
+    emit('action-performed');
+  }
+
+  const footerVisible = computed(
+    () =>
+      props.showFooter &&
+      (showBulkActions.value ||
+        props.enableAdjustPageSize ||
+        (props.total ?? 0) > 0 ||
+        props.table.getPageCount() > 1)
   );
 </script>
 
@@ -60,6 +99,7 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
+        :with-bottom-border="!footerVisible"
         @reorder="(start, end) => emit('reorder', start, end)"
       >
         <template #empty-row v-if="$slots['empty-row']"
@@ -67,8 +107,20 @@
         /></template>
       </DataTable>
     </div>
-    <div class="admin-table__footer" v-if="showFooter">
+    <div class="admin-table__footer" v-if="footerVisible">
+      <AdminTableBulkActionsBar
+        v-if="showBulkActions"
+        :selected-ids="selectedIds"
+        :actions="actions"
+        :statuses="statuses"
+        :ids-field="idsField"
+        :element-type="elementType"
+        :action-context="actionContext"
+        @performed="onActionPerformed"
+        @clear="table.resetRowSelection()"
+      />
       <PaginationControls
+        v-else
         :page-index="table.atoms.pagination.get().pageIndex"
         :page-size="table.atoms.pagination.get().pageSize"
         :page-count="table.getPageCount()"

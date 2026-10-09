@@ -17,6 +17,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
+use Workbench\App\Http\Controllers\TableNodeController;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
 use Workbench\App\Workflow\AutomaticApprovalStage;
@@ -80,6 +81,17 @@ class WorkbenchServiceProvider extends ServiceProvider
                 ->label('Layout Slots')
                 ->href('workbench/layout-slots')
                 ->icon('table-layout');
+
+            $event->navItems[] = new NavItem()
+                ->label('Table Node')
+                ->href('workbench/table')
+                ->icon('table')
+                ->subnav(collect(TableNodeController::STORIES)
+                    ->map(fn (string $label, string $story) => new NavItem()
+                        ->label($label)
+                        ->href("workbench/table/{$story}"))
+                    ->values()
+                    ->all());
         });
     }
 }
