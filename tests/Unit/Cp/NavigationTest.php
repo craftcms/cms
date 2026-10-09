@@ -315,7 +315,10 @@ it('lists ungrouped plugin nav items before grouped ones', function () {
         cpSettings(),
     );
 
-    $labels = collect($navigation->getTree())->pluck('label')->all();
+    $labels = collect($navigation->getTree())
+        ->flatMap(fn (NavItem $item) => $item->label === 'Content' ? $item->subnav : [$item])
+        ->pluck('label')
+        ->all();
 
     expect(array_values(array_intersect($labels, ['Shop', 'Bookings', 'Newsletter'])))
         ->toBe(['Bookings', 'Newsletter', 'Shop']);
@@ -353,7 +356,7 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
         cpSettings(),
     );
 
-    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getTree(), 'Entries');
     $children = collect($entries->subnav);
 
     expect($children->pluck('label')->all())->toBe(['Singles', 'Channels'])
@@ -397,7 +400,7 @@ it('drops a heading whose members all turned out to be unusable', function () {
         cpSettings(),
     );
 
-    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getTree(), 'Entries');
 
     // A heading standing over nothing is worse than no heading.
     expect($entries->subnav)->toBe([]);
@@ -538,7 +541,7 @@ it('leaves a source addressed by query to requests that ask for it', function (s
         cpSettings(),
     );
 
-    $entries = collect($navigation->getItems())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getItems(), 'Entries');
 
     expect($entries->selected)->toBeTrue()
         ->and(collect($entries->subnav)->where('selected', true)->pluck('label')->all())
