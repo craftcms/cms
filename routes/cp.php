@@ -442,15 +442,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // Volumes
         Route::prefix('settings/assets')->group(function () {
-            Route::get('/', [VolumesController::class, 'index']);
+            Route::get('/', [VolumesController::class, 'index'])->name('settings.assets.volumes.index');
 
-            Route::prefix('volumes')->group(function () {
-                Route::middleware(RequireAdminChanges::class)->get('new', [VolumesController::class, 'create']);
-                Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+            Route::prefix('volumes')->name('settings.assets.volumes.')->group(function () {
+                Route::middleware(RequireAdminChanges::class)->get('new', [VolumesController::class, 'create'])->name('create');
+                Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId')->name('edit');
 
                 Route::middleware(RequireAdminChanges::class)->group(function () {
                     Route::post('ui', [VolumesController::class, 'renderUi']);
-                    Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
+                    Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId')->name('destroy');
                     Route::post('/', [VolumesController::class, 'store']);
                 });
             });

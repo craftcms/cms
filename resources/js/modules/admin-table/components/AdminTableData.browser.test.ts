@@ -1,10 +1,9 @@
-import {createApp, effectScope, h, nextTick, ref} from 'vue';
+import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import AdminTable from './AdminTable.vue';
 import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
 import {actionClient} from '@craftcms/ui';
 import type {TableProps} from '@/modules/ui/table-types';
-import {useAdminTable} from '../useAdminTable';
 import type {
   AdminTableHandle,
   AdminTablePage,
@@ -186,6 +185,16 @@ function rowNames(host: HTMLElement) {
       ?.textContent?.trim()
   );
 }
+async function moveFirstRowDown(host: HTMLElement) {
+  const handle = host.querySelector<
+    HTMLElementTagNameMap['craft-reorder-button']
+  >('tbody craft-reorder-button')!;
+  await handle.updateComplete;
+  await handle.shadowRoot!.querySelector('craft-action-menu')!.show();
+  Array.from(handle.shadowRoot!.querySelectorAll('craft-action-item'))
+    .find((item) => item.textContent?.trim() === 'Move down')!
+    .click();
+}
 function result(
   name: string,
   page = 1
@@ -307,21 +316,40 @@ it('deletes through a row-specific resource route without offering bulk deletion
   expect(post).not.toHaveBeenCalled();
 });
 
-it('saves static ordering as an array of row IDs', async () => {
+it('rolls back a refused static reorder and saves array IDs after a retry', async () => {
+  const displayError = vi.fn();
+  vi.stubGlobal('Craft', {cp: {displayError}});
+  let rejectReorder!: (error: unknown) => void;
   const post = vi
     .spyOn(actionClient, 'post')
+    .mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectReorder = reject;
+        })
+    )
     .mockResolvedValue({data: {}} as never);
   const host = mountNode({reorderUrl: '/settings/reorder'});
-  const handle = host.querySelector('craft-reorder-button')!;
-  await handle.updateComplete;
-  handle
-    .shadowRoot!.querySelector<HTMLElement>('[data-action="moveDown"]')!
-    .click();
+  await moveFirstRowDown(host);
 
   await vi.waitFor(() =>
     expect(post).toHaveBeenCalledWith('/settings/reorder', {ids: [2, 1]})
   );
   expect(rowNames(host)).toEqual(['Alpha', 'Beta']);
+  expect(reload).not.toHaveBeenCalled();
+
+  rejectReorder(new Error('Failed to save'));
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Beta', 'Alpha']));
+  await vi.waitFor(() =>
+    expect(displayError).toHaveBeenCalledWith('Couldn’t reorder.')
+  );
+  expect(reload).not.toHaveBeenCalled();
+  await moveFirstRowDown(host);
+
+  await vi.waitFor(() => expect(reload).toHaveBeenCalledOnce());
+  expect(rowNames(host)).toEqual(['Alpha', 'Beta']);
+  expect(post).toHaveBeenCalledTimes(2);
+  expect(post).toHaveBeenLastCalledWith('/settings/reorder', {ids: [2, 1]});
 });
 
 it('retains bulk selection when deletion is refused and removes the rows after a retry', async () => {
@@ -409,8 +437,9 @@ it('uses independent endpoints and confirmations for row and bulk deletion', asy
   expect(confirmDelete).toHaveBeenLastCalledWith('Delete these records?');
 });
 
-it('filters rows by status and search and clears selection when the view changes', async () => {
-  const {host, handle} = mountTable();
+it('filters rows by status and search, clears selection, and restores manual ordering when filters are cleared', async () => {
+  const {host, handle} = mountTable({reorderable: true});
+  expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
   host
     .querySelector('tbody tr')!
     .dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
@@ -420,6 +449,7 @@ it('filters rows by status and search and clears selection when the view changes
   await setControl(host, 'craft-select-rich', 'enabled');
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Beta']));
   expect(handle.value?.selectedIds).toEqual([]);
+  expect(host.querySelector('tbody craft-reorder-button')).toBeNull();
 
   await setControl(host, 'craft-input[name="search"]', 'alpha');
   await vi.waitFor(() =>
@@ -430,6 +460,11 @@ it('filters rows by status and search and clears selection when the view changes
 
   await setControl(host, 'craft-select-rich', '');
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Alpha']));
+  expect(host.querySelector('tbody craft-reorder-button')).toBeNull();
+
+  await setControl(host, 'craft-input[name="search"]', '');
+  expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
+  expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
 });
 
 it('restores existing status, sorting, and column preferences while keeping the first column visible', async () => {
@@ -440,7 +475,7 @@ it('restores existing status, sorting, and column preferences while keeping the 
     `${prefix}.columns`,
     '{"visible":[],"hidden":["count"]}'
   );
-  const {host} = mountTable({storageKey: 'settings'});
+  const {host} = mountTable({storageKey: 'settings', reorderable: true});
   await nextTick();
 
   expect(rowNames(host)).toEqual(['Beta']);
@@ -448,6 +483,11 @@ it('restores existing status, sorting, and column preferences while keeping the 
   await setControl(host, 'craft-select-rich', '');
   expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
   expect(localStorage.getItem(`${prefix}.status`)).toBe('');
+  expect(host.querySelector('tbody craft-reorder-button')).toBeNull();
+
+  host.querySelector<HTMLButtonElement>('thead th button')!.click();
+  await nextTick();
+  expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
 });
 
 it('loads the requested page and returns to page one when the page size changes', async () => {
@@ -498,52 +538,6 @@ it('ignores superseded responses and aborts an unfinished load on unmount', asyn
   teardown = undefined;
   expect(pending[2]!.signal.aborted).toBe(true);
   pending[2]!.resolve(result('Unmounted'));
-});
-
-it('rolls back a failed reorder and prevents reorder while sorting or filtering', async () => {
-  const scope = effectScope();
-  teardown = () => scope.stop();
-  const state = scope.run(() =>
-    useAdminTable(
-      {
-        rows: records,
-        columns,
-        pageSize: 100,
-        pageSizeOptions: [100],
-        statusFilterOptions: [],
-        columnsToggleable: false,
-        hiddenColumnsByDefault: [],
-        reorderable: true,
-        selectable: true,
-      },
-      () => {}
-    )
-  )!;
-  let rejectMove!: (reason: Error) => void;
-  const perform = vi.fn(
-    () =>
-      new Promise<void>((_resolve, reject) => {
-        rejectMove = reject;
-      })
-  );
-  const moving = state.reorder(0, 1, perform);
-  const failed = expect(moving).rejects.toThrow('Failed to save');
-  await nextTick();
-  expect(
-    state.table.getRowModel().rows.map((row) => row.original.name)
-  ).toEqual(['Alpha', 'Beta']);
-  rejectMove(new Error('Failed to save'));
-  await failed;
-  expect(
-    state.table.getRowModel().rows.map((row) => row.original.name)
-  ).toEqual(['Beta', 'Alpha']);
-
-  state.viewSortField.value = 'name';
-  await state.reorder(0, 1, perform);
-  state.viewSortField.value = '';
-  state.search.value = 'Beta';
-  await state.reorder(0, 1, perform);
-  expect(perform).toHaveBeenCalledOnce();
 });
 
 it('adapts node endpoint requests and renders serialized cells in the shared table', async () => {
