@@ -39,7 +39,17 @@ Use the `after` pair when you need the popover to have actually settled — movi
 
 Lion supplies the overlay behavior, including dismissal and the wiring between invoker and content.
 
-Because it is non-modal, focus is not trapped. That is the point, but it means a popover holding interactive content should place focus deliberately when it opens and return it to the invoker when it closes — otherwise a keyboard user is left where they were, with the popover open somewhere else.
+Make the invoker a real button — a `<button>` or `craft-button`. The popover accepts any element as its invoker, but only a button is focusable and activates with Enter and Space.
+
+Set `label` to name the panel. Lion's dropdown config still gives the panel `role="dialog"`, and without a label it is announced as an unnamed dialog.
+
+With `without-invoker-aria`, the popover leaves `aria-expanded` off its invoker, so put that state on the control that actually opens it.
+
+Opening a popover does not move focus. With a slotted invoker the panel follows it in the Tab order; with `for` or `anchor`, the panel sits wherever the `<craft-popover>` element does, so place it directly after the trigger.
+
+In a navigation panel, mark the link to the current page with `aria-current="page"`.
+
+The popover opens on click only. If you add hover opening, the content must then be dismissible, hoverable and persistent, as WCAG 1.4.13 (Content on Hover or Focus) requires.
 
 ## Properties
 

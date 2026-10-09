@@ -58,16 +58,19 @@ wrapper to fine-tune it.
   `aria-label`. Without one, it has no role or name and is skipped by assistive
   technology.
 - A status dot conveys meaning through color alone, so set `label` whenever the
-  indicator isn't purely decorative. If it only repeats adjacent visible text,
-  it's fine to leave `label` unset.
+  indicator isn't purely decorative, and always when the dot is the only cue
+  for a status, as with an element chip's status dot. If it only repeats
+  adjacent visible text, it's fine to leave `label` unset.
 - A `label` only reaches screen-reader users. Sighted users still tell the
   status apart by color alone, which fails WCAG 1.4.1 Use of Color, so pair a
   meaningful dot with visible text that names the status. A tooltip isn't
-  enough, because it only appears on hover or focus.
+  enough, because it only appears on hover or focus. Varying `appearance`
+  (`solid` or `outline`) also helps, since it changes the dot's shape.
 - A `solid` dot has no ring, so it relies on its fill for contrast. The palette
   and variant fills reach 3:1 on the default, sunken and selected-row surfaces,
-  but not on a loud fill such as a highlighted option. Check any arbitrary
-  color against the surface it sits on.
+  but not on a loud fill such as a highlighted option. Check any custom color
+  passed to `fill`, such as a plugin's status color, reaches 3:1 against the
+  surface it sits on.
 
 ## Styling
 

@@ -28,9 +28,9 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [x] Focus follows the selection: the tab an arrow, Home, or End key selects also receives focus. Per WCAG 2.4.3 (Focus Order). Verified by `moves focus with the selection` in `tabs.browser.test.ts`, and by the arrow and Home/End cases in `tabs.test.ts` for external-panel mode.
 - [x] Navigation skips disabled tabs and tabs collapsed into the overflow menu. Per WCAG 2.1.1 (Keyboard). Verified by `skips disabled tabs when navigating, and refuses to select one` and `arrows past collapsed tabs` in `tabs.test.ts`, and the `Disabled` story.
 - [ ] Selecting a tab shows its panel without a noticeable delay, as automatic activation requires. A panel that loads its content shows a loading state straight away rather than holding the switch. Not yet verified.
-- [x] The tablist comes directly before the panels it controls in the DOM, so reading order and focus order run from the tablist into the selected panel. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Slotted mode puts the tablist first. In external-panel mode the consumer places the panels: `Tabs.mdx` documents the requirement, the `ExternalPanels` story asserts it, and `FormRenderer.test.ts` asserts it for the field-layout tabs. One untested edge case: a field layout that mixes a tab without a `uid` ahead of saved tabs would render that tab's fields between the tablist and the panels (`FieldLayoutCompiler.php`). Nothing in core builds such a layout.
+- [x] The tablist comes directly before the panels it controls in the DOM, so reading order and focus order run from the tablist into the selected panel. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Slotted mode puts the tablist first. Verified in external-panel mode by the `ExternalPanels` story.
 - [x] A keyboard-focused tab shows a solid ring at least 2px wide, at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `rings a keyboard-focused tab at 3:1 against the surface` in `tabs.browser.test.ts`.
-- [x] A focused panel's ring is drawn inside the panel, so the scrolling panel region doesn't clip it. The inset applies only to slotted panels, which sit in the strip's own scroll region. External panels keep the default outset ring, and a consumer that puts them in a scroll container insets the ring there, as `DetailsPanels.vue` does. Per WCAG 2.4.7 (Focus Visible). Verified by `keeps a focused panel’s ring inside the scrolling panel region` in `tabs.browser.test.ts`.
+- [x] A focused panel's ring is drawn inside the panel, so the scrolling panel region doesn't clip it. The inset applies only to slotted panels, which sit in the strip's own scroll region. External panels keep the default outset ring. Per WCAG 2.4.7 (Focus Visible). Verified by `keeps a focused panel’s ring inside the scrolling panel region` in `tabs.browser.test.ts`.
 
 ### Visual
 
@@ -54,9 +54,16 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
       asserts the region scrolled.
 - [x] The tab strip stays in place while the panels scroll, so the tablist
       never scrolls out of reach of someone reading the far end of a long
-      panel. Per WCAG 2.4.3 (Focus Order). Verified by the same case, which
-      asserts the strip hasn't moved once the panel has scrolled.
+      panel. Per WCAG 2.4.3 (Focus Order). Verified by
+      `scrolls its panels from the keyboard, leaving the strip in place` in
+      `tabs.browser.test.ts`, which asserts the strip hasn't moved once the
+      panel has scrolled.
 - [x] Under a host with no height of its own the panels grow instead of
       scrolling, so nothing is clipped or lost when the page is reflowed or
       zoomed. Per WCAG 1.4.10 (Reflow). Verified by `tabs.browser.test.ts`'s
       unbounded-host case.
+
+## Depends on usage
+
+- 1.3.2 (Meaningful Sequence): place external panels directly after the tablist. See [Accessibility](./Tabs.mdx#accessibility).
+- 2.4.7 (Focus Visible): inset the ring of external panels inside a scroll container. See [Accessibility](./Tabs.mdx#accessibility).

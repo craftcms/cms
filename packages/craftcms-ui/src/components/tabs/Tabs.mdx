@@ -66,7 +66,7 @@ A panel doesn't have to be slotted into the strip. A [Tab](?path=/docs/component
 
 <Canvas of={TabsStories.ExternalPanels} sourceState="shown" />
 
-To follow the WAI-ARIA APG tabs pattern, an external panel still has to be next in the DOM: place the panels immediately after `<craft-tabs>`, with no content between them and the tablist. Screen reader users read from the tabs straight into the selected panel, and <kbd>Tab</kbd> moves from the selected tab into it.
+An external panel still has to come next in the DOM. See [Accessibility](#accessibility).
 
 If the triggers and the content need to live in different parts of the page, such as buttons in a toolbar and panels in a pane, they aren't tabs. Use a [Disclosure](?path=/docs/components-disclosure--docs) for each one instead.
 
@@ -87,6 +87,11 @@ Three things stay with you:
 - **Name the strip.** `label` is required: set it to what the tabs switch between, such as "Entry settings". A strip without one logs an error, and the PHP `Tabs` component throws. The tablist is in the shadow root, so `aria-labelledby` on the host can't reach it.
 - **Keep labels short.** They sit in a strip, and a long label is what pushes a tab into the overflow menu.
 - **Do not use tabs to hide required form fields.** A validation error in a panel nobody has opened is an error nobody can find.
+
+With external panels, two more:
+
+- **Put the panels right after the strip.** To follow the WAI-ARIA APG tabs pattern, place the panels immediately after `<craft-tabs>`, with no content between them and the tablist. Screen reader users read from the tabs straight into the selected panel, and <kbd>Tab</kbd> moves from the selected tab into it.
+- **Inset the focus ring in a scroll container.** External panels keep the default outset focus ring. If you put them in a scroll container, inset the ring there so the container doesn't clip it, as `DetailsPanels.vue` does.
 
 ## Properties
 
