@@ -4,10 +4,11 @@
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
+  import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {
-    appendIndexQuery,
-    type ElementIndexRoute,
-  } from '@/modules/elements/index/composables/useElementIndexVisits';
+    sourcesLandingUrl,
+    type SourcesLanding,
+  } from '@/modules/elements/index/composables/useCustomizeSources';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
@@ -86,37 +87,13 @@
   /**
    * Starts the index over after the sources are saved — everything it shows,
    * and the nav's list of them, comes from them — landing on the source the
-   * modal picked. The server's link for it is the nav's own, so the nav
-   * highlights it; without one, the source is named in the query.
+   * modal picked.
    *
    * An Inertia visit rather than a reload, so the page stays on screen while
    * the new one loads.
    */
-  function onSourcesSaved(landing: {
-    sourceKey: string | null;
-    url: string | null;
-  }): void {
-    router.visit(landingUrl(landing));
-  }
-
-  function landingUrl(landing: {
-    sourceKey: string | null;
-    url: string | null;
-  }): string {
-    if (landing.url) {
-      return landing.url;
-    }
-
-    if (landing.sourceKey === null) {
-      return window.location.href;
-    }
-
-    const site = new URLSearchParams(window.location.search).get('site');
-    const query = {source: landing.sourceKey, site: site ?? undefined};
-
-    return props.sourceHref
-      ? appendIndexQuery(props.sourceHref, query)
-      : props.route.url(query);
+  function onSourcesSaved(landing: SourcesLanding): void {
+    router.visit(sourcesLandingUrl(landing, props.route, props.sourceHref));
   }
 
   function actionRow(detail: BulkActionEventDetail) {
