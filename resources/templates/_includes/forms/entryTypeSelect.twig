@@ -1,0 +1,47 @@
+{# Renders an entry type select from the legacy entryTypeSelect variables (the
+   componentSelect variables, plus `allowOverrides`, `includeGroupInValues` and
+   `create`). The mapping lives in FormFields::entryTypeSelectFromConfig(); only
+   the `jsClass` escape hatch is rendered here. #}
+
+{% if not (jsClass ?? false) %}
+  {{- craft.cp.entryTypeSelect(_context)|raw }}
+{% else %}
+{% set allowOverrides = allowOverrides ?? false %}
+
+{% embed '_includes/forms/componentSelect/legacy' with {
+  options: options ?? EntryTypes.getAllEntryTypes(),
+  showHandles: true,
+  showIndicators: showIndicators ?? allowOverrides,
+  showDescription: showDescription ?? allowOverrides,
+  createAction: (create ?? false) ? cpUrl('settings/entry-types/new') : null,
+  jsSettings: {
+    allowOverrides,
+  }|merge(jsSettings ?? {}),
+} %}
+  {% block chips %}
+    {% for entryType in values %}
+      {% set overrides = allowOverrides ? {
+        name: entryType.original and entryType.name != entryType.original.name ? entryType.name : null,
+        handle: entryType.original and entryType.handle != entryType.original.handle ? entryType.handle : null,
+        description: entryType.original and entryType.description != entryType.original.description ? entryType.description : null,
+      }|filter : {} %}
+      <li>
+        {% set chip = chip(entryType, {
+          inputName: inputName ?? name ?? null,
+          inputValue: allowOverrides ? {
+            id: entryType.id,
+            group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
+          }|filter|merge(overrides)|json_encode : null,
+          showActionMenu: showActionMenus,
+          showHandle: showHandles,
+          showIndicators: showIndicators,
+          showDescription: showDescription,
+          hyperlink: hyperlinks,
+          overrides,
+        }) %}
+        {{ chip|raw }}
+      </li>
+    {% endfor %}
+  {% endblock %}
+{% endembed %}
+{% endif %}

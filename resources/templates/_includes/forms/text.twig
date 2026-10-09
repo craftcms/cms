@@ -1,0 +1,17 @@
+{# Renders a <craft-input> web component from the legacy text input variables
+   (`type`, `id`, `class`, `size`, `name`, `value`, `maxlength`, `autofocus`,
+   `autocomplete`/`autocorrect`/`autocapitalize`, `disabled`, `readonly`,
+   `title`, `placeholder`, `step`/`min`/`max`, `inputmode`, `orientation`,
+   `role`/`expanded`, `suffix`/`unit`, `descriptionId`, `showCharsLeft`,
+   `labelledBy`/`describedBy`, `inputAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in FormFields::textFromConfig(); the
+   native input renders in the light DOM as the component's form control, and
+   the suffix/unit renders into the component's `suffix` slot. #}
+
+{%- set inputAttributes = inputAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{- craft.cp.text(_context)|raw -}}

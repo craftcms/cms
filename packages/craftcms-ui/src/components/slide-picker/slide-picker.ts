@@ -1,0 +1,235 @@
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
+import {property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
+import {FormAssociated} from '@src/mixins/FormAssociated';
+import {t} from '@src/utilities/translate';
+import styles from './slide-picker.styles.js';
+
+/**
+ * @summary Segmented slider control for selecting numeric values in fixed steps.
+ * @since 1.0
+ *
+ * @attr {string} name - Field name. The control posts under this, like any
+ * other input. Supplied by the `FormAssociated` mixin.
+ * @attr {boolean} disabled - Whether the control responds to input. A disabled
+ * control is left out of form submission. Supplied by the `FormAssociated`
+ * mixin.
+ *
+ * @fires input - Emitted on every alteration to the value.
+ * @fires change - Emitted when an alteration to the value is committed by the
+ * user. Every alteration is a commit here, so it follows each `input`.
+ */
+export default class CraftSlidePicker extends FormAssociated(LitElement) {
+  static override styles = [styles];
+
+  /** Lowest selectable value. */
+  @property({type: Number}) min = 0;
+  /** Highest selectable value. */
+  @property({type: Number}) max = 100;
+  /** Spacing between selectable values. */
+  @property({type: Number}) step = 10;
+  /** The currently selected value. */
+  @property({type: Number}) value = 0;
+  /** Accessible name for the slider. */
+  @property() label = t('Number of columns');
+  /**
+   * Id of the element describing the control, applied as `aria-describedby`.
+   * `craft-field` supplies this for you.
+   */
+  @property({attribute: 'described-by'}) describedBy?: string;
+  /**
+   * Unit appended to the announced value — `columns`, `px`. Without one a
+   * bare number is all a screen reader gets.
+   */
+  @property({attribute: 'value-unit'}) valueUnit = '';
+  /**
+   * Formats the announced value, for when a number and a unit are not enough.
+   * A property rather than an attribute, so bind it with `.valueLabel`.
+   */
+  @property({attribute: false}) valueLabel?: (value: number) => string;
+  /**
+   * Renders the current value without allowing it to be changed. Spelled the
+   * way HTML spells it, and the way the other controls do. A read-only control
+   * still posts its value; a `disabled` one does not.
+   */
+  @property({type: Boolean, reflect: true}) readonly = false;
+
+  /** Whether the control responds to input. */
+  get #editable(): boolean {
+    return !this.readonly && !this.disabled;
+  }
+
+  override _formValue(): string | null {
+    return this.name ? String(this.value) : null;
+  }
+
+  override _restoreFormValue(value: string | null): void {
+    this.value = this.#normalize(Number(value ?? this.min));
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>) {
+    super.willUpdate(changed);
+
+    if (
+      changed.has('min') ||
+      changed.has('max') ||
+      changed.has('step') ||
+      changed.has('value')
+    ) {
+      const normalized = this.#normalize(this.value);
+      if (normalized !== this.value) {
+        this.value = normalized;
+      }
+    }
+  }
+
+  #values(): number[] {
+    const {min, max, step} = this;
+    if (step <= 0 || max < min) {
+      throw new Error('Invalid craft-slide-picker range configuration.');
+    }
+
+    const totalSteps = (max - min) / step;
+    if (!Number.isInteger(totalSteps)) {
+      throw new Error(
+        'Invalid craft-slide-picker step configuration for the provided range.'
+      );
+    }
+
+    return Array.from(
+      {length: totalSteps + 1},
+      (_, index) => min + index * step
+    );
+  }
+
+  #normalize(rawValue: number): number {
+    this.#values();
+    const {min, max, step} = this;
+    const clamped = Math.min(Math.max(rawValue, min), max);
+    const snapped = min + Math.round((clamped - min) / step) * step;
+    return Math.min(Math.max(snapped, min), max);
+  }
+
+  #isRtl(): boolean {
+    const dir =
+      (this.closest('[dir]') as HTMLElement | null)?.getAttribute('dir') ??
+      document.documentElement.getAttribute('dir');
+    return dir?.toLowerCase() === 'rtl';
+  }
+
+  #valueText(value: number): string {
+    if (this.valueLabel) {
+      return this.valueLabel(value);
+    }
+    return this.valueUnit ? `${value}${this.valueUnit}` : `${value}`;
+  }
+
+  #setValue(next: number, emit: boolean) {
+    const normalized = this.#normalize(next);
+    if (normalized === this.value) {
+      return;
+    }
+
+    this.value = normalized;
+
+    if (emit) {
+      // Every step is a commit, so `change` follows `input` immediately —
+      // what a radio group does, not what a range slider does.
+      this.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+      this.dispatchEvent(new Event('change', {bubbles: true, composed: true}));
+    }
+  }
+
+  #handleSegmentClick(value: number) {
+    if (!this.#editable) {
+      return;
+    }
+    this.#setValue(value, true);
+  }
+
+  #handleKeyDown(event: KeyboardEvent) {
+    if (!this.#editable) {
+      return;
+    }
+
+    const rtl = this.#isRtl();
+
+    switch (event.key) {
+      case 'ArrowUp':
+        this.#setValue(this.value + this.step, true);
+        event.preventDefault();
+        break;
+      case 'ArrowDown':
+        this.#setValue(this.value - this.step, true);
+        event.preventDefault();
+        break;
+      case 'ArrowRight':
+        this.#setValue(this.value + (rtl ? -this.step : this.step), true);
+        event.preventDefault();
+        break;
+      case 'ArrowLeft':
+        this.#setValue(this.value + (rtl ? this.step : -this.step), true);
+        event.preventDefault();
+        break;
+      case 'Home':
+        this.#setValue(this.min, true);
+        event.preventDefault();
+        break;
+      case 'End':
+        this.#setValue(this.max, true);
+        event.preventDefault();
+        break;
+    }
+  }
+
+  override render() {
+    const values = this.#values();
+
+    return html`
+      <div
+        class="slide-picker"
+        role="slider"
+        tabindex=${this.#editable ? 0 : -1}
+        aria-label=${this.label}
+        aria-valuemin=${this.min}
+        aria-valuemax=${this.max}
+        aria-valuenow=${this.value}
+        aria-valuetext=${this.#valueText(this.value)}
+        aria-readonly=${this.readonly ? 'true' : 'false'}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-describedby=${ifDefined(this.describedBy)}
+        @keydown=${this.#handleKeyDown}
+      >
+        ${values.map((segmentValue) => {
+          const active = segmentValue <= this.value;
+          const lastActive = segmentValue === this.value;
+          return html`
+            <span
+              class=${classMap({
+                'slide-picker__segment': true,
+                'is-active': active,
+                'is-last-active': lastActive,
+              })}
+              role="presentation"
+              aria-hidden="true"
+              @click=${() => this.#handleSegmentClick(segmentValue)}
+              title=${this.#valueText(segmentValue)}
+              >${nothing}</span
+            >
+          `;
+        })}
+      </div>
+    `;
+  }
+}
+
+if (!customElements.get('craft-slide-picker')) {
+  customElements.define('craft-slide-picker', CraftSlidePicker);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-slide-picker': CraftSlidePicker;
+  }
+}

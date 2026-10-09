@@ -1,0 +1,2 @@
+// line 1
+abort(404, "Page not found");

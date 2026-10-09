@@ -1,0 +1,144 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace crafttests\unit\gql;
+
+use ArrayObject;
+use Craft;
+use craft\elements\GlobalSet;
+use craft\gql\base\Resolver;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
+use craft\gql\resolvers\elements\User as UserResolver;
+use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\User\Elements\User;
+use crafttests\fixtures\AssetFixture;
+use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\GlobalSetFixture;
+use crafttests\fixtures\GqlSchemasFixture;
+use crafttests\fixtures\UserFixture;
+use Exception;
+use GraphQL\Type\Definition\ResolveInfo;
+
+class TypeResolverTest extends TestCase
+{
+    protected function _before(): void
+    {
+        $gqlService = Craft::$app->getGql();
+        $schema = $gqlService->getSchemaById(1000);
+        $gqlService->setActiveSchema($schema);
+    }
+
+    protected function _after(): void
+    {
+        Craft::$app->getGql()->flushCaches();
+    }
+
+    public function _fixtures(): array
+    {
+        return [
+            'entries' => [
+                'class' => EntryFixture::class,
+            ],
+            'assets' => [
+                'class' => AssetFixture::class,
+            ],
+            'users' => [
+                'class' => UserFixture::class,
+            ],
+            'globalSets' => [
+                'class' => GlobalSetFixture::class,
+            ],
+            'gqlSchemas' => [
+                'class' => GqlSchemasFixture::class,
+            ],
+        ];
+    }
+
+    /**
+     * Test resolving a related element.
+     **/
+    public function testRunGqlResolveTest(): void
+    {
+        // Not using a data provider for this because of fixture load/unload on *every* iteration.
+        $data = [
+            // Assets
+            [Asset::class, ['filename' => 'shinybrad.png'], AssetResolver::class],
+            [Asset::class, ['folderId' => 1000], AssetResolver::class],
+            [Asset::class, ['filename' => Str::random(128)], AssetResolver::class],
+
+            // Entries
+            [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
+            [Entry::class, ['title' => Str::random(128)], EntryResolver::class],
+
+            // Globals
+            [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => Str::random(128)], GlobalSetResolver::class, true],
+
+            // Users
+            [User::class, ['username' => 'user1'], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
+            [User::class, ['username' => Str::random(128)], UserResolver::class],
+        ];
+
+        foreach ($data as $testData) {
+            $this->_runResolverTest(...$testData);
+        }
+    }
+
+    /**
+     * Run the test.
+     *
+     * @param string $elementType The element class providing the elements
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param array $params Querying parameters to use
+     * @param string $resolverClass The resolver class being tested
+     * @phpstan-param class-string<Resolver> $resolverClass
+     * @param bool $mustNotBeSame Whether the results should differ instead
+     * @throws Exception
+     */
+    public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
+    {
+        $elementQueryClass = $elementType::find()::class;
+
+        if ($elementQueryClass instanceof ElementQuery) {
+            $elementQuery = new $elementQueryClass($params);
+        } else {
+            $elementQuery = Typecast::configure($elementType::find(), $params);
+        }
+
+        // Get the ids and elements.
+        $ids = (clone $elementQuery)->ids();
+        $elementResults = (clone $elementQuery)->all();
+
+        $sourceElement = new ExampleElement();
+        $sourceElement->someField = $elementType::find()->id($ids);
+
+        $filterParameters = [];
+
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => new ArrayObject([null])]);
+
+        $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
+
+        if ($mustNotBeSame) {
+            self::assertNotEquals($resolvedField, $elementResults);
+        } else {
+            self::assertEquals($resolvedField, $elementResults);
+        }
+    }
+}

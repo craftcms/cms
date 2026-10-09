@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
+use Illuminate\Support\Facades\Event;
+
+it('restores a soft-deleted element', function () {
+    Event::fake([ElementLifecycleRestoring::class, ElementLifecycleRestored::class]);
+
+    $entry = EntryModel::factory()->createElement();
+    Elements::deleteElement($entry);
+
+    $this->artisan('craft:elements/restore', ['id' => $entry->id])
+        ->expectsOutputToContain('Element restored.')
+        ->assertSuccessful();
+
+    expect(ElementModel::withTrashed()->find($entry->id)?->dateDeleted)->toBeNull();
+
+    Event::assertDispatchedOnce(ElementLifecycleRestoring::class);
+    Event::assertDispatchedOnce(ElementLifecycleRestored::class);
+});
+
+it('fails when the element is already restored', function () {
+    $entry = EntryModel::factory()->createElement();
+
+    $this->artisan('craft:elements:restore', ['id' => $entry->id])
+        ->expectsOutputToContain('already restored')
+        ->assertExitCode(1);
+});

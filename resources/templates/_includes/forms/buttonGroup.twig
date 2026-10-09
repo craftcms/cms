@@ -1,0 +1,9 @@
+{# Renders a <craft-button-group> (wrapped in a <craft-listbox>) from the
+   legacy buttonGroup variables (`options`, `value`, `name`, `id`, `class`,
+   `appearance`, `size`, `disabled`, `static`, `labelledBy`,
+   `containerAttributes`).
+
+   The legacy-to-component mapping lives in
+   FormFields::buttonGroupFromConfig(). #}
+
+{{- craft.cp.buttonGroup(_context)|raw -}}

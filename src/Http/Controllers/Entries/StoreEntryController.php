@@ -1,0 +1,316 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Entries;
+
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Data\UserInitiatedElementSaveResult;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Entries;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+readonly class StoreEntryController
+{
+    use EnforcesPermissions;
+    use RespondsWithFlash;
+
+    public function __construct(
+        private Request $request,
+        private Elements $elements,
+        private Entries $entries,
+        private Sites $sites,
+        private UserInitiatedElementSave $userInitiatedElementSave,
+    ) {}
+
+    public function __invoke(): Response
+    {
+        $currentUser = $this->request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $entry = $this->getEntry($currentUser);
+        $entryVariable = $this->request->getSigned('entryVariable') ?? 'entry';
+
+        $this->enforeSitePermission($entry->getSite());
+        $this->enforceEditEntryPermissions($entry, $duplicate = $this->request->input('duplicate', false));
+
+        // Keep track of whether the entry was disabled as a result of duplication
+        $forceDisabled = false;
+
+        if ($duplicate) {
+            $result = $this->duplicateEntry($entry);
+
+            if ($result instanceof Response) {
+                return $result;
+            }
+
+            $forceDisabled = $entry->enabled && ! $result->enabled;
+            $entry = $result;
+        }
+
+        $this->populateEntry($entry, $currentUser);
+
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
+        if ($forceDisabled) {
+            $entry->enabled = false;
+        }
+
+        $result = $duplicate
+            ? $this->saveDuplicate($entry, $currentUser)
+            : $this->userInitiatedElementSave->save($entry, $currentUser);
+
+        /** @var Entry $entry */
+        $entry = $result->element;
+
+        if (! $result->successful) {
+            return $this->asModelFailure(
+                model: $entry,
+                message: t('Couldn’t save entry.'),
+                modelName: $entryVariable
+            );
+        }
+
+        $data = [];
+
+        if ($this->request->acceptsJson()) {
+            $data['id'] = $entry->id;
+            $data['title'] = $entry->title;
+            $data['slug'] = $entry->slug;
+
+            if ($this->request->isCpRequest()) {
+                $data['cpEditUrl'] = $entry->getCpEditUrl();
+            }
+
+            if (($author = $entry->getAuthor()) !== null) {
+                $data['authorUsername'] = $author->username;
+            }
+
+            $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+            $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+            $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            if ($this->request->isCpRequest()) {
+                $data['elementHtml'] = app(ElementHtml::class)->elementChipHtml($entry);
+            }
+        }
+
+        return $this->asModelSuccess(
+            model: $entry,
+            message: t('{type} saved.', ['type' => Entry::displayName()]),
+            data: $data,
+        );
+    }
+
+    private function getEntry(CraftUser $currentUser): Entry
+    {
+        $entryId = $this->request->input('canonicalId')
+            ?? $this->request->input('sourceId')
+            ?? $this->request->input('entryId');
+
+        $siteId = $this->request->input('siteId');
+
+        if (! $entryId) {
+            $this->request->validate([
+                'sectionId' => ['required'],
+            ]);
+
+            return new Entry(array_filter([
+                'sectionId' => $this->request->input('sectionId'),
+                'siteId' => $siteId,
+            ]));
+        }
+
+        // Is this a provisional draft?
+        if ($this->request->input('provisional')) {
+            /** @var Entry|null $entry */
+            $entry = Entry::find()
+                ->provisionalDrafts()
+                ->draftOf($entryId)
+                ->draftCreator($currentUser->getCraftUserId())
+                ->siteId($siteId)
+                ->status(null)
+                ->one();
+
+            if ($entry) {
+                return $entry;
+            }
+        }
+
+        $entry = $this->entries->getEntryById($entryId, $siteId);
+
+        abort_if(is_null($entry), 404, 'Entry not found.');
+
+        return $entry;
+    }
+
+    private function duplicateEntry(Entry $entry): Entry|Response
+    {
+        try {
+            $entry->draftId = null;
+            $entry->isProvisionalDraft = false;
+
+            return $this->elements->duplicateElement($entry);
+        } catch (InvalidElementException $e) {
+            /** @var Entry $clone */
+            $clone = $e->element;
+
+            if ($this->request->acceptsJson()) {
+                return $this->asModelFailure($clone);
+            }
+
+            // Send the original entry back to the template, with any validation errors on the clone
+            $entry->errors()->merge($clone->errors());
+
+            return $this->asModelFailure(
+                model: $entry,
+                message: t('Couldn’t duplicate {type}.', ['type' => Entry::lowerDisplayName()]),
+                modelName: 'entry'
+            );
+        } catch (Throwable $e) {
+            throw new Exception(t('An error occurred when duplicating the entry.'), 0, $e);
+        }
+    }
+
+    private function saveDuplicate(Entry $entry, CraftUser $currentUser): UserInitiatedElementSaveResult
+    {
+        if ($entry->enabled && $entry->getEnabledForSite()) {
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
+
+        $lock = Cache::lock("entry:{$entry->id}", 15);
+        if (! $lock->get()) {
+            throw new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}.");
+        }
+
+        try {
+            $successful = $this->elements->saveElement($entry);
+        } catch (InvalidElementException $exception) {
+            /** @var Entry $entry */
+            $entry = $exception->element;
+            $successful = false;
+        } catch (UnsupportedSiteException $exception) {
+            $entry->errors()->add('siteId', $exception->getMessage());
+            $successful = false;
+        } finally {
+            $lock->release();
+        }
+
+        if ($successful) {
+            /** @var Entry|null $provisional */
+            $provisional = Entry::find()
+                ->provisionalDrafts()
+                ->draftOf($entry->id)
+                ->draftCreator($currentUser->getCraftUserId())
+                ->siteId($entry->siteId)
+                ->status(null)
+                ->one();
+
+            if ($provisional) {
+                $this->elements->deleteElement($provisional, true);
+            }
+        }
+
+        return new UserInitiatedElementSaveResult($entry, $successful);
+    }
+
+    private function populateEntry(Entry $entry, CraftUser $currentUser): void
+    {
+        // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
+        $attributes = [
+            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $currentUser->getCraftUserId(),
+        ];
+
+        foreach (['expiryDate', 'postDate', 'slug', 'title', 'typeId'] as $attribute) {
+            if ($this->request->has($attribute)) {
+                $attributes[$attribute] = $this->request->input($attribute);
+            }
+        }
+
+        $entry->setAttributesFromRequest($attributes);
+
+        $enabledForSite = $this->enabledForSiteValue();
+        if (is_array($enabledForSite)) {
+            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+            $entry->enabled = in_array(true, $enabledForSite) || $entry->enabled;
+        } else {
+            $entry->enabled = (bool) $this->request->input('enabled', $entry->enabled);
+        }
+
+        $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
+
+        if (! $entry->typeId) {
+            // Default to the section's first entry type
+            $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
+        }
+
+        // Authors
+        if (empty($entry->getAuthorIds()) && ! $entry->id) {
+            $entry->setAuthor($currentUser->asElement());
+        }
+
+        // Parent
+        if (($parentId = $this->request->input('parentId')) !== null) {
+            $entry->setParentId($parentId);
+        }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        $fieldsLocation = $this->request->input('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
+
+        // Is fresh?
+        if ($this->request->input('isFresh')) {
+            $entry->setIsFresh();
+        }
+
+        // Revision notes
+        $entry->setRevisionNotes($this->request->input('notes'));
+    }
+
+    /**
+     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
+     *
+     * @return bool|bool[]|null
+     */
+    private function enabledForSiteValue(): array|bool|null
+    {
+        $enabledForSite = $this->request->input('enabledForSite');
+
+        if (! is_array($enabledForSite)) {
+            return $enabledForSite;
+        }
+
+        // Make sure they are allowed to edit all of the posted site IDs
+        $editableSiteIds = $this->sites->getEditableSiteIds()->all();
+
+        if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
+            abort(403, 'User not permitted to edit the statuses for all the submitted site IDs');
+        }
+
+        return $enabledForSite;
+    }
+}

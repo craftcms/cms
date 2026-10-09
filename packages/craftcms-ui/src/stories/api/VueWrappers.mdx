@@ -1,0 +1,56 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="JavaScript API/Vue Wrappers" />
+
+# Vue Wrappers
+
+The components are web components, so they work in a Vue template as they are. The wrappers exist for the one thing that does not carry over: `v-model` on a Lion-based form control.
+
+```js
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+```
+
+```html
+<CraftInput v-model="title" :error="errors.title" />
+```
+
+## Why they are needed
+
+Lion holds a form control's value in a `modelValue` **property** and announces changes with a `model-value-changed` event. Vue's `v-model` on a custom element binds an attribute and listens for `update:modelValue`, so the two do not meet: the value never reaches the element, and a change never comes back.
+
+Each wrapper is a thin single-file component that does the bridging — binds `.modelValue` as a property, listens for `model-value-changed`, and writes the result back through `defineModel()`. It also forwards an `error` prop into the control's `feedback` slot, so validation messages render the way the design system expects.
+
+One subtlety they handle for you: Lion emits a `model-value-changed` on mount carrying the element's own default, before Vue's binding has settled. The wrappers ignore that one — `detail.initialize` marks it — because acting on it would clobber the bound value with an empty default the moment the component appeared.
+
+## What is wrapped
+
+Only the controls that need the bridge, seventeen in all:
+
+| Kind    | Components                                                                                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Value   | `CraftInput`, `CraftInputColor`, `CraftInputHandle`, `CraftInputMoney`, `CraftInputPassword`, `CraftTextarea`, `CraftSelect`, `CraftSelectRich`, `CraftCombobox`, `CraftInputFile`, `CraftSelectColor` |
+| Checked | `CraftSwitch`, `CraftCheckbox`                                                                                                                                                                         |
+| Group   | `CraftCheckboxGroup`, `CraftPermissionTree`, `CraftRadioGroup`                                                                                                                                         |
+| Chrome  | `CraftField`                                                                                                                                                                                           |
+
+Everything else — buttons, chips, cards, menus, overlays — has no value to bind, so there is no wrapper and none is needed. Use the custom element directly.
+
+## Types for the rest
+
+Alongside the wrappers, `craft-elements.d.ts` declares every `craft-*` element to Vue, so templates get type-checking and autocomplete on elements used directly:
+
+```html
+<craft-button variant="accent" @click="save">Save</craft-button>
+```
+
+Without it, Vue treats an unknown custom element as untyped and a misspelled attribute passes silently.
+
+## Generated, not written
+
+Both the wrappers and the type declarations come out of `scripts/generate-vue-wrappers.js`, which reads a list of components and their slots and writes `dist/vue/`. Adding a control to that list is how a new wrapper appears; editing a generated file by hand does not survive the next run.
+
+```sh
+node scripts/generate-vue-wrappers.js
+```
+
+The wrappers bridge `model-value-changed` because that is what Lion's form system speaks internally. Outside Vue, prefer the native `input` and `change` events the controls emit — see [Combobox](?path=/docs/form-controls-select-controls-combobox--docs) for the distinction.

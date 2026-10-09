@@ -1,0 +1,327 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
+use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\Rule;
+use Inertia\Testing\AssertableInertia;
+
+use function CraftCms\Cms\t;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
+use function Pest\Laravel\get;
+use function Pest\Laravel\post;
+use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+});
+
+function createTestTransform(array $overrides = []): ImageTransformData
+{
+    static $counter = 1;
+
+    $data = array_merge([
+        'name' => 'Test Transform',
+        'handle' => 'testTransform'.$counter++,
+        'width' => 100,
+        'height' => 100,
+        'mode' => 'crop',
+        'position' => 'center-center',
+        'interlace' => 'none',
+    ], $overrides);
+
+    $service = app(ImageTransforms::class);
+    $service->saveTransform(new ImageTransformData($data));
+    $service->reset();
+
+    $transform = $service->getTransformByHandle($data['handle']);
+    if (is_null($transform)) {
+        throw new RuntimeException('Failed to create image transform test fixture.');
+    }
+
+    return $transform;
+}
+
+function validTransformData(array $overrides = []): array
+{
+    static $counter = 1;
+
+    return array_merge([
+        'name' => 'New Transform',
+        'handle' => 'newTransform'.$counter++,
+        'width' => 200,
+        'height' => 200,
+        'mode' => 'crop',
+        'position' => 'center-center',
+        'interlace' => 'none',
+    ], $overrides);
+}
+
+function registerControllerAssetTransformer(string $driver = 'custom'): AssetTransformer
+{
+    app(AssetTransformDrivers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
+    $transformer = new AssetTransformer([
+        'name' => 'Custom',
+        'handle' => $driver,
+        'driver' => $driver,
+    ]);
+    app(AssetTransformers::class)->saveAssetTransformer($transformer);
+
+    return $transformer;
+}
+
+it('requires authentication', function () {
+    $transform = createTestTransform();
+    Auth::logout();
+
+    get(action([ImageTransformsController::class, 'index']))->assertRedirect();
+    get(action([ImageTransformsController::class, 'create']))->assertRedirect();
+    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
+    postJson(action([ImageTransformsController::class, 'renderUi']))->assertUnauthorized();
+    postJson(action([ImageTransformsController::class, 'store']))->assertUnauthorized();
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
+});
+
+it('requires admin changes', function () {
+    $transform = createTestTransform();
+    Cms::config()->allowAdminChanges = false;
+
+    get(action([ImageTransformsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
+    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('readOnly', true));
+
+    get(action([ImageTransformsController::class, 'create']))->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'renderUi']))->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData())->assertForbidden();
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
+});
+
+it('renders index', function () {
+    get(action([ImageTransformsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/Index'));
+});
+
+it('renders a functional create form', function () {
+    get(action([ImageTransformsController::class, 'create']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('title', t('Create a new image transform'))
+            ->where('ui.values.transformId', null)
+            ->where('ui.values.mode', ImageTransformMode::Crop->value)
+            ->where('submit.url', action([ImageTransformsController::class, 'store']))
+            ->where('refreshUrl', action([ImageTransformsController::class, 'renderUi']))
+            ->where('ui.nodes', fn ($nodes): bool => collect($nodes)
+                ->pluck('control.path')
+                ->contains(['mode'])));
+});
+
+it('renders declared parameters under their Asset Transformer UUID', function () {
+    $transformer = registerControllerAssetTransformer();
+
+    get(action([ImageTransformsController::class, 'create']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
+                ->pluck('control.path')
+                ->contains(['parameters', $transformer->uid, 'blur'])));
+});
+
+it('renders edit for an existing transform', function () {
+    $transform = createTestTransform();
+
+    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('title', $transform->name)
+            ->where('ui.values.transformId', $transform->id)
+            ->where('ui.values.name', $transform->name)
+            ->where('ui.values.handle', $transform->handle));
+});
+
+it('refreshes mode-dependent controls without saving', function () {
+    $values = validTransformData([
+        'transformId' => null,
+        'fill' => 'abc',
+        'quality' => '',
+        'format' => '',
+        'upscale' => true,
+    ]);
+
+    $fitNodes = postJson(action([ImageTransformsController::class, 'renderUi']), [
+        'values' => [...$values, 'mode' => ImageTransformMode::Fit->value],
+        'scope' => [],
+    ])->assertOk()->json('ui.nodes');
+    $letterboxNodes = postJson(action([ImageTransformsController::class, 'renderUi']), [
+        'values' => [...$values, 'mode' => ImageTransformMode::Letterbox->value],
+        'scope' => [],
+    ])->assertOk()->json('ui.nodes');
+
+    $fitFields = collect(flattenUiNodes($fitNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $letterboxFields = collect(flattenUiNodes($letterboxNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+
+    expect($fitFields['fill']['component'])->toBe('craft:hidden-field')
+        ->and($fitFields['position']['component'])->toBe('craft:hidden-field')
+        ->and($letterboxFields['fill']['component'])->toBe('craft:field')
+        ->and($letterboxFields['position']['component'])->toBe('craft:field')
+        ->and($letterboxFields['position']['props']['label'])->toBe(t('Image Position'))
+        ->and(ImageTransformModel::count())->toBe(0);
+});
+
+it('rejects invalid refresh values', function () {
+    postJson(action([ImageTransformsController::class, 'renderUi']), [
+        'values' => validTransformData(['mode' => 'invalid']),
+        'scope' => [],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('values.mode');
+});
+
+it('returns 404 for a missing transform handle', function () {
+    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => 'missing-transform']))
+        ->assertNotFound();
+});
+
+it('saves a new transform', function () {
+    expect(ImageTransformModel::count())->toBe(0);
+
+    $payload = validTransformData();
+
+    postJson(action([ImageTransformsController::class, 'store']), $payload)
+        ->assertOk()
+        ->assertJsonPath('modelName', 'transform');
+
+    expect(ImageTransformModel::count())->toBe(1);
+
+    $service = app(ImageTransforms::class);
+    $service->reset();
+    $transform = $service->getTransformByHandle($payload['handle']);
+
+    expect($transform)->not->toBeNull()
+        ->and($transform->name)->toBe($payload['name']);
+});
+
+it('redirects to the saved transform edit page when saving and continuing', function () {
+    $payload = validTransformData([
+        'handle' => 'continuedTransform',
+    ]);
+
+    post(action([ImageTransformsController::class, 'store']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
+        ->assertMessage('success', t('Transform saved.'));
+});
+
+it('redirects to the posted redirect when saving normally', function () {
+    $payload = validTransformData([
+        'handle' => 'normallySavedTransform',
+        'redirect' => Crypt::encrypt('settings/assets/transforms'),
+    ]);
+
+    post(action([ImageTransformsController::class, 'store']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
+        ->assertMessage('success', t('Transform saved.'));
+});
+
+it('updates an existing transform', function () {
+    $transform = createTestTransform([
+        'name' => 'Original Name',
+        'handle' => 'updatableTransform',
+        'width' => 100,
+    ]);
+
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
+        'transformId' => $transform->id,
+        'name' => 'Updated Name',
+        'handle' => $transform->handle,
+        'width' => 350,
+        'height' => 120,
+    ]))->assertOk();
+
+    $service = app(ImageTransforms::class);
+    $service->reset();
+    $updated = $service->getTransformByHandle($transform->handle);
+
+    expect($updated)->not->toBeNull()
+        ->and($updated->name)->toBe('Updated Name')
+        ->and($updated->width)->toBe(350)
+        ->and($updated->height)->toBe(120);
+});
+
+it('saves custom parameters under the Asset Transformer UUID', function () {
+    $transformer = registerControllerAssetTransformer();
+    $payload = validTransformData([
+        'parameters' => [$transformer->uid => [
+            'blur' => '5',
+            'quality' => 'high',
+        ]],
+    ]);
+
+    postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
+
+    app(ImageTransforms::class)->reset();
+    $transform = app(ImageTransforms::class)->getTransformByHandle($payload['handle']);
+
+    expect($transform->getCustomParameters())->toBe([
+        $transformer->uid => [
+            'blur' => '5',
+            'quality' => 'high',
+        ],
+    ])->and($transform->getParameters($transformer->uid)['quality'])->toBe('high');
+});
+
+it('deletes a transform', function () {
+    $transform = createTestTransform();
+
+    expect(ImageTransformModel::count())->toBe(1);
+
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertOk();
+
+    expect(ImageTransformModel::count())->toBe(0);
+
+    $service = app(ImageTransforms::class);
+    $service->reset();
+    expect($service->getTransformByHandle($transform->handle))->toBeNull();
+});
+
+class ControllerAssetTransformDriver implements AssetTransformDriver
+{
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition(
+            'Custom',
+            parameterRules: [
+                'blur' => ['integer', 'min:1'],
+                'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],
+            ],
+            parameterFields: [
+                'blur' => Field::make(t('Blur'), Number::make('blur')->min(1)),
+                'quality' => Field::make(t('Remote Quality'), Text::make('quality')),
+            ],
+        );
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        return new AssetTransformResult('/custom.webp', 'image/webp');
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "preset": "laravel",
+  "rules": {
+    "no_empty_statement": false
+  },
+  "exclude": ["resources/translations", "yii2-adapter"]
+}

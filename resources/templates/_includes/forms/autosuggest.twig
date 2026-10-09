@@ -1,0 +1,14 @@
+{# Renders a `<craft-combobox>` from the legacy autosuggest variables
+   (`suggestions`, `suggestTemplates`, `suggestEnvVars`, `suggestAliases`,
+   `suggestionFilter`, `id`, `name`, `value`, `placeholder`, `disabled`,
+   `readonly`, `required`, `limit`, `describedBy`, `labelledBy`).
+
+   Craft 5 rendered a Vue 2 `vue-autosuggest` instance here. The mapping onto
+   the combobox — and the legacy variables that have no equivalent — is
+   documented on FormFields::autosuggestFromConfig().
+
+   `{% block data %}` and `{% block methods %}` are gone with the Vue instance
+   they configured. Nothing in Craft overrode them, and a template that did will
+   need to supply `suggestions` instead. #}
+
+{{- craft.cp.autosuggest(_context)|raw -}}

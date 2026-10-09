@@ -1,0 +1,192 @@
+<?php
+
+/**
+ * @link https://craftcms.com/
+ *
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace crafttests\unit\helpers;
+
+use craft\helpers\Cp;
+use craft\test\TestCase;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\User\Elements\User;
+use crafttests\fixtures\SitesFixture;
+use InvalidArgumentException;
+use UnitTester;
+
+/**
+ * Unit tests for the CP Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
+ * @since 3.6.0
+ */
+class CpHelperTest extends TestCase
+{
+    protected UnitTester $tester;
+
+    public function _fixtures(): array
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class,
+            ],
+        ];
+    }
+
+    public function test_element_chip_html(): void
+    {
+        /** @var User $user */
+        $user = User::findOne(1);
+        self::assertInstanceOf(User::class, $user);
+
+        $indexHtml = Cp::elementChipHtml($user);
+        $fieldHtml = Cp::elementChipHtml($user, [
+            'context' => 'field',
+            'inputName' => 'myFieldName[]',
+        ]);
+
+        // field
+        self::assertStringContainsString('removable', $fieldHtml);
+        self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
+
+        // status
+        self::assertStringContainsString('<craft-indicator', $indexHtml);
+        self::assertStringNotContainsString('<craft-indicator', Cp::elementChipHtml($user, ['showStatus' => false]));
+
+        // thumb
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementChipHtml($user, ['showThumb' => false]));
+
+        // label
+        $labelPattern = '/<craft-truncate id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementChipHtml($user, ['showLabel' => false])));
+
+        // errors
+        self::assertStringNotContainsString('error', $indexHtml);
+        $user->errors()->add('foo', 'bad error');
+        self::assertStringContainsString('error', Cp::elementChipHtml($user, [
+            'context' => 'field',
+        ]));
+        $user->errors()->forget('foo');
+
+        // trashed
+        self::assertStringNotContainsString('data-trashed', $indexHtml);
+        $user->trashed = true;
+        self::assertStringContainsString('data-trashed', Cp::elementChipHtml($user));
+        $user->trashed = false;
+    }
+
+    public function test_element_html(): void
+    {
+        /** @var User $user */
+        $user = User::findOne(1);
+        self::assertInstanceOf(User::class, $user);
+
+        $indexHtml = Cp::elementHtml($user);
+        $fieldHtml = Cp::elementHtml($user, 'field', inputName: 'myFieldName');
+
+        // field
+        self::assertStringContainsString('removable', $fieldHtml);
+        self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
+
+        // status
+        self::assertStringContainsString('<craft-indicator', $indexHtml);
+        self::assertStringNotContainsString('<craft-indicator', Cp::elementHtml($user, showStatus: false));
+
+        // thumb
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementHtml($user, showThumb: false));
+
+        // label
+        $labelPattern = '/<craft-truncate id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementHtml($user, showLabel: false)));
+
+        // errors
+        self::assertStringNotContainsString('error', $indexHtml);
+        $user->errors()->add('foo', 'bad error');
+        self::assertStringContainsString('error', Cp::elementHtml($user, 'field'));
+        $user->errors()->forget('foo');
+
+        // trashed
+        self::assertStringNotContainsString('data-trashed', $indexHtml);
+        $user->trashed = true;
+        self::assertStringContainsString('data-trashed', Cp::elementHtml($user));
+        $user->trashed = false;
+    }
+
+    public function test_field_html(): void
+    {
+        self::assertStringContainsString('<input slot="input"></craft-field>', Cp::fieldHtml('<input>'));
+        $withLabel = Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']);
+        self::assertStringContainsString('id="id-field"', $withLabel);
+        self::assertStringContainsString('label="Label"', $withLabel);
+        self::assertStringNotContainsString('label="', Cp::fieldHtml('<input>', ['label' => '__blank__']));
+        // invalid site ID
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
+            Cp::fieldHtml('<input>', ['siteId' => -1]);
+        });
+        // fieldset
+        $fieldset = Cp::fieldHtml('<input>', ['fieldset' => 'true', 'label' => 'Label']);
+        self::assertMatchesRegularExpression('/<craft-field [^>]*\bfieldset\b/', $fieldset);
+        self::assertStringContainsString('label="Label"', $fieldset);
+        // translatable
+        self::assertMatchesRegularExpression('/<craft-field [^>]*\btranslatable\b/', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
+        // instructions
+        $withInstructions = Cp::fieldHtml('<input>', ['instructions' => '**Test**']);
+        self::assertStringContainsString('<div slot="help-text">', $withInstructions);
+        self::assertStringContainsString('<p><strong>Test</strong></p>', $withInstructions);
+        // tip
+        self::assertStringContainsString('<span slot="tip"><strong>Test</strong></span>', Cp::fieldHtml('<input>', [
+            'tip' => '**Test**',
+        ]));
+        // warning
+        self::assertStringContainsString('<span slot="warning"><strong>Test</strong></span>', Cp::fieldHtml('<input>', [
+            'warning' => '**Test**',
+        ]));
+        // errors
+        $withErrors = Cp::fieldHtml('<input>', ['errors' => ['Very bad', 'Very, very bad']]);
+        self::assertStringContainsString('has-errors', $withErrors);
+        self::assertMatchesRegularExpression('/<ul [^>]*class="error-list"/', $withErrors);
+        self::assertStringContainsString('<li>Very bad</li>', $withErrors);
+        // invalid template path
+        $this->tester->expectThrowable(TemplateLoaderException::class, function() {
+            Cp::fieldHtml('template:invalid/template.twig', []);
+        });
+    }
+
+    /**
+     * @dataProvider fieldMethodsDataProvider
+     */
+    public function test_field_methods(string $needle, string $method, array $config = []): void
+    {
+        self::assertStringContainsString($needle, call_user_func([Cp::class, $method], $config));
+    }
+
+    public static function fieldMethodsDataProvider(): array
+    {
+        return [
+            ['type="checkbox"', 'checkboxFieldHtml'],
+            ['color-input', 'colorFieldHtml'],
+            [
+                'editable', 'editableTableFieldHtml', [
+                    'name' => 'test',
+                ],
+            ],
+            ['lightswitch', 'lightswitchFieldHtml'],
+            ['<select', 'selectFieldHtml'],
+            ['type="text"', 'textFieldHtml'],
+            [
+                '<div slot="suffix" class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
+                    'unit' => 'Test unit',
+                ],
+            ],
+            ['<textarea', 'textareaFieldHtml'],
+        ];
+    }
+}

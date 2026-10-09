@@ -1,0 +1,155 @@
+import {html, LitElement, nothing} from 'lit';
+import {property, state} from 'lit/decorators.js';
+import type {CSSResultGroup, PropertyValues} from 'lit';
+import styles from './badge.styles.js';
+import {Color, type ColorValue} from '@src/constants/colors';
+import '../indicator/indicator.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {Size, type SizeValue} from '@src/constants/size';
+
+/**
+ * @summary A colored status pill: a `<craft-indicator>` dot (by default)
+ * followed by a label. `fill` sets the badge color from the shared `Color`
+ * palette — the surface renders in the quiet tone of that color and the
+ * indicator in the loud tone.
+ *
+ * @slot - The label content shown after the indicator.
+ * @slot prefix - The leading content; defaults to a `<craft-indicator>` whose
+ * fill is derived from `fill`.
+ * @slot suffix - The trailing content.
+ *
+ * @csspart badge - The badge wrapper.
+ * @csspart prefix - The leading slot, rendered before the label.
+ * @csspart indicator - The default indicator shown in the prefix slot.
+ * @csspart suffix - The trailing slot, rendered after the label.
+ *
+ * @since 1.0
+ */
+export default class CraftBadge extends LitElement {
+  static override styles: CSSResultGroup = [styles];
+
+  /** The badge color — a color value from `Color` (e.g. `red`, `emerald`). */
+  @property({reflect: true}) fill: ColorValue = Color.Gray;
+
+  /** Leaves out the prefix region, default indicator included. */
+  @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
+
+  /** The badge's scale: `small`, `medium` (the default), or `large`. */
+  @property() size: SizeValue = Size.Medium;
+
+  /**
+   * Whether the default slot holds a label, as opposed to the badge being a
+   * bare indicator. A labeled badge takes a control's height, so it lines up
+   * with the buttons and inputs it sits beside.
+   */
+  @state() private hasLabel = false;
+
+  /** Whether the label is plain text, which can be trimmed to its capitals. */
+  @state() private hasTextLabel = false;
+
+  /** Whether anything is slotted into `suffix`. */
+  @state() private hasSuffix = false;
+
+  /**
+   * Watches the light DOM for what the label and suffix slots would hold. They
+   * aren't rendered while empty, so there's no slot to fire `slotchange`.
+   */
+  private readonly contentObserver = new MutationObserver(() =>
+    this.readContent()
+  );
+
+  /**
+   * Read before the first render, so an empty region never renders and a
+   * labeled badge never renders a frame at the wrong height.
+   */
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.readContent();
+    this.contentObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.contentObserver.disconnect();
+  }
+
+  private readContent(): void {
+    const children = [...this.childNodes];
+
+    this.hasLabel = children.some(
+      (node) =>
+        (node instanceof Element && !node.hasAttribute('slot')) ||
+        (node.nodeType === Node.TEXT_NODE && node.textContent!.trim() !== '')
+    );
+    this.hasTextLabel =
+      this.hasLabel &&
+      !children.some((node) => node instanceof Element && !node.slot);
+    this.hasSuffix = children.some(
+      (node) => node instanceof Element && node.slot === 'suffix'
+    );
+  }
+
+  /** The resolved color value used for the badge fill. */
+  private getFill(): ColorValue {
+    return this.fill;
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    // Set the colorable context from `fill` so the badge's own surface/border/
+    // text colors (which read --c-color-*) reflect the chosen color.
+    if (changed.has('fill')) {
+      this.dataset.color = this.getFill();
+    }
+  }
+
+  override render() {
+    return html`
+      <span
+        part="badge"
+        class="${classMap({
+          badge: true,
+          'badge--small': this.size === Size.Small,
+          'badge--large': this.size === Size.Large,
+          'badge--labeled': this.hasLabel,
+        })}"
+      >
+        ${this.noPrefix
+          ? nothing
+          : html`<span class="badge__prefix">
+              <slot name="prefix" part="prefix">
+                <craft-indicator
+                  part="indicator"
+                  fill="${this.getFill()}"
+                ></craft-indicator>
+              </slot>
+            </span>`}
+        ${this.hasLabel
+          ? html`<slot
+              class="${classMap({'badge__label--text': this.hasTextLabel})}"
+            ></slot>`
+          : nothing}
+        ${this.hasSuffix
+          ? html`<span class="badge__suffix">
+              <slot name="suffix" part="suffix"></slot>
+            </span>`
+          : nothing}
+      </span>
+    `;
+  }
+}
+
+if (!customElements.get('craft-badge')) {
+  customElements.define('craft-badge', CraftBadge);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-badge': CraftBadge;
+  }
+}

@@ -1,0 +1,199 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
+
+use CraftCms\Cms\Condition\ConditionBuilder;
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
+use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
+use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\Resources\ElementIndexResource;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use Illuminate\Http\JsonResponse;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+class ElementIndexController
+{
+    public function __construct(
+        private readonly Conditions $conditions,
+        private readonly ElementSources $elementSources,
+        private readonly ElementIndexes $elementIndexes,
+    ) {}
+
+    public function getElements(ElementIndexRequest $request): ElementIndexResource|JsonResponse
+    {
+        if ($request->context() === ElementSources::CONTEXT_EMBEDDED_INDEX) {
+            return new JsonResponse(new EmbeddedIndexViewModel($request->elementType(), $request)->payload());
+        }
+
+        return new ElementIndexResource;
+    }
+
+    public function getMoreElements(): ElementIndexResource
+    {
+        return new ElementIndexResource(
+            includeContainer: false,
+            includeActions: false,
+        );
+    }
+
+    public function countElements(ElementIndexRequest $request): JsonResponse
+    {
+        $elementType = $request->elementType();
+        $context = $request->context();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource(
+            $elementType,
+            $request->input('source'),
+            $context,
+        );
+        $elementQueryState = $this->elementIndexes->buildQueryState(
+            elementType: $elementType,
+            source: $source,
+            condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
+        );
+
+        $total = $elementType::indexElementCount($elementQueryState['query'], $sourceKey);
+        $unfilteredTotal = $elementQueryState['unfilteredQuery']
+            ? $elementType::indexElementCount($elementQueryState['unfilteredQuery'], $sourceKey)
+            : $total;
+
+        return new JsonResponse([
+            'resultSet' => $request->input('resultSet'),
+            'total' => $total,
+            'unfilteredTotal' => $unfilteredTotal,
+        ]);
+    }
+
+    public function filterHud(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
+    {
+        $elementType = $request->elementType();
+        $context = $request->context();
+        $nestedSource = null;
+
+        if ($context === ElementSources::CONTEXT_EMBEDDED_INDEX) {
+            $nestedSource = new EmbeddedNestedElementScope($request)->indexSource($elementType);
+        }
+
+        [$sourceKey, $source] = $nestedSource
+            ? [$nestedSource::NESTED_KEY, $nestedSource->source]
+            : $this->elementIndexes->resolveSource(
+                $elementType,
+                $request->input('source.key', $request->input('source')),
+                $context,
+            );
+        $fieldLayouts = $nestedSource !== null ? $nestedSource->fieldLayouts : $request->fieldLayouts();
+        $request->condition();
+        $id = $request->input('id');
+
+        abort_if($id === null || $id === '', 400, 'Request missing required body param');
+
+        $conditionConfig = $request->input('conditionConfig');
+        $serialized = $request->input('serialized');
+
+        if (! $conditionConfig && $serialized) {
+            parse_str((string) $serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'] ?? null;
+        }
+
+        /** @var ElementConditionInterface $condition */
+        $condition = $conditionConfig
+            ? $this->conditions->createCondition([...$conditionConfig, 'conditionRules' => []])
+            : $elementType::createCondition();
+
+        $condition->forQuery = true;
+
+        if (! empty($fieldLayouts)) {
+            $condition->setFieldLayouts($fieldLayouts);
+        }
+
+        $condition->mainTag = 'div';
+        $condition->id = (string) $id;
+        $condition->addRuleLabel = t('Add a filter');
+
+        if ($source && $source['type'] === ElementSources::TYPE_NATIVE) {
+            $condition->sourceKey = $sourceKey;
+        }
+
+        $condition->setConditionRules($conditionConfig['conditionRules'] ?? []);
+        $currentElementIndex->activate();
+
+        return new JsonResponse([
+            'builder' => app(ConditionBuilder::class)->resolve($condition),
+            'hudHtml' => new ConditionBuilderRenderer($condition)->render(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+        ]);
+    }
+
+    public function elementTableHtml(ElementIndexRequest $request): JsonResponse
+    {
+        $request->validate([
+            'id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $elementType = $request->elementType();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $request->context());
+        $elementQuery = $this->elementIndexes->buildQueryState(
+            elementType: $elementType,
+            source: $source,
+            condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
+        )['query'];
+
+        abort_if(! $sourceKey, 400, 'Request missing required body param');
+
+        /** @var ElementInterface|null $element */
+        $element = (clone $elementQuery)
+            ->draftOf($request->integer('id'))
+            ->draftCreator($request->craftUser()?->asElement())
+            ->provisionalDrafts()
+            ->status(null)
+            ->one();
+
+        if (! $element) {
+            /** @var ElementInterface|null $element */
+            $element = (clone $elementQuery)
+                ->id($request->integer('id'))
+                ->status(null)
+                ->one();
+        }
+
+        abort_if(! $element, 400, 'Invalid element ID: '.$request->integer('id'));
+
+        $attributes = $this->elementSources->getTableAttributes(
+            elementType: $elementType,
+            sourceKey: $sourceKey,
+            customAttributes: $request->viewState()['tableColumns'] ?? null,
+            fieldLayouts: $request->fieldLayouts(),
+        );
+
+        $attributeHtml = [];
+
+        foreach ($attributes as [$attribute]) {
+            $attributeHtml[$attribute] = $element->getAttributeHtml($attribute);
+        }
+
+        return new JsonResponse([
+            'attributeHtml' => $attributeHtml,
+        ]);
+    }
+}

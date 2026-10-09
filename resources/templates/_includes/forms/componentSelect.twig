@@ -1,0 +1,21 @@
+{# Renders a component select from the legacy componentSelect variables (`id`,
+   `name`, `inputName`, `renderDefaultInput`, `options`, `values`/`value`,
+   `limit`, `showHandles`, `showIndicators`, `showDescription`, `sortable`,
+   `selectable`, `showActionMenus`, `hyperlinks`, `withSearchInput`,
+   `createAction`, `checkboxOptions`, `inline`, `disabled`, `class`,
+   `containerAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in
+   FormFields::componentSelectFromConfig(); this template only handles the
+   `attr` block, and the `jsClass` escape hatch (see componentSelect/legacy). #}
+
+{%- set containerAttributes = containerAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{%- if jsClass ?? false %}
+  {%- include '_includes/forms/componentSelect/legacy' %}
+{%- else %}
+  {{- craft.cp.componentSelect(_context)|raw }}
+{%- endif %}

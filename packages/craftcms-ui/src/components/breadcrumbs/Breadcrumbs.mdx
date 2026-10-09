@@ -1,0 +1,32 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as BreadcrumbsStories from './breadcrumbs.stories';
+
+<Meta of={BreadcrumbsStories} name="Docs" />
+
+# Breadcrumbs
+
+`<craft-breadcrumbs>` shows where the current page sits and gives a route back up.
+
+<Canvas of={BreadcrumbsStories.Default} sourceState="shown" />
+
+The trail is made of [Breadcrumb Item](?path=/docs/components-breadcrumb-item--docs)s, each a link except the last.
+
+## Collapsing
+
+A deep path in a narrow window would either wrap onto two lines or push the page sideways. Instead the trail collapses:
+
+<Canvas of={BreadcrumbsStories.Resizable} sourceState="shown" />
+
+The ends matter most — where you are, and the root you can get back to — so those survive as the middle gives way.
+
+## Accessibility
+
+The trail is a navigation landmark named by `label`, defaulting to a translated "Breadcrumbs".
+
+A page with more than one set should name each of them. Two landmarks both called "Breadcrumbs" are indistinguishable in the list a screen reader offers.
+
+The current page is the last crumb and should have no `href` — it is where the person already is, so linking it goes nowhere.
+
+## Properties
+
+<ArgTypes of={BreadcrumbsStories} />

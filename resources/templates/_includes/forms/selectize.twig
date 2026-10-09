@@ -1,0 +1,9 @@
+{# Renders a `<craft-combobox>` from the legacy selectize variables
+   (`options`, `value`, `name`, `id`, `multi`, `includeEnvVars`, `disabled`,
+   `required`, `labelledBy`, `describedBy`).
+
+   Craft 5 rendered a Selectize instance over a hidden `<select>` here. The
+   mapping onto the combobox — and the legacy variables that have no equivalent
+   — is documented on FormFields::selectizeFromConfig(). #}
+
+{{- craft.cp.selectize(_context)|raw -}}

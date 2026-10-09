@@ -1,0 +1,91 @@
+<script setup lang="ts">
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
+  import {h} from 'vue';
+  import {t} from '@craftcms/ui';
+  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import {useCraftTable} from '@/common/table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {create, destroy, edit} from '@actions/Gql/SchemasController';
+  import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
+  import {router} from '@inertiajs/vue3';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+
+  interface SchemaData {
+    id: number;
+    scope: Array<any>;
+    isPublic: boolean;
+    uid: string;
+    name: string;
+  }
+
+  const props = defineProps<{
+    schemas: Array<SchemaData>;
+    readOnly: boolean;
+  }>();
+
+  const columnHelper = createCraftColumnHelper<SchemaData>();
+  const table = useCraftTable({
+    get columns() {
+      return [
+        columnHelper.link('name', {
+          props: ({row}) => ({
+            href: row.original.isPublic
+              ? edit({schemaId: 'public'}).url
+              : edit({schemaId: row.original.id}).url,
+          }),
+          header: t('Name'),
+        }),
+        columnHelper.display({
+          id: 'scope',
+          header: t('Scope'),
+          cell: ({row}) =>
+            row.original.scope.length > 2
+              ? `${row.original.scope.slice(0, 2).join(', ')} ${t('and {count} more', {count: row.original.scope.length - 2})}`
+              : row.original.scope.join(', '),
+        }),
+        columnHelper.display({
+          id: 'public',
+          header: t('Public'),
+          cell: ({row}) => (row.original.isPublic ? 'Yes' : 'No'),
+        }),
+        columnHelper.actions(({row}) => [
+          row.original.isPublic
+            ? null
+            : h(DeleteButton, {
+                confirm: t(
+                  'Are you sure you want to delete the “{name}” schema?',
+                  {name: row.original.name}
+                ),
+                onClick: () =>
+                  router
+                    .optimistic<{schemas: Array<SchemaData>}>(({schemas}) => ({
+                      schemas: schemas.filter(({id}) => id !== row.original.id),
+                    }))
+                    .delete(destroy({schemaId: row.original.id})),
+              }),
+        ]),
+      ];
+    },
+    get data() {
+      return props.schemas;
+    },
+    state: {
+      get columnVisibility() {
+        return {
+          name: true,
+          public: true,
+          actions: !props.readOnly,
+        };
+      },
+    },
+  });
+</script>
+
+<template>
+  <LayoutSlot name="content-actions">
+    <CpButtonLink :href="create.url()" icon="plus" variant="primary">{{
+      t('New schema')
+    }}</CpButtonLink>
+  </LayoutSlot>
+  <AdminTable padded :table="table" />
+</template>

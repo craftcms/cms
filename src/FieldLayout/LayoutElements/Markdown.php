@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\FieldLayout\LayoutElements;
+
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\MarkdownContent;
+use CraftCms\Cms\Ui\UiContext;
+use InvalidArgumentException;
+use Override;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+class Markdown extends BaseUiElement
+{
+    /**
+     * @var string The Markdown content
+     */
+    public string $content = '';
+
+    /**
+     * @var bool Whether the content should be displayed in a pane.
+     */
+    public bool $displayInPane = true;
+
+    public static function make(string $content): static
+    {
+        return app(static::class)->content($content);
+    }
+
+    public function content(string $content): static
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+    public function displayInPane(bool $displayInPane = true): static
+    {
+        $this->displayInPane = $displayInPane;
+
+        return $this;
+    }
+
+    protected function selectorLabel(): string
+    {
+        return Str::firstLine($this->content) ?: 'Markdown';
+    }
+
+    protected function selectorIcon(): ?string
+    {
+        return 'markdown';
+    }
+
+    /** @return array{class?: list<string>} */
+    #[Override]
+    protected function selectorLabelAttributes(): array
+    {
+        $attr = parent::selectorLabelAttributes();
+
+        if ($this->content) {
+            $attr['class'][] = 'code';
+        }
+
+        return $attr;
+    }
+
+    #[Override]
+    public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public function hasSettings(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    protected function settingsNodes(UiContext $context): array
+    {
+        return [
+            Field::make(t('Content'), Textarea::make('content')
+                ->monospace()
+                ->value($this->content)),
+            Field::make(t('Display content in a pane'), Lightswitch::make('displayInPane')
+                ->value($this->displayInPane)),
+        ];
+    }
+
+    #[Override]
+    public function uiNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Markdown FieldLayout elements require stable UIDs.');
+        }
+
+        return MarkdownContent::make($this->uid, $this->content)
+            ->displayInPane($this->displayInPane)
+            ->width($this->width);
+    }
+}

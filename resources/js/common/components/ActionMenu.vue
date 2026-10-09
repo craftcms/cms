@@ -1,0 +1,111 @@
+<script setup lang="ts">
+  import {ButtonVariant, t} from '@craftcms/ui';
+  import {computed} from 'vue';
+  import ActionList from '@/common/components/ActionList.vue';
+  import type {ActionItem} from '@/common/types';
+
+  export type ActionItems = Array<ActionItem>;
+
+  const props = withDefaults(
+    defineProps<{
+      icon?: string;
+      label?: string | null;
+      actions: ActionItems;
+      buttonVariant?: ButtonVariant;
+      /** Puts a filter box at the top — worth it once the list is long. */
+      searchable?: boolean;
+      /** Passed to the invoker; see `craft-button`'s `flush`. */
+      flush?: boolean | string;
+    }>(),
+    {
+      icon: 'ellipsis',
+      label: t('Actions'),
+      buttonVariant: ButtonVariant.Plain,
+      searchable: false,
+      flush: true,
+    }
+  );
+
+  /**
+   * Destructive items sink to the bottom, stably.
+   *
+   * `craft-action-menu` does this itself, but only for the menus it builds
+   * from its `actions` property — and this one is slotted, so the convention
+   * has to be applied here instead.
+   */
+  const sorted = computed<ActionItems>(() => [
+    ...props.actions.filter((action) => !isDanger(action)),
+    ...props.actions.filter((action) => isDanger(action)),
+  ]);
+
+  // `craft-button` reads `flush` as an attribute value, where a bare `flush` is
+  // the empty string. `true` would reflect as "true", which matches no side.
+  const invokerFlush = computed(() =>
+    props.flush === true ? '' : props.flush || undefined
+  );
+
+  function isDanger(action: ActionItem): boolean {
+    return 'variant' in action && action.variant === 'danger';
+  }
+
+  /**
+   `v-once` on the invoker slot is load-bearing, not an optimization.
+   `craft-action-menu` (Lion `OverlayMixin`) imperatively relocates/restructures
+   its own light DOM. If Vue keeps the invoker in its reactive patch path, a
+   later re-render patches the invoker's slot fragment against DOM the element
+   moved and throws "Cannot read properties of null (reading 'insertBefore')".
+   Being passive isn't enough: Vue's block optimization flattens dynamic
+   descendants and patches them with `craft-action-menu` as the container,
+   bypassing anything short of `v-once`. `v-once` renders the invoker exactly
+   once and removes it from the block's dynamic children, so Vue never
+   re-patches the overlay-managed DOM. Invokers are static triggers (an icon /
+   avatar), so freezing them is safe.
+
+   It's on the `<slot>` outlet itself (not a wrapping element) so the invoker
+   — the default `craft-button` below, or whatever a consumer slots in via
+   `#invoker` — is the *direct* child `craft-action-menu` assigns to its
+   `invoker` slot. That's what lets the component's `id`/`aria-controls`/
+   `aria-haspopup`/`aria-expanded` wiring land on the real, focusable element
+   instead of an inert wrapper.
+
+   The items are a different matter: they change, and they're rendered here
+   rather than by the element so link actions can be `CpLink`s and make Inertia
+   visits. `craft-popover` moves unslotted children into a `slot="content"`
+   container it creates once, which would strand anything Vue added afterwards
+   outside the slot — so the wrapper below is ours, which stops the auto-wrap
+   from running at all. Keep every comment outside `craft-action-menu`: the
+   auto-wrap counts any non-empty child node, comment nodes included.
+   */
+</script>
+
+<template>
+  <craft-action-menu
+    :icon="icon"
+    :label="label ?? undefined"
+    :searchable="searchable"
+  >
+    <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
+      <craft-button
+        slot="invoker"
+        type="button"
+        size="small"
+        :icon="icon"
+        :aria-label="label"
+        inherit
+        :flush="invokerFlush"
+        :variant="buttonVariant"
+      >
+      </craft-button>
+    </slot>
+    <div slot="content">
+      <ActionList :actions="sorted" as="craft-action-item" />
+      <slot name="actions"></slot>
+    </div>
+  </craft-action-menu>
+</template>
+
+<style scoped lang="scss">
+  craft-action-menu :deep(craft-action-item) {
+    min-width: 200px;
+  }
+</style>

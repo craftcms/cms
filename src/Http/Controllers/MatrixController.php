@@ -1,0 +1,291 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers;
+
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\NestedUiPayload;
+use CraftCms\Cms\Ui\UiContext;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+readonly class MatrixController
+{
+    use RespondsWithFlash;
+
+    public function __construct(
+        private Drafts $drafts,
+        private Elements $elements,
+        private EntryTypes $entryTypes,
+        private Sites $sites,
+    ) {}
+
+    public function defaultTableColumnOptions(Request $request): JsonResponse
+    {
+        $request->validate([
+            'entryTypeIds' => ['required', 'array'],
+            'entryTypeIds.*' => ['integer'],
+        ]);
+
+        $entryTypes = collect($request->array('entryTypeIds'))->map(function (mixed $entryTypeId) {
+            $entryType = $this->entryTypes->getEntryTypeById((int) $entryTypeId);
+
+            abort_if(is_null($entryType), 400, "Invalid entry type ID: $entryTypeId");
+
+            return $entryType;
+        })->all();
+
+        return new JsonResponse([
+            'options' => Matrix::defaultTableColumnOptions($entryTypes),
+        ]);
+    }
+
+    public function createEntry(Request $request): Response
+    {
+        $validated = $request->validate([
+            'fieldId' => ['required'],
+            'entryTypeId' => ['required'],
+            'ownerId' => ['required'],
+            'ownerElementType' => ['required', 'string', new ElementTypeRule],
+            'siteId' => ['required'],
+            'namespace' => ['required_without:path', 'string'],
+            'path' => ['required_without:namespace', 'array'],
+            'path.*' => ['string'],
+            'staticEntries' => ['nullable', 'boolean'],
+            'duplicate' => ['nullable'],
+        ]);
+
+        abort_if(
+            ! isset($validated['path']) && ! Event::hasListeners(MatrixBlockHtmlRendering::class),
+            400,
+            'Legacy Matrix block rendering requires the Yii2 adapter.',
+        );
+
+        $owner = $this->owner(
+            (int) $validated['ownerId'],
+            $validated['ownerElementType'],
+            (int) $validated['siteId'],
+        );
+
+        abort_if(is_null($owner), 400, 'Invalid owner ID, element type, or site ID.');
+
+        $field = $owner->getFieldLayout()?->getFieldById($validated['fieldId']);
+
+        abort_if(! $field instanceof Matrix, 400, "Invalid Matrix field ID: $validated[fieldId]");
+
+        $entryType = $this->entryTypes->getEntryTypeById($validated['entryTypeId']);
+
+        abort_if(is_null($entryType), 400, "Invalid entry type ID: $validated[entryTypeId]");
+
+        $site = $this->sites->getSiteById($validated['siteId'], true);
+
+        abort_if(is_null($site), 400, "Invalid site ID: $validated[siteId]");
+
+        $attributes = [
+            'siteId' => $validated['siteId'],
+            'uid' => Str::uuid()->toString(),
+            'typeId' => $entryType->id,
+            'fieldId' => $validated['fieldId'],
+            'primaryOwner' => $owner,
+            'owner' => $owner,
+            'slug' => ElementHelper::tempSlug(),
+        ];
+
+        // duplicate an existing entry?
+        $sourceId = $validated['duplicate'] ?? null;
+        if ($sourceId) {
+            /** @var ?Entry $source */
+            $source = Entry::find()
+                ->id($sourceId)
+                ->siteId($validated['siteId'])
+                ->fieldId($validated['fieldId'])
+                ->ownerId($validated['ownerId'])
+                ->typeId($validated['entryTypeId'])
+                ->drafts(null)
+                ->status(null)
+                ->one();
+
+            abort_if(is_null($source), 400, "Invalid source element ID: $sourceId");
+
+            Gate::authorize('view', $source);
+
+            // set owner so that the canDuplicateAsDraft checks the max entries on the right owner and not only the canonical
+            $source->setOwner($owner);
+
+            Gate::authorize('duplicateAsDraft', $source);
+
+            try {
+                $entry = $this->elements->duplicateElement($source, [
+                    ...$attributes,
+                    'isProvisionalDraft' => false,
+                    'draftId' => null,
+                    'sortOrder' => null,
+                ]);
+            } catch (InvalidElementException) {
+                return $this->asFailure(t('Couldn’t duplicate {type}.', [
+                    'type' => Entry::lowerDisplayName(),
+                ]));
+            }
+        } else {
+            abort_if(
+                ! $field->isEntryTypeAvailableForOwner($entryType->id, $owner),
+                400,
+                "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
+            );
+
+            $entry = new Entry([
+                ...$attributes,
+            ]);
+
+            Gate::authorize('save', $entry);
+
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+
+            if (! $this->drafts->saveElementAsDraft($entry, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
+                return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [
+                    'type' => Entry::lowerDisplayName(),
+                ])));
+            }
+        }
+
+        if (isset($validated['path'])) {
+            return new JsonResponse($this->blockUiResponse($entry, $validated['path'], $field));
+        }
+
+        return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
+            entries: [$entry],
+            field: $field,
+            namespace: $validated['namespace'],
+            fresh: true,
+            staticEntries: $validated['staticEntries'] ?? false,
+        ));
+    }
+
+    private function blockHtmlResponse(MatrixBlockHtmlRendering $event): JsonResponse
+    {
+        Event::dispatch($event);
+
+        abort_if($event->response === null, 400, 'Legacy Matrix block rendering is unavailable.');
+
+        return $event->response;
+    }
+
+    /**
+     * The new block as UI nodes, in the same shape the Matrix Control ships its
+     * blocks in — so the browser renders it with UiNodeList like anything else,
+     * rather than splicing in server-rendered HTML.
+     *
+     * @param  list<string>  $path  The Matrix Control's path, e.g. `['fields', 'pageBuilder']`
+     * @return array{uid: string, type: string, ui: array<string, mixed>, values: array<string, mixed>, block: array<string, mixed>}
+     */
+    private function blockUiResponse(Entry $entry, array $path, Matrix $field): array
+    {
+        $scope = [...$path, 'entries', $entry->uid];
+        $payload = app(FieldLayoutCompiler::class)->compile(
+            $entry->getFieldLayout(),
+            $entry,
+            new UiContext(namespace: $scope, refreshable: true),
+        );
+
+        return [
+            'uid' => $entry->uid,
+            'type' => $entry->getType()->handle,
+            'ui' => new NestedUiPayload(
+                scope: $scope,
+                refreshable: true,
+                nodes: $payload->nodes,
+            )->jsonSerialize(),
+            'values' => $payload->values,
+            // What the block is called, what it looks like and what can be done
+            // to it — the same shape the Control ships its other blocks in, so a
+            // new one isn't a blank card until the next save.
+            'block' => $field->blockPresentation($entry, $entry->uid),
+        ];
+    }
+
+    /** @param class-string<ElementInterface> $elementType */
+    private function owner(int $id, string $elementType, int $siteId): ?ElementInterface
+    {
+        return $this->elements->getElementById($id, $elementType, $siteId);
+    }
+
+    /**
+     * Renders the blocks for newly-created entries.
+     */
+    public function renderBlocks(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'entryIds' => ['required', 'array', 'min:1'],
+            'siteId' => ['required'],
+            'namespace' => ['required_without:path', 'string'],
+            'path' => ['required_without:namespace', 'array'],
+            'path.*' => ['string'],
+        ]);
+
+        abort_if(
+            ! isset($validated['path']) && ! Event::hasListeners(MatrixBlockHtmlRendering::class),
+            400,
+            'Legacy Matrix block rendering requires the Yii2 adapter.',
+        );
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->id($validated['entryIds'])
+            ->fixedOrder()
+            ->siteId($validated['siteId'])
+            ->status(null)
+            ->all();
+
+        $field = null;
+        $blocks = [];
+
+        foreach ($entries as $entry) {
+            $field ??= $entry->getField();
+
+            abort_if(
+                ! $field instanceof Matrix || $field->id !== $entry->fieldId,
+                400,
+                'Entry must belong to a Matrix field.',
+            );
+
+            Gate::authorize('view', $entry);
+
+            if (isset($validated['path'])) {
+                $blocks[] = $this->blockUiResponse($entry, $validated['path'], $field);
+            }
+        }
+
+        if (isset($validated['path'])) {
+            return new JsonResponse(['blocks' => $blocks]);
+        }
+
+        return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
+            entries: $entries,
+            field: $field,
+            namespace: $validated['namespace'],
+        ));
+    }
+}

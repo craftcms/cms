@@ -1,0 +1,4 @@
+.uppy-is-drag-over {
+  outline: 2px dashed currentColor;
+  outline-offset: -2px;
+}

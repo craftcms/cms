@@ -1,0 +1,280 @@
+<script setup lang="ts">
+  import {attrs, t, type ServerAttributes} from '@craftcms/ui';
+  import {computed, normalizeClass} from 'vue';
+  import {usePage} from '@inertiajs/vue3';
+  import SelectableCardList from '@/common/components/SelectableCardList.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import type {Selectable} from '@/common/composables/useSelectable';
+  import {
+    isInteractiveItemEvent,
+    type ElementIndexItemBehavior,
+  } from '@/modules/elements/types/item-behavior';
+
+  interface CardElement {
+    id: string | number;
+    label?: string;
+    cardAttributes?: ServerAttributes;
+    cardHeaderHtml?: string;
+    cardActionsHtml?: string;
+    cardThumbHtml?: string;
+    thumbAlignment?: string;
+    cardContentHtml?: string;
+    cardFooterHtml?: string;
+  }
+
+  const props = withDefaults(
+    defineProps<{
+      selection: Selectable<any>;
+      data?: Array<CardElement>;
+      selectable?: boolean;
+      selectAll?: boolean;
+      singleColumn?: boolean;
+      sortable?: boolean;
+      interactionsDisabled?: boolean;
+      readOnly?: boolean;
+      loading?: boolean;
+      renderServerActions?: boolean;
+      itemBehavior?: ElementIndexItemBehavior<CardElement>;
+    }>(),
+    {
+      data: () => [],
+      selectable: false,
+      selectAll: true,
+      singleColumn: false,
+      sortable: false,
+      loading: false,
+      renderServerActions: true,
+    }
+  );
+
+  const page = usePage<{readOnly: boolean}>();
+  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
+
+  // Selection is handed in rather than derived from a table, so this body works
+  // for anything with an ordered list of ids — the element index, a relation
+  // field, or a third-party list.
+
+  const emit = defineEmits<{
+    (event: 'reorder', startIndex: number, finishIndex: number): void;
+  }>();
+
+  const ids = computed(() => props.data.map((element) => element.id));
+
+  /** Per-card attributes the shared frame passes straight through. */
+  function itemClass(id: string | number): unknown {
+    const element = props.data.find((candidate) => candidate.id === id);
+    const classes = normalizeClass(element?.cardAttributes?.class).split(/\s+/);
+
+    return {element: true, error: classes.includes('error')};
+  }
+
+  function itemAttrs(id: string | number): Record<string, unknown> | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    return element ? props.itemBehavior?.attrs?.(element) : undefined;
+  }
+
+  function cardAttrs(id: string | number): Record<string, unknown> | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element) {
+      return undefined;
+    }
+
+    return {
+      ...attrs(element.cardAttributes, {exclude: ['class']}),
+      'thumb-alignment': element.thumbAlignment ?? undefined,
+    };
+  }
+
+  function cardSelectLabel(id: string | number): string | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    return element?.label
+      ? t('Select {label}', {label: element.label})
+      : undefined;
+  }
+
+  function onCardClick(id: string | number, event: MouseEvent) {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (element && props.itemBehavior?.onClick?.(element, event)) {
+      return;
+    }
+
+    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+      props.selection.handleClick(id, event);
+    }
+  }
+
+  function onCardKeydown(
+    id: number | string,
+    _index: number,
+    event: KeyboardEvent
+  ) {
+    if (!props.selectable) {
+      return;
+    }
+
+    if (isInteractiveItemEvent(event)) {
+      return;
+    }
+
+    const element = props.data.find((el) => el.id === id);
+
+    if (element && props.itemBehavior?.onKeydown?.(element, event)) {
+      event.preventDefault();
+    }
+  }
+
+  function checkboxValue(event: Event): boolean {
+    // `craft-checkbox` dispatches `model-value-changed` from the host, not from
+    // an inner `<input>`, so an `instanceof HTMLInputElement` test reads every
+    // change as unchecked. Since it also re-fires on programmatic `.checked`
+    // updates, that turned each selection into an immediate deselection.
+    return Boolean((event.target as {checked?: boolean} | null)?.checked);
+  }
+</script>
+
+<template>
+  <div class="grid place-items-center min-h-50" v-if="loading">
+    <craft-spinner></craft-spinner>
+  </div>
+  <template v-else-if="data.length > 0">
+    <div class="card-grid-header" v-if="selectable && selectAll">
+      <craft-checkbox
+        label-sr-only
+        .checked="selection.allSelected.value"
+        .indeterminate="selection.someSelected.value"
+        .disabled="readOnly || interactionsDisabled"
+        @model-value-changed="selection.toggleAll(checkboxValue($event))"
+      >
+        <label slot="label">{{ t('Select all') }}</label>
+      </craft-checkbox>
+    </div>
+
+    <SelectableCardList
+      tag="ul"
+      :ids="ids"
+      :selection="selection"
+      :selectable="selectable"
+      :sortable="sortable"
+      :interactions-disabled="interactionsDisabled"
+      :read-only="readOnly"
+      :single-column="singleColumn"
+      :list-class="{'card-grid': true, 'card-grid--single': singleColumn}"
+      :item-class="itemClass"
+      :item-attrs="itemAttrs"
+      :card-attrs="cardAttrs"
+      :select-label="cardSelectLabel"
+      :aria-busy="loading ? 'true' : undefined"
+      @reorder="(from, to) => emit('reorder', from, to)"
+      @item-click="onCardClick"
+      @item-keydown="onCardKeydown"
+    >
+      <template #thumbnail="{index}">
+        <div v-if="data[index]?.cardThumbHtml" slot="thumbnail">
+          <DynamicHtmlRenderer :html="data[index]!.cardThumbHtml!" />
+        </div>
+      </template>
+
+      <template #label="{index}">
+        <DynamicHtmlRenderer :html="data[index]?.cardHeaderHtml ?? ''" />
+      </template>
+
+      <template #actions="{index}">
+        <slot name="actions" :element="data[index]" :index="index"></slot>
+        <DynamicHtmlRenderer
+          v-if="renderServerActions"
+          :html="data[index]?.cardActionsHtml ?? ''"
+        />
+      </template>
+
+      <template #default="{index}">
+        <DynamicHtmlRenderer :html="data[index]?.cardContentHtml ?? ''" />
+      </template>
+
+      <template #footer="{index}">
+        <DynamicHtmlRenderer
+          :html="data[index]?.cardFooterHtml ?? ''"
+          slot="footer"
+        />
+      </template>
+    </SelectableCardList>
+  </template>
+  <template v-else>
+    <slot name="empty">
+      <craft-empty :label="t('No results')" icon="empty-set"></craft-empty>
+    </slot>
+  </template>
+</template>
+
+<style scoped lang="scss">
+  .card-grid-header {
+    margin-block-end: var(--c-spacing-md);
+    padding: var(--c-spacing-md);
+    padding-inline-start: calc(
+      var(--c-spacing-md) + 1px
+    ); // so the checkboxes line up
+    background-color: var(--c-color-neutral-fill-quiet);
+    border-start-start-radius: var(--c-radius-md);
+    border-start-end-radius: var(--c-radius-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .card-grid {
+    display: grid;
+    gap: var(--c-spacing-md);
+    align-items: stretch;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    margin-block: var(--c-spacing-md);
+  }
+
+  // One card per row, however wide the container gets.
+  .card-grid--single {
+    grid-template-columns: 1fr;
+  }
+
+  .card-grid > li {
+    position: relative;
+  }
+
+  .card-grid > li[data-is-folder] {
+    cursor: pointer;
+  }
+
+  // Dragging, but still over itself — dim rather than remove, so the grid
+  // doesn't reflow under the cursor.
+  .card-grid > li.is-dragging {
+    opacity: 0.4;
+  }
+
+  // Dragged away from itself: collapse but keep the footprint, so the grid
+  // doesn't reshuffle around the gap.
+  .card-grid > li.is-dragging-away {
+    visibility: hidden;
+  }
+
+  .card-grid :deep(> li > craft-card) {
+    height: 100%;
+  }
+
+  // craft-thumbnail defaults its own size via :host, so the card thumbnail
+  // renders at the tiny default instead of filling its 120px column. Match the
+  // thumbnail view (and Craft 5's 120px card thumb column).
+  .card-grid :deep(craft-thumbnail) {
+    --c-thumbnail-size: 120px;
+  }
+
+  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size;
+  // scale them up to match.
+  .card-grid :deep(.card-main .thumb) {
+    width: 72px;
+    height: 72px;
+  }
+
+  .card-grid :deep(.card-main .thumb svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,0 +1,332 @@
+/**
+CP Styles
+ */
+@layer theme, base, components, cp, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import '@craftcms/ui/styles/cp.css' layer(cp);
+@import '@craftcms/ui/tailwind.css' layer(theme);
+
+@import './fld.css';
+@import './cvd.css';
+@import './global-sidebar.css';
+@import './matrix.css';
+@import './messages.css';
+@import './slideout.css';
+
+:root {
+  --cp-sidebar-width: calc(226rem / 16);
+
+  /* What a collapsed navigation folds down to: one touch target plus its
+     padding. Shared so every rail in the CP is the same width. */
+  --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
+  --cp-sidebar-collapsed-width: var(--cp-rail-width);
+  --cp-content-width: calc(1440rem / 16);
+  --cp-footer-height: calc(54rem / 16);
+  --cp-header-height: calc(42rem / 16);
+  --cp-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-body-inset: var(--c-spacing-md);
+  --cp-body-border-width: 1px;
+  --cp-header-bg: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-blue-50), white 50%),
+    black 4%
+  );
+
+  /* Inline padding for the CpContainer element */
+  --cp-container-padding: var(--c-spacing-lg);
+  --cp-content-max-width: calc(960rem / 16);
+
+  /* Workspace */
+  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
+  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-image:
+    linear-gradient(
+      to right,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 0
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 1px
+    );
+  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
+    var(--workspace-bg-image);
+}
+
+/* Laravel Debugbar pins its header row to the bottom of the viewport. This is
+   its collapsed height, until PageScreen measures the bar itself. */
+:root:has(.phpdebugbar) {
+  --cp-debug-bar-height: calc(33rem / 16);
+}
+
+/* Above all persistent page chrome; see the layer tokens. */
+.skip-link--global {
+  z-index: var(--c-layer-skip-link);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* Held by overlays — modals and slideouts — while any of them is open. The
+   legacy stylesheet and panel-stack.css each define this too; repeated here so
+   the lock still works on a CP page that loads neither. */
+body.no-scroll {
+  overflow: hidden;
+}
+
+/**
+Temporary holding for cp-pane styles until craft-pane is a thing
+ */
+.cp-workspace {
+  padding: var(--c-spacing-xl);
+  border-radius: var(--c-radius-sm);
+  background-color: var(--workspace-bg-color);
+  background-image: var(--workspace-bg-image);
+  background-size: var(--workspace-bg-size);
+  background-position: -1px -1px;
+  box-shadow: var(--c-shadow-sunken);
+  background-clip: padding-box;
+  border: 1px solid var(--c-color-border-quiet);
+  overflow: clip;
+}
+
+.markdown-field > .markdown-field-editor {
+  display: block;
+  min-height: 0;
+}
+
+.markdown-field > .markdown-field-editor:not(:defined) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--markdown-field-min-height, 188px);
+  margin: 0;
+  padding-block: var(--c-spacing-md);
+  padding-inline: var(--c-input-spacing-inline);
+  overflow: auto;
+  border: var(
+      --c-input-border-width,
+      var(--c-form-control-border-width, var(--c-spacing-1px))
+    )
+    var(--c-input-border-style, var(--c-form-control-border-style, solid))
+    var(
+      --c-input-border-color,
+      var(--c-form-control-border-color, var(--c-color-neutral-border-quiet))
+    );
+  border-radius: var(--c-input-radius, var(--c-radius-sm));
+  background: var(
+    --c-input-fill,
+    var(--c-form-control-fill, var(--c-surface-form))
+  );
+  background-clip: padding-box;
+  box-shadow: var(--c-input-shadow);
+  color: var(--c-input-text, var(--c-text-default));
+  font-family: var(--c-font-mono);
+  font-size: var(--c-text-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/**
+Sidebar metadata
+ */
+.cp-metadata-list {
+  display: grid;
+  gap: var(--c-spacing-md);
+  margin: 0;
+  padding: 0;
+}
+
+.cp-metadata-list dt {
+  font-weight: bold;
+}
+
+.cp-metadata-list__item {
+  display: grid;
+  gap: var(--c-spacing-xs);
+  align-items: baseline;
+}
+
+.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+  align-items: center;
+}
+
+/* Roughly 250px */
+@container (width > 16.25rem) {
+  .cp-metadata-list {
+    grid-template-columns: minmax(max-content, 25%) 1fr;
+  }
+
+  .cp-metadata-list__item {
+    grid-column: span 2;
+    display: grid;
+    gap: unset;
+    grid-template-columns: subgrid;
+  }
+
+  /* Values against the far edge, now they have a column of their own. */
+  .cp-metadata-list dd {
+    text-align: end;
+  }
+}
+
+.context-label {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--c-spacing-sm);
+  padding-inline: var(--c-spacing-md);
+  font-size: calc(11rem / 16);
+  font-weight: normal;
+  line-height: 1.5;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: var(--c-radius-full);
+}
+
+/**
+CP Checkbox Select (minimal legacy styling)
+ */
+.cp-checkbox-select {
+  display: grid;
+  gap: var(--c-spacing-sm);
+}
+
+.cp-checkbox-select__item {
+  display: flex;
+  align-items: center;
+  gap: var(--c-spacing-md);
+}
+
+/**
+Bring the reorder button to the top to prevent weird click issues between
+the drag handler and the hidden checkbox with legacy markup.
+
+Remove once we have a stable way to create a `<craft-checkbox/>` via twig
+ */
+.cp-checkbox-select__item craft-reorder-button {
+  position: relative;
+  z-index: 1;
+}
+
+/**
+Form controls
+ */
+.cp-form-control {
+  --_border-width: var(
+    --c-input-border-width,
+    var(--c-form-control-border-width)
+  );
+  font: inherit;
+  color: var(--c-input-text, var(--c-text-default));
+  position: relative;
+  min-height: calc(
+    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
+  );
+  border-width: var(--_border-width);
+  border-style: var(--c-input-border-style, var(--c-form-control-border-style));
+  border-color: var(--c-input-border-color, var(--c-form-control-border-color));
+  border-radius: var(--c-input-radius, var(--c-radius-sm));
+  padding-block: 0;
+  width: 100%;
+  flex: 1 1 auto;
+  background-color: var(--c-input-fill, var(--c-form-control-fill));
+  box-shadow: var(--c-input-shadow);
+  overflow: clip;
+}
+
+.selectize-dropdown.cp-form-control {
+  position: absolute;
+  min-height: 0;
+  overflow: visible;
+}
+
+/**
+Drag-and-drop move targets
+
+Shared highlight for any element the asset-move drag marks as the active drop
+target — folder rows, sidebar sources, and breadcrumb crumbs alike. Garnish adds
+`.active-drop-target` while the cursor is over a valid target.
+ */
+[data-folder-drop-target].active-drop-target {
+  outline: 2px solid var(--c-color-accent-border-loud);
+  outline-offset: -2px;
+  border-radius: var(--c-radius-sm);
+  background-color: var(--c-color-accent-fill-quiet);
+}
+
+/**
+Column resizing
+
+`useResizable` puts this on <html> for the duration of a pointer drag, so the
+resize cursor sticks even when the pointer outruns the handle, and the drag
+doesn't leave a trail of selected text behind it.
+ */
+.is-resizing-inline,
+.is-resizing-inline * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+/*
+ * Choice option illustrations (View Mode and friends). The label is `for`-bound
+ * to its radio, so clicking the illustration selects the option — what Craft 5
+ * got from wrapping the image and the input in a single label.
+ */
+.radio-thumbnail {
+  display: block;
+  margin-block-end: var(--c-spacing-xs);
+  cursor: pointer;
+}
+
+.radio-thumbnail img {
+  display: block;
+}
+
+/*
+ * The field a deep link points at — see `useFieldHighlight`. Styled on the host
+ * element rather than inside `craft-field`'s shadow root, so the ring can sit
+ * outside the field's own box without the component knowing about it.
+ */
+craft-field[data-highlighted] {
+  background-color: var(--c-color-accent-fill-quiet);
+  outline: 1px solid
+    var(--c-color-focus-ring, var(--c-color-accent-border-quiet));
+  outline-offset: var(--c-spacing-xs);
+  transition-property: outline, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  craft-field[data-highlighted] {
+    transition: none;
+  }
+}
+
+.cp-container {
+  --c-container-padding: var(--c-spacing-lg);
+  display: grid;
+  grid-template-columns: var(--cp-container-padding) 1fr var(
+      --c-container-padding
+    );
+  grid-template-areas: '. content .';
+}
+
+.cp-container > * {
+  grid-column: 2;
+}

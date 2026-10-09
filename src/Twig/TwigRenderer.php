@@ -1,0 +1,304 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig;
+
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Support\Arrayable;
+use Twig\Extension\SandboxExtension;
+use Yiisoft\Arrays\ArrayableInterface;
+
+/**
+ * @mixin Twig
+ *
+ * @since 6.0.0
+ */
+class TwigRenderer implements TwigRendererInterface
+{
+    /** @var array<string, string> */
+    private array $normalizedObjectTemplates = [];
+
+    public function __construct(
+        private readonly Twig $twig,
+    ) {}
+
+    public function supports(string $file): bool
+    {
+        return str_ends_with($file, '.twig') || str_ends_with($file, '.html');
+    }
+
+    /**
+     * Renders a Twig template.
+     *
+     * @param  string  $template  The name of the template to load
+     * @param  array<string, mixed>  $variables  The variables that should be available to the template
+     * @param  TemplateMode|null  $templateMode  The template mode to use
+     * @return string the rendering result
+     */
+    public function renderTemplate(
+        string $template,
+        array $variables = [],
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
+        $templateMode ??= TemplateMode::get();
+
+        return $this->twig->get($templateMode)->render($template, $variables);
+    }
+
+    /**
+     * Renders a template in sandbox mode.
+     */
+    public function renderSandboxedTemplate(
+        string $template,
+        array $variables = [],
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
+        $templateMode ??= TemplateMode::get();
+
+        return $this->sandbox(
+            fn () => $this->renderTemplate($template, $variables, $templateMode, $resolvedTemplate),
+            $templateMode,
+        );
+    }
+
+    /**
+     * Renders an inline template string.
+     */
+    public function renderString(
+        string $template,
+        array $variables = [],
+        TemplateMode $templateMode = TemplateMode::Site,
+        bool $escapeHtml = false,
+    ): string {
+        // If there are no dynamic tags, just return the template
+        if (! str_contains($template, '{')) {
+            return $template;
+        }
+
+        $twig = $this->twig->get($templateMode);
+
+        if (! $escapeHtml) {
+            $twig->setDefaultEscaperStrategy(false);
+        }
+
+        try {
+            return $twig->createTemplate($template)->render($variables);
+        } finally {
+            if (! $escapeHtml) {
+                $twig->setDefaultEscaperStrategy();
+            }
+        }
+    }
+
+    /**
+     * Renders a template defined by a string in a sandboxed environment.
+     *
+     * @see renderString()
+     */
+    public function renderSandboxedString(
+        string $template,
+        array $variables = [],
+        TemplateMode $templateMode = TemplateMode::Site,
+        bool $escapeHtml = false,
+    ): string {
+        return $this->sandbox(fn () => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
+    }
+
+    /**
+     * Renders an object template.
+     *
+     * The passed-in `$object` will be available to the template as an `object` variable.
+     *
+     * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
+     * full Twig output tags (e.g. `{{ object.foo }}`.
+     *
+     * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
+     * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
+     */
+    public function renderObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
+    ): string {
+        // If there are no dynamic tags, just return the template
+        if (! str_contains($template, '{')) {
+            return trim($template);
+        }
+
+        $twig = $this->twig->get($templateMode);
+
+        // Temporarily disable strict variables if it's enabled
+        $strictVariables = $twig->isStrictVariables();
+
+        if ($strictVariables) {
+            $twig->disableStrictVariables();
+        }
+
+        $twig->setDefaultEscaperStrategy($escaperStrategy);
+        try {
+            $cacheKey = md5($templateMode->value.':'.$template);
+            $normalizedTemplate = $this->normalizedObjectTemplates[$cacheKey] ??= $this->normalizeObjectTemplate($template);
+            $templateObj = $twig->createTemplate($normalizedTemplate);
+
+            // Get the variables to pass to the template
+            if ($object instanceof ArrayableInterface) {
+                if (preg_match('/\binclude\b/', $template)) {
+                    // Export all normal fields, since we don’t know what the included template is going to need
+                    // (https://github.com/craftcms/cms/issues/18165)
+                    $fields = [];
+                } else {
+                    $fields = $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'];
+                }
+
+                $variables += $object->toArray(
+                    fields: $fields,
+                    expand: $this->filterFieldsByTemplate($object->extraFields(), $template),
+                    recursive: false,
+                );
+            } elseif (is_object($object) && ($object instanceof Arrayable || method_exists($object, 'toArray'))) {
+                $variables += $object->toArray();
+            }
+
+            $variables['object'] = $object;
+            $variables['_variables'] = $variables;
+
+            return trim($templateObj->render($variables));
+        } finally {
+            $twig->setDefaultEscaperStrategy();
+
+            // Re-enable strict variables
+            if ($strictVariables) {
+                $twig->enableStrictVariables();
+            }
+        }
+    }
+
+    /**
+     * Renders an object template in a sandboxed environment.
+     *
+     * @see renderObjectTemplate()
+     */
+    public function renderSandboxedObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        TemplateMode $templateMode = TemplateMode::Site,
+    ): string {
+        return $this->sandbox(fn () => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
+    }
+
+    /**
+     * Normalizes {property} shorthand into {{ object.property|raw }}.
+     */
+    public function normalizeObjectTemplate(string $template): string
+    {
+        $tokens = [];
+        $tokenize = function (string $value) use (&$tokens): string {
+            $token = 'tok_'.Str::random(10);
+            $tokens[$token] = $value;
+
+            return $token;
+        };
+
+        // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
+            fn (array $matches): string => $tokenize($matches[0]),
+            $template
+        );
+
+        // Tokenize any remaining Twig tags (including print tags)
+        $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
+            fn (array $matches): string => $tokenize($matches[0]),
+            (string) $template
+        );
+
+        // Tokenize inline code and code blocks
+        $template = preg_replace_callback(
+            '/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s',
+            fn (array $matches): string => $tokenize('{% verbatim %}'.$matches[0].'{% endverbatim %}'),
+            (string) $template
+        );
+
+        // Tokenize objects (multiple passes for nested objects)
+        do {
+            $template = preg_replace_callback(
+                '/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/',
+                fn (array $matches): string => $tokenize($matches[0]),
+                (string) $template,
+                -1,
+                $count
+            );
+        } while ($count > 0);
+
+        // Swap out the remaining {xyz} tags with {{object.xyz}}
+        $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function (array $match) {
+            // Is this a function call like `clone()`?
+            if (! empty($match[2]) && $match[2][0] === '(') {
+                $replace = $match[1].$match[2];
+            } else {
+                $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
+            }
+
+            return "{{ $replace }}";
+        }, (string) $template);
+
+        // Restore tokenized content (sequential to handle nested tokens)
+        foreach (array_reverse($tokens) as $token => $value) {
+            $template = str_replace($token, $value, $template);
+        }
+
+        return $template;
+    }
+
+    /**
+     * Enables sandbox, runs callback, disables sandbox.
+     */
+    private function sandbox(callable $callback, ?TemplateMode $templateMode): string
+    {
+        $extension = $this->twig->get($templateMode)->getExtension(SandboxExtension::class);
+
+        if ($extension->isSandboxed()) {
+            return $callback();
+        }
+
+        // enableSandbox() and disableSandbox() are deprecated as of Twig 3.29
+        $checker = $extension->getChecker();
+        $checker->setSandboxed(true);
+
+        try {
+            return $callback();
+        } finally {
+            $checker->setSandboxed(false);
+        }
+    }
+
+    /**
+     * Filters fields array to only those referenced in template.
+     */
+    /**
+     * @param  array<array-key, mixed>  $fields
+     * @return list<int|string>
+     */
+    private function filterFieldsByTemplate(array $fields, string $template): array
+    {
+        $filtered = [];
+
+        foreach ($fields as $field => $definition) {
+            if (is_int($field)) {
+                $field = $definition;
+            }
+            if (preg_match(sprintf('/\b%s\b/', preg_quote((string) $field, '/')), $template)) {
+                $filtered[] = $field;
+            }
+        }
+
+        return $filtered;
+    }
+}

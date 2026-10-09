@@ -1,0 +1,577 @@
+import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+import {expect, waitFor} from 'storybook/test';
+
+import {html} from 'lit';
+
+import {sizes} from '@src/constants/size';
+
+import '../tab/tab.js';
+import './tabs.js';
+import type CraftTabs from './tabs.js';
+import {tabsPlacements} from './tabs.js';
+
+import '../icon/icon.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `tabs.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftTabs>('craft-tabs');
+
+type CraftTabsArgs = CraftTabs & typeof args;
+
+const meta = {
+  title: 'Components/Tabs',
+  component: 'craft-tabs',
+  // `selected-index` is Lion's, so it is not in the manifest and is declared
+  // alongside the generated set.
+  argTypes: {
+    ...argTypes,
+    selectedIndex: {
+      name: 'selected-index',
+      control: {type: 'number', min: 0},
+      description: 'Index of the selected tab.',
+    },
+    // A strip with no selected tab isn't a tab pattern; nothing uses it.
+    collapsible: {table: {disable: true}},
+  },
+  args: {
+    ...args,
+    placement: 'block-start',
+    size: 'medium',
+    selectedIndex: 0,
+  },
+  render: (args) => html`
+    <craft-tabs
+      label="${args.label ?? 'Example'}"
+      placement="${args.placement}"
+      size="${args.size}"
+      selected-index="${args.selectedIndex}"
+      ?equal-width="${args.equalWidth}"
+    >
+      <craft-tab slot="tab">Tab One</craft-tab>
+      <div slot="panel">
+        <p>Some content for the first tab</p>
+      </div>
+      <craft-tab slot="tab">Tab Two</craft-tab>
+      <div slot="panel">
+        <p>Some content for the second tab</p>
+      </div>
+      <craft-tab slot="tab">Tab Three</craft-tab>
+      <div slot="panel">
+        <p>Some content for the third tab</p>
+      </div>
+    </craft-tabs>
+  `,
+} satisfies Meta<CraftTabsArgs>;
+
+export default meta;
+type Story = StoryObj<CraftTabsArgs>;
+
+/*
+ * These play functions are the real test bed for the Lion-driven behavior:
+ * it bootstraps from a `slotchange`, which happy-dom never fires, so
+ * tabs.test.ts can only cover the wrapper. See the note at the top of that
+ * file.
+ */
+
+/**
+ * Sends an arrow key to a tab. Lion navigates on `keyup`, and this dispatches
+ * the event at the tab directly rather than going through `userEvent.keyboard`,
+ * which routes to whatever the *browser* considers focused — unreliable here,
+ * since the story runs in an iframe that may not hold system focus.
+ */
+function arrow(tab: HTMLElement, key: 'ArrowLeft' | 'ArrowRight') {
+  tab.focus();
+  tab.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
+  tab.dispatchEvent(new KeyboardEvent('keyup', {key, bubbles: true}));
+}
+
+export const Default: Story = {
+  play: async ({canvas, userEvent}) => {
+    const tabs = canvas.getAllByRole('tab');
+
+    await expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+
+    await userEvent.click(tabs[2]!);
+    await expect(tabs[2]).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs[0]).toHaveAttribute('aria-selected', 'false');
+
+    // Roving tabindex: only the selected tab is in the tab order.
+    await expect(tabs[2]).toHaveAttribute('tabindex', '0');
+    await expect(tabs[0]).toHaveAttribute('tabindex', '-1');
+
+    arrow(tabs[2]!, 'ArrowLeft');
+    await expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
+  },
+};
+
+/**
+ * The four placements, in logical terms: the strip before the panels on the
+ * block axis (the default) or after them, and the same two on the inline axis
+ * — which is the shape an icon toolbar wants.
+ */
+export const Placements: Story = {
+  render: () => html`
+    <div style="display: grid; gap: 3rem;">
+      ${tabsPlacements.map(
+        (placement) => html`
+          <craft-tabs label="Placement example" placement="${placement}">
+            <craft-tab slot="tab">First</craft-tab>
+            <div slot="panel"><p>The strip is at the ${placement}.</p></div>
+            <craft-tab slot="tab">Second</craft-tab>
+            <div slot="panel"><p>Its second panel.</p></div>
+          </craft-tabs>
+        `
+      )}
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    for (const placement of tabsPlacements) {
+      const tabs = canvasElement.querySelector(
+        `craft-tabs[placement="${placement}"]`
+      )!;
+      const box = (part: string) =>
+        tabs
+          .shadowRoot!.querySelector(`[part="${part}"]`)!
+          .getBoundingClientRect();
+
+      const strip = box('strip');
+      const panels = box('panels');
+      const orientation = tabs
+        .shadowRoot!.querySelector('[part="tab-group"]')!
+        .getAttribute('aria-orientation');
+
+      if (placement === 'block-start') {
+        await expect(orientation).toBe('horizontal');
+        await expect(strip.bottom).toBeLessThanOrEqual(panels.top);
+      } else if (placement === 'block-end') {
+        await expect(orientation).toBe('horizontal');
+        await expect(strip.top).toBeGreaterThanOrEqual(panels.bottom);
+      } else if (placement === 'inline-start') {
+        await expect(orientation).toBe('vertical');
+        await expect(strip.right).toBeLessThanOrEqual(panels.left);
+      } else {
+        await expect(orientation).toBe('vertical');
+        await expect(strip.left).toBeGreaterThanOrEqual(panels.right);
+      }
+    }
+  },
+};
+
+/**
+ * The placements are logical, not physical: `inline-start` is the left in LTR
+ * and the right in RTL, and the rule and the selected indicator follow it
+ * across on their own — there is no direction-specific CSS in the component.
+ */
+export const RightToLeft: Story = {
+  render: () => html`
+    <div dir="rtl" style="max-inline-size: 30rem;">
+      <craft-tabs label="مثال" placement="inline-start">
+        <craft-tab slot="tab">الأول</craft-tab>
+        <div slot="panel"><p>اللوحة الأولى.</p></div>
+        <craft-tab slot="tab">الثاني</craft-tab>
+        <div slot="panel"><p>اللوحة الثانية.</p></div>
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const tabs = canvasElement.querySelector('craft-tabs')!;
+    const box = (part: string) =>
+      tabs
+        .shadowRoot!.querySelector(`[part="${part}"]`)!
+        .getBoundingClientRect();
+
+    // The strip is at the inline start, which here is the right-hand side.
+    await expect(box('strip').left).toBeGreaterThanOrEqual(box('panels').right);
+  },
+};
+
+/**
+ * `layout` is deprecated in favor of `placement`, and kept as an alias over
+ * it: `vertical` is `inline-start` and `horizontal` is `block-start`.
+ */
+export const DeprecatedLayout: Story = {
+  render: () => html`
+    <craft-tabs label="Layout example" layout="vertical">
+      <craft-tab slot="tab">First</craft-tab>
+      <div slot="panel"><p>The first panel.</p></div>
+      <craft-tab slot="tab">Second</craft-tab>
+      <div slot="panel"><p>The second panel.</p></div>
+    </craft-tabs>
+  `,
+  play: async ({canvasElement}) => {
+    const tabs = canvasElement.querySelector('craft-tabs')!;
+
+    await expect(tabs).toHaveAttribute('placement', 'inline-start');
+    await expect(tabs.placement).toBe('inline-start');
+    await expect(
+      tabs.shadowRoot!.querySelector('[part="tab-group"]')
+    ).toHaveAttribute('aria-orientation', 'vertical');
+  },
+};
+
+/**
+ * The three sizes, on both axes. `size` sets a font size on the strip and
+ * nothing else — the tabs are slotted, so they inherit it, and their padding is
+ * `em`-based and follows. The panels keep the document's text size either way.
+ */
+export const Sizes: Story = {
+  render: () => html`
+    ${(['block-start', 'inline-start'] as const).map(
+      (placement) => html`
+        <div
+          style="display: flex; align-items: start; gap: 2rem; margin-block-end: 2rem;"
+        >
+          ${sizes.map(
+            (size) => html`
+              <craft-tabs
+                label="Size example"
+                placement="${placement}"
+                size="${size}"
+              >
+                <craft-tab slot="tab">${size}</craft-tab>
+                <div slot="panel"><p>A ${size} ${placement} strip.</p></div>
+                <craft-tab slot="tab">Second</craft-tab>
+                <div slot="panel"><p>Its second panel.</p></div>
+              </craft-tabs>
+            `
+          )}
+        </div>
+      `
+    )}
+  `,
+  play: async ({canvasElement}) => {
+    const px = (tab: Element, property: string) =>
+      parseFloat(getComputedStyle(tab).getPropertyValue(property));
+
+    for (const placement of ['block-start', 'inline-start']) {
+      const firstTabs = [
+        ...canvasElement.querySelectorAll(
+          `craft-tabs[placement="${placement}"]`
+        ),
+      ].map((strip) => strip.querySelector('craft-tab')!);
+
+      const fonts = firstTabs.map((tab) => px(tab, 'font-size'));
+      const paddings = firstTabs.map((tab) => px(tab, 'padding-block-start'));
+
+      // Ordered small < medium < large...
+      await expect(fonts[0]).toBeLessThan(fonts[1]!);
+      await expect(fonts[1]).toBeLessThan(fonts[2]!);
+
+      // ...and the padding tracks it, with no per-size padding rule involved.
+      await expect(paddings[0]).toBeLessThan(paddings[1]!);
+      await expect(paddings[1]).toBeLessThan(paddings[2]!);
+      firstTabs.forEach((_, index) =>
+        expect(paddings[index]).toBeCloseTo(fonts[index]! / 2, 1)
+      );
+    }
+  },
+};
+
+/** The second tab starts selected. */
+export const SelectedIndex: Story = {
+  args: {selectedIndex: 1},
+  play: async ({canvas}) => {
+    await expect(canvas.getAllByRole('tab')[1]).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+  },
+};
+
+/**
+ * Disabled tabs can't be clicked and are skipped by arrow-key navigation. Lion
+ * also moves the initial selection off a disabled first tab.
+ */
+export const Disabled: Story = {
+  render: () => html`
+    <craft-tabs label="Disabled example">
+      <craft-tab slot="tab">Enabled</craft-tab>
+      <div slot="panel"><p>This tab can be selected.</p></div>
+      <craft-tab slot="tab" disabled>Disabled</craft-tab>
+      <div slot="panel"><p>You shouldn't be able to get here.</p></div>
+      <craft-tab slot="tab">Also enabled</craft-tab>
+      <div slot="panel"><p>This tab can be selected too.</p></div>
+    </craft-tabs>
+  `,
+  play: async ({canvas}) => {
+    const tabs = canvas.getAllByRole('tab');
+
+    // A disabled tab is out of hit-testing entirely, so a click can't reach
+    // the handler <craft-tabs> binds to every tab. (userEvent refuses to click
+    // it for that same reason, which is why this asserts the style.)
+    await expect(getComputedStyle(tabs[1]!).pointerEvents).toBe('none');
+    await expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+
+    // Arrow keys hop over the disabled tab in the middle.
+    arrow(tabs[0]!, 'ArrowRight');
+    await expect(tabs[2]).toHaveAttribute('aria-selected', 'true');
+  },
+};
+
+/**
+ * The panels can live outside the component: each tab names its panel by `id`
+ * with `controls`, and the strip drives those panels where they stand. To
+ * follow the APG tabs pattern they still come directly after the strip in the
+ * DOM, with nothing between them.
+ */
+export const ExternalPanels: Story = {
+  render: () => html`
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+
+    <craft-tabs label="Settings">
+      <craft-tab slot="tab" controls="external-content">Content</craft-tab>
+      <craft-tab slot="tab" controls="external-settings">Settings</craft-tab>
+    </craft-tabs>
+    <section id="external-content"><p>The content panel.</p></section>
+    <section id="external-settings" class="hidden">
+      <p>The settings panel.</p>
+    </section>
+  `,
+  play: async ({canvas, canvasElement, userEvent}) => {
+    const tabs = canvas.getAllByRole('tab');
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const content = canvasElement.querySelector('#external-content')!;
+    const settings = canvasElement.querySelector('#external-settings')!;
+
+    await expect(strip.nextElementSibling).toBe(content);
+    await expect(content.nextElementSibling).toBe(settings);
+
+    await expect(tabs[0]).toHaveAttribute('aria-controls', 'external-content');
+    await expect(content).toHaveAttribute('role', 'tabpanel');
+    await expect(content).toHaveAttribute('aria-labelledby', tabs[0]!.id);
+
+    await userEvent.click(tabs[1]!);
+    await expect(content).toHaveClass('hidden');
+    await expect(settings).not.toHaveClass('hidden');
+  },
+};
+
+/**
+ * Waits out the animation frames the overflow measurement schedules.
+ *
+ * A fixed number of frames is not enough on its own: `requestAnimationFrame`
+ * is starved when several browser tests run at once, so the measurement had
+ * not always finished by the time the assertions ran. Pair this with
+ * `settleUntil()` wherever the result of a measurement is being read.
+ */
+async function settle() {
+  for (let frame = 0; frame < 3; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
+/** Settles, then waits for the measurement to actually land. */
+async function settleUntil(condition: () => boolean) {
+  await settle();
+  await waitFor(() => expect(condition()).toBe(true));
+}
+
+const OVERFLOW_LABELS = [
+  'Content',
+  'Metadata',
+  'Search Engine Optimization',
+  'Social Sharing',
+  'Advanced Settings',
+  'Permissions',
+];
+
+/**
+ * A strip narrower than its tabs collapses the ones that don't fit into an
+ * action menu at the end, keeping the selected tab in the strip. Drag the
+ * Storybook viewport to watch tabs move in and out of the menu.
+ */
+export const Overflow: Story = {
+  parameters: {
+    a11y: {
+      config: {
+        // This story opens the overflow menu and leaves it open, so the scan
+        // reaches Lion's overlay wrapper — a `<dialog role="none">` it creates
+        // to position the content without adding a second dialog around it.
+        // The role is deliberate on Lion's side and the element is not ours to
+        // change; the menu inside it carries the real semantics.
+        rules: [{id: 'aria-allowed-role', enabled: false}],
+      },
+    },
+  },
+  render: () => html`
+    <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
+      <craft-tabs label="Entry settings">
+        ${OVERFLOW_LABELS.map(
+          (label, index) => html`
+            <craft-tab slot="tab">${label}</craft-tab>
+            <div slot="panel"><p>Panel ${index + 1}: ${label}</p></div>
+          `
+        )}
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement, userEvent}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const tabs = [...strip.querySelectorAll('craft-tab')];
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    const collapsed = () => tabs.filter((tab) => tab.hasAttribute('hidden'));
+
+    // The strip measures off a rAF, so wait for the measurement to land
+    // rather than for a fixed number of frames.
+    await settleUntil(() => collapsed().length > 0);
+
+    // Some tabs don't fit, so the menu is showing and holds exactly them.
+    await expect(collapsed().length).toBeGreaterThan(0);
+    await expect(menu.hidden).toBe(false);
+    await expect(getComputedStyle(menu).display).not.toBe('none');
+
+    // The visible tabs are a contiguous run from the start — collapsing never
+    // reorders the strip.
+    const visible = tabs.filter((tab) => !tab.hasAttribute('hidden'));
+    await expect(tabs.slice(0, visible.length)).toEqual(visible);
+
+    // Pick the last collapsed tab out of the menu.
+    const target = collapsed().at(-1)!;
+    const label = target.textContent!.trim();
+
+    await userEvent.click(menu.querySelector('[slot="invoker"]')!);
+    await settleUntil(
+      () => menu.querySelectorAll('craft-action-item').length > 0
+    );
+
+    // The items are the menu's own light DOM, which lives inside the strip's
+    // shadow root — a document-level query wouldn't reach them.
+    const item = [...menu.querySelectorAll('craft-action-item')].find(
+      (el) => el.textContent?.trim() === label
+    );
+    await expect(item).toBeTruthy();
+    await userEvent.click(item as HTMLElement);
+    await settleUntil(() => !target.hasAttribute('hidden'));
+
+    // It swapped into the strip, selected, and something else took its place
+    // in the menu.
+    // The menu closes behind the selection, and focus lands on the tab that
+    // just came back into the strip.
+    await expect((menu as {opened?: boolean}).opened).toBe(false);
+    await expect(target.hasAttribute('hidden')).toBe(false);
+    await expect(target.getAttribute('aria-selected')).toBe('true');
+    await expect(document.activeElement).toBe(target);
+    await expect(collapsed().length).toBeGreaterThan(0);
+  },
+};
+
+/** Everything fits, so no menu is shown. */
+export const NoOverflow: Story = {
+  render: () => html`
+    <div style="max-inline-size: 60rem;">
+      <craft-tabs label="Example">
+        <craft-tab slot="tab">One</craft-tab>
+        <div slot="panel"><p>First</p></div>
+        <craft-tab slot="tab">Two</craft-tab>
+        <div slot="panel"><p>Second</p></div>
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    await settle();
+
+    await expect(menu.hidden).toBe(true);
+    await expect(getComputedStyle(menu).display).toBe('none');
+    await expect(
+      [...strip.querySelectorAll('craft-tab')].some((t) =>
+        t.hasAttribute('hidden')
+      )
+    ).toBe(false);
+  },
+};
+
+/**
+ * With `equal-width` the tabs divide the strip between them instead of each
+ * taking the width of its own label, so a one-word tab and a five-word one
+ * come out the same size.
+ *
+ * This is the other answer to the problem `Overflow` solves, and replaces it:
+ * the container here is the narrow one from that story, but nothing collapses
+ * into the menu — tabs that share the width always fit, so they shrink instead.
+ */
+export const EqualWidth: Story = {
+  render: () => html`
+    <div style="max-inline-size: 34rem;">
+      <craft-tabs label="Entry settings" equal-width>
+        ${OVERFLOW_LABELS.slice(0, 4).map(
+          (label, index) => html`
+            <craft-tab slot="tab">${label}</craft-tab>
+            <div slot="panel"><p>Panel ${index + 1}: ${label}</p></div>
+          `
+        )}
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const tabs = [...strip.querySelectorAll('craft-tab')];
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    await settle();
+
+    // Every tab is the same width, whatever its label is — within a pixel,
+    // flex having to split an odd number of them between the shares.
+    const widths = tabs.map((tab) => tab.getBoundingClientRect().width);
+
+    await expect(widths[0]).toBeGreaterThan(0);
+    widths.forEach((width) =>
+      expect(Math.abs(width - widths[0]!)).toBeLessThanOrEqual(1)
+    );
+
+    // The labels are the ones that overflow a 26rem strip in `Overflow`, and
+    // this one is not much wider — so this is the natural width being divided,
+    // not four short tabs that happened to fit.
+    const natural = widths.reduce((total, width) => total + width, 0);
+    await expect(natural).toBeLessThanOrEqual(
+      strip.getBoundingClientRect().width + 1
+    );
+
+    // Nothing collapsed: the measurement is off and the tabs shrank instead.
+    await expect(menu.hidden).toBe(true);
+    await expect(tabs.some((tab) => tab.hasAttribute('hidden'))).toBe(false);
+
+    // A label with no room left wraps, which makes that tab taller and
+    // stretches the row to match it. The single-line labels stay centered in
+    // the space they were stretched into rather than riding its top edge.
+    const wrapped = tabs.find(
+      (tab) => tab.textContent!.trim() === 'Search Engine Optimization'
+    )!;
+
+    await expect(wrapped.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    tabs.forEach((tab) => {
+      const box = tab.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(tab);
+      const text = range.getBoundingClientRect();
+
+      // Within a few pixels of each other: half-leading lands on fractional
+      // pixels, and how far off it lands depends on the font the machine has
+      // (CI's Linux fallback comes out near two). The bug this guards leaves a
+      // gap of twenty.
+      expect(
+        Math.abs(text.top - box.top - (box.bottom - text.bottom))
+      ).toBeLessThanOrEqual(3);
+    });
+  },
+};

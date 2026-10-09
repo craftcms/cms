@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
+
+use CraftCms\Cms\Ui\UiPayload;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
+
+/**
+ * @since 6.0.0
+ */
+readonly class ConditionRulePayload
+{
+    /** @param array<string, mixed> $config */
+    public function __construct(
+        #[LiteralTypeScriptType('Record<string, unknown>')]
+        public array $config,
+        public string $label,
+        public ?string $hint,
+        public bool $showHint,
+        public UiPayload $ui,
+    ) {}
+}

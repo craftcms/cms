@@ -1,6 +1,6 @@
 project_identifier: craft-cms
 api_key_env: CROWDIN_API_KEY
-base_path: /src/translations
+base_path: /resources/translations
 preserve_hierarchy: true
 export_only_approved: true
 files:

@@ -1,0 +1,64 @@
+<script setup lang="ts">
+  import {ButtonVariant, t} from '@craftcms/ui';
+  import type {UrlMethodPair} from '@inertiajs/core';
+  import {useForm} from '@inertiajs/vue3';
+  import UiPage from '@/pages/Ui.vue';
+  import type {UiPayload} from '@/modules/ui/types';
+  import InlineFlash from '@/common/components/InlineFlash.vue';
+  import {messageTargetHeaders} from '@/modules/messages';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import {test} from '@routes/cp/settings/email';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+
+  const props = defineProps<{
+    ui: UiPayload;
+    submit: UrlMethodPair;
+    defaultToEmail: string;
+  }>();
+
+  const testForm = useForm({
+    to: props.defaultToEmail,
+  });
+
+  function sendTest(): void {
+    testForm.clearErrors().submit(test(), {
+      headers: messageTargetHeaders('email-test'),
+      onSuccess: () => testForm.reset(),
+    });
+  }
+</script>
+
+<template>
+  <div class="grid gap-3">
+    <UiPage :ui="ui" :submit="submit" />
+
+    <CpContainer>
+      <craft-pane appearance="raised">
+        <h2 class="mb-3">{{ t('Send a test email') }}</h2>
+
+        <div class="grid gap-3">
+          <CraftInput
+            :label="t('To')"
+            v-model="testForm.to"
+            name="to"
+            :error="testForm.errors.to"
+          />
+
+          <div class="flex gap-2 items-center">
+            <craft-button
+              type="button"
+              :variant="ButtonVariant.Solid"
+              .loading="testForm.processing"
+              @click="sendTest"
+            >
+              {{ t('Test') }}
+            </craft-button>
+            <InlineFlash target="email-test" :busy="testForm.processing" />
+          </div>
+        </div>
+      </craft-pane>
+    </CpContainer>
+  </div>
+</template>

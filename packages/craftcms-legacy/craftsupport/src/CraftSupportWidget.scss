@@ -1,0 +1,260 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+.widget[class*='craftsupport'] {
+  .front {
+    .pane {
+      padding: 0;
+      overflow: hidden;
+
+      .cs-screen {
+        position: relative;
+        box-sizing: border-box;
+
+        &:not(:first-child) {
+          display: none;
+          opacity: 0;
+        }
+
+        .cs-opt-icon {
+          svg {
+            display: block;
+            margin-block: 0 14px;
+            margin-inline: auto;
+            width: 50px;
+            height: 50px;
+            @include svg-mask(var(--gray-200));
+          }
+        }
+      }
+
+      .cs-screen-home {
+        .cs-opt {
+          --focus-ring: var(--focus-ring-inner);
+          display: block;
+          padding: 24px;
+          text-align: center;
+          cursor: pointer;
+          color: inherit;
+          font: inherit;
+          width: 100%;
+
+          &:first-child {
+            border-radius: 4px 4px 0 0;
+          }
+
+          &:not(:first-child) {
+            border-block-start: 1px solid var(--gray-050);
+          }
+
+          &:last-child {
+            border-radius: 0 0 4px 4px;
+          }
+
+          &:hover {
+            background: var(--gray-050);
+          }
+
+          h2 {
+            margin-block: -7px 0;
+            margin-inline: 0;
+            font-weight: normal;
+          }
+
+          p {
+            margin-block-start: 3px;
+            color: var(--light-text-color);
+          }
+        }
+      }
+
+      .cs-screen-2,
+      .cs-screen-support {
+        padding: 24px;
+      }
+
+      .cs-screen-2 {
+        .cs-search-results-container {
+          position: relative;
+          margin-block: 0;
+          margin-inline: -24px;
+          padding-block: 0;
+          padding-inline: 24px;
+          max-height: 250px;
+          overflow: scroll;
+          background: var(--gray-050);
+          box-shadow:
+            inset 0 2px 2px -2px transparentize($grey800, 0.9),
+            inset 0 -2px 2px -2px transparentize($grey800, 0.9);
+
+          .cs-search-icon {
+            padding-block-start: 10px;
+
+            svg {
+              display: block;
+              margin-block: 0;
+              margin-inline: auto;
+              width: 30px;
+              height: 30px;
+            }
+          }
+        }
+
+        .cs-more-resources-heading {
+          margin-block: 7px 14px;
+          margin-inline: 0;
+          font-weight: normal;
+          text-align: center;
+          color: var(--fg-subtle);
+        }
+
+        .cs-search-results {
+          position: relative;
+          padding-block: 14px;
+          padding-inline: 0;
+
+          a {
+            display: block;
+            position: relative;
+            padding-inline: 20px 0;
+            padding-block: 3px;
+
+            .status {
+              position: absolute;
+              inset-block-start: 6px;
+              @include left(0);
+            }
+          }
+        }
+
+        .cs-forms {
+          position: relative;
+
+          .cs-button-wrapper {
+            display: grid;
+            gap: var(--s);
+          }
+
+          .submit,
+          .cancel {
+            display: block;
+            margin-block: 0;
+            margin-inline: auto;
+            max-width: 365px;
+          }
+        }
+
+        .cs-search-form {
+          transition: padding-block-start linear 100ms;
+
+          p {
+            margin: 0;
+            text-align: center;
+          }
+
+          .cs-logo-resources {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            a {
+              width: 50%;
+              box-sizing: border-box;
+              padding-block: 10px;
+              padding-inline: 5px;
+              color: var(--light-text-color);
+
+              &:hover {
+                color: var(--link-color);
+                text-decoration: none;
+              }
+
+              h4 {
+                text-align: center;
+                margin-block-end: 0;
+
+                img {
+                  width: 120px;
+                  height: 24px;
+                }
+              }
+
+              p {
+                margin-block-start: 0;
+              }
+            }
+          }
+
+          .cs-resource-heading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+
+          .cs-icon-resources {
+            position: relative;
+            margin-block-start: 14px;
+            padding-block-start: 24px;
+            display: flex;
+            justify-content: center;
+
+            &::before {
+              display: block;
+              content: '';
+              font-size: 0;
+              position: absolute;
+              inset-block-start: 0;
+              inset-inline-start: 50%;
+              margin-block: 0;
+              margin-inline: -10px;
+              width: 20px;
+              height: 1px;
+              background: var(--border-hairline);
+            }
+
+            a + a {
+              margin-inline-start: 24px;
+            }
+
+            a {
+              display: flex;
+              align-items: center;
+
+              svg {
+                width: 1rem;
+                height: 1rem;
+                @include svg-mask(var(--light-text-color));
+              }
+
+              span {
+                margin-inline-start: 5px;
+              }
+            }
+          }
+        }
+
+        &.with-results {
+          .cs-search-form {
+            padding-block-start: 24px;
+          }
+        }
+
+        .cs-support-form {
+          .submit {
+            transition: margin-block-start linear 100ms;
+          }
+
+          .cs-support-more:not(.hidden) + .submit {
+            margin-block-start: 24px;
+          }
+
+          .spinner {
+            position: absolute;
+            inset-block-end: 0;
+            @include right(-24px);
+          }
+        }
+      }
+    }
+  }
+}

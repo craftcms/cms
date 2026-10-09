@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition\Contracts;
+
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Condition\BaseConditionRule;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+
+/**
+ * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
+ *
+ * A base implementation is provided by {@see BaseConditionRule}.
+ *
+ * @property-read string $label The rule’s option label
+ *
+ * @mixin BaseConditionRule
+ *
+ * @phpstan-require-extends BaseConditionRule
+ */
+interface ConditionRuleInterface extends ComponentInterface, ConditionComponentInterface
+{
+    /**
+     * Returns whether the rule is safe to include in conditions that are stored in the project config.
+     */
+    public static function supportsProjectConfig(): bool;
+
+    /**
+     * Returns whether the rule can be selected for the provided condition.
+     */
+    public static function isSelectableForCondition(ConditionInterface $condition): bool;
+
+    /**
+     * Returns the rule’s option label.
+     */
+    public function getLabel(): string;
+
+    /**
+     * Returns the rule’s option label hint.
+     */
+    public function getLabelHint(): ?string;
+
+    /**
+     * Returns whether to show rule’s option label hint.
+     */
+    public function showLabelHint(): bool;
+
+    /**
+     * Returns the optgroup label the condition rule should be grouped under.
+     */
+    public function getGroupLabel(): ?string;
+
+    /**
+     * Returns the rule’s Ui schema for a condition builder.
+     */
+    public function getUi(UiContext $context = new UiContext): Ui;
+
+    /**
+     * Sets the condition associated with this rule.
+     */
+    public function setCondition(ConditionInterface $condition): void;
+
+    /**
+     * Sets whether the rule’s type selector should be autofocused.
+     */
+    public function setAutofocus(bool $autofocus = true): void;
+}

@@ -1,0 +1,203 @@
+import {
+  inject,
+  provide,
+  reactive,
+  type Component,
+  type InjectionKey,
+  type Ref,
+} from 'vue';
+import {usePage} from '@inertiajs/vue3';
+import type {FormSaveOptions} from '@/common/types';
+import type {UseAppLayoutOptions} from './useAppLayout';
+
+/**
+ * A CP screen renders in one of two contexts. The page component is the same
+ * in both — only the shell around it differs, which `AppLayout` selects by
+ * injecting {@link ScreenShellKey}.
+ */
+export type ScreenMode = 'page' | 'slideout';
+
+export interface ScreenContext {
+  mode: ScreenMode;
+}
+
+export const ScreenContextKey: InjectionKey<ScreenContext> =
+  Symbol('screenContext');
+
+/**
+ * The component `AppLayout` renders. Defaults to the full-page shell; a
+ * slideout panel provides its own, and each shell re-provides a passthrough so
+ * a page that renders `<AppLayout>` inline inside a slideout doesn't stack a
+ * second shell inside the first.
+ */
+export const ScreenShellKey: InjectionKey<Component> = Symbol('screenShell');
+
+/**
+ * Collects the options pages push through `useAppLayout()`.
+ *
+ * Full-page screens don't use this — they go through Inertia's own
+ * `setLayoutProps`, which only addresses the one layout Inertia rendered and
+ * would clobber the base page if a slideout wrote to it.
+ */
+export type ScreenSaveHandler = (options?: FormSaveOptions) => void;
+
+export type ScreenPageProp =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ScreenPageProp[]
+  | ScreenPageProps;
+
+export interface ScreenPageProps {
+  [key: string]: ScreenPageProp;
+}
+
+export interface ScreenPropsStore {
+  props: UseAppLayoutOptions;
+  set(props: UseAppLayoutOptions): void;
+  /**
+   * Register a save handler, returning an unregister function.
+   *
+   * The shell's save button sits *above* the page in the tree, so a `save`
+   * event can't reach a page listening on an inline `<AppLayout>` below it.
+   * Handlers registered here bridge that gap.
+   */
+  onSave(handler: ScreenSaveHandler): () => void;
+  save(options?: FormSaveOptions): void;
+}
+
+export const ScreenPropsStoreKey: InjectionKey<ScreenPropsStore> =
+  Symbol('screenPropsStore');
+
+export function createScreenPropsStore(): ScreenPropsStore {
+  const props = reactive<UseAppLayoutOptions>({});
+  const handlers = new Set<ScreenSaveHandler>();
+
+  return {
+    props,
+
+    set(next) {
+      Object.assign(props, next);
+    },
+
+    onSave(handler) {
+      handlers.add(handler);
+
+      return () => handlers.delete(handler);
+    },
+
+    save(options) {
+      // `useAppLayout({onSave})` arrives as a prop, since Vue treats `onX` as
+      // a listener for `x`.
+      props.onSave?.(options);
+
+      handlers.forEach((handler) => handler(options));
+    },
+  };
+}
+
+/**
+ * The page props a shell should read its chrome from.
+ *
+ * `usePage()` always returns the *base* page — correct for shared props (flash,
+ * CSRF, the craft bag), but wrong for anything screen-specific: a slideout
+ * reading `usePage().props.title` gets the title of the page behind it. A
+ * slideout panel provides its own props here; a full page has none and falls
+ * back to `usePage()`.
+ */
+export const ScreenPagePropsKey: InjectionKey<() => ScreenPageProps> =
+  Symbol('screenPageProps');
+
+/**
+ * Called by a page once its server-rendered content is actually in the
+ * document.
+ *
+ * Fragments are appended asynchronously — `appendHeadHtml()` resolves only
+ * when the screen's assets have loaded — so a shell that has to hand that
+ * markup to legacy JS (`Craft.ElementEditor`, say) can't just wait for
+ * `onMounted`, which fires while the content is still empty.
+ */
+export const ScreenContentReadyKey: InjectionKey<() => void> =
+  Symbol('screenContentReady');
+
+/**
+ * How wide the shell's content area is, in px — the content and details
+ * columns together. Only a full page provides it; a slideout panel is narrow
+ * enough that nothing should fold away on its account.
+ */
+export const ScreenContentWidthKey: InjectionKey<Readonly<Ref<number>>> =
+  Symbol('screenContentWidth');
+
+/** `null` outside a shell that measures. See {@link ScreenContentWidthKey}. */
+export function useScreenContentWidth(): Readonly<Ref<number>> | null {
+  return inject(ScreenContentWidthKey, null);
+}
+
+/**
+ * Whether the shell has lifted the details column out of its layout to overlay
+ * the content, which is the cue for the column to fold down to its rail.
+ *
+ * Each shell publishes its own threshold from its container query — a slideout
+ * and a full page have nothing like the same geometry — so the width stays in
+ * the stylesheet that owns the layout.
+ */
+export const ScreenDetailsOverlayKey: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('screenDetailsOverlay');
+
+/** `null` outside a shell that overlays. See {@link ScreenDetailsOverlayKey}. */
+export function useScreenDetailsOverlay(): Readonly<Ref<boolean>> | null {
+  return inject(ScreenDetailsOverlayKey, null);
+}
+
+/**
+ * Where the details rail goes, when the shell keeps it apart from the
+ * details panels. A full page puts it in a rail beside the inset content
+ * panel; a slideout provides `null`, so its rail stays beside its panels.
+ */
+export const ScreenDetailsRailKey: InjectionKey<string | null> =
+  Symbol('screenDetailsRail');
+
+/** A selector, or `null` where the rail stays with its panels. See {@link ScreenDetailsRailKey}. */
+export function useScreenDetailsRail(): string | null {
+  return inject(ScreenDetailsRailKey, null);
+}
+
+/** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
+export function useScreenContentReady(): () => void {
+  return inject(ScreenContentReadyKey, () => {});
+}
+
+export function provideScreenContext(mode: ScreenMode): void {
+  provide(ScreenContextKey, reactive({mode}));
+}
+
+export function useScreenContext(): ScreenContext {
+  return inject(ScreenContextKey, {mode: 'page'});
+}
+
+export function useScreenPropsStore(): ScreenPropsStore | null {
+  return inject(ScreenPropsStoreKey, null);
+}
+
+/** True when the calling component is rendering inside a slideout. */
+export function useIsSlideout(): boolean {
+  return useScreenContext().mode === 'slideout';
+}
+
+/**
+ * Screen-specific page props for the current context — the slideout's own when
+ * inside one, the base page's otherwise. See {@link ScreenPagePropsKey}.
+ */
+export function useScreenPageProps(): () => ScreenPageProps {
+  const scoped = inject(ScreenPagePropsKey, null);
+
+  if (scoped) {
+    return scoped;
+  }
+
+  const page = usePage<ScreenPageProps>();
+
+  return () => page.props;
+}

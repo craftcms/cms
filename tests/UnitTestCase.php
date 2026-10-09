@@ -1,0 +1,102 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Tests;
+
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
+use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Foundation\Testing\CachedState;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Orchestra\Testbench\Concerns\WithWorkbench;
+use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
+
+/**
+ * Lightweight test case for unit tests that only need the Laravel
+ * service container (no database, no Yii2 bootstrap, no migrations).
+ *
+ * Use this for tests that don't touch the database or legacy Yii2 code.
+ */
+class UnitTestCase extends Orchestra
+{
+    use IsolatesParallelFiles;
+    use RegistersPackageAliases;
+    use WithCachedRoutes;
+    use WithWorkbench;
+
+    #[Override]
+    protected function resolveApplicationResolvingCallback($app): void
+    {
+        parent::resolveApplicationResolvingCallback($app);
+
+        if (CachedState::$cachedRoutes !== null) {
+            $app->booting(fn () => $this->markRoutesCached($app));
+        }
+    }
+
+    #[Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        unset($_SERVER['CRAFT_EDITION']);
+        putenv('CRAFT_EDITION');
+
+        Context::forgetHidden(Edition::class);
+
+        Edition::set(Edition::Pro);
+        TemplateMode::set(TemplateMode::Cp);
+
+        Sites::setCurrentSite(new Site);
+
+        app()->setLocale('en-US');
+
+        Cms::config()->timezone('America/Los_Angeles');
+        Cms::setDefaultTimezone();
+    }
+
+    #[Override]
+    protected function defineEnvironment($app): void
+    {
+        $app->make(ConfigRepository::class)->set([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.driver' => 'sqlite',
+            'database.connections.sqlite.database' => ':memory:',
+            'database.connections.sqlite.prefix' => '',
+        ]);
+
+        DB::purge('sqlite');
+        DB::setDefaultConnection('sqlite');
+
+        Context::forgetHidden('craft.info');
+        Cms::setIsInstalled(false);
+
+        $projectConfigFolder = 'project';
+
+        if (($token = getenv('TEST_TOKEN')) !== false) {
+            $projectConfigFolder .= "_$token";
+            $app->useStoragePath($app->storagePath("parallel_$token"));
+            File::ensureDirectoryExists($app->storagePath('framework/testing'));
+
+            $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($projectConfigFolder) {
+                $projectConfig->folderName = $projectConfigFolder;
+                $projectConfig->writeYamlAutomatically = false;
+            });
+        }
+
+        File::cleanDirectory($app->configPath("craft/$projectConfigFolder"));
+        File::cleanDirectory($app->storagePath('runtime/compiled_classes'));
+        File::cleanDirectory($app->storagePath('runtime/compiled_templates'));
+    }
+}

@@ -1,0 +1,25 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\events;
+
+use craft\base\Event;
+
+/**
+ * RegisterPreviewTargetsEvent class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.2.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving} instead.
+ */
+class RegisterPreviewTargetsEvent extends Event
+{
+    /**
+     * @var array The additional locations that should be available for previewing the element.
+     */
+    public array $previewTargets;
+}

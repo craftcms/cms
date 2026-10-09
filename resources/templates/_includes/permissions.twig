@@ -1,0 +1,31 @@
+{% set disabled = disabled ?? false %}
+{% set permissionName = permissionName is defined ? permissionName : 'permissions' %}
+{% set selectedPermissions = selectedPermissions ?? (session('_old_input') ? old('permissions', []) : null) %}
+
+{% if selectedPermissions is null and subject and Request.actionSegments() == ['users', 'save-user'] %}
+    {% set selectedPermissions = Request.input('permissions', []) %}
+{% endif %}
+
+{% set modelValue = [] %}
+
+{% for group in permissions %}
+    {# Include a placeholder for the user group being created? #}
+    {% if (includeGroupPlaceholder ?? false) and group.permissions.has('viewUsers') and group.permissions.viewUsers.nested.has('editUsers') %}
+        {% do group.permissions.viewUsers.nested.editUsers.nested.add(create('\\CraftCms\\Cms\\User\\Data\\Permission', {
+            key: 'assignNewUserGroup',
+            label: 'Assign users to this group'|t('app')
+        })) %}
+    {% endif %}
+
+    {% set modelValue = modelValue|merge(selectedPermissions is not null
+        ? selectedPermissions|filter(permission => permission in group.keys)
+        : (subject ? group.keys|filter(permission => subject.can(permission)) : [])) %}
+{% endfor %}
+
+{{ ui('permission-tree', {
+    groups: permissions,
+    modelValue: modelValue,
+    lockedPermissions: groupPermissions ?? [],
+    name: disabled ? null : permissionName,
+    disabled: disabled,
+}) }}

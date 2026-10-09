@@ -1,0 +1,2 @@
+// line 1
+dd(CraftCms\Cms\Support\Template::contextWithoutTemplate($context));

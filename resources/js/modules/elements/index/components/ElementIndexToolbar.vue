@@ -1,0 +1,301 @@
+<script setup lang="ts">
+  import {Appearance, t} from '@craftcms/ui';
+  import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import ElementStatus from '@/modules/elements/ElementStatus.vue';
+  import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
+  import type {CheckboxOption} from '@/common/types';
+  import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
+  import FilterHud from './FilterHud.vue';
+  import type {ConditionConfig} from '@/modules/conditions/types';
+  import type {IndexSite} from '@/modules/elements/types/sites';
+  import {computed, ref} from 'vue';
+
+  const props = withDefaults(
+    defineProps<{
+      statusOptions?: Array<{label: string; value: string}>;
+      viewModes?: Array<ViewMode>;
+      columnOptions: Array<CheckboxOption>;
+      sortOptions: Array<SortOption>;
+      processing?: boolean;
+      /**
+       * The sites this index can be switched between.
+       *
+       * Only an index with nowhere else to put the menu passes these — the
+       * element selector modal. A full index page has a header, and puts its site
+       * menu in the crumbs there, the same way the legacy index does.
+       */
+      sites?: Array<IndexSite>;
+      /** The active site's handle, when `sites` are being offered. */
+      siteHandle?: string | null;
+      asForm?: boolean;
+    }>(),
+    {asForm: true}
+  );
+
+  const search = defineModel<string>('search', {required: true});
+  const status = defineModel<string>('status', {required: true});
+  const mode = defineModel<ViewMode['mode']>('mode', {required: true});
+  const sortField = defineModel<string>('sortField', {required: true});
+  const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', {
+    required: true,
+  });
+  const tableColumns = defineModel<Array<string>>('tableColumns', {
+    required: true,
+  });
+  const conditions = defineModel<ConditionConfig | null>('conditions', {
+    required: true,
+  });
+
+  const emit = defineEmits<{
+    (e: 'submit'): void;
+    (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'site-change', handle: string): void;
+  }>();
+
+  const filterActive = ref(false);
+  const filterAnchor = ref<HTMLElement>();
+
+  // One site is no choice at all, so the menu only earns its place from two.
+  const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
+
+  const visibleSortOptions = computed(() => {
+    const options = props.sortOptions.filter(
+      (option) => option.value !== 'score'
+    );
+
+    return search.value || sortField.value === 'score'
+      ? [
+          {label: t('Score'), value: 'score', defaultDir: 'desc' as const},
+          ...options,
+        ]
+      : options;
+  });
+
+  const sortDirectionLocked = computed(() =>
+    ['score', 'sortOrder'].includes(sortField.value)
+  );
+
+  const siteOptions = computed(() =>
+    (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
+  );
+
+  /**
+   * Clears the search and returns focus to the input, since the clear button
+   * unmounts once the search is empty. This applies on mobile too, so screen
+   * reader users there aren't left without focus.
+   */
+  function clearSearch(): void {
+    search.value = '';
+    filterAnchor.value
+      ?.querySelector<HTMLElement>('craft-input[name="search"]')
+      ?.focus();
+  }
+
+  function onSearchEnter(event: KeyboardEvent): void {
+    if (props.asForm !== false) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    emit('submit');
+  }
+</script>
+
+<template>
+  <component
+    :is="asForm === false ? 'div' : 'form'"
+    class="w-full"
+    @submit.prevent="emit('submit')"
+  >
+    <div class="element-toolbar">
+      <div
+        v-if="showSiteMenu || statusOptions?.length"
+        class="element-toolbar__status"
+      >
+        <div v-if="showSiteMenu" class="element-toolbar__site">
+          <CraftSelectRich
+            :model-value="siteHandle ?? undefined"
+            :options="siteOptions"
+            :label="t('Site')"
+            label-sr-only
+            .disabled="processing"
+            @model-value-changed="
+              (event: CustomEvent) => {
+                if (event.detail.isTriggeredByUser) {
+                  emit(
+                    'site-change',
+                    (event.target as unknown as {modelValue: string}).modelValue
+                  );
+                }
+              }
+            "
+          />
+        </div>
+
+        <CraftSelectRich
+          v-if="statusOptions?.length"
+          v-model="status"
+          :options="statusOptions"
+          :label="t('Status')"
+          label-sr-only
+          .disabled="processing"
+          @model-value-changed="
+            (event: CustomEvent) => {
+              if (event.detail.isTriggeredByUser) {
+                emit('submit');
+              }
+            }
+          "
+        >
+          <template #option="{option}">
+            <ElementStatus :label="option.label" :value="option.value" />
+          </template>
+        </CraftSelectRich>
+      </div>
+
+      <div ref="filterAnchor" class="element-toolbar__filter">
+        <CraftInput
+          name="search"
+          :label="t('Search')"
+          v-model="search"
+          label-sr-only
+          @keydown.enter="onSearchEnter"
+        >
+          <craft-icon name="search" slot="prefix"></craft-icon>
+          <div slot="suffix" class="flex">
+            <craft-button
+              type="button"
+              icon
+              size="small"
+              variant="plain"
+              v-if="search"
+              .disabled="processing"
+              @click="clearSearch"
+            >
+              <craft-icon
+                name="xmark-large"
+                :label="t('Clear search')"
+              ></craft-icon>
+            </craft-button>
+            <craft-button
+              type="button"
+              icon
+              size="small"
+              variant="plain"
+              .disabled="processing"
+              @click="filterActive = true"
+              :class="{'is-active': !!conditions}"
+            >
+              <craft-icon
+                name="filter"
+                :label="t('Filter results')"
+              ></craft-icon>
+            </craft-button>
+          </div>
+        </CraftInput>
+
+        <FilterHud
+          v-if="filterActive"
+          :anchor="filterAnchor"
+          @close="filterActive = false"
+          @apply="emit('submit')"
+          v-model="conditions"
+        />
+
+        <slot name="search-options"></slot>
+      </div>
+
+      <div class="element-toolbar__state">
+        <div class="flex gap-md justify-end">
+          <craft-button-group
+            name="viewState[mode]"
+            .value="mode"
+            @change="(event: CustomEvent) => (mode = event.detail.value)"
+          >
+            <template v-for="viewMode in viewModes" :key="viewMode.mode">
+              <craft-button
+                type="button"
+                :variant="Appearance.Fill"
+                :icon="viewMode.icon"
+                :aria-label="viewMode.title"
+                :value="viewMode.mode"
+                .disabled="processing"
+              ></craft-button>
+            </template>
+          </craft-button-group>
+
+          <IndexViewSettings
+            :options="columnOptions"
+            :sort-options="visibleSortOptions"
+            :sort-direction-locked="sortDirectionLocked"
+            :disabled="processing"
+            v-model:sort-field="sortField"
+            v-model:sort-direction="sortDirection"
+            v-model:table-columns="tableColumns"
+            @reorder="(options) => emit('reorder', options)"
+          />
+        </div>
+      </div>
+
+      <!-- The index's own actions: the entries index puts its New Entry button
+        here. Search still submits on Enter — the field is the form's only text
+        input, so the browser submits it implicitly. -->
+      <div class="element-toolbar__actions">
+        <slot name="actions"></slot>
+      </div>
+    </div>
+  </component>
+</template>
+
+<style scoped lang="postcss">
+  .element-toolbar {
+    display: grid;
+    gap: var(--c-spacing-md);
+    justify-content: space-between;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'status' 'filter' 'state' 'actions';
+
+    @container cp-content-view (width >= 480px) {
+      gap: var(--c-spacing-md);
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'status filter state' 'actions actions actions';
+    }
+
+    @container cp-content-view (width >= var(--breakpoint-sm)) {
+      gap: var(--c-spacing-md);
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-areas: 'status filter state actions';
+    }
+  }
+
+  .element-toolbar > :first-child {
+    grid-column-start: status-start;
+  }
+
+  /* Site and status share a cell rather than the grid gaining a column, so
+     the breakpoint ladder above stays the one definition of the layout. */
+  .element-toolbar__status {
+    grid-area: status;
+    display: flex;
+    gap: var(--c-spacing-sm);
+  }
+
+  .element-toolbar__state {
+    grid-area: state;
+    min-width: 0;
+
+    @container cp-content-view (width < 480px) {
+      justify-self: start;
+    }
+  }
+
+  .element-toolbar__actions {
+    grid-area: actions;
+  }
+
+  .element-toolbar__filter {
+    grid-area: filter;
+  }
+</style>

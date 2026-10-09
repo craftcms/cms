@@ -1,0 +1,3 @@
+@scope (.cp-legacy-reset, .slideout-container, .modal, .menu--disclosure) {
+  @tailwind base;
+}

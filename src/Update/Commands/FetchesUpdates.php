@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Update\Commands;
+
+use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Enums\UpdateStatus;
+
+use function Laravel\Prompts\spin;
+
+/**
+ * @internal
+ */
+trait FetchesUpdates
+{
+    /** @param array<string, string> $constraints */
+    protected function fetchUpdates(array $constraints = []): UpdatesData
+    {
+        $updates = null;
+
+        spin(function () use ($constraints, &$updates) {
+            $updateData = app(Api::class)->getUpdates($constraints);
+            $updates = UpdatesData::fromArray($updateData);
+        }, 'Fetching available updates');
+
+        return $updates;
+    }
+
+    /** @return array{handle: string, from: string, to: string, status: string} */
+    protected function formatLine(string $handle, string $from, Update $update, ?string $to = null): array
+    {
+        $expired = $update->status === UpdateStatus::EXPIRED;
+        $color = $expired
+            ? fn ($value) => $this->gray($this->reset($value))
+            : fn ($value) => $value;
+
+        return [
+            'handle' => $color($this->cyan($handle)),
+            'from' => $color($this->cyan($from)),
+            'to' => $color($this->cyan($to ?? $update->latest()?->version)),
+            'status' => match (true) {
+                $update->hasCritical() => $this->bold($color($this->red('CRITICAL'))),
+                $expired => $this->bold($color($this->red('EXPIRED'))),
+                default => '',
+            }.(
+                $update->phpConstraint && ($phpConstraintError = PHP::checkConstraint($update->phpConstraint))
+                    ? $color($this->red(" ⚠️ $phpConstraintError"))
+                    : ''
+            ),
+        ];
+    }
+}

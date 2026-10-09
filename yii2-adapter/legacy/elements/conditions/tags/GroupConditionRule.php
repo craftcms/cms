@@ -1,0 +1,75 @@
+<?php
+
+namespace craft\elements\conditions\tags;
+
+use Craft;
+use craft\base\conditions\BaseMultiSelectConditionRule;
+use craft\elements\Tag;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
+use Illuminate\Database\Query\Builder;
+use function CraftCms\Cms\t;
+
+/**
+ * Tag group condition rule.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ * @deprecated in 6.0.0
+ */
+class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
+{
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (!$condition instanceof TagCondition) {
+            return false;
+        }
+
+        // Exclude from tag group sources
+        if (isset($condition->sourceKey) && str_starts_with($condition->sourceKey, 'group:')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLabel(): string
+    {
+        return t('Tag Group', category: 'yii2-adapter');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function options(): array
+    {
+        $groups = Craft::$app->getTags()->getAllTagGroups();
+        return Arr::pluck($groups, 'name', 'uid');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
+    {
+        $tags = Craft::$app->getTags();
+        TagQuery::applyGroupId($query, $this->paramValue(fn($uid) => $tags->getTagGroupByUid($uid)->id ?? null));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Tag $element */
+        return $this->matchValue($element->getGroup()->uid);
+    }
+}

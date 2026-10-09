@@ -1,0 +1,576 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Factories\UserFactory;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
+use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Notification;
+
+use function CraftCms\Cms\currentUser;
+use function Pest\Laravel\post;
+use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    Edition::set(Edition::Team);
+
+    ProjectConfig::set('users.allowPublicRegistration', true);
+});
+
+it('succeeds with valid data', function () {
+    $initialCount = User::find()->count();
+
+    $data = [
+        'email' => 'newuser@example.com',
+        'password' => 'securePassword123!',
+        'firstName' => 'John',
+        'lastName' => 'Doe',
+    ];
+
+    post(action(SaveUserController::class), $data)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(User::find()->count())->toBe($initialCount + 1);
+
+    $user = User::find()->email($data['email'])->one();
+    expect($user)->not->toBeNull();
+    expect($user->email)->toBe($data['email']);
+    expect($user->firstName)->toBe($data['firstName']);
+    expect($user->lastName)->toBe($data['lastName']);
+});
+
+it('succeeds with minimal valid data', function () {
+    $initialCount = User::find()->count();
+
+    $data = [
+        'email' => 'newuser2@example.com',
+        'password' => 'securePassword123!',
+    ];
+
+    post(action(SaveUserController::class), $data)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(User::find()->count())->toBe($initialCount + 1);
+
+    $user = User::find()->email($data['email'])->one();
+    expect($user)->not->toBeNull();
+    expect($user->email)->toBe($data['email']);
+});
+
+it('fails when public registration is disabled', function () {
+    ProjectConfig::set('users.allowPublicRegistration', false);
+
+    post(action(SaveUserController::class), [
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ])->assertForbidden();
+});
+
+it('fails with missing email', function () {
+    post(action(SaveUserController::class), [
+        'password' => 'password123',
+    ])->assertSessionHasErrors(['email']);
+});
+
+it('fails with empty email', function () {
+    post(action(SaveUserController::class), [
+        'email' => '',
+        'password' => 'securePassword123!',
+    ])->assertSessionHasErrors(['email']);
+});
+
+it('fails with invalid email format', function () {
+    post(action(SaveUserController::class), [
+        'email' => 'not-an-email',
+        'password' => 'securePassword123!',
+    ])->assertSessionHasErrors(['email']);
+});
+
+it('fails with missing password field', function () {
+    post(action(SaveUserController::class), [
+        'email' => 'newuser@example.com',
+    ])->assertSessionHasErrors(['password']);
+});
+
+it('rejects duplicate email from active user', function () {
+    $existingUser = UserFactory::new()->active()->createElement([
+        'email' => 'existing@example.com',
+    ]);
+
+    post(action(SaveUserController::class), [
+        'email' => $existingUser->email,
+        'password' => 'password123',
+    ])->assertSessionHasErrors(['email']);
+});
+
+it('reactivates existing inactive user with same email', function () {
+    $inactiveUser = UserFactory::new()->createElement([
+        'email' => 'inactive@example.com',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    post(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'newPassword123!',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email($inactiveUser->email)->one();
+    expect($user)->not->toBeNull();
+    expect($user->active)->toBeTrue();
+});
+
+it('clears admin status and permissions from a reactivated inactive user', function () {
+    Edition::set(Edition::Pro);
+
+    $inactiveUser = UserFactory::new()->admin()->createElement([
+        'email' => 'inactive-admin@example.com',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    app(UserPermissions::class)->saveUserPermissions($inactiveUser->id, ['accessCp']);
+
+    post(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'newPassword123!',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email($inactiveUser->email)->one();
+    expect($user->admin)->toBeFalse();
+    expect(app(UserPermissions::class)->getPermissionsByUserId($user->id))->toBeEmpty();
+});
+
+it('tracks affiliated site on registration', function () {
+    post(action(SaveUserController::class), [
+        'email' => 'siteuser@example.com',
+        'password' => 'password123',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('siteuser@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->affiliatedSiteId)->not->toBeNull();
+});
+
+it('creates user as active when deactivateByDefault is false', function () {
+    ProjectConfig::set('users.deactivateByDefault', false);
+
+    post(action(SaveUserController::class), [
+        'email' => 'activeuser@example.com',
+        'password' => 'password123',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('activeuser@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->active)->toBeTrue();
+    expect($user->pending)->toBeFalse();
+});
+
+it('creates user as inactive when deactivateByDefault is true', function () {
+    ProjectConfig::set('users.deactivateByDefault', true);
+
+    post(action(SaveUserController::class), [
+        'email' => 'pendinguser@example.com',
+        'password' => 'password123',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('pendinguser@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->active)->toBeFalse();
+    expect($user->pending)->toBeFalse();
+});
+
+it('requires Craft Team edition for public registration', function () {
+    Edition::set(Edition::Solo);
+
+    post(action(SaveUserController::class), [
+        'email' => 'solo@example.com',
+        'password' => 'password123',
+    ])->assertInternalServerError();
+});
+
+it('validates unique email for active and pending users only', function () {
+    $activeUser = UserFactory::new()->active()->createElement([
+        'email' => 'unique@example.com',
+    ]);
+    $pendingUser = UserFactory::new()->pending()->createElement([
+        'email' => 'pending@example.com',
+    ]);
+
+    post(action(SaveUserController::class), [
+        'email' => $activeUser->email,
+        'password' => 'password123',
+    ])->assertSessionHasErrors(['email']);
+
+    post(action(SaveUserController::class), [
+        'email' => $pendingUser->email,
+        'password' => 'password123',
+    ])->assertSessionHasErrors(['email']);
+});
+
+it('allows registration with email that belongs to inactive user', function () {
+    $inactiveUser = UserFactory::new()->createElement([
+        'email' => 'inactive2@example.com',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    $user = User::find()->email($inactiveUser->email)->one();
+    expect($user)->not->toBeNull();
+    expect($user->active)->toBeFalse();
+    expect($user->pending)->toBeFalse();
+
+    post(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'password123',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $updatedUser = User::find()->email($inactiveUser->email)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->active)->toBeTrue();
+});
+
+it('returns proper response on success', function () {
+    $response = postJson(action(SaveUserController::class), [
+        'email' => 'json@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertOk();
+
+    $content = $response->json();
+    expect($content)->toHaveKey('modelId');
+    expect($content)->toHaveKey('user');
+    expect($content['message'])->toBe('User saved.');
+});
+
+it('sets username from email when useEmailAsUsername is true', function () {
+    ProjectConfig::set('general.useEmailAsUsername', true);
+
+    post(action(SaveUserController::class), [
+        'email' => 'username@example.com',
+        'password' => 'password123',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('username@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->username)->toBe('username@example.com');
+});
+
+it('properly handles email with leading/trailing spaces', function () {
+    $initialCount = User::find()->count();
+
+    post(action(SaveUserController::class), [
+        'email' => '  spaced@example.com  ',
+        'password' => 'password123',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(User::find()->count())->toBe($initialCount + 1);
+
+    $user = User::find()->email('spaced@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->email)->toBe('spaced@example.com');
+});
+
+it('succeeds without password when deferPublicRegistrationPassword is true', function () {
+    Cms::config()->deferPublicRegistrationPassword = true;
+    ProjectConfig::set('users.deactivateByDefault', true);
+
+    $initialCount = User::find()->count();
+
+    post(action(SaveUserController::class), [
+        'email' => 'deferred@example.com',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(User::find()->count())->toBe($initialCount + 1);
+
+    $user = User::find()->email('deferred@example.com')->one();
+    expect($user)->not->toBeNull();
+    expect($user->password)->toBeNull();
+});
+
+it('logs user in after registration when autoLoginAfterAccountActivation is true', function () {
+    Cms::config()->autoLoginAfterAccountActivation = true;
+
+    post(action(SaveUserController::class), [
+        'email' => 'autologin@example.com',
+        'password' => 'password123',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(Auth::check())->toBeTrue();
+    expect(currentUser()?->asElement()->email)->toBe('autologin@example.com');
+});
+
+it('can upload a photo', function () {
+    // @TODO: Bulk ops cause issues
+    if (DB::isMysql()) {
+        $this->markTestSkipped('Bulk ops cause issues with MySQL');
+    }
+
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
+        'url' => '/test',
+    ]);
+
+    $volume = Volume::factory()->create([
+        'fs' => 'test',
+        'hasUrls' => true,
+    ]);
+
+    ProjectConfig::set('users.photoVolumeUid', $volume->uid);
+
+    $this->withoutExceptionHandling();
+
+    $data = [
+        'email' => 'newuser@example.com',
+        'password' => 'securePassword123!',
+        'firstName' => 'John',
+        'lastName' => 'Doe',
+        'photo' => UploadedFile::fake()->image('avatar.jpg'),
+    ];
+
+    post(action(SaveUserController::class), $data)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('newuser@example.com')->one();
+
+    expect($user->getPhoto())->not->toBeNull();
+});
+
+it('rejects a photo with a non image client filename extension', function () {
+    $uploadPath = storage_path('framework/testing/avatar-js.gif');
+
+    File::ensureDirectoryExists(dirname($uploadPath));
+    copy(dirname(__DIR__, 5).'/_data/assets/files/example-gif.gif', $uploadPath);
+
+    post(action(SaveUserController::class), [
+        'email' => 'avatarjs@example.com',
+        'password' => 'securePassword123!',
+        'photo' => new UploadedFile($uploadPath, 'avatar.js', 'image/gif', null, true),
+    ])->assertSessionHasErrors(['photo']);
+
+    expect(User::find()->email('avatarjs@example.com')->one())->toBeNull();
+});
+
+it('can upload a photo with different image formats', function () {
+    // @TODO: Bulk ops cause issues
+    if (DB::isMysql()) {
+        $this->markTestSkipped('Bulk ops cause issues with MySQL');
+    }
+
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
+        'url' => '/test',
+    ]);
+
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    ProjectConfig::set('users.photoVolumeUid', $volume->uid);
+
+    $this->withoutExceptionHandling();
+
+    post(action(SaveUserController::class), [
+        'email' => 'pnguser@example.com',
+        'password' => 'securePassword123!',
+        'photo' => UploadedFile::fake()->image('avatar.png'),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $user = User::find()->email('pnguser@example.com')->one();
+    expect($user->getPhoto())->not->toBeNull();
+});
+
+it('can upload a photo with base64 encoded data', function () {
+    // @TODO: Bulk ops cause issues
+    if (DB::isMysql()) {
+        $this->markTestSkipped('Bulk ops cause issues with MySQL');
+    }
+
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
+        'url' => '/test',
+    ]);
+
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    ProjectConfig::set('users.photoVolumeUid', $volume->uid);
+
+    $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());
+
+    post(action(SaveUserController::class), [
+        'email' => 'base64user@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'data' => 'data:image/jpeg;base64,'.$realImage,
+            'filename' => 'avatar.jpg',
+        ],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $user = User::find()->email('base64user@example.com')->one();
+    expect($user->getPhoto())->not->toBeNull();
+});
+
+it('rejects oversized base64 encoded photos', function () {
+    Cms::config()->maxUploadFileSize = 10;
+
+    post(action(SaveUserController::class), [
+        'email' => 'oversized-photo@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'filename' => 'avatar.jpg',
+            'data' => 'data:image/jpeg;base64,'.base64_encode(str_repeat('a', 11)),
+        ],
+    ])->assertSessionHasErrors(['photo']);
+});
+
+it('rejects oversized uploaded photos', function () {
+    Cms::config()->maxUploadFileSize = 10;
+
+    post(action(SaveUserController::class), [
+        'email' => 'oversized-upload@example.com',
+        'password' => 'securePassword123!',
+        'photo' => UploadedFile::fake()->createWithContent('avatar.jpg', str_repeat('a', 11)),
+    ])->assertSessionHasErrors(['photo']);
+});
+
+it('rejects malformed base64 encoded photos', function () {
+    post(action(SaveUserController::class), [
+        'email' => 'invalid-photo@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'filename' => 'avatar.jpg',
+            'data' => 'data:image/jpeg;base64,not-valid-base64!',
+        ],
+    ])->assertSessionHasErrors(['photo']);
+});
+
+it('assigns default user groups on public registration', function () {
+    ProjectConfig::set('users.defaultUserGroups', ['testgroup']);
+
+    post(action(SaveUserController::class), [
+        'email' => 'groupuser@example.com',
+        'password' => 'password123',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email('groupuser@example.com')->one();
+    expect($user->getGroups())->toHaveCount(1);
+});
+
+it('handles base64 photo without filename extension', function () {
+    // @TODO: Bulk ops cause issues
+    if (DB::isMysql()) {
+        $this->markTestSkipped('Bulk ops cause issues with MySQL');
+    }
+
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
+        'url' => '/test',
+    ]);
+
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    ProjectConfig::set('users.photoVolumeUid', $volume->uid);
+
+    $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());
+
+    post(action(SaveUserController::class), [
+        'email' => 'noext@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'data' => 'data:image/jpeg;base64,'.$realImage,
+        ],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $user = User::find()->email('noext@example.com')->one();
+    expect($user)->not->toBeNull();
+});
+
+it('activates, notifies, and logs in public registrants based on user settings', function (
+    bool $deactivateByDefault,
+    bool $requireEmailVerification,
+    bool $deferPassword,
+    string $expectedStatus,
+    ?string $expectedLink,
+    bool $expectLoggedIn,
+) {
+    Notification::fake();
+    Edition::set(Edition::Pro);
+    ProjectConfig::set('users.deactivateByDefault', $deactivateByDefault);
+    ProjectConfig::set('users.requireEmailVerification', $requireEmailVerification);
+    Cms::config()->deferPublicRegistrationPassword = $deferPassword;
+    Cms::config()->autoLoginAfterAccountActivation = true;
+
+    postJson(action(SaveUserController::class), array_filter([
+        'username' => 'registrant',
+        'email' => 'registrant@example.com',
+        'password' => $deferPassword ? null : 'SuperSecret123!',
+    ]))->assertOk();
+
+    $user = User::find()
+        ->email('registrant@example.com')
+        ->status(null)
+        ->addSelect(['users.password'])
+        ->one();
+
+    expect($user->getStatus())->toBe($expectedStatus)
+        ->and($user->password === null)->toBe($deferPassword)
+        ->and(Auth::check())->toBe($expectLoggedIn);
+
+    if ($expectedStatus === User::STATUS_ACTIVE) {
+        expect($user->unverifiedEmail)->toBeNull();
+    }
+
+    if ($expectedLink === null) {
+        Notification::assertNothingSent();
+    } else {
+        Notification::assertSentToTimes($user, ActivationNotification::class, 1);
+        Notification::assertSentTo(
+            $user,
+            ActivationNotification::class,
+            function (ActivationNotification $notification) use ($user, $expectedLink) {
+                $mailable = $notification->toMail($user);
+
+                return $mailable->to[0]['address'] === 'registrant@example.com'
+                    && str_contains(urldecode((string) $mailable->variables['link']), $expectedLink);
+            },
+        );
+    }
+})->with([
+    'verification required' => [false, true, false, User::STATUS_PENDING, 'verifyemail?code=', false],
+    'verification required, deferred password' => [false, true, true, User::STATUS_PENDING, 'set-password?code=', false],
+    'no verification' => [false, false, false, User::STATUS_ACTIVE, null, true],
+    'no verification, deferred password' => [false, false, true, User::STATUS_ACTIVE, 'set-password?code=', true],
+    'deactivated, verification required' => [true, true, false, User::STATUS_INACTIVE, null, false],
+    'deactivated, verification required, deferred password' => [true, true, true, User::STATUS_INACTIVE, null, false],
+    'deactivated, no verification' => [true, false, false, User::STATUS_INACTIVE, null, false],
+    'deactivated, no verification, deferred password' => [true, false, true, User::STATUS_INACTIVE, null, false],
+]);

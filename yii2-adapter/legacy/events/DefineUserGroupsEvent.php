@@ -1,0 +1,25 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\events;
+
+use CraftCms\Cms\User\Data\UserGroup;
+
+/**
+ * Define user groups event class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.5.4
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Events\DefaultUserGroupsResolving} instead.
+ */
+class DefineUserGroupsEvent extends UserEvent
+{
+    /**
+     * @var UserGroup[] The user groups to assign to the user
+     */
+    public array $userGroups;
+}

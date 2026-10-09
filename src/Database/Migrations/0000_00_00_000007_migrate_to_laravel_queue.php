@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Table;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Migrates from Yii2 Queue to Laravel Queue.
+ *
+ * - Drops the legacy `queue` table (used by Yii2 Queue)
+ * - Creates the `jobprogress` table (used by Laravel Queue for progress tracking)
+ *
+ * Laravel's queue tables are provisioned separately.
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable(Table::JOBPROGRESS)) {
+            Schema::create(Table::JOBPROGRESS, function (Blueprint $table) {
+                $table->string('uid')->primary();
+                $table->string('description')->nullable();
+                $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
+                $table->unsignedTinyInteger('progress')->default(0);
+                $table->unsignedInteger('delay')->nullable();
+                $table->string('progressLabel')->nullable();
+                $table->text('error')->nullable();
+                $table->dateTime('dateCompleted')->nullable();
+                $table->dateTime('dateFailed')->nullable();
+                $table->dateTime('dateCreated');
+                $table->dateTime('dateUpdated');
+            });
+        }
+
+        Schema::dropIfExists(Table::QUEUE);
+    }
+
+    public function down(): void
+    {
+        if (! Schema::hasTable(Table::QUEUE)) {
+            Schema::create(Table::QUEUE, function (Blueprint $table) {
+                $table->integer('id', true);
+                $table->string('channel')->default('queue');
+                $table->binary('job');
+                $table->text('description')->nullable();
+                $table->integer('timePushed');
+                $table->integer('ttr');
+                $table->integer('delay')->default(0);
+                $table->unsignedInteger('priority')->default(1024);
+                $table->dateTime('dateReserved')->nullable();
+                $table->integer('timeUpdated')->nullable();
+                $table->smallInteger('progress')->default(0);
+                $table->string('progressLabel')->nullable();
+                $table->integer('attempt')->nullable();
+                $table->boolean('fail')->default(false)->nullable();
+                $table->dateTime('dateFailed')->nullable();
+                $table->text('error')->nullable();
+            });
+
+            Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
+            Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
+        }
+
+        Schema::dropIfExists(Table::JOBPROGRESS);
+    }
+};

@@ -1,0 +1,111 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Gql\Data;
+
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Validation\Rule;
+use Override;
+use Stringable;
+
+/**
+ * @since 6.0.0
+ */
+class GqlSchema extends Component implements Stringable
+{
+    public ?int $id = null;
+
+    public ?string $name = null;
+
+    /** @var list<string> */
+    public array $scope = [];
+
+    public bool $isPublic = false;
+
+    public ?string $uid = null;
+
+    /** @var array<string, array<string, list<string>|true>> */
+    private array $_cachedPairs = [];
+
+    /** @var list<string> */
+    private array $_cachedScope = [];
+
+    #[Override]
+    public function getRules(): array
+    {
+        return [
+            'id' => ['nullable', 'integer'],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::GQLSCHEMAS, 'name')->ignore($this->id)],
+            'scope' => ['nullable', 'array'],
+            'isPublic' => ['boolean'],
+            'uid' => ['nullable', 'uuid'],
+        ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->name;
+    }
+
+    public function has(string $name): bool
+    {
+        return in_array($name, $this->scope, true);
+    }
+
+    /** @return array<string, array<string, list<string>|true>> */
+    public function getAllScopePairs(): array
+    {
+        if ($this->_cachedScope === $this->scope) {
+            return $this->_cachedPairs;
+        }
+
+        $this->_cachedScope = $this->scope;
+        $this->_cachedPairs = [];
+
+        foreach ($this->scope as $permission) {
+            if (! preg_match('/:([\w-]+)$/', (string) $permission, $matches)) {
+                continue;
+            }
+
+            $action = $matches[1];
+            $permission = Str::chopEnd($permission, ':'.$action);
+            $parts = explode('.', $permission);
+
+            if (count($parts) === 2) {
+                $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
+
+                continue;
+            }
+
+            if (count($parts) === 1) {
+                $this->_cachedPairs[$action][$parts[0]] = true;
+            }
+        }
+
+        return $this->_cachedPairs;
+    }
+
+    /** @return array<string, list<string>|true> */
+    public function getAllScopePairsForAction(string $action = 'read'): array
+    {
+        return $this->getAllScopePairs()[$action] ?? [];
+    }
+
+    /** @return array{name: ?string, isPublic: bool, scope?: list<string>} */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'isPublic' => $this->isPublic,
+        ];
+
+        if ($this->scope !== []) {
+            $config['scope'] = $this->scope;
+        }
+
+        return $config;
+    }
+}
