@@ -2,6 +2,7 @@ import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import '@craftcms/ui/components/action-item/action-item';
 import '@craftcms/ui/components/button/button';
+import '@craftcms/ui/components/indicator/indicator';
 import type {ActionItems} from '@/common/types';
 import ActionList from './ActionList.vue';
 
@@ -287,4 +288,26 @@ describe('ActionList', () => {
 
     expect(container.querySelector('p')?.textContent).toBe('Ten selected');
   });
+
+  it.each(['craft-nav-item', 'craft-action-item'] as const)(
+    'draws a status as a dot in the icon slot of a %s',
+    async (as) => {
+      const container = mount({
+        actions: [
+          {type: 'link', href: '/draft', label: 'Draft', status: 'blue'},
+          {type: 'link', href: '/all', label: 'All'},
+        ],
+        as,
+      });
+      await nextTick();
+
+      const [draft, all] = [...container.querySelectorAll(as)];
+      const dot = draft!.querySelector(
+        'craft-indicator[slot="icon"]'
+      ) as HTMLElement & {fill?: string};
+
+      expect(dot.fill).toBe('blue');
+      expect(all!.querySelector('craft-indicator')).toBeNull();
+    }
+  );
 });

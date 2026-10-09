@@ -11,6 +11,7 @@ import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
 import UiRenderer from './UiRenderer.vue';
 import GroupNode from './GroupNode.vue';
+import ScopeNode from './ScopeNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
 import MarkdownControl from './MarkdownControl.vue';
 import MoneyControl from './MoneyControl.vue';
@@ -56,6 +57,7 @@ export function registerUiComponents(
   components.register('craft:action-menu', ActionMenuNode);
   components.register('craft:copy-attribute', CopyAttributeNode);
   components.register('craft:group', GroupNode);
+  components.register('craft:scope', ScopeNode);
   components.register('craft:tab', TabNode);
   components.register('craft:template-content', TemplateContentNode);
   components.register('craft:markdown-content', MarkdownContentNode);

@@ -89,6 +89,27 @@ public function settingsUi(UiContext $context = new UiContext): ?Ui
 Return `null` when the component has no settings. Translate server-authored labels, instructions, options, and errors
 before resolution.
 
+To embed a component's settings in a larger UI, wrap its Nodes in a `Scope`:
+
+```php
+use CraftCms\Cms\Ui\Nodes\Scope;
+
+$ui->add(
+    Scope::make('providerSettings', $provider->settingsUi($context)?->nodes() ?? [])
+        ->deltaGroupAtNamespace(),
+);
+```
+
+`Scope` adds its path to the surrounding namespace for every child Control, including children in Groups and nested
+Scopes. Values and errors use those prefixed paths. It adds no markup and does not mutate the component's Nodes.
+Paths accept dot strings or segment lists. The optional third argument to `Scope::make()` is a stable UID; otherwise
+the path determines it.
+
+Without `deltaGroup()`, each Control keeps its normal change-tracking group. `deltaGroupAtNamespace()` groups changes under
+the scope's path, so editing one setting submits the scoped settings together. Other delta group paths are relative
+to the scope and must be ancestors of the affected Controls. An enclosing atomic group takes precedence.
+The Scope remains part of its containing UI's refresh boundary.
+
 ### Field inputs
 
 Implement `FieldInterface::uiControl()` instead of `getInputHtml()`:

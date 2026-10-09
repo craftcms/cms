@@ -55,8 +55,10 @@ import './modules/asset-select-input';
 import './modules/element-deletion-manager';
 import './modules/uploader';
 import './modules/ui';
+import {installLegacyAdminTableShim} from './modules/admin-table/legacy-admin-table';
 
 window.Cp = Cp;
+installLegacyAdminTableShim();
 defineEntryFieldLayoutUiHost(Cp.$components);
 defineNestedElementsControlHost(Cp.$components);
 defineConditionBuilderHost(Cp.$components);

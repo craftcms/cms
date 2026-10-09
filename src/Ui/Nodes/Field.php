@@ -16,10 +16,13 @@ use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\Nodes\Concerns\HasVisibility;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
+use Stringable;
+use Twig\Markup;
 
 /**
  * @since 6.0.0
@@ -31,7 +34,25 @@ class Field implements Node
 
     private ?string $label = null;
 
+    private ?string $labelHtml = null;
+
     private bool $labelSrOnly = false;
+
+    private bool $fieldset = false;
+
+    private bool $showStatus = true;
+
+    private ?string $headingPrefix = null;
+
+    private ?string $headingSuffix = null;
+
+    private bool $translatable = false;
+
+    private ?string $translationDescription = null;
+
+    private ?string $orientation = null;
+
+    private ?string $inputWidth = null;
 
     private ?string $instructions = null;
 
@@ -83,8 +104,14 @@ class Field implements Node
             // name comes from. The input sits inside on `{$id}-input`.
             ->id($id)
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
-            ->label($label)
+            ->label(isset($node->props['labelHtml']) ? new HtmlString($node->props['labelHtml']) : $label)
             ->labelSrOnly((bool) ($node->props['labelSrOnly'] ?? false))
+            ->fieldset((bool) ($node->props['fieldset'] ?? false))
+            ->headingPrefix(isset($node->props['headingPrefix']) ? (string) $node->props['headingPrefix'] : null)
+            ->headingSuffix(isset($node->props['headingSuffix']) ? (string) $node->props['headingSuffix'] : null)
+            ->translatable((bool) ($node->props['translatable'] ?? false), $node->props['translationDescription'] ?? null)
+            ->orientation($node->props['orientation'] ?? null)
+            ->width($node->props['inputWidth'] ?? null)
             ->instructions($instructions)
             ->instructionsPosition((string) ($node->props['instructionsPosition'] ?? 'before'))
             ->tip(isset($node->props['tip']) ? (string) $node->props['tip'] : null)
@@ -107,18 +134,26 @@ class Field implements Node
             ->toHtml();
     }
 
-    public static function make(?string $label = null, ?Control $control = null): self
+    public static function make(string|Htmlable|Stringable|null $label = null, ?Control $control = null): self
     {
         $field = new self;
-        $field->label = $label;
+        $field->label($label);
         $field->control = $control;
 
         return $field;
     }
 
-    public function label(?string $label): static
+    /** Strings are plain text; Htmlable and Twig markup render as trusted HTML. */
+    public function label(string|Htmlable|Stringable|null $label): static
     {
-        $this->label = $label;
+        $this->labelHtml = match (true) {
+            $label instanceof Htmlable => $label->toHtml(),
+            $label instanceof Markup => (string) $label,
+            default => null,
+        };
+        $this->label = $this->labelHtml !== null
+            ? html_entity_decode(strip_tags($this->labelHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            : ($label !== null ? (string) $label : null);
 
         return $this;
     }
@@ -137,6 +172,71 @@ class Field implements Node
     public function instructions(?string $instructions): static
     {
         $this->instructions = $instructions;
+
+        return $this;
+    }
+
+    /**
+     * Trusted HTML rendered beside the label, such as a `<craft-info-icon>`.
+     * Encode any user-provided content before including it in the markup.
+     */
+    public function headingSuffix(string|Htmlable|null $headingSuffix): static
+    {
+        $this->headingSuffix = $headingSuffix instanceof Htmlable ? $headingSuffix->toHtml() : $headingSuffix;
+
+        return $this;
+    }
+
+    /** Trusted HTML rendered before the label. Encode any user-provided content. */
+    public function headingPrefix(string|Htmlable|null $headingPrefix): static
+    {
+        $this->headingPrefix = $headingPrefix instanceof Htmlable ? $headingPrefix->toHtml() : $headingPrefix;
+
+        return $this;
+    }
+
+    public function translatable(bool $translatable = true, ?string $description = null): static
+    {
+        $this->translatable = $translatable;
+
+        if ($description !== null) {
+            $this->translationDescription = $description;
+        }
+
+        return $this;
+    }
+
+    public function fieldset(bool $fieldset = true): static
+    {
+        $this->fieldset = $fieldset;
+
+        return $this;
+    }
+
+    public function showStatus(bool $showStatus = true): static
+    {
+        $this->showStatus = $showStatus;
+
+        return $this;
+    }
+
+    /** @param 'ltr'|'rtl'|null $orientation */
+    public function orientation(?string $orientation): static
+    {
+        $this->orientation = $orientation;
+
+        return $this;
+    }
+
+    /**
+     * Overrides control-based sizing within the field's grid allocation.
+     * `full` fills the column even with a maxlength; `auto` shrinks without one.
+     *
+     * @param  'full'|'auto'|null  $width
+     */
+    public function inputWidth(?string $width): static
+    {
+        $this->inputWidth = $width;
 
         return $this;
     }
@@ -245,6 +345,15 @@ class Field implements Node
             'required' => $this->required,
             ...Arr::whereNotNull([
                 'labelSrOnly' => $this->labelSrOnly ?: null,
+                'fieldset' => $this->fieldset ?: null,
+                'showStatus' => $this->showStatus ? null : false,
+                'labelHtml' => $this->labelHtml,
+                'headingPrefix' => $this->headingPrefix,
+                'headingSuffix' => $this->headingSuffix,
+                'translatable' => $this->translatable ?: null,
+                'translationDescription' => $this->translationDescription,
+                'orientation' => $this->orientation,
+                'inputWidth' => $this->inputWidth,
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
                 'instructionsHtml' => $this->noticeHtml($this->instructions),
                 'tip' => $this->tip,
@@ -253,8 +362,8 @@ class Field implements Node
                 'warningHtml' => $this->noticeHtml($this->warning),
                 'layoutUid' => $this->layoutUid,
                 'width' => $this->width,
-                'status' => $this->status,
-                'statusLabel' => $this->status !== null ? $this->statusLabel : null,
+                'status' => $this->showStatus ? $this->status : null,
+                'statusLabel' => $this->showStatus && $this->status !== null ? $this->statusLabel : null,
                 'hasActions' => $this->actions === [] ? null : true,
             ]),
             ...$this->visibilityProps(),

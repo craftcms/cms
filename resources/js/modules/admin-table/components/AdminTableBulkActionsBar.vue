@@ -80,7 +80,7 @@
         type: 'button',
         label: item.label,
         variant,
-        fill: item.fill,
+        status: item.fill,
         disabled: item.disabled,
         onClick: item.onClick,
       } satisfies ActionItemButton;
@@ -97,7 +97,7 @@
         type: 'button',
         label: item.label,
         variant,
-        fill: item.fill,
+        status: item.fill,
         disabled: true,
       };
     }
@@ -107,7 +107,7 @@
         type: 'button',
         label: item.label,
         variant,
-        fill: item.fill,
+        status: item.fill,
         action: {
           ...item.action,
           detail: {
@@ -124,7 +124,7 @@
         type: 'button',
         label: item.label,
         variant,
-        fill: item.fill,
+        status: item.fill,
         action: {
           ...item.action,
           body: {
@@ -141,7 +141,7 @@
       type: 'button',
       label: item.label,
       variant,
-      fill: item.fill,
+      status: item.fill,
       action: item.action,
       feedback: {success: {message: t('Done')}},
     } satisfies ActionItemButton;

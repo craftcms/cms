@@ -16,7 +16,7 @@ Use tabs for alternative views of the same subject — an entry's content, its s
 Tabs and panels are slotted as **siblings**, paired by document order: the first `slot="tab"` owns the first `slot="panel"`.
 
 ```html
-<craft-tabs>
+<craft-tabs label="Entry settings">
   <craft-tab slot="tab">Content</craft-tab>
   <div slot="panel">…</div>
   <craft-tab slot="tab">Settings</craft-tab>
@@ -62,11 +62,13 @@ The two are alternatives rather than layers. `equal-width` turns the overflow me
 
 ## External Panels
 
-Some strips cannot slot their panels — a server-rendered field layout puts the tab bar in the page header and the sections inside a pane, so the two halves live in different parts of the document.
+A panel doesn't have to be slotted into the strip. A [Tab](?path=/docs/components-tab--docs) can name its panel by id with `controls`, and the strip wires the two together across the document instead of by position.
 
 <Canvas of={TabsStories.ExternalPanels} sourceState="shown" />
 
-For that case, a [Tab](?path=/docs/components-tab--docs) names its panel by id with `controls`, and the strip wires the two together across the document instead of by position.
+To follow the WAI-ARIA APG tabs pattern, an external panel still has to be next in the DOM: place the panels immediately after `<craft-tabs>`, with no content between them and the tablist. Screen reader users read from the tabs straight into the selected panel, and <kbd>Tab</kbd> moves from the selected tab into it.
+
+If the triggers and the content need to live in different parts of the page, such as buttons in a toolbar and panels in a pane, they aren't tabs. Use a [Disclosure](?path=/docs/components-disclosure--docs) for each one instead.
 
 ## States
 
@@ -74,14 +76,15 @@ For that case, a [Tab](?path=/docs/components-tab--docs) names its panel by id w
 
 Disabled tabs are skipped by arrow-key navigation, rather than being focusable and inert.
 
-<Canvas of={TabsStories.IconToolbar} sourceState="shown" />
-
 ## Accessibility
 
 Lion supplies the whole tab contract: the `role`, `aria-controls`, and `aria-labelledby` wiring, the roving tabindex, and arrow/Home/End navigation.
 
-Two things stay with you:
+It follows the APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/) pattern: the arrow keys move focus and selection together.
 
+Three things stay with you:
+
+- **Name the strip.** `label` is required: set it to what the tabs switch between, such as "Entry settings". A strip without one logs an error, and the PHP `Tabs` component throws. The tablist is in the shadow root, so `aria-labelledby` on the host can't reach it.
 - **Keep labels short.** They sit in a strip, and a long label is what pushes a tab into the overflow menu.
 - **Do not use tabs to hide required form fields.** A validation error in a panel nobody has opened is an error nobody can find.
 

@@ -34,7 +34,7 @@ use function CraftCms\Cms\t;
 /**
  * @phpstan-import-type TextExpanderTrigger from HasTextExpander
  *
- * @phpstan-type SuggestionOption array{label: string, value: string, data: array{hint: mixed}}
+ * @phpstan-type SuggestionOption array{label: string, value: string, data: array{hint: mixed, keywords?: string|null}}
  *
  * @since 6.0.0
  */
@@ -64,11 +64,16 @@ class SelectOptions
                 is_scalar($env = Env::get($var)) &&
                 (! $filter || $filter($env))
             ) {
+                $hint = Security::redactIfSensitive($var, Aliases::get((string) $env, false));
                 $envSuggestions[] = [
                     'label' => '$'.$var,
                     'value' => '$'.$var,
                     'data' => [
-                        'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
+                        'hint' => $hint,
+                        // The hint is a variable's value, and Craft 5's autosuggest
+                        // matched against it — so you can find `$PRIMARY_SITE_URL`
+                        // by typing part of the URL it holds.
+                        'keywords' => $hint,
                     ],
                 ];
             }
@@ -77,7 +82,7 @@ class SelectOptions
         $suggestions[] = [
             'type' => 'optgroup',
             'label' => t('Environment Variables'),
-            'options' => array_values(Arr::sort($envSuggestions, 'name')),
+            'options' => array_values(Arr::sort($envSuggestions, 'label')),
         ];
 
         if ($includeAliases) {
@@ -89,6 +94,7 @@ class SelectOptions
                         'value' => $alias,
                         'data' => [
                             'hint' => $path,
+                            'keywords' => is_string($path) ? $path : null,
                         ],
                     ];
                 }
@@ -96,7 +102,7 @@ class SelectOptions
             $suggestions[] = [
                 'type' => 'optgroup',
                 'label' => t('Aliases'),
-                'options' => array_values(Arr::sort($aliasSuggestions, 'name')),
+                'options' => array_values(Arr::sort($aliasSuggestions, 'label')),
             ];
         }
 
@@ -570,6 +576,7 @@ class SelectOptions
                         'value' => $template,
                         'data' => [
                             'hint' => $hint,
+                            'keywords' => $hint,
                         ],
                     ];
                 }
@@ -580,7 +587,7 @@ class SelectOptions
             [
                 'label' => t('Templates'),
                 'type' => 'optgroup',
-                'options' => array_values(Arr::sort($suggestions, 'name')),
+                'options' => array_values(Arr::sort($suggestions, 'label')),
             ],
         ];
     }

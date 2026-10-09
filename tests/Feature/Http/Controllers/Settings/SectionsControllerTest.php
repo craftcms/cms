@@ -120,6 +120,18 @@ test('it can edit a section', function () {
             ->where('ui.values.handle', $section->handle));
 });
 
+test('the edit slideout links to the section’s edit page', function () {
+    $section = $this->sections->getSectionById(Section::first()->id);
+
+    get(action([SectionsController::class, 'edit'], [$section->id]), [
+        'Accept' => 'application/json',
+        'X-Craft-Container-Id' => 'section-slideout',
+        'X-Requested-With' => 'XMLHttpRequest',
+    ])
+        ->assertOk()
+        ->assertJsonPath('editUrl', $section->getCpEditUrl());
+});
+
 function sectionUiValues(array $overrides = []): array
 {
     return array_merge([

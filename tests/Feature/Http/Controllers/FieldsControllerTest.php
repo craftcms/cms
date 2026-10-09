@@ -112,10 +112,12 @@ it('can create a new field', function () {
             ->has('supportedTranslationMethods')
             ->where('ui.refreshable', true)
             ->where('ui.nodes', function (Collection $nodes): bool {
-                $settings = $nodes->firstWhere('uid', 'field-settings');
+                $settings = collect(flattenUiNodes($nodes->all()))->first(
+                    fn (array $node): bool => data_get($node, 'props.dependsOn') === ['type'],
+                );
 
-                return data_get($settings, 'props.dependsOn') === ['type']
-                        && collect(data_get($settings, 'children'))->isNotEmpty();
+                return collect(flattenUiNodes(data_get($settings, 'children', [])))
+                    ->contains(fn (array $node): bool => data_get($node, 'control.path.0') === 'settings');
             })
             ->where('submit.method', 'post')
             ->where('refreshUrl', action([FieldsController::class, 'renderUi'])));
@@ -172,7 +174,7 @@ it('renders the edit screen read-only without admin changes', function () {
             ->where('refreshUrl', null)
             ->where('ui.refreshable', false)
             ->where('ui.nodes', function (Collection $nodes): bool {
-                $controls = $nodes->pluck('control')->filter();
+                $controls = collect(flattenUiNodes($nodes->all()))->pluck('control')->filter();
 
                 return $controls->isNotEmpty()
                     && $controls->every(fn (array $control): bool => $control['mode'] === 'readOnly');

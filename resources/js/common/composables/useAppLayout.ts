@@ -18,10 +18,17 @@ export interface UseAppLayoutOptions {
   formAdditionalButtons?: Array<ActionItemButton>;
   /** Controls below the secondary nav. See `ScreenProps.subnavActions`. */
   subnavActions?: Array<ActionItem>;
+  /** The secondary nav itself. See `ScreenProps.subnav`. */
+  subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   /** Caps and centers the content column. See `ScreenProps.contentMaxWidth`. */
   contentMaxWidth?: boolean | string;
   /** The screen's own edit page. See `ScreenProps.editUrl`. */
   editUrl?: string | null;
+  /**
+   * Restores Craft 5's `#main-form`/`#content`/`#details`/`#page-container`/
+   * `#toolbar`. See `ScreenProps.legacyIds`.
+   */
+  legacyIds?: boolean;
   onSave?: (options?: FormSaveOptions) => void;
 }
 

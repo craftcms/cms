@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 use Yii;
+use yii\web\Cookie as YiiCookie;
 use yii\web\HeadersAlreadySentException;
 use Yii2tech\Illuminate\Http\YiiApplicationMiddleware;
 
@@ -197,10 +198,38 @@ class Response extends \yii\web\Response implements Responsable
         }
 
         foreach ($this->getCookies() as $cookie) {
-            $value = $cookie->value;
-
-            $response->headers->setCookie(new Cookie($cookie->name, $value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly));
+            $response->headers->setCookie(self::illuminateCookie($cookie));
         }
+    }
+
+    /**
+     * A Yii response cookie as its Symfony equivalent.
+     *
+     * Shared by both exits into Laravel — the send path above and
+     * {@see self::toResponse()} — so what a cookie carries can't depend on
+     * which one a response happens to leave through.
+     *
+     * `sameSite` is included because Craft configures it
+     * (`Craft::cookieConfig()` reads `sameSiteCookieValue`); omitting it let
+     * Symfony apply its own `Lax` default, so a project asking for `Strict` or
+     * `None` silently got neither — and a project configuring nothing got an
+     * explicit `Lax` that Craft never asked for. Passing it through matches
+     * Yii's own `sendCookies()`, which emits no attribute at all for an empty
+     * value. Symfony lowercases the value and maps an empty string to null.
+     */
+    private static function illuminateCookie(YiiCookie $cookie): Cookie
+    {
+        return new Cookie(
+            $cookie->name,
+            $cookie->value,
+            $cookie->expire,
+            $cookie->path,
+            $cookie->domain,
+            $cookie->secure,
+            $cookie->httpOnly,
+            raw: false,
+            sameSite: $cookie->sameSite,
+        );
     }
 
     /**
@@ -236,12 +265,40 @@ class Response extends \yii\web\Response implements Responsable
         }
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * This exit and the send path have to agree about what a response carries.
+     * They didn't: this one copied content, status and headers and dropped the
+     * cookies {@see self::sendCookies()} carries across, so a legacy controller
+     * setting a cookie on its response lost it whenever Laravel resolved the
+     * response through `Responsable` rather than through the Yii send path. An
+     * OAuth flow keeping its state in a cookie could never complete.
+     *
+     * The mapping itself lives in {@see self::illuminateCookie()}, shared with
+     * the send path so the two can't drift apart again.
+     *
+     * Deliberately still assembles its own response rather than delegating to
+     * {@see self::getIlluminateResponse()}: that would also run
+     * {@see self::sendHeaders()}, which throws once headers are sent — a
+     * failure mode this method has never had, and which `LegacyMiddleware`
+     * guards against separately.
+     *
+     * Known gap: a streamed response (`sendFile()` and friends) still arrives
+     * here as its empty `content`. Use the send path for those.
+     */
     public function toResponse($request): IlluminateResponse
     {
-        return new IlluminateResponse(
+        $response = new IlluminateResponse(
             content: $this->content,
             status: $this->getStatusCode(),
             headers: $this->getHeaders()->toArray()
         );
+
+        foreach ($this->getCookies() as $cookie) {
+            $response->headers->setCookie(self::illuminateCookie($cookie));
+        }
+
+        return $response;
     }
 }

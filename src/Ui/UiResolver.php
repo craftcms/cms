@@ -8,6 +8,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use InvalidArgumentException;
 use JsonException;
 
@@ -99,6 +100,17 @@ class UiResolver
             $this->nodeUidIndex[$scopedUid] = true;
         }
 
+        $childNamespace = $namespace;
+
+        if ($node instanceof Scope) {
+            $childNamespace = [...$namespace, ...$this->normalizePath($node->path(), 'UI Scope')];
+            $deltaGroup = $node->getDeltaGroup();
+
+            if ($deltaGroup !== null && $inheritedDeltaGroup === null) {
+                $inheritedDeltaGroup = [...$childNamespace, ...$this->normalizePath($deltaGroup, 'UI Scope delta group')];
+            }
+        }
+
         return new NodePayload(
             type: $type,
             component: $component,
@@ -116,7 +128,7 @@ class UiResolver
                     fn (Node $child): NodePayload => $this->resolveNode(
                         $child,
                         $context,
-                        $namespace,
+                        $childNamespace,
                         $inheritedDeltaGroup,
                         $inheritedMode,
                     ),

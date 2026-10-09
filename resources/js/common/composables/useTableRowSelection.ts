@@ -1,6 +1,6 @@
 import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
   type SelectableId,

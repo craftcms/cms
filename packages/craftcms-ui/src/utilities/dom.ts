@@ -22,7 +22,8 @@ export type AppendHtmlDisposer = () => void;
 export async function appendElementHtml(
   html: string,
   parent: HTMLElement,
-  rejectOnError = false
+  rejectOnError = false,
+  before: Node | null = null
 ): Promise<AppendHtmlDisposer> {
   const appended: Node[] = [];
   const releases: Array<() => void> = [];
@@ -69,7 +70,13 @@ export async function appendElementHtml(
           ? waitForScript(node, asset.value)
           : null;
 
-      parent.appendChild(node);
+      // `insertBefore(node, null)` appends, but going through `appendChild`
+      // keeps the primitive every caller without a marker already used.
+      if (before) {
+        parent.insertBefore(node, before);
+      } else {
+        parent.appendChild(node);
+      }
 
       if (
         asset &&
@@ -182,12 +189,22 @@ function releaseAsset(key: string, asset: OwnedAsset): void {
 /**
  * Appends HTML to the page `<head>`.
  *
+ * Inserts ahead of the `craft-head-anchor` marker where the document carries
+ * one, so assets injected during a client-side visit land in the same band as
+ * the ones the root view renders — above the control panel stylesheet, which
+ * stays authoritative in both cases. Without the marker this appends, as before.
+ *
  * Returns a disposer that removes the appended nodes when called.
  */
 export async function appendHeadHtml(
   html: string
 ): Promise<AppendHtmlDisposer> {
-  return appendElementHtml(html, document.head);
+  return appendElementHtml(
+    html,
+    document.head,
+    false,
+    document.head.querySelector('meta[name="craft-head-anchor"]')
+  );
 }
 
 /**

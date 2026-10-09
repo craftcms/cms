@@ -104,6 +104,8 @@ export class EditableTable extends Base<EditableTableSettings> {
   $table: any = null;
   $tbody: any = null;
   $addRowBtn: any = null;
+
+  #visibilityObserver?: ResizeObserver;
   $tableParent: any = null;
   $statusMessage: any = null;
 
@@ -264,10 +266,42 @@ export class EditableTable extends Base<EditableTableSettings> {
     this.removeListener(window, 'resize');
 
     if (this.isVisible()) {
+      this.#stopWatchingForVisibility();
       this.initialize();
-    } else {
-      this.addListener(window, 'resize', 'initializeIfVisible');
+
+      return;
     }
+
+    /**
+     * A table can be laid out long after it's built — inside a tab panel that
+     * isn't the selected one, say. That's a change to its own box rather than
+     * the window's, so watch the container the height is read from.
+     */
+    this.#watchForVisibility();
+  }
+
+  #watchForVisibility(): void {
+    const container: Element | undefined = this.$tableParent?.[0];
+
+    if (!container || this.#visibilityObserver) {
+      return;
+    }
+
+    this.#visibilityObserver = new ResizeObserver(() => {
+      if (!this.isVisible()) {
+        return;
+      }
+
+      this.#stopWatchingForVisibility();
+      this.initialize();
+    });
+
+    this.#visibilityObserver.observe(container);
+  }
+
+  #stopWatchingForVisibility(): void {
+    this.#visibilityObserver?.disconnect();
+    this.#visibilityObserver = undefined;
   }
 
   updateAddRowButton(): void {
@@ -570,6 +604,7 @@ export class EditableTable extends Base<EditableTableSettings> {
   }
 
   override destroy(): void {
+    this.#stopWatchingForVisibility();
     const tableEl: Element | undefined = this.$table?.[0];
     if (tableEl) {
       editableTableData.delete(tableEl);

@@ -40,8 +40,7 @@
     href?: string;
     external?: boolean;
     label?: string;
-    /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
-    fill?: string;
+    status?: string;
     onClick?: (event: Event) => void;
     /**
      * Everything optional, with the unset keys left out entirely. Binding an
@@ -164,6 +163,7 @@
           href: link.href,
           external: link.external,
           label: action.label,
+          status: isItem ? action.status : undefined,
           onClick: action.onClick,
           attrs: defined({...attrs, size}),
         },
@@ -174,7 +174,7 @@
       {
         kind: 'button',
         label: action.label,
-        fill: action.fill,
+        status: isItem ? action.status : undefined,
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
@@ -295,6 +295,11 @@
     return action.type === 'group' ? undefined : action.iconSvg;
   }
 
+  /** A status dot, filling the same slot an icon would. */
+  function statusOf(action: NavItem): string | undefined {
+    return action.type === 'group' ? undefined : action.status;
+  }
+
   const actionsLentTo = useNavItemActions();
 
   /**
@@ -406,6 +411,11 @@
         slot="icon"
         v-html="iconSvgOf(action)"
       ></craft-icon>
+      <craft-indicator
+        v-else-if="statusOf(action)"
+        slot="icon"
+        :fill="statusOf(action)"
+      ></craft-indicator>
 
       {{ labelOf(action) }}
 
@@ -462,6 +472,11 @@
       :href="action.href"
       @click="action.onClick"
     >
+      <craft-indicator
+        v-if="action.status"
+        slot="icon"
+        :fill="action.status"
+      ></craft-indicator>
       {{ action.label }}
     </component>
 
@@ -472,6 +487,11 @@
       :href="action.href!"
       :inertia="!action.external"
     >
+      <craft-indicator
+        v-if="action.status"
+        slot="icon"
+        :fill="action.status"
+      ></craft-indicator>
       {{ action.label }}
     </CpLink>
 
@@ -482,7 +502,11 @@
       :is="as"
       @click="action.onClick"
     >
-      <craft-indicator v-if="action.fill" :fill="action.fill"></craft-indicator>
+      <craft-indicator
+        v-if="action.status"
+        slot="icon"
+        :fill="action.status"
+      ></craft-indicator>
       {{ action.label }}
     </component>
   </template>

@@ -27,6 +27,7 @@ use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -118,21 +119,12 @@ class ImageTransformEditViewModel extends ViewModel
                 continue;
             }
 
-            $fields = array_map(function (Field $field) use ($transformer): Field {
-                $field = clone $field;
-                $control = $field->getControl();
-
-                if ($control !== null) {
-                    $handle = $control->path();
-                    $handle = is_array($handle) ? $handle[0] : $handle;
-                    $field->control($control->withPath(['parameters', $transformer->uid, $handle]));
-                }
-
-                return $field;
-            }, array_values($this->assetTransformers->parameterFields($transformer)));
+            $fields = array_values($this->assetTransformers->parameterFields($transformer));
 
             if ($fields !== []) {
-                $ui->add(Group::make("asset-transformer-{$transformer->uid}", $fields)
+                $ui->add(Group::make("asset-transformer-{$transformer->uid}", [
+                    Scope::make(['parameters', $transformer->uid], $fields),
+                ])
                     ->label((string) $transformer->name));
             }
         }

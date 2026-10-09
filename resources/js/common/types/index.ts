@@ -134,6 +134,8 @@ export interface ActionItemButton {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -143,8 +145,6 @@ export interface ActionItemButton {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
-  /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
-  fill?: string;
   /**
    * Items that hang off this one — the nav's own children.
    *
@@ -167,6 +167,8 @@ export interface ActionItemLink {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /**

@@ -23,6 +23,8 @@ class TemplateContent implements Node
 
     private int $width = 100;
 
+    private bool $trusted = false;
+
     private function __construct(
         private readonly string $uid,
         private readonly string $html,
@@ -33,20 +35,24 @@ class TemplateContent implements Node
         return Html::tag('div', $node->props['html'], [
             'class' => ["width-{$node->props['width']}"],
             'data-ui-node' => $node->uid,
-            'inert' => true,
+            'inert' => $node->props['inert'],
         ]);
     }
 
     public static function make(string $uid, string $html): self
     {
-        $config = app(HtmlSanitizerManager::class)->defaultConfig()
-            ->blockElement('form');
+        return new self($uid, $html);
+    }
 
-        foreach (['button', 'input', 'optgroup', 'option', 'select', 'textarea'] as $element) {
-            $config = $config->dropElement($element);
-        }
+    /**
+     * Trusted HTML is rendered without sanitization or interaction restrictions.
+     * Only opt in for developer-controlled markup with untrusted values escaped.
+     */
+    public function trusted(bool $trusted = true): static
+    {
+        $this->trusted = $trusted;
 
-        return new self($uid, new HtmlSanitizer($config)->sanitize($html));
+        return $this;
     }
 
     public function width(int $width): static
@@ -68,9 +74,23 @@ class TemplateContent implements Node
 
     public function props(): array
     {
+        $html = $this->html;
+
+        if (! $this->trusted) {
+            $config = app(HtmlSanitizerManager::class)->defaultConfig()
+                ->blockElement('form');
+
+            foreach (['button', 'input', 'optgroup', 'option', 'select', 'textarea'] as $element) {
+                $config = $config->dropElement($element);
+            }
+
+            $html = new HtmlSanitizer($config)->sanitize($html);
+        }
+
         return [
-            'html' => $this->html,
+            'html' => $html,
             'width' => $this->width,
+            'inert' => ! $this->trusted,
         ];
     }
 

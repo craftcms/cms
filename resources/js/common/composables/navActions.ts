@@ -44,6 +44,7 @@ export function navItemAction(
     selected: item.selected,
     ...(item.icon ? {icon: item.icon} : {}),
     ...(item.iconSvg ? {iconSvg: item.iconSvg} : {}),
+    ...(item.status ? {status: item.status} : {}),
     ...(item.badgeCount > 0 ? {indicator: true} : {}),
     ...(children.length > 0 ? {subnav: navItemActions(children)} : {}),
   };

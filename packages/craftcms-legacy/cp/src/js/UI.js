@@ -125,7 +125,9 @@ Craft.ui = {
       )
     );
 
-    if (config.placeholder || config.showCharsLeft) {
+    // Guarded: the modernized Garnish has no NiceText, and `craft-input`'s
+    // own `showCharsLeft` covers it where that namespace is in play.
+    if ((config.placeholder || config.showCharsLeft) && Garnish.NiceText) {
       new Garnish.NiceText($input);
     }
 
@@ -535,7 +537,11 @@ Craft.ui = {
     if (config.includeSortActions) {
       new Craft.SortableCheckboxSelect($container);
     } else {
-      new Garnish.CheckboxSelect($container);
+      // Guarded: superseded by the CheckboxSelect component where the
+      // modernized Garnish owns the namespace.
+      if (Garnish.CheckboxSelect) {
+        new Garnish.CheckboxSelect($container);
+      }
 
       if (config.sortable) {
         const dragSort = new Garnish.DragSort(

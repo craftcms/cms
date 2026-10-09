@@ -60,10 +60,30 @@ describe('craft-chip slots', () => {
     expect(slot(element, 'suffix')).toBeNull();
   });
 
-  it('renders the prefix for the icon attribute alone', async () => {
+  it('renders the icon for the icon attribute alone', async () => {
     const element = await createChip({icon: 'star'});
 
-    expect(slot(element, 'prefix')).not.toBeNull();
+    expect(slot(element, 'icon')).not.toBeNull();
+    expect(slot(element, 'prefix')).toBeNull();
+  });
+
+  // An empty part would still take the gap between parts.
+  it('leaves out slots filled only by an empty wrapper', async () => {
+    const element = await createChip(
+      {'show-status': '', 'show-thumb': ''},
+      '<div slot="status"></div><div slot="thumbnail"> </div>Label<div slot="suffix"></div>'
+    );
+
+    expect(slot(element, 'status')).toBeNull();
+    expect(slot(element, 'thumbnail')).toBeNull();
+    expect(slot(element, 'suffix')).toBeNull();
+    expect(element.shadowRoot?.querySelector('.cp-chip__prefix')).toBeNull();
+  });
+
+  it('leaves out the label when there is none', async () => {
+    const element = await createChip({icon: 'star'}, '');
+
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).toBeNull();
   });
 });
 
@@ -109,14 +129,27 @@ describe('craft-chip light DOM changes', () => {
   });
 
   /** Content is moved into a slot by setting the attribute, not only by being appended. */
-  it('renders the prefix when existing content is moved into the slot', async () => {
-    const element = await createChip({}, 'Label<div id="thumb"></div>');
-    expect(slot(element, 'prefix')).toBeNull();
+  it('renders a slot when existing content is moved into it', async () => {
+    const element = await createChip({}, 'Label<span id="status">Live</span>');
+    expect(slot(element, 'status')).toBeNull();
 
-    element.querySelector('#thumb')!.setAttribute('slot', 'thumbnail');
+    element.querySelector('#status')!.setAttribute('slot', 'status');
     await settle(element);
 
-    expect(slot(element, 'prefix')).not.toBeNull();
+    expect(slot(element, 'status')).not.toBeNull();
+  });
+
+  it('renders the label once its text arrives', async () => {
+    const element = await createChip({}, '');
+    const text = document.createTextNode('');
+    element.append(text);
+    await settle(element);
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).toBeNull();
+
+    text.data = 'Label';
+    await settle(element);
+
+    expect(element.shadowRoot?.querySelector('.cp-chip__body')).not.toBeNull();
   });
 });
 
@@ -130,15 +163,17 @@ describe('craft-chip status', () => {
     expect(slot(element, 'status')).not.toBeNull();
   });
 
-  // A status is prefix content like any other; without it counting, a chip whose
-  // only prefix content is its status would render no prefix at all.
-  it('renders the prefix for a status alone', async () => {
+  // A status describes the label, so it sits with it rather than in the prefix.
+  it('renders the status beside the label, outside the prefix', async () => {
     const element = await createChip(
       {'show-status': ''},
-      '<span slot="status">Live</span>'
+      '<span slot="status">Live</span>Label'
     );
 
-    expect(element.shadowRoot?.querySelector('[part="prefix"]')).not.toBeNull();
+    expect(
+      element.shadowRoot?.querySelector('.cp-chip__main > slot[name="status"]')
+    ).not.toBeNull();
+    expect(element.shadowRoot?.querySelector('.cp-chip__prefix')).toBeNull();
   });
 
   // Slotting a status is enough to show it; `show-status` is for a status slot
@@ -163,6 +198,21 @@ describe('craft-chip selection', () => {
 
   it('offers no checkbox unless selectable', async () => {
     expect(checkbox(await createChip())).toBeNull();
+  });
+
+  // A host that selects on mousedown would otherwise toggle the item before the
+  // checkbox toggles it back.
+  it('keeps presses on the checkbox from reaching the host', async () => {
+    const element = await createChip({selectable: ''});
+    const reached: string[] = [];
+    for (const type of ['mousedown', 'mouseup']) {
+      element.addEventListener(type, () => reached.push(type));
+      checkbox(element)!.dispatchEvent(
+        new MouseEvent(type, {bubbles: true, composed: true})
+      );
+    }
+
+    expect(reached).toEqual([]);
   });
 
   it('reflects `selected` onto the checkbox', async () => {

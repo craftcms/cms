@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {
   useTableRowSelection,
   type TableRowSelectionOptions,

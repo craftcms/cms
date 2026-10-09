@@ -195,10 +195,71 @@ export function inputName(path: string[]): string {
     .join('')}`;
 }
 
+const ID_CHARACTERS =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+function randomId(length = 10): string {
+  let id = '';
+
+  for (let index = 0; index < length; index++) {
+    id += ID_CHARACTERS.charAt(
+      Math.floor(Math.random() * ID_CHARACTERS.length)
+    );
+  }
+
+  return id;
+}
+
+/**
+ * Normalizes a string into an element id.
+ *
+ * A port of `CraftCms\Cms\Support\Html::id()`, which is what builds these ids
+ * server-side — the markup a form renders carries ids the client then has to
+ * address, so the two have to agree character for character.
+ */
+export function elementId(id = ''): string {
+  // Placeholders pass through untouched, e.g. `__NAMESPACE__-fieldId`.
+  if (/^__[A-Z_]+__/.test(id)) {
+    return id;
+  }
+
+  const normalized = id
+    // Drop invalid characters already sitting against a hyphen, so they don't
+    // each become a hyphen of their own below.
+    .replace(/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/g, '')
+    // Collapse whatever invalid characters are left into single hyphens.
+    .replace(/[^A-Za-z0-9_.-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return normalized || randomId();
+}
+
+/**
+ * Namespaces an element id.
+ *
+ * Mirrors `InputNamespace::namespaceId()`: the namespace and id are joined and
+ * then normalized **once**, rather than normalized separately and joined. That
+ * distinction matters, because the server builds the id the same way and the
+ * two must match.
+ *
+ * Deliberately not `Craft.namespaceId()`. That lives only in the legacy CP
+ * bundle, so borrowing it made rendering a form node fail outright wherever
+ * that bundle isn't loaded — `Craft.namespaceId is not a function`. It also
+ * normalizes each part separately, so it disagreed with the server for ids the
+ * joining itself affects.
+ */
+export function namespaceId(id: string, namespace?: string | null): string {
+  if (id === '') {
+    return id;
+  }
+
+  return namespace ? elementId(`${namespace}-${id}`) : elementId(id);
+}
+
 export function uiTabPanelId(uid: string, scope: string[]): string {
   const id = `ui-tab-${uid}`;
 
-  return scope.length ? Craft.namespaceId(id, inputName(scope)) : id;
+  return scope.length ? namespaceId(id, inputName(scope)) : id;
 }
 
 export function valueAt(source: UiValue, path: string[]): UiValue {

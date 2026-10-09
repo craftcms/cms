@@ -1,6 +1,8 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {useCraftTable} from '@/modules/admin-table/craftTable';
+import '@craftcms/ui/components/indicator/indicator';
+import {useCraftTable} from '@/common/table/craftTable';
+import type {BulkAction} from '@/modules/elements/types/actions';
 import AdminTable from './AdminTable.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -73,7 +75,7 @@ it.each([undefined, true, false])(
   }
 );
 
-function mountSelectionTable(selectable: boolean) {
+function mountSelectionTable(selectable: boolean, statuses: BulkAction[] = []) {
   const table = useCraftTable({
     data: [
       {id: 1, name: 'First', url: '/first'},
@@ -93,7 +95,7 @@ function mountSelectionTable(selectable: boolean) {
   const host = document.createElement('div');
   document.body.append(host);
   const app = createApp({
-    render: () => h(AdminTable, {table, selectable} as never),
+    render: () => h(AdminTable, {table, selectable, statuses} as never),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(host);
@@ -119,6 +121,40 @@ it('renders a select-all checkbox and one labelled checkbox per row', () => {
   expect(host.querySelector('tbody craft-checkbox label')?.textContent).toBe(
     'Select First'
   );
+});
+
+it('preserves status colors in bulk-action menus after selecting a row', async () => {
+  const {host, rows} = mountSelectionTable(true, [
+    {key: 'pending', label: 'Pending', fill: 'orange', onClick: () => {}},
+    {
+      key: 'enabled',
+      label: 'Enabled',
+      fill: 'green',
+      action: {type: 'http', url: '/set-status'},
+    },
+  ]);
+
+  expect(host.querySelector('.bulk-actions-bar')).toBeNull();
+  rows()[1]!
+    .querySelector('td:last-child')!
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  await nextTick();
+
+  const items = Array.from(host.querySelectorAll('craft-action-item'));
+  expect(items.map((item) => item.textContent?.trim())).toEqual([
+    'Pending',
+    'Enabled',
+  ]);
+  expect(
+    items.map(
+      (item) =>
+        (
+          item.querySelector('craft-indicator[slot="icon"]') as HTMLElement & {
+            fill: string;
+          }
+        )?.fill
+    )
+  ).toEqual(['orange', 'green']);
 });
 
 it('toggles a row when its body is clicked and marks it selected', async () => {

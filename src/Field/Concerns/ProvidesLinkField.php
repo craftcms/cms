@@ -13,11 +13,11 @@ use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Choice;
-use CraftCms\Cms\Ui\Controls\Control;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -236,21 +236,8 @@ trait ProvidesLinkField
                 ->options($this->linkAdvancedFieldOptions())
                 ->value($this->{$this->namespacedAttribute('advancedFields')}));
 
-        $this->groupLinkSettingsChanges($nodes);
-
-        return $nodes;
-    }
-
-    /** @param list<Node> $nodes */
-    private function groupLinkSettingsChanges(array $nodes): void
-    {
-        foreach ($nodes as $node) {
-            $control = $node->getControl();
-            if ($control instanceof Control) {
-                $control->deltaGroupAtNamespace();
-            }
-            $this->groupLinkSettingsChanges($node->children());
-        }
+        // Keep existing paths and submit all link settings together at the enclosing namespace.
+        return [Scope::make([], $nodes, 'link-settings')->deltaGroupAtNamespace()];
     }
 
     /** @return list<array<string, mixed>> */

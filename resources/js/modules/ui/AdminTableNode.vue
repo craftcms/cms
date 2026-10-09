@@ -49,11 +49,11 @@
   import CreateActionButton from '@/modules/admin-table/components/CreateActionButton.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {
     craftTableFeatures,
     type CraftTableFeatures,
-  } from '@/modules/admin-table/craftTable';
+  } from '@/common/table/craftTable';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {UiIsBareTable} from './runtime';

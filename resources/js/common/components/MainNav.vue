@@ -43,12 +43,22 @@
     mode?: 'trail' | 'flyout' | 'inline';
   }>();
   const queue = computed(() => page.props.queue);
+
+  // Collapsed to a rail there's no room to name a group, so its items join the
+  // rail directly rather than sitting under a heading that wraps them.
+  const actions = computed(() =>
+    iconOnly
+      ? nav.value.flatMap((action) =>
+          action.type === 'group' ? action.items : [action]
+        )
+      : nav.value
+  );
 </script>
 
 <template>
   <craft-nav-list>
     <ActionList
-      :actions="nav"
+      :actions="actions"
       as="craft-nav-item"
       :icon-only="iconOnly"
       :mode="mode"
