@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Nodes;
 
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -37,7 +38,7 @@ class Scope extends Container
      */
     public static function make(string|array $path, array $children = [], ?string $uid = null): self
     {
-        return new self($path, $children, $uid ?? 'scope:'.json_encode($path, JSON_THROW_ON_ERROR));
+        return new self($path, $children, $uid ?? 'scope:'.Json::encode($path, JSON_THROW_ON_ERROR));
     }
 
     /** @return string|list<string> */
