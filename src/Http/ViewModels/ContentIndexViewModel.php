@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
@@ -1287,20 +1286,20 @@ abstract class ContentIndexViewModel extends ViewModel
 
     private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
     {
-        $chip = $elementHtml->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
-        ]);
-
         $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
             ? $this->editUrl($element)
             : null;
 
-        if ($editUrl === null) {
-            return $chip;
-        }
-
-        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
+        // Only the label is the link, so the rest of the chip (its status
+        // indicator, say) behaves like the rest of the row.
+        return $elementHtml->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            'hyperlink' => $editUrl !== null,
+            'hyperlinkUrl' => $editUrl,
+            'hyperlinkTag' => 'CpLink',
+            'hyperlinkAttributes' => ['bare' => true],
+        ]);
     }
 
     /**

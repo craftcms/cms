@@ -78,17 +78,23 @@
       icon?: string;
       block?: boolean;
       inertia?: boolean;
+      /**
+       * Renders just the link around its content, without the flex wrapper, for
+       * a link inside text that has to wrap or truncate with it.
+       */
+      bare?: boolean;
     }>(),
     {
       block: false,
       inertia: true,
+      bare: false,
     }
   );
 
   const classes = computed(() => {
     return {
-      block: props.block,
-      'inline-flex': !props.block,
+      block: props.block && !props.bare,
+      'inline-flex': !props.block && !props.bare,
       'cp-link': true,
     };
   });
@@ -126,7 +132,7 @@
       :href="href"
       :class="customElement ? undefined : classes"
     >
-      <slot v-if="customElement"></slot>
+      <slot v-if="customElement || bare"></slot>
       <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
@@ -140,7 +146,7 @@
       :href="hrefString"
       :class="customElement ? undefined : classes"
     >
-      <slot v-if="customElement"></slot>
+      <slot v-if="customElement || bare"></slot>
       <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>

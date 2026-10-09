@@ -28,6 +28,19 @@ export const ELEMENT_QUICK_EDIT_CONTROL_SELECTOR = [
 ].join(', ');
 
 /**
+ * What a press acts on straight away, rather than waiting out a possible
+ * double-click — whether it's inside a chip or wrapped around it, as the title
+ * column's link is.
+ */
+const IMMEDIATE_PRESS_SELECTOR = [
+  'a[href]',
+  'button',
+  '[role="button"]',
+  '[role="link"]',
+  'craft-button',
+].join(', ');
+
+/**
  * How long a chip's first click waits for a second one before doing what a
  * click there normally does. Browsers don't expose the OS double-click
  * interval, so this is the common default.
@@ -171,7 +184,8 @@ export function useElementQuickEdit(
   /**
    * Holds a plain click on an editable chip back until it's clear it isn't the
    * first half of a double-click, so double-clicking the chip doesn't also
-   * follow the link around it or toggle the row's selection.
+   * toggle the row's selection. A press on a link or button, in the chip or
+   * around it, isn't held: following it shouldn't wait.
    *
    * Takes the `mouseup` as well as the `click`, since Inertia links visit on
    * `mouseup` when they prefetch on `mousedown` (as `CpLink` does by default).
@@ -192,6 +206,13 @@ export function useElementQuickEdit(
       event.ctrlKey ||
       event.shiftKey ||
       event.altKey ||
+      // A link or button does its own thing at once, with no wait.
+      event
+        .composedPath()
+        .some(
+          (node) =>
+            node instanceof Element && node.matches(IMMEDIATE_PRESS_SELECTOR)
+        ) ||
       !chipFrom(event)
     ) {
       return false;
