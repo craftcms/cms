@@ -26,19 +26,20 @@ it('uses the published Craft Vite manifest as its asset version', function () {
     }
 });
 
-it('shares the CP\'s Vue build and element index with plugin bundles through the import map', function () {
+it('shares the CP\'s Vue build, element index and admin table with plugin bundles through the import map', function () {
     $publicPath = storage_path('framework/testing/inertia-assets');
     $originalPublicPath = public_path();
 
     File::deleteDirectory($publicPath);
     File::ensureDirectoryExists("{$publicPath}/vendor/craft/build");
-    File::put("{$publicPath}/vendor/craft/build/manifest.json", '{"resources/js/vue.ts":{"file":"assets/vue-abc123.js","isEntry":true},"resources/js/elements.ts":{"file":"assets/elements-def456.js","isEntry":true}}');
+    File::put("{$publicPath}/vendor/craft/build/manifest.json", '{"resources/js/vue.ts":{"file":"assets/vue-abc123.js","isEntry":true},"resources/js/elements.ts":{"file":"assets/elements-def456.js","isEntry":true},"resources/js/admin-table.ts":{"file":"assets/admin-table-ghi789.js","isEntry":true}}');
     app()->usePublicPath($publicPath);
 
     try {
         expect(Cp::sharedModules())->toHaveKey('vue')
             ->and(Cp::sharedModules()['vue'])->toEndWith('/vendor/craft/build/assets/vue-abc123.js')
-            ->and(Cp::sharedModules()['@craftcms/cms/elements'])->toEndWith('/vendor/craft/build/assets/elements-def456.js');
+            ->and(Cp::sharedModules()['@craftcms/cms/elements'])->toEndWith('/vendor/craft/build/assets/elements-def456.js')
+            ->and(Cp::sharedModules()['@craftcms/cms/admin-table'])->toEndWith('/vendor/craft/build/assets/admin-table-ghi789.js');
     } finally {
         app()->usePublicPath($originalPublicPath);
         File::deleteDirectory($publicPath);
