@@ -89,7 +89,7 @@ class Table implements Node
 
     private bool $bordered = false;
 
-    private bool $showFooter = true;
+    private ?bool $showFooter = null;
 
     public function __construct(private readonly string $uid) {}
 
@@ -135,11 +135,11 @@ class Table implements Node
      * `_search` overrides client-side search text; otherwise columns' text is used.
      * `_sort` maps column keys to values to sort by client-side instead of the cell's text.
      *
-     * @param  list<array<string, mixed>>  $rows
+     * @param  iterable<array-key, array<string, mixed>>  $rows
      */
-    public function rows(array $rows): static
+    public function rows(iterable $rows): static
     {
-        $this->rows = self::prepareRows($rows);
+        $this->rows = self::prepareRows(iterator_to_array($rows, false));
         $this->dataUrl = null;
 
         return $this;
@@ -395,6 +395,9 @@ class Table implements Node
         return $this;
     }
 
+    /**
+     * Override the automatic footer visibility for pagination and bulk actions.
+     */
     public function showFooter(bool $showFooter = true): static
     {
         $this->showFooter = $showFooter;
@@ -521,7 +524,13 @@ class Table implements Node
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,
-            'showFooter' => $this->showFooter,
+            'showFooter' => $this->showFooter ?? (
+                $this->dataUrl !== null
+                || $this->bulkDeleteUrl !== null
+                || $this->bulkActions !== []
+                || $this->statusActions !== []
+                || $this->moveToPageUrl !== null
+            ),
         ];
     }
 

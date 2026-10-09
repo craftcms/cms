@@ -69,7 +69,6 @@ readonly class SchemasController extends GqlController
                     ]),
                 ];
             }, $this->gql->getSchemas()))
-            ->showFooter(false)
             ->createAction(t('New schema'), route('craft.cp.graphql.schemas.create'))
             ->createActionInPageHeader()
             ->deletable();

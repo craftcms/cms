@@ -309,17 +309,17 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Workflows
-        Route::prefix('settings/workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
-            Route::get('/', [WorkflowsController::class, 'index']);
+        Route::prefix('settings/workflows')->name('settings.workflows.')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+            Route::get('/', [WorkflowsController::class, 'index'])->name('index');
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
-                Route::get('new', [WorkflowsController::class, 'create']);
-                Route::post('/', [WorkflowsController::class, 'store']);
-                Route::patch('{workflow}', [WorkflowsController::class, 'update']);
-                Route::delete('{workflow}', [WorkflowsController::class, 'destroy']);
+                Route::get('new', [WorkflowsController::class, 'create'])->name('create');
+                Route::post('/', [WorkflowsController::class, 'store'])->name('store');
+                Route::patch('{workflow}', [WorkflowsController::class, 'update'])->name('update');
+                Route::delete('{workflow}', [WorkflowsController::class, 'destroy'])->name('destroy');
             });
 
-            Route::get('{workflow}', [WorkflowsController::class, 'edit']);
+            Route::get('{workflow}', [WorkflowsController::class, 'edit'])->name('edit');
         });
 
         // Fields

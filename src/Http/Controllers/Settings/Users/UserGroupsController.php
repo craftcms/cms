@@ -83,9 +83,8 @@ class UserGroupsController extends BaseUserSettingsController
                     '_deleteUrl' => route('craft.cp.settings.users.groups.destroy', ['groupId' => $group->id]),
                     '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $group->name]),
                 ]),
-            ])->all())
+            ]))
             ->emptyMessage(t('No groups exist yet.'))
-            ->showFooter(false)
             ->unless($this->readOnly, fn (Table $table) => $table
                 ->createAction(t('New user group'), route('craft.cp.settings.users.groups.create'))
                 ->createActionInPageHeader()

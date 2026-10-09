@@ -76,10 +76,8 @@ class ImageTransformsController extends BaseAssetSettingsController
                         '_deleteUrl' => route('craft.cp.settings.assets.transforms.destroy', ['transformId' => $transform->id]),
                         '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” transform?', ['name' => $transform->name]),
                     ]),
-                ])
-                ->values()->all())
+                ]))
             ->emptyMessage(t('No image transforms exist yet.'))
-            ->showFooter(false)
             ->unless($readOnly, fn (Table $table) => $table
                 ->createAction(t('New image transform'), route('craft.cp.settings.assets.transforms.create'))
                 ->createActionInPageHeader()
