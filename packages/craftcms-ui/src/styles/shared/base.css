@@ -50,6 +50,10 @@ a:hover {
   text-decoration-line: var(--c-link-hover-decoration);
 }
 
+a craft-chip {
+  --c-chip-text: var(--c-text-link);
+}
+
 /*
   Make lists unstyled by default.
 */
