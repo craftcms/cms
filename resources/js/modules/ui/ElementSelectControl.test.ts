@@ -798,6 +798,19 @@ describe('ElementSelectControl', () => {
       );
     });
 
+    it('swaps in an image saved as a new asset from the editor', async () => {
+      const root = await mount({value: [5, 6]});
+
+      doubleClick(chip(root));
+      const [, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: {data?: Record<string, unknown>}) => void},
+      ];
+      options.onSaved({data: {replacedAssetId: 5, newAssetId: 9}});
+
+      expect(updates.at(-1)).toEqual([9, 6]);
+    });
+
     it('stays put when the double-click lands on the chip’s checkbox', async () => {
       const root = await mount({props: {limit: 3}, value: [5]});
       // `craft-chip` renders its own checkbox in shadow DOM; the composed path

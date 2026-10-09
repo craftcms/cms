@@ -618,8 +618,22 @@
     void openSlideout(href, {
       // Registering a handler keeps a save from reloading the page behind,
       // which would throw away the owner's unsaved edits.
-      onSaved: () => {},
+      onSaved: ({data}) =>
+        replaceAsset(data?.replacedAssetId, data?.newAssetId),
     });
+  }
+
+  /** An image saved as a new asset takes the edited asset's place. */
+  function replaceAsset(replacedId: unknown, newId: unknown): void {
+    const from = Number(replacedId);
+    const to = Number(newId);
+
+    if (!from || !to || !ids.value.includes(from)) {
+      return;
+    }
+
+    presentations.set(to, {...presentation(from), id: to});
+    updateValue(ids.value.map((id) => (id === from ? to : id)));
   }
 </script>
 
