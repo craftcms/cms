@@ -24,7 +24,7 @@ control panel's own copies.
 
 The full guide — columns and column helpers, row actions, server-side
 pagination and sorting, search, reordering, selection, empty states, and the
-component's props — lives in Storybook under **Elements → AdminTable Guide**
+component's props — lives in Storybook under **CP → AdminTable → Guide**
 (`resources/js/modules/admin-table/AdminTable.mdx`), next to runnable examples
-under **Elements → AdminTable Recipes** and the table composables under
+under **CP → AdminTable → Recipes** and the table composables under
 **Composables**. Run `pnpm storybook` to browse it.

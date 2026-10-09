@@ -14,7 +14,7 @@ import {useWidgetPageProps, widgets, type Widget} from './fixtures/widgets';
  * `@craftcms/cp`. See the AdminTable Guide for the walkthrough.
  */
 const meta = {
-  title: 'Elements/AdminTable Recipes',
+  title: 'CP/AdminTable/Recipes',
   parameters: {
     docs: {
       description: {
