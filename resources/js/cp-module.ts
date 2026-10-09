@@ -61,6 +61,8 @@ export {
   useCraftTable,
   craftTableFeatures,
   type CraftTableFeatures,
+  type CraftTableInertiaOptions,
+  type CraftTableOptions,
   type CraftColumnMeta,
 } from './common/table/craftTable';
 
@@ -68,9 +70,6 @@ export {
   createCraftColumnHelper,
   type CraftColumnHelper,
 } from './common/table/createCraftColumnHelper';
-
-export {useServerPagination} from './common/table/useServerPagination';
-export {useServerSort} from './common/table/useServerSort';
 
 export {
   TableSpacing,

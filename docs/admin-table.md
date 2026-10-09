@@ -11,10 +11,12 @@ import {
   DeleteButton,
   SearchForm,
   useCraftTable,
-  useServerPagination,
-  useServerSort,
 } from '@craftcms/cp';
 ```
+
+Tables paged and sorted on the server pass `useCraftTable` an `inertia` option
+(`url`, `pagination`, `sort`, `dataProp`), and each change becomes an Inertia
+visit that reloads those props.
 
 Leave `vue` and `@craftcms/cp` out of the plugin's bundle (for example,
 `build.rollupOptions.external: ['vue', '@craftcms/cp']`) so the page runs on the

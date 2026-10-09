@@ -6,14 +6,11 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
-  import {router} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerPagination} from '@/common/table/useServerPagination';
-  import {useServerSort} from '@/common/table/useServerSort';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -62,42 +59,6 @@
     ])
   );
 
-  const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
-        {
-          only: ['data', 'pagination'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
-        {
-          only: ['data', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
   const sectionTable = useCraftTable({
     get data() {
       return props.data;
@@ -106,20 +67,17 @@
       return columns.value;
     },
     state: {
-      get pagination() {
-        return paginationState.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
       get columnVisibility() {
         return {
           actions: !readOnly.value,
         };
       },
     },
-    ...paginationConfig,
-    ...sortingConfig,
+    inertia: {
+      url: index(),
+      pagination: () => props.pagination,
+      sort: () => props.sort,
+    },
   });
 </script>
 

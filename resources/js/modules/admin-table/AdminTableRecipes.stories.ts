@@ -1,16 +1,13 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import {computed, h, ref} from 'vue';
+import {h, ref} from 'vue';
 import {
   AdminTable,
   createCraftColumnHelper,
   DeleteButton,
   SearchForm,
   useCraftTable,
-  useServerPagination,
-  useServerSort,
-  type SortItem,
 } from '@/cp-module';
-import {queryWidgets, widgets, type Widget} from './fixtures/widgets';
+import {useWidgetPageProps, widgets, type Widget} from './fixtures/widgets';
 
 /**
  * Each story builds its table the way a plugin page does, importing only from
@@ -88,87 +85,39 @@ export const ColumnHelpers: Story = {
 };
 
 /**
- * `useServerPagination` and `useServerSort` turn the table's page and sort
- * changes into query params. A plugin page sends them to its controller with
- * `router.visit()`; here they go to a local stand-in so the story can run.
+ * The `inertia` option pages and sorts the table on the server: each change
+ * visits the page's own URL and reloads the rows, `pagination` and `sort`
+ * props. Here a stand-in controller answers the visits so the story can run.
  */
 export const ServerPaginationAndSorting: Story = {
   render: () => ({
     components: {AdminTable},
     setup() {
-      const query = ref({
-        page: 1,
-        perPage: 5,
-        sort: [{field: 'name', direction: 'asc'}] as Array<SortItem>,
-      });
-      const response = computed(() => queryWidgets(query.value));
-
-      const {paginationState, paginationConfig} = useServerPagination({
-        initialState: response.value.pagination,
-        currentQuery: () => ({}),
-        onChange: ({query: next}) => {
-          query.value = {
-            ...query.value,
-            page: Number(next.page),
-            perPage: Number(next.per_page),
-          };
-          paginationState.value = {
-            pageIndex: query.value.page - 1,
-            pageSize: query.value.perPage,
-          };
-        },
-      });
-
-      const {sortingState, sortingConfig} = useServerSort({
-        initialState: query.value.sort,
-        currentQuery: () => ({}),
-        onChange: ({query: next}) => {
-          const sort = Object.values(
-            next.sort as Record<number, SortItem>
-          ).slice(0, 1);
-          query.value = {...query.value, page: 1, sort};
-          sortingState.value = sort.map((s) => ({
-            id: s.field,
-            desc: s.direction === 'desc',
-          }));
-          paginationState.value = {
-            pageIndex: 0,
-            pageSize: query.value.perPage,
-          };
-        },
-      });
+      const {props} = useWidgetPageProps();
 
       const table = useCraftTable({
         get data() {
-          return response.value.data;
+          return props.widgets;
         },
         columns: widgetColumns(),
         getRowId: (row) => String(row.id),
-        state: {
-          get pagination() {
-            return paginationState.value;
-          },
-          get sorting() {
-            return sortingState.value;
-          },
+        inertia: {
+          url: '/admin/widgets',
+          pagination: () => props.pagination,
+          sort: () => props.sort,
+          dataProp: 'widgets',
         },
-        ...paginationConfig,
-        get rowCount() {
-          return response.value.pagination.total;
-        },
-        ...sortingConfig,
-        enableMultiSort: false,
       });
 
-      return {table, response};
+      return {table, props};
     },
     template: `
       <AdminTable
         :table="table"
         title="Widgets"
-        :from="response.pagination.from"
-        :to="response.pagination.to"
-        :total="response.pagination.total"
+        :from="props.pagination.from"
+        :to="props.pagination.to"
+        :total="props.pagination.total"
         enable-adjust-page-size
         :page-size-options="[5, 10, 25]"
       />

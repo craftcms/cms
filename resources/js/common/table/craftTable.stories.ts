@@ -3,7 +3,12 @@ import {computed, defineComponent, ref} from 'vue';
 import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
 import {useCraftTable} from './craftTable';
 import {createCraftColumnHelper} from './createCraftColumnHelper';
-import {widgets, type Widget} from '@/modules/admin-table/fixtures/widgets';
+import {
+  toQueryString,
+  useWidgetPageProps,
+  widgets,
+  type Widget,
+} from '@/modules/admin-table/fixtures/widgets';
 
 const columnHelper = createCraftColumnHelper<Widget>();
 const columns = columnHelper.columns([
@@ -85,8 +90,8 @@ const meta = {
           'row selection, sorting, pagination, and column visibility, ordering ' +
           'and sizing. Use it in place of TanStack’s `useTable`. Sorting and ' +
           'paging happen on the server, so no client-side row models are ' +
-          'registered and sorting is off until `useServerSort` turns it on. ' +
-          'See the AdminTable Guide.',
+          'registered and sorting is off until the `inertia` option turns it ' +
+          'on. See the AdminTable Guide.',
       },
     },
   },
@@ -96,7 +101,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Column headers aren't sortable until `useServerSort` is wired up. */
+/** Column headers aren't sortable until the `inertia` option sorts them. */
 export const Default: Story = {};
 
 /**
@@ -118,4 +123,85 @@ export const Selection: Story = {
 /** `enableRowSelection` as a function vetoes rows: Gizmos can't be selected. */
 export const UnselectableRows: Story = {
   args: {selectable: true, lockGizmos: true},
+};
+
+/**
+ * An AdminTable paged and sorted through `useCraftTable`'s `inertia` option,
+ * next to the visit it makes. A stand-in controller answers the visits.
+ */
+const InertiaTable = defineComponent({
+  components: {AdminTable},
+  props: {
+    paginate: {type: Boolean, default: true},
+  },
+  setup(props) {
+    const {props: page, lastVisit} = useWidgetPageProps({
+      perPage: props.paginate ? 5 : 23,
+    });
+
+    const table = useCraftTable({
+      get data() {
+        return page.widgets;
+      },
+      columns,
+      getRowId: (row) => String(row.id),
+      inertia: {
+        url: '/admin/widgets',
+        pagination: props.paginate ? () => page.pagination : undefined,
+        sort: () => page.sort,
+        dataProp: 'widgets',
+      },
+    });
+
+    const queryString = computed(() =>
+      lastVisit.value ? toQueryString(lastVisit.value.data) : ''
+    );
+
+    return {table, page, lastVisit, queryString};
+  },
+  template: `
+    <div class="flex flex-col gap-4">
+      <AdminTable
+        :table="table"
+        title="Widgets"
+        :from="page.pagination.from"
+        :to="page.pagination.to"
+        :total="paginate ? page.pagination.total : undefined"
+        :enable-adjust-page-size="paginate"
+        :page-size-options="[5, 10, 25]"
+      />
+      <div class="text-xs flex flex-col gap-2">
+        <p v-if="!lastVisit">
+          {{ paginate ? 'Change the page, page size or sort' : 'Sort a column' }}
+          to see the visit the table makes.
+        </p>
+        <template v-else>
+          <div><strong>Visit</strong><pre>{{ lastVisit.url }}?{{ queryString }}</pre></div>
+          <div><strong>Reloads</strong><pre>{{ lastVisit.only }}</pre></div>
+        </template>
+      </div>
+    </div>
+  `,
+});
+
+/**
+ * With `inertia`, page and sort changes visit the page's own URL with the new
+ * query, reloading the rows, \`pagination\` and \`sort\` props together, and
+ * the table follows the reloaded props. Shift-click a header to add a second
+ * sort column. The query starts from the page's own URL params, which here
+ * are the Storybook iframe's.
+ */
+export const Inertia: Story = {
+  render: () => ({
+    components: {InertiaTable},
+    template: '<InertiaTable />',
+  }),
+};
+
+/** Leave out `pagination` for a table that's sorted on the server but not paged. */
+export const InertiaSortOnly: Story = {
+  render: () => ({
+    components: {InertiaTable},
+    template: '<InertiaTable :paginate="false" />',
+  }),
 };

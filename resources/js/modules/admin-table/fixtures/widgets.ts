@@ -1,3 +1,5 @@
+import {router} from '@inertiajs/vue3';
+import {computed, onBeforeUnmount, reactive, ref} from 'vue';
 import type {PaginationData, SortItem} from '@/common/types';
 
 export interface Widget {
@@ -86,4 +88,54 @@ export function toQueryString(query: Record<string, unknown>): string {
   }
 
   return params.join('&');
+}
+
+export interface RecordedVisit {
+  url: string;
+  data: Record<string, unknown>;
+  only?: string[];
+}
+
+/**
+ * Answers the table's Inertia visits the way a plugin's controller would, by
+ * reloading the page props, and records each visit so a story can show it.
+ * Stories run on a mocked router, so this swaps its `visit` for the story's
+ * lifetime.
+ */
+export function useWidgetPageProps(initial: Partial<WidgetQuery> = {}) {
+  const query = ref<WidgetQuery>({
+    page: 1,
+    perPage: 5,
+    sort: [{field: 'name', direction: 'asc'}],
+    ...initial,
+  });
+  const response = computed(() => queryWidgets(query.value));
+  const lastVisit = ref<RecordedVisit | null>(null);
+
+  const originalVisit = router.visit;
+  router.visit = ((url, options = {}) => {
+    const data = (options.data ?? {}) as Record<string, unknown>;
+    lastVisit.value = {
+      url: String(typeof url === 'object' && 'method' in url ? url.url : url),
+      data,
+      only: options.only,
+    };
+    query.value = {
+      page: Number(data[window.Craft.pageTrigger ?? 'page'] ?? 1),
+      perPage: Number(data.per_page ?? query.value.perPage),
+      // The page's URL would carry the current sort into a page change.
+      sort: data.sort
+        ? Object.values(data.sort as Record<number, SortItem>)
+        : query.value.sort,
+    };
+  }) as typeof router.visit;
+  onBeforeUnmount(() => (router.visit = originalVisit));
+
+  const props = reactive({
+    widgets: computed(() => response.value.data),
+    pagination: computed(() => response.value.pagination),
+    sort: computed(() => query.value.sort),
+  });
+
+  return {props, lastVisit};
 }

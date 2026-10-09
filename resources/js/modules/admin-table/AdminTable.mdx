@@ -36,26 +36,24 @@ export default defineConfig({
 import {AdminTable, createCraftColumnHelper, useCraftTable} from '@craftcms/cp';
 ```
 
-| Export                    | What it is                                                                                                                                                                                                                |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AdminTable`              | The table component.                                                                                                                                                                                                      |
-| `useCraftTable`           | Creates a table with the features `AdminTable` expects (selection, sorting, pagination, column visibility/ordering/sizing). Use it instead of TanStack's `useTable`.                                                      |
-| `createCraftColumnHelper` | TanStack's column helper plus Craft presets (`link`, `handle`, `date`, `html`, `actions`).                                                                                                                                |
-| `useServerPagination`     | Turns page changes into query params for your controller.                                                                                                                                                                 |
-| `useServerSort`           | Turns sort changes into query params for your controller.                                                                                                                                                                 |
-| `SearchForm`              | A debounced search field for the `table-header` slot.                                                                                                                                                                     |
-| `DeleteButton`            | The small “×” button for an actions column.                                                                                                                                                                               |
-| `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                            |
-| types                     | `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
+| Export                    | What it is                                                                                                                                                                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminTable`              | The table component.                                                                                                                                                                                                                                                       |
+| `useCraftTable`           | Creates a table with the features `AdminTable` expects (selection, sorting, pagination, column visibility/ordering/sizing). Use it instead of TanStack's `useTable`. Its `inertia` option pages and sorts on the server.                                                   |
+| `createCraftColumnHelper` | TanStack's column helper plus Craft presets (`link`, `handle`, `date`, `html`, `actions`).                                                                                                                                                                                 |
+| `SearchForm`              | A debounced search field for the `table-header` slot.                                                                                                                                                                                                                      |
+| `DeleteButton`            | The small “×” button for an actions column.                                                                                                                                                                                                                                |
+| `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                                                                             |
+| types                     | `CraftTableOptions`, `CraftTableInertiaOptions`, `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
 
-For Inertia navigation (pagination, sorting, reordering), use the CP's router,
+For your own Inertia navigation (deleting, reordering), use the CP's router,
 `Cp.$router`, rather than one imported from your own `@inertiajs/vue3`. A
 second copy of the router isn't connected to the page the CP mounted.
 
 ## A basic table
 
-**Composables/useCraftTable** has stories for its defaults, column visibility
-and selection.
+**Composables/useCraftTable** has stories for its defaults, column visibility,
+selection and the `inertia` option.
 
 Define the row type, build columns with the column helper, create the table
 with `useCraftTable`, and pass it to `AdminTable`. Read `data` through a getter
@@ -195,19 +193,12 @@ const table = useCraftTable({
 ## Server-side pagination and sorting
 
 `useCraftTable` doesn't sort or page on the client, because CP tables leave
-that to the server. `useServerPagination` and `useServerSort` translate the
-table's changes into a query, and you send it to your controller.
-The **Composables/useServerPagination** and **Composables/useServerSort**
-stories show the exact query each change produces.
+that to the server. Give it an `inertia` option and each page, page-size or
+sort change visits your page's URL with the new query, reloading the rows,
+`pagination` and `sort` props together. The table follows the reloaded props.
 
 ```ts
-import {
-  useCraftTable,
-  useServerPagination,
-  useServerSort,
-  type PaginationData,
-  type SortItem,
-} from '@craftcms/cp';
+import {useCraftTable, type PaginationData, type SortItem} from '@craftcms/cp';
 
 const props = defineProps<{
   widgets: Widget[];
@@ -215,38 +206,17 @@ const props = defineProps<{
   sort: SortItem[];
 }>();
 
-const visit = (query: Record<string, unknown>, only: string[]) =>
-  Cp.$router.visit(`/admin/my-plugin/widgets`, {
-    data: query,
-    only,
-    preserveScroll: true,
-  });
-
-const {paginationState, paginationConfig} = useServerPagination({
-  initialState: props.pagination,
-  onChange: ({query}) => visit(query, ['widgets', 'pagination']),
-});
-
-const {sortingState, sortingConfig} = useServerSort({
-  initialState: props.sort,
-  onChange: ({query}) => visit(query, ['widgets', 'sort', 'pagination']),
-});
-
 const table = useCraftTable({
   get data() {
     return props.widgets;
   },
   columns,
-  state: {
-    get pagination() {
-      return paginationState.value;
-    },
-    get sorting() {
-      return sortingState.value;
-    },
+  inertia: {
+    url: '/admin/my-plugin/widgets',
+    pagination: () => props.pagination,
+    sort: () => props.sort,
+    dataProp: 'widgets',
   },
-  ...paginationConfig,
-  ...sortingConfig,
 });
 ```
 
@@ -260,6 +230,13 @@ const table = useCraftTable({
 />
 ```
 
+| Option       | Description                                                                           |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `url`        | The page's own URL, as a string or a Wayfinder route.                                 |
+| `pagination` | Returns the `pagination` prop. Leave it out for a table that isn't paged.             |
+| `sort`       | Returns the `sort` prop. Leave it out for a table that isn't sortable.                |
+| `dataProp`   | The prop holding the rows, reloaded with `pagination` and `sort`. Defaults to `data`. |
+
 The query keeps the page's current params and adds:
 
 | Param                         | Value                                                                      |
@@ -268,9 +245,10 @@ The query keeps the page's current params and adds:
 | `per_page`                    | The page size.                                                             |
 | `sort`                        | `sort[0][field]=name&sort[0][direction]=asc`, one entry per sorted column. |
 
-Columns are only sortable once `useServerSort` is wired up. Turn sorting off
+Columns are only sortable once `inertia` has a `sort`. Turn sorting off
 for a column with `enableSorting: false`. Sort ids are column ids, so map them
-to your own database columns on the server.
+to your own database columns on the server. The **Composables/useCraftTable**
+stories show the exact visit each change makes.
 
 On the server, `CraftCms\Cms\Http\Requests\TableRequest` reads the same params
 (`page()`, `limit()`, `sort()`, `search()`). A Laravel paginator's `toArray()`
