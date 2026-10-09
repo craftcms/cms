@@ -67,6 +67,13 @@ describe('DataTable', () => {
     return header?.querySelector('button') ?? null;
   }
 
+  it('flushes the row edges with its container', () => {
+    const {root} = mount();
+    expect(
+      root.querySelector('table')?.classList.contains('cp-table--flush')
+    ).toBe(true);
+  });
+
   it('marks no row selected to begin with', () => {
     const {root} = mount();
 

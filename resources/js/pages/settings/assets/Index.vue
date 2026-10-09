@@ -135,7 +135,7 @@
 
   <div class="@container">
     <AdminTable
-      class="admin-table--padded"
+      padded
       :table="table"
       :reorderable="true"
       :read-only="readOnly"
