@@ -3,6 +3,7 @@ import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import UiKitchenSink from './pages/UiKitchenSink.vue';
 import Chips from './chips/Chips.vue';
 import './layout-slots-demo/register';
+import './safe-area-debug';
 
 Cp.$inertia.register(
   'workbench/UiKitchenSink',

@@ -16,6 +16,9 @@ use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Workbench\App\Http\Controllers\ErrorPagesController;
+use Workbench\App\Http\Controllers\LegacyPagesController;
+use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
@@ -89,6 +92,36 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->label('Layout Slots')
                         ->href('workbench/layout-slots')
                         ->icon('table-layout'),
+                    new NavItem()
+                        ->label('Legacy Pages')
+                        ->href('workbench/legacy-pages/dbupdate')
+                        ->icon('clock-rotate-left')
+                        ->subnav(collect(LegacyPagesController::PAGES)
+                            ->map(fn (string $label, string $page) => new NavItem()
+                                ->label($label)
+                                ->href("workbench/legacy-pages/{$page}"))
+                            ->values()
+                            ->all()),
+                    new NavItem()
+                        ->label('Error Pages')
+                        ->href('workbench/error-pages/404')
+                        ->icon('triangle-exclamation')
+                        ->subnav(collect(ErrorPagesController::PAGES)
+                            ->map(fn (string $label, int|string $page) => new NavItem()
+                                ->label($label)
+                                ->href("workbench/error-pages/{$page}"))
+                            ->values()
+                            ->all()),
+                    new NavItem()
+                        ->label('Ported Pages')
+                        ->href('workbench/ported-pages/updater-progress')
+                        ->icon('arrow-right-arrow-left')
+                        ->subnav(collect(PortedPagesController::PAGES)
+                            ->map(fn (string $label, string $page) => new NavItem()
+                                ->label($label)
+                                ->href("workbench/ported-pages/{$page}"))
+                            ->values()
+                            ->all()),
                 ]);
         });
     }

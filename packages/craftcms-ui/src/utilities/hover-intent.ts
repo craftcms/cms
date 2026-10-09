@@ -53,12 +53,22 @@ export interface HoverIntentMember {
   overlayRect?(): DOMRect | undefined;
 }
 
-interface Point {
+export interface Point {
   x: number;
   y: number;
 }
 
-type Triangle = [Point, Point, Point];
+export type Triangle = [Point, Point, Point];
+
+/** A safe area as it stands right now. See {@link HoverIntentGroup.safeAreas}. */
+export interface SafeArea {
+  /** Where the pointer left the trigger, then the overlay's near top and bottom. */
+  corners: Triangle;
+  /** Whether the pointer is inside the triangle. */
+  pointerInside: boolean;
+  /** How much longer the group will believe the pointer is aiming, in ms. */
+  graceRemaining: number;
+}
 
 interface MemberState {
   open: boolean;
@@ -258,6 +268,36 @@ export class HoverIntentGroup {
     this.#pointer = undefined;
     this.#pointerWatch?.abort();
     this.#pointerWatch = undefined;
+  }
+
+  /**
+   * Every safe area in play: one for each open overlay the pointer has left
+   * but that hasn't closed yet. For tooling that wants to draw them.
+   */
+  safeAreas(): SafeArea[] {
+    const areas: SafeArea[] = [];
+    const pointer = this.#pointer;
+
+    for (const [member, state] of this.#members) {
+      const {exit} = state;
+      const rect = state.open && exit && member.overlayRect?.();
+      const corners = rect && safeArea({x: exit.x, y: exit.y}, rect);
+
+      if (!corners) {
+        continue;
+      }
+
+      areas.push({
+        corners,
+        pointerInside: !!pointer && contains(corners, pointer),
+        graceRemaining: Math.max(
+          0,
+          this.options.graceDelay - (Date.now() - exit.at)
+        ),
+      });
+    }
+
+    return areas;
   }
 
   #stateOf(member: HoverIntentMember): MemberState {

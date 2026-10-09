@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\Responses\CpErrorPage;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -48,6 +49,7 @@ use Override;
 use ReflectionClass;
 use RuntimeException;
 use stdClass;
+use Throwable;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\craftAuth;
@@ -273,6 +275,8 @@ class AppServiceProvider extends ServiceProvider
                     return back();
                 }
             });
+
+            $handler->renderable(fn (Throwable $e, Request $request) => CpErrorPage::render($e, $request));
         });
     }
 }
