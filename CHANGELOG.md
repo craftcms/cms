@@ -12,7 +12,7 @@
 - Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Tabs now mirror the selected tab in the URL hash, select the tab named by the hash on page load, and keep it after saving.
 - Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
-- The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline fills the panel, with the comment form pinned to the bottom. ([#19919](https://github.com/craftcms/cms/pull/19919))
+- The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline scrolls within the panel, keeping the comment form in view. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The “View all activity” and “View all revisions” links are now shown in their details panels’ headers. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
