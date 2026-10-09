@@ -428,18 +428,25 @@ abstract class BaseField extends FieldLayoutElement
 
         $control->reactive();
 
-        $static = $context->mode !== ControlMode::Editable;
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
         $status = $this->showStatus() ? $this->statusClass($context->element, $static) : null;
 
         return Field::make(
             $this->showLabel() ? $this->label() : null,
             $control,
         )
-            ->instructions($this->instructionsText($context->element))
+            ->fieldset($this->useFieldset())
+            ->showStatus($this->showStatus())
+            ->orientation($this->orientation($context->element, $static))
+            ->translatable(
+                $context->element !== null && Sites::isMultiSite() && $this->translatable($context->element, $static),
+                $context->element !== null ? $this->translationDescription($context->element, $static) : null,
+            )
+            ->instructions($this->instructionsText($context->element, $static))
             ->instructionsPosition($this->instructionsPosition)
-            ->tip($this->tipText($context->element))
-            ->warning($this->warningText($context->element))
-            ->required($this->required)
+            ->tip($this->tipText($context->element, $static))
+            ->warning($this->warningText($context->element, $static))
+            ->required(! $static && $this->required)
             ->status(
                 $status,
                 $status !== null
@@ -512,6 +519,7 @@ abstract class BaseField extends FieldLayoutElement
             ! $this->uid ||
             ! $element?->id ||
             $context->mode !== ControlMode::Editable ||
+            $context->ui->mode !== ControlMode::Editable ||
             ! $this->isCrossSiteCopyable($element) ||
             ! $this->translatable($element) ||
             ! $element->getIsCrossSiteCopyable()
