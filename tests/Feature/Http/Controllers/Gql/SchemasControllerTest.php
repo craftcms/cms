@@ -79,11 +79,36 @@ it('forbids schema pages when admin changes are disabled', function () {
 
 it('renders the schema index, create, edit, and public edit screens', function () {
     $schema = createSchemaForSchemasControllerTest([
+        'name' => 'Short scope',
         'scope' => ['directive:parseRefs'],
     ]);
+    $expandedSchema = createSchemaForSchemasControllerTest([
+        'name' => 'Expanded scope',
+        'scope' => ['entries:read', 'assets:read', 'users:read', 'directive:parseRefs'],
+    ]);
 
-    get(action([SchemasController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/schemas/Index'));
+    $response = get(action([SchemasController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+    $rows = collect($table['props']['rows'])->keyBy('id');
+
+    expect($table['props']['createUrl'])->toBe(action([SchemasController::class, 'create']))
+        ->and($rows[$schema->id])->toMatchArray([
+            'name' => ['label' => 'Short scope', 'url' => action([SchemasController::class, 'edit'], ['schemaId' => $schema->id])],
+            'scope' => 'directive:parseRefs',
+            'public' => 'No',
+            '_deleteUrl' => action([SchemasController::class, 'destroy'], ['schemaId' => $schema->id]),
+            '_deleteConfirmMessage' => 'Are you sure you want to delete the “Short scope” schema?',
+        ])
+        ->and($rows[$expandedSchema->id]['scope'])->toBe('entries:read, assets:read and 2 more');
+
+    $publicSchema = Gql::getPublicSchema();
+    expect($rows[$publicSchema->id])->toMatchArray([
+        'name' => ['label' => $publicSchema->name, 'url' => action([SchemasController::class, 'edit'], ['schemaId' => 'public'])],
+        'public' => 'Yes',
+        '_deletable' => false,
+    ])->not->toHaveKey('_deleteUrl');
 
     get(action([SchemasController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -214,6 +239,14 @@ it('requires a schemaId before deletion', function () {
     expect(fn () => deleteJson(action([SchemasController::class, 'destroy']), []))
         ->toThrow(UrlGenerationException::class);
 });
+
+it('deletes private schemas and preserves the public schema', function (bool $public) {
+    $schema = $public ? Gql::getPublicSchema() : createSchemaForSchemasControllerTest();
+
+    deleteJson(action([SchemasController::class, 'destroy'], ['schemaId' => $schema->id]))->assertForbidden();
+
+    expect(Gql::getSchemaById($schema->id)?->id)->toBe($public ? $schema->id : null);
+})->with(['private' => false, 'public' => true]);
 
 function schemaControllerScope(): array
 {
