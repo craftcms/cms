@@ -316,14 +316,14 @@
 
   .activity-timeline__comment-field--footer craft-markdown-field {
     --markdown-field-footer-height: calc(
-      var(--c-size-control-sm) + var(--c-spacing-sm) * 2
+      var(--c-size-control-sm) + var(--c-spacing-md) * 2
     );
   }
 
   .activity-timeline__comment-footer {
     position: absolute;
-    inset-block-end: var(--c-spacing-sm);
-    inset-inline-end: var(--c-spacing-sm);
+    inset-block-end: var(--c-spacing-md);
+    inset-inline-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
     gap: var(--c-spacing-md);
