@@ -644,6 +644,65 @@ describe('UiRenderer', () => {
     expect(matrix().getAttribute('status')).toBeNull();
   });
 
+  it('submits all scoped settings when one setting in a shared delta group changes', async () => {
+    const onMutation = vi.fn();
+    const settingsField = (name: string): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+        component: 'craft:text',
+        props: {},
+        path: ['providerSettings', name],
+        mode: 'editable',
+        deltaGroup: ['providerSettings'],
+      },
+    });
+    app.unmount();
+    await mount(
+      {
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Scope',
+            component: 'craft:scope',
+            uid: 'provider-settings',
+            props: {},
+            children: [settingsField('apiKey'), settingsField('endpoint')],
+          },
+        ],
+        values: {
+          providerSettings: {apiKey: 'old', endpoint: 'https://example.com'},
+        },
+        errors: [],
+        globalErrors: [],
+      },
+      {onMutation}
+    );
+
+    const input = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="providerSettings[apiKey]"]'
+      ),
+      'Expected the scoped API key input.'
+    );
+    input.value = 'new';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(onMutation).toHaveBeenLastCalledWith(
+      {providerSettings: {apiKey: 'new', endpoint: 'https://example.com'}},
+      'typing'
+    );
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="providerSettings[endpoint]"]'
+      )?.value
+    ).toBe('https://example.com');
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
