@@ -5,11 +5,8 @@
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
-  import {useServerPagination} from '@/common/table/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerSort} from '@/common/table/useServerSort';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -63,47 +60,11 @@
             'Are you sure you want to delete “{name}” and all entries of that type?',
             {name: row.original.title}
           ),
-          onClick: () => router.delete(destroy({entryType: row.original.id})),
+          action: destroy({entryType: row.original.id}),
         }),
       ]),
     ])
   );
-
-  const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
-        {
-          only: ['data', 'pagination'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
-        {
-          only: ['data', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
 
   const table = useCraftTable<EntryTypeRow>({
     get data() {
@@ -113,19 +74,15 @@
       return columns.value;
     },
     state: {
-      get pagination() {
-        return paginationState.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
-
       get columnVisibility() {
         return columnVisibility.value;
       },
     },
-    ...paginationConfig,
-    ...sortingConfig,
+    inertia: {
+      url: index(),
+      pagination: () => props.pagination,
+      sort: () => props.sort,
+    },
   });
 
   useAppLayout({title: props.title});

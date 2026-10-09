@@ -4,7 +4,7 @@
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {useCraftTable} from '@/common/table/craftTable';
-  import {computed, h, nextTick, ref, watch} from 'vue';
+  import {h, ref} from 'vue';
   import type {Site, SiteGroup} from '@/common/types';
   import ModalForm from '@/common/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
@@ -17,6 +17,7 @@
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {useInertiaReorder} from '@/common/composables/useInertiaReorder';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
@@ -61,43 +62,7 @@
     modalActive.value = true;
   }
 
-  const siteIds = ref(props.sites.map((site) => site.id));
-  const sites = computed((): Site[] => {
-    if (siteIds.value.length > 0) {
-      return siteIds.value
-        .map((id) => props.sites.find((site) => site.id === id))
-        .filter((s): s is Site => s !== undefined);
-    }
-
-    return [];
-  });
-
-  watch(siteIds, (newValue, oldValue) => {
-    // Defer to next tick to avoid issues during drag-and-drop event handling
-    nextTick(() => {
-      router.post(
-        reorder(),
-        {
-          ids: [...newValue], // Copy to ensure we have the current value
-        },
-        {
-          preserveScroll: true,
-          preserveState: true,
-          onError: () => {
-            siteIds.value = oldValue;
-          },
-        }
-      );
-    });
-  });
-
-  function handleReorder(startIndex: number, finishIndex: number) {
-    const newIds = [...siteIds.value];
-    const [id] = newIds.splice(startIndex, 1);
-    if (id === undefined) return;
-    newIds.splice(finishIndex, 0, id);
-    siteIds.value = newIds;
-  }
+  const onReorder = useInertiaReorder({url: reorder(), prop: 'sites'});
 
   const columns = ref(
     columnHelper.columns([
@@ -175,7 +140,7 @@
 
   const sitesTable = useCraftTable({
     get data() {
-      return sites.value;
+      return props.sites;
     },
     get columns() {
       return columns.value;
@@ -269,7 +234,7 @@
       :read-only="readOnly"
       :reorderable="!!group?.id"
       spacing="spacious"
-      @reorder="handleReorder"
+      @reorder="onReorder"
     >
       <template #empty-row>
         <craft-empty

@@ -6,7 +6,6 @@
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
@@ -57,15 +56,15 @@
             confirm: t('Are you sure you want to delete the “{name}” token?', {
               name: row.original.name,
             }),
-            onClick: () =>
-              router
-                .optimistic<{tokens: {data: Array<TokenData>}}>(({tokens}) => ({
-                  tokens: {
-                    ...tokens,
-                    data: tokens.data.filter(({id}) => id !== row.original.id),
-                  },
-                }))
-                .delete(destroy({tokenId: row.original.id})),
+            action: destroy({tokenId: row.original.id}),
+            options: {
+              optimistic: ({tokens}: {tokens: {data: Array<TokenData>}}) => ({
+                tokens: {
+                  ...tokens,
+                  data: tokens.data.filter(({id}) => id !== row.original.id),
+                },
+              }),
+            },
           }),
         ]),
       ];

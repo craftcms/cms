@@ -1,0 +1,408 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as AdminTableStories from './components/AdminTable.stories';
+import * as Recipes from './AdminTableRecipes.stories';
+import * as ReorderStories from '../../common/composables/useInertiaReorder.stories';
+
+<Meta title="CP/AdminTable/Guide" />
+
+# AdminTable
+
+`AdminTable` is the table on the control panel's settings and index screens
+(Sections, Sites, Fields, GraphQL schemas…). It renders a
+[TanStack Table](https://tanstack.com/table/latest) instance with Craft's
+styling, keyboard support, selection, drag-to-reorder, pagination and empty
+states. You own the table instance and its data, and `AdminTable` draws it.
+
+Plugins get the same component, and the helpers Craft's own pages build their
+tables with, from the `@craftcms/cp` module.
+
+## Using it from a plugin
+
+The control panel publishes `@craftcms/cp` through its import map, alongside
+`vue`. Import from it and leave both out of your bundle so your page runs on the
+CP's own copies:
+
+```js
+// vite.config.js
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      external: ['vue', '@craftcms/cp'],
+    },
+  },
+});
+```
+
+```ts
+import {AdminTable, createCraftColumnHelper, useCraftTable} from '@craftcms/cp';
+```
+
+| Export                    | What it is                                                                                                                                                                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminTable`              | The table component.                                                                                                                                                                                                                                                       |
+| `useCraftTable`           | Creates a table with the features `AdminTable` expects (selection, sorting, pagination, column visibility/ordering/sizing). Use it instead of TanStack's `useTable`. Its `inertia` option pages and sorts on the server.                                                   |
+| `createCraftColumnHelper` | TanStack's column helper plus Craft presets (`link`, `handle`, `date`, `html`, `actions`).                                                                                                                                                                                 |
+| `SearchForm`              | A debounced search field for the `table-header` slot.                                                                                                                                                                                                                      |
+| `DeleteButton`            | The small “×” button for an actions column.                                                                                                                                                                                                                                |
+| `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                                                                             |
+| types                     | `CraftTableOptions`, `CraftTableInertiaOptions`, `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
+
+Don't import Inertia's router or `Link` from your own `@inertiajs/vue3`. A
+second copy isn't connected to the page the CP mounted. The table makes its own
+visits, `DeleteButton` and `useInertiaReorder` cover deleting and reordering,
+and `CpButtonLink` covers other links and actions; `method` and `data` pass
+through to Inertia's `Link`:
+
+```vue
+<CpButtonLink href="/admin/my-plugin/widgets/reset" method="post">
+  Reset
+</CpButtonLink>
+```
+
+## A basic table
+
+**Composables/useCraftTable** has stories for its defaults, column visibility,
+selection and the `inertia` option.
+
+Define the row type, build columns with the column helper, create the table
+with `useCraftTable`, and pass it to `AdminTable`. Read `data` through a getter
+so the table follows prop updates after Inertia reloads.
+
+```vue
+<script setup lang="ts">
+  import {
+    AdminTable,
+    createCraftColumnHelper,
+    useCraftTable,
+  } from '@craftcms/cp';
+
+  interface Widget {
+    id: number;
+    name: string;
+    handle: string;
+    dateCreated: string;
+  }
+
+  const props = defineProps<{widgets: Widget[]}>();
+
+  const columnHelper = createCraftColumnHelper<Widget>();
+  const columns = columnHelper.columns([
+    columnHelper.link('name', {
+      header: 'Name',
+      props: ({row}) => ({href: `/admin/my-plugin/widgets/${row.original.id}`}),
+    }),
+    columnHelper.handle('handle'),
+    columnHelper.date('dateCreated', {header: 'Date Created'}),
+  ]);
+
+  const table = useCraftTable({
+    get data() {
+      return props.widgets;
+    },
+    columns,
+    getRowId: (row) => String(row.id),
+  });
+</script>
+
+<template>
+  <AdminTable :table="table" title="Widgets" />
+</template>
+```
+
+`title` isn't shown. It labels the table for screen readers.
+
+The examples use plain strings. Translate them the way the rest of your
+plugin's UI does.
+
+<Canvas of={Recipes.ColumnHelpers} />
+
+## Columns
+
+### Column helper presets
+
+The **Composables/createCraftColumnHelper** stories show each preset and the
+`meta` options on their own.
+
+`createCraftColumnHelper<Row>()` returns everything TanStack's `createColumnHelper`
+does (`accessor`, `display`, `group`, `columns`) plus:
+
+| Preset                              | Renders                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `link(accessor, {props})`           | The value as a bold `CpLink`. `props(cell)` returns the link's props, `href` at least. Leave `props` out to render plain text. |
+| `handle(accessor, config?)`         | The value in a click-to-copy `<craft-copy-attribute>`. The header defaults to “Handle”.                                        |
+| `date(accessor, config?)`           | A formatted date. The value can be an ISO string or an object with a `date` string.                                            |
+| `html(accessor, {props})`           | The value as HTML. Use it only for markup your server built and escaped.                                                       |
+| `actions(cell => VNode[], config?)` | A right-aligned `actions` column with a screen-reader-only header. Return the row's buttons.                                   |
+
+Anything else is a regular TanStack column. Render custom cells with Vue's `h()`:
+
+```ts
+import {h} from 'vue';
+
+columnHelper.accessor('enabled', {
+  header: 'Enabled',
+  meta: {trackSize: 'min-content'},
+  cell: ({getValue}) =>
+    getValue() ? h('craft-icon', {name: 'check', label: 'Enabled'}) : null,
+});
+```
+
+### Column `meta`
+
+`AdminTable` reads these keys from a column's `meta`:
+
+| Key            | Type                                | Effect                                                                                 |
+| -------------- | ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `trackSize`    | `string`                            | The column's CSS grid track (`'1.5fr'`, `'60px'`, `'min-content'`). Defaults to `1fr`. |
+| `headerTip`    | `string`                            | Adds an info tooltip beside the header.                                                |
+| `headerSrOnly` | `boolean`                           | Hides the header text visually, keeping it for screen readers.                         |
+| `wrap`         | `boolean`                           | Lets cell text wrap. Cells don't wrap by default.                                      |
+| `cellTag`      | `'td' \| 'th'`                      | Renders the cell as a row header (`th`).                                               |
+| `columnClass`  | `string \| Record<string, boolean>` | Classes for the header and every cell.                                                 |
+| `headerClass`  | `string \| Record<string, boolean>` | Classes for the header only.                                                           |
+| `cellClass`    | `string \| Record<string, boolean>` | Classes for body cells only.                                                           |
+
+### Row actions
+
+Put per-row buttons in an `actions` column. Give `DeleteButton` an `action`,
+a URL (sent as a `DELETE`) or a route, and it confirms with its `confirm`
+message, then makes that visit. `options` takes Inertia visit options, such as
+an `optimistic` update that drops the row before the server responds:
+
+```ts
+import {h} from 'vue';
+import {DeleteButton} from '@craftcms/cp';
+
+columnHelper.actions(({row}) => [
+  h(DeleteButton, {
+    label: `Delete ${row.original.name}`,
+    confirm: `Are you sure you want to delete “${row.original.name}”?`,
+    action: `/admin/my-plugin/widgets/${row.original.id}`,
+    options: {
+      optimistic: ({widgets}: {widgets: Widget[]}) => ({
+        widgets: widgets.filter((w) => w.id !== row.original.id),
+      }),
+    },
+  }),
+]);
+```
+
+Without an `action`, it only emits `click`, for a button that does something
+else.
+
+### Hiding columns
+
+Pass `columnVisibility` in the table's state. Read-only screens usually hide
+the actions column:
+
+```ts
+const table = useCraftTable({
+  // …
+  state: {
+    get columnVisibility() {
+      return {actions: !props.readOnly};
+    },
+  },
+});
+```
+
+## Server-side pagination and sorting
+
+`useCraftTable` doesn't sort or page on the client, because CP tables leave
+that to the server. Give it an `inertia` option and each page, page-size or
+sort change visits your page's URL with the new query, reloading the rows,
+`pagination` and `sort` props together. The table follows the reloaded props.
+
+```ts
+import {useCraftTable, type PaginationData, type SortItem} from '@craftcms/cp';
+
+const props = defineProps<{
+  widgets: Widget[];
+  pagination: PaginationData;
+  sort: SortItem[];
+}>();
+
+const table = useCraftTable({
+  get data() {
+    return props.widgets;
+  },
+  columns,
+  inertia: {
+    url: '/admin/my-plugin/widgets',
+    pagination: () => props.pagination,
+    sort: () => props.sort,
+    dataProp: 'widgets',
+  },
+});
+```
+
+```vue
+<AdminTable
+  :table="table"
+  :from="pagination.from"
+  :to="pagination.to"
+  :total="pagination.total"
+  enable-adjust-page-size
+/>
+```
+
+| Option       | Description                                                                           |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `url`        | The page's own URL, as a string or a Wayfinder route.                                 |
+| `pagination` | Returns the `pagination` prop. Leave it out for a table that isn't paged.             |
+| `sort`       | Returns the `sort` prop. Leave it out for a table that isn't sortable.                |
+| `dataProp`   | The prop holding the rows, reloaded with `pagination` and `sort`. Defaults to `data`. |
+
+The query keeps the page's current params and adds:
+
+| Param                         | Value                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| page trigger (usually `page`) | The 1-based page. Sorting resets it to 1.                                  |
+| `per_page`                    | The page size.                                                             |
+| `sort`                        | `sort[0][field]=name&sort[0][direction]=asc`, one entry per sorted column. |
+
+Columns are only sortable once `inertia` has a `sort`. Turn sorting off
+for a column with `enableSorting: false`. Sort ids are column ids, so map them
+to your own database columns on the server. The **Composables/useCraftTable**
+stories show the exact visit each change makes.
+
+On the server, `CraftCms\Cms\Http\Requests\TableRequest` reads the same params
+(`page()`, `limit()`, `sort()`, `search()`). A Laravel paginator's `toArray()`
+already has the `PaginationData` keys:
+
+```php
+public function index(TableRequest $request): CpScreenResponse
+{
+    $sort = $request->sort()[0];
+    $orderBy = match ($sort['field']) {
+        'handle' => 'handle',
+        'dateCreated' => 'dateCreated',
+        default => 'name',
+    };
+
+    $paginator = Widget::query()
+        ->when($request->search(), fn ($q, $term) => $q->where('name', 'like', "%{$term}%"))
+        ->orderBy($orderBy, $sort['direction'] === 'desc' ? 'desc' : 'asc')
+        ->paginate(perPage: $request->limit(), page: $request->page());
+
+    return new CpScreenResponse()
+        ->title(t('Widgets', category: 'my-plugin'))
+        ->inertiaPage('my-plugin/widgets/Index', [
+            'widgets' => fn () => $paginator->items(),
+            'pagination' => fn () => Arr::except($paginator->toArray(), ['data', 'links']),
+            'sort' => $request->sort(),
+            'searchTerm' => $request->search(),
+        ]);
+}
+```
+
+<Canvas of={Recipes.ServerPaginationAndSorting} />
+
+## Search
+
+Put `SearchForm` in the `table-header` slot. It submits `search` to its
+`action` half a second after typing stops, or straight away on Enter, and
+reloads only the `data` and `searchTerm` props. Pass `options` to reload
+different props:
+
+```vue
+<AdminTable :table="table">
+  <template #table-header>
+    <SearchForm
+      action="/admin/my-plugin/widgets"
+      v-model="searchTerm"
+      :options="{only: ['widgets', 'pagination', 'searchTerm']}"
+    />
+  </template>
+</AdminTable>
+```
+
+<Canvas of={Recipes.WithSearch} />
+
+## Reordering
+
+`reorderable` adds a drag handle and keyboard move buttons to each row.
+`AdminTable` only emits `reorder(startIndex, finishIndex)`. `useInertiaReorder`
+returns a handler that moves the row in its page prop straight away and posts
+the new id order. Inertia puts the prop back if the save fails.
+
+```ts
+import {useInertiaReorder} from '@craftcms/cp';
+
+const onReorder = useInertiaReorder({
+  url: '/admin/my-plugin/widgets/reorder',
+  prop: 'widgets',
+});
+```
+
+```vue
+<AdminTable :table="table" reorderable @reorder="onReorder" />
+```
+
+Read the table's `data` straight from that prop. The ids come from each row's
+`id` and post as `ids`; pass `key` and `param` to change either. Reordering is
+turned off while the table is read-only.
+
+<Canvas of={ReorderStories.Default} />
+
+## Selection
+
+`selectable` adds row checkboxes and a select-all header. Users can click a row,
+shift-click a range, or focus a row and use Space/Enter and Shift+Arrow. The
+selection lives in the table, so read it from there:
+
+```ts
+const selected = computed(() =>
+  table.getSelectedRowModel().rows.map((row) => row.original)
+);
+```
+
+Give the table a `getRowId` so the selection stays with the same rows when the
+data changes. To make some rows unselectable, pass
+`enableRowSelection: (row) => row.original.deletable`.
+
+<Canvas of={AdminTableStories.Selectable} />
+
+## Empty states
+
+With no rows, the table shows “No results”. Use the `empty-row` slot to show
+something more useful:
+
+```vue
+<AdminTable :table="table">
+  <template #empty-row>
+    <craft-empty icon="cube" label="No widgets exist yet." />
+  </template>
+</AdminTable>
+```
+
+<Canvas of={AdminTableStories.CustomEmptyState} />
+
+## Props
+
+| Prop                    | Type                | Default           | Description                                                                                  |
+| ----------------------- | ------------------- | ----------------- | -------------------------------------------------------------------------------------------- |
+| `table`                 | `Table`             | required          | The table from `useCraftTable`.                                                              |
+| `title`                 | `string`            | —                 | The table's accessible name.                                                                 |
+| `selectable`            | `boolean`           | `false`           | Adds row selection.                                                                          |
+| `reorderable`           | `boolean`           | `false`           | Adds drag-to-reorder. Listen for `reorder`.                                                  |
+| `readOnly`              | `boolean`           | page's `readOnly` | Disables selection and reordering. Falls back to the Inertia page's `readOnly` prop.         |
+| `loading`               | `boolean`           | `false`           | Shows the loading state and blocks interaction.                                              |
+| `layout`                | `'auto' \| 'fixed'` | `'auto'`          | The table's CSS layout.                                                                      |
+| `spacing`               | `TableSpacingValue` | `'spacious'`      | Row density, `TableSpacing.Spacious` or `TableSpacing.Compact`.                              |
+| `padded`                | `boolean`           | `false`           | Insets the table by the page container's padding, so it lines up with the content around it. |
+| `from` / `to` / `total` | `number`            | —                 | The “X–Y of Z” footer text. Pass these from `PaginationData`.                                |
+| `enableAdjustPageSize`  | `boolean`           | `false`           | Adds a page-size select to the footer.                                                       |
+| `pageSizeOptions`       | `number[]`          | `[50, 100, 250]`  | The page-size select's choices.                                                              |
+
+| Event     | Payload                                     |
+| --------- | ------------------------------------------- |
+| `reorder` | `(startIndex: number, finishIndex: number)` |
+
+| Slot           | Content                                 |
+| -------------- | --------------------------------------- |
+| `table-header` | Above the table, for search or filters. |
+| `empty-row`    | Replaces the “No results” message.      |
+
+The footer appears when there's more than one page, a `total` above zero, or
+`enableAdjustPageSize`.
