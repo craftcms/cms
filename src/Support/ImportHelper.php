@@ -82,17 +82,20 @@ class ImportHelper
      */
     public static function getImportableProperties(BaseImporter $importer): array
     {
-        // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
+        // Automatically include all Importable properties, including inherited ones
+        // such as parent from Structurable trait on Element.
         $class = new \ReflectionClass($importer::targetClass());
-        $properties = $class->getProperties();
+        $properties = [];
 
-        // now walk up and getParentClass() so that we can get all the props for classes that this one extends (e.g. Element class for Entry)
-        // todo (iwona): review again once entry parent works
-        //        while ($class = $class->getParentClass()) {
-        //            $properties = array_merge($properties, $class->getProperties());
-        //        }
+        do {
+            foreach ($class->getProperties() as $property) {
+                if ($property->getAttributes(Importable::class) === []) {
+                    continue;
+                }
 
-        $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
+                $properties[$property->getName()] ??= $property;
+            }
+        } while ($class = $class->getParentClass());
 
         return array_map(function ($property) {
             $attribute = $property->getAttributes(Importable::class)[0];

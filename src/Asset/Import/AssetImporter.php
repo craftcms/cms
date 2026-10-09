@@ -217,7 +217,7 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
-    public function setAttributesForImport(ElementInterface $element, array $attributes): void
+    public function setAttributesForImport(ElementInterface $element, array $attributes, array $data): void
     {
         /** @var Asset $element */
         // ensure we're not changing volume ID compared to what we chose in the field layout provider step
@@ -288,7 +288,7 @@ class AssetImporter extends ElementImporter
             }
         }
 
-        parent::setAttributesForImport($element, $attributes);
+        parent::setAttributesForImport($element, $attributes, $data);
     }
 
     /**

@@ -14,6 +14,8 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Validation\Validator;
@@ -235,6 +237,23 @@ class EntryImporter extends ElementImporter
         };
     }
 
+    private static function normalizeParent(string|int|Entry|null $value, int $sectionId, int $siteId): ?Entry
+    {
+        return match (true) {
+            $value instanceof Entry => $value,
+            $value === null => null,
+            is_numeric($value) => Elements::getElementById((int) $value, Entry::class),
+            // if it's a string query entries by title or slug only in the section and site we're importing into
+            default => Entry::find()
+                ->where(['title' => $value])
+                ->orWhere(['slug' => $value])
+                ->sectionId($sectionId)
+                ->siteId($siteId)
+                ->status(null)
+                ->one()
+        };
+    }
+
     #[Override]
     public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
     {
@@ -276,7 +295,7 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
-    public function setAttributesForImport(ElementInterface $element, array $attributes): void
+    public function setAttributesForImport(ElementInterface $element, array $attributes, array $data): void
     {
         // for UI-based import, ensure we're not changing type ID compared to what we chose in the field layout provider step
         if (isset($this->section)) {
@@ -286,7 +305,16 @@ class EntryImporter extends ElementImporter
             unset($attributes['typeId']);
         }
 
-        parent::setAttributesForImport($element, $attributes);
+        // if we're importing into a structure and have parentId data, try to find and set it
+        /** @var Entry $element */
+        if ($element->section?->type === SectionType::Structure && isset($data['parentId'])) {
+            $parent = self::normalizeParent($data['parentId'], $element->section->id, $this->site->id);
+            if ($element->getParentId() !== $parent->id) {
+                $element->setParent($parent);
+            }
+        }
+
+        parent::setAttributesForImport($element, $attributes, $data);
     }
 
     /**

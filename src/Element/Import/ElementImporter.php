@@ -405,7 +405,7 @@ abstract class ElementImporter extends BaseImporter
         $oldFieldValues = $skipChangeDetection ? [] : $this->snapshotFieldValues($element, array_keys($fields));
 
         if (! empty($attributes)) {
-            $this->setAttributesForImport($element, $attributes);
+            $this->setAttributesForImport($element, $attributes, $item);
         }
 
         if (! empty($fields)) {
@@ -514,10 +514,12 @@ abstract class ElementImporter extends BaseImporter
 
     /**
      * Sets element's importable attributes.
+     * We're passing all the data as a 3rd parameter as it might be needed in some cases.
      *
      * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $data
      */
-    public function setAttributesForImport(ElementInterface $element, array $attributes): void
+    public function setAttributesForImport(ElementInterface $element, array $attributes, array $data): void
     {
         // the ID and UID can only be used to match on, we cannot have them be set via the import
         unset($attributes['id'], $attributes['uid']);

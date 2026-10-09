@@ -5,13 +5,17 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Event;
@@ -205,4 +209,31 @@ it('resolves sectionId and typeId given as handles', function () {
         ->and($entry->getTypeId())->toBe($this->entryType->id);
 });
 
-it('imports an entry under a parent in a structure section', function () {})->todo();
+it('imports an entry under a parent in a structure section', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()
+        ->withEntryTypes($this->entryType)
+        ->create([
+            'type' => SectionType::Structure,
+            'structureId' => $structure->id,
+            'minAuthors' => 0,
+            'maxAuthors' => 3,
+        ]);
+
+    $parent = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($this->entryType)
+        ->title('parent entry')
+        ->createElement();
+    Structures::appendToRoot($structure->id, $parent);
+
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'sectionId' => $section->handle,
+        'parentId' => $parent->id,
+    ]));
+
+    $entry = ($this->importedEntry)();
+
+    expect($entry->getParentId())->toBe($parent->id)
+        ->and($entry->level)->toBe(2);
+});
