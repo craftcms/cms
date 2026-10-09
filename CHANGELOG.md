@@ -20,12 +20,14 @@
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Activity timeline day headings now show the date as a badge over a full-width rule, and the Workflow details panel’s review panes are no longer outlined. ([#19930](https://github.com/craftcms/cms/pull/19930))
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
 - Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
 - Added the `cp-table--flush` class, which removes the inline padding at the outer edges of each table row. ([#19906](https://github.com/craftcms/cms/pull/19906))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19930](https://github.com/craftcms/cms/pull/19930))
 - Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
@@ -76,6 +78,7 @@
 - Fixed a bug where the “Underline links” accessibility preference wasn’t respected on most control panel screens. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 - Fixed a bug where the Activity details panel didn’t scroll to the newest activity when opened. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Fixed a bug where cards with `data-color="white"` had translucent bodies that didn’t match their headers. ([#19930](https://github.com/craftcms/cms/pull/19930))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
