@@ -6,8 +6,15 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -22,8 +29,12 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class FullNameField extends TextField
+class FullNameField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement {
+        getFieldsForMapping as traitGetFieldsForMapping;
+    }
+
     #[Override]
     public string $attribute = 'fullName';
 
@@ -101,5 +112,29 @@ class FullNameField extends TextField
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Full Name');
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
+    {
+        if (! Cms::config()->showFirstAndLastNameFields) {
+            return self::traitGetFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
+        }
+
+        $parts = [
+            ['attribute' => 'firstName', 'label' => t('First Name'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+            ['attribute' => 'lastName', 'label' => t('Last Name'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+        ];
+
+        return new CompoundMappingColumn(
+            heading: $this->label(),
+            subfields: array_map(fn (array $part): MappingColumn => MappingColumn::make(
+                handle: $part['attribute'],
+                label: $part['label'],
+                prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
+                canBeMatchCriteria: $part['canBeMatchCriteria'],
+                canBeCleared: $part['canBeCleared'],
+            ), $parts),
+        );
     }
 }

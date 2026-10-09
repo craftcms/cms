@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 use function CraftCms\Cms\t;
@@ -33,6 +34,7 @@ trait HasStatuses
      * @var bool Whether the element is enabled
      */
     #[AllowedInSandbox]
+    #[Importable('enabled', 'Enabled', canBeMatchCriteria: false, canBeCleared: false)]
     public bool $enabled = true;
 
     /**

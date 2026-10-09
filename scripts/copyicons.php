@@ -26,6 +26,7 @@ $lightIcons = [
     'sitemap',
     'sliders',
     'tags',
+    'upload',
     'user-group',
 ];
 

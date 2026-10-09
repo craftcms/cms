@@ -1,0 +1,541 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Import;
+
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
+use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportPlanStepUiViewModel;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\ImportPlanIndexData;
+use CraftCms\Cms\Import\Data\MappingColumnGroup;
+use CraftCms\Cms\Import\Data\MappingValues;
+use CraftCms\Cms\Import\Data\NestedMappingPayload;
+use CraftCms\Cms\Import\Data\StepMappingPayload;
+use CraftCms\Cms\Import\Data\StepUiPayload;
+use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\UiResolver;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+class ImportPlansController
+{
+    use RespondsWithFlash;
+
+    public function __construct(
+        private Request $request,
+        private readonly Import $importService,
+        private readonly ImportPlan $importsService,
+        private readonly Fields $fieldsService,
+    ) {}
+
+    public function index(): InertiaResponse
+    {
+        $currentUser = $this->request->craftUser();
+
+        return Inertia::render('import/Index', [
+            'title' => t('Import Plans'),
+            'crumbs' => [
+                ['label' => t('Import')],
+            ],
+            'canSave' => (bool) $currentUser?->can('saveImportPlans'),
+            'canDelete' => (bool) $currentUser?->can('deleteImportPlans'),
+            'canTrigger' => (bool) $currentUser?->can('triggerImportPlans'),
+            'editableImportPlans' => $this->importsService->getEditableImportPlans()
+                ->map(fn (ImportPlanData $importPlan) => $this->importRow($importPlan, true))
+                ->values()
+                ->all(),
+            'nonEditableImportPlans' => $this->importsService->getNonEditableImportPlans()
+                ->map(fn (ImportPlanData $importPlan) => $this->importRow($importPlan, false))
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    private function importRow(ImportPlanData $importPlan, bool $editable): ImportPlanIndexData
+    {
+        return new ImportPlanIndexData(
+            uid: $importPlan->uid,
+            name: (string) $importPlan->name,
+            handle: (string) $importPlan->handle,
+            description: $importPlan->description,
+            stepCount: count($importPlan->steps ?? []),
+            stepLabels: array_values(array_map(
+                fn (BaseImporter $step): string => $step::displayName(),
+                $importPlan->steps ?? [],
+            )),
+            editable: $editable,
+        );
+    }
+
+    public function create(): CpScreenResponse
+    {
+        $old = $this->request->session()->get('import');
+
+        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : new ImportPlanData);
+    }
+
+    public function edit(?string $handle = null): CpScreenResponse
+    {
+        $handle ??= $this->request->input('handle');
+
+        if (is_null($handle)) {
+            return $this->create();
+        }
+
+        abort_if(is_null($found = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
+        abort_if(! $found->isEditable(), 400, "This import plan is not editable: $found->handle");
+
+        $old = $this->request->session()->get('import');
+
+        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : $found);
+    }
+
+    public function store(): Response
+    {
+        $importUid = $this->request->input('uid');
+
+        $this->request->validate([
+            'uid' => ['nullable', 'string', 'max:36'],
+        ]);
+
+        if ($importUid) {
+            abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($importUid, true)), 400, "Invalid import plan UID: $importUid");
+        } else {
+            $importPlan = new ImportPlanData(['editable' => true]);
+        }
+
+        $importPlan->name($this->request->input('name', $importPlan->name));
+        $importPlan->handle($this->request->input('handle', $importPlan->handle));
+        $importPlan->description($this->request->input('description', $importPlan->description));
+        $importPlan->steps($this->request->input('steps', $importPlan->steps ?? []));
+
+        if (! $this->importsService->saveImportPlan($importPlan)) {
+            return $this->asModelFailure($importPlan, t('Couldn’t save import plan.'), 'import');
+        }
+
+        return $this->asModelSuccess(
+            $importPlan,
+            t('Import plan saved.'),
+            'import',
+        );
+    }
+
+    /**
+     * Returns the UI payload for a single step, built from the posted draft step rather than
+     * anything persisted, so a step can be configured before the import plan is ever saved.
+     */
+    public function stepSettings(): JsonResponse
+    {
+        $importer = $this->draftImporter(requireType: false);
+        $batchSize = $this->request->input('step.batchSize');
+        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
+
+        return new JsonResponse(new StepUiPayload(
+            ui: new ImportPlanStepUiViewModel(
+                $importer,
+                $this->importService,
+                app(UiResolver::class),
+                (bool) $this->request->craftUser()?->can('saveImportPlans'),
+                $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
+            )->ui(),
+            canMap: $this->hasDestination($importer) && $sourceError === null,
+            // shown under the source field; a step whose source is yet to be entered isn't flagged
+            sourceError: ! empty($importer->source) ? $sourceError : null,
+        ));
+    }
+
+    /**
+     * Returns whether a step knows what it's importing into, so it has destination columns to map onto.
+     *
+     * An element importer resolves its field layout from whatever it's importing into — an
+     * entry type, a volume — so until that's chosen there's nothing to map onto.
+     */
+    private function hasDestination(?BaseImporter $importer): bool
+    {
+        return $importer !== null && (! $importer instanceof ElementImporter || ! empty($importer->fieldLayout));
+    }
+
+    /**
+     * Validates a single draft step, for the slideout to check before it lets the step close.
+     */
+    public function validateStep(): JsonResponse
+    {
+        $data = $this->request->validate([
+            'step' => ['required', 'array'],
+            'step.uid' => ['nullable', 'string', 'max:36'],
+            'step.type' => ['nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'step.source' => ['nullable', 'string'],
+            'step.transformer' => ['nullable', 'string'],
+            'step.batchSize' => ['nullable', 'integer'],
+            'step.settings' => ['nullable', 'array'],
+        ]);
+
+        $step = $data['step'];
+        $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
+
+        $errors = ImportPlanData::stepErrors($step);
+
+        if (! empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        return new JsonResponse(['success' => true]);
+    }
+
+    /**
+     * Returns the mapping structure for a draft step: its destination columns, the source
+     * columns read from its source, and a best guess at a mapping between the two.
+     */
+    public function stepMapping(): JsonResponse
+    {
+        $importer = $this->draftImporter();
+
+        // the panel's mapping button is hidden until this passes, so reaching here means the step
+        // changed between the last refresh and the click
+        if (! $this->hasDestination($importer)) {
+            return $this->mappingUnavailable(t('Choose what this step imports into before mapping its data.'));
+        }
+
+        // validate the data source (which can be a URL too)
+        $sourceError = BaseImporter::sourceError($importer->source, resolveHost: false);
+
+        if ($sourceError !== null) {
+            return $this->mappingUnavailable($sourceError, 'source');
+        }
+
+        // the file is only downloaded (if it's a URL) and parsed once the mapping is asked for
+        try {
+            $sourceDataCols = $importer->getSourceDataCols();
+        } catch (Exception $e) {
+            return $this->mappingUnavailable($e->getMessage(), 'source');
+        }
+
+        if ($sourceDataCols === null) {
+            return $this->mappingUnavailable(t('The data in “{source}” couldn’t be read.', ['source' => $importer->source]), 'source');
+        }
+
+        $destinationCols = $importer->getDestinationCols();
+
+        return $this->asJsonSuccess(null, new StepMappingPayload(
+            available: true,
+            destinationCols: $destinationCols,
+            sourceDataCols: $sourceDataCols,
+            values: MappingValues::fromImporter($importer),
+            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
+        )->jsonSerialize());
+    }
+
+    /**
+     * Returns the response for a step whose data can't be mapped, naming the step attribute
+     * the message is about, if it's about one.
+     */
+    private function mappingUnavailable(string $message, ?string $attribute = null): JsonResponse
+    {
+        return $this->asJsonSuccess(null, new StepMappingPayload(
+            available: false,
+            message: $message,
+            attribute: $attribute,
+        )->jsonSerialize());
+    }
+
+    /**
+     * Returns the destination columns for a container field or property, for the nested
+     * mapping panel.
+     *
+     * Only the structure: the panel is opened around client state the mapping panel already
+     * holds, so there is nothing to relay back and forth.
+     */
+    public function nestedMappingCols(): JsonResponse
+    {
+        $importer = $this->draftImporter();
+
+        abort_if($importer === null, 400, 'The import step couldn’t be built.');
+
+        $fieldUid = $this->request->input('fieldUid');
+        $field = ! empty($fieldUid) ? $this->fieldsService->getFieldByUid($fieldUid) : null;
+
+        $fieldHandle = $this->request->input('fieldHandle');
+        $fieldIsProperty = $this->request->boolean('fieldIsProperty');
+
+        $fieldName = $field instanceof FieldInterface ? $field->name : $fieldHandle;
+        $groups = [];
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
+            foreach ($field->getFieldLayoutProviders() as $provider) {
+                $groups[] = new MappingColumnGroup(
+                    providerName: $provider instanceof Chippable ? $provider->getUiLabel() : $provider->getHandle(),
+                    destinationCols: ImportHelper::getDestinationColsForFieldLayout(
+                        $provider->getFieldLayout(),
+                        $field,
+                        $provider,
+                        $fieldHandle,
+                    ),
+                );
+            }
+        }
+
+        // a container property gets its columns from its element type
+        $targetClass = $importer::targetClass();
+        if (! $field && $fieldIsProperty && is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
+            $groups[] = new MappingColumnGroup(
+                providerName: null,
+                destinationCols: $targetClass::getDestinationColsForProperty($importer, $fieldHandle) ?? [],
+            );
+        }
+
+        // the source columns only feed the suggestions, so there are none if the file can't be read
+        try {
+            $sourceDataCols = $importer->getSourceDataCols() ?? [];
+        } catch (Exception) {
+            $sourceDataCols = [];
+        }
+
+        $allDestinationCols = array_merge(...array_map(fn (MappingColumnGroup $group) => $group->destinationCols, $groups));
+
+        // the top-level columns are thrown in so a heading that exactly matches one of them
+        // isn't also guessed at in here, then the guesses are narrowed back down to this panel
+        $suggestions = ImportHelper::suggestMapValues(
+            array_merge($importer->getDestinationCols(), $allDestinationCols),
+            $sourceDataCols,
+            $importer->map,
+        );
+        $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
+
+        return $this->asJsonSuccess(null, new NestedMappingPayload(
+            title: t('Edit map for {fieldName}', ['fieldName' => $fieldName]),
+            fieldName: $fieldName,
+            groups: $groups,
+            sourceDataCols: $sourceDataCols,
+            suggestions: self::subtree($suggestions, $rootPath),
+        )->jsonSerialize());
+    }
+
+    /**
+     * Builds a transient importer from the posted draft step. Nothing is looked up in the
+     * database, so this works for a step that has never been saved.
+     */
+    private function draftImporter(bool $requireType = true): ?BaseImporter
+    {
+        $data = $this->request->validate([
+            'step' => ['required', 'array'],
+            'step.uid' => ['nullable', 'string', 'max:36'],
+            'step.type' => [$requireType ? 'required' : 'nullable', 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'step.source' => ['nullable', 'string'],
+            'step.transformer' => ['nullable', 'string'],
+            'step.batchSize' => ['nullable', 'integer'],
+            'step.settings' => ['nullable', 'array'],
+        ]);
+
+        $step = $data['step'];
+
+        if (empty($step['type'])) {
+            return null;
+        }
+
+        $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
+
+        return ImportPlan::createImporter($step);
+    }
+
+    /**
+     * Returns a tree holding only `$path`'s branch of `$tree`, still rooted at the top level.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    private static function subtree(array $tree, string $path): array
+    {
+        $branch = Arr::get($tree, $path);
+
+        if ($branch === null) {
+            return [];
+        }
+
+        $subtree = [];
+        Arr::set($subtree, $path, $branch);
+
+        return $subtree;
+    }
+
+    public function duplicate(): Response
+    {
+        $uid = $this->request->input('uid');
+
+        if (! $uid) {
+            throw ValidationException::withMessages([
+                'id' => t('uid is required.'),
+            ]);
+        }
+
+        $importPlan = $this->importsService->getImportPlanByUid($uid);
+
+        abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be duplicated via the Control Panel: $uid");
+
+        if (! $this->importsService->duplicateImportPlan($importPlan)) {
+            return $this->asFailure(t('Couldn’t duplicate import plan.'));
+        }
+
+        return $this->asSuccess(t('“{name}” duplicated.', [
+            'name' => $importPlan->name,
+        ]));
+    }
+
+    public function reorder(): Response
+    {
+        $uids = $this->request->validate([
+            'uids' => ['required', 'array'],
+            'uids.*' => [
+                'string',
+                Rule::exists(Table::IMPORT_PLANS, 'uid')->whereNull('dateDeleted'),
+            ],
+        ])['uids'];
+
+        $this->importsService->reorderImportPlans($uids);
+
+        return $this->asSuccess(t('New order saved.'));
+    }
+
+    public function destroy(): Response
+    {
+        $uid = $this->request->input('uid');
+
+        if (! $uid) {
+            throw ValidationException::withMessages([
+                'id' => t('uid is required.'),
+            ]);
+        }
+
+        $importPlan = $this->importsService->getImportPlanByUid($uid);
+
+        abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be deleted via the Control Panel: $uid");
+
+        $this->importsService->deleteImportPlan($importPlan);
+
+        return $this->asSuccess(t('“{name}” deleted.', [
+            'name' => $importPlan->name,
+        ]));
+    }
+
+    public function run(): Response
+    {
+        $uid = $this->request->input('uid');
+        $handle = $this->request->input('handle');
+
+        abort_if(is_null($uid) && is_null($handle), 400, 'An import plan uid or handle is required.');
+
+        $importPlan = $uid !== null
+            ? $this->importsService->getImportPlanByUid($uid)
+            : $this->importsService->getImportPlanByHandle($handle);
+
+        abort_if(is_null($importPlan), 400, 'Import plan not found.');
+
+        try {
+            $dispatched = $this->importService->dispatchImport($importPlan);
+        } catch (Throwable $e) {
+            ImportLog::warning("Import failed: {$e->getMessage()}");
+
+            $dispatched = false;
+        }
+
+        if (! $dispatched) {
+            return $this->asFailure(t('Import could not be started.'));
+        }
+
+        return $this->asSuccess(t('Import started.'));
+    }
+
+    private function cpScreenResponse(ImportPlanData $importPlan): CpScreenResponse
+    {
+        $currentUser = $this->request->craftUser();
+        $canSave = (bool) $currentUser?->can('saveImportPlans');
+
+        return new CpScreenResponse()
+            ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
+            ->addCrumb(t('Import'), route('craft.cp.import.index'))
+            ->formAttributes(['action' => action([self::class, 'store'])])
+            ->inertiaPage('import/Edit', new ImportPlanEditViewModel(
+                $importPlan,
+                $this->importService,
+                app(UiResolver::class),
+                $canSave,
+            ))
+            ->when(
+                $canSave,
+                callback: function (CpScreenResponse $response) use ($importPlan, $currentUser) {
+                    $response
+                        ->action('import/save')
+                        ->redirectUrl('import/{handle}');
+
+                    if (! $importPlan->isEditable()) {
+                        return;
+                    }
+
+                    if ($currentUser?->can('deleteImportPlans')) {
+                        $response->addAltAction(t('Delete'), [
+                            'variant' => 'danger',
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'DELETE',
+                                'url' => action([self::class, 'destroy']),
+                                'body' => [
+                                    'uid' => $importPlan->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to delete “{name}”?', [
+                                    'name' => $importPlan->name,
+                                ]),
+                            ],
+                        ]);
+                    }
+
+                    if ($currentUser?->can('triggerImportPlans')) {
+                        $response->addAltAction(t('Run this import plan'), [
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'POST',
+                                'url' => action([self::class, 'run']),
+                                'body' => [
+                                    'uid' => $importPlan->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to run “{name}”?', [
+                                    'name' => $importPlan->name,
+                                ]),
+                            ],
+                        ]);
+                    }
+                },
+            );
+    }
+}

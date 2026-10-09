@@ -45,6 +45,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -1183,5 +1184,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
         $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
+    }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
+    {
+        // by default, just return the value we were given
+        return $value;
     }
 }

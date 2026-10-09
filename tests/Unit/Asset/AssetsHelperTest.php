@@ -8,10 +8,13 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
+use CraftCms\UrlValidator\UrlValidator;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     Cms::setIsInstalled(false);
+    $this->urlValidator = new UrlValidator;
 });
 
 describe('prepareAssetName', function () {
@@ -506,6 +509,47 @@ describe('tempFilePath', function () {
 
         // Cleanup
         @unlink($path);
+    });
+});
+
+describe('downloadUrl', function () {
+    test('throws for a URL with a disallowed hostname, without making a request', function () {
+        Http::fake();
+
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://127.0.0.1/file.txt', AssetsHelper::tempFilePath()))
+            ->toThrow(InvalidArgumentException::class);
+
+        Http::assertNothingSent();
+    });
+
+    test('throws for a URL with an invalid scheme, without making a request', function () {
+        Http::fake();
+
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'file:///etc/passwd', AssetsHelper::tempFilePath()))
+            ->toThrow(InvalidArgumentException::class);
+
+        Http::assertNothingSent();
+    });
+
+    test('downloads a remote file to the given temp path', function () {
+        Http::fake([
+            'example.com/*' => Http::response('hello from the internet'),
+        ]);
+
+        $tempPath = AssetsHelper::tempFilePath();
+
+        AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/file.txt', $tempPath);
+
+        expect(file_get_contents($tempPath))->toBe('hello from the internet');
+    });
+
+    test('reports a failed response with its status', function () {
+        Http::fake([
+            'example.com/*' => Http::response('not found', 404),
+        ]);
+
+        expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/missing.txt', AssetsHelper::tempFilePath()))
+            ->toThrow(InvalidArgumentException::class, 'http://example.com/missing.txt returned a 404 response.');
     });
 });
 

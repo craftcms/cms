@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Support\Facades;
+
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use Illuminate\Support\Facades\Facade;
+use Override;
+
+/**
+ * @method static array getAllDataTypes()
+ * @method static ?string getDataTypeFromExtension(string $filePath)
+ * @method static array getAllImporterTypes()
+ * @method static array getAllFieldImportHandlers()
+ * @method static ?FieldImportHandlerInterface getFieldImportHandlerFor(FieldInterface $field)
+ * @method static bool dispatchImport(ImportPlanData $importPlan)
+ * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
+ * @method static string getRawData(string $filePath)
+ * @method static array getFormattedData(string $filePath)
+ * @method static ?array getDataHeadings(string $filePath)
+ * @method static array processData(BaseImporter $importer, array $data, mixed $element)
+ *
+ * @see \CraftCms\Cms\Import\Import
+ */
+class Import extends Facade
+{
+    #[Override]
+    protected static function getFacadeAccessor(): string
+    {
+        return \CraftCms\Cms\Import\Import::class;
+    }
+}

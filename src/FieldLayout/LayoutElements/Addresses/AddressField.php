@@ -7,9 +7,16 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Address as AddressControl;
 use InvalidArgumentException;
@@ -22,8 +29,10 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class AddressField extends BaseField
+class AddressField extends BaseField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     public function attribute(): string
     {
         return 'address';
@@ -112,5 +121,33 @@ class AddressField extends BaseField
         return Html::tag('div', app(Addresses::class)->formatAddress($address), [
             'class' => 'no-truncate',
         ]);
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
+    {
+        // we have to show all the possible address fields as at this stage we have no idea which country we're importing for
+        // and each row could be a different country anyway
+        $parts = [
+            ['attribute' => 'addressLine1', 'label' => t('Address Line 1')],
+            ['attribute' => 'addressLine2', 'label' => t('Address Line 2')],
+            ['attribute' => 'addressLine3', 'label' => t('Address Line 3')],
+            ['attribute' => 'administrativeArea', 'label' => t('Administrative Area')],
+            ['attribute' => 'locality', 'label' => t('Locality')],
+            ['attribute' => 'dependentLocality', 'label' => t('Dependent Locality')],
+            ['attribute' => 'postalCode', 'label' => t('Postal Code')],
+            ['attribute' => 'sortingCode', 'label' => t('Sorting Code')],
+        ];
+
+        return new CompoundMappingColumn(
+            heading: $this->label(),
+            subfields: array_map(fn (array $part): MappingColumn => MappingColumn::make(
+                handle: $part['attribute'],
+                label: $part['label'],
+                prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
+                canBeMatchCriteria: false,
+                canBeCleared: true,
+            ), $parts),
+        );
     }
 }

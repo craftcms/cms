@@ -261,6 +261,13 @@ readonly class Navigation
                     ->subnav($subNavItems->all());
         }
 
+        if (Gate::check('viewImportPlans')) {
+            $administrationItems[] = new NavItem()
+                ->label(t('Import'))
+                ->href('import')
+                ->icon('arrow-up-to-bracket');
+        }
+
         $utilities = $this->utilities->getAuthorizedUtilityTypes();
 
         if ($utilities->isNotEmpty()) {

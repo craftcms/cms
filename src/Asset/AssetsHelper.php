@@ -10,6 +10,8 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
@@ -22,16 +24,24 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\UrlValidator\UrlValidationException;
+use CraftCms\UrlValidator\UrlValidator;
 use DateTimeInterface;
 use Exception;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -573,5 +583,153 @@ class AssetsHelper
         ]);
 
         return [$subpath, $folder];
+    }
+
+    /**
+     * Resolves a local file path given in import data, making sure it points to a file
+     * within a known temp path, the project root, or the storage folder.
+     *
+     *
+     * @throws FileException if the file doesn’t exist or is in a disallowed location
+     */
+    public static function resolveImportFilePath(string $path): string
+    {
+        $resolvedPath = realpath($path);
+
+        if ($resolvedPath === false || ! is_file($resolvedPath)) {
+            throw new FileException(t('Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        $resolvedPath = File::normalizePath($resolvedPath);
+
+        if (! Path::isPathWithinRoots($resolvedPath, Asset::getAllowedTempFileRoots())) {
+            throw new FileException(t('File “{filePath}” is in a disallowed location. Only temp path, project root and storage folders are allowed.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        return $resolvedPath;
+    }
+
+    /**
+     * Downloads a remote file to a temp path, pinning the connection to a set of
+     * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
+     * different (potentially internal) address between validation and download.
+     *
+     * @throws InvalidArgumentException if the URL or the IP it resolves to is disallowed, or the response isn’t a 2xx one
+     */
+    public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath): Response
+    {
+        // Validate the URL and resolve it to a known-good set of IPs *before*
+        // opening any connection (guards against SSRF + DNS rebinding).
+        try {
+            $ips = $urlValidator->validate($url);
+        } catch (UrlValidationException $e) {
+            throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]), previous: $e);
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT)
+            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
+
+        try {
+            $response = Http::create()->withOptions([
+                RequestOptions::ALLOW_REDIRECTS => false,
+                RequestOptions::SINK => $tempPath,
+                // Pin the connection to the IPs we already validated, so cURL doesn’t
+                // re-resolve the hostname to a different address (DNS rebinding).
+                'curl' => [
+                    CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
+                ],
+                RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
+                    // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
+                    $ip = $stats->getHandlerStat('primary_ip');
+                    if ($ip && ! $urlValidator->validateIp($ip)) {
+                        throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]));
+                    }
+                },
+            ])->get($url);
+        } catch (RequestException $e) {
+            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
+                'url' => $url,
+                'status' => $e->response->status(),
+            ]), previous: $e);
+        }
+
+        // redirects aren’t followed, so a redirect’s body would otherwise be taken for the file
+        if (! $response->successful()) {
+            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
+                'url' => $url,
+                'status' => $response->status(),
+            ]));
+        }
+
+        return $response;
+    }
+
+    /**
+     * Returns the asset filename for an imported file reference (a local path or an absolute URL).
+     */
+    public static function importFilename(string $source): string
+    {
+        $basename = pathinfo(Url::stripQueryString($source), PATHINFO_BASENAME);
+
+        return self::prepareAssetName(Url::isAbsoluteUrl($source) ? rawurldecode($basename) : $basename);
+    }
+
+    /**
+     * Fetches an imported file (an absolute URL or a local path) to a temp path, and returns the path along with
+     * the file’s extension, taken from its content type when the filename doesn’t have one.
+     *
+     * A local file is copied, so the source file itself is never handed over to be moved into a volume.
+     *
+     * @return array{0: string, 1: string}
+     *
+     * @throws AssetException if the file is too large or its type can’t be determined
+     * @throws FileException if a local file can’t be found, isn’t allowed, or can’t be copied
+     * @throws InvalidArgumentException if a URL can’t be downloaded
+     */
+    public static function fetchImportFile(UrlValidator $urlValidator, string $source, string $filename): array
+    {
+        // validate a local path before anything gets created for it
+        $localPath = Url::isAbsoluteUrl($source) ? null : self::resolveImportFilePath($source);
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $tempPath = self::tempFilePath($extension ?: 'tmp');
+
+        try {
+            $mimeType = null;
+
+            if ($localPath === null) {
+                $mimeType = self::downloadUrl($urlValidator, $source, $tempPath)->header('Content-Type');
+            } elseif (! @copy($localPath, $tempPath)) {
+                throw new FileException("Couldn’t copy $localPath to a temp location.");
+            }
+
+            if (filesize($tempPath) > Cms::config()->maxUploadFileSize) {
+                throw new AssetException(t('“{filename}” is too large.', [
+                    'filename' => $filename,
+                ]));
+            }
+
+            if ($extension === '') {
+                $mimeType = strtolower(trim(explode(';', $mimeType ?: (File::getMimeType($tempPath, checkExtension: false) ?? ''))[0]));
+
+                try {
+                    $extension = File::getExtensionByMimeType($mimeType);
+                } catch (InvalidArgumentException $e) {
+                    throw new AssetException(t('The file type of “{filename}” couldn’t be determined.', [
+                        'filename' => $filename,
+                    ]), previous: $e);
+                }
+            }
+        } catch (Throwable $e) {
+            File::delete($tempPath);
+
+            throw $e;
+        }
+
+        return [$tempPath, $extension];
     }
 }

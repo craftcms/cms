@@ -7,10 +7,17 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
@@ -24,8 +31,10 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class LatLongField extends BaseNativeField
+class LatLongField extends BaseNativeField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'latLong';
 
@@ -175,5 +184,25 @@ class LatLongField extends BaseNativeField
         }
 
         return '61.108, -149.779';
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
+    {
+        $parts = [
+            ['attribute' => 'latitude', 'label' => t('Latitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+            ['attribute' => 'longitude', 'label' => t('Longitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+        ];
+
+        return new CompoundMappingColumn(
+            heading: $this->label(),
+            subfields: array_map(fn (array $part): MappingColumn => MappingColumn::make(
+                handle: $part['attribute'],
+                label: $part['label'],
+                prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
+                canBeMatchCriteria: $part['canBeMatchCriteria'],
+                canBeCleared: $part['canBeCleared'],
+            ), $parts),
+        );
     }
 }
