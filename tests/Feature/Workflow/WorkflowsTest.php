@@ -15,6 +15,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Settings\WorkflowsController;
 use CraftCms\Cms\Http\Controllers\Workflows\UserReviewController;
+use CraftCms\Cms\Http\Controllers\Workflows\WorkflowTransitionsController;
+use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -941,3 +943,23 @@ function workflowEvents(Entry $entry, WorkflowActivityType|WorkflowTransition $t
         ->filter(fn (ActivityEvent $event): bool => $event->data['type'] === $type->value)
         ->values();
 }
+
+it('accepts workflow comments as long as activity comments', function (int $length, bool $accepted) {
+    app(WorkflowStageTypes::class)->register(TestAutomatedWorkflowStage::class);
+    $workflow = workflowFor($this->entry, [automatedStage('External check', 'pending')]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    actingAs($this->author);
+    $response = postJson(action([WorkflowTransitionsController::class, 'comment'], [
+        'workflowRun' => $run,
+        'stage' => $workflow->stages->sole()->uid,
+    ]), [
+        ...elementIdentity($this->entry, $this->draft),
+        'note' => str_repeat('a', $length),
+    ]);
+
+    $accepted ? $response->assertOk() : $response->assertJsonValidationErrors('note');
+})->with([
+    'at the limit' => [ActivityCommentRequest::MaxLength, true],
+    'over the limit' => [ActivityCommentRequest::MaxLength + 1, false],
+]);

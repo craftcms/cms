@@ -67,6 +67,9 @@ craft-markdown-field:not(:defined) {
 
 craft-markdown-field:defined .overtype-container {
   overflow: hidden !important;
+  /* Room below the scrolling text for a host's own control, e.g. a submit
+     button positioned in the field's corner. */
+  padding-block-end: var(--markdown-field-footer-height, 0px) !important;
   border: var(--markdown-field-border) !important;
   border-radius: var(--markdown-field-radius) !important;
   background: var(--markdown-field-bg) !important;
@@ -82,7 +85,7 @@ craft-markdown-field:defined .overtype-container:focus-within {
 craft-markdown-field:defined .overtype-toolbar {
   gap: var(--c-spacing-1px) !important;
   padding: var(--c-spacing-sm) !important;
-  border-block-end: var(--markdown-field-border) !important;
+  border-block-end: none !important;
   background: var(--markdown-field-bg) !important;
 }
 
@@ -146,6 +149,13 @@ craft-markdown-field:defined .overtype-wrapper {
   background: var(--markdown-field-bg) !important;
 }
 
+/* OverType floors the editor at 60px; `rows` sets the minimum instead. */
+craft-markdown-field:defined
+  .overtype-container.overtype-auto-resize
+  .overtype-wrapper {
+  min-height: 0 !important;
+}
+
 craft-markdown-field:defined .markdown-field-footer-controls {
   position: absolute !important;
   inset-block-end: var(--c-spacing-md) !important;
@@ -190,6 +200,7 @@ craft-markdown-field:defined .overtype-wrapper .overtype-input::selection {
 craft-markdown-field:defined .overtype-input,
 craft-markdown-field:defined .overtype-preview,
 craft-markdown-field:defined .overtype-placeholder {
+  padding-block: var(--c-spacing-xs) !important;
   font-family: var(--c-font-mono) !important;
 }
 
