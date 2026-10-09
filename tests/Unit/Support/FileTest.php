@@ -250,6 +250,15 @@ describe('sanitizeFilename', function () {
         expect(File::sanitizeFilename('not a file', ['separator' => '🐧', 'asciiOnly' => true]))
             ->toBe('not🐧a🐧file');
     });
+
+    test('strips straight and curly quotation marks', function (string $filename) {
+        expect(File::sanitizeFilename($filename))->toBe('testing');
+    })->with([
+        'straight double' => ['"testing"'],
+        'straight single' => ["'testing'"],
+        'curly double' => ['“testing”'],
+        'curly single' => ['‘testing’'],
+    ]);
 });
 
 describe('canTrustMimeType', function () {
