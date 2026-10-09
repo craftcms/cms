@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Color;
+use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
 use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\FieldTypes;
+use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
@@ -23,8 +27,10 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -471,6 +477,84 @@ it('can merge fields', function () {
             ->and($layoutElement->getFieldUid())->toBe($persistingField->uid)
             ->and($migrationPath)->toBeFile()
             ->and(DB::table(Table::MIGRATIONS)->where('migration', basename((string) $migrationPath, '.php'))->exists())->toBeTrue();
+    } finally {
+        if ($migrationPath) {
+            @unlink($migrationPath);
+        }
+    }
+});
+
+it('points merged fields’ condition rules and Content Block layouts at the persisting field', function () {
+    $lightswitch = function (string $handle): Lightswitch {
+        $field = $this->fields->createField(['type' => Lightswitch::class, 'name' => $handle, 'handle' => $handle]);
+        $this->fields->saveField($field);
+
+        return $field;
+    };
+    $persistingField = $lightswitch('persistingToggle');
+    $outgoingField = $lightswitch('outgoingToggle');
+    $conditionalField = $lightswitch('conditionalToggle');
+
+    $layoutUid = (string) Str::uuid();
+    $outgoingElementUid = (string) Str::uuid();
+    $contentBlockField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Block',
+        'handle' => 'block',
+        'settings' => [
+            'fieldLayouts' => [
+                $layoutUid => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'name' => 'Content',
+                        'elements' => [
+                            [
+                                'type' => CustomFieldElement::class,
+                                'uid' => $outgoingElementUid,
+                                'fieldUid' => $outgoingField->uid,
+                            ],
+                            [
+                                'type' => CustomFieldElement::class,
+                                'uid' => (string) Str::uuid(),
+                                'fieldUid' => $conditionalField->uid,
+                                'elementCondition' => [
+                                    'class' => ElementCondition::class,
+                                    'elementType' => ContentBlockElement::class,
+                                    'conditionRules' => [[
+                                        'class' => LightswitchFieldConditionRule::class,
+                                        'uid' => (string) Str::uuid(),
+                                        'fieldUid' => $outgoingField->uid,
+                                        'layoutElementUid' => $outgoingElementUid,
+                                        'value' => true,
+                                    ]],
+                                ],
+                            ],
+                        ],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+    expect($this->fields->saveField($contentBlockField))->toBeTrue();
+
+    $migrationPath = null;
+
+    try {
+        $migrationPath = $this->fields->merge($persistingField, $outgoingField)->migrationPath;
+
+        $savedLayout = $this->fields->getFieldById($contentBlockField->id)->getFieldLayout()->getConfig();
+        $settings = ProjectConfigHelper::unpackAssociativeArrays(
+            ProjectConfig::get("fields.$contentBlockField->uid.settings"),
+        );
+
+        foreach (['saved layout' => $savedLayout, 'project config' => $settings['fieldLayouts'][$layoutUid] ?? null] as $source => $config) {
+            $elements = $config['tabs'][0]['elements'] ?? [];
+
+            expect(array_column($elements, 'fieldUid'))
+                ->toBe([$persistingField->uid, $conditionalField->uid], "The $source still references the outgoing field.")
+                ->and($elements[1]['elementCondition']['conditionRules']['rules'][0]['fieldUid'] ?? null)
+                ->toBe($persistingField->uid, "The $source has a condition rule that still references the outgoing field.");
+        }
     } finally {
         if ($migrationPath) {
             @unlink($migrationPath);

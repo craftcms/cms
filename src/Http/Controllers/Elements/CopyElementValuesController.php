@@ -11,12 +11,12 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -91,9 +91,9 @@ readonly class CopyElementValuesController
         $payload = app(FieldLayoutCompiler::class)->compile(
             $element->getFieldLayout(),
             $element,
-            new FormContext(namespace: $namespace ?? []),
+            new UiContext(namespace: $namespace ?? []),
         );
-        $renderer = app(FormHtmlRenderer::class);
+        $renderer = app(UiHtmlRenderer::class);
         $node = null;
 
         foreach ($payload->nodes as $tab) {

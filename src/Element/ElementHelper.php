@@ -475,7 +475,7 @@ class ElementHelper
      * posting whichever UUIDs it was originally rendered with, and the nested element
      * fields map those back to the duplicates on the way in — so what gets rendered back
      * out has to keep speaking canonical UUIDs too. Otherwise the browser can't match a
-     * re-rendered nested Form to the block it belongs to.
+     * re-rendered nested UI to the block it belongs to.
      *
      * @param  list<ElementInterface>  $elements
      * @return list<string> The identities, in the same order as `$elements`
@@ -510,7 +510,7 @@ class ElementHelper
      *
      * Both halves of the envelope may or may not carry the `uid:` prefix, depending on
      * which stack rendered the inputs: `block.twig` writes prefixed `entries` keys but
-     * bare `sortOrder` values, while the Form controls prefix both. The prefix only ever
+     * bare `sortOrder` values, while the UI controls prefix both. The prefix only ever
      * meant "this identity is a UUID, not an element ID", so it's stripped here and
      * callers get one shape to work with.
      *

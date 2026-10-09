@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
-use CraftCms\Yii2Adapter\Form\NestedElementFieldHtml;
+use CraftCms\Yii2Adapter\Ui\NestedElementFieldHtml;
 use Override;
 use RuntimeException;
 
@@ -33,7 +33,7 @@ class Addresses extends \CraftCms\Cms\Field\Addresses implements LegacyField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $control = parent::formControl(new FieldContext(
+        $control = parent::uiControl(new FieldContext(
             path: ['fields', $this->handle],
             value: $value,
             element: $element,

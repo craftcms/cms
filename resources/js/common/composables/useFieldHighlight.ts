@@ -7,7 +7,7 @@ const HIGHLIGHT_MS = 5000;
 /**
  * Draws attention to the field a URL fragment points at.
  *
- * Deep links like `settings/general#form-maintenanceMode` land on a long form
+ * Deep links like `settings/general#ui-maintenanceMode` land on a long form
  * where the field in question is easy to miss. The browser's own `:target`
  * handling isn't enough here: an Inertia visit swaps the page with `pushState`,
  * which doesn't re-evaluate `:target`, and the field doesn't exist yet at the

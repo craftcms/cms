@@ -17,13 +17,14 @@ use Stringable;
  * set of panels, one visible at a time:
  *
  *     Tabs::make()
+ *         ->label(t('Entry settings'))
  *         ->tab(t('Content'), $contentHtml)
  *         ->tab(t('Settings'), $settingsHtml)
  *         ->selectedIndex(1);
  *
  * or from a config array (Twig `ui()`):
  *
- *     {{ ui('tabs', {tabs: [
+ *     {{ ui('tabs', {label: 'Entry settings'|t, tabs: [
  *         {label: 'Content'|t, panel: contentHtml},
  *         {label: 'Settings'|t, panel: settingsHtml, disabled: true},
  *     ]}) }}
@@ -45,15 +46,17 @@ class Tabs extends ViewComponent
     /** @var list<Tab> */
     protected array $items = [];
 
+    protected ?string $label = null;
+
     protected ?int $selectedIndex = null;
 
     protected TabsLayout|string|null $layout = null;
 
     protected TabsPlacement|string|null $placement = null;
 
-    protected bool $collapsible = false;
-
     protected bool $equalWidth = false;
+
+    protected bool $syncLocationHash = true;
 
     protected function tagName(): string
     {
@@ -107,6 +110,17 @@ class Tabs extends ViewComponent
         return $this;
     }
 
+    /**
+     * The tablist's accessible name, describing what the tabs switch between.
+     * Required: rendering a strip without one throws.
+     */
+    public function label(?string $label): static
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
     /** The index of the initially selected tab; the web component defaults to 0. */
     public function selectedIndex(?int $selectedIndex): static
     {
@@ -139,17 +153,6 @@ class Tabs extends ViewComponent
     }
 
     /**
-     * Lets the selected tab be deselected, closing the panel region entirely —
-     * what an icon toolbar wants, where "nothing open" is a normal state.
-     */
-    public function collapsible(bool $collapsible = true): static
-    {
-        $this->collapsible = $collapsible;
-
-        return $this;
-    }
-
-    /**
      * Gives every tab the same share of the strip’s width rather than the width
      * of its own label. Tabs that share the width always fit, so nothing
      * collapses into the overflow menu; long labels wrap instead. Only the
@@ -158,6 +161,18 @@ class Tabs extends ViewComponent
     public function equalWidth(bool $equalWidth = true): static
     {
         $this->equalWidth = $equalWidth;
+
+        return $this;
+    }
+
+    /**
+     * Mirrors the selected tab in `location.hash`, and selects the tab the hash
+     * names on load. On by default, and only for tabs naming a panel. Turn it
+     * off where the strip isn't the page's own.
+     */
+    public function syncLocationHash(bool $syncLocationHash = true): static
+    {
+        $this->syncLocationHash = $syncLocationHash;
 
         return $this;
     }
@@ -184,6 +199,19 @@ class Tabs extends ViewComponent
         }
 
         return $this->layout instanceof TabsLayout ? $this->layout->value : TabsLayout::from($this->layout)->value;
+    }
+
+    /**
+     * @throws InvalidArgumentException if no {@see label()} was set
+     */
+    #[\Override]
+    public function toHtml(): string
+    {
+        if ($this->label === null || $this->label === '') {
+            throw new InvalidArgumentException('Tabs require a label naming what the tabs switch between.');
+        }
+
+        return parent::toHtml();
     }
 
     /**
@@ -216,11 +244,12 @@ class Tabs extends ViewComponent
     protected function hostAttributes(): array
     {
         return [
+            'label' => $this->label,
             'selected-index' => $this->selectedIndex,
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
-            'collapsible' => $this->collapsible,
             'equal-width' => $this->equalWidth,
+            'sync-location-hash' => $this->syncLocationHash ? null : 'false',
             'layout' => $this->getLayout(),
         ];
     }

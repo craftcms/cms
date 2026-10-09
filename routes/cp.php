@@ -404,7 +404,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);
                 Route::post('{handle}/disable', [PluginsController::class, 'disable']);
                 Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
-                Route::post('{handle}/render-form', [PluginsController::class, 'renderSettingsForm']);
+                Route::post('{handle}/render-ui', [PluginsController::class, 'renderSettingsUi']);
                 Route::post('{handle}', [PluginsController::class, 'saveSettings']);
             });
 
@@ -443,7 +443,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->group(function () {
             Route::get('settings/sections/new', [SectionsController::class, 'create']);
-            Route::post('settings/sections/render-form', [SectionsController::class, 'renderForm']);
+            Route::post('settings/sections/render-ui', [SectionsController::class, 'renderUi']);
         });
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
         Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
@@ -458,7 +458,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
 
                 Route::middleware(RequireAdminChanges::class)->group(function () {
-                    Route::post('form', [VolumesController::class, 'renderForm']);
+                    Route::post('ui', [VolumesController::class, 'renderUi']);
                     Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
                     Route::post('/', [VolumesController::class, 'store']);
                 });
@@ -472,7 +472,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::middleware(RequireAdminChanges::class)->group(function () {
                 Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
                 Route::post('/', [ImageTransformsController::class, 'store']);
-                Route::post('form', [ImageTransformsController::class, 'renderForm']);
+                Route::post('ui', [ImageTransformsController::class, 'renderUi']);
                 Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
             });
 
@@ -485,7 +485,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::middleware(RequireAdminChanges::class)->group(function () {
                 Route::get('new', [AssetTransformersController::class, 'create'])->name('create');
                 Route::post('/', [AssetTransformersController::class, 'store']);
-                Route::post('form', [AssetTransformersController::class, 'renderForm']);
+                Route::post('ui', [AssetTransformersController::class, 'renderUi']);
                 Route::delete('{handle}', [AssetTransformersController::class, 'destroy'])->name('destroy');
             });
 
@@ -498,7 +498,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)
             ->group(function () {
                 Route::get('settings/sites/new', [SitesController::class, 'create']);
-                Route::post('settings/sites/form', [SitesController::class, 'renderForm']);
+                Route::post('settings/sites/ui', [SitesController::class, 'renderUi']);
                 Route::post('settings/sites/reorder', [SitesController::class, 'reorder']);
                 Route::post('settings/sites', [SitesController::class, 'store']);
                 Route::delete('settings/sites/{site}', [SitesController::class, 'destroy']);
@@ -540,7 +540,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
         Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::post('settings/users/settings/render-form', [UserSettingsController::class, 'renderForm']);
+            Route::post('settings/users/settings/render-ui', [UserSettingsController::class, 'renderUi']);
             Route::post('settings/users/settings', [UserSettingsController::class, 'store']);
         });
     });

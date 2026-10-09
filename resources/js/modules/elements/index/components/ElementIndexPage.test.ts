@@ -4,8 +4,8 @@ import type {Table} from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
   useCraftTable,
-} from '@/modules/admin-table/craftTable';
-import {useElementIndexSelection} from '../composables/useElementIndexSelection';
+} from '@/common/table/craftTable';
+import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import {useNavItemActions} from '@/common/composables/useNavItemActions';
 
 const page = vi.hoisted(() => ({
@@ -146,7 +146,7 @@ async function mountPage(
     clearSelection: vi.fn(),
     refresh: vi.fn(),
     view: {
-      selection: useElementIndexSelection(elementTable, {
+      selection: useTableRowSelection(elementTable, {
         selectable: true,
         readOnly: false,
       }),

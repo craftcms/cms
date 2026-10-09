@@ -2,9 +2,67 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
+
+- Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
+- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
+- Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
+- The global nav now groups Entries, Assets under a “Content” heading, and Users, GraphQL, Utilities, Settings, and Plugin Store under an “Administration” heading. ([#19903](https://github.com/craftcms/cms/pull/19903))
+- Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Tabs now mirror the selected tab in the URL hash, select the tab named by the hash on page load, and keep it after saving.
+- Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
+- Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
+- Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
+- Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
+- Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
+- Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
+- Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
+- Added `CraftCms\Cms\Cp\Navigation::sourceSubnav()`, which builds a subnav from an element type’s sources, for plugins adding their own control panel section.
+- Added `CraftCms\Cms\Cp\Data\ActionItem::$status` and `status()`. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Added `craft.cp.selectize()` and `CraftCms\Cms\Cp\FormFields::selectizeFromConfig()`, which render the legacy selectize variables as a combobox.
+- Added `CraftCms\Cms\Ui\Nodes\TemplateContent::trusted()`, which allows developer-controlled HTML to include interactive content and inline SVG. ([#19913](https://github.com/craftcms/cms/pull/19913))
+- Added `craft.cp.select()` and `CraftCms\Cms\Cp\FormFields::selectFromConfig()`, which render the legacy select variables as a `<craft-select>`.
+- Added `craft.cp.autosuggest()` and `CraftCms\Cms\Cp\FormFields::autosuggestFromConfig()`, which render the legacy autosuggest variables as a combobox. Craft 5’s `suggestions` shape is still accepted.
+- Added `CraftCms\Cms\Cp\Components\Combobox::labelledBy()`, for a combobox labelled by an element the caller renders itself.
+- Added `CraftCms\Cms\Ui\Nodes\Field::headingPrefix()`, `headingSuffix()`, `translatable()`, `orientation()`, `inputWidth()`, `fieldset()`, and `showStatus()`. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Updated `CraftCms\Cms\Ui\Nodes\Field::make()` and `label()` to accept `Illuminate\Contracts\Support\Htmlable` and `Twig\Markup` labels. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
+- Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
+- `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
+- `CraftCms\Cms\Element\Element::prepareEditScreen()` now accepts a `Symfony\Component\HttpFoundation\Response|CraftCms\Cms\Http\Responses\CpScreenResponse` argument, rather than `yii\web\Response`. Overrides must update their signatures.
+- `CraftCms\Cms\Element\Queries\ElementQuery::statusCondition()` now returns a `Closure` which modifies an `Illuminate\Database\Query\Builder`, rather than a Yii query condition. Overrides must update their signatures and return closures.
+- `craft\base\Model::attributes()` now declares an `array` return type. Overrides must update their signatures.
+- Plugin settings models must now extend `CraftCms\Cms\Plugin\PluginSettings` rather than `craft\base\Model`.
+- Plugin settings are now validated using Laravel validation rules returned by `CraftCms\Cms\Plugin\PluginSettings::getRules()`, rather than Yii validation rules returned by `rules()`. Validation errors are added via the `$fail` callback or `errors()`, rather than `addError()`.
+- Plugin settings are now persisted based on the settings model’s public properties, via `CraftCms\Cms\Plugin\PluginSettings::configData()`. Settings stored in private properties with getter and setter methods must be redeclared as public properties, or included by overriding `configData()`.
+- Removed the `collapsible` attribute, the reflected `collapsed` attribute, and the `close()` and `open()` methods from `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::collapsible()`. Panels that can all be closed should use `<craft-disclosure>` instead.
+- Deprecated `Cp.$elementDetailsTabs`, its `tabs` property, and the `ElementDetailsTab*` types. `Cp.$elementDetailsPanels`, its `panels` property, and the `ElementDetailsPanel*` types should be used instead.
+- Removed the `data` and `methods` blocks from the `_includes/forms/autosuggest.twig` template, along with the Vue instance they configured. Templates that overrode them should pass `suggestions` instead.
+- Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved control panel styling for medium-sized viewports.
+- Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
+- Moved the shared control panel table code (`useCraftTable`, `createCraftColumnHelper`, `useServerPagination`, `useServerSort`, and `useEditableTable`) from `modules/admin-table` to `common/table`. ([#19897](https://github.com/craftcms/cms/pull/19897))
+- Added `CraftCms\Cms\Ui\Nodes\Scope` for embedding component settings under a path prefix, with optional shared delta tracking. ([#19914](https://github.com/craftcms/cms/pull/19914))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
+- Fixed an error when rendering the Craft 5 starter homepage with the Yii adapter installed. ([#19917](https://github.com/craftcms/cms/pull/19917)
+- Fixed a bug where fields in element editors didn’t receive their text direction or translation settings. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Fixed a bug where element editor fields didn’t preserve field grouping, static presentation settings, or suppression of modification indicators. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Fixed an accessibility issue where fields’ translation indicators and their help text were hidden. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Fixed an error that occurred when a Craft 5 plugin registered a utility, which no longer satisfied `CraftCms\Cms\Utility\UtilityTypes`’ contract. ([#19852](https://github.com/craftcms/cms/pull/19852))
+- Fixed an error that occurred when registering asset bundles that depend on `CraftCms\Cms\View\LegacyAssets\HtmxAsset`. The bundle is now deprecated and does nothing.
+- Fixed a bug where the tab strip wasn’t guttered with the content it sits above. ([#19861](https://github.com/craftcms/cms/pull/19861))
+- Fixed a bug where an editable table that wasn’t visible when the page loaded didn’t initialize until the window was resized.
+- Fixed a bug where environment variable, alias, and template suggestions weren’t sorted alphabetically.
+- Fixed a bug where status indicators for disabled elements were filled in rather than outlined, and custom status colors were shown as gray. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Fixed a bug where admin tables no longer had selectable rows. ([#19893](https://github.com/craftcms/cms/pull/19893))
+- Fixed a bug where the license enforcement screen wasn’t showing the “Continue to the control panel” link after the countdown ended. ([#19895](https://github.com/craftcms/cms/issues/19895))
+- Fixed an accessibility issue where field layout tabs and image editor tabs weren’t announced with a name for their tab list.
+- Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
+- Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
+- Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

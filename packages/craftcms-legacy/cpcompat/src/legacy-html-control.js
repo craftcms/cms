@@ -29,7 +29,7 @@ import {
     }
 
     const selector =
-      'craft-entry-field-layout-form[data-field-path], craft-nested-elements-control[data-control]';
+      'craft-entry-field-layout-ui[data-field-path], craft-nested-elements-control[data-control]';
     const capture = (html) => {
       const template = document.createElement('template');
       template.innerHTML = html;
@@ -165,7 +165,7 @@ import {
             : null;
       if (nativeValue && Array.isArray(nativeValue.sortOrder)) {
         this.querySelectorAll(
-          'craft-entry-field-layout-form[data-field-path]'
+          'craft-entry-field-layout-ui[data-field-path]'
         ).forEach((host) => {
           host.fieldValue = nativeValue;
         });
@@ -177,7 +177,7 @@ import {
       this._scope = scope;
     }
 
-    set formScope(scope) {
+    set uiScope(scope) {
       this._scope = scope;
     }
 
@@ -185,7 +185,7 @@ import {
       this._refreshable = refreshable;
     }
 
-    set formRefreshable(refreshable) {
+    set uiRefreshable(refreshable) {
       this._refreshable = refreshable;
     }
 
@@ -340,7 +340,7 @@ import {
           unsetValue(this._values, this._control.path);
           const expanded = expandValues(value);
           this.querySelectorAll(
-            'craft-entry-field-layout-form[data-field-path]'
+            'craft-entry-field-layout-ui[data-field-path]'
           ).forEach((host) => {
             const payload = host.payload;
             const path = payload?.nodes[0]?.control?.path;
@@ -393,7 +393,7 @@ import {
     }
 
     renderErrors() {
-      this.querySelector('[data-legacy-form-errors]')?.remove();
+      this.querySelector('[data-legacy-ui-errors]')?.remove();
       this.removeAttribute('aria-invalid');
 
       const path = this._control?.path ?? [];
@@ -406,7 +406,7 @@ import {
       }
 
       const list = document.createElement('ul');
-      list.dataset.legacyFormErrors = '';
+      list.dataset.legacyUiErrors = '';
       list.className = 'error-list';
       list.setAttribute('role', 'alert');
       errors.forEach((error) => {
@@ -428,7 +428,7 @@ import {
   function nativeFieldHtml(html, path, value) {
     if (
       !html.includes('data-nested-modified') &&
-      !html.includes('data-form-field-name')
+      !html.includes('data-ui-field-name')
     ) {
       return html;
     }
@@ -443,7 +443,7 @@ import {
         .join('');
     template.content
       .querySelectorAll(
-        'craft-nested-elements-control > input[data-nested-modified], craft-entry-field-layout-form[data-field-path] > input[data-form-field-name]'
+        'craft-nested-elements-control > input[data-nested-modified], craft-entry-field-layout-ui[data-field-path] > input[data-ui-field-name]'
       )
       .forEach((input) => {
         input.name = name;
@@ -455,7 +455,7 @@ import {
     ) {
       template.content
         .querySelectorAll(
-          'craft-entry-field-layout-form[data-field-path][data-payload]'
+          'craft-entry-field-layout-ui[data-field-path][data-payload]'
         )
         .forEach((host) => {
           const payload = JSON.parse(host.dataset.payload);
@@ -500,7 +500,7 @@ import {
     for (const control of formControls(container)) {
       if (
         control.disabled ||
-        control.closest('craft-entry-field-layout-form[data-field-path]')
+        control.closest('craft-entry-field-layout-ui[data-field-path]')
       ) {
         continue;
       }

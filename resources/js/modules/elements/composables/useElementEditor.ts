@@ -1,4 +1,4 @@
-import {isRecord, pathsMatch, visitControls} from '@/modules/forms/runtime';
+import {isRecord, pathsMatch, visitControls} from '@/modules/ui/runtime';
 import {
   nestedOwnerContext,
   type NestedOwnerEditor,
@@ -14,18 +14,14 @@ import {
   type ScreenPageProps,
 } from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-import type {
-  FormChangeKind,
-  FormPayload,
-  FormValues,
-} from '@/modules/forms/types';
+import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
-import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
+import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-import {provideFormValueGroup} from '@/modules/forms/formValueGroup';
+import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 
 export interface ElementEditFormData {
@@ -48,7 +44,7 @@ export interface ElementEditFormData {
 export interface ElementFormAction {
   label: string;
   actionUrl: string | null;
-  params: FormValues;
+  params: UiValues;
   includeFormData?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -62,7 +58,7 @@ export interface ElementFormAction {
 export type ElementFormActionSubmitter = (action: ElementFormAction) => void;
 
 export interface ElementPrimaryAction extends ElementFormAction {
-  tabId: string | null;
+  panelId: string | null;
 }
 
 export interface ElementEditorActions {
@@ -102,8 +98,8 @@ export interface ElementEditPayload {
   docTitle: string;
   crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
-  form: FormPayload | null;
-  sidebarForm: FormPayload | null;
+  ui: UiPayload | null;
+  sidebarUi: UiPayload | null;
   metadataHtml: string | null;
   /** The element's status badge. `null` for element types without statuses. */
   statusLabelHtml: string | null;
@@ -172,9 +168,9 @@ interface Options {
    * Identity and element-type attributes merged into every submission —
    * whatever the type's save action needs to resolve the element it's saving.
    */
-  saveData?: () => FormValues;
+  saveData?: () => UiValues;
   /** Adapts form state before autosave and explicit submissions. */
-  transform?: (data: object) => FormValues;
+  transform?: (data: object) => UiValues;
   /**
    * Where the screen's content is rendered. Failed saves announce invalid
    * nested elements from here, so the nested element fields inside hear it.
@@ -185,7 +181,7 @@ interface Options {
 /**
  * Drives an element edit screen: bridges the compiled field layout into an
  * Inertia form, collects the still-server-rendered sidebar meta fields, and
- * owns the unsaved-changes guard and saving. Tabs belong to `FormRenderer`.
+ * owns the unsaved-changes guard and saving. Tabs belong to `UiRenderer`.
  *
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
@@ -247,20 +243,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // The field layout comes back on the response separately from the screen
   // payload — scoped to whatever the request asked for — and applying it is the
   // only way a nested element the save just created (a new Matrix entry or
-  // address) receives its own Form payload. Until it does, the block has
+  // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
-  const savedForm = shallowRef<FormPayload | null>(null);
-  const formPayload = computed(() => savedForm.value ?? props.form);
-  const sidebarPayload = computed(() => props.sidebarForm);
+  const savedUi = shallowRef<UiPayload | null>(null);
+  const uiPayload = computed(() => savedUi.value ?? props.ui);
+  const sidebarPayload = computed(() => props.sidebarUi);
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
   let nestedElementsReloadPending = false;
 
-  function invalidateFormRefreshes(): void {
+  function invalidateUiRefreshes(): void {
     refreshGeneration++;
   }
 
-  provideFormValueGroup();
+  provideUiValueGroup();
 
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a
@@ -272,7 +268,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     renderer,
     resetValues,
     values,
-  } = useInertiaFormRenderer(form, formPayload);
+  } = useInertiaUiRenderer(form, uiPayload);
 
   const {
     advanceBaseline: advanceSidebarBaseline,
@@ -280,7 +276,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     onMutation: onSidebarFormMutation,
     renderer: sidebarRenderer,
     resetValues: resetSidebarValues,
-  } = useInertiaFormRenderer(form, sidebarPayload);
+  } = useInertiaUiRenderer(form, sidebarPayload);
 
   useSiteStatuses(form);
 
@@ -292,7 +288,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * which may be a draft of it. A fresh element says so on each save, so the
    * server propagates it to all of its sites.
    */
-  function contextParams(): FormValues {
+  function contextParams(): UiValues {
     return {
       ...props.nestedContext,
       ...(props.fresh ? {fresh: 1} : {}),
@@ -428,17 +424,17 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   let reverting = 0;
 
   watch(
-    [() => autosave.form.value, () => autosave.screen.value],
+    [() => autosave.ui.value, () => autosave.screen.value],
     ([form, screen]) => {
       if (!form && !screen) {
         return;
       }
 
-      invalidateFormRefreshes();
+      invalidateUiRefreshes();
       applyingSavedPayload = true;
 
       if (form) {
-        savedForm.value = form;
+        savedUi.value = form;
       }
 
       if (screen) {
@@ -462,9 +458,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   watch(
     () => pageProps(),
     () => {
-      invalidateFormRefreshes();
+      invalidateUiRefreshes();
       draftElementIds.clear();
-      savedForm.value = null;
+      savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
     }
@@ -475,8 +471,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // whether the values actually differ from the server's, not off having been
   // told a control changed.
   function onMutation(
-    mutation: FormPayload['values'],
-    kind: FormChangeKind = 'discrete'
+    mutation: UiPayload['values'],
+    kind: UiChangeKind = 'discrete'
   ): void {
     const changed = onLayoutMutation(mutation);
 
@@ -486,8 +482,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   function onSidebarMutation(
-    mutation: FormPayload['values'],
-    kind: FormChangeKind = 'discrete'
+    mutation: UiPayload['values'],
+    kind: UiChangeKind = 'discrete'
   ): void {
     const changed = onSidebarFormMutation(mutation);
 
@@ -507,7 +503,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       if (
         props.readOnly ||
         workflowReviewLocked.value ||
-        !(nestedOwnerContext(formPayload.value, path) ?? initialContext)
+        !(nestedOwnerContext(uiPayload.value, path) ?? initialContext)
       ) {
         return null;
       }
@@ -516,7 +512,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       try {
         if (props.canAutosave) {
-          visitControls(formPayload.value?.nodes ?? [], (control) => {
+          visitControls(uiPayload.value?.nodes ?? [], (control) => {
             if (
               control.mode === 'editable' &&
               control.path.every((segment, index) => path[index] === segment) &&
@@ -534,7 +530,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         }
 
         const context =
-          nestedOwnerContext(formPayload.value, path) ?? initialContext;
+          nestedOwnerContext(uiPayload.value, path) ?? initialContext;
         if (!context) {
           return null;
         }
@@ -569,8 +565,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
   );
 
-  function requestValues(data: object): FormValues {
-    return transform?.(data) ?? ({...data} as FormValues);
+  function requestValues(data: object): UiValues {
+    return transform?.(data) ?? ({...data} as UiValues);
   }
 
   /**
@@ -579,11 +575,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * Resolves with the server's response once it's been applied, or nothing
    * when a newer refresh superseded it.
    */
-  async function refreshForm(
-    scope: string[] = formPayload.value?.scope ?? []
-  ): Promise<FormValues | undefined> {
+  async function refreshUi(
+    scope: string[] = uiPayload.value?.scope ?? []
+  ): Promise<UiValues | undefined> {
     const generation = ++refreshGeneration;
-    const rootScope = formPayload.value?.scope ?? [];
+    const rootScope = uiPayload.value?.scope ?? [];
     const currentValues = renderer.value?.currentValues() ?? values.value;
     const {data: response} = await actionClient.post(
       UpdateFieldLayoutController.url(),
@@ -599,8 +595,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       },
       {
         headers: {
-          'X-Craft-Form-Root-Scope': JSON.stringify(rootScope),
-          'X-Craft-Form-Scope': JSON.stringify(scope),
+          'X-Craft-Ui-Root-Scope': JSON.stringify(rootScope),
+          'X-Craft-Ui-Scope': JSON.stringify(scope),
         },
       }
     );
@@ -609,8 +605,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       return;
     }
 
-    if (!response.form) {
-      throw new Error('The Element Editor did not return a Form payload.');
+    if (!response.ui) {
+      throw new Error('The Element Editor did not return a UI payload.');
     }
 
     await appendHeadHtml(response.headHtml);
@@ -623,7 +619,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     // it reconciles it into the layout.
     if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
       applyingSavedPayload = true;
-      savedForm.value = response.form;
+      savedUi.value = response.ui;
       await nextTick();
       applyingSavedPayload = false;
     }
@@ -641,16 +637,16 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * Refreshes the field layout for the renderer's reactive controls.
    */
   async function refreshLayout(
-    _values: FormValues,
+    _values: UiValues,
     scope?: string[]
-  ): Promise<FormPayload> {
-    const response = await refreshForm(scope);
+  ): Promise<UiPayload> {
+    const response = await refreshUi(scope);
 
     if (!response) {
       throw new Error('A newer refresh superseded this one.');
     }
 
-    return response.form as FormPayload;
+    return response.ui as UiPayload;
   }
 
   // Set for the duration of one submission when an alternate action owns it,
@@ -766,7 +762,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       },
       // A submission supersedes any in-flight draft write.
       onBeforeSave: () => {
-        invalidateFormRefreshes();
+        invalidateUiRefreshes();
         autosave.cancel();
       },
       onSuccess: (data) => {
@@ -862,7 +858,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
    * flag it.
    */
   async function refreshAfterNestedChange(): Promise<void> {
-    const response = await refreshForm();
+    const response = await refreshUi();
 
     if (response && 'updatedTimestamp' in response) {
       activity.rebase({
@@ -902,7 +898,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       return;
     }
 
-    invalidateFormRefreshes();
+    invalidateUiRefreshes();
 
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
@@ -923,7 +919,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // something that no longer exists — drop it before the reload rather than
       // waiting for the response, or the "unsaved changes" notice it carries
       // goes on shadowing the page props for the length of the round trip.
-      savedForm.value = null;
+      savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
       // The draft the autosave pointer names has just been deleted; leaving it
@@ -1017,7 +1013,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     onBeforeUnmount(removeNavigationGuard);
   }
 
-  onBeforeUnmount(invalidateFormRefreshes);
+  onBeforeUnmount(invalidateUiRefreshes);
   onBeforeUnmount(autosave.cancel);
 
   return {
@@ -1028,13 +1024,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     submitAction,
     errors,
     form,
-    formPayload,
+    uiPayload,
     onMutation,
     onSidebarMutation,
     props,
     renderer,
     nestedOwnerEditor,
-    refreshForm,
+    refreshUi,
     refreshLayout,
     save,
     sidebarErrors,

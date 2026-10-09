@@ -11,16 +11,16 @@ use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\UiContext;
 use InvalidArgumentException;
 use Override;
 
@@ -63,7 +63,7 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         $element = $context->element;
 
@@ -72,7 +72,7 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
             ! Cms::config()->showFirstAndLastNameFields ||
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) !== 2
         ) {
-            return parent::formNode($context);
+            return parent::uiNode($context);
         }
 
         if (! $this->uid) {
@@ -80,7 +80,7 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
         }
 
         // Both halves inherit the Full Name field’s change-tracking status.
-        $static = $context->mode !== ControlMode::Editable;
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
         $status = $this->showStatus() ? $this->statusClass($element, $static) : null;
         $statusLabel = $status !== null
             ? ($this->statusLabel($element, $static) ?? ucfirst($status))
@@ -88,16 +88,18 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
 
         return Group::make($this->uid, [
             Field::make(t('First Name'), Text::make('firstName')->value($element->firstName ?? null))
-                ->required($this->required)
+                ->required(! $static && $this->required)
+                ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
             Field::make(t('Last Name'), Text::make('lastName')->value($element->lastName ?? null))
-                ->required($this->required)
+                ->required(! $static && $this->required)
+                ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
         ]);
     }
 
     #[Override]
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         if (Cms::config()->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?

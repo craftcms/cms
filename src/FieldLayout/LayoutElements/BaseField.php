@@ -12,19 +12,6 @@ use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Checkbox;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Action;
-use CraftCms\Cms\Form\Nodes\ActionMenu;
-use CraftCms\Cms\Form\Nodes\CopyAttribute;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -32,6 +19,19 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Checkbox;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Action;
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use InvalidArgumentException;
 use Override;
 
@@ -361,7 +361,7 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     #[Override]
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         return [
             $this->labelSettingsNode($context),
@@ -374,7 +374,7 @@ abstract class BaseField extends FieldLayoutElement
      * The Label field, with the “Hide” toggle in its actions slot. Hiding the
      * label disables the text input, mirroring the value the layout stores.
      */
-    protected function labelSettingsNode(FormContext $context): Field
+    protected function labelSettingsNode(UiContext $context): Field
     {
         $labelHidden = ! $this->showLabel();
 
@@ -389,7 +389,7 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /** @return list<Node> */
-    protected function instructionsSettingsNodes(FormContext $context): array
+    protected function instructionsSettingsNodes(UiContext $context): array
     {
         return [
             Field::make(t('Instructions'), Textarea::make('instructions')
@@ -405,7 +405,7 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /** @return list<Node> */
-    protected function noticeSettingsNodes(FormContext $context): array
+    protected function noticeSettingsNodes(UiContext $context): array
     {
         return [
             Field::make(t('Tip'), Textarea::make('tip')->rows(1)->value($this->tip)),
@@ -414,9 +414,9 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
-        $control = $this->formControl($context);
+        $control = $this->uiControl($context);
 
         if ($control === null) {
             return null;
@@ -428,18 +428,25 @@ abstract class BaseField extends FieldLayoutElement
 
         $control->reactive();
 
-        $static = $context->mode !== ControlMode::Editable;
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
         $status = $this->showStatus() ? $this->statusClass($context->element, $static) : null;
 
         return Field::make(
             $this->showLabel() ? $this->label() : null,
             $control,
         )
-            ->instructions($this->instructionsText($context->element))
+            ->fieldset($this->useFieldset())
+            ->showStatus($this->showStatus())
+            ->orientation($this->orientation($context->element, $static))
+            ->translatable(
+                $context->element !== null && Sites::isMultiSite() && $this->translatable($context->element, $static),
+                $context->element !== null ? $this->translationDescription($context->element, $static) : null,
+            )
+            ->instructions($this->instructionsText($context->element, $static))
             ->instructionsPosition($this->instructionsPosition)
-            ->tip($this->tipText($context->element))
-            ->warning($this->warningText($context->element))
-            ->required($this->required)
+            ->tip($this->tipText($context->element, $static))
+            ->warning($this->warningText($context->element, $static))
+            ->required(! $static && $this->required)
             ->status(
                 $status,
                 $status !== null
@@ -448,7 +455,7 @@ abstract class BaseField extends FieldLayoutElement
             )
             ->layoutUid($this->uid)
             ->width($this->width)
-            ->actions(...$this->formActionNodes($context, $control));
+            ->actions(...$this->uiActionNodes($context, $control));
     }
 
     /**
@@ -458,10 +465,10 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @return list<Node>
      */
-    protected function formActionNodes(FieldLayoutElementContext $context, Control $control): array
+    protected function uiActionNodes(FieldLayoutElementContext $context, Control $control): array
     {
         $nodes = [];
-        $uidPrefix = $this->formActionsUid($control);
+        $uidPrefix = $this->uiActionsUid($control);
 
         $items = $this->resolveActionMenuItems($context);
         if ($items !== []) {
@@ -512,6 +519,7 @@ abstract class BaseField extends FieldLayoutElement
             ! $this->uid ||
             ! $element?->id ||
             $context->mode !== ControlMode::Editable ||
+            $context->ui->mode !== ControlMode::Editable ||
             ! $this->isCrossSiteCopyable($element) ||
             ! $this->translatable($element) ||
             ! $element->getIsCrossSiteCopyable()
@@ -570,17 +578,17 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
-     * A stable, form-unique key for a field's action nodes.
+     * A stable, UI-unique key for a field's action nodes.
      *
      * Derived from the control's path rather than the layout element's UID:
      * the UID is nullable (fluently-built layouts and the card view designer
      * produce UID-less elements), and one layout element can emit several
-     * Fields (see {@see Addresses\LatLongField::formNode()}). Control paths are
-     * already unique within a form namespace — {@see FormResolver}
+     * Fields (see {@see Addresses\LatLongField::uiNode()}). Control paths are
+     * already unique within a UI namespace — {@see UiResolver}
      * rejects duplicates — and control-less nodes are scoped by that same
      * namespace.
      */
-    protected function formActionsUid(Control $control): string
+    protected function uiActionsUid(Control $control): string
     {
         $path = $control->path();
 
@@ -595,7 +603,7 @@ abstract class BaseField extends FieldLayoutElement
         return $user?->isAdmin() && $user->getPreference('showFieldHandles');
     }
 
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         return null;
     }

@@ -10,10 +10,10 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\ActionMenu;
-use CraftCms\Cms\Form\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Users;
@@ -25,7 +25,7 @@ function fieldActionNodes(
     BaseField $field,
     ControlMode $mode = ControlMode::Editable,
 ): array {
-    return $field->formNode(new FieldLayoutElementContext(null, new FormContext, $mode))->children();
+    return $field->uiNode(new FieldLayoutElementContext(null, new UiContext, $mode))->children();
 }
 
 function customTextField(): CustomField
@@ -137,7 +137,7 @@ it('only contributes input actions in a field layout context', function () {
         'name' => 'Content',
         'viewMode' => Matrix::VIEW_MODE_BLOCKS,
     ]);
-    $context = new FieldLayoutElementContext(null, new FormContext);
+    $context = new FieldLayoutElementContext(null, new UiContext);
 
     $fieldLabels = array_column($field->getActionMenuItems(), 'label');
     $componentLabels = array_column($field->getFieldLayoutActionMenuItems($context), 'label');

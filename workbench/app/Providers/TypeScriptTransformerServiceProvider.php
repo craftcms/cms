@@ -19,11 +19,6 @@ use CraftCms\Cms\Element\Data\NestedElementCard;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
-use CraftCms\Cms\Form\ControlPayload;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
@@ -51,6 +46,11 @@ use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Data\StepFormPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Data\Updates;
 use CraftCms\Cms\User\Data\Permission;
@@ -106,7 +106,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ConditionBuilderPayload::class,
                     ConditionRulePayload::class,
                     GroupOperator::class,
-                    FormPayload::class,
+                    UiPayload::class,
                     WidgetData::class,
                     WidgetTypeData::class,
                     NodePayload::class,

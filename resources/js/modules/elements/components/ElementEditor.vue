@@ -18,11 +18,11 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
-  import type {FormValues} from '@/modules/forms/types';
-  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
-  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import type {UiValues} from '@/modules/ui/types';
+  import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
+  import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
@@ -39,8 +39,8 @@
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => FormValues;
-    transform?: (data: object) => FormValues;
+    saveData?: () => UiValues;
+    transform?: (data: object) => UiValues;
     formWrapper?: Component;
     showDetails?: boolean;
   }>();
@@ -58,12 +58,12 @@
     discardDraft,
     errors,
     form,
-    formPayload,
+    uiPayload,
     onMutation,
     onSidebarMutation,
     props: payload,
     renderer,
-    refreshForm,
+    refreshUi,
     refreshLayout,
     save,
     sidebarErrors,
@@ -83,7 +83,7 @@
    */
   const hasUntabbedFields = computed(
     () =>
-      formPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
+      uiPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
       false
   );
 
@@ -93,10 +93,10 @@
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
-      elementDetailsTabRegistry.hasVisible(payload)
+      elementDetailsPanelRegistry.hasVisible(payload)
   );
-  const detailsTabs = useTemplateRef<{select: (tabId: string) => void}>(
-    'detailsTabs'
+  const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(
+    'detailsPanels'
   );
 
   // Alternate saves in the Save button's menu, and the buttons grouped with
@@ -143,8 +143,8 @@
   }
 
   function primaryAction(options?: FormSaveOptions): void {
-    if (payload.editorActions.primary.tabId) {
-      detailsTabs.value?.select(payload.editorActions.primary.tabId);
+    if (payload.editorActions.primary.panelId) {
+      detailsPanels.value?.select(payload.editorActions.primary.panelId);
       return;
     }
 
@@ -350,13 +350,13 @@
       >
         <component
           :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-          v-if="formPayload"
+          v-if="uiPayload"
         >
-          <FormRenderer
+          <UiRenderer
             ref="renderer"
-            :payload="formPayload"
+            :payload="uiPayload"
             :errors="errors"
-            :refresh="formPayload.refreshable ? refreshLayout : undefined"
+            :refresh="uiPayload.refreshable ? refreshLayout : undefined"
             :modified="autosave.modified.value"
             :disabled="workflowReviewLocked"
             @update:mutation="onMutation"
@@ -372,8 +372,8 @@
     v-if="hasDetails || $slots['details-header']"
     name="content-details"
   >
-    <ElementDetailsTabs
-      ref="detailsTabs"
+    <ElementDetailsPanels
+      ref="detailsPanels"
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
       :update-payload="updatePayload"
@@ -392,7 +392,7 @@
               v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
             >
               <craft-field-group v-if="sidebarPayload">
-                <FormRenderer
+                <UiRenderer
                   ref="sidebarRenderer"
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"
@@ -405,7 +405,7 @@
           </template>
         </MetadataDetailsContent>
       </template>
-    </ElementDetailsTabs>
+    </ElementDetailsPanels>
   </LayoutSlot>
 </template>
 

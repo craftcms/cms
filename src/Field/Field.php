@@ -43,8 +43,6 @@ use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -58,6 +56,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -110,7 +110,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      *
-     * @see FieldInterface::formControl()
+     * @see FieldInterface::uiControl()
      */
     public ?string $describedBy = null;
 
@@ -300,9 +300,9 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return 'i-cursor';
     }
 
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
-        throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
+        throw new LogicException(sprintf('%s does not provide a UI Control.', static::class));
     }
 
     /**
@@ -313,7 +313,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      * field pointed at a volume that no longer exists, say. Returning a string
      * puts it in the field's warning slot; `null` means nothing to say.
      */
-    public function formWarning(?ElementInterface $element = null): ?string
+    public function uiWarning(?ElementInterface $element = null): ?string
     {
         return null;
     }

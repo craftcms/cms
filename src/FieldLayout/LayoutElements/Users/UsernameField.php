@@ -10,8 +10,8 @@ use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
-use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
 use Override;
@@ -69,9 +69,9 @@ class UsernameField extends TextField implements ImportableFieldLayoutElementInt
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
-        return Cms::config()->useEmailAsUsername ? null : parent::formControl($context);
+        return Cms::config()->useEmailAsUsername ? null : parent::uiControl($context);
     }
 
     #[Override]

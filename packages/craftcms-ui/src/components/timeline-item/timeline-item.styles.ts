@@ -63,12 +63,6 @@ export default css`
     column-gap: var(--c-spacing-xs);
   }
 
-  .timeline-item__separator {
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-lg);
-    line-height: 1;
-  }
-
   .timeline-item__meta {
     position: relative;
     inset-block-start: 1px;

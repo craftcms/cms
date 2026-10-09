@@ -13,12 +13,12 @@ use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Address as AddressControl;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Address as AddressControl;
 use InvalidArgumentException;
 use Override;
 
@@ -72,7 +72,7 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         if (! $context->element instanceof Address) {
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));

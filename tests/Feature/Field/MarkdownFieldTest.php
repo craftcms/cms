@@ -201,7 +201,7 @@ it('can disable the editor toolbar', function () {
     ]);
 
     expect($field->validate())->toBeTrue()
-        ->and($field->formControl(new FieldContext('body'))->props()['showToolbar'])->toBeFalse();
+        ->and($field->uiControl(new FieldContext('body'))->props()['showToolbar'])->toBeFalse();
 });
 
 it('defaults markdown link settings to link field defaults', function () {
@@ -277,7 +277,7 @@ it('prefers submitted nested link settings over persisted flat settings', functi
         ->and($field->linkSettingsShowLabelField)->toBeTrue();
 });
 
-it('passes the editor stats setting to the form control', function (bool $showStats) {
+it('passes the editor stats setting to the UI control', function (bool $showStats) {
     $field = new MarkdownField([
         'name' => 'Body',
         'handle' => 'body',
@@ -285,7 +285,7 @@ it('passes the editor stats setting to the form control', function (bool $showSt
     ]);
 
     expect($field->validate())->toBeTrue()
-        ->and($field->formControl(new FieldContext('body'))->props()['showStats'])->toBe($showStats);
+        ->and($field->uiControl(new FieldContext('body'))->props()['showStats'])->toBe($showStats);
 })->with([true, false]);
 
 it('sanitizes rendered html with the configured html sanitizer', function () {

@@ -21,14 +21,6 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\FieldSelect;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Missing as MissingControl;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
@@ -38,6 +30,14 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\FieldSelect;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Missing as MissingControl;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
@@ -442,7 +442,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     {
         $warnings = array_filter([
             parent::warningText($element, $static),
-            $this->getField()->formWarning($element),
+            $this->getField()->uiWarning($element),
         ]);
 
         return $warnings !== [] ? implode(' ', $warnings) : null;
@@ -645,7 +645,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         // Make sure setField() has had a chance to set the default values
         $field = $this->getField();
@@ -812,7 +812,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    protected function conditionalSettingsNodes(FormContext $context): array
+    protected function conditionalSettingsNodes(UiContext $context): array
     {
         $elementType = $this->elementType ?? $this->getLayout()?->type;
 
@@ -859,13 +859,13 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    public function formMode(?ElementInterface $element): ControlMode
+    public function uiMode(?ElementInterface $element): ControlMode
     {
         return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         try {
             $this->getField();
@@ -882,11 +882,11 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
                 ->value($this->value($context->element));
         }
 
-        return $field->formControl(new FieldContext(
+        return $field->uiControl(new FieldContext(
             ['fields', $this->attribute()],
             $this->value($context->element),
             $context->element,
-            $context->form,
+            $context->ui,
             $context->mode,
         ));
     }

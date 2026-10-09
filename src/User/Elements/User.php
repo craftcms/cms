@@ -1421,7 +1421,7 @@ XML;
     }
 
     /**
-     * The account actions for the Inertia editor — the Form-system counterpart
+     * The account actions for the Inertia editor — the UI-system counterpart
      * to the items {@see safeActionMenuItems()} and
      * {@see destructiveActionMenuItems()} build with inline jQuery.
      *

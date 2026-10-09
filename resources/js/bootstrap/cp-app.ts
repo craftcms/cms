@@ -16,8 +16,8 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import CpLink from '@/common/components/CpLink.vue';
 import {cpComponentRegistry} from './components';
-import {elementDetailsTabRegistry} from './element-details-tabs';
-import {registerFormComponents} from '@/modules/forms/register';
+import {elementDetailsPanelRegistry} from './element-details-panels';
+import {registerUiComponents} from '@/modules/ui/register';
 import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
 import {registerWorkflowComponents} from '@/modules/workflows/register';
@@ -26,10 +26,10 @@ import {registerLayoutComponents} from '@/common/layouts/register';
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
 
-registerFormComponents(cpComponentRegistry);
+registerUiComponents(cpComponentRegistry);
 registerWidgetComponents(cpComponentRegistry);
 registerActivityComponents(cpComponentRegistry);
-registerWorkflowComponents(cpComponentRegistry, elementDetailsTabRegistry);
+registerWorkflowComponents(cpComponentRegistry, elementDetailsPanelRegistry);
 registerLayoutComponents(cpComponentRegistry);
 
 export function installCpApp(app: App): void {

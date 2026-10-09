@@ -37,14 +37,14 @@ export default class CraftFieldGroup extends LitElement {
           max-width: 100%;
         }
 
-        craft-field[fieldset][data-form-node]
+        craft-field[fieldset][data-ui-node]
           > craft-field-group.auto-widths:not(:has(> [class*='width-'])) {
           display: flex;
           flex-wrap: wrap;
           gap: var(--c-spacing-sm) var(--c-spacing-md);
         }
 
-        craft-field[fieldset][data-form-node] > craft-field-group.auto-widths {
+        craft-field[fieldset][data-ui-node] > craft-field-group.auto-widths {
           --c-field-label-font-weight: normal;
           --c-field-label-margin-block-end: 0;
         }

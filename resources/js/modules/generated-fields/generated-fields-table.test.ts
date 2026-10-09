@@ -1,12 +1,12 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {nextTick} from 'vue';
 import {cpComponentRegistry} from '@/bootstrap/components';
-import {registerFormComponents} from '@/modules/forms/register';
-import type {FormNodePayload, FormPayload} from '@/modules/forms/types';
+import {registerUiComponents} from '@/modules/ui/register';
+import type {UiNodePayload, UiPayload} from '@/modules/ui/types';
 import {cvdData} from '@/modules/field-layout-designer/support';
 import {CraftGeneratedFieldsTable} from './index';
 
-registerFormComponents(cpComponentRegistry);
+registerUiComponents(cpComponentRegistry);
 let form: HTMLFormElement;
 let table: CraftGeneratedFieldsTable;
 
@@ -14,7 +14,7 @@ afterEach(() => form?.remove());
 
 async function mount(disabled = false): Promise<void> {
   const path = ['settings', 'layout', 'generatedFields'];
-  const fields: FormNodePayload[] = ['name', 'handle', 'template', 'uid'].map(
+  const fields: UiNodePayload[] = ['name', 'handle', 'template', 'uid'].map(
     (key) => ({
       type: 'Field',
       component: 'craft:field',
@@ -29,7 +29,7 @@ async function mount(disabled = false): Promise<void> {
       },
     })
   );
-  const payload: FormPayload = {
+  const payload: UiPayload = {
     scope: path.slice(0, -1),
     refreshable: false,
     nodes: [
@@ -119,7 +119,7 @@ async function name(index: number, value: string): Promise<void> {
   await settle();
 }
 
-describe('generated fields Form table', () => {
+describe('generated fields UI table', () => {
   it('preserves identities and submits ordered values while synchronizing card attributes', async () => {
     await mount();
     const card = document.createElement('div');

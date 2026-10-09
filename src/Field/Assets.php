@@ -27,17 +27,6 @@ use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
-use CraftCms\Cms\Form\Controls\AssetSelect;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\FieldWidth;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -53,6 +42,17 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Controls\AssetSelect;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -222,7 +222,7 @@ class Assets extends BaseRelationField
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
             'author.username' => t('Author Username'),
@@ -248,18 +248,18 @@ class Assets extends BaseRelationField
         // because assets can’t relate to a structure (Craft 5 never rendered the
         // block), and “Branch Limit” with it — it only ever showed alongside
         // “Maintain hierarchy”, so it was permanently hidden here.
-        return Form::make(array_values(array_filter([
-            FormField::make(t('Restrict assets to a single location'))
+        return Ui::make(array_values(array_filter([
+            UiField::make(t('Restrict assets to a single location'))
                 ->control(Lightswitch::make('restrictLocation')
                     ->value($this->restrictLocation)
                     ->reactive()),
             Group::make('asset-location-settings', [
                 Group::make('restricted-location', [
-                    FormField::make()
+                    UiField::make()
                         ->label(t('Source'))
                         ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
                         ->width(FieldWidth::Third),
-                    FormField::make()
+                    UiField::make()
                         ->label(t('Subpath'))
                         ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
                         ->width(FieldWidth::TwoThirds),
@@ -269,24 +269,24 @@ class Assets extends BaseRelationField
                     ->instructions(t('The location where assets can be selected from.'))
                     ->tip($objectTemplateTip)
                     ->visible($this->restrictLocation),
-                FormField::make(t('Allow subfolders'))
+                UiField::make(t('Allow subfolders'))
                     ->control(Lightswitch::make('allowSubfolders')
                         ->value($this->allowSubfolders)
                         ->reactive())
                     ->visible($this->restrictLocation),
                 Group::make('asset-subfolder-settings', [
-                    FormField::make(t('Default Upload Subpath'))
+                    UiField::make(t('Default Upload Subpath'))
                         ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
                         ->tip($objectTemplateTip)
                         ->visible($this->restrictLocation && $this->allowSubfolders),
                 ])->dependsOn('settings.allowSubfolders'),
                 $this->sourcesField(reactive: true)->visible(! $this->restrictLocation),
                 Group::make('default-upload-location', [
-                    FormField::make()
+                    UiField::make()
                         ->label(t('Source'))
                         ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
                         ->width(FieldWidth::Third),
-                    FormField::make()
+                    UiField::make()
                         ->label(t('Subpath'))
                         ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
                         ->tip($objectTemplateTip)
@@ -299,10 +299,10 @@ class Assets extends BaseRelationField
             ])->dependsOn('settings.restrictLocation'),
             Separator::make('asset-location-separator'),
             $this->selectionConditionField(),
-            FormField::make(t('Show unpermitted volumes'))
+            UiField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-            FormField::make(t('Allow uploading directly to the field'))
+            UiField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
             ...$this->limitFields(),
@@ -314,7 +314,7 @@ class Assets extends BaseRelationField
             ])->dependsOn("settings.{$sourcesPath}"),
             $this->validateRelatedElementsField(),
             Separator::make('preview-mode-separator'),
-            FormField::make(t('Preview Mode'))
+            UiField::make(t('Preview Mode'))
                 ->instructions(t('How the related {type} should be displayed within element indexes.', [
                     'type' => Asset::pluralLowerDisplayName(),
                 ]))
@@ -856,7 +856,7 @@ class Assets extends BaseRelationField
         } catch (InvalidFsException|InvalidSubpathException) {
             // A misconfigured location costs the field its upload affordance,
             // not its ability to relate what's already there. What went wrong
-            // reaches the author through {@see formWarning()}.
+            // reaches the author through {@see uiWarning()}.
             return $control;
         }
 
@@ -879,7 +879,7 @@ class Assets extends BaseRelationField
      * default upload location is not a misconfiguration to complain about.
      */
     #[Override]
-    public function formWarning(?ElementInterface $element = null): ?string
+    public function uiWarning(?ElementInterface $element = null): ?string
     {
         if (! $this->allowUploads && ! $this->restrictLocation) {
             return null;

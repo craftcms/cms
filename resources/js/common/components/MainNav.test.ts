@@ -45,13 +45,17 @@ const nav = () => [
   },
 ];
 
-async function mount(url: string, navBadges: Record<string, number> = {}) {
+async function mount(
+  url: string,
+  navBadges: Record<string, number> = {},
+  {tree = nav(), iconOnly = false}: {tree?: Array<any>; iconOnly?: boolean} = {}
+) {
   const {default: MainNav} = await import('./MainNav.vue');
 
   state.page = reactive({
     url,
     props: {
-      craft: {nav: nav(), navBadges},
+      craft: {nav: tree, navBadges},
       queue: {
         displayedJob: null,
         hasReservedJobs: false,
@@ -62,7 +66,7 @@ async function mount(url: string, navBadges: Record<string, number> = {}) {
 
   container = document.createElement('div');
   document.body.append(container);
-  app = createApp(MainNav);
+  app = createApp(MainNav, {iconOnly});
   app.mount(container);
   await nextTick();
 
@@ -128,4 +132,34 @@ it('links each item where it says it does', async () => {
   expect(
     items.map((item) => (item as any).href ?? item.getAttribute('href'))
   ).toEqual(['/admin/content/entries', '/admin/utilities']);
+});
+
+it('drops top-level group headings from the collapsed rail', async () => {
+  const [entries, utilities] = nav();
+  const tree = [
+    {...entries, group: false},
+    {
+      ...utilities,
+      label: 'Administration',
+      href: null,
+      id: 'nav-admin',
+      group: true,
+      subnav: [utilities],
+    },
+  ];
+  const label = (item: Element) => item.textContent?.trim();
+
+  const expanded = await mount('/admin/content/entries', {}, {tree});
+  expect(expanded.filter((item) => item.hasAttribute('group'))).toHaveLength(1);
+
+  app?.unmount();
+  container.remove();
+
+  const collapsed = await mount(
+    '/admin/content/entries',
+    {},
+    {tree, iconOnly: true}
+  );
+  expect(collapsed.some((item) => item.hasAttribute('group'))).toBe(false);
+  expect(collapsed.map(label)).toEqual(['Entries', 'Utilities']);
 });

@@ -1,17 +1,21 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormChange, FormPayload} from '@/modules/forms/types';
+import {setIconResolver} from '@craftcms/ui/utilities/icons';
+import {nothing} from 'lit';
+import {afterEach, beforeAll, beforeEach, expect, it, vi} from 'vite-plus/test';
+import type {UiChange, UiPayload} from '@/modules/ui/types';
 import Edit from './Edit.vue';
 
+beforeAll(() => setIconResolver(() => nothing));
+
 const state = vi.hoisted<{
-  formProps: ReturnType<
+  uiProps: ReturnType<
     typeof vi.fn<(props: {formActions: Array<{onClick: () => void}>}) => void>
   >;
   save: ReturnType<typeof vi.fn>;
   setValue: ReturnType<typeof vi.fn>;
-  change?: (change: FormChange, values: FormPayload['values']) => void;
+  change?: (change: UiChange, values: UiPayload['values']) => void;
 }>(() => ({
-  formProps: vi.fn(),
+  uiProps: vi.fn(),
   save: vi.fn(),
   setValue: vi.fn(),
   change: undefined,
@@ -33,13 +37,13 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
   }),
 }));
 
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     emits: ['change'],
     props: ['formActions'],
     setup: (props, {emit, expose}) => {
       state.change = (change, values) => emit('change', change, values);
-      state.formProps({
+      state.uiProps({
         formActions: props.formActions,
       });
       expose({save: state.save, setValue: state.setValue});
@@ -49,7 +53,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -62,7 +66,7 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.formProps.mockClear();
+  state.uiProps.mockClear();
   state.save.mockReset();
   state.setValue.mockReset();
   state.change = undefined;
@@ -77,9 +81,9 @@ afterEach(() => {
 
 function mount(details: string | null = null): void {
   app = createApp(Edit, {
-    form,
+    ui,
     submit: {method: 'post', url: '/actions/fields/store'},
-    refreshUrl: '/actions/fields/render-form',
+    refreshUrl: '/actions/fields/render-ui',
     supportedTranslationMethods: {
       OldField: ['none', 'custom'],
       NewField: ['none'],
@@ -105,11 +109,11 @@ it('selects a supported translation method when the field type changes', async (
   );
 });
 
-it('saves and starts another field from the form action', async () => {
+it('saves and starts another field from the ui action', async () => {
   mount();
   await nextTick();
 
-  state.formProps.mock.calls[0]![0].formActions[0]!.onClick();
+  state.uiProps.mock.calls[0]![0].formActions[0]!.onClick();
 
   expect(state.save).toHaveBeenCalledWith({
     data: {addAnother: 1},
@@ -117,11 +121,13 @@ it('saves and starts another field from the form action', async () => {
   });
 });
 
-it('shows the field’s details in an Info tab', async () => {
+it('shows the field’s details in an Info panel', async () => {
   mount('<dl>ID 1</dl>');
   await nextTick();
 
-  expect(container.querySelector('craft-tab')?.id).toBe('details-tab-info');
+  expect(container.querySelector('craft-disclosure > button')?.id).toBe(
+    'details-panel-info'
+  );
   expect(container.querySelector('.details-html')?.textContent).toBe(
     '<dl>ID 1</dl>'
   );
@@ -131,5 +137,5 @@ it('omits the details column for a new field', async () => {
   mount();
   await nextTick();
 
-  expect(container.querySelector('craft-tabs')).toBeNull();
+  expect(container.querySelector('craft-disclosure')).toBeNull();
 });

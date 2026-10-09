@@ -10,11 +10,11 @@ use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
-use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -91,7 +91,7 @@ class EmailField extends TextField implements ImportableFieldLayoutElementInterf
     }
 
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         $element = $context->element;
 
@@ -103,7 +103,7 @@ class EmailField extends TextField implements ImportableFieldLayoutElementInterf
             return null;
         }
 
-        return parent::formControl($context);
+        return parent::uiControl($context);
     }
 
     #[Override]

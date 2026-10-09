@@ -108,6 +108,19 @@ describe('elementChipHtml', function () {
         expect($html)->toContain('<a class="label-link" href="')
             ->and($html)->toContain('/custom-elements/123');
     });
+
+    it('lets a selectable chip render its own labelled checkbox', function () {
+        $user = User::findOne();
+
+        $html = $this->elementHtml->elementChipHtml($user, ['selectable' => true]);
+
+        expect($html)
+            ->toContainTag('craft-chip', [
+                'selectable' => true,
+                'select-label' => "Select {$user->getUiLabel()}",
+            ])
+            ->not->toContain('class="checkbox"');
+    });
 });
 
 describe('elementCardHtml', function () {

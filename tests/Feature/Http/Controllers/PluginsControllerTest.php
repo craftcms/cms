@@ -28,7 +28,7 @@ beforeEach(function () {
     loadTestPlugin();
 
     TestPlugin::$useSettings = true;
-    TestPlugin::$useSettingsForm = true;
+    TestPlugin::$useSettingsUi = true;
     TestPlugin::$settingsRequestClass = Request::class;
 });
 
@@ -40,7 +40,7 @@ test('requires authentication', function () {
     postJson(action([PluginsController::class, 'uninstall'], ['test-plugin']))->assertUnauthorized();
     postJson(action([PluginsController::class, 'enable'], ['test-plugin']))->assertUnauthorized();
     postJson(action([PluginsController::class, 'disable'], ['test-plugin']))->assertUnauthorized();
-    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']))->assertUnauthorized();
+    postJson(action([PluginsController::class, 'renderSettingsUi'], ['test-plugin']))->assertUnauthorized();
 });
 
 test('index shows plugin list page', function () {
@@ -160,12 +160,12 @@ test('editSettings loads for existing plugin', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Form')
+            ->component('Ui')
             ->where('title', 'Test Plugin')
-            ->where('form.scope', ['settings'])
-            ->where('form.values.settings.foo', 'saved value')
-            ->where('form.nodes.0.control.path', ['settings', 'foo'])
-            ->where('form.nodes.0.control.mode', 'editable')
+            ->where('ui.scope', ['settings'])
+            ->where('ui.values.settings.foo', 'saved value')
+            ->where('ui.nodes.0.control.path', ['settings', 'foo'])
+            ->where('ui.nodes.0.control.mode', 'editable')
         );
 });
 
@@ -175,12 +175,12 @@ test('editSettings renders settings validation errors', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.errors.0.path', ['settings', 'foo'])
-            ->where('form.errors.0.messages', ['Foo is invalid.'])
+            ->where('ui.errors.0.path', ['settings', 'foo'])
+            ->where('ui.errors.0.messages', ['Foo is invalid.'])
         );
 });
 
-test('plugin settings form targets the plugin CP route', function () {
+test('plugin settings UI targets the plugin CP route', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -191,25 +191,25 @@ test('plugin settings form targets the plugin CP route', function () {
         );
 });
 
-test('plugin settings form is refreshable', function () {
+test('plugin settings UI is refreshable', function () {
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.refreshable', true)
-            ->where('refreshUrl', action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']))
+            ->where('ui.refreshable', true)
+            ->where('refreshUrl', action([PluginsController::class, 'renderSettingsUi'], ['test-plugin']))
         );
 
-    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']), [
+    postJson(action([PluginsController::class, 'renderSettingsUi'], ['test-plugin']), [
         'values' => ['foo' => 'show-bar', 'bar' => 'unsaved value'],
         'scope' => ['settings'],
     ])
         ->assertOk()
-        ->assertJsonPath('form.scope', ['settings'])
-        ->assertJsonPath('form.refreshable', true)
-        ->assertJsonPath('form.values.settings.foo', 'show-bar')
-        ->assertJsonPath('form.values.settings.bar', 'unsaved value')
-        ->assertJsonPath('form.nodes.1.props.dependsOn', ['settings', 'foo'])
-        ->assertJsonPath('form.nodes.1.children.0.control.path', ['settings', 'bar']);
+        ->assertJsonPath('ui.scope', ['settings'])
+        ->assertJsonPath('ui.refreshable', true)
+        ->assertJsonPath('ui.values.settings.foo', 'show-bar')
+        ->assertJsonPath('ui.values.settings.bar', 'unsaved value')
+        ->assertJsonPath('ui.nodes.1.props.dependsOn', ['settings', 'foo'])
+        ->assertJsonPath('ui.nodes.1.children.0.control.path', ['settings', 'bar']);
 });
 
 test('editSettings returns read-only settings response when supported', function () {
@@ -219,8 +219,8 @@ test('editSettings returns read-only settings response when supported', function
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('readOnly', true)
-            ->where('form.refreshable', false)
-            ->where('form.nodes.0.control.mode', 'readOnly')
+            ->where('ui.refreshable', false)
+            ->where('ui.nodes.0.control.mode', 'readOnly')
             ->missing('refreshUrl')
         );
 });
@@ -234,13 +234,13 @@ test('standard editable settings responses require a settings model', function (
         ->toThrow(LogicException::class, 'must provide a settings model');
 });
 
-test('standard settings responses require a Form', function () {
-    TestPlugin::$useSettingsForm = false;
+test('standard settings responses require a UI', function () {
+    TestPlugin::$useSettingsUi = false;
     $plugin = new class(app()) extends TestPlugin {};
     $plugin->handle = 'test-plugin';
 
     expect(fn () => $plugin->getSettingsResponse())
-        ->toThrow(LogicException::class, 'must return a Form from settingsForm()');
+        ->toThrow(LogicException::class, 'must return a Ui from settingsUi()');
 });
 
 test('plugins can override editable and read-only settings responses', function () {
@@ -352,10 +352,10 @@ test('respects read-only mode for saveSettings', function () {
         ->assertForbidden();
 });
 
-test('respects read-only mode for settings form refresh', function () {
+test('respects read-only mode for settings UI refresh', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']), [
+    postJson(action([PluginsController::class, 'renderSettingsUi'], ['test-plugin']), [
         'values' => [],
         'scope' => ['settings'],
     ])->assertForbidden();

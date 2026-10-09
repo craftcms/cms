@@ -109,7 +109,9 @@
 
   // Page chrome from props and shared page data.
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-  const subnav = computed(() => page.props.subnav ?? []);
+  // A page that knows its own nav — an index listing its sources — sets it
+  // through `useAppLayout`; everything else takes the server's page prop.
+  const subnav = computed(() => props.subnav ?? page.props.subnav ?? []);
 
   // The secondary nav's trail joins the crumbs, so location reads the same
   // with or without the nav on screen, and each level brings its switcher. The
@@ -155,6 +157,7 @@
   const hasFooter = computed(
     () =>
       Boolean(props.form) ||
+      Boolean(props.fullPageForm) ||
       regions.has('content-footer') ||
       regions.has('additional-buttons')
   );
@@ -189,7 +192,7 @@
   const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
 
-  // Lets content decide when it's cramped — the element details tabs fold away
+  // Lets content decide when it's cramped — the element details panels fold away
   // below a certain width.
   provide(ScreenContentWidthKey, contentLayoutWidth);
   const detailsOverlaid = useDetailsOverlay(
@@ -197,7 +200,7 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
-  // The details tab strip renders in the rail beside the panel.
+  // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
   const detailsResizer = useDetailsResizer({
@@ -209,6 +212,19 @@
 
   function save(options?: FormSaveOptions) {
     emit('save', options);
+  }
+
+  /**
+   * A Vue page drives saving through its Inertia form, so the native submit is
+   * cancelled. A bridged legacy screen has no such form: it posts to the
+   * current URL, and the hidden `action` input in its own content names the
+   * controller action — the same contract Craft 5's page form used.
+   */
+  function onSubmit(event: Event): void {
+    if (props.form) {
+      event.preventDefault();
+      save();
+    }
   }
 
   useAppendHtml();
@@ -256,11 +272,15 @@
                   <main id="main" tabindex="-1">
                     <form
                       method="post"
-                      @submit.prevent="form && save()"
+                      accept-charset="UTF-8"
+                      novalidate
+                      :id="legacyIds ? 'main-form' : undefined"
+                      @submit="onSubmit"
                       class="cp-main"
                     >
                       <div
                         ref="contentLayout"
+                        :id="legacyIds ? 'page-container' : undefined"
                         class="cp-content"
                         :class="{
                           'cp-content--sidebar': hasSidebar,
@@ -319,7 +339,10 @@
                                   class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
                                 >
                                   <LayoutSlotOutlet name="content-toolbar">
-                                    <div class="flex gap-2 items-center">
+                                    <div
+                                      :id="legacyIds ? 'toolbar' : undefined"
+                                      class="flex gap-2 items-center"
+                                    >
                                       <LayoutSlotOutlet
                                         name="content-toolbar-meta"
                                       >
@@ -372,7 +395,15 @@
                                 </LayoutSlotOutlet>
                               </div>
                             </CpContainer>
-                            <slot></slot>
+                            <!-- `#content` is how the legacy element editor finds its form
+                            host: `$('#content').find('craft-entry-field-layout-form')`.
+                            Without it `formHost` is undefined and every field-layout
+                            refresh throws, which stopped a nested element — an address,
+                            say — from ever being added on a bridged screen. -->
+                            <div v-if="legacyIds" id="content" class="contents">
+                              <slot></slot>
+                            </div>
+                            <slot v-else></slot>
                           </div>
                           <!-- Outside the content view, so its rule spans the pane even when
                           the view is constrained; the row itself keeps to the content's
@@ -402,6 +433,7 @@
                                 :form-actions="formActions"
                                 :form-additional-actions="formAdditionalActions"
                                 :form-additional-buttons="formAdditionalButtons"
+                                :full-page-form="fullPageForm"
                                 :submit-button-label="submitButtonLabel"
                                 :primary-action-html="page.props.primaryAction"
                                 :save-disabled="saveDisabled"
@@ -419,8 +451,16 @@
                             </div>
                           </div>
                         </div>
-                        <aside v-show="hasDetails" class="cp-content__details">
-                          <div class="cp-content__details-pane">
+                        <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
+                        <aside
+                          v-show="hasDetails"
+                          :id="legacyIds ? 'details' : undefined"
+                          class="cp-content__details"
+                        >
+                          <div
+                            class="cp-content__details-pane"
+                            :class="{details: legacyIds}"
+                          >
                             <ContentDetails
                               ref="detailsColumn"
                               :resizer="detailsResizer"
@@ -466,11 +506,23 @@
   /**
 Shell
  */
+  /* The top bar keeps its height and the shell takes at least the rest. Docked,
+     the sidebar's own height does this; floating, nothing else would. */
+  .page-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+  }
+
   .cp {
+    flex: 1;
     display: grid;
+    /* The floating sidebar's row stays empty, so the main row takes the room. */
+    grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
 
     @media (width >= var(--breakpoint-lg)) {
+      grid-template-rows: none;
       grid-template-columns: auto minmax(0, 1fr);
     }
   }
@@ -479,15 +531,12 @@ Shell
     container: cp-shell / inline-size;
   }
 
-  /* The top bar keeps its height and the shell takes the rest. */
+  /* No taller than the viewport, either. */
   .page-screen--fill-viewport {
-    display: flex;
-    flex-direction: column;
     height: calc(100dvh - var(--cp-debug-bar-height, 0px));
 
     .cp {
       display: flex;
-      flex: 1;
       min-height: 0;
     }
 
@@ -512,7 +561,7 @@ Page
   }
 
   /**
-Body: the inset panel holding `page-main`, and the details tab rail beside it
+Body: the inset panel holding `page-main`, and the details rail beside it
  */
   .cp-body {
     height: 100%;
@@ -531,7 +580,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
     overflow: clip;
   }
 
-  /* The tab rail stands in for the trailing inset. */
+  /* The details rail stands in for the trailing inset. */
   .cp-body--details .cp-body__panel {
     margin-inline-end: 0;
   }
@@ -555,7 +604,7 @@ Body: the inset panel holding `page-main`, and the details tab rail beside it
 Content: the secondary nav, content, and details panes
  */
   .cp-content {
-    /* Sizes the details pane's `cqi` caps to the panel, not the tab rail beside it. */
+    /* Sizes the details pane's `cqi` caps to the panel, not the details rail beside it. */
     container: cp-content / inline-size;
     height: 100%;
     max-width: 100vw;
@@ -563,6 +612,8 @@ Content: the secondary nav, content, and details panes
     /* Three columns at every width; the nav spans them while it's stacked above
        the content, and an area nothing occupies collapses to nothing. */
     grid-template-areas: 'sidebar sidebar sidebar' '. main details';
+    /* The nav's row, empty or not, keeps to its content; the rest goes below. */
+    grid-template-rows: auto 1fr;
     grid-template-columns:
       auto
       minmax(var(--cp-content-main-min), 1fr)
@@ -582,6 +633,7 @@ Content: the secondary nav, content, and details panes
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-areas: 'sidebar main details';
+      grid-template-rows: none;
     }
   }
 
@@ -602,7 +654,7 @@ Content: the secondary nav, content, and details panes
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-body:has(.cp-details-rail craft-tabs[collapsed]) .cp-content--details {
+  .cp-body:has(.cp-details-rail [data-open='false']) .cp-content--details {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
     --cp-content-details-width: 0px !important;
@@ -683,7 +735,7 @@ Content: the secondary nav, content, and details panes
       box-shadow: none;
     }
 
-    /* The border still divides the panel from the tab rail. */
+    /* The border still divides the panel from the details rail. */
     .cp-body--details .cp-body__panel {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }
@@ -696,7 +748,7 @@ Folds
  * Below the sum of the content's floor (600px, `--cp-content-main-min`) and the
  * panel's (280px) one of them would be squeezed past it, so the panel folds to
  * its rail and opens over the content instead. The panel can't query its own
- * width, so these query the shell: the sum plus the 50px tab rail and the
+ * width, so these query the shell: the sum plus the 50px details rail and the
  * panel's two border pixels. A query condition can't read a custom property,
  * so the sum is written out; keep it in step with the floors and with the
  * wider fold below.

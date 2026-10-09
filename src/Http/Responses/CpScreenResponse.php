@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\LegacyTabsShim;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
@@ -29,7 +31,6 @@ use Inertia\Inertia;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
-use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -46,6 +47,16 @@ class CpScreenResponse implements Responsable
      * @see inertiaPage()
      */
     private ?string $inertiaPage = null;
+
+    /**
+     * The fallback Vue page for screens with no `inertiaPage()` of their own.
+     *
+     * It draws the screen's server-rendered HTML into the shell's slots rather
+     * than replacing it with Vue components, so a screen renders in the new
+     * chrome without being ported. Every screen renders in the shell now, so
+     * this is what a screen gets until it declares an `inertiaPage()`.
+     */
+    private const string FRAGMENT_PAGE = 'cp/Screen';
 
     /**
      * @var array<string, mixed>|Arrayable<string, mixed> Props to pass to the Inertia page component.
@@ -411,13 +422,15 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the secondary navigation items.
      *
-     * A list, not a keyed array: the CP shell counts these to decide whether to
-     * draw the secondary nav, which a JSON object wouldn't let it do.
+     * Stored as a list: the shell counts these to decide whether to draw the
+     * secondary nav, and a keyed array would reach it as a JSON object with
+     * nothing to count. Craft 5 wrote nav children keyed by handle, so a
+     * caller passing one is re-keyed rather than silently dropped.
      */
-    /** @param list<array<string, mixed>|NavItem>|null $value */
+    /** @param array<array-key, array<string, mixed>|NavItem>|null $value */
     public function subnav(?array $value): self
     {
-        $this->subnav = $value;
+        $this->subnav = $value === null ? null : array_values($value);
 
         return $this;
     }
@@ -1047,31 +1060,86 @@ class CpScreenResponse implements Responsable
             'errorSummary' => $errorSummary,
         ];
 
-        if ($this->inertiaPage) {
-            if ($this->subnav === null) {
-                unset($templateProps['subnav']);
-            }
-
-            $props = $this->inertiaProps instanceof Arrayable
-                ? $this->inertiaProps->toArray()
-                : $this->inertiaProps;
-            $templateProps['formActions'] = array_merge(
-                $templateProps['formActions'],
-                $props['formActions'] ?? [],
-            );
-
-            return Inertia::render($this->inertiaPage, $props)
-                ->with($templateProps)
-                ->with($this->screenProps('page', withAssets: $request->inertia()))
-                ->toResponse($request);
+        /**
+         * Every screen renders in the Inertia shell. One with an
+         * `inertiaPage()` renders that page; one without gets
+         * {@see self::FRAGMENT_PAGE}, which draws its server-rendered HTML into
+         * the shell's slots. The legacy `_layouts/cp` document is no longer a
+         * destination for a `CpScreenResponse` — it still backs the CP
+         * templates that render through it directly.
+         */
+        if ($this->subnav === null) {
+            unset($templateProps['subnav']);
         }
 
-        // Render and return the template
-        return response(pageTemplate(
-            '_layouts/cp',
-            $templateProps,
-            TemplateMode::Cp
-        ));
+        $page = $this->inertiaPage ?? self::FRAGMENT_PAGE;
+
+        /**
+         * A bridged screen is server-rendered legacy markup, and legacy JS
+         * expects the environment a normal document build gives it: the
+         * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`)
+         * loaded in source order, before anything that uses them. A
+         * client-side visit can't offer that, so it becomes a hard visit.
+         *
+         * The rule is deliberately total: bridged screen + Inertia visit →
+         * hard visit, with no partial case to get wrong. Screens with a
+         * real Vue page keep client-side navigation.
+         */
+        if ($page === self::FRAGMENT_PAGE && $request->inertia()) {
+            return Inertia::location($request->fullUrl());
+        }
+
+        if ($page === self::FRAGMENT_PAGE) {
+            /**
+             * Legacy ready-JS can't trust `DOMContentLoaded` here — Vue
+             * mounts this screen's markup after the document parses.
+             */
+            LegacyReadyShim::register();
+
+            /**
+             * The fragment screen draws HTML into the shell's slots, so tabs
+             * arrive rendered — the way the slideout takes them — rather than
+             * as the raw config the Twig layout consumed. Everything else in
+             * `$templateProps` is already a string both clients can take.
+             *
+             * `<craft-tabs>` is preferred: it pairs the screen's own panes to
+             * its tabs, so a legacy screen gets the same tab component as the
+             * rest of the control panel without its author touching anything.
+             * The shim returns null whenever it isn't certain, and the legacy
+             * strip handles it.
+             */
+            $templateProps['tabs'] = LegacyTabsShim::apply($this->tabs)
+                ?? (count($this->tabs) > 1
+                    ? template('_includes/tabs', [
+                        'tabs' => $this->tabs,
+                    ], templateMode: TemplateMode::Cp)
+                    : null);
+
+            /**
+             * Names the fragment screen for the header bar, which badges it
+             * under dev mode. A screen with an `inertiaPage()` leaves this
+             * unset, so the badge marks exactly what's still unported.
+             */
+            $templateProps['bridged'] = 'screen';
+        }
+
+        /**
+         * A page may declare its props as an `Arrayable`, and its own
+         * `formActions` have to join the screen's rather than replace them.
+         */
+        $props = $this->inertiaProps instanceof Arrayable
+            ? $this->inertiaProps->toArray()
+            : $this->inertiaProps;
+
+        $templateProps['formActions'] = array_merge(
+            $templateProps['formActions'],
+            $props['formActions'] ?? [],
+        );
+
+        return Inertia::render($page, $props)
+            ->with($templateProps)
+            ->with($this->screenProps('page', withAssets: $request->inertia()))
+            ->toResponse($request);
     }
 
     /**

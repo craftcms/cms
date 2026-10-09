@@ -886,7 +886,7 @@ describe('storeForDerivative', function () {
             ->toBe('Canonical matrix value');
 
         $ownerDraft = Entry::find()->id($fixture['ownerDraft']->id)->drafts(null)->status(null)->one();
-        $control = $fixture['field']->formControl(new FieldContext(
+        $control = $fixture['field']->uiControl(new FieldContext(
             path: 'matrixField',
             value: $ownerDraft->getFieldValue('matrixField'),
             element: $ownerDraft,

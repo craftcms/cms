@@ -51,22 +51,22 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormControlTypes;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormNodeTypes;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiControlTypes;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiNodeTypes;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\Field\Field as LegacyField;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent as LegacySettingsContract;
-use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
-use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
-use CraftCms\Yii2Adapter\Form\LegacyHtml;
-use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent as LegacySettingsContract;
+use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
+use CraftCms\Yii2Adapter\Ui\Nodes\LegacyHtmlField;
 use Mockery;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
@@ -159,16 +159,16 @@ function legacyHookLayoutElement(string $uid = 'legacy-element'): LegacyFieldLay
     return new LegacyHookLayoutElement(['uid' => $uid]);
 }
 
-it('registers its private Form types', function() {
-    expect(app(FormNodeTypes::class)->types()->contains(LegacyHtmlField::class))->toBeTrue()
-        ->and(app(FormControlTypes::class)->types()->contains(LegacyHtmlControl::class))->toBeTrue();
+it('registers its private UI types', function() {
+    expect(app(UiNodeTypes::class)->types()->contains(LegacyHtmlField::class))->toBeTrue()
+        ->and(app(UiControlTypes::class)->types()->contains(LegacyHtmlControl::class))->toBeTrue();
 });
 
 it('captures inline field hooks with their namespace and assets', function() {
     $field = new LegacyInlineHookField(['handle' => 'body']);
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'body',
-        form: new FormContext(namespace: ['index', 'element-42', 'fields']),
+        ui: new UiContext(namespace: ['index', 'element-42', 'fields']),
         inline: true,
     ));
     $props = $control->props();
@@ -180,7 +180,7 @@ it('captures inline field hooks with their namespace and assets', function() {
         ->and($props['fragment']['bodyHtml'])->toContain('window.inlineHookLoaded = true;');
 });
 
-it('preserves public and protected custom field HTML hooks through inline Form rendering', function(string $type) {
+it('preserves public and protected custom field HTML hooks through inline UI rendering', function(string $type) {
     $field = new $type(['handle' => 'body', 'uid' => 'inline-field']);
     $layoutElement = Mockery::mock(CustomField::class);
     $layoutElement->shouldReceive('showInForm', 'editable')->andReturn(true);
@@ -195,7 +195,7 @@ it('preserves public and protected custom field HTML hooks through inline Form r
         fn() => $entry->getInlineAttributeInputHtml('field:inline-field'),
         'index[element-42][fields]',
     );
-    $payload = json_decode(new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $payload = json_decode(new Crawler($html)->filter('craft-inline-attribute-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
     $input = new Crawler($payload['nodes'][0]['control']['props']['fragment']['html'])->filter('input');
 
     expect($input->attr('name'))->toBe('index[element-42][fields][body]')
@@ -219,7 +219,7 @@ it('eagerly captures namespaced HTML and assets into a JSON-safe payload', funct
         path: '__legacy',
         namespace: 'settings',
     );
-    $payload = app(FormResolver::class)->resolve(Form::make([$node]), new FormContext());
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), new UiContext());
     $control = $payload->nodes[0]->control;
 
     expect($control?->props['namespace'])->toBe('settings')
@@ -242,7 +242,7 @@ it('composes an explicit namespace with the active namespace', function() {
         path: '__legacy',
         namespace: 'settings',
     ));
-    $payload = app(FormResolver::class)->resolve(Form::make([$node]), new FormContext());
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), new UiContext());
     $html = $payload->nodes[0]->control?->props['fragment']['html'];
 
     expect($html)->toContain('name="outer[settings][title]"')
@@ -281,7 +281,7 @@ it('maps legacy field modes to their established hooks', function(LegacyHtmlMode
         namespace: 'fields[example]',
         mode: $mode,
     );
-    $payload = app(FormResolver::class)->resolve(Form::make([$node]), new FormContext());
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), new UiContext());
     $control = $payload->nodes[0]->control;
     $html = $control?->props['fragment']['html'];
 
@@ -306,17 +306,17 @@ it('omits null hooks and reports capture failures', function() {
         ->toThrow(\RuntimeException::class, 'plugin failed');
 });
 
-it('implements replacement Form operations through legacy hooks', function() {
-    $settings = new LegacySettingsComponent()->settingsForm(new FormContext(
+it('implements replacement UI operations through legacy hooks', function() {
+    $settings = new LegacySettingsComponent()->settingsUi(new UiContext(
         namespace: 'settings',
         mode: ControlMode::ReadOnly,
     ));
-    $settingsPayload = app(FormResolver::class)->resolve($settings, new FormContext(namespace: 'settings'));
-    $fieldControl = new LegacyHookField(['handle' => 'legacy'])->formControl(new FieldContext(
+    $settingsPayload = app(UiResolver::class)->resolve($settings, new UiContext(namespace: 'settings'));
+    $fieldControl = new LegacyHookField(['handle' => 'legacy'])->uiControl(new FieldContext(
         path: ['fields', 'legacy'],
         value: 'value',
         element: Mockery::mock(Entry::class),
-        form: new FormContext(namespace: ['nested', 'block']),
+        ui: new UiContext(namespace: ['nested', 'block']),
         mode: ControlMode::Disabled,
     ));
 
@@ -328,10 +328,10 @@ it('implements replacement Form operations through legacy hooks', function() {
         ->toContain('name="nested[block][fields][legacy]"', 'disabled');
 });
 
-it('wraps legacy plugin settings HTML in a Form', function(ControlMode $mode, bool $disabled) {
-    $context = new FormContext(namespace: 'settings', mode: $mode);
-    $form = new LegacySettingsPlugin('legacy-settings')->settingsForm($context);
-    $payload = app(FormResolver::class)->resolve($form, $context);
+it('wraps legacy plugin settings HTML in a UI', function(ControlMode $mode, bool $disabled) {
+    $context = new UiContext(namespace: 'settings', mode: $mode);
+    $ui = new LegacySettingsPlugin('legacy-settings')->settingsUi($context);
+    $payload = app(UiResolver::class)->resolve($ui, $context);
     $control = $payload->nodes[0]->control;
     $input = new Crawler($control?->props['fragment']['html']);
 
@@ -358,11 +358,11 @@ it('preserves legacy hooks on public field aliases', function() {
     }
 
     $field = new LegacyPlainTextField(['handle' => 'legacy']);
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: ['fields', 'legacy'],
         value: 'value',
         element: Mockery::mock(Entry::class),
-        form: new FormContext(),
+        ui: new UiContext(),
     ));
 
     expect(method_exists(ConfigurableComponentInterface::class, 'getSettingsHtml'))->toBeTrue()
@@ -411,7 +411,7 @@ it('preserves legacy hooks on each built-in field alias', function(string $field
 ]);
 
 it('preserves nullable settings and renderer-native static output on built-in aliases', function(string $viewMode) {
-    expect(new MissingField()->settingsForm())->toBeNull()
+    expect(new MissingField()->settingsUi())->toBeNull()
         ->and(new MissingField()->getSettingsHtml())->toBeNull();
 
     $entry = new Entry();
@@ -423,7 +423,7 @@ it('preserves nullable settings and renderer-native static output on built-in al
     ])->getStaticHtml(null, $entry);
 
     expect($html)->toContain('Entries can only be created after the entry has been saved.')
-        ->not->toContain('data-form-matrix-add');
+        ->not->toContain('data-ui-matrix-add');
 })->with([
     'cards' => Matrix::VIEW_MODE_CARDS,
     'cards grid' => Matrix::VIEW_MODE_CARDS_GRID,
@@ -446,8 +446,8 @@ it('renders the same captured fragment through PHP and restores its assets to th
             return '<input name="settings[value]" value="rendered">';
         },
     );
-    $payload = app(FormResolver::class)->resolve(Form::make([$node]), new FormContext());
-    $html = app(FormHtmlRenderer::class)->render($payload);
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), new UiContext());
+    $html = app(UiHtmlRenderer::class)->render($payload);
 
     expect($html)->toContain('name="settings[value]"')
         ->and(HtmlStack::headHtml())->toContain('name="legacy-head"')
@@ -463,7 +463,7 @@ it('compiles legacy FieldLayout elements into namespaced multi-root HTML islands
 
     $payload = app(FieldLayoutCompiler::class)->compile(
         $layout,
-        context: new FormContext(
+        context: new UiContext(
             namespace: ['nested', 'block'],
             errors: ['__legacyFieldLayout.legacy-element.title' => 'Title is invalid.'],
             refreshable: true,
@@ -499,21 +499,21 @@ it('compiles legacy FieldLayout elements into namespaced multi-root HTML islands
             ],
         ]);
 
-    $rendered = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $rendered = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
     expect($rendered->filter('input[name="nested[block][title]"]'))->toHaveCount(1)
         ->and($rendered->filter('input[name="nested[block][meta][slug]"]'))->toHaveCount(1)
         ->and($rendered->filter('[aria-invalid="true"] .error-list')->text())->toContain('Title is invalid.');
 });
 
-it('maps Form modes onto legacy FieldLayout HTML', function(ControlMode $mode, bool $static) {
+it('maps UI modes onto legacy FieldLayout HTML', function(ControlMode $mode, bool $static) {
     $layout = FieldLayout::make(Entry::class)
         ->tab('Content', fn(FieldLayoutTab $tab) => $tab->add(legacyHookLayoutElement()));
     $layout->getTabs()[0]->uid = 'content-tab';
 
     $payload = app(FieldLayoutCompiler::class)->compile(
         $layout,
-        context: new FormContext(mode: $mode),
+        context: new UiContext(mode: $mode),
     );
     $control = $payload->nodes[0]->children[0]->control;
 

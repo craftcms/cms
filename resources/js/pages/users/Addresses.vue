@@ -3,8 +3,8 @@
   import {router, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {savedNestedOwner} from '@/modules/elements/nested-owner';
-  import NestedElements from '@/modules/forms/nested-elements/NestedElements.vue';
-  import type {NestedElementsProps} from '@/modules/forms/nested-elements/nested-elements';
+  import NestedElements from '@/modules/ui/nested-elements/NestedElements.vue';
+  import type {NestedElementsProps} from '@/modules/ui/nested-elements/nested-elements';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({

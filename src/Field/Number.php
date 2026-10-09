@@ -13,13 +13,6 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Number as NumberControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -29,6 +22,13 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Number as NumberControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -91,40 +91,40 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $currencies = [['label' => t('Choose a currency…'), 'value' => '']];
         foreach (new ISOCurrencies as $currency) {
             $currencies[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
         }
 
-        return Form::make([
-            FormField::make(t('Min Value'), NumberControl::make('min')->step('any')->value($this->min)),
-            FormField::make(t('Max Value'), NumberControl::make('max')->step('any')->value($this->max)),
-            FormField::make(t('Step Size'), NumberControl::make('step')->step('any')->value($this->step)),
-            FormField::make(t('Decimal Points'), NumberControl::make('decimals')->min(0)->value($this->decimals)),
-            FormField::make(t('Size'), NumberControl::make('size')->min(1)->value($this->size)),
-            FormField::make(t('Default Value'), NumberControl::make('defaultValue')->step('any')->value($this->defaultValue)),
-            FormField::make(t('Prefix Text'))
+        return Ui::make([
+            UiField::make(t('Min Value'), NumberControl::make('min')->step('any')->value($this->min)),
+            UiField::make(t('Max Value'), NumberControl::make('max')->step('any')->value($this->max)),
+            UiField::make(t('Step Size'), NumberControl::make('step')->step('any')->value($this->step)),
+            UiField::make(t('Decimal Points'), NumberControl::make('decimals')->min(0)->value($this->decimals)),
+            UiField::make(t('Size'), NumberControl::make('size')->min(1)->value($this->size)),
+            UiField::make(t('Default Value'), NumberControl::make('defaultValue')->step('any')->value($this->defaultValue)),
+            UiField::make(t('Prefix Text'))
                 ->instructions(t('Text that should be shown before the input.'))
                 ->control(Text::make('prefix')->value($this->prefix)),
-            FormField::make(t('Suffix Text'))
+            UiField::make(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
                 ->control(Text::make('suffix')->value($this->suffix)),
-            FormField::make(t('Preview Format'))
+            UiField::make(t('Preview Format'))
                 ->instructions(t('How field values will be formatted within element indexes.'))
                 ->control(Choice::make('previewFormat')->options([
                     ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
                     ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
                     ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
                 ])->value($this->previewFormat)),
-            FormField::make(t('Preview Currency'))
+            UiField::make(t('Preview Currency'))
                 ->control(Choice::make('previewCurrency')->options($currencies)->value($this->previewCurrency)),
         ]);
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return NumberControl::make($context->path)
             ->min($this->min)

@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\NodePayload;
-use CraftCms\Cms\Form\Nodes\Concerns\HasVisibility;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\Nodes\Concerns\HasVisibility;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -21,7 +21,7 @@ use function Pest\Laravel\actingAs;
 /** @return array<string, bool> Whether each labelled field is visible. */
 function matrixSettingsVisibility(Matrix $field): array
 {
-    $payload = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve($field->settingsUi(), new UiContext);
     $visible = [];
 
     $walk = function (array $nodes) use (&$walk, &$visible): void {
@@ -45,7 +45,7 @@ function matrixSettingsVisibility(Matrix $field): array
 beforeEach(fn () => actingAs(User::findOne()));
 
 it('illustrates each view mode, the way a relation field does', function () {
-    $payload = app(FormResolver::class)->resolve((new Matrix)->settingsForm(), new FormContext);
+    $payload = app(UiResolver::class)->resolve((new Matrix)->settingsUi(), new UiContext);
     $options = [];
 
     $walk = function (array $nodes) use (&$walk, &$options): void {

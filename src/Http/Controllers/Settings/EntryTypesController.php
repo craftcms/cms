@@ -15,7 +15,6 @@ use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Form\Controls\EntryTypeSelect as EntryTypeSelectControl;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\EntryTypeSelect as EntryTypeSelectControl;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -155,7 +155,7 @@ class EntryTypesController
         return $response;
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -181,11 +181,11 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
-            'form' => new EntryTypeEditViewModel(
+            'ui' => new EntryTypeEditViewModel(
                 new EntryType,
                 brandNew: ! isset($data['values']['entryTypeId']),
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 
