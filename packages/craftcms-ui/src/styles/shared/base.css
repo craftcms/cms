@@ -47,7 +47,7 @@ a {
 }
 
 a:hover {
-  text-decoration-line: var(--c-link-hover-decoration);
+  text-decoration-line: var(--c-link-decoration-hover);
 }
 
 a craft-chip {

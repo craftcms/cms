@@ -39,7 +39,7 @@
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
   --c-link-decoration: none;
-  --c-link-hover-decoration: underline;
+  --c-link-decoration-hover: underline;
 
   /* Transparent tokens */
   --c-color-border-translucent: color-mix(
@@ -279,5 +279,5 @@
 
 .underline-links {
   --c-link-decoration: underline;
-  --c-link-hover-decoration: none;
+  --c-link-decoration-hover: none;
 }

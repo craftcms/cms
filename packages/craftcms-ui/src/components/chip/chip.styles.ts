@@ -14,7 +14,7 @@ export default css`
     --c-truncate-link-hover-decoration: underline;
     /* The page's link rule outranks ::slotted(), so it's told through these. */
     --c-link-decoration: none;
-    --c-link-hover-decoration: underline;
+    --c-link-decoration-hover: underline;
   }
 
   /* Base */
