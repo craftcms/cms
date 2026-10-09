@@ -28,7 +28,11 @@ Locked permissions render as fixed — granted by something other than this scre
 
 ## Accessibility
 
-The nesting is structural, so the relationship between a permission and the ones it contains is available rather than being conveyed by indentation alone.
+The nesting is structural, so the relationship between a permission and the ones it contains is available rather than being conveyed by indentation alone. Each permission is an ordinary checkbox, reached with Tab and toggled with Space. There's no expanding or collapsing.
+
+Give every group a `heading`. A group without one gets no heading and no "Select all" button. Headings are always `<h3>`, so place the tree where that level fits.
+
+Locked permissions, and permissions nested under one that isn't granted, are disabled with nothing to say why. Explain on the page why locked permissions are fixed, such as which group grants them.
 
 A tree this size is hard to navigate by ear regardless. Where a screen offers one, it is worth also providing a way to search or filter it.
 

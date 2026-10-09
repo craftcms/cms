@@ -45,6 +45,11 @@ The text field is what makes the value readable and typable without seeing the s
 Presets are offered by value, not by name.
 If a preset means something — a brand color, a status — say so in the help text, because the swatch alone does not.
 
+The `#` prefix is hidden from screen readers, so say in the help text that the field takes a hex value.
+
+The field doesn't validate its value.
+An invalid value only empties the swatch, which says nothing about what's wrong, so add a validator that puts a message in `feedback`.
+
 ## Properties
 
 <ArgTypes of={InputColorStories} />

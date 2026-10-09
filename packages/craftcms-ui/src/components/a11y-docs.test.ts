@@ -17,62 +17,6 @@ import {describe, expect, it} from 'vite-plus/test';
 
 const COMPONENTS = join(import.meta.dirname, '.');
 
-/**
- * Components still waiting on their first `.a11y.md`. This list only shrinks:
- * a component listed here that has gained a doc fails until it's removed.
- */
-const PENDING = new Set([
-  'avatar',
-  'badge-indicator',
-  'button-group',
-  'callout',
-  'card',
-  'checkbox',
-  'checkbox-group',
-  'checkbox-indeterminate',
-  'combobox',
-  'copy-attribute',
-  'copy-button',
-  'empty',
-  'field',
-  'field-group',
-  'icon',
-  'info-icon',
-  'input',
-  'input-color',
-  'input-copy',
-  'input-date',
-  'input-file',
-  'input-handle',
-  'input-money',
-  'input-password',
-  'input-time',
-  'missing-component',
-  'option',
-  'pane',
-  'permission-tree',
-  'progress',
-  'progress-bar',
-  'radio',
-  'radio-group',
-  'reorder-button',
-  'select',
-  'select-color',
-  'select-rich',
-  'shortcut',
-  'slide-picker',
-  'slide-rule',
-  'spinner',
-  'status',
-  'switch',
-  'switch-button',
-  'textarea',
-  'thumbnail-loader',
-  'timeline-item',
-  'truncate',
-  'visually-hidden',
-]);
-
 const components = readdirSync(COMPONENTS, {withFileTypes: true})
   .filter(
     (entry) =>
@@ -88,29 +32,12 @@ const components = readdirSync(COMPONENTS, {withFileTypes: true})
 describe('components document their accessibility requirements', () => {
   /** A guard that silently matches nothing would be worse than none at all. */
   it('finds the components', () => {
-    expect(components.length).toBeGreaterThan(PENDING.size);
+    expect(components.length).toBeGreaterThan(0);
   });
 
-  it.each(components.filter(({component}) => !PENDING.has(component)))(
-    '$component',
-    ({doc}) => {
-      expect(existsSync(doc), `${doc} does not exist`).toBe(true);
-      expect(readFileSync(doc, 'utf8')).toMatch(/^## Requirements$/m);
-    }
-  );
-
-  it('lists only components still missing a doc as pending', () => {
-    const documented = components
-      .filter(({component, doc}) => PENDING.has(component) && existsSync(doc))
-      .map(({component}) => component);
-
-    expect(documented).toEqual([]);
-  });
-
-  it('lists only components that exist as pending', () => {
-    const names = new Set(components.map(({component}) => component));
-
-    expect([...PENDING].filter((name) => !names.has(name))).toEqual([]);
+  it.each(components)('$component', ({doc}) => {
+    expect(existsSync(doc), `${doc} does not exist`).toBe(true);
+    expect(readFileSync(doc, 'utf8')).toMatch(/^## Requirements$/m);
   });
 });
 
@@ -204,7 +131,13 @@ describe('a11y docs check off only what this package verifies', () => {
         /\bstor(?:y|ies)\b/.test(text) &&
         matchAll(text, CITED_STORY).some((name) => stories.has(name));
       const verifiedBy = text.split('Verified by').slice(1).join('Verified by');
-      const missingNames = matchAll(verifiedBy, /`([^`]+)`/g).filter(
+      const missingNames = [
+        ...matchAll(verifiedBy, /`([^`]+)`/g),
+        ...matchAll(
+          verifiedBy,
+          /\.test\.ts`'s ((?:"[^"\n]+"(?:,? and |, )?)+)/g
+        ).flatMap((run) => matchAll(run, /"([^"\n]+)"/g)),
+      ].filter(
         (name) =>
           name.includes(' ') &&
           !name.includes('…') &&

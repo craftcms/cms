@@ -87,6 +87,12 @@ Set `heading-level="1"` for a pane that really is the page's main heading, or a 
 
 Slotting your own heading into `title` still overrides all of this.
 
+A pane that clamps its height (`variant="code"`, or any pane with `--c-pane-max-block-size`) makes its scroll container a tab stop and a `region` while the content overflows, so it can be scrolled from the keyboard. Don't put `tabindex` on the host. The region takes its name from `label`, then from an `aria-label` on the host, and otherwise falls back to "Scrollable region". Name every pane that may scroll, so a page with several of them doesn't list several regions with the same name.
+
+The `error` variant changes the pane's colors only. Say what went wrong in the pane's text.
+
+A pane that doesn't clamp its height clips anything wider than itself. Let long strings wrap, and give wide content such as a table its own scroll container.
+
 ## Properties
 
 <ArgTypes of={PaneStories} />

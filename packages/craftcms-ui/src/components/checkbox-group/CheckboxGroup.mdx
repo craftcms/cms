@@ -25,6 +25,14 @@ A group rendered by the server adopts the name already present on its inputs.
 
 That is load-bearing rather than a convenience: Lion syncs every registered child's name to the group's, so a group that upgraded without a name would strip the server's names off the inputs and break native posting.
 
+## Accessibility
+
+The group is exposed as a group named by its label, so give it a visible label that names the question the checkboxes answer.
+
+When at least one option is required, say so in the label or help text. The group can't mark itself as required to assistive technology the way a single input can.
+
+Show a message in `feedback` when the group is invalid, rather than relying on the color change, and write it so it says how to fix the choice.
+
 ## Properties
 
 <ArgTypes of={CheckboxGroupStories} />

@@ -41,7 +41,11 @@ The control re-emits the copy button's outcome, so a page can react to it:
 The copy button carries its own tooltip and label, so it is announced as a button rather than as unnamed chrome.
 
 A copy that succeeds silently is a copy a screen reader user cannot confirm.
-If the surrounding page does not already announce the result, listen for `craft-copy` and say so.
+If the surrounding page does not already announce the result, listen for `craft-copy` and `craft-error` and say so.
+
+The copy button is named the same in every field, so where several copy fields sit together, make each label distinct enough to tell them apart.
+
+When `copy-value` differs from the displayed value, say so in the help text, so it's clear the clipboard gets more than is shown.
 
 ## Properties
 

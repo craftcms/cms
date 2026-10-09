@@ -101,6 +101,9 @@ It has no implicit role and does not receive focus, so the content decides the s
 - **Give the card a heading if it is one.** The `label` renders as plain text, not a heading element. When a card is a section of a page, slot a real heading into `label` so it lands in the document outline.
 - **Name the header actions.** An icon-only button in the `actions` slot needs an `aria-label`; the card's label does not name it.
 - **Keep a decorative thumbnail decorative.** Artwork that only repeats the label takes `alt=""` or `aria-hidden`. If it carries meaning the text does not, give it a name of its own.
+- **Don't rely on `active` alone.** It changes only fill and border colors, which forced colors mode replaces. Pair a selection with a checkbox, text, or another cue, and expose the selected state on the control that sets it.
+- **Expose `collapsed` on its toggle.** The card has no toggle of its own. The button that collapses it needs `aria-expanded`.
+- **Don't make the whole card a link.** For a card that leads somewhere, put the link on its heading so the link's name is the heading, not the card's whole content, and other controls in the card stay reachable.
 
 ## Properties
 

@@ -72,6 +72,10 @@ The native time input brings its own keyboard support and picker.
 
 The custom validity message is set on the native input, so it is announced the way any constraint-validation message is.
 Because an unavailable time is only rejected after it is chosen, say so in the help text as well — a person should not have to discover the rule by failing it.
+The same goes for `min` and `max`, and for `force-round-time`: if a typed time will be moved to the nearest step, say so, so the change isn't a surprise.
+
+Today the unavailable-time message only appears in the browser's validation bubble when the form is submitted; it isn't shown under the field or marked with `aria-invalid`.
+Help text that names the unavailable times is what makes the rule known in the meantime.
 
 ## Properties
 

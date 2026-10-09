@@ -19,7 +19,11 @@ Like the copy button, it emits `craft-copy` on success and `craft-error` on fail
 
 ## Accessibility
 
-The same rule as the copy button: name the control with what it copies, and announce the result if the surrounding page does not already.
+The chip's visible text is its `value`, and that text, followed by a hidden "Copy to clipboard", is its accessible name. It can't be given another name, so use it where the value says what it is, such as a field handle.
+
+Like the copy button, it changes only its icon and tooltip when a copy succeeds or fails. Listen for `craft-copy` and `craft-error` and announce the result in a live region on the page.
+
+`disabled` doesn't reach the copy button yet, so a disabled copy attribute can still be focused and copied.
 
 ## Properties
 
