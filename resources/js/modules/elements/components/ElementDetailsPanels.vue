@@ -9,7 +9,9 @@
     type DetailsPanel,
   } from '@/common/components/DetailsPanels.vue';
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
+  import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
+  import ElementRevisionsActions from '@/modules/elements/components/ElementRevisionsActions.vue';
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
@@ -43,6 +45,7 @@
       label: t('Activity'),
       icon: 'wave-pulse',
       component: ElementActivityTimeline,
+      headerActionsComponent: ElementActivityTimelineActions,
       order: 10,
       visible: (payload) => payload.activityTimelineUrl !== null,
       props: ({payload, active, refreshToken}) => ({
@@ -56,6 +59,7 @@
       label: t('Revisions'),
       icon: 'clock-rotate-left',
       component: RevisionsList,
+      headerActionsComponent: ElementRevisionsActions,
       order: 20,
       props: ({payload}) => ({payload}),
     },

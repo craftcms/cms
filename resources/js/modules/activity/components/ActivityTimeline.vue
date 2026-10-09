@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
   import ActivityTimelineComment from './ActivityTimelineComment.vue';
   import {
     type ActivityEvent,
@@ -64,13 +63,6 @@
       </p>
 
       <div v-else-if="hasLoaded" class="activity-timeline__rail">
-        <div v-if="pageUrl" class="activity-timeline__full-link">
-          <CpLink :href="pageUrl">
-            {{ t('View all activity') }}
-            <craft-icon name="circle-arrow-right" />
-          </CpLink>
-        </div>
-
         <section
           v-for="group in dayGroups"
           :key="group.key"
@@ -112,11 +104,13 @@
   .activity-timeline {
     display: flex;
     flex-direction: column;
-    max-height: 60vh;
+    block-size: 100%;
   }
 
   .activity-timeline__scroll {
     min-height: 8rem;
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
     overflow-y: auto;
   }
 
@@ -134,18 +128,8 @@
     margin: 0;
   }
 
-  .activity-timeline__composer {
-    padding-block-start: var(--c-spacing-md);
-  }
-
-  .activity-timeline__full-link {
-    display: flex;
-    align-items: center;
-    margin-block-end: var(--c-spacing-md);
-  }
-
   .activity-timeline__day {
-    margin-block: var(--c-spacing-lg) var(--c-spacing-xs);
+    margin-block: var(--c-spacing-md);
     color: var(--c-text-quiet);
     font-size: var(--c-text-xs);
     font-weight: 600;
@@ -156,7 +140,8 @@
   }
 
   .activity-timeline__composer {
-    flex: none;
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     background: var(--c-bg);
   }
