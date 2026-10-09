@@ -30,9 +30,7 @@ it('colors a chip inside a link as a link', async () => {
 
   const color = linkColor();
 
-  expect(getComputedStyle(document.getElementById('label')!).color).toBe(
-    color
-  );
+  expect(getComputedStyle(document.getElementById('label')!).color).toBe(color);
   expect(getComputedStyle(document.getElementById('plain')!).color).not.toBe(
     color
   );
