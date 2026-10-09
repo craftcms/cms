@@ -54,7 +54,6 @@ export interface ActivityTimelineProps {
   elementType: string;
   elementId: number | null;
   siteId: number | null;
-  pageUrl?: string | null;
   refreshToken?: number;
 }
 

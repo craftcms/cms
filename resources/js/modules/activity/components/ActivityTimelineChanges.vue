@@ -22,7 +22,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="white">
     <craft-disclosure
       v-if="showInline"
       :label="changeCountLabel(changes.length)"

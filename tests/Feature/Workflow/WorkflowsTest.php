@@ -414,7 +414,7 @@ it('fails on a change request and restores the current stage when review is requ
         ->and(collect($review->runs)->first()->stages[0]->icon)->toBe('clock')
         ->and(collect($review->runs)->first()->stages[0]->events)->toHaveCount(3)
         ->and(collect($review->runs)->first()->stages[0]->events[0]->description)->toBe('requested changes')
-        ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented.')
+        ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented')
         ->and(collect($review->runs)->first()->stages[0]->events[2]->description)->toBe('requested another review')
         ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canReview'])->toBeTrue()
         ->and($this->reviewers[0]->notifications()->count())->toBe(2);
