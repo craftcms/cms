@@ -54,6 +54,7 @@
 - Fixed an accessibility issue where field layout tabs and image editor tabs weren’t announced with a name for their tab list.
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
+- Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
