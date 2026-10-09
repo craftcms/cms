@@ -506,7 +506,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings index
         if (Edition::isAtLeast(Edition::Team)) {
-            Route::get('settings/users', [UserGroupsController::class, 'index']);
+            Route::get('settings/users', [UserGroupsController::class, 'index'])->name('settings.users.groups.index');
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
@@ -520,9 +520,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 RequireEdition::class.':'.Edition::Pro->value,
                 RequireAdminChanges::class,
             ])->group(function () {
-                Route::get('settings/users/groups/new', [UserGroupsController::class, 'create']);
+                Route::get('settings/users/groups/new', [UserGroupsController::class, 'create'])->name('settings.users.groups.create');
                 Route::post('settings/users/groups', [UserGroupsController::class, 'store'])->whereNumber('groupId');
-                Route::delete('settings/users/groups/{groupId}', [UserGroupsController::class, 'destroy'])->whereNumber('groupId');
+                Route::delete('settings/users/groups/{groupId}', [UserGroupsController::class, 'destroy'])
+                    ->whereNumber('groupId')
+                    ->name('settings.users.groups.destroy');
             });
             Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit'])
                 ->name('settings.users.groups.edit');

@@ -73,6 +73,7 @@ export type TableRow = Record<string, TableCellValue> & {
   id?: string | number;
   _deletable?: boolean;
   _deleteUrl?: string;
+  _deleteConfirmMessage?: string;
   _status?: TableStatus | null;
   _search?: string;
   _sort?: Record<string, string | number | boolean | null>;

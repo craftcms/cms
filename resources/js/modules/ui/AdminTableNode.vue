@@ -402,7 +402,10 @@
       return;
     }
 
-    const message = props.node.props.deleteConfirmMessage ?? t('Are you sure?');
+    const message =
+      row._deleteConfirmMessage ??
+      props.node.props.deleteConfirmMessage ??
+      t('Are you sure?');
 
     if (!confirm(message)) {
       return;

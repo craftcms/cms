@@ -128,6 +128,7 @@ class Table implements Node
      * then reloads the table.
      *
      * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
+     * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
      * `_deletable => false` suppresses deletion of one row. `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.

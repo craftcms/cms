@@ -222,7 +222,10 @@ it.each([
 );
 
 it('deletes through a row-specific resource route without offering bulk deletion', async () => {
-  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const confirmDelete = vi
+    .spyOn(window, 'confirm')
+    .mockReturnValueOnce(false)
+    .mockReturnValue(true);
   const post = vi
     .spyOn(actionClient, 'post')
     .mockResolvedValue({data: {}} as never);
@@ -231,14 +234,27 @@ it('deletes through a row-specific resource route without offering bulk deletion
     .mockResolvedValue({data: {}} as never);
   const host = mountNode({
     deletable: true,
-    rows: [{id: 7, name: 'Group', _deleteUrl: '/settings/groups/7'}],
+    deleteConfirmMessage: 'Delete this row?',
+    rows: [
+      {
+        id: 7,
+        name: 'Group',
+        _deleteUrl: '/settings/groups/7',
+        _deleteConfirmMessage: 'Are you sure you want to delete "Group"?',
+      },
+    ],
   });
 
   expect(host.querySelector('tbody craft-checkbox')).toBeNull();
   host.querySelector<HTMLElement>('tbody craft-button')!.click();
-  await vi.waitFor(() =>
-    expect(host.querySelector('tbody craft-button')).toBeNull()
+  expect(confirmDelete).toHaveBeenCalledWith(
+    'Are you sure you want to delete "Group"?'
   );
+  expect(remove).not.toHaveBeenCalled();
+  expect(rowNames(host)).toEqual(['Group']);
+
+  host.querySelector<HTMLElement>('tbody craft-button')!.click();
+  await vi.waitFor(() => expect(rowNames(host)).not.toContain('Group'));
   expect(remove).toHaveBeenCalledWith('/settings/groups/7', {data: {id: 7}});
   expect(post).not.toHaveBeenCalled();
 });

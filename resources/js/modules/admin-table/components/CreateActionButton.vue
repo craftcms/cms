@@ -21,14 +21,9 @@
 </script>
 
 <template>
-  <CpButtonLink
-    v-if="url"
-    variant="primary"
-    icon="plus"
-    :href="url"
-    :inertia="false"
-    >{{ label }}</CpButtonLink
-  >
+  <CpButtonLink v-if="url" variant="primary" icon="plus" :href="url">{{
+    label
+  }}</CpButtonLink>
   <ActionMenu v-else-if="menuActions.length" :actions="menuActions">
     <template #invoker="{attributes}">
       <craft-button

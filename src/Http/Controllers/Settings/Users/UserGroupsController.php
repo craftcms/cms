@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -33,7 +35,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
@@ -58,18 +59,43 @@ class UserGroupsController extends BaseUserSettingsController
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
-    public function index(): RedirectResponse|\Inertia\Response
+    public function index(): RedirectResponse|CpScreenResponse
     {
         if (Edition::get() === Edition::Team) {
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return Inertia::render('settings/users/groups/Index', [
-            'crumbs' => $this->crumbs(),
-            'title' => t('User Settings'),
-            'subnav' => $this->subnav(),
-            'groups' => $this->userGroups->getAllGroups(),
-        ]);
+        $table = Table::make('user-groups')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+            ])
+            ->rows($this->userGroups->getAllGroups()->map(fn (UserGroup $group) => [
+                'id' => $group->id,
+                'name' => [
+                    'label' => $group->name,
+                    'url' => route('craft.cp.settings.users.groups.edit', ['userGroup' => $group->id]),
+                ],
+                'handle' => [
+                    'html' => Html::tag('craft-copy-attribute', Html::encode($group->handle), ['value' => $group->handle]),
+                ],
+                ...($this->readOnly ? [] : [
+                    '_deleteUrl' => route('craft.cp.settings.users.groups.destroy', ['groupId' => $group->id]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $group->name]),
+                ]),
+            ])->all())
+            ->emptyMessage(t('No groups exist yet.'))
+            ->showFooter(false)
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New user group'), route('craft.cp.settings.users.groups.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('User Settings'))
+            ->crumbs($this->crumbs())
+            ->subnav($this->subnav())
+            ->ui(Ui::make([$table]));
     }
 
     public function create(UserPermissions $userPermissions): CpScreenResponse
@@ -201,7 +227,7 @@ class UserGroupsController extends BaseUserSettingsController
     {
         $this->userGroups->deleteGroupById($groupId);
 
-        return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
+        return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.groups.index'));
     }
 
     private function ui(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): UiPayload

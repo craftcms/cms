@@ -14,7 +14,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,7 +28,6 @@ readonly class SettingsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private UiResolver $uiResolver,
         private ProjectConfig $projectConfig,
         private SettingsUi $settingsUi,
     ) {}
@@ -61,11 +59,6 @@ readonly class SettingsController
             ...$settings->toArray(),
             'endpoint' => route('craft.cp.mcp.server'),
         ];
-        $ui = $this->uiResolver->resolve($this->settingsUi->make(), new UiContext(
-            values: $values,
-            errors: $settings->errors()->getMessages(),
-            mode: $mode,
-        ));
 
         return new CpScreenResponse()
             ->title(t('MCP Settings'))
@@ -74,9 +67,12 @@ readonly class SettingsController
                 new ActionItem()->label(t('MCP')),
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('Ui', [
+            ->ui($this->settingsUi->make(), new UiContext(
+                values: $values,
+                errors: $settings->errors()->getMessages(),
+                mode: $mode,
+            ), props: [
                 'readOnly' => ! $this->generalConfig->allowAdminChanges,
-                'ui' => $ui,
                 'submit' => [
                     'method' => 'post',
                     'url' => route('craft.cp.settings.mcp.store'),
