@@ -2,7 +2,21 @@
 
 ## Unreleased
 
+- Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating field condition rules that referenced the merged fields. ([#19901](https://github.com/craftcms/cms/issues/19901))
+- Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating Content Block fields’ layouts. ([#19901](https://github.com/craftcms/cms/issues/19901))
+
+## 5.11.5.1 - 2026-10-08
+
+- Fixed a bug that prevented third party nested element types from being editable. ([#19898](https://github.com/craftcms/cms/issues/19898))
+
+## 5.11.5 - 2026-10-07
+
 - Fixed a bug where saving an image as a new asset from the Image Editor didn’t always replace the original asset within the Assets field it was selected in. ([#19791](https://github.com/craftcms/cms/issues/19791))
+- Fixed a bug where queries executed within `craft\db\Connection::cache()` could cause infinite recursion when `craft\cache\DbCache` was used as the cache component. ([#19877](https://github.com/craftcms/cms/issues/19877))
+- Fixed a bug where license records weren’t being updated with the newly-installed versions after running the `update` command. ([#19878](https://github.com/craftcms/cms/issues/19878))
+- Fixed a bug where addresses could present as editable even if the user didn’t have permission to save their parent element. ([#19881](https://github.com/craftcms/cms/issues/19881))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-cphx-cx67-jcqj)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4rg3-m2h8-grqw)
 
 ## 5.11.4 - 2026-10-01
 

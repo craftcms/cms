@@ -2348,7 +2348,11 @@ JS);
         $addressId = $this->request->getBodyParam('addressId');
 
         if ($addressId) {
-            $address = Address::findOne($addressId);
+            if (!is_numeric($addressId)) {
+                throw new BadRequestHttpException('Invalid address ID.');
+            }
+
+            $address = Address::findOne((int)$addressId);
 
             if (!$address) {
                 throw new BadRequestHttpException("Invalid address ID: $addressId");
@@ -2409,7 +2413,11 @@ JS);
     public function actionDeleteAddress(): ?Response
     {
         $addressId = $this->request->getRequiredBodyParam('addressId');
-        $address = Address::findOne($addressId);
+        if (!is_numeric($addressId)) {
+            throw new BadRequestHttpException('Invalid address ID.');
+        }
+
+        $address = Address::findOne((int)$addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");
