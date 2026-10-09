@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -57,7 +59,16 @@ class AssetTransformerEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $ui = $this->uiResolver->resolve(Ui::make([
+        $settings = $this->settingsNode($values);
+        $errors = Arr::only($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']);
+
+        if ($settings instanceof Scope) {
+            foreach (Arr::except($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']) as $path => $messages) {
+                $errors[$path === '' ? 'settings' : "settings.{$path}"] = $messages;
+            }
+        }
+
+        return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
             HiddenField::make('oldDriver'),
             Field::make(t('Name'), Text::make('name')->autofocus()->mode($identityMode))->required(),
@@ -66,22 +77,13 @@ class AssetTransformerEditViewModel extends ViewModel
                 t('Driver'),
                 Choice::make('driver')->options($this->driverOptions())->mode($identityMode)->reactive(),
             )->required(),
+            $settings,
         ]), new UiContext(
             values: $values,
-            errors: Arr::only($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),
+            errors: $errors,
             mode: $mode,
             refreshable: ! $this->readOnly,
         ));
-        $settingsUi = $this->settingsUi($values, $mode);
-
-        return new UiPayload(
-            scope: [],
-            refreshable: ! $this->readOnly,
-            nodes: [...$ui->nodes, ...$settingsUi->nodes],
-            values: [...$ui->values, ...$settingsUi->values],
-            errors: [...$ui->errors, ...$settingsUi->errors],
-            globalErrors: [...$ui->globalErrors, ...$settingsUi->globalErrors],
-        );
     }
 
     /** @return array{method:'post',url:string} */
@@ -122,38 +124,27 @@ class AssetTransformerEditViewModel extends ViewModel
     }
 
     /** @param array<string, mixed> $values */
-    private function settingsUi(array $values, ControlMode $mode): UiPayload
+    private function settingsNode(array $values): Node
     {
         $driver = $values['driver'];
 
         if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
-            return $this->uiResolver->resolve(Ui::make([
-                Group::make('asset-transformer-settings', [
-                    Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
-                    Field::make(
-                        t('Stored settings'),
-                        Textarea::make('unavailableSettings')
-                            ->value(Json::encode($this->transformer->settings, JSON_PRETTY_PRINT))
-                            ->mode(ControlMode::ReadOnly),
-                    ),
-                ])->dependsOn('driver'),
-            ]), new UiContext(mode: $mode));
+            return Group::make('asset-transformer-settings', [
+                Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
+                Field::make(
+                    t('Stored settings'),
+                    Textarea::make('unavailableSettings')
+                        ->value(Json::encode($this->transformer->settings, JSON_PRETTY_PRINT))
+                        ->mode(ControlMode::ReadOnly),
+                ),
+            ])->dependsOn('driver');
         }
 
         $definition = $this->assetTransformDrivers->driver($driver)->definition();
 
-        return $this->uiResolver->resolve(
-            Ui::make([
-                Group::make('asset-transformer-settings', $definition->settingsFields)
-                    ->dependsOn('driver'),
-            ]),
-            new UiContext(
-                namespace: 'settings',
-                values: $values,
-                errors: Arr::except($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),
-                mode: $mode,
-                refreshable: ! $this->readOnly,
-            ),
-        );
+        return Scope::make('settings', [
+            Group::make('asset-transformer-settings', $definition->settingsFields)
+                ->dependsOn('driver'),
+        ]);
     }
 }
