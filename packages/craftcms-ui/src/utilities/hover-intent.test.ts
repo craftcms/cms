@@ -357,6 +357,23 @@ describe('safe area', () => {
     expect(trigger.open).toBe(true);
   });
 
+  it('drops a hover held on a sibling once the pointer reaches an open overlay', () => {
+    const {trigger, neighbor} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    group.requestOpen(neighbor);
+
+    group.requestOpen(trigger);
+    movePointer(150, 50);
+    vi.advanceTimersByTime(500);
+
+    expect(trigger.open).toBe(true);
+    expect(neighbor.open).toBe(false);
+  });
+
   it('spares the trigger the pointer doubles back into', () => {
     const {trigger, neighbor} = aimedTree();
 
