@@ -228,6 +228,16 @@ class ElementEditViewModel extends ViewModel
         );
     }
 
+    /**
+     * Buttons the element type and plugins add to the footer, apart from the save controls.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function additionalButtons(): array
+    {
+        return $this->element->additionalButtonDescriptors();
+    }
+
     protected function primaryActionLabel(): ?string
     {
         return null;

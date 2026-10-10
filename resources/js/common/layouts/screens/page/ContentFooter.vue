@@ -31,6 +31,8 @@
         defaultFormActions: Array<DefaultFormAction>;
         /** The response's `primaryAction()` button, rendered server-side. */
         primaryActionHtml?: string | null;
+        /** Shows the plain submit button's spinner, for shells that submit natively. */
+        submitting?: boolean;
         /**
          * Keeps the row within the content's column, for a constrained content
          * view: the footer's rule still spans the pane, but the save controls
@@ -49,8 +51,11 @@
   defineSlots<
     Pick<
       ScreenSlots,
-      'content-footer' | 'additional-buttons' | 'primary-action'
-    >
+      'content-footer' | 'footer-meta' | 'additional-buttons' | 'primary-action'
+    > & {
+      /** The shell's own buttons at the end of the row, e.g. a slideout's Cancel. */
+      'shell-actions'?: () => any;
+    }
   >();
 
   const formActionItems = computed(() =>
@@ -69,7 +74,7 @@
       'content-footer--contained': contained,
     }"
   >
-    <div class="flex gap-2 items-center justify-between">
+    <div class="flex gap-md items-center">
       <FormActions
         v-if="form"
         :form="form"
@@ -101,17 +106,38 @@
            It posts natively instead, so it gets a plain submit button — the
            same contract as Craft 5's page form. `craft-button` extends
            `LionButtonSubmit`, so `type="submit"` submits the enclosing form. -->
-      <craft-button
+      <LayoutSlotOutlet
         v-else-if="fullPageForm && !readOnly"
-        type="submit"
-        variant="primary"
+        name="primary-action"
       >
-        {{ submitButtonLabel || t('Save') }}
-      </craft-button>
-
-      <LayoutSlotOutlet name="additional-buttons">
-        <slot name="additional-buttons"></slot>
+        <slot name="primary-action">
+          <DynamicHtmlRenderer
+            v-if="primaryActionHtml"
+            :html="primaryActionHtml"
+          />
+          <craft-button
+            v-else
+            type="submit"
+            variant="primary"
+            :loading="submitting || undefined"
+          >
+            {{ submitButtonLabel || t('Save') }}
+          </craft-button>
+        </slot>
       </LayoutSlotOutlet>
+
+      <LayoutSlotOutlet name="footer-meta">
+        <slot name="footer-meta"></slot>
+      </LayoutSlotOutlet>
+
+      <div class="flex-1"></div>
+      <div class="content-footer__actions">
+        <LayoutSlotOutlet name="additional-buttons">
+          <slot name="additional-buttons"></slot>
+        </LayoutSlotOutlet>
+
+        <slot name="shell-actions"></slot>
+      </div>
     </div>
 
     <div>
@@ -123,6 +149,12 @@
 </template>
 
 <style scoped>
+  .content-footer__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+
   /*
    * The footer pads itself by the container padding, so the row's share of the
    * content's max width is that width less the padding on both sides.

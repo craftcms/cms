@@ -954,11 +954,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function getCpRevisionsUrl(): ?string;
 
     /**
-     * Returns additional buttons that should be shown at the top of the element’s edit page.
-     */
-    public function getAdditionalButtons(): string|Stringable;
-
-    /**
      * Returns alternative form actions for the element.
      *
      * {@see CpScreenResponse::altActions()} for documentation on supported action properties.

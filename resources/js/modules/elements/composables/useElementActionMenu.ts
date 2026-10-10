@@ -114,18 +114,10 @@ interface Options {
 }
 
 /**
- * Turns the element's action descriptors into menu items the CP action menu can
- * render, dispatching each behavior directly rather than through registered
- * jQuery handlers.
+ * Builds the function that carries out an element action's behavior directly,
+ * rather than through registered jQuery handlers.
  */
-/**
- * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
- *
- * Separate from {@link useElementActionMenu} so a caller with many menus — a
- * relation field drawing one per chip — can map them all through a single
- * dispatcher instead of standing up a computed per element.
- */
-export function createElementActionMenu({
+export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
 }: Options = {}) {
@@ -384,6 +376,19 @@ export function createElementActionMenu({
     uploader.setParams({assetId});
     input.click();
   }
+
+  return dispatch;
+}
+
+/**
+ * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
+ *
+ * Separate from {@link useElementActionMenu} so a caller with many menus — a
+ * relation field drawing one per chip — can map them all through a single
+ * dispatcher instead of standing up a computed per element.
+ */
+export function createElementActionMenu(options: Options = {}) {
+  const dispatch = createElementActionDispatcher(options);
 
   return (items: Array<ElementActionMenuItem>): Array<ActionItem> =>
     items.map(
