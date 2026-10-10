@@ -8,7 +8,7 @@ Screens that haven't been ported to a Vue page still work: they fall back to a b
 that draws the server-rendered HTML the response already carries.
 
 > This is the Vue/Inertia system. The legacy `Craft.CpScreenSlideout` (jQuery/Garnish, in
-> `resources/js/modules/slideout/`) still exists and is unchanged — see
+> `resources/js/modules/slideout/`) opens its screen here whenever this stack is available — see
 > [Coexisting with the legacy stack](#coexisting-with-the-legacy-stack).
 
 ## Basic Usage
@@ -250,7 +250,8 @@ With the Yii adapter installed, element HTML events and `prepareEditScreen()` ca
 inputs added by those customizations are included in saves, and registered assets load after the
 content is ready.
 
-Legacy jQuery slideouts continue to request JSON without the Inertia header. They receive the
+Legacy jQuery slideouts — on pages without the Vue stack, or element editors given
+`onBeforeSubmit`/`saveParams` — continue to request JSON without the Inertia header. They receive the
 legacy `CpScreenResponse` and use `Craft.ElementEditor`.
 
 ### Unsaved changes
@@ -411,11 +412,15 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 ## Coexisting with the legacy stack
 
 The legacy `Craft.Slideout` (and its `CpScreenSlideout` / `ElementEditorSlideout` subclasses) is
-still very much alive — matrix, component select and the nested element manager all open one, and
-the field layout designer falls back to it.
+still around for pages without the Vue stack, and the field layout designer falls back to it.
 
-> The designer's component settings use `openSlideoutWith()` when the Vue stack is available, and
-> the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
+`new Craft.CpScreenSlideout(action)` and `Craft.createElementEditor()` open a Vue panel whenever
+`Craft.openSlideout` exists, relaying `submit`/`close` back to the instance. Other subclasses, and
+element editors given `onBeforeSubmit` or `saveParams`, keep the legacy panel. See
+`resources/js/modules/slideout/README.md`.
+
+> The designer's component settings — and the entry type manager's per-field overrides — use
+> `openSlideoutWith()` when the Vue stack is available, and the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
 > and the designer is also reachable from legacy-stack screens through the `fieldLayoutDesigner()`
 > Twig function. `canUseVueSlideout()` in
 > `resources/js/modules/field-layout-designer/settings-slideout.ts` decides, keying off whether the

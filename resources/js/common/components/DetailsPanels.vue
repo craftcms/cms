@@ -15,6 +15,7 @@
   import {computed, nextTick, shallowRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
+    useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
@@ -85,10 +86,13 @@
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : null;
+  // A slideout opens on its content; the column starts folded to the rail.
   const openPanelId = shallowRef<string | null>(
-    initialHash && isVisible(initialHash)
-      ? initialHash
-      : (visiblePanels.value[0]?.id ?? null)
+    useIsSlideout()
+      ? null
+      : initialHash && isVisible(initialHash)
+        ? initialHash
+        : (visiblePanels.value[0]?.id ?? null)
   );
 
   // An open panel that goes away falls back to the first.

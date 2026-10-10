@@ -27,8 +27,9 @@ that replaced the legacy `Craft.ComponentSelectInput` chain.
 - **Per-field entry-type overrides.** When `<craft-entry-type-manager>` carries
   `allow-overrides` (the Matrix field always sets it), each entry-type chip
   gets a gear "Settings" action — replacing its default "Entry type settings"
-  item (which edits the shared entry type globally) — that opens a
-  `Craft.Slideout` to override the entry type's name/handle/description *for
+  item (which edits the shared entry type globally) — that opens a slideout
+  (a Vue panel via `openSlideoutWith()` when the page has the Vue slideout
+  stack, a `Craft.Slideout` otherwise) to override the entry type's name/handle/description *for
   this field*. This ports `Craft.EntryTypeSelectInput`'s
   `createSettings`/`applySettings` (never carried over when Matrix moved to the
   web-component select) into `entry-type-override-settings.ts`, wired from
@@ -88,7 +89,8 @@ deferred boot, so chips wired by earlier-booting selects still get their items.
 - `grouped-entry-type-manager.ts` — the `GroupedEntryTypeManager` and `Group`
   classes, plus `attachChipMoveActions`.
 - `entry-type-override-settings.ts` — `editEntryTypeOverrides(chip)`, the
-  per-field override slideout flow (render → `Craft.Slideout` → apply).
+  per-field override slideout flow (render → slideout → apply).
+- `EntryTypeOverrideSettings.vue` — the Vue panel for that flow.
 - `grouped-entry-type-manager.ce.ts` — `<craft-entry-type-manager>`, the
   self-booting custom element (a `ControllerElement`).
 - `support.ts` — the `.data()`-replacement WeakMap.

@@ -1374,6 +1374,11 @@ Craft.ui = {
 
     if (!$errors.length) {
       $errors = this.createErrorList(null, fieldErrorsId).appendTo($field);
+
+      // <craft-field> only renders feedback that's slotted in.
+      if ($field.is('craft-field')) {
+        $errors.attr('slot', 'feedback');
+      }
     }
 
     this.addErrorsToList($errors, errors);

@@ -127,6 +127,18 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         prevalidate: this.$element.parents('.prevalidate').length > 0,
       }
     );
+
+    if (
+      this.opensInVueStack(ElementEditorSlideout) &&
+      !this.needsLegacyEditor(mergedSettings)
+    ) {
+      this.action = 'elements/edit';
+      this.openInVueStack('elements/edit', mergedSettings);
+      // The Vue panel broadcasts the save and refreshes Live Preview itself.
+      this.on('submit', (ev: any) => this.reportSavedElement(ev));
+      return;
+    }
+
     super.init('elements/edit', mergedSettings);
 
     this.on('load', () => {
@@ -186,23 +198,35 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         });
       }
 
-      // Pass the response data off to onSaveElement() for backwards
-      // compatibility.
-      if (this.settings!.onSaveElement) {
-        const data = Object.assign(
-          {},
-          ev.response.data,
-          ev.response.data.element
-        );
-        delete data.element;
-        delete data.modelName;
-        delete data.message;
-        this.settings!.onSaveElement!(data);
-      }
+      this.reportSavedElement(ev);
 
       // Refresh Live Preview
       Craft.Preview.refresh();
     });
+  }
+
+  /**
+   * `onBeforeSubmit` and `saveParams` reach into the legacy editor's
+   * `Craft.ElementEditor`, which the Vue panel doesn't have.
+   */
+  private needsLegacyEditor(settings: ElementEditorSlideoutSettings): boolean {
+    return (
+      Boolean(settings.saveParams) ||
+      settings.onBeforeSubmit !== ElementEditorSlideout.defaults.onBeforeSubmit
+    );
+  }
+
+  /** Passes the saved element to `onSaveElement()`, for backwards compatibility. */
+  private reportSavedElement(ev: any): void {
+    if (!this.settings!.onSaveElement) {
+      return;
+    }
+
+    const data = Object.assign({}, ev.response.data, ev.response.data.element);
+    delete data.element;
+    delete data.modelName;
+    delete data.message;
+    this.settings!.onSaveElement!(data);
   }
 
   override getParams(): ElementEditorParams {
@@ -310,7 +334,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   }
 
   override destroy(): void {
-    this.elementEditor.destroy();
+    this.elementEditor?.destroy();
     this.elementEditor = null;
     super.destroy();
   }
