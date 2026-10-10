@@ -2,7 +2,7 @@
   import {actionClient, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import type {ColumnDef} from '@tanstack/vue-table';
-  import {computed, h, ref, shallowRef} from 'vue';
+  import {computed, h, inject, provide, ref, shallowRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Date from '@/common/components/Date.vue';
@@ -31,6 +31,7 @@
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
+  import {UiTablePadded} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -48,8 +49,22 @@
     TableRow,
   } from './table-types';
 
-  const props = defineProps<{node: TableNodePayload}>();
+  const props = withDefaults(
+    defineProps<{node: TableNodePayload; padded?: boolean}>(),
+    {padded: undefined}
+  );
+  const pageTablePadded = inject(UiTablePadded, ref(false));
+  provide(UiTablePadded, ref(false));
 
+  const slots = defineSlots<{
+    /** The page owns submission and refreshing when replacing the deletion dialog. */
+    'delete-modal'?(props: {
+      row: TableRow;
+      label: string;
+      close: () => void;
+    }): unknown;
+    'empty-row'?(): unknown;
+  }>();
   const adminTable = ref<AdminTableHandle>();
   const inertia = useInertiaTable(() => props.node);
   const deletePending = shallowRef(false);
@@ -306,6 +321,8 @@
                 h('craft-indicator', {
                   fill: status.fill,
                   label: status.label ?? undefined,
+                  appearance:
+                    status.value === 'disabled' ? 'outline' : undefined,
                 }),
                 rendered,
               ]);
@@ -439,7 +456,7 @@
     )
       return;
 
-    if (props.node.props.deleteModalUrl) {
+    if (props.node.props.deleteModalUrl || slots['delete-modal']) {
       deletingRow.value = row;
       return;
     }
@@ -558,6 +575,7 @@
     >
       <AdminTable
         ref="adminTable"
+        :padded="padded ?? (!node.props.bordered && pageTablePadded)"
         :rows="node.props.rows"
         :columns="columns"
         :load-rows="
@@ -611,6 +629,9 @@
         @load-error="onLoadFailed"
         @action-performed="refreshUi"
       >
+        <template v-if="$slots['empty-row']" #empty-row>
+          <slot name="empty-row" />
+        </template>
         <template
           v-if="hasCreateAction && node.props.createActionInPageHeader"
           #empty-actions
@@ -623,14 +644,22 @@
         </template>
       </AdminTable>
     </component>
-    <AdminTableDeleteModal
-      v-if="deletingRow && node.props.deleteModalUrl"
-      :modal-url="node.props.deleteModalUrl"
-      :delete-url="deleteUrl(deletingRow)!"
-      :row-id="deletingRow.id!"
-      @close="deletingRow = null"
-      @deleted="onModalDeleted"
-    />
+    <slot
+      v-if="deletingRow"
+      name="delete-modal"
+      :row="deletingRow"
+      :label="cellText(deletingRow[node.props.columns[0]?.key ?? ''] ?? null)"
+      :close="() => (deletingRow = null)"
+    >
+      <AdminTableDeleteModal
+        v-if="node.props.deleteModalUrl"
+        :modal-url="node.props.deleteModalUrl"
+        :delete-url="deleteUrl(deletingRow)!"
+        :row-id="deletingRow.id!"
+        @close="deletingRow = null"
+        @deleted="onModalDeleted"
+      />
+    </slot>
     <UiModal
       v-if="menuModal"
       :modal-url="menuModal.modalUrl"

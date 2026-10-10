@@ -488,13 +488,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.sites.index');
         Route::middleware(RequireAdminChanges::class)
             ->group(function () {
-                Route::get('settings/sites/new', [SitesController::class, 'create']);
+                Route::get('settings/sites/new', [SitesController::class, 'create'])->name('settings.sites.create');
                 Route::post('settings/sites/ui', [SitesController::class, 'renderUi']);
-                Route::post('settings/sites/reorder', [SitesController::class, 'reorder']);
+                Route::post('settings/sites/reorder', [SitesController::class, 'reorder'])->name('settings.sites.reorder');
                 Route::post('settings/sites', [SitesController::class, 'store']);
-                Route::delete('settings/sites/{site}', [SitesController::class, 'destroy']);
+                Route::delete('settings/sites/{site}', [SitesController::class, 'destroy'])->name('settings.sites.destroy');
             });
-        Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
+        Route::get('settings/sites/{site}', [SitesController::class, 'edit'])->name('settings.sites.edit');
 
         // Site Groups
         Route::middleware(RequireAdminChanges::class)

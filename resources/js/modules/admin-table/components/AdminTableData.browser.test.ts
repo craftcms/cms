@@ -805,6 +805,7 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
           count: {html: '<strong>42</strong>'},
           lastUsed: {date: new Date(2026, 2, 14, 12).toISOString()},
           expiryDate: null,
+          _status: {value: 'disabled', fill: 'gray', label: 'Disabled'},
         },
       ],
       pagination: result('Unused').pagination,
@@ -830,6 +831,11 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
     '/settings/item'
   );
   expect(host.querySelector('tbody strong')?.textContent).toBe('42');
+  const status = page.getByRole('img', {name: 'Disabled', exact: true});
+  await expect.element(status).toBeVisible();
+  expect(getComputedStyle(status.element()).backgroundColor).toMatch(
+    /^rgba\(.*?,\s*0\)$/
+  );
   const headers = Array.from(host.querySelectorAll('thead th'));
   const cells = host.querySelector('tbody tr')!.querySelectorAll('td');
   function cellText(label: string) {

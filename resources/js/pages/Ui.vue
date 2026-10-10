@@ -2,7 +2,7 @@
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {computed, shallowRef, toRaw} from 'vue';
+  import {computed, provide, shallowRef, toRaw} from 'vue';
   import type {
     ActionItem,
     FormAction,
@@ -14,6 +14,7 @@
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import {UiTablePadded} from '@/modules/ui/runtime';
   import type {
     UiChange,
     UiChangeKind,
@@ -181,6 +182,7 @@
     );
   });
   const contentSlot = computed(() => (isBareTable.value ? 'full' : 'default'));
+  provide(UiTablePadded, isBareTable);
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
@@ -246,7 +248,7 @@
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? 'ui-full-table' : 'py-4'"
+          :class="isBareTable ? undefined : 'py-4'"
         >
           <UiRenderer
             ref="renderer"
@@ -281,13 +283,3 @@
     </MetadataDetails>
   </component>
 </template>
-
-<style scoped lang="scss">
-  .ui-full-table {
-    :deep(.admin-table__header),
-    :deep(.admin-table__body),
-    :deep(.admin-table__footer) {
-      padding-inline: var(--cp-container-padding);
-    }
-  }
-</style>
