@@ -17,6 +17,10 @@ export const UiFailure: InjectionKey<(message: string) => void> =
 export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('UiPending');
 
+/** Whether the page renders its table across the full container width. */
+export const UiTablePadded: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('UiTablePadded');
+
 export const UiErrors: InjectionKey<{
   clearChildren(path: string[]): void;
   childrenCleared(path: string[]): boolean;

@@ -151,7 +151,12 @@
       </craft-button>
     </template>
 
-    <Modal :is-active="modalActive" :overlay="false" width="2xl">
+    <Modal
+      :is-active="modalActive"
+      :label="t('Install Craft CMS')"
+      :overlay="false"
+      width="2xl"
+    >
       <!-- License screen -->
       <template v-if="isCurrent('license')">
         <craft-pane class="max-w-[80ch] mx-auto">

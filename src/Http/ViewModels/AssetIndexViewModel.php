@@ -369,19 +369,19 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * row, which navigates without losing the index's current state.
      */
     #[Override]
-    protected function titleLinkHtml(ElementInterface $element, string $chip): string
+    protected function titleLinkHtml(ElementInterface $element): string
     {
         if (! $element instanceof Asset || ! $element->isFolder) {
-            return parent::titleLinkHtml($element, $chip);
+            return parent::titleLinkHtml($element);
         }
 
         $folderUrl = $this->folderUrl($element);
 
         if ($folderUrl === null) {
-            return $chip;
+            return $this->chipHtml($element);
         }
 
-        return Html::a($chip, $folderUrl, ['data-folder-link' => true]);
+        return Html::a($this->chipHtml($element), $folderUrl, ['data-folder-link' => true]);
     }
 
     private function folderUrl(Asset $folder): ?string

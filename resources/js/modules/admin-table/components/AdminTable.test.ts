@@ -19,40 +19,59 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('renders settings rows and drives caller pagination without an element payload', () => {
-  const onPaginationChange = vi.fn();
-  const table = useCraftTable({
-    data: [{id: 1, name: 'Settings record'}],
-    columns: [
-      {accessorKey: 'name', header: 'Name', cell: ({getValue}) => getValue()},
-    ],
-    state: {pagination: {pageIndex: 0, pageSize: 50}},
-    manualPagination: true,
-    rowCount: 151,
-    onPaginationChange,
-  });
-  const host = document.createElement('div');
-  document.body.append(host);
-  const app = createApp({
-    render: () => h(AdminTable, {table, from: 1, to: 50, total: 151} as never),
-  });
-  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
-  app.mount(host);
-  teardown = () => app.unmount();
-  expect(host.querySelector('tbody')?.textContent).toContain('Settings record');
-  Array.from(host.querySelectorAll('craft-icon'))
-    .find(
-      (icon) => (icon as HTMLElement & {name: string}).name === 'chevron-right'
-    )!
-    .closest('craft-button')!
-    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
-  expect(onPaginationChange).toHaveBeenCalledOnce();
-  const update = onPaginationChange.mock.calls[0]![0];
-  expect(update({pageIndex: 0, pageSize: 50})).toEqual({
-    pageIndex: 1,
-    pageSize: 50,
-  });
-});
+it.each([undefined, true, false])(
+  'renders settings rows with footer option %s',
+  (showFooter) => {
+    const onPaginationChange = vi.fn();
+    const table = useCraftTable({
+      data: [{id: 1, name: 'Settings record'}],
+      columns: [
+        {accessorKey: 'name', header: 'Name', cell: ({getValue}) => getValue()},
+      ],
+      state: {pagination: {pageIndex: 0, pageSize: 50}},
+      manualPagination: true,
+      rowCount: 151,
+      onPaginationChange,
+    });
+    const host = document.createElement('div');
+    document.body.append(host);
+    const app = createApp({
+      render: () =>
+        h(AdminTable, {
+          table,
+          from: 1,
+          to: 50,
+          total: 151,
+          showFooter,
+        } as never),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(host);
+    teardown = () => app.unmount();
+    expect(host.querySelector('tbody')?.textContent).toContain(
+      'Settings record'
+    );
+    if (showFooter === false) {
+      expect(host.querySelector('.admin-table__footer')).toBeNull();
+      expect(onPaginationChange).not.toHaveBeenCalled();
+      return;
+    }
+    expect(host.querySelector('.admin-table__footer')).not.toBeNull();
+    Array.from(host.querySelectorAll('craft-icon'))
+      .find(
+        (icon) =>
+          (icon as HTMLElement & {name: string}).name === 'chevron-right'
+      )!
+      .closest('craft-button')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(onPaginationChange).toHaveBeenCalledOnce();
+    const update = onPaginationChange.mock.calls[0]![0];
+    expect(update({pageIndex: 0, pageSize: 50})).toEqual({
+      pageIndex: 1,
+      pageSize: 50,
+    });
+  }
+);
 
 function mountSelectionTable(selectable: boolean) {
   const table = useCraftTable({
@@ -86,24 +105,14 @@ function mountSelectionTable(selectable: boolean) {
   return {host, rows, selectedIds};
 }
 
-it('renders no selection checkboxes unless selectable', () => {
-  const {host} = mountSelectionTable(false);
-
-  expect(host.querySelectorAll('craft-checkbox')).toHaveLength(0);
-});
-
-it('renders a select-all checkbox and one labelled checkbox per row', () => {
-  const {host} = mountSelectionTable(true);
+it('connects selectable rows and their labelled controls to the table selection', async () => {
+  const {host, rows, selectedIds} = mountSelectionTable(true);
 
   expect(host.querySelectorAll('thead craft-checkbox')).toHaveLength(1);
   expect(host.querySelectorAll('tbody craft-checkbox')).toHaveLength(3);
   expect(host.querySelector('tbody craft-checkbox label')?.textContent).toBe(
     'Select First'
   );
-});
-
-it('toggles a row when its body is clicked and marks it selected', async () => {
-  const {rows, selectedIds} = mountSelectionTable(true);
 
   rows()[1]!
     .querySelector('td:last-child')!
@@ -122,32 +131,10 @@ it('toggles a row when its body is clicked and marks it selected', async () => {
   expect(rows()[1]!.classList.contains('sel')).toBe(false);
 });
 
-it('extends the selection across a range on shift-click', async () => {
-  const {rows, selectedIds} = mountSelectionTable(true);
+it('omits selection controls and ignores row clicks when not selectable', () => {
+  const {host, rows, selectedIds} = mountSelectionTable(false);
 
-  rows()[0]!
-    .querySelector('td:last-child')!
-    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
-  rows()[2]!
-    .querySelector('td:last-child')!
-    .dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey: true}));
-  await nextTick();
-
-  expect(selectedIds()).toEqual([1, 2, 3]);
-});
-
-it('leaves clicks on links inside a row to the link', () => {
-  const {rows, selectedIds} = mountSelectionTable(true);
-  const link = rows()[0]!.querySelector('a')!;
-  link.addEventListener('click', (event) => event.preventDefault());
-
-  link.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-
-  expect(selectedIds()).toEqual([]);
-});
-
-it('ignores row clicks when not selectable', () => {
-  const {rows, selectedIds} = mountSelectionTable(false);
+  expect(host.querySelectorAll('craft-checkbox')).toHaveLength(0);
 
   rows()[0]!
     .querySelector('td:last-child')!

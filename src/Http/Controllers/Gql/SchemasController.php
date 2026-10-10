@@ -13,12 +13,13 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -36,19 +37,50 @@ readonly class SchemasController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index(): \Inertia\Response
+    public function index(): CpScreenResponse
     {
-        // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
 
-        return Inertia::render('graphql/schemas/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('GraphQL'))->href(Url::cpUrl('graphql/schemas')),
+        $table = Table::make('graphql-schemas')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'scope', 'label' => t('Scope')],
+                ['key' => 'public', 'label' => t('Public')],
+            ])
+            ->rows(array_map(function (GqlSchema $schema): array {
+                $scope = implode(', ', array_slice($schema->scope, 0, 2));
+
+                if (count($schema->scope) > 2) {
+                    $scope .= ' '.t('and {count} more', ['count' => count($schema->scope) - 2]);
+                }
+
+                return [
+                    'id' => $schema->id,
+                    'name' => [
+                        'label' => $schema->name,
+                        'url' => route('craft.cp.graphql.schemas.edit', ['schemaId' => $schema->isPublic ? 'public' : $schema->id]),
+                    ],
+                    'scope' => $scope,
+                    'public' => $schema->isPublic ? t('Yes') : t('No'),
+                    '_deletable' => ! $schema->isPublic,
+                    ...($schema->isPublic ? [] : [
+                        '_deleteUrl' => route('craft.cp.graphql.schemas.destroy', ['schemaId' => $schema->id]),
+                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” schema?', ['name' => $schema->name]),
+                    ]),
+                ];
+            }, $this->gql->getSchemas()))
+            ->createAction(t('New schema'), route('craft.cp.graphql.schemas.create'))
+            ->createActionInPageHeader()
+            ->deletable();
+
+        return new CpScreenResponse()
+            ->title(t('GraphQL Schemas'))
+            ->selectedSubnavItem('schemas')
+            ->crumbs([
+                new ActionItem()->label(t('GraphQL'))->href(route('craft.cp.graphql.schemas.index')),
                 new ActionItem()->label(t('Schemas')),
-            ],
-            'title' => t('GraphQL Schemas'),
-            'schemas' => $this->gql->getSchemas(),
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(): CpScreenResponse
@@ -77,7 +109,12 @@ readonly class SchemasController extends GqlController
 
     public function destroy(Request $request, int $schemaId): Response
     {
-        $this->gql->deleteSchemaById($schemaId);
+        $schema = $this->gql->getSchemaById($schemaId);
+        abort_if($schema?->isPublic, 403);
+
+        if ($schema) {
+            $this->gql->deleteSchema($schema);
+        }
 
         return $this->asSuccess(t('Schema deleted.'));
     }
