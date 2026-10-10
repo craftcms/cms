@@ -23,6 +23,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -109,12 +110,15 @@ it('requires admin access for the section index', function () {
     get(action([SectionsController::class, 'index']))->assertForbidden();
 });
 
-test('index filters sorts and paginates sections', function (string $field, string $direction, string $name) {
+test('index filters sorts and paginates sections', function (string $field, string $direction, string $name, ?string $mysqlName = null) {
     Section::firstOrFail()->update(['handle' => 'm_middle']);
     Section::factory()->create(['name' => 'zzz Last Section', 'handle' => 'a_last', 'type' => SectionType::Single]);
     Section::factory()->create(['name' => 'aaa First Section', 'handle' => 'z_first', 'type' => SectionType::Structure]);
     Section::factory()->create(['name' => 'Ignored record', 'handle' => 'ignored_record']);
     Cms::config()->pageTrigger = 'custom-page';
+
+    // MySQL sorts enum values by declaration order rather than alphabetically.
+    $name = DB::isMysql() ? $mysqlName ?? $name : $name;
 
     get(action([SectionsController::class, 'index'], [
         'search' => 'Section',
@@ -141,7 +145,7 @@ test('index filters sorts and paginates sections', function (string $field, stri
     'ascending handles' => ['handle', 'asc', 'aaa First Section'],
     'descending handles' => ['handle', 'desc', 'zzz Last Section'],
     'ascending types' => ['type', 'asc', 'aaa First Section'],
-    'descending types' => ['type', 'desc', 'mmm Middle Section'],
+    'descending types' => ['type', 'desc', 'mmm Middle Section', 'zzz Last Section'],
 ]);
 
 test('create can be loaded', function () {
