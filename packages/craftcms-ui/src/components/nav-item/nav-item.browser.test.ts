@@ -493,7 +493,11 @@ async function groupedFixture(): Promise<CraftNavItem> {
 
 it('keeps a flyout open when the pointer reaches it from across another group', async () => {
   flyoutHoverIntent.reset();
-  flyoutHoverIntent.options = {...flyoutHoverIntent.options, warmUpDelay: 0};
+  flyoutHoverIntent.options = {
+    ...flyoutHoverIntent.options,
+    warmUpDelay: 0,
+    graceDelay: 10_000,
+  };
 
   const {userEvent} = await import('@vitest/browser/context');
   const trigger = await groupedFixture();
