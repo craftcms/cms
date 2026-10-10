@@ -2,7 +2,7 @@ import '../../../../css/cp.css';
 import {createApp, h, nextTick, reactive, ref} from 'vue';
 import {mergeDataIntoQueryString} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {page} from 'vite-plus/test/browser/context';
+import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
 import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
 import {actionClient} from '@craftcms/ui';
@@ -263,6 +263,60 @@ it('insets padded table controls, rows, and footer by the container gutter', asy
     expect(getComputedStyle(element).paddingInlineStart).toBe('24px');
     expect(getComputedStyle(element).paddingInlineEnd).toBe('24px');
   }
+});
+
+it('explains blocked deletion on keyboard focus while keeping the row editable and unselectable', async () => {
+  const remove = vi
+    .spyOn(actionClient, 'delete')
+    .mockResolvedValue({data: {}} as never);
+  const host = mountNode({
+    deletable: true,
+    deleteUrl: '/settings/transformers/delete',
+    bulkDeleteUrl: '/settings/transformers/delete-many',
+    rows: [
+      {
+        id: 'craft',
+        name: {label: 'Craft (Default)', url: '/settings/transformers/craft'},
+        _deletable: false,
+        _deleteDisabledReason: 'The Craft Asset Transformer cannot be deleted.',
+      },
+      {id: 'public', name: 'Public', _deletable: false},
+      {id: 'remote', name: 'Remote'},
+    ],
+  });
+  const row = host.querySelector('tbody tr')!;
+  const button =
+    row.querySelector<HTMLElementTagNameMap['craft-button']>('craft-button')!;
+  await button.updateComplete;
+
+  await expect
+    .element(page.getByRole('link', {name: 'Craft (Default)'}))
+    .toHaveAttribute('href', '/settings/transformers/craft');
+  await expect
+    .element(page.elementLocator(button))
+    .toHaveAccessibleDescription(
+      'The Craft Asset Transformer cannot be deleted.'
+    );
+  expect(button.getAttribute('aria-disabled')).toBe('true');
+  expect(
+    host.querySelectorAll('tbody tr')[1]!.querySelector('craft-button')
+  ).toBeNull();
+  button.click();
+  row.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
+  await nextTick();
+  expect(remove).not.toHaveBeenCalled();
+  expect(host.querySelector('.bulk-actions-bar__count')).toBeNull();
+
+  for (let step = 0; step < 10 && document.activeElement !== button; step++) {
+    await userEvent.tab();
+  }
+  expect(document.activeElement).toBe(button);
+  const tooltip =
+    row.querySelector<HTMLElementTagNameMap['craft-tooltip']>('craft-tooltip')!;
+  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
+  await userEvent.keyboard('{Escape}');
+  await vi.waitFor(() => expect(tooltip.opened).toBe(false));
+  expect(document.activeElement).toBe(button);
 });
 
 it.each([

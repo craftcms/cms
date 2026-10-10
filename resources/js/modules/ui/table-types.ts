@@ -80,6 +80,7 @@ export interface TableStatus {
 export type TableRow = Record<string, TableCellValue> & {
   id?: string | number;
   _deletable?: boolean;
+  _deleteDisabledReason?: string | null;
   _deleteUrl?: string;
   _deleteConfirmMessage?: string;
   _status?: TableStatus | null;

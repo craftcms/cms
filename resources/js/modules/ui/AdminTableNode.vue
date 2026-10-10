@@ -322,10 +322,15 @@
           ({row}) => {
             const actions = [];
 
-            if (row.original._deletable !== false && deleteUrl(row.original)) {
+            if (
+              (row.original._deletable !== false ||
+                row.original._deleteDisabledReason) &&
+              deleteUrl(row.original)
+            ) {
               actions.push(
                 h(DeleteButton, {
                   disabled: deletePending.value,
+                  disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),
                 })
               );
@@ -426,7 +431,13 @@
 
   async function deleteRow(row: TableRow): Promise<void> {
     const url = deleteUrl(row);
-    if (!url || deletePending.value) return;
+    if (
+      !url ||
+      deletePending.value ||
+      row._deletable === false ||
+      row._deleteDisabledReason
+    )
+      return;
 
     if (props.node.props.deleteModalUrl) {
       deletingRow.value = row;
@@ -569,7 +580,9 @@
         :get-search-text="rowSearchText"
         :get-row-status="(row) => row._status?.value"
         :get-sort-value="sortValue"
-        :can-select-row="(row) => row._deletable !== false"
+        :can-select-row="
+          (row) => row._deletable !== false && !row._deleteDisabledReason
+        "
         :reorderable="!!node.props.reorderUrl"
         :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
         :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"

@@ -32,6 +32,7 @@
 - Updated the sections index to use shared UI tables, preserving server-side search, sorting, pagination, and section deletion warnings about entries.
 - Updated the entry types index to use shared UI tables, preserving chips, expandable usages, copyable handles, and deletion warnings about entries.
 - Updated the fields index to use shared UI tables, preserving icon descriptions, multisite columns, copyable handles, and field type presentation.
+- Updated the asset transformers index to use shared UI tables, preserving default labels and explanations for disabled deletion.
 - Updated the workflows index to use shared UI tables, with name sorting and visible deletion refusal messages.
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates.
 - Fixed a bug where page-header actions could be clipped on narrow screens.
