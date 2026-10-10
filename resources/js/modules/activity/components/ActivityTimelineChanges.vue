@@ -22,7 +22,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="white">
     <craft-disclosure
       v-if="showInline"
       :label="changeCountLabel(changes.length)"
@@ -49,7 +49,12 @@
   </craft-card>
 
   <Teleport to="body">
-    <Modal :is-active="modalActive" width="2xl" @close="modalActive = false">
+    <Modal
+      :is-active="modalActive"
+      :label="changeCountLabel(changes.length)"
+      width="2xl"
+      @close="modalActive = false"
+    >
       <craft-pane :label="changeCountLabel(changes.length)">
         <craft-button
           slot="header-actions"

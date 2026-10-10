@@ -319,7 +319,7 @@ export default defineConfig(({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`elements.ts` entries that plugin bundles import through
+        // `vue.ts`/`cp-module.ts` entries that plugin bundles import through
         // the import map.
         preserveEntrySignatures: 'exports-only',
       },
@@ -382,9 +382,9 @@ export default defineConfig(({mode}) => {
             laravel({
               input: [
                 'resources/js/cp.ts',
-                'resources/js/elements.ts',
-                'yii2-adapter/resources/js/element-editor.ts',
                 'yii2-adapter/resources/js/cp-compat.ts',
+                'yii2-adapter/resources/js/element-editor.ts',
+                'resources/js/cp-module.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',

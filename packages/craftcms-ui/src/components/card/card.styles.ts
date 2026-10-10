@@ -36,8 +36,7 @@ export default css`
   .card__footer {
     font-size: 0.875em;
     padding-block: var(--c-card-padding-block, var(--c-spacing-sm));
-    padding-inline-start: var(--c-card-padding-inline, var(--c-spacing-md));
-    padding-inline-end: var(--c-card-padding-inline, var(--c-spacing-sm));
+    padding-inline: var(--c-card-padding-inline, var(--c-spacing-md));
     background-color: var(--c-color-fill-quiet);
     border-width: 0;
     border-color: var(--c-color-border-quiet);
@@ -71,6 +70,7 @@ export default css`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-sizing: border-box;
   }
 
   .card__label-text,
@@ -78,10 +78,14 @@ export default css`
     text-box: trim-both cap alphabetic;
   }
 
+  .card__header__suffix {
+    display: flex;
+    gap: var(--c-spacing-md);
+  }
+
   .card__actions {
     display: flex;
     gap: var(--c-spacing-sm);
-    align-self: end;
   }
 
   .card-body {

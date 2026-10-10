@@ -1,4 +1,4 @@
-import {h} from 'vue';
+import {h, type MaybeRef} from 'vue';
 import {
   createColumnHelper,
   createPaginatedRowModel,
@@ -139,7 +139,7 @@ export const sampleColumns = columnHelper.columns([
  * this inside `setup()`.
  */
 export function createSampleTable(
-  options: {data?: Array<SampleEntry>; pageSize?: number} = {}
+  options: {data?: MaybeRef<Array<SampleEntry>>; pageSize?: number} = {}
 ): Table<CraftTableFeatures, SampleEntry> {
   const table = useTable<typeof sampleFeatures, SampleEntry>({
     features: sampleFeatures,

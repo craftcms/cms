@@ -26,7 +26,10 @@ vi.mock('./UiRenderer.vue', () => ({
   default: defineComponent({
     props: ['payload', 'errors'],
     setup(_props, {expose}) {
-      expose({currentValues: () => ({details: {a: {accept: '2'}}})});
+      expose({
+        canSubmit: () => true,
+        currentValues: () => ({details: {a: {accept: '2'}}}),
+      });
       return () => h('div');
     },
   }),

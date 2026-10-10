@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
@@ -1228,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element, $elementHtml)
+                        ? $this->titleCellHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1285,22 +1284,53 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
+    private function titleCellHtml(ElementInterface $element): string
     {
-        $chip = $elementHtml->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
-        ]);
-
-        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $this->editUrl($element)
-            : null;
-
-        if ($editUrl === null) {
-            return $chip;
+        if (static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL) {
+            return $this->chipHtml($element);
         }
 
-        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
+        return $this->titleLinkHtml($element);
+    }
+
+    /**
+     * Renders a title cell's chip, linked to wherever clicking the element
+     * should go.
+     *
+     * Only the label is the link, so the rest of the chip (its status
+     * indicator, say) behaves like the rest of the row.
+     */
+    protected function titleLinkHtml(ElementInterface $element): string
+    {
+        $editUrl = $this->editUrl($element);
+
+        if ($editUrl === null) {
+            return $this->chipHtml($element);
+        }
+
+        return $this->chipHtml($element, [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $editUrl,
+            'hyperlinkTag' => 'CpLink',
+            'hyperlinkAttributes' => ['bare' => true],
+        ]);
+    }
+
+    /**
+     * Renders a title cell's chip.
+     *
+     * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
+     * which can queue transforms or fire `ThumbUrlResolving` handlers.
+     *
+     * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
+     */
+    protected function chipHtml(ElementInterface $element, array $config = []): string
+    {
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            ...$config,
+        ]);
     }
 
     /**

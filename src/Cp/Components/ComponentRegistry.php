@@ -28,6 +28,7 @@ class ComponentRegistry
         'checkbox-select' => CheckboxSelect::class,
         'combobox' => Combobox::class,
         'component-select' => ComponentSelect::class,
+        'copy-attribute' => CopyAttribute::class,
         'empty' => EmptyState::class,
         'entry-type-select' => EntryTypeSelect::class,
         'field' => Field::class,

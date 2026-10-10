@@ -515,6 +515,93 @@ describe('WorkflowReviewPanel', () => {
     ).toBe(false);
   });
 
+  it('posts the requester’s comment on Ctrl/Command + Enter', async () => {
+    const requesterReview = review({
+      actionComponent: null,
+      showDefaultActions: true,
+      actionProps: {canReview: false},
+    });
+    requestSpy.mockResolvedValue(
+      response({message: 'Comment added.', workflowReview: requesterReview})
+    );
+    mount(requesterReview);
+
+    await enterNote('One more detail for the reviewers.');
+    container!
+      .querySelector<HTMLTextAreaElement>(
+        'textarea[id^="workflow-review-note"]'
+      )!
+      .dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+    await vi.waitFor(() => expect(requests()).toHaveLength(1));
+
+    expect(requests()[0]).toEqual(
+      expect.objectContaining({
+        url: '/admin/workflows/41/stages/publishers-stage/comment',
+        data: expect.objectContaining({
+          note: 'One more detail for the reviewers.',
+        }),
+      })
+    );
+  });
+
+  it('blocks a requester’s comment that’s over the length limit', async () => {
+    mount(
+      review({
+        actionComponent: null,
+        showDefaultActions: true,
+        actionProps: {canReview: false},
+      })
+    );
+
+    await enterNote('a'.repeat(10_001));
+    const comment = actionButton(
+      'Comment'
+    ) as HTMLElementTagNameMap['craft-button'];
+    await comment.updateComplete;
+
+    expect(comment.disabled).toBe(true);
+    expect(container!.textContent).toContain('1 character over the limit');
+
+    container!
+      .querySelector<HTMLTextAreaElement>(
+        'textarea[id^="workflow-review-note"]'
+      )!
+      .dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+    await nextTick();
+    expect(requests()).toHaveLength(0);
+
+    await enterNote('a'.repeat(10_000));
+    await comment.updateComplete;
+    expect(comment.disabled).toBe(false);
+    expect(container!.textContent).not.toContain('over the limit');
+  });
+
+  it('blocks a review whose message is over the length limit', async () => {
+    mount(review());
+
+    await chooseReviewDecision('approve');
+    await enterReviewMessage('😀'.repeat(10_002));
+    const submit = actionButton(
+      'Submit review'
+    ) as HTMLElementTagNameMap['craft-button'];
+    await submit.updateComplete;
+
+    expect(submit.disabled).toBe(true);
+    expect(container!.textContent).toContain('2 characters over the limit');
+  });
+
   it('shows the workflow message returned by a failed transition', async () => {
     requestSpy.mockResolvedValue(
       response(
@@ -623,7 +710,7 @@ describe('WorkflowReviewPanel', () => {
                     id: 'comment',
                     type: 'comment',
                     icon: 'comment',
-                    description: 'commented.',
+                    description: 'commented',
                     actor: activityTarget('Lin'),
                     decision: null,
                     noteHtml: '<p>Can you clarify this?</p>',
@@ -653,7 +740,7 @@ describe('WorkflowReviewPanel', () => {
     expect(text).toContain('Looks good.');
     expect(text).toContain('Grace requested changes');
     expect(text).toContain('Please revise this.');
-    expect(text).toContain('Lin commented.');
+    expect(text).toContain('Lin commented');
     expect(text).toContain('Can you clarify this?');
     expect(text).toContain('Craft CMS failed the stage');
     expect(text).toContain('Unsupported claims were found.');

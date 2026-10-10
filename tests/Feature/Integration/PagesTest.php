@@ -54,13 +54,13 @@ it('renders inertia pages', function (string $url, string $component, string $ti
 })->with([
     [
         'url' => '/settings/sections',
-        'component' => 'settings/sections/Index',
+        'component' => 'Ui',
         'title' => 'Sections',
     ],
     [
         'url' => '/settings/users',
         'title' => 'User Settings',
-        'component' => 'settings/users/groups/Index',
+        'component' => 'Ui',
     ],
     [
         'url' => '/settings/users/settings',
@@ -70,17 +70,17 @@ it('renders inertia pages', function (string $url, string $component, string $ti
     [
         'url' => '/settings/fields',
         'title' => 'Fields',
-        'component' => 'settings/fields/Index',
+        'component' => 'Ui',
     ],
     [
         'url' => '/settings/assets',
         'title' => 'Volume Settings',
-        'component' => 'settings/assets/Index',
+        'component' => 'Ui',
     ],
     [
         'url' => '/settings/assets/transforms',
         'title' => 'Image Transforms',
-        'component' => 'settings/assets/transforms/Index',
+        'component' => 'Ui',
     ],
     [
         'url' => '/settings/routes',

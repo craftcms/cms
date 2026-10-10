@@ -43,6 +43,24 @@ pre {
 a {
   cursor: pointer;
   color: var(--c-text-link);
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover {
+  text-decoration-line: var(--c-link-decoration-hover);
+}
+
+a craft-chip {
+  --c-chip-text: var(--c-text-link);
+}
+
+/* A link's underline doesn't reach into the chip's shadow tree, so its label takes it directly. */
+a craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration-hover);
 }
 
 /*
@@ -183,6 +201,7 @@ most of the element display correctly which is why we don't do BEM or anything h
 Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
+Modify with `cp-table--flush` to remove the inline padding at the outer edges of each row
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
@@ -269,6 +288,16 @@ Modify with `cp-table--auto` to apply table-layout: auto
   textarea {
     resize: none;
     line-height: 1.2;
+  }
+}
+
+.cp-table--flush tr > :is(th, td) {
+  &:first-child {
+    padding-inline-start: 0;
+  }
+
+  &:last-child {
+    padding-inline-end: 0;
   }
 }
 

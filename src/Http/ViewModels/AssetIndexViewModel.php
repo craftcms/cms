@@ -365,6 +365,33 @@ class AssetIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * Folder titles link to the folder, though a plain click is left to the
+     * row, which navigates without losing the index's current state.
+     */
+    #[Override]
+    protected function titleLinkHtml(ElementInterface $element): string
+    {
+        if (! $element instanceof Asset || ! $element->isFolder) {
+            return parent::titleLinkHtml($element);
+        }
+
+        $folderUrl = $this->folderUrl($element);
+
+        if ($folderUrl === null) {
+            return $this->chipHtml($element);
+        }
+
+        return Html::a($this->chipHtml($element), $folderUrl, ['data-folder-link' => true]);
+    }
+
+    private function folderUrl(Asset $folder): ?string
+    {
+        $uri = array_last($folder->sourcePath ?? [])['uri'] ?? null;
+
+        return $uri !== null ? Url::cpUrl($uri) : null;
+    }
+
+    /**
      * Marks folder rows so the client can (a) navigate into the folder on click
      * — the folder chip has no edit URL, so `folderUrl` (the last step of its
      * resolved source path) is provided — and (b) treat the row as a drag-and-
@@ -383,14 +410,13 @@ class AssetIndexViewModel extends ContentIndexViewModel
             return ['previewable' => true];
         }
 
-        $uri = array_last($element->sourcePath)['uri'] ?? null;
         $folder = Folders::getFolderById($element->folderId);
 
         return [
             'isFolder' => true,
             'folderId' => $element->folderId,
             'folderName' => $folder?->name,
-            'folderUrl' => $uri !== null ? Url::cpUrl($uri) : null,
+            'folderUrl' => $this->folderUrl($element),
             'canMoveTo' => $folder !== null && Gate::check('moveIntoFolder', $folder),
         ];
     }

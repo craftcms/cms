@@ -23,7 +23,7 @@
 <style scoped>
   .workflow-review-runs {
     display: grid;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
     margin: 0;
     padding: 0;
     list-style: none;

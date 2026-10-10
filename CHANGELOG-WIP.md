@@ -13,10 +13,8 @@
 
 ### Elements
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
-- Element edit screens now indicate which fields a draft has unapplied changes to.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
-- Element editor slideouts now have action menus and “Open in a new tab” buttons. ([#19748](https://github.com/craftcms/cms/pull/19748))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -643,7 +641,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Removed `Cp.$axios`.
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
-- Plugin bundles can now import the control panel’s element index and element editor components (`ElementIndexPage`, `ElementEditor`, `CpButtonLink`, `ActionMenu`) from the `@craftcms/cms/elements` import-map module, so a plugin’s own element types can have Inertia index and edit pages.
+- Plugin bundles can now import the control panel’s element index and element editor components (`ElementIndexPage`, `ElementEditor`, `CpButtonLink`, `ActionMenu`) from the `@craftcms/cp` import-map module, so a plugin’s own element types can have Inertia index and edit pages.
 - Reactive controls in an element’s field layout now refresh the layout from the server when they change, the same as in settings forms.
 - Element action menu items can now use a `formModal` behavior (`modalUrl`, `actionUrl`, `params`), which opens a server-built form in a modal, posts its values to `actionUrl`, and reloads the page once it’s submitted.
 - Element actions run from the element index’s bulk actions bar can now redirect the browser by setting a redirect response with `setResponse()`.

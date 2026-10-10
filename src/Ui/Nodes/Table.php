@@ -11,6 +11,7 @@ use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
+use DateTimeImmutable;
 use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\t;
@@ -24,13 +25,16 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
     private array $rows = [];
 
     private ?string $dataUrl = null;
+
+    /** @var array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}|null */
+    private ?array $pagination = null;
 
     private int $perPage = 100;
 
@@ -58,11 +62,15 @@ class Table implements Node
 
     private ?string $deleteUrl = null;
 
+    private bool $deletable = false;
+
     private ?string $deleteConfirmMessage = null;
 
-    private bool $bulkDeletable = false;
-
     private ?string $deleteModalUrl = null;
+
+    private ?string $bulkDeleteUrl = null;
+
+    private ?string $bulkDeleteConfirmMessage = null;
 
     /** @var list<array<string, mixed>> */
     private array $bulkActions = [];
@@ -84,7 +92,7 @@ class Table implements Node
 
     private bool $bordered = false;
 
-    private bool $showFooter = true;
+    private ?bool $showFooter = null;
 
     public function __construct(private readonly string $uid) {}
 
@@ -96,8 +104,10 @@ class Table implements Node
     /**
      * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
+     * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `headerSrOnly` hides only the visible header text.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
      */
     public function columns(array $columns): static
     {
@@ -110,7 +120,7 @@ class Table implements Node
      * Rows are keyed by column `key`, with an `id` when reordering or deleting.
      * Cells accept scalars, `['label' => string, 'url' => ?string]` links, lists of
      * links, `['label' => string, 'items' => list<links>]` menus, `['icon' => string,
-     * 'label' => ?string]` icons, or `['html' => string]` markup. HTML is rendered
+     * 'label' => ?string]` icons, `['date' => ISO timestamp]` dates, or `['html' => string]` markup. HTML is rendered
      * without sanitization in both renderers. Encode untrusted content with
      * {@see Html::encode()} before passing it.
      *
@@ -123,17 +133,23 @@ class Table implements Node
      * submitLabel?: string}`; submitting posts the UI's values plus `params` to `actionUrl`,
      * then reloads the table.
      *
-     * `_deletable => false` suppresses deletion of one row. `_status` accepts a
+     * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
+     * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
+     * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
+     * shows a disabled delete button with an explanation instead of hiding it.
+     * `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
      * `_sort` maps column keys to values to sort by client-side instead of the cell's text.
+     * Calling this clears pagination; apply {@see pagination()} afterward for a server-paginated page.
      *
-     * @param  list<array<string, mixed>>  $rows
+     * @param  iterable<array-key, array<string, mixed>>  $rows
      */
-    public function rows(array $rows): static
+    public function rows(iterable $rows): static
     {
-        $this->rows = self::prepareRows($rows);
+        $this->rows = self::prepareRows(iterator_to_array($rows, false));
         $this->dataUrl = null;
+        $this->pagination = null;
 
         return $this;
     }
@@ -184,20 +200,46 @@ class Table implements Node
      * last_page, next_page_url, prev_page_url, from, to}}`. Pass the page's rows through
      * {@see prepareRows()} first. Calling this clears {@see rows()}, and vice versa.
      *
-     * Users can switch `per_page` between `$perPageOptions` (plus `$perPage`), so the
-     * endpoint must honor the posted value rather than assume `$perPage`.
-     *
-     * @param  list<int>|null  $perPageOptions
+     * Users can switch `per_page` between the sizes configured by {@see perPage()}, so
+     * the endpoint must honor the posted value rather than assume the initial size.
      */
-    public function dataUrl(string $url, int $perPage = 100, ?array $perPageOptions = null): static
+    public function dataUrl(string $url): static
     {
         $this->dataUrl = $url;
-        $this->perPage = $perPage;
         $this->rows = [];
+        $this->pagination = null;
 
-        if ($perPageOptions !== null) {
-            $this->perPageOptions = $perPageOptions;
+        return $this;
+    }
+
+    /**
+     * Configure the initial page size and optionally replace
+     * the available sizes. The initial size is always included in the options.
+     *
+     * @param  list<int>|null  $options
+     */
+    public function perPage(int $perPage, ?array $options = null): static
+    {
+        $this->perPage = $perPage;
+
+        if ($options !== null) {
+            $this->perPageOptions = $options;
         }
+
+        return $this;
+    }
+
+    /**
+     * Treat {@see rows()} as one server-paginated page. The Inertia UI page supplies
+     * subsequent pages through partial reloads of its existing index route.
+     *
+     * @param  array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}  $pagination
+     */
+    public function pagination(array $pagination): static
+    {
+        $this->pagination = $pagination;
+        $this->perPage = $pagination['per_page'];
+        $this->dataUrl = null;
 
         return $this;
     }
@@ -255,7 +297,8 @@ class Table implements Node
     }
 
     /**
-     * Enables drag-to-reorder; the new order posts to `$url` as `{ids: list<int|string>}`.
+     * Enables drag-to-reorder. Static rows post `{ids: list<int|string>}`.
+     * Paginated rows post `{id: <row id>, toPosition: <absolute zero-based position>}`.
      * `$successMessage`/`$failMessage` are shown as a toast after the request settles — omit
      * either (or both) to fall back to a generic message client-side.
      */
@@ -269,24 +312,36 @@ class Table implements Node
     }
 
     /**
-     * Adds a per-row delete action, posting `{id: <row id>}` to `$url`. Individual rows can
-     * opt out via `_deletable => false` in {@see rows()}.
-     *
-     * `$bulk` enables row selection and posts `{ids: <row ids>}` to the same endpoint.
-     * Enable it only if the endpoint handles `ids` as well as `id`.
+     * Adds a per-row delete action, submitting `{id: <row id>}` to `$url` via DELETE.
+     * Individual rows can opt out via `_deletable => false` in {@see rows()}.
+     * For resource routes, set `_deleteUrl` on each row using `route()`.
+     * The shared `$url` can then be omitted.
      *
      * `$modalUrl` replaces the per-row confirmation with a modal UI, for deletions that need
      * more input (where to move a deleted record's data, say). It's requested via GET with
      * `{id: <row id>}` and must return JSON `{ui: UiPayload, title?: string,
-     * submitLabel?: string}`; submitting posts the UI's values plus `id` to `$url`. Bulk
-     * deletion still uses the plain confirmation.
+     * submitLabel?: string}`; submitting sends the UI's values plus `id` to the row's
+     * deletion URL via DELETE.
      */
-    public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false, ?string $modalUrl = null): static
+    public function deletable(?string $url = null, ?string $confirmMessage = null, ?string $modalUrl = null): static
     {
+        $this->deletable = true;
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
-        $this->bulkDeletable = $bulk;
         $this->deleteModalUrl = $modalUrl;
+
+        return $this;
+    }
+
+    /**
+     * Enables row selection and adds a bulk delete action, submitting
+     * `{ids: list<int|string>}` to `$url` via DELETE after confirmation.
+     * Row deletion is configured independently with {@see deletable()}.
+     */
+    public function bulkDeletable(string $url, ?string $confirmMessage = null): static
+    {
+        $this->bulkDeleteUrl = $url;
+        $this->bulkDeleteConfirmMessage = $confirmMessage;
 
         return $this;
     }
@@ -375,6 +430,9 @@ class Table implements Node
         return $this;
     }
 
+    /**
+     * Override the automatic footer visibility for pagination and bulk actions.
+     */
     public function showFooter(bool $showFooter = true): static
     {
         $this->showFooter = $showFooter;
@@ -423,6 +481,7 @@ class Table implements Node
                     is_array($value) && array_key_exists('items', $value) => implode(', ', array_map($renderLink, $value['items'])),
                     is_array($value) && array_key_exists('icon', $value) => Html::encode($value['label'] ?? ''),
                     is_array($value) && array_key_exists('html', $value) => $value['html'],
+                    is_array($value) && array_key_exists('date', $value) => Html::tag('time', Html::encode(new DateTimeImmutable($value['date'])->format('F j, Y')), ['datetime' => $value['date']]),
                     is_array($value) && array_is_list($value) => implode(', ', array_map($renderLink, $value)),
                     is_array($value) => $renderLink($value),
                     default => Html::encode((string) $value),
@@ -475,6 +534,7 @@ class Table implements Node
             'columns' => $this->columns,
             'rows' => $this->rows,
             'dataUrl' => $this->dataUrl,
+            'pagination' => $this->pagination,
             'perPage' => $this->perPage,
             'perPageOptions' => $this->resolvePerPageOptions(),
             'moveToPageUrl' => $this->moveToPageUrl,
@@ -487,9 +547,11 @@ class Table implements Node
             'reorderSuccessMessage' => $this->reorderSuccessMessage,
             'reorderFailMessage' => $this->reorderFailMessage,
             'deleteUrl' => $this->deleteUrl,
+            'deletable' => $this->deletable,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
-            'bulkDeletable' => $this->bulkDeletable,
             'deleteModalUrl' => $this->deleteModalUrl,
+            'bulkDeleteUrl' => $this->bulkDeleteUrl,
+            'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
             'bulkActions' => $this->bulkActions,
             'statusActions' => $this->statusActions,
             'statusFilterOptions' => $this->resolveStatusFilterOptions(),
@@ -498,7 +560,14 @@ class Table implements Node
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
             'bordered' => $this->bordered,
-            'showFooter' => $this->showFooter,
+            'showFooter' => $this->showFooter ?? (
+                $this->dataUrl !== null
+                || $this->pagination !== null
+                || $this->bulkDeleteUrl !== null
+                || $this->bulkActions !== []
+                || $this->statusActions !== []
+                || $this->moveToPageUrl !== null
+            ),
         ];
     }
 

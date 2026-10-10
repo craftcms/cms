@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
-  import type {Row, Table} from '@tanstack/vue-table';
+  import type {ColumnDef, Table} from '@tanstack/vue-table';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import type {BulkAction} from '@/modules/elements/types/actions';
   import AdminTableBulkActionsBar from './AdminTableBulkActionsBar.vue';
@@ -8,12 +8,53 @@
   import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {computed, type HTMLAttributes, ref} from 'vue';
-  import {TableSpacing, type TableSpacingValue} from '@/common/types';
+  import {computed, defineComponent, h, ref} from 'vue';
+  import {
+    TableSpacing,
+    type TableSpacingValue,
+    type PaginationData,
+  } from '@/common/types';
+
+  import {useAdminTable} from '../useAdminTable';
+  import type {
+    AdminTableDataOptions,
+    AdminTableReorder,
+    AdminTableStatusOption,
+  } from '../types';
+  import AdminTableControls from './AdminTableControls.vue';
+  import MoveToPageButton from './MoveToPageButton.vue';
+  import CreateActionButton from './CreateActionButton.vue';
 
   const props = withDefaults(
     defineProps<{
-      table: Table<CraftTableFeatures, TData>;
+      table?: Table<CraftTableFeatures, TData>;
+      rows?: TData[];
+      columns?: ColumnDef<CraftTableFeatures, TData, any>[];
+      loadRows?: AdminTableDataOptions<TData>['loadRows'];
+      storageKey?: string;
+      pagination?: PaginationData | null;
+      requestState?: AdminTableDataOptions<TData>['requestState'];
+      pageSize?: number;
+      searchable?: boolean;
+      searchPlaceholder?: string | null;
+      statusFilterOptions?: AdminTableStatusOption[];
+      columnsToggleable?: boolean;
+      hiddenColumnsByDefault?: string[];
+      getSearchText?: AdminTableDataOptions<TData>['getSearchText'];
+      getRowStatus?: AdminTableDataOptions<TData>['getRowStatus'];
+      getSortValue?: AdminTableDataOptions<TData>['getSortValue'];
+      canSelectRow?: AdminTableDataOptions<TData>['canSelectRow'];
+      getRowLabel?: (row: TData) => string;
+      reorderRows?: (move: AdminTableReorder<TData>) => Promise<void>;
+      moveToPage?: (
+        id: string | number,
+        page: number,
+        pageSize: number
+      ) => Promise<void>;
+      emptyMessage?: string | null;
+      createLabel?: string | null;
+      createUrl?: string | null;
+      createMenuItems?: Array<{label: string; url: string}> | null;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
@@ -25,16 +66,29 @@
       context?: string;
       readOnly?: boolean;
       loading?: boolean;
+      interactionsDisabled?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
-      from?: number;
-      to?: number;
+      from?: number | null;
+      to?: number | null;
       total?: number;
       showFooter?: boolean;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
+      /**
+       * Insets the table by the page container’s padding, and drops the inline
+       * padding at the start and end of each row to match.
+       */
+      padded?: boolean;
     }>(),
     {
+      rows: () => [],
+      columns: () => [],
+      pageSize: 100,
+      searchable: false,
+      statusFilterOptions: () => [],
+      columnsToggleable: false,
+      hiddenColumnsByDefault: () => [],
       reorderable: false,
       selectable: false,
       actions: () => [],
@@ -46,6 +100,7 @@
       showFooter: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
+      padded: false,
     }
   );
   const page = usePage<{readOnly: boolean}>();
@@ -55,91 +110,123 @@
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
     'action-performed': [];
+    'load-error': [error: unknown];
+    'action-error': [error: unknown];
   }>();
 
-  const {
-    onToggleAllSelected,
-    selectRow,
-    selectRowFromEvent,
-    toggleRow,
-    extendSelectionTo,
-  } = useTableRowSelection(() => props.table, {
+  const managed = props.table
+    ? null
+    : useAdminTable<TData>(props, (error) => emit('load-error', error));
+  const table = computed(() => props.table ?? managed!.table);
+  const hasRows = computed(() => table.value.getRowModel().rows.length > 0);
+  const loading = computed(
+    () => props.loading || !!managed?.loading.value || moving.value
+  );
+  const reorderable = computed(
+    () =>
+      props.reorderable && !managed?.orderingDisabled.value && !loading.value
+  );
+  const from = computed(() => props.from ?? managed?.from.value);
+  const to = computed(() => props.to ?? managed?.to.value);
+  const total = computed(() => props.total ?? managed?.total.value);
+  const enableAdjustPageSize = computed(
+    () => props.enableAdjustPageSize || !!managed?.paginated.value
+  );
+  const hasControls = computed(
+    () =>
+      managed &&
+      (props.searchable ||
+        props.statusFilterOptions.length ||
+        props.columnsToggleable ||
+        props.createUrl ||
+        props.createMenuItems?.length)
+  );
+  const emptyLabel = computed(() =>
+    managed?.search.value
+      ? t('No results for “{search}”.', {search: managed.search.value})
+      : managed?.status.value
+        ? t('No results.')
+        : (props.emptyMessage ?? t('Nothing to show.'))
+  );
+  const moving = ref(false);
+
+  function clearSelection(): void {
+    table.value.resetRowSelection();
+  }
+  function refresh(): Promise<boolean> {
+    return managed?.refresh() ?? Promise.resolve(true);
+  }
+  function removeRows(ids: Array<string | number>): void {
+    managed?.removeRows(ids);
+  }
+
+  function onReorder(start: number, end: number): void {
+    if (managed && props.reorderRows) {
+      void managed
+        .reorder(start, end, props.reorderRows)
+        .catch((error) => emit('action-error', error));
+    } else {
+      emit('reorder', start, end);
+    }
+  }
+
+  async function moveSelectedToPage(page: number): Promise<void> {
+    const id = selectedIds.value[0];
+    if (!managed || !props.moveToPage || id === undefined || moving.value)
+      return;
+    moving.value = true;
+    try {
+      await props.moveToPage(
+        id,
+        page,
+        table.value.atoms.pagination.get().pageSize
+      );
+      clearSelection();
+      await refresh();
+    } catch (error) {
+      emit('action-error', error);
+    } finally {
+      moving.value = false;
+    }
+  }
+  const MoveToPageDisplay = defineComponent({
+    setup() {
+      return () =>
+        h(MoveToPageButton, {
+          currentPage: managed?.pagination.value?.current_page ?? 1,
+          lastPage: managed?.pagination.value?.last_page ?? 1,
+          loading: loading.value,
+          onMove: moveSelectedToPage,
+        });
+    },
+  });
+  const actions = computed<BulkAction[]>(() => [
+    ...(props.actions ?? []),
+    ...(props.moveToPage &&
+    managed?.paginated.value &&
+    !managed.orderingDisabled.value &&
+    table.value.getPageCount() > 1 &&
+    selectedIds.value.length === 1
+      ? [{type: 'display' as const, is: MoveToPageDisplay}]
+      : []),
+  ]);
+
+  const selection = useTableRowSelection(() => table.value, {
     selectable: () => props.selectable,
     readOnly,
   });
 
-  // Captures modifier state from the native click, because craft-checkbox's
-  // `model-value-changed` event does not carry `shiftKey`.
-  const pendingShiftKey = ref(false);
-
-  const leadingColumnTracks = computed(() =>
-    props.selectable ? ['44px'] : []
-  );
-
-  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
-    return row.original.label ?? row.original.name ?? String(row.original.id);
-  }
-
-  function rowAttributes(row: Row<CraftTableFeatures, TData>): HTMLAttributes {
-    if (!props.selectable) {
-      return {};
-    }
-
-    return {
-      tabindex: 0,
-      class: {sel: row.getIsSelected()},
-    };
-  }
-
-  function onRowClick(row: Row<CraftTableFeatures, TData>, event: MouseEvent) {
-    if (props.loading) {
-      return;
-    }
-
-    selectRowFromEvent(row, event);
-  }
-
-  function onRowKeydown(
-    row: Row<CraftTableFeatures, TData>,
-    index: number,
-    event: KeyboardEvent
-  ) {
-    if (!props.selectable || props.loading) {
-      return;
-    }
-
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
-    const rows = props.table.getRowModel().rows;
-
-    switch (event.key) {
-      case ' ':
-      case 'Enter':
-        event.preventDefault();
-        toggleRow(row);
-        break;
-      case 'ArrowDown':
-      case 'ArrowUp': {
-        const target = rows[event.key === 'ArrowDown' ? index + 1 : index - 1];
-        if (event.shiftKey && target) {
-          extendSelectionTo(target);
-        }
-        break;
-      }
-    }
-  }
-
   const selectedIds = computed(() =>
-    props.table.getSelectedRowModel().rows.map((row) => row.original.id)
+    table.value.getSelectedRowModel().rows.map((row) => row.original.id)
   );
+  defineExpose({selectedIds, refresh, removeRows, clearSelection});
+
   const showBulkActions = computed(
     () =>
       props.selectable &&
       !readOnly.value &&
       selectedIds.value.length > 0 &&
-      ((props.actions?.length ?? 0) > 0 || (props.statuses?.length ?? 0) > 0)
+      (actions.value.length > 0 || (props.statuses?.length ?? 0) > 0)
   );
   const actionContext = computed(() => ({
     elementType: props.elementType,
@@ -148,7 +235,8 @@
   }));
 
   function onActionPerformed() {
-    props.table.resetRowSelection();
+    table.value.resetRowSelection();
+    void refresh();
     emit('action-performed');
   }
 
@@ -156,16 +244,38 @@
     () =>
       props.showFooter &&
       (showBulkActions.value ||
-        props.enableAdjustPageSize ||
-        (props.total ?? 0) > 0 ||
-        props.table.getPageCount() > 1)
+        enableAdjustPageSize.value ||
+        (total.value ?? 0) > 0 ||
+        table.value.getPageCount() > 1)
   );
 </script>
 
 <template>
-  <div class="admin-table">
-    <div v-if="$slots['table-header']" class="admin-table__header">
-      <slot name="table-header" />
+  <div :class="['admin-table', {'admin-table--padded': padded}]">
+    <div
+      v-if="$slots['table-header'] || hasControls"
+      class="admin-table__header"
+    >
+      <slot name="table-header">
+        <AdminTableControls
+          v-if="managed && hasControls"
+          v-model:search="managed.search.value"
+          v-model:status="managed.status.value"
+          v-model:sort-field="managed.viewSortField.value"
+          v-model:sort-direction="managed.viewSortDirection.value"
+          v-model:table-columns="managed.viewTableColumns.value"
+          :searchable="searchable"
+          :search-placeholder="searchPlaceholder"
+          :status-filter-options="statusFilterOptions"
+          :columns-toggleable="columnsToggleable"
+          :view-column-options="managed.viewColumnOptions.value"
+          :view-sort-options="managed.viewSortOptions.value"
+          :create-label="createLabel"
+          :create-url="createUrl"
+          :create-menu-items="createMenuItems"
+          @reorder-columns="managed.onColumnsReorder"
+        />
+      </slot>
     </div>
     <div class="admin-table__body">
       <DataTable
@@ -176,66 +286,31 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
+        :flush="padded"
         :with-bottom-border="!footerVisible"
-        :leading-column-tracks="leadingColumnTracks"
-        :row-attributes="rowAttributes"
-        @row-click="onRowClick"
-        @row-keydown="onRowKeydown"
-        @reorder="(start, end) => emit('reorder', start, end)"
+        :selection="selection"
+        :get-row-label="getRowLabel"
+        :interactions-disabled="interactionsDisabled || loading"
+        @reorder="onReorder"
       >
-        <template #leading-header>
-          <th
-            v-if="selectable"
-            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
-            scope="col"
-          >
-            <craft-checkbox
-              label-sr-only
-              .checked="table.getIsAllRowsSelected()"
-              .indeterminate="
-                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-              "
-              .disabled="readOnly || loading"
-              @model-value-changed="
-                onToggleAllSelected(($event.target as HTMLInputElement).checked)
-              "
-            >
-              <label slot="label">{{ t('Select all') }}</label>
-            </craft-checkbox>
-          </th>
+        <template #empty-row v-if="$slots['empty-row'] || managed">
+          <slot name="empty-row"><span hidden /></slot>
         </template>
-        <template #leading-cells="{row, hideBottomBorder}">
-          <td
-            v-if="selectable"
-            :class="{
-              'cp-table-cell': true,
-              'cp-table-cell--select': true,
-              'border-b-0': hideBottomBorder,
-            }"
-          >
-            <craft-checkbox
-              label-sr-only
-              .checked="row.getIsSelected()"
-              .disabled="readOnly || loading || !row.getCanSelect()"
-              @click="pendingShiftKey = $event.shiftKey"
-              @model-value-changed="
-                selectRow(row, {
-                  checked: ($event.target as HTMLInputElement).checked,
-                  shiftKey: pendingShiftKey,
-                })
-              "
-            >
-              <label slot="label">{{
-                t('Select {label}', {label: rowLabel(row)})
-              }}</label>
-            </craft-checkbox>
-          </td>
-        </template>
-        <template #empty-row v-if="$slots['empty-row']"
-          ><slot name="empty-row"
-        /></template>
       </DataTable>
     </div>
+    <craft-empty
+      v-if="managed && !hasRows && !loading && !$slots['empty-row']"
+      :label="emptyLabel"
+    >
+      <slot name="empty-actions">
+        <CreateActionButton
+          v-if="!readOnly"
+          :label="createLabel ?? null"
+          :url="createUrl"
+          :menu-items="createMenuItems"
+        />
+      </slot>
+    </craft-empty>
     <div class="admin-table__footer" v-if="footerVisible">
       <AdminTableBulkActionsBar
         v-if="showBulkActions"
@@ -250,6 +325,7 @@
       />
       <PaginationControls
         v-else
+        :disabled="loading || interactionsDisabled"
         :page-index="table.atoms.pagination.get().pageIndex"
         :page-size="table.atoms.pagination.get().pageSize"
         :page-count="table.getPageCount()"

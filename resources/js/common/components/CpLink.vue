@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
-  import {type Component, computed, defineComponent, h} from 'vue';
+  import {type Component, computed, defineComponent, h, useAttrs} from 'vue';
 
   defineOptions({inheritAttrs: false});
 
@@ -78,19 +78,36 @@
       icon?: string;
       block?: boolean;
       inertia?: boolean;
+      /**
+       * Renders just the link around its content, without the flex wrapper, for
+       * a link inside text that has to wrap or truncate with it.
+       */
+      bare?: boolean;
     }>(),
     {
       block: false,
       inertia: true,
+      bare: false,
     }
   );
 
   const classes = computed(() => {
     return {
-      block: props.block,
-      'inline-flex': !props.block,
+      block: props.block && !props.bare,
+      'inline-flex': !props.block && !props.bare,
       'cp-link': true,
     };
+  });
+
+  const attrs = useAttrs();
+
+  // Inertia only prefetches GET visits, and throws for any other method.
+  const defaultPrefetch = computed(() => {
+    const method =
+      attrs.method ??
+      (props.href instanceof Object ? props.href.method : undefined);
+
+    return !method || String(method).toLowerCase() === 'get' ? 'click' : false;
   });
 
   const hrefString = computed(() => {
@@ -120,13 +137,17 @@
 <template>
   <template v-if="inertia">
     <Link
-      v-bind="{prefetch: 'click', ...$attrs, ...customElementAttributes}"
+      v-bind="{
+        prefetch: defaultPrefetch,
+        ...$attrs,
+        ...customElementAttributes,
+      }"
       :as="linkComponent"
       :tag="customElement"
       :href="href"
       :class="customElement ? undefined : classes"
     >
-      <slot v-if="customElement"></slot>
+      <slot v-if="customElement || bare"></slot>
       <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
@@ -140,7 +161,7 @@
       :href="hrefString"
       :class="customElement ? undefined : classes"
     >
-      <slot v-if="customElement"></slot>
+      <slot v-if="customElement || bare"></slot>
       <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
@@ -153,6 +174,5 @@
   .cp-link {
     gap: var(--c-spacing-sm);
     align-items: center;
-    text-decoration: none;
   }
 </style>

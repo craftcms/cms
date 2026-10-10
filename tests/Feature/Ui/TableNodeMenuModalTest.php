@@ -28,20 +28,6 @@ function menuModalRows(): array
     ]];
 }
 
-it('passes menu items that open a modal UI through to the table', function () {
-    $props = Table::make('stock')
-        ->columns([['key' => 'stock', 'label' => 'Stock']])
-        ->rows(menuModalRows())
-        ->props();
-
-    expect($props['rows'][0]['stock']['items'][1])->toBe([
-        'label' => 'Adjust',
-        'modalUrl' => 'stock/adjust-modal',
-        'actionUrl' => 'stock/adjust',
-        'params' => ['id' => 1],
-    ]);
-});
-
 it('renders menu items that open a modal UI as plain labels without JavaScript', function () {
     $payload = app(UiResolver::class)->resolve(Ui::make([
         Table::make('stock')

@@ -17,6 +17,10 @@ export const UiFailure: InjectionKey<(message: string) => void> =
 export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('UiPending');
 
+/** Whether the page renders its table across the full container width. */
+export const UiTablePadded: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('UiTablePadded');
+
 export const UiErrors: InjectionKey<{
   clearChildren(path: string[]): void;
   childrenCleared(path: string[]): boolean;
@@ -68,13 +72,6 @@ export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
 /** Control paths whose changes have an active UI refresh. */
 export const UiRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('UiRefreshingFields');
-
-/**
- * Whether the form is a lone borderless table rendered without a CpContainer,
- * so the table must supply its own inline gutter.
- */
-export const UiIsBareTable: InjectionKey<Readonly<Ref<boolean>>> =
-  Symbol('UiIsBareTable');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';

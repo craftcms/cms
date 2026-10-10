@@ -8,6 +8,10 @@
   } from '@actions/Elements/ActivityCommentsController';
   import ActivityMentionSuggestionsController from '@actions/Elements/ActivityMentionSuggestionsController';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {
+    COMMENT_MAX_LENGTH,
+    useCharacterLimit,
+  } from '@/common/composables/useCharacterLimit';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
@@ -35,6 +39,10 @@
   const editing = shallowRef(false);
   const draft = shallowRef('');
   const mutating = shallowRef(false);
+  const {overage, overageMessage} = useCharacterLimit(
+    draft,
+    COMMENT_MAX_LENGTH
+  );
   const error = shallowRef(false);
   const creating = computed(() => props.event === undefined);
   const comment = computed(() => props.event?.comment);
@@ -88,7 +96,7 @@
   }
 
   async function saveComment(): Promise<void> {
-    if (draft.value.trim() === '') {
+    if (draft.value.trim() === '' || overage.value > 0) {
       return;
     }
 
@@ -121,6 +129,22 @@
     } finally {
       mutating.value = false;
     }
+  }
+
+  /** Ctrl/Command + Enter posts (or saves) the comment from the editor. */
+  function onDraftKeydown(event: KeyboardEvent): void {
+    if (
+      event.key !== 'Enter' ||
+      (!event.metaKey && !event.ctrlKey) ||
+      event.isComposing ||
+      mutating.value ||
+      overage.value > 0
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void saveComment();
   }
 
   async function deleteComment(): Promise<void> {
@@ -165,19 +189,44 @@
       <label class="visually-hidden" :for="editorId">
         {{ creating ? t('Add a comment') : t('Edit comment') }}
       </label>
-      <craft-markdown-field
-        :id="editorId"
-        class="markdown-field"
-        :rows="creating ? 3 : 4"
-        :placeholder="creating ? t('Add a comment…') : undefined"
-        sanitize-html
-        show-toolbar
-        .toolbarButtons="commentToolbarButtons"
-        .value="draft"
-        @input="draft = ($event.target as HTMLTextAreaElement).value"
-      />
+      <div
+        class="activity-timeline__comment-field"
+        :class="{
+          'activity-timeline__comment-field--footer':
+            creating || overageMessage,
+        }"
+      >
+        <craft-markdown-field
+          :id="editorId"
+          class="markdown-field"
+          :max-height="200"
+          :rows="1"
+          :placeholder="creating ? t('Add a comment…') : undefined"
+          sanitize-html
+          show-toolbar
+          .toolbarButtons="commentToolbarButtons"
+          .value="draft"
+          @input="draft = ($event.target as HTMLTextAreaElement).value"
+          @keydown="onDraftKeydown"
+        />
+        <div class="activity-timeline__comment-footer">
+          <span class="activity-timeline__comment-overage" aria-live="polite">
+            {{ overageMessage }}
+          </span>
+          <craft-button
+            v-if="creating"
+            type="button"
+            variant="primary"
+            size="small"
+            :disabled="draft.trim() === '' || mutating || overage > 0"
+            @click="saveComment"
+          >
+            {{ t('Comment') }}
+          </craft-button>
+        </div>
+      </div>
       <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
-      <div class="activity-timeline__comment-actions">
+      <div v-if="error || !creating" class="activity-timeline__comment-actions">
         <p v-if="error" class="error" role="alert">
           {{
             creating
@@ -194,13 +243,14 @@
           {{ t('Cancel') }}
         </craft-button>
         <craft-button
+          v-if="!creating"
           type="button"
           variant="primary"
-          :size="creating ? 'medium' : 'small'"
-          :disabled="draft.trim() === '' || mutating"
+          size="small"
+          :disabled="draft.trim() === '' || mutating || overage > 0"
           @click="saveComment"
         >
-          {{ creating ? t('Comment') : t('Save') }}
+          {{ t('Save') }}
         </craft-button>
       </div>
     </div>
@@ -240,6 +290,10 @@
 </template>
 
 <style scoped>
+  .activity-timeline__comment:not(:last-child) {
+    margin-block-end: var(--c-spacing-md);
+  }
+
   .activity-timeline__comment-actions {
     display: flex;
     align-items: center;
@@ -256,9 +310,32 @@
     width: 100%;
   }
 
+  .activity-timeline__comment-field {
+    position: relative;
+  }
+
+  .activity-timeline__comment-field--footer craft-markdown-field {
+    --markdown-field-footer-height: calc(
+      var(--c-size-control-sm) + var(--c-spacing-md) * 2
+    );
+  }
+
+  .activity-timeline__comment-footer {
+    position: absolute;
+    inset-block-end: var(--c-spacing-md);
+    inset-inline-end: var(--c-spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+  }
+
+  .activity-timeline__comment-overage {
+    color: var(--c-color-danger-on-quiet);
+    font-size: var(--c-text-sm);
+  }
+
   .activity-timeline__comment-editor .activity-timeline__comment-actions {
-    justify-content: flex-end;
-    margin-block-start: var(--c-spacing-xs);
+    margin-block-start: var(--c-spacing-md);
   }
 
   .activity-timeline__comment-actions .error {

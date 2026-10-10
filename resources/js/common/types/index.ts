@@ -5,8 +5,8 @@ import type {
   VariantKey,
 } from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
-import type {UrlMethodPair} from '@inertiajs/core';
 import type {Component} from 'vue';
+import type {UrlMethodPair} from '@inertiajs/core';
 import type {UiValues} from '@/modules/ui/types';
 
 export type OptionData = ComboboxOptionData;
@@ -324,7 +324,6 @@ export type EditableTableCellType =
   | 'autosuggest'
   | 'template'
   | 'number'
-  | 'money'
   | 'singleline'
   | 'money'
   | 'multiline'
@@ -394,8 +393,8 @@ export interface PaginationData {
   last_page: number;
   next_page_url: string | null;
   prev_page_url: string | null;
-  from: number;
-  to: number;
+  from: number | null;
+  to: number | null;
 }
 
 export interface UserGroup {

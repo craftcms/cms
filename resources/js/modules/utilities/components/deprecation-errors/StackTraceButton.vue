@@ -17,7 +17,11 @@
   </craft-button>
 
   <Teleport to="body">
-    <Modal :is-active="isActive" @close="isActive = false">
+    <Modal
+      :is-active="isActive"
+      :label="t('Stack Trace')"
+      @close="isActive = false"
+    >
       <StackTrace :log-id="logId" />
     </Modal>
   </Teleport>

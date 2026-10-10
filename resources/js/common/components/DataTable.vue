@@ -21,6 +21,7 @@
     watch,
   } from 'vue';
   import type {NestedReorderDirection} from '@craftcms/ui';
+  import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
@@ -28,6 +29,12 @@
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
+      selection?: TableRowSelection<TData>;
+      getRowLabel?: (row: TData) => string;
+      rowBehavior?: {
+        onClick?: (row: TData, event: MouseEvent) => boolean;
+        onKeydown?: (row: TData, event: KeyboardEvent) => boolean;
+      };
       title?: string;
       reorderable?: boolean;
       /**
@@ -42,6 +49,11 @@
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
       withBottomBorder?: boolean;
+      /**
+       * Drops the inline padding at the start and end of each row, so the
+       * table lines up with its container's edges.
+       */
+      flush?: boolean;
     }>(),
 
     {
@@ -52,6 +64,7 @@
       loading: false,
       layout: 'auto',
       withBottomBorder: true,
+      flush: false,
     }
   );
 
@@ -66,6 +79,60 @@
     rowRef: [element: Element | null, row: Row<CraftTableFeatures, TData>];
   }>();
 
+  const selectable = computed(
+    () => props.selection?.selection.enabled.value ?? false
+  );
+  const readOnly = computed(
+    () => props.readOnly || !!props.selection?.readOnly.value
+  );
+  const selectionDisabled = computed(
+    () => readOnly.value || props.interactionsDisabled || props.loading
+  );
+  const leadingColumnTracks = computed(() => [
+    ...props.leadingColumnTracks,
+    ...(selectable.value ? ['44px'] : []),
+  ]);
+  const pendingShiftKey = ref(false);
+
+  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
+    return (
+      props.getRowLabel?.(row.original) ??
+      String(row.original.label ?? row.original.name ?? row.original.id)
+    );
+  }
+
+  function toggleAllSelected(event: Event): void {
+    if (selectionDisabled.value) return;
+    props.selection?.onToggleAllSelected(
+      (event.target as HTMLInputElement).checked
+    );
+  }
+
+  function selectRow(row: Row<CraftTableFeatures, TData>, event: Event): void {
+    if (selectionDisabled.value) return;
+    const shiftKey = pendingShiftKey.value;
+    pendingShiftKey.value = false;
+
+    props.selection?.selectRow(row, {
+      checked: (event.target as HTMLInputElement).checked,
+      shiftKey,
+    });
+  }
+
+  function onRowClick(
+    row: Row<CraftTableFeatures, TData>,
+    event: MouseEvent
+  ): void {
+    emit('rowClick', row, event);
+    if (
+      props.rowBehavior?.onClick?.(row.original, event) ||
+      event.defaultPrevented ||
+      selectionDisabled.value
+    )
+      return;
+    props.selection?.selectRowFromEvent(row, event);
+  }
+
   const rootRef = useTemplateRef<HTMLElement>('root-ref');
   const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
 
@@ -76,7 +143,7 @@
         emit('reorder', startIndex, finishIndex);
       },
       enabled: () =>
-        !props.readOnly && props.reorderable && !props.interactionsDisabled,
+        !readOnly.value && props.reorderable && !props.interactionsDisabled,
     });
 
   function getClosestEdge(rowId: string) {
@@ -165,7 +232,7 @@
       columnCount += 1;
     }
 
-    return columnCount + props.leadingColumnTracks.length;
+    return columnCount + leadingColumnTracks.value.length;
   });
 
   const tableStyles = computed(() => {
@@ -191,7 +258,7 @@
     return {
       '--table-column-count': columnCount,
       '--table-template-columns': [
-        ...props.leadingColumnTracks,
+        ...leadingColumnTracks.value,
         ...gridDef,
       ].join(' '),
     };
@@ -237,6 +304,23 @@
     )
       return;
 
+    if (props.rowBehavior?.onKeydown?.(row.original, event)) {
+      event.preventDefault();
+      return;
+    }
+
+    if (props.interactionsDisabled || props.loading) return;
+
+    if (
+      selectable.value &&
+      !readOnly.value &&
+      (event.key === ' ' || event.key === 'Enter')
+    ) {
+      event.preventDefault();
+      props.selection?.toggleRow(row);
+      return;
+    }
+
     const rows = props.table.getRowModel().rows;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
@@ -244,6 +328,9 @@
         event.key === 'ArrowDown'
           ? Math.min(index + 1, rows.length - 1)
           : Math.max(index - 1, 0);
+      if (selectable.value && !readOnly.value && event.shiftKey && rows[next]) {
+        props.selection?.extendSelectionTo(rows[next]);
+      }
       focusRowByIndex(next, event.currentTarget);
     }
   }
@@ -262,6 +349,7 @@
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
+        'cp-table--flush': flush,
       }"
       :style="tableStyles"
     >
@@ -279,6 +367,22 @@
           :key="headerGroup.id"
         >
           <slot name="leading-header" />
+          <th
+            v-if="selectable"
+            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
+            scope="col"
+          >
+            <craft-checkbox
+              label-sr-only
+              .checked="table.getIsAllRowsSelected()"
+              .indeterminate="
+                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+              "
+              .disabled="selectionDisabled"
+              @model-value-changed="toggleAllSelected"
+              ><label slot="label">{{ t('Select all') }}</label></craft-checkbox
+            >
+          </th>
           <template v-if="!readOnly && reorderable">
             <th class="cell cell--header">
               <span class="sr-only">Reorder</span>
@@ -354,11 +458,13 @@
             :class="{
               row: true,
               'cp-table-row': true,
+              sel: !!selection && row.getIsSelected(),
               'row--dragging':
                 !readOnly && getDragState(row.id).type === 'is-dragging',
             }"
+            :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
-            @click="emit('rowClick', row, $event)"
+            @click="onRowClick(row, $event)"
             @keydown="onRowKeydown(row, rowIdx, $event)"
           >
             <slot
@@ -366,6 +472,22 @@
               :row="row"
               :hide-bottom-border="hideBottomBorder(rowIdx)"
             />
+            <td
+              v-if="selectable"
+              class="cp-table-cell cp-table-cell--select"
+              :class="{'border-b-0': hideBottomBorder(rowIdx)}"
+            >
+              <craft-checkbox
+                label-sr-only
+                .checked="row.getIsSelected()"
+                .disabled="selectionDisabled || !row.getCanSelect()"
+                @click="pendingShiftKey = $event.shiftKey"
+                @model-value-changed="selectRow(row, $event)"
+                ><label slot="label">{{
+                  t('Select {label}', {label: rowLabel(row)})
+                }}</label></craft-checkbox
+              >
+            </td>
             <template v-if="reorderable && !readOnly">
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
                 <div>

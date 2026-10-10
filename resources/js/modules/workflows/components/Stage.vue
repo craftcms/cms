@@ -129,12 +129,11 @@
   .workflow-review-stage__content,
   .workflow-review-events {
     display: grid;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
   }
 
   .workflow-review-stage__content {
-    margin-block-start: var(--c-spacing-xs);
-    padding-block-end: var(--c-spacing-sm);
+    margin-block-start: var(--c-spacing-sm);
     padding-inline-start: 0;
     border-inline-start: 0;
   }

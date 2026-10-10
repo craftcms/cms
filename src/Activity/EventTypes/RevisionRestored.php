@@ -36,7 +36,7 @@ class RevisionRestored extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Restored revision {revision}.',
+            'Restored revision {revision}',
             ['revision' => $event->data['revisionNum']],
         );
     }

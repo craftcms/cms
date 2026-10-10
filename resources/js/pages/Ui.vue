@@ -14,7 +14,7 @@
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
-  import {UiIsBareTable} from '@/modules/ui/runtime';
+  import {UiTablePadded} from '@/modules/ui/runtime';
   import type {
     UiChange,
     UiChangeKind,
@@ -181,8 +181,8 @@
       node.props.bordered === false
     );
   });
-
-  provide(UiIsBareTable, isBareTable);
+  const contentSlot = computed(() => (isBareTable.value ? 'full' : 'default'));
+  provide(UiTablePadded, isBareTable);
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
@@ -244,14 +244,11 @@
 
 <template>
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
-    <component :is="isBareTable ? 'div' : CpContainer">
-      <component
-        :is="isBareTable ? 'div' : 'craft-pane'"
-        v-bind="isBareTable ? {} : {appearance: 'raised'}"
-      >
+    <CpContainer>
+      <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          v-bind="isBareTable ? {} : {class: 'py-4'}"
+          :class="isBareTable ? undefined : 'py-lg'"
         >
           <UiRenderer
             ref="renderer"
@@ -270,8 +267,8 @@
             </template>
           </UiRenderer>
         </component>
-      </component>
-    </component>
+      </template>
+    </CpContainer>
     <MetadataDetails :html="metadataHtml">
       <template v-if="sidebarUi" #default>
         <craft-field-group>
