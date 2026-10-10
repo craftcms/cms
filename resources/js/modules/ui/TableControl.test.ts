@@ -487,6 +487,17 @@ describe('Vue table rows', () => {
     ]);
     expect(new FormData(form).get('rows[row7][title]')).toBe('Alpha');
   });
+
+  it('keeps hidden rows mounted and submitted', async () => {
+    await mountTable(true, undefined, {hiddenRows: ['row7']});
+
+    const row = form
+      .querySelector<HTMLTableRowElement>('input[name="rows[row7][title]"]')!
+      .closest('tr')!;
+    expect(row.hidden).toBe(true);
+    expect(row.classList.contains('hidden')).toBe(true);
+    expect(new FormData(form).get('rows[row7][title]')).toBe('Alpha');
+  });
 });
 
 function payload(keyed: boolean): UiPayload {

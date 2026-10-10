@@ -18,10 +18,12 @@
     asField?: boolean;
     required?: boolean;
     instructions?: string | null;
+    instructionsPosition?: 'before' | 'after';
     tip?: string;
     tipHtml?: string;
     warning?: string;
     warningHtml?: string;
+    layoutUid?: string;
     width?: number;
     /** Absolute path of the reactive control whose refresh loads this group. */
     dependsOn?: string[];
@@ -60,6 +62,7 @@
     :label="node.props.label ?? undefined"
     :required="node.props.required || undefined"
     :help-text="node.props.instructions ?? undefined"
+    :instructions-position="node.props.instructionsPosition"
     :class="{
       [`width-${node.props.width}`]: Boolean(node.props.width),
       hidden: Boolean(node.props.hidden),
@@ -67,6 +70,7 @@
     }"
     :hidden="node.props.hidden || undefined"
     :data-ui-node="node.uid"
+    :data-layout-element="node.props.layoutUid"
     :aria-busy="showLoading || undefined"
   >
     <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />

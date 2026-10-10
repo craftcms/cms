@@ -134,26 +134,129 @@ function navLevelOf(
 }
 
 /**
- * Gives each crumb that has a switcher the menu the nav draws for its level.
+ * The part of a level that lives under `href`, keeping the headings over
+ * whatever survives.
+ *
+ * A plugin lists an index's sources in its own nav alongside everything else
+ * it has, so the level a source sits in is the whole plugin. The index crumb
+ * above the source is what says which of those belong to it.
+ */
+function levelWithin(level: Array<NavItem>, href: string): Array<NavItem> {
+  return level.flatMap((item): Array<NavItem> => {
+    if (item.group) {
+      const children = levelWithin(
+        Array.isArray(item.subnav) ? item.subnav : [],
+        href
+      );
+
+      return children.length > 0 ? [{...item, subnav: children}] : [];
+    }
+
+    return item.href && navItemContains(href, item.href) ? [item] : [];
+  });
+}
+
+/** What a level offers, for telling whether two crumbs would offer the same. */
+function levelSignature(level: Array<NavItem>): string {
+  return level
+    .map((item) =>
+      item.group && Array.isArray(item.subnav)
+        ? `[${levelSignature(item.subnav)}]`
+        : (item.href ?? '')
+    )
+    .join(',');
+}
+
+function offersChoice(level: Array<NavItem>): boolean {
+  return (
+    level.filter((item) => !item.group).length > 1 ||
+    level.some((item) => item.group)
+  );
+}
+
+/**
+ * Gives each crumb that has a switcher the menu the nav draws for its level,
+ * and a section's crumb the menu of the section.
  *
  * An index screen's crumbs come from its secondary nav, while a screen deeper
  * in (an entry's edit page, say) gets its crumbs from the server. Taking the
  * menu from the nav for both keeps a source's switcher the same wherever it
  * appears. A crumb without a menu keeps not having one, and one the nav
  * doesn't know keeps the server's.
+ *
+ * The exception is a section — a main nav item with a subnav, which is what a
+ * plugin's nav item is. Its crumb switches between everything in the section,
+ * unless a crumb further along already offers exactly that, as an element
+ * index's source crumb does when the section is nothing but its sources.
+ *
+ * @param url The page being shown, which the section's menu marks.
  */
 export function withNavCrumbMenus(
   crumbs: Array<BreadcrumbItem>,
-  nav: Array<NavItem>
+  nav: Array<NavItem>,
+  url?: string
 ): Array<BreadcrumbItem> {
-  return crumbs.map((crumb) => {
-    const href = crumb.href ?? crumb.url;
+  const hrefs = crumbs.map((crumb) => crumb.href ?? crumb.url ?? null);
+
+  const levels = crumbs.map((crumb, index): Array<NavItem> | null => {
+    const href = hrefs[index];
 
     if (!crumb.items?.length || !href) {
-      return crumb;
+      return null;
     }
 
     const level = navLevelOf(withNavSelection(nav, href), href);
+
+    if (!level) {
+      return null;
+    }
+
+    const parent = hrefs
+      .slice(0, index)
+      .reverse()
+      .find((other): other is string => other !== null);
+
+    if (!parent || !navItemContains(parent, href)) {
+      return level;
+    }
+
+    const within = levelWithin(level, parent);
+
+    return within.length > 0 ? within : level;
+  });
+
+  const current =
+    url ?? [...hrefs].reverse().find((href) => href !== null) ?? '';
+  const selectedNav = withNavSelection(nav, current);
+
+  const sections = crumbs.map((crumb, index): Array<NavItem> | null => {
+    const href = hrefs[index];
+
+    if (crumb.items?.length || !href) {
+      return null;
+    }
+
+    const section = selectedNav.find(
+      (item) =>
+        samePath(item.href, href) &&
+        Array.isArray(item.subnav) &&
+        offersChoice(item.subnav)
+    );
+
+    if (!section || !Array.isArray(section.subnav)) {
+      return null;
+    }
+
+    const signature = levelSignature(section.subnav);
+    const offeredLater = levels
+      .slice(index + 1)
+      .some((level) => level !== null && levelSignature(level) === signature);
+
+    return offeredLater ? null : section.subnav;
+  });
+
+  return crumbs.map((crumb, index) => {
+    const level = levels[index] ?? sections[index];
 
     return level ? {...crumb, items: navItemActions(level)} : crumb;
   });

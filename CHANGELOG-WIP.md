@@ -641,6 +641,10 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Removed `Cp.$axios`.
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
+- Plugin bundles can now import the control panel’s element index and element editor components (`ElementIndexPage`, `ElementEditor`, `CpButtonLink`, `ActionMenu`) from the `@craftcms/cp` import-map module, so a plugin’s own element types can have Inertia index and edit pages.
+- Reactive controls in an element’s field layout now refresh the layout from the server when they change, the same as in settings forms.
+- Element action menu items can now use a `formModal` behavior (`modalUrl`, `actionUrl`, `params`), which opens a server-built form in a modal, posts its values to `actionUrl`, and reloads the page once it’s submitted.
+- Element actions run from the element index’s bulk actions bar can now redirect the browser by setting a redirect response with `setResponse()`.
 
 #### Drafts
 - Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.

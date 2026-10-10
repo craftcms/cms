@@ -166,6 +166,20 @@ it('preserves keyed Table rows in payloads and PHP submission names', function (
         ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['values']['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']]);
 });
 
+it('passes a custom add row label through Table payloads and HTML', function () {
+    $form = Ui::make([
+        Field::make()->control(Table::make('rows')
+            ->columns(['name' => ['heading' => 'Name', 'type' => 'singleline']])
+            ->allowAdd()
+            ->addRowLabel('Add a coupon')),
+    ]);
+    $payload = app(UiResolver::class)->resolve($form, new UiContext(namespace: 'settings'));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($payload->nodes[0]->control->props['addRowLabel'])->toBe('Add a coupon')
+        ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['props']['addRowLabel'])->toBe('Add a coupon');
+});
+
 it('renders text expanders for text and textarea Controls', function () {
     $triggers = [
         ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'source' => 'users/text-expander-options'],

@@ -57,3 +57,47 @@ it('renders nothing without metadata', async () => {
 
   expect(container!.querySelector('craft-disclosure')).toBeNull();
 });
+
+it('shows sidebar controls above the metadata', async () => {
+  container = document.createElement('div');
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(
+        MetadataDetails,
+        {html: '<dl>ID 1</dl>'},
+        {default: () => h('div', {class: 'controls'})}
+      ),
+  });
+  app.mount(container);
+  await nextTick();
+
+  const controls = container.querySelector('.controls');
+  const details = container.querySelector('.details-html');
+
+  expect(controls).not.toBeNull();
+  expect(container.querySelector('hr')).not.toBeNull();
+  expect(
+    controls!.compareDocumentPosition(details!) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+  ).toBeTruthy();
+});
+
+it('shows sidebar controls without metadata', async () => {
+  container = document.createElement('div');
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(
+        MetadataDetails,
+        {html: null},
+        {default: () => h('div', {class: 'controls'})}
+      ),
+  });
+  app.mount(container);
+  await nextTick();
+
+  expect(container.querySelector('.controls')).not.toBeNull();
+  expect(container.querySelector('hr')).toBeNull();
+  expect(container.querySelector('.details-html')).toBeNull();
+});

@@ -383,6 +383,7 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'yii2-adapter/resources/js/cp-compat.ts',
+                'yii2-adapter/resources/js/element-editor.ts',
                 'resources/js/cp-module.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
